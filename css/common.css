@@ -1,0 +1,116 @@
+/*@import url('http://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic,700,700italic,800,800italic&amp;v2');*/
+/*@import url('http://fonts.googleapis.com/css?family=Archivo+Narrow|Archivo+Black');*/
+/*@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200italic,300,300italic,400,400italic,600,600italic,700,700italic,900,900italic);*/
+@import url(http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic);
+
+/* CSS Reset */
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	font-size: 100%;
+	vertical-align: baseline;
+	background: transparent;
+}
+
+/* @group Global */
+body {
+	color: hsl(47, 5%, 9%);
+	background: #ffffff;
+	font: 9pt/1.5 "Source Sans Pro", Calibri, Charcoal, Tahoma, Kalimati, sans-serif;
+	position: relative;
+}
+h1 {
+}
+h2 {
+	font-size: 277%;
+	font-weight: 300;
+	line-height: 1.0;
+	letter-spacing: -1px;
+	margin: 0.75em 0 0.25em;
+	text-indent: -2px;
+	font-style: normal;
+}
+h3 {
+	font-size: 150%;
+	font-weight: 600;
+	line-height: 1.8;
+	letter-spacing: 0;
+	margin: 0.75em 0 1em;
+}
+h4 {
+	font-size: 125%;
+	font-weight: 700;
+	line-height: 2.0;
+	letter-spacing: 0;
+	margin: 0.75em 0 1em;
+}
+p {
+	padding: 0 0 0.75em;
+/*		margin: 0.5em 0 1.5em;*/
+}
+ins {
+	text-decoration: none;
+}
+del {
+	text-decoration: line-through;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+th {
+	text-align: left;
+}
+code, pre, tt {
+	font-family: Monaco, Consolas, monospace;
+	background-color: hsl(205, 61%, 94%);
+}
+cite, blockquote, q {
+	quotes: none;
+}
+blockquote {
+	padding: 5px;
+	padding-left: 20px;
+	border-left: 1px solid hsl(47, 30%, 80%);
+	background-color: hsl(47, 61%, 97%);
+	color: hsl(47, 40%, 40%);
+}
+blockquote:before, q:before,
+blockquote:after, q:after {
+	content: '';
+}
+address {
+}
+acronym {
+}
+/* @end */
+
+/* @group Links */
+a {
+	background-color: transparent;
+	text-decoration: none;
+	color: hsl(10, 85%, 50%);
+}
+/*::-moz-selection {
+	color: 				hsl(203, 100%, 100%);
+	background-color: 	hsl(203, 100%, 50%);
+}
+::selection {
+	color: 				hsl(203, 100%, 100%);
+	background-color: 	hsl(203, 100%, 50%);
+}*/
+/* @end */
+
+/* @group Lists */
+ol,ul {
+	list-style: none;
+}
+ol {
+	font-weight: bold;
+}
+ol > li {
+	font-weight: normal;
+}
+/* @end */
