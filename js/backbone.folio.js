@@ -12,7 +12,19 @@ $(function(){
 				ko.bundles.push(bi.id);
 			}
 		})
-//		ko._resolvedDomIds = ko.bundles.concat(); // make a copy
+	});
+		
+	/// TODO: Implement GroupingCollectionView
+	var kIndex = _.indexBy(bootstrap["all-keywords"], "id");
+	_.each(bootstrap["all-bundles"], function (bo, bi, ba) {
+		var bTypes = [];
+		_.each(bo.keywords, function(ko, ki, ka) {
+			var kType = kIndex[ko].type;
+			if (bTypes.indexOf(kType) == -1) {
+				bTypes.push(kType);
+			}
+		});
+		bo._resolvedDomIds = bo.keywords.concat(bTypes);
 	});
 	
 	
@@ -24,19 +36,10 @@ $(function(){
 	 * Item
 	 */
 	var Item = Backbone.Model.extend({
-//		defaults: {
-//			selected: false,
-//			highlight: false
-//		},
-		
 		/** @override */
 		url: function() {
 			return Backbone.Model.prototype.url.apply(this, arguments) + "/";
 		},
-		
-//		setSelected: function(value){
-//			this.set("selected", value);
-//		}
 	});
 	
 	/**
@@ -51,13 +54,7 @@ $(function(){
 				return;
 			}
 			oldItem = this.selected;
-//			if (oldItem) {
-//				oldItem.setSelected(false);
-//			}
 			this.selected = newItem;
-//			if (newItem) {
-//				newItem.setSelected(true);
-//			}
 			this.trigger("collection:select", newItem, oldItem);
 		},
 		
@@ -95,21 +92,37 @@ $(function(){
 		}
 		
 	});
+		
+		
+	/** BundleItem */
+	var BundleItem = Item.extend({
+		defaults: { name: "", description: "", completed: 0 }
+	});
+	/** BundleList */
+	var BundleList = ItemList.extend({
+	 	model: BundleItem,
+	 	url: "/json/bundles/"
+	});
+	
+	/** KeywordItem */
+	var KeywordItem = Item.extend({
+		defaults: { name: "", type: "" }
+	});
+	/** KeywordList */
+	var KeywordList = ItemList.extend({
+		model: KeywordItem
+	});
+	
+	/* ~~~~~~ VIEWS ~~~~~~ */
 	
 	
 	/**
 	 * ItemView
 	 */
 	var ItemView = Backbone.View.extend({
-		
 		events: {
 			"click ": "whenClick"
 		},
-		
-//		initialize: function() {
-//			this.model.on('change:selected', this.render, this);
-//			this.model.on('change:highlight', this.render, this);
-//		},
 		
 		whenClick: function(event) {
 			if (!event.isDefaultPrevented()) {
@@ -117,30 +130,6 @@ $(function(){
 			}
 			this.trigger("item:click", this.model);
 		},
-		
-//		render: function() {
-//			if (this.model.get('selected')) {
-//				this.$el.addClass('selected');
-//			} else {
-//				this.$el.removeClass('selected');
-//			}
-//			return this;
-//		}
-	});
-	
-	
-	
-	/// TODO: remove need for this
-	var kIndex = _.indexBy(bootstrap["all-keywords"], "id");
-	_.each(bootstrap["all-bundles"], function (bo, bi, ba) {
-		var bTypes = [];
-		_.each(bo.keywords, function(ko, ki, ka) {
-			var kType = kIndex[ko].type;
-			if (bTypes.indexOf(kType) == -1) {
-				bTypes.push(kType);
-			}
-		});
-		bo._resolvedDomIds = bo.keywords.concat(bTypes);
 	});
 	
 	/**
@@ -171,96 +160,53 @@ $(function(){
 			view.on("item:click", this.onItemViewClick, this);
 			this._views[item.id] = view;
 		},
+		
+		onItemViewClick: function(item) {
+			// TODO: refactor, bad place to do this...
+			this.associations.select(null);
+			
+			this.collection.select(item);
+		},
 				
 		onModelSelection: function(newItem, oldItem) {
-			if (oldItem) {
+			if (oldItem)
 				this._views[oldItem.id].$el.removeClass("selected");
-			}
-			if (newItem) {
+			if (newItem)
 				this._views[newItem.id].$el.addClass("selected");
-			}
 			// TODO: refactor
-			this.$el.removeClass("collapsed");
+//			this.$el.removeClass("collapsed");
+			this.render();
 		},
 		
 		onAssocSelection: function(newItem, oldItem) {
-			
 			if (newItem) {
 				var refIds = newItem.get(this.key);
 				_.each(this._els, function(o, i, a) {
 					var jqo = $(o);
-					if (_.contains(refIds, o.id)) {
+					if (_.contains(refIds, o.id))
 						jqo.addClass("highlight");
-					} else {
+					else
 						jqo.removeClass("highlight");
-					}
 				});
 			} else {
 				$(this._els).removeClass("highlight");
 			}
 			// TODO: refactor
-			if (newItem) {
+//			if (newItem)
+//				this.$el.addClass("collapsed");
+//			else
+//				this.$el.removeClass("collapsed");
+			this.render();
+		},
+		
+		render: function(){
+			if (this.associations.selected) {
 				this.$el.addClass("collapsed");
 			} else {
 				this.$el.removeClass("collapsed");
 			}
-//			this.collection.each(function (model, idx, list) {
-//				model.set("highlight", newItem && _.contains(refIds, model.id));
-//			});
-		},
-		
-		onItemViewClick: function(item) {
-			this.collection.select(item);
-			// bad place to do this...
-			this.associations.select(null); 
-		},
-		
-		render: function(){
 			return this;
 		}
-	});
-		
-		
-	/** BundleItem */
-	var BundleItem = Item.extend({
-		defaults: { name: "", description: "", completed: 0 }
-	});
-	/** BundleList */
-	var BundleList = ItemList.extend({
-	 	model: BundleItem,
-//	 	comparator: "completed",
-	 	url: "/json/bundles/"
-	});
-	
-	/** KeywordItem */
-	var KeywordItem = Item.extend({
-		defaults: { name: "", type: "" }
-	});
-	/** KeywordList */
-	var KeywordList = ItemList.extend({
-		model: KeywordItem
-	});
-	
-	var bundleList = new BundleList;
-	bundleList.reset(bootstrap["all-bundles"]);
-	
-	var keywordList = new KeywordList;
-	keywordList.reset(bootstrap["all-keywords"]);
-	
-	/** bundleListView */
-	var bundleListView = new ItemListView({
-		el: "#bundles",
-		collection: bundleList,
-		associations: keywordList,
-		key: "bundles"
-	});
-	
-	/** keywordListView */
-	var keywordListView = new ItemListView({
-		el: "#keywords",
-		collection: keywordList,
-		associations: bundleList,
-		key: "_resolvedDomIds"
 	});
 	
 	/**
@@ -304,7 +250,8 @@ $(function(){
 		},
 		
 		closeBundle: function() {
-			if (this.current) this.collection.select(null);
+			if (this.current)
+				this.collection.select(null);
 		},
 		
 		render: function() {
@@ -319,7 +266,6 @@ $(function(){
 			return this;
 		}
 	});
-	var bundlePagerView = new BundlePagerView({collection:bundleList});
 	
 	/**
 	 * BundleDetailView
@@ -368,7 +314,6 @@ $(function(){
 			this.$(".description").html(attrs["description"]);
 		}
 	});
-	var bundleDetailView = new BundleDetailView({collection:bundleList});
 	
 	/**
 	 * AppView
@@ -378,13 +323,35 @@ $(function(){
 		el: "#container",
 		
 		/** Setup listening to model changes */
-		initialize: function() {
+		initialize: function(options) {
+			this.bundleList = new BundleList;
+			this.bundleList.reset(options["bootstrap"]["all-bundles"]);
+			
+			this.keywordList = new KeywordList;
+			this.keywordList.reset(options["bootstrap"]["all-keywords"]);
+			
+			this.bundleDetailView = new BundleDetailView({collection:this.bundleList});
+			this.bundlePagerView = new BundlePagerView({collection:this.bundleList});
+			
+			this.bundleListView = new ItemListView({
+				el: "#bundles",
+				collection: this.bundleList,
+				associations: this.keywordList,
+				key: "bundles"
+			});
+			
+			this.keywordListView = new ItemListView({
+				el: "#keywords",
+				collection: this.keywordList,
+				associations: this.bundleList,
+				key: "_resolvedDomIds"
+			});
 		},
 		
 		render: function() {
 			return this;
 		}
 	});
-	var App = new AppView({model:bundleList});
+	var App = new AppView({bootstrap: bootstrap});
 	
 });

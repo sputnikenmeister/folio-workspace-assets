@@ -144,3 +144,47 @@ $(function(){
 //		}
 //	);
 });
+
+
+/** Requires ga.js */
+//try {
+//	var tracker = _gat._getTracker("UA-9123564-6");
+//	tracker._trackPageview();
+//	tracker._setDomainName("canillas.name");
+//} catch (e) {}
+
+
+/** Requires jquery-ui.js */
+//$(".keywords").selectable({
+//	filter: "li a",
+//	create: function (e, ui) {
+//		$(this).children().each(function (idx) {
+//			var refs = $(".entry:not(." + this.id + ")");
+//			$(this).hover(
+//				function () { refs.addClass("highlight"); },
+//				function () { refs.removeClass("highlight"); }
+//			);
+//		});
+//	},
+//	selected: function (e, ui) {
+//		$(".entry." + ui.selected.id).addClass("selected");
+//		changeHash(ui.selected.id);
+//	},
+//	unselected: function (e, ui) {
+//		$(".entry." + ui.unselected.id).removeClass("selected");
+//	}
+//});
+
+	
+/** Requires jquery.cycle.js */
+//$(".pageable").each(
+//	function (idx, elt) {
+//		var list = $(this).children("ul");
+//		list.children(":not(:first-child)").hide();
+//		list.cycle({
+//			fx: "fade", speed:"fast", timeout:0,
+//			next: $(this).children(".next-button"),
+//			prev: $(this).children(".prev-button")
+//		});
+//	}
+//);

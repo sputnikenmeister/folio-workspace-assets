@@ -101,9 +101,9 @@
 /* @end */
 
 /* DEBUG */
-#container, #main, #header, #footer, #nav-main, #nav-sidebar { outline: 1px solid hsla(0, 0%, 0%, .2); }
+/*#container, #main,  #nav-main, #nav-sidebar { outline: 1px solid hsla(0, 0%, 0%, .2); }*/
 
-#keywords, #bundles { background-color: hsla(0, 0%, 0%, .05); }
+#header, #footer, #keywords, #bundles { background-color: hsla(0, 0%, 0%, .05); }
 
 #bd-nav		{ background-color: hsla(  0, 75%, 75%, .2); }
 #bd-detail	{ background-color: hsla(180, 75%, 75%, .2); }
@@ -131,8 +131,8 @@
 	color: white;
 	background-color: red;
 }
-.mapped .group.highlight h3,
-.mapped .item.highlight {
+.mapped:not(.collapsed) .group.highlight h3,
+.mapped:not(.collapsed) .item.highlight {
 	background-color: silver;
 }
 #bundles {
