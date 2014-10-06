@@ -36,7 +36,7 @@
 }
 #footer {
 	clear: both;
-	margin-top: 20px;
+	margin-top: 40px;
 	margin-left: 20px;
 	margin-right: 20px;
 }
@@ -90,10 +90,10 @@
 #bd-nav a#close-bundle:before {
 	content: "\2715";
 }
-#bd-detail .bundle-name {
-	margin: 0.5em 0 0.2em;
+#bd-detail {
 }
 #bd-detail .completed {
+	margin: 2em 0 1em;
 }
 #bd-content {
 	display: none;
@@ -103,30 +103,17 @@
 /* DEBUG */
 /*#container, #main,  #nav-main, #nav-sidebar { outline: 1px solid hsla(0, 0%, 0%, .2); }*/
 
-#header, #footer, #keywords, #bundles { background-color: hsla(0, 0%, 0%, .05); }
+/*#header, #footer, #keywords, #bundles { background-color: hsla(0, 0%, 0%, .05); }
 
 #bd-nav		{ background-color: hsla(  0, 75%, 75%, .2); }
 #bd-detail	{ background-color: hsla(180, 75%, 75%, .2); }
-#bd-content	{ background-color: hsla(270, 75%, 75%, .2); }
+#bd-content	{ background-color: hsla(270, 75%, 75%, .2); }*/
 
 /*.mapped				{ background-color: hsla(360, 50%, 60%, .25); }*/
 /*.mapped .group h3,
 .mapped .item,
 .caption	{ background-color: hsla(360, 50%, 50%, .25); }*/
 
-/* @group .item */
-.mapped .item {
-}
-.mapped a {
-	color: inherit;
-/*	background-color: transparent;*/
-	display: block;
-	width: 100%;
-}
-.mapped .item:hover {
-	color: white;
-	background-color: gray;
-}
 .mapped .item.selected {
 	color: white;
 	background-color: red;
@@ -135,13 +122,27 @@
 .mapped:not(.collapsed) .item.highlight {
 	background-color: silver;
 }
-#bundles {
+/*.mapped .item:hover {
+	color: white;
+	background-color: gray;
+}*/
+
+/* @group .item */
+
+.mapped {
 	margin-left: 0;
 	margin-right: 0;
 	margin-bottom: 20px;
 }
-#keywords {
-	margin-bottom: 20px;
+.mapped a {
+	color: inherit;
+/*	background-color: transparent;*/
+	display: block;
+	width: 100%;
+}
+.mapped .item {
+	margin: 0;
+	padding: 0;
 }
 #keywords .group {
 	margin-left: 100px;
@@ -156,10 +157,8 @@
 /* @end */
 
 /* @group #bundles .item */
-#bundles .item {
-	padding: 0.1em 0;
-}
 #bundles .item .bundle-name {
+	padding: 0.1em 0;
 	margin: 0;
 	padding: 0;
 }
@@ -190,34 +189,18 @@
 /* @end */
 
 /* @group .mapped animated props */
-
-#keywords .group h3 {
-	opacity: 1;
-}
-#keywords.collapsed .group.highlight h3 {
-	opacity: 1;
-}
-#keywords.collapsed .group h3 {
-	opacity: 0;
-}
-
 #bundles .item {
 	opacity: 1;
+/*	max-height: 33px;*/
 }
-#bundles.collapsed .item.highlight {
+#bundles.collapsed .item.highlight,
+#bundles.collapsed .item.selected {
 	opacity: 1;
+/*	max-height: 33px;*/
 }
 #bundles.collapsed .item {
 	opacity: 0.2;
-}
-
-#keywords .group h3,
-#bundles .item {
-	-webkit-transition: opacity 0.4s;
-	   -moz-transition: opacity 0.4s;
-	    -ms-transition: opacity 0.4s;	
-	     -o-transition: opacity 0.4s;
-	        transition: opacity 0.4s;
+/*	max-height: 0;*/
 }
 
 #keywords .item {
@@ -233,12 +216,31 @@
 	max-height: 0;
 }
 
+#keywords .group h3 {
+	opacity: 1;
+}
+#keywords.collapsed .group.highlight h3 {
+	opacity: 1;
+}
+#keywords.collapsed .group h3 {
+	opacity: 0;
+}
+
+/*#bundles .item,*/
 #keywords .item {	
 	-webkit-transition: max-height 0.4s, opacity 0.4s;
 	   -moz-transition: max-height 0.4s, opacity 0.4s;
 	    -ms-transition: max-height 0.4s, opacity 0.4s;	
 	     -o-transition: max-height 0.4s, opacity 0.4s;
 	        transition: max-height 0.4s, opacity 0.4s;
+}
+#bundles .item,
+#keywords .group h3 {
+	-webkit-transition: opacity 0.4s;
+	   -moz-transition: opacity 0.4s;
+	    -ms-transition: opacity 0.4s;	
+	     -o-transition: opacity 0.4s;
+	        transition: opacity 0.4s;
 }
 /* @end */
 

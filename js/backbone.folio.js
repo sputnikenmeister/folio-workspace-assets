@@ -27,7 +27,6 @@ $(function(){
 		bo._resolvedDomIds = bo.keywords.concat(bTypes);
 	});
 	
-	
 	_.templateSettings = {
 		interpolate: /\{\{(.+?)\}\}/g
 	};
@@ -120,6 +119,7 @@ $(function(){
 	 * ItemView
 	 */
 	var ItemView = Backbone.View.extend({
+	
 		events: {
 			"click ": "whenClick"
 		},
@@ -163,7 +163,7 @@ $(function(){
 		
 		onItemViewClick: function(item) {
 			// TODO: refactor, bad place to do this...
-			this.associations.select(null);
+//			this.associations.select(null);
 			
 			this.collection.select(item);
 		},
@@ -173,9 +173,7 @@ $(function(){
 				this._views[oldItem.id].$el.removeClass("selected");
 			if (newItem)
 				this._views[newItem.id].$el.addClass("selected");
-			// TODO: refactor
-//			this.$el.removeClass("collapsed");
-			this.render();
+//			this.render();
 		},
 		
 		onAssocSelection: function(newItem, oldItem) {
@@ -191,28 +189,31 @@ $(function(){
 			} else {
 				$(this._els).removeClass("highlight");
 			}
-			// TODO: refactor
-//			if (newItem)
-//				this.$el.addClass("collapsed");
-//			else
-//				this.$el.removeClass("collapsed");
-			this.render();
+//			this.render();
 		},
 		
-		render: function(){
-			if (this.associations.selected) {
+		collapse: function(collapse) {
+			if (collapse)
 				this.$el.addClass("collapsed");
-			} else {
+			else
 				this.$el.removeClass("collapsed");
-			}
-			return this;
-		}
+		},
+		
+//		render: function(){
+//			if (this.associations.selected) {
+//				this.$el.addClass("collapsed");
+//			} else {
+//				this.$el.removeClass("collapsed");
+//			}
+//			return this;
+//		}
 	});
 	
 	/**
 	 * BundlePagerView
 	 */
 	var BundlePagerView = Backbone.View.extend({
+	
 		el: "#bd-nav",
 		
 		current: null,
@@ -326,26 +327,44 @@ $(function(){
 		initialize: function(options) {
 			this.bundleList = new BundleList;
 			this.bundleList.reset(options["bootstrap"]["all-bundles"]);
-			
 			this.keywordList = new KeywordList;
 			this.keywordList.reset(options["bootstrap"]["all-keywords"]);
 			
-			this.bundleDetailView = new BundleDetailView({collection:this.bundleList});
-			this.bundlePagerView = new BundlePagerView({collection:this.bundleList});
-			
+			this.bundleDetailView = new BundleDetailView({
+				collection:this.bundleList
+			});
+			this.bundlePagerView = new BundlePagerView({
+				collection:this.bundleList
+			});
 			this.bundleListView = new ItemListView({
 				el: "#bundles",
 				collection: this.bundleList,
 				associations: this.keywordList,
 				key: "bundles"
 			});
-			
 			this.keywordListView = new ItemListView({
 				el: "#keywords",
 				collection: this.keywordList,
 				associations: this.bundleList,
 				key: "_resolvedDomIds"
 			});
+			
+			this.bundleList.on("collection:select", this.onBundleSelect, this)
+			this.keywordList.on("collection:select", this.onKeywordSelect, this)
+		},
+		
+		onBundleSelect: function(newItem, oldItem) {
+			if (newItem) {
+				this.keywordList.select(null);
+				this.bundleListView.collapse(true);
+				this.keywordListView.collapse(true);
+			} else {
+				this.bundleListView.collapse(false);
+				this.keywordListView.collapse(false);
+			}
+		},
+		
+		onKeywordSelect: function(newItem, oldItem) {
 		},
 		
 		render: function() {
