@@ -45,6 +45,7 @@ $(function(){
 	 * ItemList
 	 */
 	var ItemList = Backbone.Collection.extend({
+	
 		model: Item,
 		selected: null,
 		
@@ -121,14 +122,42 @@ $(function(){
 	var ItemView = Backbone.View.extend({
 	
 		events: {
-			"click ": "whenClick"
+			"click ": "whenClick",
 		},
 		
-		whenClick: function(event) {
+		whenClick: function (event) {
 			if (!event.isDefaultPrevented()) {
 				event.preventDefault();
 			}
-			this.trigger("item:click", this.model);
+			this.trigger("item-view:click", this.model);
+		},
+		
+		_selected: null,
+		selected: function (value) {
+			if (arguments.length == 1 && this._selected !== value)
+			{
+				this._selected = value;
+				if (this._selected) {
+					this.$el.addClass("selected");
+				} else {
+					this.$el.removeClass("selected");
+				}
+			}
+			return this._selected;
+		},
+		
+		_highlight: null,
+		highlight: function (value) {
+			if (arguments.length == 1 && this._highlighted !== value)
+			{
+				this._highlighted = value;
+				if (this._highlighted) {
+					this.$el.addClass("highlight");
+				} else {
+					this.$el.removeClass("highlight");
+				}
+			}
+			return this._highlighted;
 		},
 	});
 	
@@ -137,15 +166,19 @@ $(function(){
 	 */
 	var ItemListView = Backbone.View.extend({
 	
-		tagName: "ul",
-		className: "mapped",
-		
 		initialize: function(options) {
 			this.associations = options["associations"];
 			this.key = options["key"];
 			
-			this._views = {};
-			this.collection.each(this.assignItemView, this);
+			this._views = [];
+			this._viewIndex = {};
+			
+			this.collection.each(function (o, i, a) {
+				var view = new ItemView({ el: "#" + o.id, model: o });
+				view.on("item-view:click", this.onItemViewClick, this);
+				this._viewIndex[o.id] = view;
+				this._views[i] = view;
+			}, this);
 			
 			this._els = this.$(".item, .group");
 			
@@ -155,24 +188,30 @@ $(function(){
 			}
 		},
 		
-		assignItemView: function (item, idx, list) {
-			var view = new ItemView({ el: "#" + item.id, model: item });
-			view.on("item:click", this.onItemViewClick, this);
-			this._views[item.id] = view;
+		getItemView: function(model) {
+			return this._viewIndex[model.id];
 		},
 		
 		onItemViewClick: function(item) {
-			// TODO: refactor, bad place to do this...
-//			this.associations.select(null);
-			
 			this.collection.select(item);
 		},
 				
 		onModelSelection: function(newItem, oldItem) {
-			if (oldItem)
-				this._views[oldItem.id].$el.removeClass("selected");
-			if (newItem)
-				this._views[newItem.id].$el.addClass("selected");
+			if (newItem) {
+				this.getItemView(newItem).$el.addClass("selected");
+				if (!oldItem) {
+					this.$el.addClass("has-selected");
+				}
+			}
+			if (oldItem) {
+				this.getItemView(oldItem).$el.removeClass("selected");
+				if (!newItem) {
+					this.$el.removeClass("has-selected");
+				}
+			}
+			if (!newItem && !oldItem) {
+				throw new Error("ItemListView.onModelSelection: both new and old are null");
+			}
 //			this.render();
 		},
 		
@@ -186,27 +225,34 @@ $(function(){
 					else
 						jqo.removeClass("highlight");
 				});
+				if (!oldItem) {
+					this.$el.addClass("has-highlight");
+				}
 			} else {
 				$(this._els).removeClass("highlight");
+				this.$el.removeClass("has-highlight");
 			}
 //			this.render();
 		},
 		
-		collapse: function(collapse) {
-			if (collapse)
-				this.$el.addClass("collapsed");
-			else
-				this.$el.removeClass("collapsed");
+		_collapsed: null,
+		collapsed: function(value) {
+			if (arguments.length == 1 && value !== this._collapsed) 
+			{
+				this._collapsed = value;
+				if (value) {
+					this.$el.addClass("collapsed");
+				} else {
+					this.$el.removeClass("collapsed");
+				}
+//				this.render();
+			}
+			return this._collapsed;
 		},
 		
-//		render: function(){
-//			if (this.associations.selected) {
-//				this.$el.addClass("collapsed");
-//			} else {
-//				this.$el.removeClass("collapsed");
-//			}
-//			return this;
-//		}
+		render: function(){
+			return this;
+		}
 	});
 	
 	/**
@@ -228,10 +274,10 @@ $(function(){
 				
 		initialize: function() {
 			this.template = _.template(this.$(".template").html());
-			this.collection.on('collection:select', this.onSelectionChange, this);
+			this.collection.on('collection:select', this.onBundleSelect, this);
 		},
 		
-		onSelectionChange: function(newItem, oldItem) {
+		onBundleSelect: function(newItem, oldItem) {
 			if (newItem) {
 				this.current = this.collection.selected;
 				this.preceding = this.collection.precedingOrLast(this.current);
@@ -251,8 +297,9 @@ $(function(){
 		},
 		
 		closeBundle: function() {
-			if (this.current)
+			if (this.current) {
 				this.collection.select(null);
+			}
 		},
 		
 		render: function() {
@@ -274,15 +321,15 @@ $(function(){
 	var BundleDetailView = Backbone.View.extend({
 	
 		el: "#bd-detail",
-		
+	
 		initialize: function() {
 			this.template = _.template(this.$(".template").html());
-			this.collection.on('collection:select', this.onSelectionChange, this);
+			this.collection.on('collection:select', this.onBundleSelect, this);
 		},
 		
-		onSelectionChange: function(newItem, oldItem) {
+		onBundleSelect: function(newItem, oldItem) {
 			if (newItem && !newItem.has("images")) {
-				newItem.once("change", this.onModelUpdate, this);
+				newItem.once("change", this.onFetchSuccess, this);
 				newItem.fetch({
 					success: function() { console.log("bundle fetch success") },
 					error: function() { console.log("bundle fetch error"); }
@@ -292,7 +339,7 @@ $(function(){
 			}
 		},
 		
-		onModelUpdate: function() {
+		onFetchSuccess: function() {
 			this.render();
 		},
 		
@@ -306,14 +353,89 @@ $(function(){
 			return this;
 		},
 		
-		renderToDOM: function() {
-			var attrs = this.collection.selected
-				? this.collection.selected.attributes
-				: this.collection.model.defaults;
-			this.$(".bd-title").html(attrs["name"]);
-			this.$(".pubDate").html(attrs["completed"]);
-			this.$(".description").html(attrs["description"]);
+//		renderToDOM: function() {
+//			var attrs = this.collection.selected
+//				? this.collection.selected.attributes
+//				: this.collection.model.defaults;
+//			this.$(".bd-title").html(attrs["name"]);
+//			this.$(".pubDate").html(attrs["completed"]);
+//			this.$(".description").html(attrs["description"]);
+//		}
+	});
+	
+	var ImageListView = Backbone.View.extend({
+	
+		el: "#bd-images",
+		
+		initialize: function(options) {
+			this.template = _.template(this.$("#bd-images_tmpl").html());
+			this.itemTemplate = _.template(this.$("#bd-images-item_tmpl").html());
+			
+			this.collection.on('collection:select', this.onBundleSelect, this);
+		},
+		
+		onBundleSelect: function(newItem, oldItem) {
+			if (newItem && !newItem.has("images")) {
+				newItem.once("change", this.onFetchSuccess, this);
+//				newItem.fetch({
+//					success: function() { console.log("bundle fetch success") },
+//					error: function() { console.log("bundle fetch error"); }
+//				});
+			} else {
+				this.render();
+			}
+		},
+		
+		onFetchSuccess: function() {
+			this.render();
+		},
+		
+		render: function() {
+			var item = this.collection.selected;
+			if (item) {
+				this.$el.html(this.template(item.attributes));
+				_.each(item.get("images"), this.renderImageItem, this);	
+//				var listEl = this.$("ul");
+//				var itemTemplate = this.itemTemplate;
+//				_.each(item.get("images"), function(item, index, list) {
+//					var attrs = {};
+//					attrs.url			= item.url? item.url: "";
+//					attrs.description 	= item.description? item.description: "";
+//					attrs.width			= 480;
+//					attrs.height		= Math.floor((480 / item.width) * item.height);
+//					var itemEl = listEl.append(itemTemplate(attrs));
+//				});
+			} else {
+				this.$el.empty();
+			}
+			return this;
+		},
+		
+		renderImageItem: function(item) {
+			var attrs = {};
+			attrs.url			= item.url? item.url: "";
+			attrs.description 	= item.description? item.description: "";
+			attrs.width			= 480;
+			attrs.height		= Math.floor((480 / item.width) * item.height);
+			var itemEl = this.$("ul").append(this.itemTemplate(attrs));
 		}
+		
+//		renderItem: function (o, i, a) {
+//		}
+	});
+	
+	var ImageView = Backbone.View.extend({
+		
+		model: Backbone.Model,
+		
+		initialize: function(options) {
+			this.template = _.template(this.$(".template").html());
+		},
+		
+		render: function() {
+			this.$el.html(this.template(this.model.attributes));
+			return this;
+		},
 	});
 	
 	/**
@@ -327,15 +449,10 @@ $(function(){
 		initialize: function(options) {
 			this.bundleList = new BundleList;
 			this.bundleList.reset(options["bootstrap"]["all-bundles"]);
+			
 			this.keywordList = new KeywordList;
 			this.keywordList.reset(options["bootstrap"]["all-keywords"]);
 			
-			this.bundleDetailView = new BundleDetailView({
-				collection:this.bundleList
-			});
-			this.bundlePagerView = new BundlePagerView({
-				collection:this.bundleList
-			});
 			this.bundleListView = new ItemListView({
 				el: "#bundles",
 				collection: this.bundleList,
@@ -349,22 +466,46 @@ $(function(){
 				key: "_resolvedDomIds"
 			});
 			
-			this.bundleList.on("collection:select", this.onBundleSelect, this)
-			this.keywordList.on("collection:select", this.onKeywordSelect, this)
+			this.bundleDetailView = new BundleDetailView({
+				collection:this.bundleList
+			});
+			this.bundlePagerView = new BundlePagerView({
+				collection:this.bundleList
+			});
+			this.ImageListView = new ImageListView({
+				collection:this.bundleList
+			});
+			
+			this.bundleList.on("collection:select", this.onBundleSelect, this);
+			this.keywordList.on("collection:select", this.onKeywordSelect, this);
+//			this.bundleListView.$el.on("click", function() {
+//				console.log("focus bundles");
+//			});
+//			this.keywordListView.$el.on("click", function() {
+//				console.log("focus keywords");
+//			});
 		},
+		
+//		_focus: "bundles",
 		
 		onBundleSelect: function(newItem, oldItem) {
 			if (newItem) {
 				this.keywordList.select(null);
-				this.bundleListView.collapse(true);
-				this.keywordListView.collapse(true);
+				this.keywordListView.collapsed(true);
+				this.bundleListView.collapsed(true);
 			} else {
-				this.bundleListView.collapse(false);
-				this.keywordListView.collapse(false);
+				this.keywordListView.collapsed(false);
+				this.bundleListView.collapsed(false);
 			}
 		},
 		
 		onKeywordSelect: function(newItem, oldItem) {
+			if (newItem) {
+				this.keywordListView.collapsed(false)
+				this.bundleListView.collapsed(false);
+			} else {
+//				this.keywordListView.collapsed(true);
+			}
 		},
 		
 		render: function() {
