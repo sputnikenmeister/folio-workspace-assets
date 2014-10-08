@@ -34,19 +34,16 @@ $(function(){
 	/**
 	 * Item
 	 */
-	var Item = Backbone.Model.extend({
-		/** @override */
-		url: function() {
-			return Backbone.Model.prototype.url.apply(this, arguments) + "/";
-		},
-	});
+//	var Item = Backbone.Model.extend({
+//		/** @override */
+//	});
 	
 	/**
 	 * ItemList
 	 */
 	var ItemList = Backbone.Collection.extend({
 	
-		model: Item,
+//		model: Item,
 		selected: null,
 		
 		select: function(newItem) {
@@ -93,28 +90,74 @@ $(function(){
 		
 	});
 		
-		
+	/* ~~~~~~ MODELS ~~~~~~ */
+	
+	/** KeywordItem */
+	var KeywordItem = Backbone.Model.extend({
+		defaults: {
+			name: "",
+			handle: "",
+			type: "",
+			attributes: []
+		}
+	});
+	
+	/** TypeItem */
+	var TypeItem = Backbone.Model.extend({
+		defaults: {
+			name: "",
+			handle: "",
+			attributes: []
+		}
+	});
 	/** BundleItem */
-	var BundleItem = Item.extend({
-		defaults: { name: "", description: "", completed: 0 }
+	var BundleItem = Backbone.Model.extend({
+		defaults: {
+			name: "",
+			handle: "",
+			description: "",
+			completed: 0,
+			attributes: []
+			// images
+		},
+		url: function() {
+			return Backbone.Model.prototype.url.apply(this, arguments) + "/";
+		},
+	});
+	
+	/** ImageItem */
+	var ImageItem = Backbone.Model.extend({
+		defaults: {
+			url: null,
+			width: NaN,
+			height: NaN,
+			description: null,
+			attributes: []
+		}
+		
+	});
+	
+	/* ~~~~~~ COLLECTIONS ~~~~~~ */
+	
+	/** TypeList */
+	var TypeList = Backbone.Collection.extend({
+	 	model: TypeItem
 	});
 	/** BundleList */
 	var BundleList = ItemList.extend({
 	 	model: BundleItem,
 	 	url: "/json/bundles/"
 	});
-	
-	/** KeywordItem */
-	var KeywordItem = Item.extend({
-		defaults: { name: "", type: "" }
-	});
 	/** KeywordList */
 	var KeywordList = ItemList.extend({
 		model: KeywordItem
 	});
+	/** ImageList */
+	var ImageList = ItemList.extend({
+	 	model: ImageItem
+	});
 	
 	/* ~~~~~~ VIEWS ~~~~~~ */
-	
 	
 	/**
 	 * ItemView
@@ -126,9 +169,9 @@ $(function(){
 		},
 		
 		whenClick: function (event) {
-			if (!event.isDefaultPrevented()) {
-				event.preventDefault();
-			}
+//			if (!event.isDefaultPrevented()) {
+//				event.preventDefault();
+//			}
 			this.trigger("item-view:click", this.model);
 		},
 		
@@ -174,7 +217,7 @@ $(function(){
 			this._viewIndex = {};
 			
 			this.collection.each(function (o, i, a) {
-				var view = new ItemView({ el: "#" + o.id, model: o });
+				var view = new ItemView({ el: this.$("#" + o.id), model: o });
 				view.on("item-view:click", this.onItemViewClick, this);
 				this._viewIndex[o.id] = view;
 				this._views[i] = view;
@@ -261,6 +304,7 @@ $(function(){
 	var BundlePagerView = Backbone.View.extend({
 	
 		el: "#bd-nav",
+		template: _.template($("#bd-nav_tmpl").html()),
 		
 		current: null,
 		following: null,
@@ -273,7 +317,6 @@ $(function(){
 		},
 				
 		initialize: function() {
-			this.template = _.template(this.$(".template").html());
 			this.collection.on('collection:select', this.onBundleSelect, this);
 		},
 		
@@ -304,9 +347,12 @@ $(function(){
 		
 		render: function() {
 			if (this.current) {
-				var values = {};
-				values["preceding"] = this.preceding.get("name");
-				values["following"] = this.following.get("name");
+				var values = {
+					"preceding_name": this.preceding.get("name"),
+					"preceding_href": this.preceding.get("handle"),
+					"following_name": this.following.get("name"),
+					"following_href": this.following.get("handle"),
+				};
 				this.$el.html(this.template(values));
 			} else {
 				this.$el.empty();
@@ -321,9 +367,70 @@ $(function(){
 	var BundleDetailView = Backbone.View.extend({
 	
 		el: "#bd-detail",
+		template: _.template($("#bd-detail_tmpl").html()),
 	
 		initialize: function() {
-			this.template = _.template(this.$(".template").html());
+			this.collection.on('collection:select', this.onBundleSelect, this);
+		},
+		
+		onBundleSelect: function(newItem, oldItem) {
+			if (newItem && !newItem.has("images")) {
+				newItem.once("change", this.onFetchSuccess, this);
+			} else {
+				this.render();
+			}
+		},
+		
+		onFetchSuccess: function() {
+			this.render();
+		},
+		
+		render: function() {
+			var item = this.collection.selected;
+			if (item) {
+				this.$el.html(this.template(item.attributes));
+			} else {
+				this.$el.empty();
+			}
+			return this;
+		},
+	});
+	
+	/**
+	 * ImageItemView
+	 */
+	var ImageItemView = Backbone.View.extend({
+		
+		model: ImageItem,
+		className: "bd-images-item",
+		template: _.template($("#bd-images-item_tmpl").html()),
+		
+		// Without JIT recipe: url="{$root}/image/1/{$img-width}/0{file/@path}/{file/filename}"
+		_recipe: { prefix: "/1/700/0", constraint: 700, }, // resize to 700
+//		_recipe: { prefix: "/bundle", constraint: 480, }, // named recipe
+		
+		render: function() {
+			var values = {
+				url: this._recipe.prefix + this.model.get("url"),
+				description: this.model.get("description"),
+				width: this._recipe.constraint,
+				height: Math.floor((this._recipe.constraint / this.model.get("width")) * this.model.get("height")),
+			};
+			this.$el.html(this.template(values));
+			return this;
+		},
+	});
+	
+	/**
+	 * ImageListView
+	 */
+	var ImageListView = Backbone.View.extend({
+	
+		tagName: "ul",
+		className: "bd-images",
+		
+		initialize: function(options) {
+			this.images = new ImageList;
 			this.collection.on('collection:select', this.onBundleSelect, this);
 		},
 		
@@ -331,8 +438,8 @@ $(function(){
 			if (newItem && !newItem.has("images")) {
 				newItem.once("change", this.onFetchSuccess, this);
 				newItem.fetch({
-					success: function() { console.log("bundle fetch success") },
-					error: function() { console.log("bundle fetch error"); }
+//					success: function(model, resp, opts) { console.log("bundle fetch success") },
+					error: function(model, resp, opts) { console.log("bundle fetch error"); }
 				});
 			} else {
 				this.render();
@@ -346,94 +453,18 @@ $(function(){
 		render: function() {
 			var item = this.collection.selected;
 			if (item) {
-				this.$el.html(this.template(item.attributes));
+//				this.$el.html(this.template(item.attributes));
+				this.images.reset(item.get("images"));
+				
+				this.$el.empty();
+				if (this.images.length) {
+					var view = new ImageItemView({model : this.images.first()});
+					this.$el.append(view.render().el);
+				}
 			} else {
 				this.$el.empty();
+				this.images.reset();
 			}
-			return this;
-		},
-		
-//		renderToDOM: function() {
-//			var attrs = this.collection.selected
-//				? this.collection.selected.attributes
-//				: this.collection.model.defaults;
-//			this.$(".bd-title").html(attrs["name"]);
-//			this.$(".pubDate").html(attrs["completed"]);
-//			this.$(".description").html(attrs["description"]);
-//		}
-	});
-	
-	var ImageListView = Backbone.View.extend({
-	
-		el: "#bd-images",
-		
-		initialize: function(options) {
-			this.template = _.template(this.$("#bd-images_tmpl").html());
-			this.itemTemplate = _.template(this.$("#bd-images-item_tmpl").html());
-			
-			this.collection.on('collection:select', this.onBundleSelect, this);
-		},
-		
-		onBundleSelect: function(newItem, oldItem) {
-			if (newItem && !newItem.has("images")) {
-				newItem.once("change", this.onFetchSuccess, this);
-//				newItem.fetch({
-//					success: function() { console.log("bundle fetch success") },
-//					error: function() { console.log("bundle fetch error"); }
-//				});
-			} else {
-				this.render();
-			}
-		},
-		
-		onFetchSuccess: function() {
-			this.render();
-		},
-		
-		render: function() {
-			var item = this.collection.selected;
-			if (item) {
-				this.$el.html(this.template(item.attributes));
-				_.each(item.get("images"), this.renderImageItem, this);	
-//				var listEl = this.$("ul");
-//				var itemTemplate = this.itemTemplate;
-//				_.each(item.get("images"), function(item, index, list) {
-//					var attrs = {};
-//					attrs.url			= item.url? item.url: "";
-//					attrs.description 	= item.description? item.description: "";
-//					attrs.width			= 480;
-//					attrs.height		= Math.floor((480 / item.width) * item.height);
-//					var itemEl = listEl.append(itemTemplate(attrs));
-//				});
-			} else {
-				this.$el.empty();
-			}
-			return this;
-		},
-		
-		renderImageItem: function(item) {
-			var attrs = {};
-			attrs.url			= item.url? item.url: "";
-			attrs.description 	= item.description? item.description: "";
-			attrs.width			= 480;
-			attrs.height		= Math.floor((480 / item.width) * item.height);
-			var itemEl = this.$("ul").append(this.itemTemplate(attrs));
-		}
-		
-//		renderItem: function (o, i, a) {
-//		}
-	});
-	
-	var ImageView = Backbone.View.extend({
-		
-		model: Backbone.Model,
-		
-		initialize: function(options) {
-			this.template = _.template(this.$(".template").html());
-		},
-		
-		render: function() {
-			this.$el.html(this.template(this.model.attributes));
 			return this;
 		},
 	});
@@ -452,6 +483,9 @@ $(function(){
 			
 			this.keywordList = new KeywordList;
 			this.keywordList.reset(options["bootstrap"]["all-keywords"]);
+			
+			this.typeList = new TypeList;
+			this.typeList.reset(options["bootstrap"]["all-types"]);
 			
 			this.bundleListView = new ItemListView({
 				el: "#bundles",
@@ -472,21 +506,15 @@ $(function(){
 			this.bundlePagerView = new BundlePagerView({
 				collection:this.bundleList
 			});
-			this.ImageListView = new ImageListView({
+			this.imageListView = new ImageListView({
+				id: "bd-images",
 				collection:this.bundleList
 			});
+			this.$("#main").append(this.imageListView.render().el);
 			
 			this.bundleList.on("collection:select", this.onBundleSelect, this);
 			this.keywordList.on("collection:select", this.onKeywordSelect, this);
-//			this.bundleListView.$el.on("click", function() {
-//				console.log("focus bundles");
-//			});
-//			this.keywordListView.$el.on("click", function() {
-//				console.log("focus keywords");
-//			});
 		},
-		
-//		_focus: "bundles",
 		
 		onBundleSelect: function(newItem, oldItem) {
 			if (newItem) {
