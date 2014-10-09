@@ -34,8 +34,8 @@ html.flash, .flash body {
 /*	-webkit-box-shadow: 0 6px 12px rgba(0,0,0,0.5);
 	   -moz-box-shadow: 0 6px 12px rgba(0,0,0,0.5);
 	        box-shadow: 0 6px 12px rgba(0,0,0,0.5);*/
-	-webkit-box-sizing: border-box;
-	   -moz-box-sizing: border-box;
+/*	-webkit-box-sizing: border-box;*/
+/*	   -moz-box-sizing: border-box;*/
 	        box-sizing: border-box;
 }
 
