@@ -1,7 +1,6 @@
 /* @group Flash/SWFObject */
 
 /* @group Global */
-
 html.flash, .flash body {
 	height: 100%;
 	color: hsl(47, 5%, 9%);
@@ -9,21 +8,16 @@ html.flash, .flash body {
 	position: relative;
 	font: 9pt/1.5 Calibri, Charcoal, Tahoma, Kalimati, sans-serif;
 }
-
 .flash body {
 	overflow: hidden;
 	position: relative;
 }
-
 #flash {
 	height: 100%;
 	overflow: hidden; 
 }
-
 #alt {
-/*	font-size: 11pt;*/
 	position: relative;
-/*	height: 100%;*/
 	margin: 1.5em;
 	padding: 2em;
 	padding-left: 6em;
@@ -31,19 +25,14 @@ html.flash, .flash body {
 	background-clip: border-box;
 	background-origin: border-box;
 	background-size: auto auto;
-/*	-webkit-box-shadow: 0 6px 12px rgba(0,0,0,0.5);
-	   -moz-box-shadow: 0 6px 12px rgba(0,0,0,0.5);
-	        box-shadow: 0 6px 12px rgba(0,0,0,0.5);*/
-/*	-webkit-box-sizing: border-box;*/
-/*	   -moz-box-sizing: border-box;*/
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
 	        box-sizing: border-box;
 }
-
 #alt strong {
 	color: #333;
 	font-weight: bold;
 }
-
 .flash-box {
 	border: 1px solid rgba(0,0,0,0.15);
 	width: 110px; height: 120px;
@@ -52,7 +41,6 @@ html.flash, .flash body {
 	position: relative;
 	text-align: center;
 }
-
 .flash-logo {
 	background: #AAA url('../images/fp43.svg') scroll no-repeat 0 0;
 	background-clip: border-box;
@@ -71,4 +59,3 @@ html.flash, .flash body {
 	        box-sizing: border-box;
 }
 /* @end */
-

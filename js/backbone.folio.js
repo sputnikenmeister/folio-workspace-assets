@@ -304,7 +304,7 @@ $(function(){
 	var BundlePagerView = Backbone.View.extend({
 	
 		el: "#bd-nav",
-		template: _.template($("#bd-nav_tmpl").html()),
+//		template: _.template($("#bd-nav_tmpl").html()),
 		
 		current: null,
 		following: null,
@@ -315,8 +315,9 @@ $(function(){
 			"click #following-bundle":	"selectFollowingBundle",
 			"click #close-bundle":		"closeBundle"
 		},
-				
-		initialize: function() {
+		
+		initialize: function(options) {
+			this.template = _.template($("#bd-nav_tmpl").html());
 			this.collection.on('collection:select', this.onBundleSelect, this);
 		},
 		
@@ -367,9 +368,10 @@ $(function(){
 	var BundleDetailView = Backbone.View.extend({
 	
 		el: "#bd-detail",
-		template: _.template($("#bd-detail_tmpl").html()),
+//		template: _.template($("#bd-detail_tmpl").html()),
 	
-		initialize: function() {
+		initialize: function(options) {
+			this.template = _.template($("#bd-detail_tmpl").html());
 			this.collection.on('collection:select', this.onBundleSelect, this);
 		},
 		
@@ -405,9 +407,13 @@ $(function(){
 		className: "bd-images-item",
 		template: _.template($("#bd-images-item_tmpl").html()),
 		
+//		initialize: function(options) {
+//			this.template = _.template($("#bd-images-item_tmpl").html());
+//		}
+		
 		// Without JIT recipe: url="{$root}/image/1/{$img-width}/0{file/@path}/{file/filename}"
 		_recipe: { prefix: "/1/700/0", constraint: 700, }, // resize to 700
-//		_recipe: { prefix: "/bundle", constraint: 480, }, // named recipe
+//		_recipe: { prefix: "/w480", constraint: 480, }, // named recipe
 		
 		render: function() {
 			var values = {
@@ -486,6 +492,12 @@ $(function(){
 			
 			this.typeList = new TypeList;
 			this.typeList.reset(options["bootstrap"]["all-types"]);
+			
+//			var tmplVal;
+//			var tmplDom;
+//			tmplDom = $("#test_tmpl");
+//			tmplVal = tmplDom.text();
+//			tmplVal = tmplDom.html();
 			
 			this.bundleListView = new ItemListView({
 				el: "#bundles",
