@@ -5,11 +5,11 @@
 /* DEBUG */
 /*#container, #main,  #navigation, #nav-sidebar { outline: 1px solid hsla(0, 0%, 0%, .2); }*/
 
-/*#header, #footer, #keywords, #bundles { background-color: hsla(0, 0%, 0%, .05); }
+#header, #footer, #keywords, #bundles { background-color: hsla(0, 0%, 0%, .05); }
 #bd-nav		{ background-color: hsla(  0, 75%, 75%, .2); }
 #bd-detail	{ background-color: hsla(180, 75%, 75%, .2); }
 #bd-images	{ background-color: hsla(270, 75%, 75%, .2); }
-.item		{ background-color: hsla(270, 75%, 75%, .2); }*/
+.item		{ background-color: hsla(270, 75%, 75%, .2); }
 
 /* @group Layout */
 #container {
@@ -69,13 +69,14 @@
 	font-size: 100%;
 }
 #bd-detail .description {
+	display: none;
 	margin-right: 20px;
 }
 #bd-detail .name {
 /*	display: none;*/
 }
 #bd-detail .completed {
-	display: none;
+/*	display: none;*/
 }
 #bd-detail a:hover {
 	color: hsl(10, 75%, 50%);
@@ -259,12 +260,15 @@
 .text-nav .button {
 	display: block;
 	position: relative;
-	margin-left: 1.25em;
+	margin-left: -0.25em;
+	padding-left: 1.5em;
+	padding-right: 0.5em;
 }
 .text-nav .button:before {
 	display: block;
 	position: absolute;
-	left: -1.25em;
+	left: 0.25em;
+	width: 1em;
 }
 .text-nav .preceding-button:before {
 	content: "\2190";
@@ -274,6 +278,14 @@
 }
 .text-nav .close-button:before {
 	content: "\2715";
+}
+.text-nav .button:hover {
+	color: white;
+	background-color: hsl(10, 85%, 50%);
+}
+.text-nav .button:active {
+	color: white;
+	background-color: hsl(10, 100%, 30%);
 }
 /* @end */
 

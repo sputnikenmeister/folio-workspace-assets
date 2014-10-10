@@ -99,6 +99,9 @@ $(function(){
 			handle: "",
 			type: "",
 			attributes: []
+		},
+		toString: function() {
+			return this.attributes["name"];
 		}
 	});
 	
@@ -108,6 +111,9 @@ $(function(){
 			name: "",
 			handle: "",
 			attributes: []
+		},
+		toString: function() {
+			return this.attributes["name"];
 		}
 	});
 	/** BundleItem */
@@ -123,6 +129,9 @@ $(function(){
 		url: function() {
 			return Backbone.Model.prototype.url.apply(this, arguments) + "/";
 		},
+		toString: function() {
+			return this.attributes["name"];
+		}
 	});
 	
 	/** ImageItem */
@@ -133,6 +142,9 @@ $(function(){
 			height: NaN,
 			description: null,
 			attributes: []
+		},
+		toString: function() {
+			return this.attributes["description"];
 		}
 		
 	});
@@ -165,14 +177,14 @@ $(function(){
 	var ItemView = Backbone.View.extend({
 	
 		events: {
-			"click ": "whenClick",
+			"click ": "onClick",
 		},
 		
-		whenClick: function (event) {
-//			if (!event.isDefaultPrevented()) {
-//				event.preventDefault();
-//			}
-			this.trigger("item-view:click", this.model);
+		onClick: function (event) {
+			if (!event.isDefaultPrevented()) {
+				event.preventDefault();
+			}
+			this.trigger("item:click", this.model);
 		},
 		
 		_selected: null,
@@ -216,30 +228,35 @@ $(function(){
 			this._views = [];
 			this._viewIndex = {};
 			
-			this.collection.each(function (o, i, a) {
-				var view = new ItemView({ el: this.$("#" + o.id), model: o });
-				view.on("item-view:click", this.onItemViewClick, this);
-				this._viewIndex[o.id] = view;
-				this._views[i] = view;
-			}, this);
+			this.collection.each(this.assignItemView, this);
 			
 			this._els = this.$(".item, .group");
 			
-			this.collection.on('collection:select', this.onModelSelection, this);
+			this.collection.on('collection:select', this.whenModelSelect, this);
 			if (this.associations && this.key) {
-				this.associations.on('collection:select', this.onAssocSelection, this);
+				this.associations.on('collection:select', this.whenAssocSelect, this);
 			}
+		},
+		
+		assignItemView: function(item, index, arr) {
+			var view = new ItemView({
+				el: this.$("#" + item.id),
+				model: item
+			});
+			view.on("item:click", this.whenItemViewClick, this);
+			this._viewIndex[item.id] = view;
+			this._views[index] = view;
 		},
 		
 		getItemView: function(model) {
 			return this._viewIndex[model.id];
 		},
 		
-		onItemViewClick: function(item) {
+		whenItemViewClick: function(item) {
 			this.collection.select(item);
 		},
 				
-		onModelSelection: function(newItem, oldItem) {
+		whenModelSelect: function(newItem, oldItem) {
 			if (newItem) {
 				this.getItemView(newItem).$el.addClass("selected");
 				if (!oldItem) {
@@ -258,7 +275,7 @@ $(function(){
 //			this.render();
 		},
 		
-		onAssocSelection: function(newItem, oldItem) {
+		whenAssocSelect: function(newItem, oldItem) {
 			if (newItem) {
 				var refIds = newItem.get(this.key);
 				_.each(this._els, function(o, i, a) {
@@ -299,29 +316,32 @@ $(function(){
 	});
 	
 	/**
-	 * BundlePagerView
+	 * CollectionPagerView
 	 */
-	var BundlePagerView = Backbone.View.extend({
+	var CollectionPagerView = Backbone.View.extend({
 	
-		el: "#bd-nav",
-//		template: _.template($("#bd-nav_tmpl").html()),
+		template: _.template($("#pager-nav_tmpl").html()),
 		
 		current: null,
 		following: null,
 		preceding: null,
 		
 		events: {
-			"click #preceding-bundle": 	"selectPrecedingBundle",
-			"click #following-bundle":	"selectFollowingBundle",
-			"click #close-bundle":		"closeBundle"
+			"click .preceding-button": 	"onPrecedingClick",
+			"click .following-button":	"onFollowingClick",
+			"click .close-button":		"onCloseClick"
 		},
 		
 		initialize: function(options) {
-			this.template = _.template($("#bd-nav_tmpl").html());
-			this.collection.on('collection:select', this.onBundleSelect, this);
+//			if (options["labelFunction"])
+//				this.labelFunction = options["labelFunction"];
+			if (options["labelAttribute"])
+				this.labelAttribute = options["labelAttribute"];
+			
+			this.collection.on('collection:select', this.whenCollectionSelect, this);
 		},
 		
-		onBundleSelect: function(newItem, oldItem) {
+		whenCollectionSelect: function(newItem, oldItem) {
 			if (newItem) {
 				this.current = this.collection.selected;
 				this.preceding = this.collection.precedingOrLast(this.current);
@@ -332,27 +352,46 @@ $(function(){
 			this.render();
 		},
 		
-		selectPrecedingBundle: function() {
+		onPrecedingClick: function (event) {
+			if (!event.isDefaultPrevented()) {
+				event.preventDefault();
+			}
 			this.collection.select(this.preceding);
 		},
 		
-		selectFollowingBundle: function() {
+		onFollowingClick: function(event) {
+			if (!event.isDefaultPrevented()) {
+				event.preventDefault();
+			}
 			this.collection.select(this.following);
 		},
 		
-		closeBundle: function() {
+		onCloseClick: function(event) {
+			if (!event.isDefaultPrevented()) {
+				event.preventDefault();
+			}
 			if (this.current) {
 				this.collection.select(null);
 			}
 		},
 		
+//		labelAttribute: "name",
+		
+		getItemLabel: function(item) {
+			if (!this.labelAttibute)
+				return item.toString();
+			return item.get(this.labelAttribute);
+		},
+		
 		render: function() {
 			if (this.current) {
 				var values = {
-					"preceding_name": this.preceding.get("name"),
-					"preceding_href": this.preceding.get("handle"),
-					"following_name": this.following.get("name"),
-					"following_href": this.following.get("handle"),
+					"preceding_label": this.getItemLabel(this.preceding),
+					"preceding_href": "#",//this.preceding.get("handle"),
+					"following_label": this.getItemLabel(this.following),
+					"following_href": "#",//this.following.get("handle"),
+					"close_label": 'Close',
+					"close_href": "#",//this.following.get("handle"),
 				};
 				this.$el.html(this.template(values));
 			} else {
@@ -368,14 +407,13 @@ $(function(){
 	var BundleDetailView = Backbone.View.extend({
 	
 		el: "#bd-detail",
-//		template: _.template($("#bd-detail_tmpl").html()),
+		template: _.template($("#bd-detail_tmpl").html()),
 	
 		initialize: function(options) {
-			this.template = _.template($("#bd-detail_tmpl").html());
-			this.collection.on('collection:select', this.onBundleSelect, this);
+			this.collection.on('collection:select', this.whenBundleSelect, this);
 		},
 		
-		onBundleSelect: function(newItem, oldItem) {
+		whenBundleSelect: function(newItem, oldItem) {
 			if (newItem && !newItem.has("images")) {
 				newItem.once("change", this.onFetchSuccess, this);
 			} else {
@@ -407,13 +445,11 @@ $(function(){
 		className: "bd-images-item",
 		template: _.template($("#bd-images-item_tmpl").html()),
 		
-//		initialize: function(options) {
-//			this.template = _.template($("#bd-images-item_tmpl").html());
-//		}
-		
-		// Without JIT recipe: url="{$root}/image/1/{$img-width}/0{file/@path}/{file/filename}"
 		_recipe: { prefix: "/1/700/0", constraint: 700, }, // resize to 700
 //		_recipe: { prefix: "/w480", constraint: 480, }, // named recipe
+		
+//		initialize: function(options) {
+//		},
 		
 		render: function() {
 			var values = {
@@ -437,32 +473,34 @@ $(function(){
 		
 		initialize: function(options) {
 			this.images = new ImageList;
-			this.collection.on('collection:select', this.onBundleSelect, this);
+			this.collection.on('collection:select', this.whenBundleSelect, this);
+			this.collection.on('error', this.whenFetchError, this);
 		},
 		
-		onBundleSelect: function(newItem, oldItem) {
+		whenBundleSelect: function(newItem, oldItem) {
 			if (newItem && !newItem.has("images")) {
-				newItem.once("change", this.onFetchSuccess, this);
-				newItem.fetch({
-//					success: function(model, resp, opts) { console.log("bundle fetch success") },
-					error: function(model, resp, opts) { console.log("bundle fetch error"); }
-				});
+				newItem.once("change:images", this.whenFetchSuccess, this);
+				newItem.fetch();
 			} else {
 				this.render();
 			}
 		},
 		
-		onFetchSuccess: function() {
+		whenFetchSuccess: function() {
 			this.render();
+		},
+		
+		whenFetchError: function(model, resp, opts) {
+			// TODO: something more useful here
+			console.log("bundle fetch error");
 		},
 		
 		render: function() {
 			var item = this.collection.selected;
 			if (item) {
-//				this.$el.html(this.template(item.attributes));
 				this.images.reset(item.get("images"));
-				
 				this.$el.empty();
+				
 				if (this.images.length) {
 					var view = new ImageItemView({model : this.images.first()});
 					this.$el.append(view.render().el);
@@ -493,12 +531,6 @@ $(function(){
 			this.typeList = new TypeList;
 			this.typeList.reset(options["bootstrap"]["all-types"]);
 			
-//			var tmplVal;
-//			var tmplDom;
-//			tmplDom = $("#test_tmpl");
-//			tmplVal = tmplDom.text();
-//			tmplVal = tmplDom.html();
-			
 			this.bundleListView = new ItemListView({
 				el: "#bundles",
 				collection: this.bundleList,
@@ -515,20 +547,23 @@ $(function(){
 			this.bundleDetailView = new BundleDetailView({
 				collection:this.bundleList
 			});
-			this.bundlePagerView = new BundlePagerView({
+			this.bundlePagerView = new CollectionPagerView({
+				el: "#bd-nav",
 				collection:this.bundleList
 			});
+//			this.$("#navigation").append(this.bundlePagerView.render().el);
+			
 			this.imageListView = new ImageListView({
 				id: "bd-images",
 				collection:this.bundleList
 			});
 			this.$("#main").append(this.imageListView.render().el);
 			
-			this.bundleList.on("collection:select", this.onBundleSelect, this);
-			this.keywordList.on("collection:select", this.onKeywordSelect, this);
+			this.bundleList.on("collection:select", this.whenBundleSelect, this);
+			this.keywordList.on("collection:select", this.whenKeywordSelect, this);
 		},
 		
-		onBundleSelect: function(newItem, oldItem) {
+		whenBundleSelect: function(newItem, oldItem) {
 			if (newItem) {
 				this.keywordList.select(null);
 				this.keywordListView.collapsed(true);
@@ -539,7 +574,7 @@ $(function(){
 			}
 		},
 		
-		onKeywordSelect: function(newItem, oldItem) {
+		whenKeywordSelect: function(newItem, oldItem) {
 			if (newItem) {
 				this.keywordListView.collapsed(false)
 				this.bundleListView.collapsed(false);
@@ -553,5 +588,8 @@ $(function(){
 		}
 	});
 	var App = new AppView({bootstrap: bootstrap});
+	
+	// Start Backbone history a necessary step for bookmarkable URL's
+	Backbone.history.start();
 	
 });
