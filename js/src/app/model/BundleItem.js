@@ -9,7 +9,7 @@ var Backbone = require( "backbone" );
 
 /**
  * @constructor
- * @type {module:app/model/BundleItem
+ * @type {module:app/model/BundleItem}
  */
 module.exports = Backbone.Model.extend({
 	/**

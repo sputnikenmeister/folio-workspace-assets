@@ -1,0 +1,74 @@
+/* @group file: _buttons.scss */
+.rsquare-nav {
+	.button {
+		color: transparent;
+		display: inline-block;
+		vertical-align: middle;
+		overflow: hidden;
+		width: 23px; max-width: 23px;
+		height: 23px; max-height: 23px;
+		margin: 0 1px 0 0;
+		padding: 0;
+		border-radius: 3px;
+		border: 0px solid #ffffff;
+		text-decoration: none;
+		background-position: 0 0;
+		background-repeat: no-repeat;
+		transition: background-color 0.1s;
+	}
+	.preceding-button {
+		background-image: url('../images/rsquare-larr.svg');
+	}
+	.following-button {
+		background-image: url('../images/rsquare-rarr.svg');
+	}
+	.close-button {
+		background-image: url('../images/rsquare-close.svg');
+	}
+	.button {
+		background-color: hsl(10, 0%, 80%);
+	}
+	.button:hover {
+		background-color: $link-color;
+	}
+	.button:active {
+		background-color: $link-down-color;
+	}
+}
+.text-nav {
+	font-size: 150%;
+	line-height: 2;
+
+	.button {
+		display: block;
+		position: relative;
+		margin-left: -0.5em;
+		padding-left: 2.0em;
+		padding-right: 0.5em;
+	}
+	.button:before {
+		text-align: center;
+		display: block;
+		position: absolute;
+		left: 0.5em;
+		width: 1em;
+	}
+	.button:hover {
+		color: white;
+		background-color: $link-color;
+	}
+	.button:active {
+		color: white;
+		background-color: $link-down-color;
+	}
+	.preceding-button:before {
+		content: "\2190";
+	}
+	.following-button:before {
+		content: "\2192";
+	}
+	.close-button:before {
+		content: "\2715";
+	}
+}
+/* @end */

@@ -18,7 +18,7 @@ var viewTemplate = require( "./ImageView.tpl" );
 
 /**
  * @constructor
- * @type {module:app/view/ImageView
+ * @type {module:app/view/ImageView}
  */
 module.exports = Backbone.View.extend({
 	

@@ -12,7 +12,7 @@ var ImageItem = require( "./ImageItem" );
 
 /**
  * @constructor
- * @type {module:app/model/ImageList
+ * @type {module:app/model/ImageList}
  */
 module.exports = ItemList.extend({
 

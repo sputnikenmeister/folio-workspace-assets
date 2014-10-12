@@ -3,15 +3,13 @@
 * @module App
 */
 
-/** @type {module:underscore} */
+/** @type {module:jquery} */
 var $ = require( "jquery" );
 
 /** @type {module:underscore} */
 var _ = require( "underscore" );
 
-_.templateSettings = {
-	interpolate: /\{\{(.+?)\}\}/g
-};
+_.templateSettings = { interpolate: /\{\{(.+?)\}\}/g };
 
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
@@ -19,11 +17,16 @@ var Backbone = require( "backbone" );
 /** @type {module:app/view/AppView} */
 var AppView = require( "./view/AppView" );
 
-$(function(){
-	var bootstrap = window.bootstrap || {"all-bundles":[],"all-keywords":[],"all-types":[]};
+//$(function(){
+$(document).ready(function($) {
+	var bootstrap = window.bootstrap || {
+		"all-bundles": [],
+		"all-keywords": [],
+		"all-types": []
+	};
 	delete window.bootstrap;
 	
-	/** Fill-in back references: Bundle.keywords -> Keyword.bundles) */
+	/* Fill-in back references: Bundle.keywords -> Keyword.bundles) */
 	_.each(bootstrap["all-keywords"], function(ko, ki, ka) {
 		ko.bundles = [];
 		_.each(bootstrap["all-bundles"], function(bi, bo, ba) {
@@ -47,10 +50,8 @@ $(function(){
 	});
 	delete kIndex;
 	
-	window.app = new AppView({bootstrap: bootstrap});
-	
 	// Start Backbone history a necessary step for bookmarkable URL's
 	Backbone.history.start();
 	
-	
+	window.app = new AppView({bootstrap: bootstrap});
 });

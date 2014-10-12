@@ -12,7 +12,7 @@ var BundleItem = require( "./BundleItem" );
 
 /**
  * @constructor
- * @type {module:app/model/List
+ * @type {module:app/model/List}
  */
 module.exports = ItemList.extend({
 

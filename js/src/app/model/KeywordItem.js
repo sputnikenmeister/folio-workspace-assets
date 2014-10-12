@@ -9,7 +9,7 @@ var Backbone = require( "backbone" );
 
 /**
  * @constructor
- * @type {module:app/model/KeywordItem
+ * @type {module:app/model/KeywordItem}
  */
 module.exports = Backbone.Model.extend({
 	/**

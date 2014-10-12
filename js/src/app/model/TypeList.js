@@ -12,7 +12,7 @@ var TypeItem = require( "./TypeItem" );
 
 /**
  * @constructor
- * @type {module:app/model/TypeList
+ * @type {module:app/model/TypeList}
  */
 module.exports = Backbone.Collection.extend({
 

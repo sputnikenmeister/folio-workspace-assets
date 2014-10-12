@@ -12,7 +12,7 @@ var KeywordItem = require( "./KeywordItem" );
 
 /**
  * @constructor
- * @type {module:app/model/KeywordList
+ * @type {module:app/model/KeywordList}
  */
 module.exports = ItemList.extend({
 

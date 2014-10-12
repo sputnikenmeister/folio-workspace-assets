@@ -12,7 +12,7 @@ var ItemView = require( "./ItemView" );
 
 /**
  * @constructor
- * @type {module:app/view/ItemListView
+ * @type {module:app/view/ItemListView}
  */
 module.exports = Backbone.View.extend({
 	

@@ -15,7 +15,7 @@ var viewTemplate = require( "./CollectionPagerView.tpl" );
 
 /**
  * @constructor
- * @type {module:app/view/CollectionPagerView
+ * @type {module:app/view/CollectionPagerView}
  */
 module.exports = Backbone.View.extend({
 

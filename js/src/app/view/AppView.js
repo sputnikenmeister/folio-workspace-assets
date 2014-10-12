@@ -25,7 +25,7 @@ var ImageListView = require( "./ImageListView" );
 
 /**
  * @constructor
- * @type {module:app/view/AppView
+ * @type {module:app/view/AppView}
  */
 module.exports = Backbone.View.extend({
 

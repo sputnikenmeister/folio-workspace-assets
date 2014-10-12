@@ -1,0 +1,17 @@
+
+/*	@group Typography */
+.heading {
+	margin-left: -2px;
+	margin-right: 2px;
+	font-size: 277%;
+	font-weight: 300;
+	letter-spacing: -1px;
+}
+.sc {
+	font-size: 85%;
+	line-height: 18px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}
+/* @end */

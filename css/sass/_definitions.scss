@@ -1,0 +1,29 @@
+// Colors
+$link-color: hsl(10, 85%, 50%);
+$link-down-color: hsl(10, 100%, 30%);
+
+// Widths
+$side-col-width: 300px;
+
+// Font fallback lists
+$font-fallback-sans: Calibri, Charcoal, Tahoma, Kalimati, sans-serif;
+//$font-small-sizes: 'Lucida Grande','Lucida Sans',Verdana,Helvetica,Arial,sans-serif;
+
+// Typography
+@mixin heading() {
+	font-size: 277%;
+	font-weight: 300;
+	letter-spacing: -0.03em;
+}
+@mixin heading-block() {
+	@include heading;
+	margin-left: -2px;
+	margin-right: 2px;
+}
+@mixin small-caps() {
+	font-size: 85%;
+	font-weight: 600;
+	line-height: 1.89;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}

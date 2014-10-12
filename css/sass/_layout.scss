@@ -1,0 +1,101 @@
+/* @group file: _layout.scss */
+
+#container {
+	width: 740px;
+	margin: 0 auto;
+	display: block;
+}
+
+#header {
+	margin: 4em 20px 1em 20px;
+	
+	h1 {
+		@include heading-block;
+	}
+}
+	
+#footer {
+	margin-top: 40px;
+	margin-left: 20px;
+	margin-right: 20px;
+	clear: both;
+}
+
+#main {
+	margin-left: 20px;
+	margin-right: 20px;
+	clear: both;
+}
+
+#navigation {
+	margin-left: 20px;
+	margin-right: 20px;
+	position: relative;
+}
+
+#keywords {
+	width: $side-col-width;
+	float: right;
+	margin-bottom: 10px;
+}
+
+#bundles {
+	margin-right: $side-col-width;
+	margin-bottom: 10px;
+}
+
+#bd-nav {
+	margin-right: $side-col-width;
+	margin-bottom: 10px;
+}
+
+#bd-detail {
+	margin-right: $side-col-width;
+	margin-bottom: 10px;
+}
+
+#bd-detail {
+	font-size: 100%;
+	
+	.description {
+		margin-right: 20px;
+//		display: none;
+	}
+	.name {
+//		display: none;
+	}
+	.completed {
+//		display: none;
+	}
+	a:hover {
+		color: $link-color;
+		background-color: hsl(0, 0%, 94%);
+	}
+}
+
+.bd-images {
+	position: relative;
+}
+
+.bd-images-item {
+	.caption {
+		position: absolute;
+		right: 0;
+		bottom: 100%;
+		width: 280px;
+		text-align: right;
+		margin: 10px -2px 0 10px;
+		color: #999999;
+		
+		p {
+			padding: 0 0 0.5em 0;
+		}
+	}
+	img {
+		display: block;
+		background-color: #999999;
+		box-shadow: 0 4px 6px -2px hsla(0, 0%, 0%, 0.4);
+	}
+}
+
+/* @end */

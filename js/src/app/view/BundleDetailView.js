@@ -15,7 +15,7 @@ var viewTemplate = require( "./BundleDetailView.tpl" );
 
 /**
  * @constructor
- * @type {module:app/view/BundleDetailView
+ * @type {module:app/view/BundleDetailView}
  */
 module.exports = Backbone.View.extend({
 

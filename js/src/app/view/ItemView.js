@@ -9,7 +9,7 @@ var Backbone = require( "backbone" );
 
 /**
  * @constructor
- * @type {module:app/view/ItemView
+ * @type {module:app/view/ItemView}
  */
 module.exports = Backbone.View.extend({
 

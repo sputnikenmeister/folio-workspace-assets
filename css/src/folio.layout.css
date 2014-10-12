@@ -1,15 +1,13 @@
 /* @override  http://folio.local/workspace/assets/css/folio.css */
 
-/*@import 'common.css';*/
-
 /* DEBUG */
 /*#container, #main,  #navigation, #nav-sidebar { outline: 1px solid hsla(0, 0%, 0%, .2); }*/
 
-#header, #footer, #keywords, #bundles { background-color: hsla(0, 0%, 0%, .05); }
+/*#header, #footer, #keywords, #bundles { background-color: hsla(0, 0%, 0%, .05); }
 #bd-nav		{ background-color: hsla(  0, 75%, 75%, .2); }
 #bd-detail	{ background-color: hsla(180, 75%, 75%, .2); }
 #bd-images	{ background-color: hsla(270, 75%, 75%, .2); }
-.item		{ background-color: hsla(270, 75%, 75%, .2); }
+.item		{ background-color: hsla(270, 75%, 75%, .2); }*/
 
 /* @group Layout */
 #container {
@@ -20,22 +18,20 @@
 #header {
 	margin: 4em 20px 2em 20px;
 }
-#header h2 {
-	margin: 1.5em 2px 0 -2px;
-	line-height: 1;
-}
-#header a, h2 a, h3 a {
-	text-decoration: none;
-}
+	#header h2 {
+		margin: 1.5em 2px 0 -2px;
+		line-height: 1;
+	}
+	#header a, h2 a, h3 a {
+		text-decoration: none;
+	}
+	
 #footer {
 	clear: both;
 	margin-top: 40px;
 	margin-left: 20px;
 	margin-right: 20px;
 }
-/* @end */
-
-/* @group #keywords #bundles*/
 #main {
 	margin-left: 20px;
 	margin-right: 20px;
@@ -69,7 +65,7 @@
 	font-size: 100%;
 }
 #bd-detail .description {
-	display: none;
+/*	display: none;*/
 	margin-right: 20px;
 }
 #bd-detail .name {
@@ -218,77 +214,6 @@
 }
 /* @end */
 
-/* @group .rsquare-nav .button */
-.rsquare-nav .button {
-	color: transparent;
-	display: inline-block;
-	vertical-align: middle;
-	overflow: hidden;
-	width: 23px; max-width: 23px;
-	height: 23px; max-height: 23px;
-	margin: 0 1px 0 0;
-	padding: 0;
-	border-radius: 3px;
-	border: 0px solid #ffffff;
-	text-decoration: none;
-	background-position: 0 0;
-	background-repeat: no-repeat;
-	transition: background-color 0.1s;
-}
-.rsquare-nav .preceding-button {
-	background-image: url('../images/rsquare-larr.svg');
-}
-.rsquare-nav .following-button {
-	background-image: url('../images/rsquare-rarr.svg');
-}
-.rsquare-nav .close-button {
-	background-image: url('../images/rsquare-close.svg');
-}
-.rsquare-nav .button {
-	background-color: hsl(10, 0%, 80%);
-}
-.rsquare-nav .button:hover {
-	background-color: hsl(10, 85%, 50%);
-}
-.rsquare-nav .button:active {
-	background-color: hsl(10, 100%, 30%);
-}
-/* @end */
-
-
-/* @group .text-nav .button */
-.text-nav .button {
-	display: block;
-	position: relative;
-	margin-left: -0.25em;
-	padding-left: 1.5em;
-	padding-right: 0.5em;
-}
-.text-nav .button:before {
-	display: block;
-	position: absolute;
-	left: 0.25em;
-	width: 1em;
-}
-.text-nav .preceding-button:before {
-	content: "\2190";
-}
-.text-nav .following-button:before {
-	content: "\2192";
-}
-.text-nav .close-button:before {
-	content: "\2715";
-}
-.text-nav .button:hover {
-	color: white;
-	background-color: hsl(10, 85%, 50%);
-}
-.text-nav .button:active {
-	color: white;
-	background-color: hsl(10, 100%, 30%);
-}
-/* @end */
-
 /* @group .admin */
 .admin a {
 	color: 	hsl(0, 0%, 60%);
@@ -305,22 +230,6 @@
 }
 /* @end */
 
-/*	@group Typography */
-.heading {
-	margin-left: -2px;
-	margin-right: 2px;
-	font-size: 277%;
-	font-weight: 300;
-	letter-spacing: -1px;
-}
-.sc {
-	font-size: 85%;
-	line-height: 18px;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.1em;
-}
-/* @end */
 
 
 @media print {
