@@ -6,14 +6,24 @@ $link-down-color: hsl(10, 100%, 30%);
 $side-col-width: 300px;
 
 // Font fallback lists
+$font-fallback-mono: Monaco, Consolas, monospace;
 $font-fallback-sans: Calibri, Charcoal, Tahoma, Kalimati, sans-serif;
 //$font-small-sizes: 'Lucida Grande','Lucida Sans',Verdana,Helvetica,Arial,sans-serif;
 
+$mono-font-family: $font-fallback-mono;
+$base-font-family: "Source Sans Pro", $font-fallback-sans;
+$large-font-family: "Source Sans Pro", $font-fallback-sans;
+//$base-font: 9pt/1.5 $base-font-family;
+
 // Typography
 @mixin heading() {
-	font-size: 277%;
+	font-family: $large-font-family;
+	font-size: 280%;
 	font-weight: 300;
+	font-style: normal;
 	letter-spacing: -0.03em;
+	-webkit-text-rendering: optimizelegibility;
+	text-rendering: optimizelegibility;
 }
 @mixin heading-block() {
 	@include heading;

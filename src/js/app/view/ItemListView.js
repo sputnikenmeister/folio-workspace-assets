@@ -4,109 +4,198 @@
 * @requires module:backbone
 */
 
+/** @type {module:underscore} */
+var _ = require( "underscore" );
+
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
 /** @type {module:app/view/ItemView} */
 var ItemView = require( "./ItemView" );
 
+/*
+ * Private mixins 
+ */
+
+/** @private */
+var whenCollectionSelect = function(newItem, oldItem)
+{
+	if (newItem)
+	{
+		this.getItemView(newItem).$el.addClass("selected");
+		if (!oldItem)
+		{
+			this.$el.addClass("has-selected");
+		}
+	}
+	if (oldItem)
+	{
+		this.getItemView(oldItem).$el.removeClass("selected");
+		if (!newItem)
+		{
+			this.$el.removeClass("has-selected");
+		}
+	}
+	if (!newItem && !oldItem)
+	{
+		throw new Error("ItemListView.onModelSelection: both new and old are null");
+	}
+	//this.render();
+};
+
+/** @private */
+var whenAssociationSelect = function(newAssoc, oldAssoc)
+{
+	console.log("ItemListView.whenAssociationSelect", (newAssoc? newAssoc.get("handle"): null));
+	if (newAssoc)
+	{
+		var assocIds = newAssoc.get(this.associations.key);
+		
+		this.collection.each(function(model, index, arr)
+		{
+			var view = this.getItemView(model);
+			if (_.contains(assocIds, model.id))
+			{
+				view.$el.addClass("highlight");
+			}
+			else
+			{
+				view.$el.removeClass("highlight");
+			}
+		}, this);
+		
+		if (!oldAssoc)
+		{
+			this.$el.addClass("has-highlight");
+		}
+	}
+	else
+	{
+		this.$(this.getAllItemElements()).removeClass("highlight");
+		this.$el.removeClass("has-highlight");
+	}
+	//this.render();
+};
+
 /**
  * @constructor
  * @type {module:app/view/ItemListView}
  */
 module.exports = Backbone.View.extend({
-	
-	initialize: function(options) {
-		this.associations = options["associations"];
-		this.key = options["key"];
-		
-		this._views = [];
-		this._viewIndex = {};
-		
+
+	/** @override */
+	tagName: "dl",
+
+	/** @override */
+	className: "mapped",
+
+	/** @public @type {object} */
+	associations: {},
+
+	/** @override */
+	initialize: function(options)
+	{
+		// setup the ViewOptions functionality.
+		//Backbone.ViewOptions.add( this, "initializationOptions" );
+		// and make use of any provided options
+		//this.setOptions( options );
+		this.listenTo(this.collection, "collection:select", whenCollectionSelect);
+
 		this.collection.each(this.assignItemView, this);
-		
-		this._els = this.$(".item, .group");
-		
-		this.collection.on("collection:select", this.whenModelSelect, this);
-		if (this.associations && this.key) {
-			this.associations.on("collection:select", this.whenAssocSelect, this);
-		}
-	},
-	
-	assignItemView: function(item, index, arr) {
-		var view = new ItemView({
-			el: this.$("#" + item.id),
-			model: item
-		});
-		view.on("item:click", this.whenItemViewClick, this);
-		this._viewIndex[item.id] = view;
-		this._views[index] = view;
-	},
-	
-	getItemView: function(model) {
-		return this._viewIndex[model.id];
-	},
-	
-	whenItemViewClick: function(item) {
-		this.collection.select(item);
-	},
-			
-	whenModelSelect: function(newItem, oldItem) {
-		if (newItem) {
-			this.getItemView(newItem).$el.addClass("selected");
-			if (!oldItem) {
-				this.$el.addClass("has-selected");
-			}
-		}
-		if (oldItem) {
-			this.getItemView(oldItem).$el.removeClass("selected");
-			if (!newItem) {
-				this.$el.removeClass("has-selected");
-			}
-		}
-		if (!newItem && !oldItem) {
-			throw new Error("ItemListView.onModelSelection: both new and old are null");
-		}
-//			this.render();
-	},
-	
-	whenAssocSelect: function(newItem, oldItem) {
-		if (newItem) {
-			var refIds = newItem.get(this.key);
-			_.each(this._els, function(o, i, a) {
-				var jqo = $(o);
-				if (_.contains(refIds, o.id)) {
-					jqo.addClass("highlight");
-				} else {
-					jqo.removeClass("highlight");
-				}
-			});
-			if (!oldItem) {
-				this.$el.addClass("has-highlight");
-			}
-		} else {
-			$(this._els).removeClass("highlight");
-			this.$el.removeClass("has-highlight");
-		}
-//		this.render();
-	},
-	
-	_collapsed: null,
-	collapsed: function(value) {
-		if (arguments.length == 1 && value !== this._collapsed) 
+
+		if (options["associations"])
 		{
-			this._collapsed = value;
-			if (value) {
-				this.$el.addClass("collapsed");
-			} else {
-				this.$el.removeClass("collapsed");
-			}
-//			this.render();
+			this.associations = options["associations"];
+			this.listenTo(this.associations.collection, "collection:select", whenAssociationSelect);
 		}
-		return this._collapsed;
 	},
 	
-	render: function(){
+	/** @private */
+	whenItemViewClick: function(item)
+	{
+		this.trigger("view:itemSelect", item);
+	},
+	
+	/** @private */
+	_itemViews: [],
+	
+	/** @private */
+	_itemViewsIndex: {},
+	
+	/** @private */
+	_itemEls: [],
+	
+	/** @private */
+	_itemElsIndex: {},
+	
+	/** @private */
+	getItemView: function(model)
+	{
+		return this._itemViewsIndex[model.id];
+	},
+	
+	/** @private */
+	getItemElement: function(model)
+	{
+		return this._itemElsIndex[model.id];
+	},
+	
+	/** @private */
+	getAllItemViews: function()
+	{
+		return this._itemViews;
+	},
+	
+	/** @private */
+	getAllItemElements: function()
+	{
+		return this._itemEls;
+	},
+	
+	/** @private */
+	assignItemView: function(model, index, arr)
+	{
+		var elt = this.$("#" + model.get("handle"));
+		var view = new ItemView({model: model});
+	
+		view.setElement(elt);
+		this.listenTo(view, "item:click", this.whenItemViewClick);
+	
+		this._itemViewsIndex[model.id] = view;
+		this._itemViews[index] = view;
+		this._itemElsIndex[model.id] = view.el;
+		this._itemEls[index] = view.el;
+	},
+
+	/** @private */
+	_collapsed: false,
+
+	collapsed: function(value)
+	{
+		if (arguments.length === 0)
+		{
+			return this._collapsed;
+		}
+		if (value === this._collapsed)
+		{
+			return;
+		}
+		
+		this._collapsed = value;
+		
+		if (value)
+		{
+			this.$el.addClass("collapsed");
+		}
+		else
+		{
+			this.$el.removeClass("collapsed");
+		}
+		//this.render();
+	},
+
+	render: function()
+	{
 		return this;
 	}
 });

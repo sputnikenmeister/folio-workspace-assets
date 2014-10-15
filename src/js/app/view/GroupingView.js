@@ -9,22 +9,11 @@ var Backbone = require( "backbone" );
 
 /**
  * @constructor
- * @type {module:app/view/ItemView}
+ * @type {module:app/view/GroupingView}
  */
 module.exports = Backbone.View.extend({
-
-	events: {
-		"click ": "onClick",
-	},
 	
-	onClick: function (event) {
-		if (!event.isDefaultPrevented()) {
-			event.preventDefault();
-		}
-		this.trigger("item:click", this.model);
-	},
-	
-	_selected: false,
+	_selected: null,
 	selected: function (value) {
 		if (arguments.length == 1 && this._selected !== value)
 		{
@@ -38,7 +27,7 @@ module.exports = Backbone.View.extend({
 		return this._selected;
 	},
 	
-	_highlight: false,
+	_highlight: null,
 	highlight: function (value) {
 		if (arguments.length == 1 && this._highlighted !== value)
 		{

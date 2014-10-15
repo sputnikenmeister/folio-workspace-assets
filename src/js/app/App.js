@@ -3,55 +3,66 @@
 * @module App
 */
 
+/* global jQuery */
+
 /** @type {module:jquery} */
 var $ = require( "jquery" );
 
 /** @type {module:underscore} */
 var _ = require( "underscore" );
-
 _.templateSettings = { interpolate: /\{\{(.+?)\}\}/g };
 
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
+Backbone.$ = $ || jQuery;
 
 /** @type {module:app/view/AppView} */
 var AppView = require( "./view/AppView" );
 
 //$(function(){
 $(document).ready(function($) {
-	var bootstrap = window.bootstrap || {
-		"all-bundles": [],
-		"all-keywords": [],
-		"all-types": []
-	};
-	delete window.bootstrap;
-	
-	/* Fill-in back references: Bundle.keywords -> Keyword.bundles) */
-	_.each(bootstrap["all-keywords"], function(ko, ki, ka) {
-		ko.bundles = [];
-		_.each(bootstrap["all-bundles"], function(bi, bo, ba) {
-			if (_.contains(bi.keywords, ko.id)) {
-				ko.bundles.push(bi.id);
-			}
+//	var opts = {};
+	var opts = { keywords: [], bundles: [], types: [], params:{} };
+
+	if (window.bootstrap) {
+		opts.keywords = window.bootstrap["all-keywords"],
+		opts.bundles = window.bootstrap["all-bundles"],
+		opts.types = window.bootstrap["all-types"],
+		opts.params = window.bootstrap["params"];
+
+		// Fill-in back references: Bundle.keywords -> Keyword.bundles)
+		_.each(opts.keywords, function(ko, ki, ka) {
+			ko.bundles = [];
+			ko._domIds = [];
+			_.each(opts.bundles, function(bo, bi, ba) {
+				if (_.contains(bo.keywords, ko.id)) {
+					ko.bundles.push(bo.id);
+					ko._domIds.push(bo.handle);
+				}
+			});
 		});
-	});
-		
-	/// TODO: Implement GroupingCollectionView
-	var kIndex = _.indexBy(bootstrap["all-keywords"], "id");
-	_.each(bootstrap["all-bundles"], function (bo, bi, ba) {
-		var bTypes = [];
-		_.each(bo.keywords, function(ko, ki, ka) {
-			var kType = kIndex[ko].type;
-			if (bTypes.indexOf(kType) == -1) {
-				bTypes.push(kType);
-			}
+
+		// Add all related ids (keywords+types) to bundle prop _resolvedDomIds
+		// TODO: Implement GroupingCollectionView
+		var kIndex = _.indexBy(opts.keywords, "id");
+		_.each(opts.bundles, function (bo, bi, ba) {
+			bo._domIds = [];
+			_.each(bo.keywords, function(ko, ki, ka) {
+				var kItem = kIndex[ko];
+				if (bo._domIds.indexOf(kItem.type) == -1) {
+					bo._domIds.push(kItem.type);
+				}
+				bo._domIds.push(kItem.handle);
+			});
 		});
-		bo._resolvedDomIds = bo.keywords.concat(bTypes);
-	});
-	delete kIndex;
-	
+		/* jshint -W051 */
+		delete kIndex;
+		delete window.bootstrap;
+		/* jshint +W051 */
+	}
+
 	// Start Backbone history a necessary step for bookmarkable URL's
 	Backbone.history.start();
-	
-	window.app = new AppView({bootstrap: bootstrap});
+
+	window.app = new AppView(opts);
 });

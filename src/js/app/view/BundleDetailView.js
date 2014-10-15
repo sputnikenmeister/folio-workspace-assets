@@ -10,8 +10,11 @@ var _ = require( "underscore" );
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
+/** @type {module:app/model/BundleItem} */
+//var BundleItem = require( "../model/BundleItem" );
+
 /** @type {string} */
-var viewTemplate = require( "./BundleDetailView.tpl" );
+var viewTemplate = require( "./template/BundleDetailView.tpl" );
 
 /**
  * @constructor
@@ -19,32 +22,39 @@ var viewTemplate = require( "./BundleDetailView.tpl" );
  */
 module.exports = Backbone.View.extend({
 
-	el: "#bd-detail",
+	tagName: "div",
+	
+	className: "bundle-detail",
 	
 	template: _.template(viewTemplate),
 
-	initialize: function(options) {
-//		this.template = _.template(viewTemplate);
-		this.collection.on("collection:select", this.whenBundleSelect, this);
+	initialize: function(options)
+	{
+//		this.listenTo(this.collection, "collection:select", this.whenBundleSelect);
+		this.listenTo(Backbone, "app:bundle", this.whenAppBundle);
+		this.listenTo(Backbone, "app:list", this.whenAppList);
 	},
 	
-	whenBundleSelect: function(newItem, oldItem) {
-		if (newItem && !newItem.has("images")) {
-			newItem.once("change", this.onFetchSuccess, this);
-		} else {
-			this.render();
-		}
+	whenAppBundle: function(newItem)
+	{
+		this.model = newItem;
+		this.render();
 	},
 	
-	onFetchSuccess: function() {
+	whenAppList: function()
+	{
+		this.model = null;
 		this.render();
 	},
 	
 	render: function() {
-		var item = this.collection.selected;
-		if (item) {
+		var item = this.model;
+		if (item)
+		{
 			this.$el.html(this.template(item.attributes));
-		} else {
+		}
+		else
+		{
 			this.$el.empty();
 		}
 		return this;

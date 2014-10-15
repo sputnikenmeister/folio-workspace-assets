@@ -11,20 +11,15 @@ var _ = require( "underscore" );
 var Backbone = require( "backbone" );
 
 /** @type {string} */
-var viewTemplate = require( "./CollectionPagerView.tpl" );
+var viewTemplate = require( "./template/CollectionPagerView.tpl" );
 
 /**
  * @constructor
  * @type {module:app/view/CollectionPagerView}
  */
 module.exports = Backbone.View.extend({
-
 	
-	current: null,
-	
-	following: null,
-	
-	preceding: null,
+	tagName: "div",
 	
 	events: {
 		"click .preceding-button": 	"onPrecedingClick",
@@ -40,11 +35,14 @@ module.exports = Backbone.View.extend({
 		if (options["labelAttribute"]) {
 			this.labelAttribute = options["labelAttribute"];
 		}
-		
-//		this.template = _.template(viewTemplate);
-		
-		this.collection.on("collection:select", this.whenCollectionSelect, this);
+		this.listenTo(this.collection, "collection:select", this.whenCollectionSelect);
 	},
+	
+	current: null,
+		
+	following: null,
+		
+	preceding: null,
 	
 	whenCollectionSelect: function(newItem, oldItem) {
 		if (newItem) {
@@ -61,23 +59,21 @@ module.exports = Backbone.View.extend({
 		if (!event.isDefaultPrevented()) {
 			event.preventDefault();
 		}
-		this.collection.select(this.preceding);
+		this.trigger("view:itemSelect", this.preceding);
 	},
 	
 	onFollowingClick: function(event) {
 		if (!event.isDefaultPrevented()) {
 			event.preventDefault();
 		}
-		this.collection.select(this.following);
+		this.trigger("view:itemSelect", this.following);
 	},
 	
 	onCloseClick: function(event) {
 		if (!event.isDefaultPrevented()) {
 			event.preventDefault();
 		}
-		if (this.current) {
-			this.collection.select(null);
-		}
+		this.trigger("view:itemDeselect");
 	},
 	
 //	labelAttribute: "name",

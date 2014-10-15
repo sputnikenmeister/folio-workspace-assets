@@ -18,14 +18,18 @@ module.exports = Backbone.Model.extend({
    	defaults: {
    		name: "",
    		handle: "",
-   		description: "",
+   		desc: "",
    		completed: 0,
-   		attributes: []
-   		// images
+   		attrs: []
    	},
    	
+   	_url: null,
+   	
+   	urlRoot: "/json/bundles/",
+   	
    	url: function() {
-   		return Backbone.Model.prototype.url.apply(this, arguments) + "/";
+	   	//return Backbone.Model.prototype.url.apply(this, arguments) + "/";
+   		return this._url = this._url || this.urlRoot + this.attributes["handle"];
    	},
    	
    	toString: function() {

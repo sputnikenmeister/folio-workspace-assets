@@ -9,6 +9,7 @@
 @import "_base";
 @import "_layout";
 @import "_buttons";
+@import "_buttons-fontello";
 
 
 /* DEBUG */
@@ -28,6 +29,13 @@
 	margin: 0;
 	padding: 0;
 	
+	&#bundles {
+	}
+	&#keywords {
+		position: absolute;
+		right: 0;
+	}
+	
 	.item {
 		margin: 0;
 		padding: 0;
@@ -40,21 +48,13 @@
 		}
 	}
 	
-	
-	&.collapsed
-		.item.selected {
-			color: inherit;
+	& .item.selected {
+		color: $link-color;
 	}
-		.item.selected {
-			color: $link-color;
+	&.collapsed .item.selected {
+		color: inherit;
 	}
 }
-//.mapped .item.selected {
-//	color: $link-color;
-//}
-//.mapped.collapsed .item.selected {
-//	color: inherit;
-//}
 /* @end */
 
 /* @group .mapped animated props */
@@ -86,7 +86,9 @@
 	// Animated props
 	.item {
 		transition:
-			max-height 0.4s, opacity 0.4s, visibility 0.4s;
+			max-height 0.4s,
+			opacity 0.4s,
+			visibility 0.4s;
 		opacity: 1;
 		max-height: 1em;
 		visibility: visible;
@@ -108,10 +110,20 @@
 #keywords {
 	.item {
 		line-height: 1.5;
+		margin-left: 9em;
 	}
+	.group {
+		@include small-caps;
+		position: absolute;
+		width: 8em;
+		left: 0;
+	}
+	// .item transitions
 	.item {
 		transition:
-			max-height 0.4s, opacity 0.4s, visibility 0.4s;
+			max-height 0.4s,
+			opacity 0.4s,
+			visibility 0.4s;
 		opacity: 1;
 		visibility: visible;
 		max-height: 1.5em;
@@ -128,20 +140,7 @@
 			max-height: 0;
 		}
 	}
-}
-#keywords {
-	position: relative;
-	.item {
-		margin-left: 9em;
-	}
-	.group {
-		@include small-caps;
-		position: absolute;
-		width: 8em;
-		left: 0;
-	}
-}
-#keywords {
+	// .group transitions
 	.group {
 		transition: opacity 0.4s;
 		opacity: 1;

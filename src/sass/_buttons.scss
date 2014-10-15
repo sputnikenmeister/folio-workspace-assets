@@ -1,5 +1,7 @@
 /* @group file: _buttons.scss */
-.rsquare-nav {
+.rsquare-pager {
+	padding: 0.5em 0;
+	
 	.button {
 		color: transparent;
 		display: inline-block;
@@ -35,7 +37,7 @@
 		background-color: $link-down-color;
 	}
 }
-.text-nav {
+.text-pager {
 	font-size: 150%;
 	line-height: 2;
 

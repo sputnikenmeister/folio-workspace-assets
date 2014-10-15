@@ -13,9 +13,13 @@ var BundleList = require( "../model/BundleList" );
 var KeywordList = require( "../model/KeywordList" );
 /** @type {module:app/model/TypeList} */
 var TypeList = require( "../model/TypeList" );
+/** @type {module:app/model/ImageList} */
+var ImageList = require( "../model/ImageList" );
 
 /** @type {module:app/view/ItemListView} */
 var ItemListView = require( "./ItemListView" );
+/** @type {module:app/view/GroupingListView} */
+var GroupingListView = require( "./GroupingListView" );
 /** @type {module:app/view/BundleDetailView} */
 var BundleDetailView = require( "./BundleDetailView" );
 /** @type {module:app/view/CollectionPagerView} */
@@ -32,70 +36,137 @@ module.exports = Backbone.View.extend({
 	el: "#container",
 	
 	/** Setup listening to model changes */
-	initialize: function(options) {
-		this.bundleList = new BundleList;
-		this.bundleList.reset(options["bootstrap"]["all-bundles"]);
-		
-		this.keywordList = new KeywordList;
-		this.keywordList.reset(options["bootstrap"]["all-keywords"]);
-		
-		this.typeList = new TypeList;
-		this.typeList.reset(options["bootstrap"]["all-types"]);
+	initialize: function(options)
+	{
+		this.bundleList = new BundleList(options["bundles"]);
+		this.keywordList = new KeywordList(options["keywords"]);
+		this.typeList = new TypeList(options["types"]);
+		this.imageList = new ImageList();
 		
 		this.bundleListView = new ItemListView({
-			el: "#bundles",
-			collection: this.bundleList,
-			associations: this.keywordList,
-			key: "bundles"
+			collection: this.bundleList, el: "#bundles",
+			associations: {
+				collection: this.keywordList,
+				key: "bundles"
+			}
 		});
-		this.keywordListView = new ItemListView({
-			el: "#keywords",
-			collection: this.keywordList,
-			associations: this.bundleList,
-			key: "_resolvedDomIds"
+		this.keywordListView = new GroupingListView({
+			collection: this.keywordList, el: "#keywords",
+			associations: {
+				collection: this.bundleList,
+				key: "keywords"
+			},
+			groupings: {
+				collection: this.typeList,
+				key: "_domIds"
+			},
 		});
 		
 		this.bundleDetailView = new BundleDetailView({
-			collection:this.bundleList
+			collection:this.bundleList, el: "#bundle-detail"
 		});
+		
 		this.bundlePagerView = new CollectionPagerView({
-			el: "#bd-nav",
-			collection:this.bundleList
+			collection:this.bundleList, el: "#bundle-pager"
 		});
-//		this.$("#navigation").append(this.bundlePagerView.render().el);
+		
+		this.imagePagerView = new CollectionPagerView({
+			collection:this.imageList, id: "bundle-images-pager", className: "rsquare-pager"
+		});
+		this.$("#main").append(this.imagePagerView.render().el);
 		
 		this.imageListView = new ImageListView({
-			id: "bd-images",
-			collection:this.bundleList
+			collection:this.imageList, id: "bundle-images"
 		});
+		
 		this.$("#main").append(this.imageListView.render().el);
 		
-		this.bundleList.on("collection:select", this.whenBundleSelect, this);
-		this.keywordList.on("collection:select", this.whenKeywordSelect, this);
+		// View events
+		//this.listenTo(this.keywordListView, "view:itemSelect", this.whenKeywordSelect);
+		this.listenTo(this.bundleListView, "view:itemSelect", this.whenBundleSelect);
+		this.listenTo(this.bundlePagerView, "view:itemSelect", this.whenBundleSelect);
+		this.listenTo(this.bundlePagerView, "view:itemDeselect", this.whenBundleDeselect);
+		this.listenTo(this.imagePagerView, "view:itemSelect", this.whenImageSelect);
+		
+		// Model events
+		this.listenTo(this.bundleList, "error", this.whenBundleSelect_error);
+		
+		// Show default state
+		this.showListState();
+		
 	},
 	
-	whenBundleSelect: function(newItem, oldItem) {
-		if (newItem) {
-			this.keywordList.select(null);
-			this.keywordListView.collapsed(true);
-			this.bundleListView.collapsed(true);
+	whenImageSelect: function(image)
+	{
+		this.imageList.select(image);
+	},
+	
+	whenBundleSelect: function(bundle)
+	{
+		this.bundleList.select(bundle);
+		if (bundle.has("images")) {
+			this.showBundleState(bundle);
 		} else {
-			this.keywordListView.collapsed(false);
-			this.bundleListView.collapsed(false);
+			this.listenToOnce(bundle, "sync", this.whenBundleSelect_sync);
+			bundle.fetch();
 		}
 	},
-	
-	whenKeywordSelect: function(newItem, oldItem) {
-		if (newItem) {
-			this.keywordListView.collapsed(false);
-			this.bundleListView.collapsed(false);
-		} 
-//		else {
-//			this.keywordListView.collapsed(true);
-//		}
+	whenBundleSelect_sync: function(bundle) {
+		this.showBundleState(bundle);
+	},
+	whenBundleSelect_error: function(model, resp, opts) {
+		// TODO: something more useful here
+		console.log("AppView.whenFetchError (bundleList)", arguments);
 	},
 	
-//	render: function() {
-//		return this;
-//	}
+	whenBundleDeselect: function()
+	{
+		this.bundleList.select(null);
+		this.showListState();
+	},
+		
+	showBundleState: function(bundle)
+	{
+		this.bundleListView.collapsed(true);
+		this.keywordListView.collapsed(true);
+		
+		this.bundlePagerView.$el.show();
+		this.bundleDetailView.$el.show();
+		this.imageListView.$el.show();
+		this.imagePagerView.$el.show();
+		
+		Backbone.trigger("app:bundle", bundle);
+	},
+	
+	showListState: function()
+	{
+		this.keywordListView.collapsed(false);
+		this.bundleListView.collapsed(false);
+		
+		this.bundlePagerView.$el.hide();
+		this.bundleDetailView.$el.hide();
+		this.imageListView.$el.hide();
+		this.imagePagerView.$el.hide();
+		
+		Backbone.trigger("app:list");
+	},
+	
+//	whenKeywordSelect: function(keyword)
+//	{
+//		this.keywordList.select(keyword);
+//		this.showKeywordState(keyword);
+//	},
+	
+//	showKeywordState: function(keyword)
+//	{
+//		this.keywordListView.collapsed(false);
+//		this.bundleListView.collapsed(false);
+//		
+//		this.bundlePagerView.$el.hide();
+//		this.bundleDetailView.$el.hide();
+//		this.imageListView.$el.hide();
+//		
+//		Backbone.trigger("app:keyword", keyword);
+//		
+//	},
 });
