@@ -23,30 +23,36 @@ var viewTemplate = require( "./template/BundleDetailView.tpl" );
 module.exports = Backbone.View.extend({
 
 	tagName: "div",
-	
+
 	className: "bundle-detail",
-	
+
 	template: _.template(viewTemplate),
 
 	initialize: function(options)
 	{
 //		this.listenTo(this.collection, "collection:select", this.whenBundleSelect);
 		this.listenTo(Backbone, "app:bundle", this.whenAppBundle);
-		this.listenTo(Backbone, "app:list", this.whenAppList);
+		this.listenTo(Backbone, "app:default", this.whenAppList);
+		this.listenTo(Backbone, "app", this.whenAppEvent);
 	},
-	
+
+	whenAppEvent: function()
+	{
+		console.log("app event", arguments.length);
+	},
+
 	whenAppBundle: function(newItem)
 	{
 		this.model = newItem;
 		this.render();
 	},
-	
+
 	whenAppList: function()
 	{
 		this.model = null;
 		this.render();
 	},
-	
+
 	render: function() {
 		var item = this.model;
 		if (item)

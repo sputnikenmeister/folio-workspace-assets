@@ -20,7 +20,7 @@ module.exports = Backbone.Model.extend({
 		handle: "",
 		attributes: []
 	},
-	
+
 	toString: function() {
 		return this.attributes["name"];
 	}

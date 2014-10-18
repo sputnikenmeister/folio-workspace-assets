@@ -15,16 +15,16 @@ module.exports = Backbone.Model.extend({
 	/**
 	 * @type {Object}
 	 */
-   	defaults: {
- 		url: null,
+	defaults: {
+		url: null,
 		w: NaN,
 		h: NaN,
 		desc: null,
 		attrs: []
-   	},
-   	
-//   	toString: function() {
-//   		return this.attributes["description"];
-//   	}
+	},
+
+//		toString: function() {
+//			return this.attributes["description"];
+//		}
 
 });

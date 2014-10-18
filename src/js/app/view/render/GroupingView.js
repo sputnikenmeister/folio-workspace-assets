@@ -1,6 +1,6 @@
 /**
 * jscs standard:Jquery
-* @module view/ItemView
+* @module app/view/render/ItemView
 * @requires module:backbone
 */
 
@@ -9,7 +9,7 @@ var Backbone = require( "backbone" );
 
 /**
  * @constructor
- * @type {module:app/view/GroupingView}
+ * @type {module:app/view/render/GroupingView}
  */
 module.exports = Backbone.View.extend({
 	

@@ -10,11 +10,8 @@ var _ = require( "underscore" );
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
-/** @type {module:app/view/ItemView} */
-var ItemView = require( "./ItemView" );
-
 /*
- * Private mixins 
+ * Private mixins
  */
 
 /** @private */
@@ -50,7 +47,7 @@ var whenAssociationSelect = function(newAssoc, oldAssoc)
 	if (newAssoc)
 	{
 		var assocIds = newAssoc.get(this.associations.key);
-		
+
 		this.collection.each(function(model, index, arr)
 		{
 			var view = this.getItemView(model);
@@ -63,7 +60,7 @@ var whenAssociationSelect = function(newAssoc, oldAssoc)
 				view.$el.removeClass("highlight");
 			}
 		}, this);
-		
+
 		if (!oldAssoc)
 		{
 			this.$el.addClass("has-highlight");
@@ -76,6 +73,24 @@ var whenAssociationSelect = function(newAssoc, oldAssoc)
 	}
 	//this.render();
 };
+
+/**
+ * @constructor
+ * @type {ItemView}
+ */
+var ItemView = Backbone.View.extend({
+
+	events: {
+		"click ": "onClick",
+	},
+
+	onClick: function (event) {
+		if (!event.isDefaultPrevented()) {
+			event.preventDefault();
+		}
+		this.trigger("item:click", this.model);
+	},
+});
 
 /**
  * @constructor
@@ -109,58 +124,58 @@ module.exports = Backbone.View.extend({
 			this.listenTo(this.associations.collection, "collection:select", whenAssociationSelect);
 		}
 	},
-	
+
 	/** @private */
 	whenItemViewClick: function(item)
 	{
 		this.trigger("view:itemSelect", item);
 	},
-	
+
 	/** @private */
 	_itemViews: [],
-	
+
 	/** @private */
 	_itemViewsIndex: {},
-	
+
 	/** @private */
 	_itemEls: [],
-	
+
 	/** @private */
 	_itemElsIndex: {},
-	
+
 	/** @private */
 	getItemView: function(model)
 	{
 		return this._itemViewsIndex[model.id];
 	},
-	
+
 	/** @private */
 	getItemElement: function(model)
 	{
 		return this._itemElsIndex[model.id];
 	},
-	
+
 	/** @private */
 	getAllItemViews: function()
 	{
 		return this._itemViews;
 	},
-	
+
 	/** @private */
 	getAllItemElements: function()
 	{
 		return this._itemEls;
 	},
-	
+
 	/** @private */
 	assignItemView: function(model, index, arr)
 	{
 		var elt = this.$("#" + model.get("handle"));
 		var view = new ItemView({model: model});
-	
+
 		view.setElement(elt);
 		this.listenTo(view, "item:click", this.whenItemViewClick);
-	
+
 		this._itemViewsIndex[model.id] = view;
 		this._itemViews[index] = view;
 		this._itemElsIndex[model.id] = view.el;
@@ -180,9 +195,9 @@ module.exports = Backbone.View.extend({
 		{
 			return;
 		}
-		
+
 		this._collapsed = value;
-		
+
 		if (value)
 		{
 			this.$el.addClass("collapsed");

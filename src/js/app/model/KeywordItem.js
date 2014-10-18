@@ -21,7 +21,7 @@ module.exports = Backbone.Model.extend({
 		type: "",
 		attributes: []
 	},
-	
+
 	toString: function() {
 		return this.attributes["name"];
 	}

@@ -24,7 +24,7 @@ html.flash, .flash body {
 }
 #flash {
 	height: 100%;
-	overflow: hidden; 
+	overflow: hidden;
 }
 #alt {
 	position: relative;

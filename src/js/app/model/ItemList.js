@@ -24,12 +24,12 @@ module.exports = Backbone.Collection.extend({
 		this.trigger("collection:select", newModel, oldModel);
 	},
 	
-	/** @return boolean  */
+	/** @return boolean	 */
 	hasFollowing:function(model) {
 		return this.indexOf(model) < (this.length - 1);
 	},
 	
-	/** @return next model  */
+	/** @return next model	*/
 	following: function(model) {
 		return this.hasFollowing(model)? this.at(this.indexOf(model) + 1): null;
 	},
@@ -39,7 +39,7 @@ module.exports = Backbone.Collection.extend({
 		return this.at((this.indexOf(model) + 1) % this.length);
 	},
 	
-	/** @return boolean  */
+	/** @return boolean	 */
 	hasPreceding: function(model) {
 		return this.indexOf(model) > 0;
 	},

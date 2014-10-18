@@ -11,28 +11,35 @@ var Backbone = require( "backbone" );
 var _ = require( "underscore" );
 
 /** @type {module:app/view/ItemView} */
-var ItemView = require( "./ItemView" );
+//var ItemView = require( "./ItemView" );
 
 /** @type {module:app/view/GroupingView} */
-var GroupingView = require( "./GroupingView" );
+//var GroupingView = require( "./GroupingView" );
 
 /** @type {module:app/view/ItemListView} */
 var ItemListView = require( "./ItemListView" );
 
+/**
+ * @constructor
+ * @type {module:app/view/GroupingView}
+ */
+var GroupingView = Backbone.View.extend({
+});
+
 /*
- * Private mixins 
+ * Private mixins
  */
 
 /** @private */
 var assignGroupingView = function(model, index, arr)
 {
-	console.log("GroupingListView.assignGroupingView");
-	
+//	console.log("GroupingListView.assignGroupingView");
+
 	var elt = this.$("#" + model.get("handle"));
 	var view = new GroupingView({model: model});
-	
+
 	view.setElement(elt);
-	
+
 	this._groupingViewsIndex[model.id] = view;
 	this._groupingViews[index] = view;
 };
@@ -40,8 +47,7 @@ var assignGroupingView = function(model, index, arr)
 /** @private */
 var _junk_whenAssociationSelect = function(newItem, oldItem)
 {
-	console.log("GroupingListView.whenAssociationSelect",
-			(newItem? newItem.get("handle"): null));
+//	console.log("GroupingListView.whenAssociationSelect", (newItem? newItem.get("handle"): null));
 	if (newItem)
 	{
 		var refIds = newItem.get(this.groupings.key);
@@ -72,32 +78,32 @@ var _junk_whenAssociationSelect = function(newItem, oldItem)
 module.exports = ItemListView.extend({
 
 	groupings: {},
-	
+
 	initialize: function(options) {
 		ItemListView.prototype.initialize.apply(this, arguments);
-		
+
 		if (this.associations.collection)
 		{
 			this.associations = options["associations"];
 			this.listenTo(this.associations.collection, "collection:select", _junk_whenAssociationSelect);
 		}
-		
+
 		if (options["groupings"]) {
 			this.groupings = options["groupings"];
 			this.initializeGroups();
 		}
 		this._junk_groupingEls = this.$(".group");
 	},
-	
+
 	initializeGroups: function()
 	{
 //		var modelGroupings = this.collection.groupBy("type");
 		this.groupings.collection.each(assignGroupingView, this);
 	},
-	
+
 	/** @private */
 	_junk_groupingEls: null,
-	
+
 	/** @private */
 	_groupingViews: [],
 

@@ -16,6 +16,6 @@ var ImageItem = require( "./ImageItem" );
  */
 module.exports = ItemList.extend({
 
- 	model: ImageItem
+	model: ImageItem
 
 });

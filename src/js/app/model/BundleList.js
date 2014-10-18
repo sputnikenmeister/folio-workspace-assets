@@ -16,8 +16,8 @@ var BundleItem = require( "./BundleItem" );
  */
 module.exports = ItemList.extend({
 
- 	model: BundleItem,
- 	
- 	url: "/json/bundles/"
+	model: BundleItem,
+
+	url: "/json/bundles/"
 
 });

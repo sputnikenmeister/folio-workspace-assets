@@ -1,6 +1,6 @@
 /**
 * jscs standard:Jquery
-* @module view/ImageView
+* @module app/view/render/ImageView
 * @requires module:backbone
 */
 
@@ -11,14 +11,14 @@ var _ = require( "underscore" );
 var Backbone = require( "backbone" );
 
 /** @type {module:app/model/ImageItem} */
-var ImageItem = require( "../model/ImageItem" );
+var ImageItem = require( "../../model/ImageItem" );
 
 /** @type {string} */
-var viewTemplate = require( "./template/ImageView.tpl" );
+var viewTemplate = require( "../template/ImageView.tpl" );
 
 /**
  * @constructor
- * @type {module:app/view/ImageView}
+ * @type {module:app/view/render/ImageView}
  */
 module.exports = Backbone.View.extend({
 	

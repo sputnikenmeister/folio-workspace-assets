@@ -1,39 +1,76 @@
-// Colors
-$link-color: hsl(10, 85%, 50%);
-$link-down-color: hsl(10, 100%, 30%);
 
-// Widths
-$side-col-width: 300px;
+// Colors
+$link-color: 		hsl(10, 80%, 50%);
+$link-hover-color: 	hsl(10, 100%, 60%);
+$link-down-color: 	hsl(10, 100%, 30%);
 
 // Font fallback lists
-$font-fallback-mono: Monaco, Consolas, monospace;
-$font-fallback-sans: Calibri, Charcoal, Tahoma, Kalimati, sans-serif;
-//$font-small-sizes: 'Lucida Grande','Lucida Sans',Verdana,Helvetica,Arial,sans-serif;
+$mono-fallback: Monaco, Consolas, monospace;
+// $humanist-fallback: Calibri, Charcoal, Tahoma, Kalimati, sans-serif;
+// $humanist-fallback: 'Lucida Grande','Lucida Sans', Verdana, Helvetica, Arial, sans-serif;
+$humanist-fallback: 'Lucida Grande','Lucida Sans', Calibri, Tahoma, Kalimati, sans-serif;
 
-$mono-font-family: $font-fallback-mono;
-$base-font-family: "Source Sans Pro", $font-fallback-sans;
-$large-font-family: "Source Sans Pro", $font-fallback-sans;
-//$base-font: 9pt/1.5 $base-font-family;
+$font-source-sans: "Source Sans Pro", $humanist-fallback;
 
-// Typography
-@mixin heading() {
+// font family aliases (these are used elsewhere)
+$large-font-family: $font-source-sans;
+$small-font-family: $humanist-fallback;
+$mono-font-family: $mono-fallback;
+
+// font shorthands aliases (these are used elsewhere)
+$base-font: 9pt $font-source-sans;
+// $base-font: 8pt/1.5 $font-system-sans;
+
+@mixin heading-font() {
 	font-family: $large-font-family;
 	font-size: 280%;
 	font-weight: 300;
 	font-style: normal;
 	letter-spacing: -0.03em;
-	-webkit-text-rendering: optimizelegibility;
-	text-rendering: optimizelegibility;
+	// -webkit-text-rendering: optimizelegibility;
+	// text-rendering: optimizelegibility;
+}
+// Typography
+@mixin heading() {
+	@include heading-font;
+	line-height: 1.07;
 }
 @mixin heading-block() {
-	@include heading;
-	margin-left: -2px;
-	margin-right: 2px;
+	@include heading-font;
+	@include translateX(-2px);
+	line-height: 3rem;
+	// margin-left: -2px;
+	// margin-right: 2px;
 }
 @mixin small-caps() {
 	font-size: 85%;
 	font-weight: 600;
-	line-height: 1.89;
+	line-height: 1.5rem;
 	text-transform: uppercase;
-	letter-spacing: 0.1em;
+	letter-spacing: 0.11em;
+}
+// Layout
+$gutter: 20px;
+
+@mixin full-width() {
+	margin-left: 20px;
+	margin-right: 20px;
+}
+@mixin left-column() {
+	margin-right: calc(38% + 20px);
+	width: calc(62% - 20px);
+}
+@mixin right-column() {
+	float: right;
+	width: 38%;
+}
+@mixin left-column-abs() {
+	position: absolute;
+	right: calc(38% + 20px);
+	left: 0;
+}
+@mixin right-column-abs() {
+	position: absolute;
+	right: 0;
+	width: 38%;
 }

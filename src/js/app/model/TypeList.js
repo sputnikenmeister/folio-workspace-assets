@@ -16,6 +16,6 @@ var TypeItem = require( "./TypeItem" );
  */
 module.exports = Backbone.Collection.extend({
 
- 	model: TypeItem
- 	
+	model: TypeItem
+
 });

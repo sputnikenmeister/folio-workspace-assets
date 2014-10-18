@@ -16,6 +16,6 @@ var KeywordItem = require( "./KeywordItem" );
  */
 module.exports = ItemList.extend({
 
- 	model: KeywordItem
+	model: KeywordItem
 
 });

@@ -2,69 +2,128 @@
 
 #container {
 	width: 740px;
-	margin: 0 auto;
+	margin: 0px auto;
 	display: block;
 }
 
+#footer {
+	width: 740px;
+	margin: 0 auto;
+
+	& > * {
+		@include full-width;
+
+		&:first-child {
+			margin-top: 1em;
+		}
+	}
+}
+
+// from: folio.scss @import "compass/layout";
+@include sticky-footer(
+	6em,
+	"#container",
+	"#container-footer",
+	"#footer"
+);
+
 #header {
-	margin: 4em 20px 1em 20px;
-	
+	@include full-width;
+	padding-top: 3.5rem;
+	padding-bottom: 1rem;
+
 	h1 {
 		@include heading-block;
 	}
 }
-	
-#footer {
-	margin-top: 40px;
-	margin-left: 20px;
-	margin-right: 20px;
-	clear: both;
-}
-
-#main {
-	margin-left: 20px;
-	margin-right: 20px;
-	clear: both;
-}
 
 #navigation {
-	margin-left: 20px;
-	margin-right: 20px;
+	@include full-width;
 	position: relative;
 }
 
-#keywords {
-	width: $side-col-width;
-	float: right;
-	margin-bottom: 10px;
+#main {
+	@include full-width;
+	position: relative;
+	clear: both;
 }
 
-#bundles {
-	margin-right: $side-col-width;
-	margin-bottom: 10px;
-}
-
+/* --------------------- *\
+	bundle detail views
+\* ----------------------*/
 #bundle-pager {
-	margin-right: $side-col-width;
-	margin-bottom: 10px;
+	@include left-column; 
+	padding: 4.5rem 0 1.5rem 0;
 }
 
 #bundle-detail {
-	margin-right: $side-col-width;
-	margin-bottom: 10px;
+	@include left-column; 
+}
+
+// Main states
+#container {
+	#bundle-pager,
+	#bundle-detail,
+	#bundle-images-pager,
+	#bundle-images {
+		opacity: 0;
+		visibility: hidden;
+		max-height: auto;
+	}
+	&.app-default {
+		#bundle-pager,
+		#bundle-detail,
+		#bundle-images-pager,
+		#bundle-images {
+			animation: fadeOut 1s;
+			opacity: 0;
+			visibility: hidden;
+			max-height: 0;
+		}
+	}
+	&.app-bundle {
+		#bundle-pager,
+		#bundle-detail,
+		#bundle-images-pager,
+		#bundle-images {
+			animation: fadeIn 1s;
+			opacity: 1;
+			visibility: visible;
+			max-height: auto;
+		}
+	}
+}
+@keyframes fadeOut {
+	from {
+		opacity: 1;
+	}
+	30%, to {
+		opacity: 0;
+		visibility: hidden;
+		max-height: 0;
+	}
+}
+@keyframes fadeIn {
+	from, 60% {
+		opacity: 0;
+		visibility: visible;
+		max-height: auto;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 #bundle-detail {
-	font-size: 100%;	
+	// font-size: 100%;
 	.name {
 		display: none;
 	}
 	.completed {
-//		display: none;
+		display: none;
 	}
 	.description {
-		margin-right: 20px;
-//		display: none;
+		display: none;
 	}
 	a:hover {
 		color: $link-color;
@@ -72,34 +131,43 @@
 	}
 }
 
-#bundle-images-pager {
-	.close-button {
-		display: none;
-	}
-}
-
 #bundle-images {
-	position: relative;
-	
+	margin-top: 4.5rem;
+	margin-bottom: 1.5rem;
+
 	.image-item {
 		.caption {
 			position: absolute;
+			width: 38%;
 			right: 0;
-			bottom: 100%;
-			width: 280px;
+			margin: 0.25rem 0;
+			bottom: calc(100% + 0.5rem);
 			text-align: right;
-			margin: 10px -1px 0 10px;
 			color: #999999;
-			
+
 			p {
-				padding: 0 0 0.5em 0;
+				margin: 0.25rem 0;
 			}
 		}
 		img {
+			visibility: hidden;
 			display: block;
 			background-color: #999999;
 			box-shadow: 0 4px 6px -2px hsla(0, 0%, 0%, 0.4);
 		}
 	}
 }
+
+#bundle-images-pager {
+	position: absolute;
+	width: 60px;
+	right: -70px;
+	top: 0;
+	margin-left: 1.5rem;
+
+	.close-button {
+		display: none;
+	}
+}
+
 /* @end */

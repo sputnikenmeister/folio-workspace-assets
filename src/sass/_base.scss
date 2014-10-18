@@ -1,62 +1,42 @@
-/* @group file: _base.scss */
-
+html {
+	font: $base-font;
+	line-height: 1;
+}
 body {
+	line-height: 1.5;
 	color: hsl(47, 5%, 9%);
 	background: #ffffff;
-	font-size: 9pt;
-	font-family: $base-font-family;
-	position: relative;
 }
 h1 {
 }
 h2 {
 	@include heading;
-//	font-size: 277%;
-//	font-weight: 300;
-//	line-height: 1.0;
-//	letter-spacing: -1px;
-	margin: 0.75em 2px 0.25em -2px;
-//	font-style: normal;
+	margin-top: 0.75rem;
+	margin-bottom: 0.25rem;
 }
 h3 {
 	font-family: $large-font-family;
-	font-size: 150%;
+	// font-size: 150%;
 	font-weight: 600;
-	line-height: 1.8;
-	letter-spacing: 0;
-	margin: 0.75em 0 1em;
+	// line-height: 1.8;
+	// letter-spacing: 0;
+	// margin: 0.75em 0 1em;
 }
 h4 {
 	font-family: $large-font-family;
-	font-size: 125%;
+	// font-size: 125%;
 	font-weight: 700;
-	line-height: 2.0;
-	letter-spacing: 0;
-	margin: 0.75em 0 1em;
+	// line-height: 2.0;
+	// letter-spacing: 0;
+	// margin: 0.75em 0 1em;
 }
 p {
 	line-height: 1.5;
-	padding: 0 0 0.75em;
-}
-ins {
-	text-decoration: none;
-}
-del {
-	text-decoration: line-through;
-}
-table {
-	border-collapse: collapse;
-	border-spacing: 0;
-}
-th {
-	text-align: left;
+	margin: 0 0 0.75em;
 }
 code, pre, tt {
 	font-family: $mono-font-family;
 	background-color: hsl(205, 61%, 94%);
-}
-cite, blockquote, q {
-	quotes: none;
 }
 blockquote {
 	color: hsl(47, 40%, 40%);
@@ -65,25 +45,13 @@ blockquote {
 	padding-left: 2em;
 	border-left: 1px solid hsl(47, 30%, 80%);
 }
-//blockquote:before, q:before,
-//blockquote:after, q:after {
-//	content: '';
-//}
-address {
-}
-acronym {
-}
 a {
 	text-decoration: none;
 	color: $link-color;
 }
-ol,ul {
-	list-style: none;
+* {
+	@include selection(
+		hsl(203, 100%, 90%), // background-color
+		hsl(203, 100%, 50%)	 // color
+	);
 }
-ol {
-	font-weight: bold;
-}
-ol > li {
-	font-weight: normal;
-}
-/* @end */
