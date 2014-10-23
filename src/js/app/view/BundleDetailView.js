@@ -1,5 +1,4 @@
 /**
-* jscs standard:Jquery
 * @module view/BundleDetailView
 * @requires module:backbone
 */
@@ -28,39 +27,31 @@ module.exports = Backbone.View.extend({
 
 	template: _.template(viewTemplate),
 
-	initialize: function(options)
-	{
-//		this.listenTo(this.collection, "collection:select", this.whenBundleSelect);
-		this.listenTo(Backbone, "app:bundle", this.whenAppBundle);
-		this.listenTo(Backbone, "app:default", this.whenAppList);
+	initialize: function(options) {
+		this.listenTo(Backbone, "app:bundleItem", this.whenAppBundleItem);
+		this.listenTo(Backbone, "app:bundleList", this.whenAppBundleList);
 		this.listenTo(Backbone, "app", this.whenAppEvent);
 	},
 
-	whenAppEvent: function()
-	{
+	whenAppEvent: function() {
 		console.log("app event", arguments.length);
 	},
 
-	whenAppBundle: function(newItem)
-	{
+	whenAppBundleItem: function(newItem) {
 		this.model = newItem;
 		this.render();
 	},
 
-	whenAppList: function()
-	{
+	whenAppBundleList: function() {
 		this.model = null;
 		this.render();
 	},
 
 	render: function() {
 		var item = this.model;
-		if (item)
-		{
+		if (item) {
 			this.$el.html(this.template(item.attributes));
-		}
-		else
-		{
+		} else {
 			this.$el.empty();
 		}
 		return this;

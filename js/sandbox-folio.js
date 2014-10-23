@@ -46,9 +46,9 @@ $(function(){
 	})();
 		
 	/** Component: Bundle List */
-	$(".xhtml-page #bundles").hover(
-		function () { $("#keywords").addClass("collapsed"); },
-		function () { $("#keywords").removeClass("collapsed"); }
+	$(".xhtml-page #bundle-list").hover(
+		function () { $("#keyword-list").addClass("collapsed"); },
+		function () { $("#keyword-list").removeClass("collapsed"); }
 	).find(".item").each(
 		function (idx, elt) {
 			var refs = maps["bundle-to-keywords"][this.id]
@@ -66,7 +66,7 @@ $(function(){
 					changeHash(this.id);
 					var jqxhr = $.getJSON("/json/bundles/" + this.id + "/",
 						function (data) {
-							$('#bundles .item').each(function(idx, elt) {
+							$('#bundle-list .item').each(function(idx, elt) {
 							    if (this.id == (data.id))
 							        $(this).addClass('selected').focus();
 							    else
@@ -91,9 +91,9 @@ $(function(){
 	);
 		
 	/** Component: Keyword List */
-	$(".xhtml-page #keywords").hover(
-		function () { $("#bundles").addClass("collapsed"); },
-		function () { $("#bundles").removeClass("collapsed"); }
+	$(".xhtml-page #keyword-list").hover(
+		function () { $("#bundle-list").addClass("collapsed"); },
+		function () { $("#bundle-list").removeClass("collapsed"); }
 	).find(".item").each(
 		function (idx, elt) {
 			var refs = maps["keyword-to-bundles"][this.id];
@@ -124,14 +124,14 @@ $(function(){
 //	$.address.state(location.origin).init(
 //		function() {
 //			/** Remove the root state part form url */
-//    		$('#bundles .item a').address(function() { 
+//    		$('#bundle-list .item a').address(function() { 
 //    	    	return $(this).attr('href').replace(location.origin, '');  
 //    		});
 //		}
 //	).change(
 //		function(event) {
 //			/** Selects the proper navigation link */
-//		    $('#bundles .item a').each(
+//		    $('#bundle-list .item a').each(
 //		    	function(idx, elt) {
 //		        	if ($(this).attr('href') == ($.address.state() + event.path))
 //		        	    $(this).addClass('selected').focus();

@@ -1,23 +1,104 @@
-/* @group file: _layout.scss */
 
-#container {
-	width: 740px;
-	margin: 0px auto;
-	display: block;
+// Layout
+$page-width: 740px;
+$gutter: 20px;
+
+@mixin full-width() {
+	margin-left: 20px;
+	margin-right: 20px;
+}
+@mixin col-full() {
+	margin-left: 20px;
+	margin-right: 20px;
+	width: calc(100% - 40px);
+}
+@mixin col-left-rel() {
+	position: relative;
+	margin-left: 20px;
+	margin-right: calc(38% + 20px);
+	width: calc(62% - 30px);
+}
+@mixin col-right-rel() {
+	position: relative;
+	margin-right: 20px;
+	float: right;
+	width: calc(38% - 30px);
+}
+@mixin col-left-abs() {
+	position: absolute;
+	right: calc(38% + 20px);
+	left: 20px;
+}
+@mixin col-right-abs() {
+	position: absolute;
+	right: 20px;
+	width: calc(38% - 20px);
 }
 
-#footer {
-	width: 740px;
-	margin: 0 auto;
+/* START DEBUG */
+// #container {
+// 	// background-color: red;
+// 	// @include baseline-grid-background(1.5rem, hsla(0, 75%, 75%, 0.3));
+// }
+// #header,
+// #footer,
+// #container-footer {
+// 	background-color: aliceblue;//hsla(90, 75%, 75%, .2);
+// 	border-left: 1px solid blue;
+// 	border-right: 1px solid blue;
+// }
+// #navigation {
+// 	background-color: seashell;
+// 	border-left: 1px solid red;
+// 	border-right: 1px solid red;
+// }
+// #bundle-images{
+// 	background-color: ghostwhite;
+// }
+// #keyword-list,
+// #bundle-list {
+// 	// outline: 1px solid beige;//hsla(270, 75%, 75%, .5);
+// 	background-color: beige;//hsla(180, 75%, 75%, .1);
+// }
+/* END DEBUG */
 
-	& > * {
-		@include full-width;
+/*
+ * View containers/wrappers
+ */
+#container {
+	width: 100%;
+	// margin: 0 auto;
+	display: block;
 
-		&:first-child {
-			margin-top: 1em;
+	@at-root {
+		#header,
+		#navigation,
+		#content,
+		#container-footer {
+			width: $page-width;
+			margin: 0 auto;
+			padding-left: 0;
+			padding-right: 0;
+		}
+		#header {
+			// @include full-width;
+			position: relative;
+			padding-top: 3.5rem;
+			padding-bottom: 1rem;
+		}
+		#navigation {
+			// @include full-width;
+			position: relative;
+			min-height: 12rem;
+		}
+		#content {
+			// @include full-width;
+			position: relative;
+			clear: both;
 		}
 	}
 }
+
 
 // from: folio.scss @import "compass/layout";
 @include sticky-footer(
@@ -27,72 +108,83 @@
 	"#footer"
 );
 
-#header {
-	@include full-width;
-	padding-top: 3.5rem;
-	padding-bottom: 1rem;
-
-	h1 {
-		@include heading-block;
+#footer {
+	width: $page-width;
+	margin: 0 auto;
+	p {
+		@include full-width;
+		padding-top: 1em;
 	}
 }
 
-#navigation {
-	@include full-width;
-	position: relative;
+/*
+ *	View Layout
+ */
+#site-name {
+	@include heading-block;
+	@include col-full;
 }
-
-#main {
-	@include full-width;
-	position: relative;
-	clear: both;
+#bundle-list {
+	// @include col-left-rel;
+	@include col-left-abs;
 }
-
-/* --------------------- *\
-	bundle detail views
-\* ----------------------*/
+#keyword-list {
+	// @include col-right-rel;
+	@include col-right-abs;
+}
 #bundle-pager {
-	@include left-column; 
-	padding: 4.5rem 0 1.5rem 0;
+	position: fixed;
+	bottom: 0.5rem;
+	width: 700px;
+	left: calc(50% - 350px);
 }
-
 #bundle-detail {
-	@include left-column; 
+}
+#bundle-images-pager {
+	width: auto;
+	margin-bottom: 1.5rem;
+	position: absolute;
+	left: 0;
+	bottom: 100%;
 }
 
-// Main states
-#container {
-	#bundle-pager,
-	#bundle-detail,
-	#bundle-images-pager,
-	#bundle-images {
+/*
+ * View visibility by app state
+ */
+// default
+#bundle-pager, #bundle-detail, #bundle-images-pager {
+	opacity: 0;
+	visibility: hidden;
+	max-height: auto;
+}
+.image-list {
+	visibility: hidden;
+}
+// bundle-list
+.app-bundle-list {
+	#bundle-pager, #bundle-detail, #bundle-images-pager {
+		// animation: fadeOut 1s;
 		opacity: 0;
 		visibility: hidden;
-		max-height: auto;
+		max-height: 0;
 	}
-	&.app-default {
-		#bundle-pager,
-		#bundle-detail,
-		#bundle-images-pager,
-		#bundle-images {
-			animation: fadeOut 1s;
-			opacity: 0;
-			visibility: hidden;
-			max-height: 0;
-		}
-	}
-	&.app-bundle {
-		#bundle-pager,
-		#bundle-detail,
-		#bundle-images-pager,
-		#bundle-images {
-			animation: fadeIn 1s;
-			opacity: 1;
-			visibility: visible;
-			max-height: auto;
-		}
+	.image-list {
+		visibility: hidden;
 	}
 }
+// bundle-item
+.app-bundle-item {
+	#bundle-pager, #bundle-detail, #bundle-images-pager {
+		// animation: fadeIn 1s;
+		opacity: 1;
+		visibility: visible;
+		max-height: auto;
+	}
+	.image-list {
+		visibility: visible;
+	}
+}
+
 @keyframes fadeOut {
 	from {
 		opacity: 1;
@@ -114,6 +206,9 @@
 	}
 }
 
+/*
+ * View inner elements
+ */
 #bundle-detail {
 	// font-size: 100%;
 	.name {
@@ -131,43 +226,8 @@
 	}
 }
 
-#bundle-images {
-	margin-top: 4.5rem;
-	margin-bottom: 1.5rem;
-
-	.image-item {
-		.caption {
-			position: absolute;
-			width: 38%;
-			right: 0;
-			margin: 0.25rem 0;
-			bottom: calc(100% + 0.5rem);
-			text-align: right;
-			color: #999999;
-
-			p {
-				margin: 0.25rem 0;
-			}
-		}
-		img {
-			visibility: hidden;
-			display: block;
-			background-color: #999999;
-			box-shadow: 0 4px 6px -2px hsla(0, 0%, 0%, 0.4);
-		}
-	}
-}
-
 #bundle-images-pager {
-	position: absolute;
-	width: 60px;
-	right: -70px;
-	top: 0;
-	margin-left: 1.5rem;
-
 	.close-button {
 		display: none;
 	}
 }
-
-/* @end */

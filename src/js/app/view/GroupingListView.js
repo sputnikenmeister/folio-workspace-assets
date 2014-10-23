@@ -1,5 +1,4 @@
 /**
-* jscs standard:Jquery
 * @module view/ItemListView
 * @requires module:backbone
 */
@@ -10,20 +9,24 @@ var Backbone = require( "backbone" );
 /** @type {module:underscore} */
 var _ = require( "underscore" );
 
-/** @type {module:app/view/ItemView} */
-//var ItemView = require( "./ItemView" );
+/** @type {module:app/view/render/ItemView} */
+//var ItemView = require( "./render/ItemView" );
 
-/** @type {module:app/view/GroupingView} */
-//var GroupingView = require( "./GroupingView" );
+/** @type {module:app/view/render/GroupingView} */
+// var GroupingView = require( "./render/GroupingView" );
 
-/** @type {module:app/view/ItemListView} */
-var ItemListView = require( "./ItemListView" );
+/** @type {module:app/view/SelectableListView} */
+var SelectableListView = require( "./SelectableListView" );
 
 /**
  * @constructor
  * @type {module:app/view/GroupingView}
  */
 var GroupingView = Backbone.View.extend({
+	/** @override */
+	tagName: "dt",
+	/** @override */
+	className: "group"
 });
 
 /*
@@ -31,41 +34,32 @@ var GroupingView = Backbone.View.extend({
  */
 
 /** @private */
-var assignGroupingView = function(model, index, arr)
-{
-//	console.log("GroupingListView.assignGroupingView");
-
-	var elt = this.$("#" + model.get("handle"));
-	var view = new GroupingView({model: model});
-
-	view.setElement(elt);
-
-	this._groupingViewsIndex[model.id] = view;
-	this._groupingViews[index] = view;
+// var assignGroupingView = function(model, index, arr) {
+// 	var view = new GroupingView({model: model});
+// 	var elt = this.$("#" + model.get("handle"));
+// 	view.setElement(elt);
+// 	this._groupingViewsIndex[model.id] = view;
+// 	this._groupingViews[index] = view;
+// };
+var assignGroupingView = function(model, index, arr) {
+	this._groupingViews[index] = this._groupingViewsIndex[model.id] =
+			new GroupingView({model: model, el: "#" + model.get("handle")});
 };
 
 /** @private */
-var _junk_whenAssociationSelect = function(newItem, oldItem)
-{
+var _junk_whenAssociationSelect = function(newItem, oldItem) {
 //	console.log("GroupingListView.whenAssociationSelect", (newItem? newItem.get("handle"): null));
-	if (newItem)
-	{
+	if (newItem) {
 		var refIds = newItem.get(this.groupings.key);
-		_.each(this._junk_groupingEls, function(o, i, a)
-		{
+		_.each(this._junk_groupingEls, function(o, i, a) {
 			var elt = this.$(o);
-			if (_.contains(refIds, o.id))
-			{
+			if (_.contains(refIds, o.id)) {
 				elt.addClass("highlight");
-			}
-			else
-			{
+			} else {
 				elt.removeClass("highlight");
 			}
 		});
-	}
-	else
-	{
+	} else {
 		this.$(this._junk_groupingEls).removeClass("highlight");
 	}
 	//this.render();
@@ -75,30 +69,31 @@ var _junk_whenAssociationSelect = function(newItem, oldItem)
  * @constructor
  * @type {module:app/view/GroupingListView}
  */
-module.exports = ItemListView.extend({
+module.exports = SelectableListView.extend({
 
+	/** @private */
 	groupings: {},
 
 	initialize: function(options) {
-		ItemListView.prototype.initialize.apply(this, arguments);
+		SelectableListView.prototype.initialize.apply(this, arguments);
 
-		if (this.associations.collection)
-		{
+		if (this.associations.collection) {
 			this.associations = options["associations"];
 			this.listenTo(this.associations.collection, "collection:select", _junk_whenAssociationSelect);
 		}
-
 		if (options["groupings"]) {
 			this.groupings = options["groupings"];
 			this.initializeGroups();
 		}
-		this._junk_groupingEls = this.$(".group");
 	},
 
+	/** @private */
 	initializeGroups: function()
 	{
-//		var modelGroupings = this.collection.groupBy("type");
+		// var modelGroupings = this.collection.groupBy("type");
 		this.groupings.collection.each(assignGroupingView, this);
+
+		this._junk_groupingEls = this.$(".group");
 	},
 
 	/** @private */

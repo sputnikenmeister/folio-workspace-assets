@@ -1,5 +1,4 @@
 /**
-* jscs standard:Jquery
 * @module model/TypeList
 * @requires module:backbone
 */
@@ -16,6 +15,9 @@ var TypeItem = require( "./TypeItem" );
  */
 module.exports = Backbone.Collection.extend({
 
+	/**
+	 * @type {Backbone.Model}
+	 */
 	model: TypeItem
 
 });

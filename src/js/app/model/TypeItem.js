@@ -1,5 +1,4 @@
 /**
-* jscs standard:Jquery
 * @module model/TypeItem
 * @requires module:backbone
 */
@@ -12,6 +11,7 @@ var Backbone = require( "backbone" );
  * @type {module:app/model/TypeItem}
  */
 module.exports = Backbone.Model.extend({
+
 	/**
 	 * @type {Object}
 	 */
@@ -21,6 +21,7 @@ module.exports = Backbone.Model.extend({
 		attributes: []
 	},
 
+	/** @override */
 	toString: function() {
 		return this.attributes["name"];
 	}

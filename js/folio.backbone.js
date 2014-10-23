@@ -532,13 +532,13 @@ $(function(){
 			this.typeList.reset(options["bootstrap"]["all-types"]);
 			
 			this.bundleListView = new ItemListView({
-				el: "#bundles",
+				el: "#bundle-list",
 				collection: this.bundleList,
 				associations: this.keywordList,
 				key: "bundles"
 			});
 			this.keywordListView = new ItemListView({
-				el: "#keywords",
+				el: "#keyword-list",
 				collection: this.keywordList,
 				associations: this.bundleList,
 				key: "_resolvedDomIds"

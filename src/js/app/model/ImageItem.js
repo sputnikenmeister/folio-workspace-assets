@@ -1,5 +1,4 @@
 /**
-* jscs standard:Jquery
 * @module model/ImageItem
 * @requires module:backbone
 */
@@ -12,19 +11,18 @@ var Backbone = require( "backbone" );
  * @type {module:app/model/ImageItem}
  */
 module.exports = Backbone.Model.extend({
+
 	/**
 	 * @type {Object}
 	 */
 	defaults: {
-		url: null,
-		w: NaN,
-		h: NaN,
-		desc: null,
-		attrs: []
+		// url: null, w: NaN, h: NaN, desc: null, attrs: []
+		url: "", w: 0, h: 0, desc: "", attrs: []
 	},
 
-//		toString: function() {
-//			return this.attributes["description"];
-//		}
+	/** @override */
+	toString: function() {
+		return this.attributes["url"];
+	}
 
 });

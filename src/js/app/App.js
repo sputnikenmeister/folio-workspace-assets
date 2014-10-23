@@ -1,5 +1,4 @@
 /**
-* jscs standard:Jquery
 * @module App
 */
 
@@ -60,9 +59,6 @@ $(document).ready(function($) {
 		delete window.bootstrap;
 		/* jshint +W051 */
 	}
-
-	// Start Backbone history a necessary step for bookmarkable URL's
-	Backbone.history.start();
 
 	window.app = new AppView(opts);
 });

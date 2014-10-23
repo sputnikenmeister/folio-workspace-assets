@@ -1,5 +1,4 @@
 /**
-* jscs standard:Jquery
 * @module model/BundleItem
 * @requires module:backbone
 */
@@ -12,6 +11,7 @@ var Backbone = require( "backbone" );
  * @type {module:app/model/BundleItem}
  */
 module.exports = Backbone.Model.extend({
+
 	/**
 	 * @type {Object}
 	 */
@@ -23,15 +23,19 @@ module.exports = Backbone.Model.extend({
 		attrs: []
 	},
 
-	_url: null,
-
+	/** @override */
 	urlRoot: "/json/bundles/",
 
+	/** @private */
+	_url: null,
+
+	/** @override */
 	url: function() {
 		//return Backbone.Model.prototype.url.apply(this, arguments) + "/";
 		return this._url = this._url || this.urlRoot + this.attributes["handle"];
 	},
 
+	/** @override */
 	toString: function() {
 		return this.attributes["name"];
 	}

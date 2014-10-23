@@ -1,5 +1,4 @@
-/**
-* jscs standard:Jquery
+ /**
 * @module app/view/render/ItemView
 * @requires module:backbone
 */
@@ -16,18 +15,23 @@ module.exports = Backbone.View.extend({
 	events: {
 		"click ": "onClick",
 	},
-	
+
 	onClick: function (event) {
 		if (!event.isDefaultPrevented()) {
 			event.preventDefault();
+			this.trigger("item:click", this.model);
 		}
-		this.trigger("item:click", this.model);
 	},
-	
+
+	/** @private */
 	_selected: false,
+
+	/**
+	 * @param {Boolean}
+	 * @return {Boolean}
+	 */
 	selected: function (value) {
-		if (arguments.length == 1 && this._selected !== value)
-		{
+		if (arguments.length == 1 && this._selected !== value) {
 			this._selected = value;
 			if (this._selected) {
 				this.$el.addClass("selected");
@@ -37,11 +41,16 @@ module.exports = Backbone.View.extend({
 		}
 		return this._selected;
 	},
-	
+
+	/** @private */
 	_highlight: false,
+
+	/**
+	 * @param {Boolean}
+	 * @return {Boolean}
+	 */
 	highlight: function (value) {
-		if (arguments.length == 1 && this._highlighted !== value)
-		{
+		if (arguments.length == 1 && this._highlighted !== value) {
 			this._highlighted = value;
 			if (this._highlighted) {
 				this.$el.addClass("highlight");

@@ -23,12 +23,15 @@ $base-font: 9pt $font-source-sans;
 
 @mixin heading-font() {
 	font-family: $large-font-family;
-	font-size: 280%;
+	font-size: 240%;
 	font-weight: 300;
 	font-style: normal;
-	letter-spacing: -0.03em;
-	// -webkit-text-rendering: optimizelegibility;
-	// text-rendering: optimizelegibility;
+	letter-spacing: -0.04em;
+
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-text-rendering: optimizelegibility;
+	text-rendering: optimizelegibility;
 }
 // Typography
 @mixin heading() {
@@ -48,29 +51,4 @@ $base-font: 9pt $font-source-sans;
 	line-height: 1.5rem;
 	text-transform: uppercase;
 	letter-spacing: 0.11em;
-}
-// Layout
-$gutter: 20px;
-
-@mixin full-width() {
-	margin-left: 20px;
-	margin-right: 20px;
-}
-@mixin left-column() {
-	margin-right: calc(38% + 20px);
-	width: calc(62% - 20px);
-}
-@mixin right-column() {
-	float: right;
-	width: 38%;
-}
-@mixin left-column-abs() {
-	position: absolute;
-	right: calc(38% + 20px);
-	left: 0;
-}
-@mixin right-column-abs() {
-	position: absolute;
-	right: 0;
-	width: 38%;
 }

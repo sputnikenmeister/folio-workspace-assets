@@ -1,4 +1,4 @@
-.mapped-list {
+.selectable-list {
 	.item {
 		display: block;
 		width: 100%;
@@ -12,49 +12,14 @@
 	&.collapsed .item.selected {
 		color: inherit;
 	}
-}
-// .mapped-list {
-// 	&.has-highlight:not(.collapsed) {
-// 		.group,
-// 		.item {
-// 			&:not(.highlight):not(.selected) {
-// 				color: #999999;
-// 			}
-// 		}
-// 	}
-// }
-
-
-// App states
-
-// #container {
-// 	&, &.app-list {
-// 		#keyword-list {
-// 			position: relative;
-// 			float: right;
-// 		}
-// 		#bundle-list{
-// 			position: relative;
-// 			left: 0;
-// 		}
-// 	}
-// 	&.app-bundle {
-// 		#keyword-list {
-// 			position: absolute;
-// 			right: 0;
-// 		}
-// 		#bundle-list {
-// 			position: absolute;
-// 			left: 0;
-// 		}
-// 	}
-// }
-
-#keyword-list {
-	@include right-column-abs;
-}
-#bundle-list {
-	@include left-column-abs;
+	// &.has-highlight:not(.collapsed) {
+	// 	.group,
+	// 	.item {
+	// 		&:not(.highlight):not(.selected) {
+	// 			color: #999999;
+	// 		}
+	// 	}
+	// }
 }
 
 #bundle-list {
@@ -63,10 +28,7 @@
 
 	.item {
 		@include heading;
-		// margin: 0 2px 0 -2px;
-
-		.name {
-		}
+		@include translateX(-2px);
 		.completed {
 			display: none;
 		}
@@ -90,7 +52,6 @@
 }
 
 /* Animations */
-
 $collapse-duration: 1s;
 $item-transition-duration: 0.333s;
 
@@ -117,7 +78,7 @@ $item-transition-duration: 0.333s;
 			max-height: 0;
 			visibility: hidden;
 			opacity: 0;
-			transition-delay: 0.333s, 0.0s, 1s;// fadeout, collapse, wait
+			transition-delay: 0.333s, 0s, 1s;// fadeout, collapse, wait
 		}
 	}
 }
@@ -125,11 +86,11 @@ $item-transition-duration: 0.333s;
 #keyword-list {
 	&:not(.collapsed) {
 		.item {
-			// transition-duration: $collapse-duration;
-			// transition-property: opacity, visibility, max-height;
 			max-height: 1.5em;
 			visibility: visible;
 			opacity: 1;
+			// transition-duration: $collapse-duration;
+			// transition-property: opacity, visibility, max-height;
 			animation: fromCollapsed $collapse-duration linear;
 		}
 	}
@@ -150,9 +111,9 @@ $item-transition-duration: 0.333s;
 	// .group transitions
 	&:not(.collapsed) {
 		.group {
+			opacity: 1;
 			// transition-duration: $collapse-duration;
 			// transition-property: opacity;
-			opacity: 1;
 			animation: fromCollapsed $collapse-duration linear;
 		}
 	}
@@ -177,16 +138,16 @@ $item-transition-duration: 0.333s;
 	30% {
 		max-height: 0;
 		visibility: visible;
-		opacity: 0;
+		// opacity: 0;
 	}
 	60% {
 		max-height: 1.5em;
-		visibility: visible;
+		// visibility: visible;
 		opacity: 0;
 	}
 	100% {
-		max-height: 1.5em;
-		visibility: visible;
+		// max-height: 1.5em;
+		// visibility: visible;
 		opacity: 1;
 	}
 }
@@ -199,17 +160,17 @@ $item-transition-duration: 0.333s;
 	}
 	30% {
 		max-height: 1.5em;
-		visibility: visible;
+		// visibility: visible;
 		opacity: 0;
 	}
 	60% {
 		max-height: 0;
 		visibility: visible;
-		opacity: 0;
+		// opacity: 0;
 	}
 	100% {
-		max-height: 0;
+		// max-height: 0;
 		visibility: hidden;
-		opacity: 0;
+		// opacity: 0;
 	}
 }

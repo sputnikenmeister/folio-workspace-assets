@@ -1,5 +1,4 @@
 /**
- * jscs standard:Jquery
  * @module model/ItemList
  * @requires module:backbone
  */
@@ -12,45 +11,62 @@ var Backbone = require( "backbone" );
 
 /**
  * @constructor
+ * @param {Backbone.Collection} [collection]
  * @type {module:app/helper/Iterator}
  */
-var Iterator = function(collection){
+function Iterator(collection){
 	this.collection = collection;
-};
+}
 
-_.extend(Iterator.prototype, {
-	
-	/** @return boolean  */
+Iterator.prototype = {
+	/**
+	 * @param {Backbone.Model} [model]
+	 * @return {Boolean}
+	 */
 	hasFollowing:function(model) {
 		return this.collection.indexOf(model) < (this.collection.length - 1);
 	},
-	
-	/** @return next model  */
+
+	/**
+	 * @param {Backbone.Model} [model]
+	 * @return {Backbone.Model} the following (next) model
+	 */
 	following: function(model) {
 		return this.hasFollowing(model)? this.collection.at(this.collection.indexOf(model) + 1): null;
 	},
-	
-	/** @return next model or the beginning if at the end */
+
+	/**
+	 * @param {Backbone.Model} [model]
+	 * @return {Backbone.Model} the next model, or the first if [model] is last
+	 */
 	followingOrFirst: function(model) {
 		return this.collection.at((this.collection.indexOf(model) + 1) % this.collection.length);
 	},
-	
-	/** @return boolean  */
+
+	/**
+	 * @param {Backbone.Model} [model]
+	 * @return {Boolean}
+	 */
 	hasPreceding: function(model) {
 		return this.collection.indexOf(model) > 0;
 	},
-	
-	/** @return the previous model */
+
+	/**
+	 * @param {Backbone.Model} [model]
+	 * @return {Backbone.Model} the preceding model
+	 */
 	preceding: function(model) {
 		return this.hasPreceding(model)? this.collection.at(this.collection.indexOf(model) - 1): null;
 	},
-	
-	/** @return the previous model or the end if at the beginning */
+
+	/**
+	 * @param {Backbone.Model} [model]
+	 * @return {Backbone.Model} the preceding (previous) model, or the last if [model] is first
+	 */
 	precedingOrLast: function(model) {
 		var index = this.collection.indexOf(model) - 1;
 		return this.collection.at(index > -1 ? index : this.collection.length - 1);
 	}
-	
-});
+};
 
 module.exports = Iterator;
