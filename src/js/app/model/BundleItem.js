@@ -23,17 +23,16 @@ module.exports = Backbone.Model.extend({
 		attrs: []
 	},
 
-	/** @override */
+	/** @type {String} */
 	urlRoot: "/json/bundles/",
-
-	/** @private */
-	_url: null,
 
 	/** @override */
 	url: function() {
 		//return Backbone.Model.prototype.url.apply(this, arguments) + "/";
 		return this._url = this._url || this.urlRoot + this.attributes["handle"];
 	},
+	/** @private */
+	_url: null,
 
 	/** @override */
 	toString: function() {

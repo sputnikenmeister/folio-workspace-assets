@@ -10,23 +10,37 @@ $mono-fallback: Monaco, Consolas, monospace;
 // $humanist-fallback: 'Lucida Grande','Lucida Sans', Verdana, Helvetica, Arial, sans-serif;
 $humanist-fallback: 'Lucida Grande','Lucida Sans', Calibri, Tahoma, Kalimati, sans-serif;
 
-$font-source-sans: "Source Sans Pro", $humanist-fallback;
+// Typefaces seem to be loaded on demand, so we define all weights, used or not.
+// @import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200italic,300,300italic,400,400italic,600,600italic,700,700italic,900,900italic");
+@import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic");
+$font-webfont-sans: "Source Sans Pro", $humanist-fallback;
+
+// @import url("http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,300italic,400italic,600italic,700italic&subset=latin,latin-ext");
+// $font-webfont-sans: "Open Sans", $humanist-fallback;
 
 // font family aliases (these are used elsewhere)
-$large-font-family: $font-source-sans;
+$large-font-family: $font-webfont-sans;
 $small-font-family: $humanist-fallback;
 $mono-font-family: $mono-fallback;
 
 // font shorthands aliases (these are used elsewhere)
-$base-font: 9pt $font-source-sans;
+$base-font: 12px $font-webfont-sans;
 // $base-font: 8pt/1.5 $font-system-sans;
+
+// h1
+// font-size: 3.42857rem;
+// letter-spacing: -2px;
+// h2
+// font-size: 2.14286rem;
+// letter-spacing: -1px;
 
 @mixin heading-font() {
 	font-family: $large-font-family;
-	font-size: 240%;
+	// font-size: 3.42857rem; letter-spacing: -2px;
+	font-size: 240%; letter-spacing: -0.04em;
+
 	font-weight: 300;
 	font-style: normal;
-	letter-spacing: -0.04em;
 
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
@@ -42,8 +56,6 @@ $base-font: 9pt $font-source-sans;
 	@include heading-font;
 	@include translateX(-2px);
 	line-height: 3rem;
-	// margin-left: -2px;
-	// margin-right: 2px;
 }
 @mixin small-caps() {
 	font-size: 85%;

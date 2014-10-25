@@ -10,8 +10,8 @@
 .image-list {
 	overflow: hidden;
 	position: relative;
-	margin: -1rem 0;
-	padding: 1rem 0;
+	margin: -1.5rem 0;
+	padding: 1.5rem 0;
 	// margin-top: -1rem; margin-bottom: -1rem;
 	// padding-top: 1rem; padding-bottom: 1rem;
 	width: 100%; min-width: 740px;
@@ -21,7 +21,7 @@
 }
 .image-item {
 	position: absolute;
-	top: 1rem; height: 100%;
+	top: 1.5rem; height: 100%;
 	// top: 2em; height: calc(100% - 2em);
 	// top: 0.5em; height: calc(100% - 1em);
 	left: calc(50% - 350px); width: 700px;
@@ -71,15 +71,15 @@
 
 	img {
 		display: block;
-		background-color: #999999;
-		box-shadow: 0 4px 6px -2px hsla(0, 0%, 0%, 0.4);
+		background-color: #999;
+		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);//0 4px 6px -2px hsla(0, 0%, 0%, 0.4);
 	}
 
 	.placeholder {
-		color: #fff;
 		@include box-sizing(border-box);
+		color: #fff;
 		padding: 1.5rem 2rem;
-		box-shadow: 0 4px 6px -2px hsla(0, 0%, 0%, 0.4);
+		box-shadow: 0px 14px 14px -8px hsla(0, 0%, 0%, 0.5);//0 4px 6px -2px hsla(0, 0%, 0%, 0.4);
 		// opacity: 0.5;
 		// position: relative;
 		overflow: hidden;

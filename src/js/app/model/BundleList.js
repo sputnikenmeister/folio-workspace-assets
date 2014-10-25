@@ -3,8 +3,8 @@
 * @requires module:backbone
 */
 
-/** @type {module:app/model/SelectableList} */
-var SelectableList = require( "./SelectableList" );
+/** @type {module:app/helper/SelectableList} */
+var SelectableList = require( "../helper/SelectableList" );
 
 /** @type {module:app/model/BundleItem} */
 var BundleItem = require( "./BundleItem" );
@@ -15,11 +15,10 @@ var BundleItem = require( "./BundleItem" );
  */
 module.exports = SelectableList.extend({
 
-	/**
-	 * @type {Backbone.Model}
-	 */
+	/** @type {Backbone.Model} */
 	model: BundleItem,
 
-	url: "/json/bundles/"
+	/** @type {String} */
+	url: "/json/bundles/",
 
 });

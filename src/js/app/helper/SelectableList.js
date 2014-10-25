@@ -1,5 +1,5 @@
 /**
- * @module model/ItemList
+ * @module model/SelectableList
  * @requires module:backbone
  */
 
@@ -8,7 +8,7 @@ var Backbone = require( "backbone" );
 
 /**
  * @constructor
- * @type {module:app/model/ItemList}
+ * @type {module:app/model/SelectableList}
  */
 module.exports = Backbone.Collection.extend({
 

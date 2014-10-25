@@ -24,46 +24,32 @@ var SelectableListView = require( "./SelectableListView" );
  */
 var GroupingView = Backbone.View.extend({
 	/** @override */
-	tagName: "dt",
+	// tagName: "dt",
 	/** @override */
-	className: "group"
+	// className: "group"
 });
 
 /*
  * Private mixins
  */
 
-/** @private */
-// var assignGroupingView = function(model, index, arr) {
-// 	var view = new GroupingView({model: model});
-// 	var elt = this.$("#" + model.get("handle"));
-// 	view.setElement(elt);
-// 	this._groupingViewsIndex[model.id] = view;
-// 	this._groupingViews[index] = view;
-// };
-var assignGroupingView = function(model, index, arr) {
-	this._groupingViews[index] = this._groupingViewsIndex[model.id] =
-			new GroupingView({model: model, el: "#" + model.get("handle")});
-};
 
 /** @private */
-var _junk_whenAssociationSelect = function(newItem, oldItem) {
-//	console.log("GroupingListView.whenAssociationSelect", (newItem? newItem.get("handle"): null));
-	if (newItem) {
-		var refIds = newItem.get(this.groupings.key);
-		_.each(this._junk_groupingEls, function(o, i, a) {
-			var elt = this.$(o);
-			if (_.contains(refIds, o.id)) {
-				elt.addClass("highlight");
-			} else {
-				elt.removeClass("highlight");
-			}
-		});
-	} else {
-		this.$(this._junk_groupingEls).removeClass("highlight");
-	}
-	//this.render();
-};
+// var whenAssociationSelect = function(newAssoc, oldAssoc) {
+// 	if (newAssoc) {
+// 		var assocIds = newAssoc.get(this.groupings.key);
+// 		this.groupings.collection.each(function (model, index, arr) {
+// 			var view = this.getGroupingView(model);
+// 			if (_.contains(assocIds, model.get("handle"))) {
+// 				view.$el.addClass("included").removeClass("excluded");
+// 			} else {
+// 				view.$el.addClass("excluded").removeClass("included");
+// 			}
+// 		}, this);
+// 	} else {
+// 		this.$(this.getAllGroupingElements()).removeClass("included").removeClass("excluded");
+// 	}
+// };
 
 /**
  * @constructor
@@ -77,37 +63,69 @@ module.exports = SelectableListView.extend({
 	initialize: function(options) {
 		SelectableListView.prototype.initialize.apply(this, arguments);
 
-		if (this.associations.collection) {
-			this.associations = options["associations"];
-			this.listenTo(this.associations.collection, "collection:select", _junk_whenAssociationSelect);
-		}
 		if (options["groupings"]) {
 			this.groupings = options["groupings"];
-			this.initializeGroups();
+			this.groupings.collection.each(this.assignGroupingView, this);
 		}
 	},
 
-	/** @private */
-	initializeGroups: function()
-	{
-		// var modelGroupings = this.collection.groupBy("type");
-		this.groupings.collection.each(assignGroupingView, this);
-
-		this._junk_groupingEls = this.$(".group");
+	renderFilters: function(newAssoc, oldAssoc) {
+		SelectableListView.prototype.renderFilters.apply(this, arguments);
+		if (newAssoc) {
+			var assocIds = newAssoc.get(this.groupings.key);
+			this.groupings.collection.each(function (model, index, arr) {
+				var view = this.getGroupingView(model);
+				if (_.contains(assocIds, model.get("handle"))) {
+					view.$el.addClass("included").removeClass("excluded");
+				} else {
+					view.$el.addClass("excluded").removeClass("included");
+				}
+			}, this);
+		} else {
+			this.$(this.getAllGroupingElements()).removeClass("included").removeClass("excluded");
+		}
 	},
 
+	/*
+	* Create children views
+	*/
 	/** @private */
-	_junk_groupingEls: null,
+	assignGroupingView: function(model, index, arr) {
+		var selector = "#" + model.get("handle");
+		var view = new GroupingView({model: model, el: selector});
+		this._groupingViews[index] = this._groupingViewsIndex[model.id] = view;
+		this._groupingEls[index] = this._groupingElsIndex[model.id] = view.el;
+	},
 
-	/** @private */
-	_groupingViews: [],
+	/*
+	 * Child view helpers
+	 */
 
 	/** @private */
 	_groupingViewsIndex: {},
+	/** @private */
+	getGroupingView: function(model) {
+		return this._groupingViewsIndex[model.id];
+	},
 
 	/** @private */
-	getGroupingView: function(model)
-	{
-		return this._groupingViewsIndex[model.id];
+	_groupingElsIndex: {},
+	/** @private */
+	getGroupingElement: function(model) {
+		return this._groupingElsIndex[model.id];
+	},
+
+	/** @private */
+	_groupingViews: [],
+	/** @private */
+	getAllGroupingViews: function() {
+		return this._groupingViews;
+	},
+
+	/** @private */
+	_groupingEls: [],
+	/** @private */
+	getAllGroupingElements: function() {
+		return this._groupingEls;
 	},
 });

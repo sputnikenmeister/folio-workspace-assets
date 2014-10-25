@@ -32,24 +32,19 @@ module.exports  = Backbone.View.extend({
 	model: ImageItem,
 
 	initialize: function(options) {
-		var fnDelegate;
-
 		this.hammer = new Hammer.Manager(this.el);
 		this.hammer.add(new Hammer.Pan({direction: this.direction, threshold: 10}));
 
+		// var fnDelegate;
 		// fnDelegate = Hammer.bindFn(this.onPan, this);
-		fnDelegate = _.bind(this.onPan, this);
-		this.hammer.on("panstart panmove panend pancancel", fnDelegate);
-
 		// fnDelegate = Hammer.bindFn(this.onWindowResize, this);
-		fnDelegate = _.bind(this.onWindowResize, this);
-		window.addEventListener("load", fnDelegate, false);
-		window.addEventListener("orientationchange", fnDelegate, false);
-		window.addEventListener("resize", fnDelegate, false);
+		// window.addEventListener("load", fnDelegate, false);
+		// window.addEventListener("orientationchange", fnDelegate, false);
+		// window.addEventListener("resize", fnDelegate, false);
 
-		// Backbone.$(window).on("load orientationchange resize", this.onWindowResize, this);
-		// this.listenTo(this.$(window), "load orientationchange resize", this.onWindowResize);
-		// this.listenTo(this.hammer, "panstart panmove panend pancancel", this.onPan);
+		_.bindAll(this, "onPan", "onWindowResize");
+		this.hammer.on("panstart panmove panend pancancel", this.onPan);
+		Backbone.$(window).on("load orientationchange resize", this.onWindowResize);
 
 		this.listenTo(Backbone, "app:bundleList", this.whenAppBundleList);
 		this.listenTo(Backbone, "app:bundleItem", this.whenAppBundleItem);
@@ -123,7 +118,6 @@ module.exports  = Backbone.View.extend({
 		var animate = false;
 		var proposedIndex = this.currentIndex;
 		var numItems = this.collection.length;
-		var newModel;
 
 
 		if (ev.type == "panend" || ev.type == "pancancel") {
@@ -131,15 +125,13 @@ module.exports  = Backbone.View.extend({
 				// when panned by >20%, selection may need change
 				proposedIndex += (percent < 0) ? 1 : -1;
 				if (0 < proposedIndex < numItems) {
-					newModel = this.collection.at(proposedIndex);
-					this.trigger("view:itemSelect", newModel);
+					this.trigger("view:itemSelect", this.collection.at(proposedIndex));
 					this.currentIndex = proposedIndex;
 				}
 			}
 			percent = 0;
 			animate = true;
-		} else if ((this.currentIndex == 0 && percent > 0) ||
-			(this.currentIndex == numItems - 1 && percent < 0)) {
+		} else if ((this.currentIndex == 0 && percent > 0) || (this.currentIndex == numItems - 1 && percent < 0)) {
 			// when at first or last index, add factor for a spring-like effect
 			percent *= 0.3;
 		}
@@ -175,8 +167,8 @@ module.exports  = Backbone.View.extend({
 		for (elementIndex = 0; elementIndex < numElements; elementIndex++) {
 			pos = (this.containerSize / 100) * (((elementIndex - showIndex) * 100) + percent);
 
-			indexDelta =  (elementIndex - showIndex) / numElements;
-			console.log("show:", pos, indexDelta);
+			// indexDelta =  (elementIndex - showIndex) / numElements;
+			// console.log("show:", pos, indexDelta);
 			// pos *= (elementIndex - showIndex) / numElements + 0.25;
 
 			if(this.direction & Hammer.DIRECTION_HORIZONTAL) {

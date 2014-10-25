@@ -25,7 +25,6 @@ module.exports = Backbone.View.extend({
 
 	/** @private */
 	_selected: false,
-
 	/**
 	 * @param {Boolean}
 	 * @return {Boolean}
@@ -42,22 +41,21 @@ module.exports = Backbone.View.extend({
 		return this._selected;
 	},
 
-	/** @private */
-	_highlight: false,
-
-	/**
-	 * @param {Boolean}
-	 * @return {Boolean}
-	 */
-	highlight: function (value) {
-		if (arguments.length == 1 && this._highlighted !== value) {
-			this._highlighted = value;
-			if (this._highlighted) {
-				this.$el.addClass("highlight");
-			} else {
-				this.$el.removeClass("highlight");
-			}
-		}
-		return this._highlighted;
-	},
+	// /** @private */
+	// _highlight: false,
+	// /**
+	//  * @param {Boolean}
+	//  * @return {Boolean}
+	//  */
+	// highlight: function (value) {
+	// 	if (arguments.length == 1 && this._highlighted !== value) {
+	// 		this._highlighted = value;
+	// 		if (this._highlighted) {
+	// 			this.$el.addClass("highlight");
+	// 		} else {
+	// 			this.$el.removeClass("highlight");
+	// 		}
+	// 	}
+	// 	return this._highlighted;
+	// },
 });

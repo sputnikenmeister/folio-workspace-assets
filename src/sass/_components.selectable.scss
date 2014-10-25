@@ -12,10 +12,10 @@
 	&.collapsed .item.selected {
 		color: inherit;
 	}
-	// &.has-highlight:not(.collapsed) {
+	// &.has-included:not(.collapsed) {
 	// 	.group,
 	// 	.item {
-	// 		&:not(.highlight):not(.selected) {
+	// 		&:not(.included):not(.selected) {
 	// 			color: #999999;
 	// 		}
 	// 	}
@@ -45,43 +45,41 @@
 	}
 	.group {
 		@include small-caps;
+		// @include translateY(1px);
+		line-height: 1.5rem;
 		position: absolute;
 		width: calc(38% - 2rem);
 		left: 0;
 	}
 }
 
-/* Animations */
-$collapse-duration: 1s;
-$item-transition-duration: 0.333s;
 
 #bundle-list {
-	&, &:not(.collapsed) {
-		.item, .item:not(.selected) {
+	&,
+	&:not(.collapsed) {
+		.item,
+		.item:not(.selected) {
 			max-height: 1.5em;
 			visibility: visible;
 			opacity: 1;
-			transition-property: max-height, opacity, visibility;
-			transition-timing-function: linear;
-			transition-duration: 0.333s, 0.333s, 0s;
-			transition-delay: 0.333s, 0.666s, 0s;// wait, expand, fadein
 		}
 	}
 	&.collapsed {
 		.item.selected {
-			max-height: 1.5em;// watch out!!!
+			max-height: 0;//1.5em;// watch out!!!
 			visibility: visible;
 			opacity: 1;
-			transition-delay: 0.333s, 0.666s, 0s;// wait, expand, fadein
 		}
-		.item, .item:not(.selected) {
+		.item,
+		.item:not(.selected) {
 			max-height: 0;
 			visibility: hidden;
 			opacity: 0;
-			transition-delay: 0.333s, 0s, 1s;// fadeout, collapse, wait
 		}
 	}
 }
+
+
 
 #keyword-list {
 	&:not(.collapsed) {
@@ -89,47 +87,76 @@ $item-transition-duration: 0.333s;
 			max-height: 1.5em;
 			visibility: visible;
 			opacity: 1;
-			// transition-duration: $collapse-duration;
-			// transition-property: opacity, visibility, max-height;
-			animation: fromCollapsed $collapse-duration linear;
+		}
+		.group {
+			opacity: 1;
+			visibility: visible;
 		}
 	}
 	&.collapsed {
-		.item.highlight {
+		.item.included {
 			max-height: 1.5em;
 			visibility: visible;
 			opacity: 1;
-			animation: fromCollapsed $collapse-duration linear;
 		}
-		.item:not(.highlight) {
+		.group.included {
+			opacity: 1;
+			visibility: visible;
+		}
+		.item.excluded {
 			max-height: 0;
 			visibility: hidden;
 			opacity: 0;
-			animation: toCollapsed $collapse-duration linear;
+		}
+		.group.excluded {
+			opacity: 0;
+			visibility: hidden;
 		}
 	}
-	// .group transitions
+}
+
+/*
+ * Animations/Transitions
+ */
+
+$ease-fn: ease;
+$collapse-params: 1s $ease-fn;
+
+#bundle-list.animate {
+	&,
 	&:not(.collapsed) {
-		.group {
-			opacity: 1;
-			// transition-duration: $collapse-duration;
-			// transition-property: opacity;
-			animation: fromCollapsed $collapse-duration linear;
+		.item,
+		.item:not(.selected) {
+			transition-property: opacity, visibility, max-height;
+			transition-timing-function: $ease-fn;
+			transition-duration: 0.333s, 0s, 0.333s;
+			transition-delay: 0.666s, 0s, 0.333s;// wait, expand, fadein
 		}
 	}
 	&.collapsed {
-		.group.highlight {
-			opacity: 1;
-			animation: fromCollapsed $collapse-duration linear;
+		.item.selected {
+			transition-delay: 0.666s, 0s, 0.333s;// wait, expand, fadein
 		}
-		.group:not(.highlight) {
-			opacity: 0;
-			animation: toCollapsed $collapse-duration linear;
+		.item:not(.selected) {
+			transition-delay: 0s, 1s, 0.333s;// fadeout, collapse, wait
 		}
 	}
 }
 
-@keyframes fromCollapsed {
+#keyword-list.animate {
+	&:not(.collapsed) {
+		.item { animation: fromCollapsedItem $collapse-params; }
+		.group { animation: fromCollapsedGroup $collapse-params; }
+	}
+	&.collapsed {
+		.item.included { animation: fromCollapsedItem $collapse-params; }
+		.group.included { animation: fromCollapsedGroup $collapse-params; }
+		.item.excluded { animation: toCollapsedItem $collapse-params; }
+		.group.excluded { animation: toCollapsedGroup $collapse-params; }
+	}
+}
+
+@keyframes fromCollapsedItem {
 	0% {
 		max-height: 0;
 		visibility: hidden;
@@ -138,21 +165,21 @@ $item-transition-duration: 0.333s;
 	30% {
 		max-height: 0;
 		visibility: visible;
-		// opacity: 0;
+		opacity: 0;
 	}
 	60% {
 		max-height: 1.5em;
-		// visibility: visible;
+		visibility: visible;
 		opacity: 0;
 	}
 	100% {
-		// max-height: 1.5em;
-		// visibility: visible;
+		max-height: 1.5em;
+		visibility: visible;
 		opacity: 1;
 	}
 }
 
-@keyframes toCollapsed {
+@keyframes toCollapsedItem {
 	0% {
 		max-height: 1.5em;
 		visibility: visible;
@@ -160,17 +187,55 @@ $item-transition-duration: 0.333s;
 	}
 	30% {
 		max-height: 1.5em;
-		// visibility: visible;
+		visibility: visible;
 		opacity: 0;
 	}
 	60% {
 		max-height: 0;
 		visibility: visible;
-		// opacity: 0;
+		opacity: 0;
 	}
 	100% {
-		// max-height: 0;
+		max-height: 0;
 		visibility: hidden;
-		// opacity: 0;
+		opacity: 0;
+	}
+}
+
+@keyframes fromCollapsedGroup {
+	0% {
+		visibility: hidden;
+		opacity: 0;
+	}
+	30% {
+		visibility: visible;
+		opacity: 0;
+	}
+	60% {
+		visibility: visible;
+		opacity: 0;
+	}
+	100% {
+		visibility: visible;
+		opacity: 1;
+	}
+}
+
+@keyframes toCollapsedGroup {
+	0% {
+		visibility: visible;
+		opacity: 1;
+	}
+	30% {
+		visibility: visible;
+		opacity: 0;
+	}
+	60% {
+		visibility: visible;
+		opacity: 0;
+	}
+	100% {
+		visibility: hidden;
+		opacity: 0;
 	}
 }
