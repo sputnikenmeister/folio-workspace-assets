@@ -1,5 +1,5 @@
 /**
- * @module model/SelectableList
+ * @module app/model/SelectableList
  * @requires module:backbone
  */
 

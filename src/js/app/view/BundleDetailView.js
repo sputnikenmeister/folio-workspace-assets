@@ -1,5 +1,5 @@
 /**
-* @module view/BundleDetailView
+* @module app/view/BundleDetailView
 * @requires module:backbone
 */
 

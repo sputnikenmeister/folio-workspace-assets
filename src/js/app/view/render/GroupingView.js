@@ -1,6 +1,6 @@
 /**
 * jscs standard:Jquery
-* @module app/view/render/ItemView
+* @module app/app/view/render/ItemView
 * @requires module:backbone
 */
 
@@ -12,7 +12,7 @@ var Backbone = require( "backbone" );
  * @type {module:app/view/render/GroupingView}
  */
 module.exports = Backbone.View.extend({
-	
+
 	_selected: null,
 	selected: function (value) {
 		if (arguments.length == 1 && this._selected !== value)
@@ -26,7 +26,7 @@ module.exports = Backbone.View.extend({
 		}
 		return this._selected;
 	},
-	
+
 	_highlight: null,
 	highlight: function (value) {
 		if (arguments.length == 1 && this._highlighted !== value)

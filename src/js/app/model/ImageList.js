@@ -1,5 +1,5 @@
 /**
-* @module model/ImageList
+* @module app/model/ImageList
 * @requires module:backbone
 */
 

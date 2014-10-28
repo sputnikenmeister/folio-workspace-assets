@@ -1,0 +1,38 @@
+.rsquare-pager {
+	.button {
+		color: transparent;
+		display: inline-block;
+		vertical-align: middle;
+		overflow: hidden;
+		width: 23px; max-width: 23px;
+		height: 23px; max-height: 23px;
+		margin: 0 1px 0 0;
+		padding: 0;
+		border-radius: 3px;
+		border: 0px solid #ffffff;
+		text-decoration: none;
+		background-position: 0 0;
+		background-repeat: no-repeat;
+		transition: background-color 0.1s;
+	}
+	.preceding-button {
+		background-image: url('../images/rsquare-larr.svg');
+	}
+	.following-button {
+		background-image: url('../images/rsquare-rarr.svg');
+	}
+	.close-button {
+		background-image: url('../images/rsquare-close.svg');
+	}
+	.button,
+	.button:link,
+	.button:visited {
+		background-color: hsl(10, 0%, 80%);
+	}
+	.button:hover {
+		background-color: $link-color;
+	}
+	.button:active {
+		background-color: $link-down-color;
+	}
+}

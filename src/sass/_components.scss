@@ -1,0 +1,46 @@
+/*
+ * View inner elements
+ */
+#bundle-detail {
+	// font-size: 100%;
+	.name {
+		display: none;
+	}
+	.completed {
+		display: none;
+	}
+	.description {
+		display: none;
+	}
+	a:hover {
+		color: $link-color;
+		background-color: hsl(0, 0%, 94%);
+	}
+}
+
+#bundle-images-pager {
+	.close-button {
+		display: none;
+	}
+}
+
+.admin {
+	display: block;
+	float: right;
+	padding-top: 1em;
+	margin: 0 20px;
+	color: scale_color($color, $lightness: 35%);
+
+	a {
+		color: 	inherit;
+	}
+	dt {
+		float: left;
+		display: inline;
+		font-weight: bold;
+	}
+	dd {
+		display: inline;
+		margin-left: 10px;
+	}
+}

@@ -1,5 +1,5 @@
  /**
-* @module app/view/render/ItemView
+* @module app/app/view/render/ItemView
 * @requires module:backbone
 */
 

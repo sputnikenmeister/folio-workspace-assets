@@ -4,8 +4,8 @@ html {
 }
 body {
 	line-height: 1.5;
-	color: hsl(47, 5%, 9%); background-color: hsl(47, 5%, 95%);
-	// color: #fff; background-color: hsl(47, 5%, 19%);
+	color: $color;
+	background-color: $background-color;
 }
 h1 {
 }
@@ -36,15 +36,15 @@ p {
 }
 code, pre, tt {
 	font-family: $mono-font-family;
-	color: hsl(47, 5%, 9%);
-	background-color: hsl(205, 61%, 94%);
+	// color: hsl(47, 5%, 9%);
+	// background-color: hsl(205, 61%, 94%);
 }
 blockquote {
-	color: hsl(47, 40%, 40%);
-	background-color: hsl(47, 61%, 97%);
+	// color: hsl(47, 40%, 40%);
+	// background-color: hsl(47, 61%, 97%);
 	padding: 0.5em;
 	padding-left: 2em;
-	border-left: 1px solid hsl(47, 30%, 80%);
+	// border-left: 1px solid hsl(47, 30%, 80%);
 }
 a {
 	text-decoration: none;

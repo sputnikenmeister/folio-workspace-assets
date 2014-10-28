@@ -1,5 +1,5 @@
 /**
-* @module view/CollectionPagerView
+* @module app/view/CollectionPagerView
 * @requires module:backbone
 */
 
@@ -41,16 +41,16 @@ module.exports = Backbone.View.extend({
 	onPrecedingClick: function (ev) {
 		if (!ev.isDefaultPrevented()) {
 			ev.preventDefault();
-			// this.trigger("view:itemSelect", this.collection.precedingOrLast(this.collection.selected));
-			this.trigger("view:itemPreceding");
+			this.trigger("view:itemSelect", this.collection.precedingOrLast(this.collection.selected));
+			// this.trigger("view:itemPreceding");
 		}
 	},
 
 	onFollowingClick: function(ev) {
 		if (!ev.isDefaultPrevented()) {
 			ev.preventDefault();
-			// this.trigger("view:itemSelect", this.collection.followingOrFirst(this.collection.selected));
-			this.trigger("view:itemFollowing");
+			this.trigger("view:itemSelect", this.collection.followingOrFirst(this.collection.selected));
+			// this.trigger("view:itemFollowing");
 		}
 	},
 
@@ -61,34 +61,21 @@ module.exports = Backbone.View.extend({
 		}
 	},
 
-//	labelAttribute: "name",
+	labelAttribute: null,
 
 	getItemLabel: function(item) {
-		if (!this.labelAttibute)
-			return item.toString();
-		return item.get(this.labelAttribute);
+		if (item.has(this.labelAttribute))
+			return item.get(this.labelAttribute);
+		return item.toString();
 	},
 
-	// current: null,
-	// following: null,
-	// preceding: null,
-
 	whenCollectionSelect: function(newItem, oldItem) {
-		// if (newItem && this.collection.length > 1) {
-		// 	this.current = this.collection.selected;
-		// 	this.preceding = this.collection.precedingOrLast(this.current);
-		// 	this.following = this.collection.followingOrFirst(this.current);
-		// } else {
-		// 	this.current = this.preceding = this.following = null;
-		// }
 		this.render();
 	},
 
 	whenCollectionReset: function() {
-		// this.current = this.preceding = this.following = null;
 		this.render();
 	},
-
 
 	render: function() {
 		if (this.collection.selected && this.collection.length > 1) {
@@ -98,9 +85,9 @@ module.exports = Backbone.View.extend({
 				"preceding_label": 	this.getItemLabel(preceding),
 				"following_label": 	this.getItemLabel(following),
 				"close_label": 		"Close",
-				"preceding_href": 	"#",	//this.preceding.get("handle"),
-				"following_href": 	"#",	//this.following.get("handle"),
-				"close_href": 		"#",	//this.following.get("handle"),
+				"preceding_href": 	"#preceding",	//this.preceding.get("handle"),
+				"following_href": 	"#following",	//this.following.get("handle"),
+				"close_href": 		"#close",
 			}));
 		} else {
 			this.$el.empty();

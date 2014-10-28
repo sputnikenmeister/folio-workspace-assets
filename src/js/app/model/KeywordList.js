@@ -1,5 +1,5 @@
 /**
-* @module model/KeywordList
+* @module app/model/KeywordList
 * @requires module:backbone
 */
 

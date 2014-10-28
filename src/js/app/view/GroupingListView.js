@@ -1,5 +1,5 @@
 /**
-* @module view/ItemListView
+* @module app/view/ItemListView
 * @requires module:backbone
 */
 
@@ -29,28 +29,6 @@ var GroupingView = Backbone.View.extend({
 	// className: "group"
 });
 
-/*
- * Private mixins
- */
-
-
-/** @private */
-// var whenAssociationSelect = function(newAssoc, oldAssoc) {
-// 	if (newAssoc) {
-// 		var assocIds = newAssoc.get(this.groupings.key);
-// 		this.groupings.collection.each(function (model, index, arr) {
-// 			var view = this.getGroupingView(model);
-// 			if (_.contains(assocIds, model.get("handle"))) {
-// 				view.$el.addClass("included").removeClass("excluded");
-// 			} else {
-// 				view.$el.addClass("excluded").removeClass("included");
-// 			}
-// 		}, this);
-// 	} else {
-// 		this.$(this.getAllGroupingElements()).removeClass("included").removeClass("excluded");
-// 	}
-// };
-
 /**
  * @constructor
  * @type {module:app/view/GroupingListView}
@@ -69,20 +47,47 @@ module.exports = SelectableListView.extend({
 		}
 	},
 
+	/** @private */
 	renderFilters: function(newAssoc, oldAssoc) {
-		SelectableListView.prototype.renderFilters.apply(this, arguments);
+		var assocIds, groupIds;
 		if (newAssoc) {
-			var assocIds = newAssoc.get(this.groupings.key);
-			this.groupings.collection.each(function (model, index, arr) {
-				var view = this.getGroupingView(model);
-				if (_.contains(assocIds, model.get("handle"))) {
-					view.$el.addClass("included").removeClass("excluded");
+			// assocIds = newAssoc.get(this.associations.key);
+			groupIds = newAssoc.get(this.groupings.key);
+			// if (!oldAssoc) {
+			// 	this.$el.addClass("has-filter");
+			// }
+		} else {
+			// if (oldAssoc) {
+			// 	this.$el.removeClass("has-filter");
+			// }
+		}
+		// this.renderChildrenItems(assocIds);
+		this.renderChildrenGroups(groupIds);
+
+		SelectableListView.prototype.renderFilters.apply(this, arguments);
+	},
+
+	/** @private */
+	renderChildrenGroups: function(modelIds) {
+		if (modelIds) {
+			this.groupings.collection.each(function(model, index, arr) {
+				if (_.contains(modelIds, model.id)) {
+					this.getGroupingView(model).$el
+						// .addClass("included")
+						.removeClass("excluded")
+						;
 				} else {
-					view.$el.addClass("excluded").removeClass("included");
+					this.getGroupingView(model).$el
+						.addClass("excluded")
+						// .removeClass("included")
+						;
 				}
 			}, this);
 		} else {
-			this.$(this.getAllGroupingElements()).removeClass("included").removeClass("excluded");
+			this.$(this.getAllGroupingElements())
+				// .removeClass("included")
+				.removeClass("excluded")
+				;
 		}
 	},
 
@@ -91,8 +96,11 @@ module.exports = SelectableListView.extend({
 	*/
 	/** @private */
 	assignGroupingView: function(model, index, arr) {
-		var selector = "#" + model.get("handle");
-		var view = new GroupingView({model: model, el: selector});
+		var view = new GroupingView({
+			model: model,
+			el: "#" + model.get("uid")
+		});
+
 		this._groupingViews[index] = this._groupingViewsIndex[model.id] = view;
 		this._groupingEls[index] = this._groupingElsIndex[model.id] = view.el;
 	},
@@ -104,15 +112,15 @@ module.exports = SelectableListView.extend({
 	/** @private */
 	_groupingViewsIndex: {},
 	/** @private */
-	getGroupingView: function(model) {
-		return this._groupingViewsIndex[model.id];
+	getGroupingView: function(obj) {
+		return this._groupingViewsIndex[obj] || this._groupingViewsIndex[obj.id];
 	},
 
 	/** @private */
 	_groupingElsIndex: {},
 	/** @private */
-	getGroupingElement: function(model) {
-		return this._groupingElsIndex[model.id];
+	getGroupingElement: function(obj) {
+		return this._groupingElsIndex[obj] || this._groupingElsIndex[obj.id];
 	},
 
 	/** @private */

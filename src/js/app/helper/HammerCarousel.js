@@ -1,5 +1,5 @@
 /**
- * @module helper/HammerCarousel
+ * @module app/helper/HammerCarousel
  * @requires module:hammerjs
  */
 

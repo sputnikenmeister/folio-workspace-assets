@@ -1,4 +1,4 @@
-	/**
+/**
 * @module app/view/CollectionView
 * @requires module:backbone
 */

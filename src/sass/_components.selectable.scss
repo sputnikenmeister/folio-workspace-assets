@@ -1,3 +1,12 @@
+
+/* START DEBUG */
+// .selectable-list {
+// 	background-color: scale_color($background-color, $lightness: -15%);
+// 	.item, .group {
+// 		background-color: scale_color($background-color, $lightness: -30%);
+// 	}
+// }
+
 .selectable-list {
 	.item {
 		display: block;
@@ -6,11 +15,24 @@
 			color: inherit;
 		}
 	}
-	& .item.selected {
+	.selected {
 		color: $link-color;
 	}
-	&.collapsed .item.selected {
+	&.collapsed .selected {
 		color: inherit;
+	}
+	&:not(.collapsed) {
+		.group, .item {
+			&.excluded {
+				color: scale_color($color, $lightness: 50%);
+			}
+		}
+		.group, .item {
+			&:not(.excluded):not(.selected) {
+				color: scale_color($color, $blue: 50%);
+				// background-color: #ccc;
+			}
+		}
 	}
 	// &.has-included:not(.collapsed) {
 	// 	.group,
@@ -53,24 +75,30 @@
 	}
 }
 
+/*
+ * Animations/Transitions
+ */
+
+$ease-fn: ease;
+$collapse-params: 1s $ease-fn;
 
 #bundle-list {
-	&,
-	&:not(.collapsed) {
-		.item,
-		.item:not(.selected) {
+	// &,
+	// &:not(.collapsed) {
+		.item {
+		//.item, .item:not(.selected) {
 			max-height: 1.5em;
 			visibility: visible;
 			opacity: 1;
 		}
-	}
+	// }
 	&.collapsed {
 		.item.selected {
 			max-height: 0;//1.5em;// watch out!!!
-			visibility: visible;
-			opacity: 1;
+			// visibility: visible;
+			// opacity: 1;
 		}
-		.item,
+		// .item,
 		.item:not(.selected) {
 			max-height: 0;
 			visibility: hidden;
@@ -79,10 +107,30 @@
 	}
 }
 
-
+#bundle-list.animate {
+// #bundle-list {
+	// &,
+	// &:not(.collapsed) {
+		.item {
+		//.item, .item:not(.selected) {
+			transition-property: opacity, visibility, max-height;
+			transition-timing-function: $ease-fn;
+			transition-duration: 0.333s, 0s, 0.333s;
+			transition-delay: 0.666s, 0s, 0.333s;// wait, expand, fadein
+		}
+	// }
+	&.collapsed {
+		// .item.selected {
+		// 	transition-delay: 0.666s, 0s, 0.333s;// wait, expand, fadein
+		// }
+		.item:not(.selected) {
+			transition-delay: 0s, 1s, 0.333s;// fadeout, collapse, wait
+		}
+	}
+}
 
 #keyword-list {
-	&:not(.collapsed) {
+	// &:not(.collapsed) {
 		.item {
 			max-height: 1.5em;
 			visibility: visible;
@@ -92,65 +140,47 @@
 			opacity: 1;
 			visibility: visible;
 		}
-	}
+	// }
 	&.collapsed {
-		.item.included {
-			max-height: 1.5em;
-			visibility: visible;
-			opacity: 1;
-		}
-		.group.included {
-			opacity: 1;
-			visibility: visible;
-		}
+		// // .item:not(.excluded) {
+		// .item.included {
+		// 	max-height: 1.5em;
+		// 	visibility: visible;
+		// 	opacity: 1;
+		// }
+		// // .group:not(.excluded) {
+		// .group.included {
+		// 	visibility: visible;
+		// 	opacity: 1;
+		// }
 		.item.excluded {
 			max-height: 0;
 			visibility: hidden;
 			opacity: 0;
 		}
 		.group.excluded {
-			opacity: 0;
 			visibility: hidden;
+			opacity: 0;
 		}
 	}
 }
 
-/*
- * Animations/Transitions
- */
-
-$ease-fn: ease;
-$collapse-params: 1s $ease-fn;
-
-#bundle-list.animate {
-	&,
-	&:not(.collapsed) {
-		.item,
-		.item:not(.selected) {
-			transition-property: opacity, visibility, max-height;
-			transition-timing-function: $ease-fn;
-			transition-duration: 0.333s, 0s, 0.333s;
-			transition-delay: 0.666s, 0s, 0.333s;// wait, expand, fadein
-		}
-	}
-	&.collapsed {
-		.item.selected {
-			transition-delay: 0.666s, 0s, 0.333s;// wait, expand, fadein
-		}
-		.item:not(.selected) {
-			transition-delay: 0s, 1s, 0.333s;// fadeout, collapse, wait
-		}
-	}
-}
-
+// #keyword-list {
 #keyword-list.animate {
-	&:not(.collapsed) {
+	// &:not(.collapsed) {
 		.item { animation: fromCollapsedItem $collapse-params; }
 		.group { animation: fromCollapsedGroup $collapse-params; }
-	}
+		// .item:not(.excluded) { animation: fromCollapsedItem $collapse-params; }
+		// .group:not(.excluded) { animation: fromCollapsedGroup $collapse-params; }
+	// }
 	&.collapsed {
-		.item.included { animation: fromCollapsedItem $collapse-params; }
-		.group.included { animation: fromCollapsedGroup $collapse-params; }
+		// .item.included { animation: fromCollapsedItem $collapse-params; }
+		// .group.included { animation: fromCollapsedGroup $collapse-params; }
+		// .item:not(.included) { animation: toCollapsedItem $collapse-params; }
+		// .group:not(.included) { animation: toCollapsedGroup $collapse-params; }
+
+		// .item:not(.excluded) { animation: fromCollapsedItem $collapse-params; }
+		// .group:not(.excluded) { animation: fromCollapsedGroup $collapse-params; }
 		.item.excluded { animation: toCollapsedItem $collapse-params; }
 		.group.excluded { animation: toCollapsedGroup $collapse-params; }
 	}

@@ -1,5 +1,7 @@
+/*
+ * Layout
+ */
 
-// Layout
 $page-width: 740px;
 $gutter: 20px;
 
@@ -36,6 +38,7 @@ $gutter: 20px;
 }
 
 /* START DEBUG */
+
 // #container {
 // 	// background-color: red;
 // 	// @include baseline-grid-background(1.5rem, hsla(0, 75%, 75%, 0.3));
@@ -60,6 +63,7 @@ $gutter: 20px;
 // 	// outline: 1px solid beige;//hsla(270, 75%, 75%, .5);
 // 	background-color: beige;//hsla(180, 75%, 75%, .1);
 // }
+
 /* END DEBUG */
 
 /*
@@ -67,9 +71,7 @@ $gutter: 20px;
  */
 #container {
 	width: 100%;
-	// margin: 0 auto;
 	display: block;
-
 	@at-root {
 		#header,
 		#navigation,
@@ -99,7 +101,6 @@ $gutter: 20px;
 	}
 }
 
-
 // from: folio.scss @import "compass/layout";
 @include sticky-footer(
 	6em,
@@ -125,11 +126,9 @@ $gutter: 20px;
 	@include col-full;
 }
 #bundle-list {
-	// @include col-left-rel;
 	@include col-left-abs;
 }
 #keyword-list {
-	// @include col-right-rel;
 	@include col-right-abs;
 }
 #bundle-pager {
@@ -206,28 +205,3 @@ $gutter: 20px;
 	}
 }
 
-/*
- * View inner elements
- */
-#bundle-detail {
-	// font-size: 100%;
-	.name {
-		display: none;
-	}
-	.completed {
-		display: none;
-	}
-	.description {
-		display: none;
-	}
-	a:hover {
-		color: $link-color;
-		background-color: hsl(0, 0%, 94%);
-	}
-}
-
-#bundle-images-pager {
-	.close-button {
-		display: none;
-	}
-}

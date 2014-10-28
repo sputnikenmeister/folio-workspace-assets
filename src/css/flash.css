@@ -16,16 +16,19 @@ html.flash, .flash body {
 	color: hsl(47, 5%, 9%);
 	background: #ffffff;
 	position: relative;
-	font: 9pt/1.5 Calibri, Charcoal, Tahoma, Kalimati, sans-serif;
+	font: 9pt/1.5 'Lucida Grande','Lucida Sans', Calibri, Tahoma, Kalimati, sans-serif;
 }
+
 .flash body {
 	overflow: hidden;
 	position: relative;
 }
+
 #flash {
 	height: 100%;
 	overflow: hidden;
 }
+
 #alt {
 	position: relative;
 	margin: 1.5em;
@@ -37,10 +40,12 @@ html.flash, .flash body {
 	background-size: auto auto;
 	box-sizing: border-box;
 }
+
 #alt strong {
 	color: #333333;
 	font-weight: bold;
 }
+
 .flash-box {
 	display: inline-block;
 	position: relative;
@@ -49,6 +54,7 @@ html.flash, .flash body {
 	margin: 0; padding: 0;
 	border: 1px solid rgba(0,0,0,0.15);
 }
+
 .flash-logo {
 	display: inline-block;
 	position: absolute;

@@ -1,5 +1,5 @@
 /**
-* @module app/view/render/ImageView
+* @module app/app/view/render/ImageView
 * @requires module:backbone
 */
 
@@ -20,9 +20,9 @@ var viewTemplate = require( "../template/ImageView.tpl" );
 var captionTemplate = require( "../template/ImageView.Caption.tpl" );
 
 /** @type {Object} */
-// var recipe = { prefix: "/workspace", constraint: 700 };		// original file, resized by browser to 700
-var recipe = { prefix: "/image/1/700/0", constraint: 700 };	// resize to 700
-// var recipe = { prefix: "/w480", constraint: 480 };			// named recipe
+// var recipe = { prefix: "/workspace/uploads/", constraint: 700 };		// original file, resized by browser to 700
+var recipe = { prefix: "/image/1/700/0/uploads/", constraint: 700 };	// resize to 700
+// var recipe = { prefix: "/image/w480/uploads/", constraint: 480 };			// named recipe
 
 /**
  * @constructor
@@ -66,7 +66,7 @@ module.exports = Backbone.View.extend({
 	 */
 	render: function() {
 		this.$el.html(this.template({
-			url: recipe.prefix + this.model.get("url"),
+			url: recipe.prefix + this.model.get("file"),
 			width: this.computedWidth,
 			height: this.computedHeight,
 			desc: this.model.get("desc")

@@ -1,5 +1,5 @@
 /**
-* @module model/TypeItem
+* @module app/model/TypeItem
 * @requires module:backbone
 */
 
@@ -16,14 +16,15 @@ module.exports = Backbone.Model.extend({
 	 * @type {Object}
 	 */
 	defaults: {
+		uid: "",
 		name: "",
 		handle: "",
-		attributes: []
+		attrs: []
 	},
 
 	/** @override */
 	toString: function() {
-		return this.attributes["name"];
+		return this.id;
 	}
 
 });

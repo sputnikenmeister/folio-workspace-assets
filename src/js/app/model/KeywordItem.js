@@ -1,5 +1,5 @@
 /**
-* @module model/KeywordItem
+* @module app/model/KeywordItem
 * @requires module:backbone
 */
 
@@ -16,15 +16,17 @@ module.exports = Backbone.Model.extend({
 	 * @type {Object}
 	 */
 	defaults: {
+		excluded: false,
+		uid: "",
 		name: "",
 		handle: "",
-		type: "",
-		attributes: []
+		typeId: 0,
+		attrs: []
 	},
 
 	/** @override */
 	toString: function() {
-		return this.attributes["name"];
+		return this.id;
 	}
 
 });

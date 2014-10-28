@@ -1,5 +1,5 @@
 /**
-* @module view/AppView
+* @module app/view/AppView
 * @requires module:backbone
 */
 
@@ -16,6 +16,9 @@ var KeywordList = require( "../model/KeywordList" );
 var TypeList = require( "../model/TypeList" );
 /** @type {module:app/model/ImageList} */
 var ImageList = require( "../model/ImageList" );
+
+/** @type {module:app/model} */
+// var model = require("../control/AppModel");
 
 /** @type {module:app/view/SelectableListView} */
 var SelectableListView = require( "./SelectableListView" );
@@ -42,17 +45,17 @@ module.exports = Backbone.View.extend({
 	/** Setup listening to model changes */
 	initialize: function(options) {
 		/*
-		* Bind callbacks
-		*/
-		// _.bindAll(this, "showBundleItem", "showBundleItemError");
-
-		/*
 		 * initialize models
 		 */
 		this.bundleList = new BundleList(options["bundles"]);
 		this.keywordList = new KeywordList(options["keywords"]);
 		this.typeList = new TypeList(options["types"]);
 		this.imageList = new ImageList();
+		// this.model = model;
+		// var bundleList = model.bundles();
+		// var keywordList = model.keywords();
+		// var typeList = model.types();
+		// var imageList = model.images();
 		/* model sync handlers */
 		this.listenTo(this.bundleList, "error", this.whenBundleSelect_error);
 
@@ -64,7 +67,7 @@ module.exports = Backbone.View.extend({
 			collection: this.bundleList,
 			associations: {
 				collection: this.keywordList,
-				key: "bundles"
+				key: "bundleIds"
 			}
 		});
 		this.listenTo(this.bundleListView, "view:itemSelect", this.whenBundleSelect);
@@ -75,11 +78,11 @@ module.exports = Backbone.View.extend({
 			collection: this.keywordList,
 			associations: {
 				collection: this.bundleList,
-				key: "keywords"
+				key: "keywordIds"
 			},
 			groupings: {
 				collection: this.typeList,
-				key: "_domIds"
+				key: "typeIds"
 			},
 		});
 		// this.listenTo(this.keywordListView, "view:itemSelect", this.whenKeywordSelect);
@@ -87,15 +90,13 @@ module.exports = Backbone.View.extend({
 		this.bundlePagerView = new CollectionPagerView({
 			id: "bundle-pager",
 			collection: this.bundleList,
-			className: "fontello-pill-pager"
+			className: "fontello-pill-pager",
+			labelAttribute: "name"
 		});
-		// this.listenTo(this.bundlePagerView, "view:itemSelect", this.whenBundleSelect);
-		// this.listenTo(this.bundlePagerView, "view:itemSelect", this.whenBundleSelect);
-		this.listenTo(this.bundlePagerView, "view:itemPreceding", this.whenBundlePreceding);
-		this.listenTo(this.bundlePagerView, "view:itemFollowing", this.whenBundleFollowing);
-		this.listenTo(this.bundlePagerView, "view:itemDeselect", this.whenBundleDeselect);
 		// append at the bottom of <body/>
 		this.$el.append(this.bundlePagerView.render().el);
+		this.listenTo(this.bundlePagerView, "view:itemSelect", this.whenBundleSelect);
+		this.listenTo(this.bundlePagerView, "view:itemDeselect", this.whenBundleDeselect);
 
 		// this.bundleDetailView = new BundleDetailView({
 		// 	el: "#bundle-detail"
@@ -118,6 +119,7 @@ module.exports = Backbone.View.extend({
 		 * initialize router
 		 */
 		this.router = new AppRouter();
+		this.listenToOnce(this.router,"route", this.initializeWithRoute);
 		this.listenTo(this.router,"route:bundleList", this.routeToBundleList);
 		this.listenTo(this.router,"route:bundleItem", this.routeToBundleItem);
 
@@ -126,23 +128,12 @@ module.exports = Backbone.View.extend({
 	},
 
 	/*
-	 * Native events
-	 */
-
-	events: {
-		"click #site-name" : "onSitenameClick"
-	},
-
-	onSitenameClick: function(ev) {
-		if (!ev.isDefaultPrevented()) {
-			ev.preventDefault();
-			this.whenBundleDeselect();
-		}
-	},
-
-	/*
 	 * Handle router events
 	 */
+
+	initializeWithRoute: function(routeName, params) {
+		console.log("initializeWithRoute", arguments);
+	},
 
 	routeToBundleItem: function(handle) {
 		var model = this.bundleList.findWhere({handle: handle});
@@ -161,18 +152,6 @@ module.exports = Backbone.View.extend({
 	 * Handle view events
 	 */
 
-	whenBundlePreceding: function() {
-		if (this.bundleList.selected && this.bundleList.hasPreceding(this.bundleList.selected)) {
-			this.whenBundleSelect(this.bundleList.precedingOrLast(this.bundleList.selected));
-		}
-	},
-
-	whenBundleFollowing: function() {
-		if (this.bundleList.selected && this.bundleList.hasFollowing(this.bundleList.selected)) {
-			this.whenBundleSelect(this.bundleList.following(this.bundleList.selected));
-		}
-	},
-
 	whenBundleSelect: function(model) {
 		this.router.navigate("bundles/" + model.get("handle"), {trigger: false});
 		this.selectBundle(model);
@@ -183,8 +162,7 @@ module.exports = Backbone.View.extend({
 		this.deselectBundle();
 	},
 
-	whenKeywordSelect: function(keyword)
-	{
+	whenKeywordSelect: function(keyword) {
 		// this.router.navigate(/* implement route */);
 		this.filterBundles(keyword);
 	},
@@ -197,9 +175,21 @@ module.exports = Backbone.View.extend({
 	 * Handle model updates
 	 */
 
+	deselectBundle: function() {
+		this.bundleList.select(null);
+		this.keywordListView.collapsed(false);
+		this.bundleListView.collapsed(false);
+
+		this.showBundleList();
+	},
+
 	selectBundle: function(bundle) {
+		this.bundleList.select(bundle);
+		this.bundleListView.collapsed(true);
+		this.keywordListView.collapsed(true);
+
 		if (bundle.has("images")) {
-			this.showBundleItem(bundle);
+			this.selectBundle_sync(bundle);
 		} else {
 			this.listenToOnce(bundle, "sync", this.selectBundle_sync);
 			bundle.fetch();
@@ -212,10 +202,6 @@ module.exports = Backbone.View.extend({
 		// TODO: something more useful here
 		console.log("AppView.whenFetchError (bundleList)", arguments);
 		this.showBundleItemError();
-	},
-
-	deselectBundle: function() {
-		this.showBundleList();
 	},
 
 	filterBundles: function(keyword) {
@@ -231,22 +217,14 @@ module.exports = Backbone.View.extend({
 	* model is ready, update views
 	*/
 
-	showBundleItem: function(bundle) {
-		this.bundleList.select(bundle);
-		this.el.className = "app-bundle-item";
-		Backbone.trigger("app:bundleItem", bundle);
-
-		this.bundleListView.collapsed(true);
-		this.keywordListView.collapsed(true);
-	},
-
 	showBundleList: function() {
-		this.bundleList.select(null);
 		this.el.className = "app-bundle-list";
 		Backbone.trigger("app:bundleList");
+	},
 
-		this.keywordListView.collapsed(false);
-		this.bundleListView.collapsed(false);
+	showBundleItem: function(bundle) {
+		this.el.className = "app-bundle-item";
+		Backbone.trigger("app:bundleItem", bundle);
 	},
 
 	showFilteredBundleList: function() {
@@ -255,5 +233,20 @@ module.exports = Backbone.View.extend({
 
 	showBundleItemError: function() {
 		console.log("AppView.showBundleItemError - not implemented");
+	},
+
+	/*
+	 * Native events
+	 */
+
+	events: {
+		"click #site-name" : "onSitenameClick"
+	},
+
+	onSitenameClick: function(ev) {
+		if (!ev.isDefaultPrevented()) {
+			ev.preventDefault();
+			this.whenBundleDeselect();
+		}
 	},
 });

@@ -1,5 +1,5 @@
 /**
-* @module model/BundleList
+* @module app/model/BundleList
 * @requires module:backbone
 */
 

@@ -1,5 +1,5 @@
 /**
-* @module App
+* @module app/App
 */
 
 /* global jQuery */
@@ -15,50 +15,47 @@ _.templateSettings = { interpolate: /\{\{(.+?)\}\}/g };
 var Backbone = require( "backbone" );
 Backbone.$ = $ || jQuery;
 
+// /** @type {module:app/model} */
+// var model = require("./control/AppModel");
+
 /** @type {module:app/view/AppView} */
 var AppView = require( "./view/AppView" );
 
 //$(function(){
 $(document).ready(function($) {
-//	var opts = {};
-	var opts = { keywords: [], bundles: [], types: [], params:{} };
+	// "use strict";
+	var keywords, bundles, types, params;
 
 	if (window.bootstrap) {
-		opts.keywords = window.bootstrap["all-keywords"],
-		opts.bundles = window.bootstrap["all-bundles"],
-		opts.types = window.bootstrap["all-types"],
-		opts.params = window.bootstrap["params"];
+		keywords = window.bootstrap["all-keywords"],
+		bundles = window.bootstrap["all-bundles"],
+		types = window.bootstrap["all-types"],
+		params = window.bootstrap["params"];
 
-		// Fill-in back references: Bundle.keywords -> Keyword.bundles)
-		_.each(opts.keywords, function(ko, ki, ka) {
-			ko.bundles = [];
-			ko._domIds = [];
-			_.each(opts.bundles, function(bo, bi, ba) {
-				if (_.contains(bo.keywords, ko.id)) {
-					ko.bundles.push(bo.id);
-					ko._domIds.push(bo.handle);
+		// Fill-in back references:
+		// Create Keyword.bundleIds from existing Bundle.keywordIds,
+		// then Bundle.typeIds from unique Keyword.typeId
+		_.each(keywords, function(ko, ki, ka) {
+			ko.bundleIds = [];
+			_.each(bundles, function(bo, bi, ba) {
+				if (ki === 0) bo.typeIds = [];
+				if (_.contains(bo.keywordIds, ko.id)) {
+					ko.bundleIds.push(bo.id);
+					if (bo.typeIds.indexOf(ko.typeId) == -1) {
+						bo.typeIds.push(ko.typeId);
+					}
 				}
 			});
 		});
 
-		// Add all related ids (keywords+types) to bundle prop _resolvedDomIds
-		// TODO: Implement GroupingCollectionView
-		var kIndex = _.indexBy(opts.keywords, "id");
-		_.each(opts.bundles, function (bo, bi, ba) {
-			bo._domIds = [];
-			_.each(bo.keywords, function(ko, ki, ka) {
-				var kItem = kIndex[ko];
-				if (bo._domIds.indexOf(kItem.type) == -1) {
-					bo._domIds.push(kItem.type);
-				}
-				bo._domIds.push(kItem.handle);
-			});
-		});
+		// model.keywords().reset(keywords);
+		// model.bundles().reset(bundles);
+		// model.types().reset(types);
+
 		/* jshint -W051 */
-		delete kIndex;
 		delete window.bootstrap;
 		/* jshint +W051 */
 	}
 
-	window.app = new AppView(opts);
+	window.app = new AppView({keywords: keywords, bundles: bundles, types: types});
 });

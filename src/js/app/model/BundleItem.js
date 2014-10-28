@@ -1,5 +1,5 @@
 /**
-* @module model/BundleItem
+* @module app/model/BundleItem
 * @requires module:backbone
 */
 
@@ -16,27 +16,26 @@ module.exports = Backbone.Model.extend({
 	 * @type {Object}
 	 */
 	defaults: {
+		excluded: false,
+		uid: "",
 		name: "",
 		handle: "",
 		desc: "",
 		completed: 0,
-		attrs: []
+		attrs: [],
+		keywordIds: [],
+		imageIds: [],
 	},
 
-	/** @type {String} */
-	urlRoot: "/json/bundles/",
-
-	/** @override */
-	url: function() {
-		//return Backbone.Model.prototype.url.apply(this, arguments) + "/";
-		return this._url = this._url || this.urlRoot + this.attributes["handle"];
-	},
-	/** @private */
-	_url: null,
+	// /** @override */
+	// url: function() {
+	// 	//return Backbone.Model.prototype.url.apply(this, arguments) + "/";
+	// 	return (this.collection.url || this.urlRoot) + this.attributes["handle"];
+	// },
 
 	/** @override */
 	toString: function() {
-		return this.attributes["name"];
+		return this.id;
 	}
 
 });

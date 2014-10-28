@@ -1,5 +1,5 @@
 /**
-* @module view/ImageListView
+* @module app/view/ImageListView
 * @requires module:backbone
 */
 

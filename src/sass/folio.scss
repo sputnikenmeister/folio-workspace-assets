@@ -1,67 +1,14 @@
-// Typefaces seem to be loaded on demand, so we define all weights, used or not.
-// @import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200italic,300,300italic,400,400italic,600,600italic,700,700italic,900,900italic");
-// @import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic");
-// @import url("http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,300italic,400italic,600italic,700italic&subset=latin,latin-ext");
-@import url("../fonts/fontello.css");
-
 @import "compass/reset";
 @import "compass/layout";
 @import "compass/css3/selection";
 @import "compass/css3/transform";
 @import "compass/css3/box-sizing";
-
 // @import "compass/layout/grid-background";
 
-//@import "_reset";
 @import "_definitions";
 @import "_base";
 @import "_layout";
-@import "_buttons";
+@import "_buttons.fontello";
+@import "_components";
 @import "_components.selectable";
 @import "_components.carousel";
-
-/* DEBUG */
-
-// #bundle-detail,
-// #bundle-pager,
-// #bundle-images-pager {
-// 	background-color: hsla(270, 75%, 75%, .1);
-// }
-
-// .item,
-// .group,
-// .caption,
-// .image-item {
-// 	// outline: 1px solid hsla(270, 75%, 75%, .5);
-// 	background-color: hsla(0, 75%, 75%, .1);
-// }
-
-// .image-list {
-// 	outline: 1px solid blue;
-// }
-
-// .image-item img {
-// 	visibility: hidden;
-// 	outline: 1px dotted red;
-// }
-
-.admin {
-	display: inline-block;
-	float: right;
-	padding-top: 1em;
-	margin: 0 20px;
-	color: hsl(0, 0%, 60%);
-
-	a {
-		color: 	hsl(0, 0%, 60%);
-	}
-	dt {
-		float: left;
-		display: inline;
-		font-weight: bold;
-	}
-	dd {
-		display: inline;
-		margin-left: 10px;
-	}
-}

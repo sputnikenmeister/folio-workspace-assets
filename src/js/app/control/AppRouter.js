@@ -1,5 +1,5 @@
 /**
-* @module view/AppView
+* @module app/view/AppView
 * @requires module:backbone
 */
 
@@ -13,12 +13,16 @@ module.exports = Backbone.Router.extend({
 		"" : "bundleList",
 	},
 
+	// bundleHandle: null,
+
 	// bundleItem: function(handle) {
-	// 	console.log("AppRouter.bundleItem", handle);
+	// 	this.bundleHandle = handle;
+	// 	// console.log("AppRouter.bundleItem", handle);
 	// },
 
 	// bundleList:function() {
-	// 	console.log("AppRouter.bundleList");
+	// 	this.bundleHandle = null;
+	// 	// console.log("AppRouter.bundleList");
 	// }
 
 });

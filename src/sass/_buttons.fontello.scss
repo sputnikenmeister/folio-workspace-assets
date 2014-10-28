@@ -1,0 +1,137 @@
+/*
+ * Fontello Icons
+ */
+
+// icon webfont
+@import url("../fonts/fontello.css");
+
+@mixin fontello-icon-base() {
+	font-family: "fontello";
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	speak: none;
+
+	display: inline-block;
+	text-decoration: inherit;
+	width: 1em;
+	text-align: center;
+	content: '\e805';
+	/* fix buttons height, for twitter bootstrap */
+	line-height: 1em;
+}
+@mixin fontello-icon-after() {
+	@include fontello-icon-base();
+	margin-right: -0.1em;
+	margin-left: .4em;
+}
+@mixin fontello-icon-before() {
+	@include fontello-icon-base();
+	margin-left: -0.1em;
+	margin-right: .4em;
+}
+
+// Bulleted text-list-style
+.fontello-pager {
+	.button {
+		font-weight: 600;
+		font-size: 115%;
+		line-height: 2rem;
+	}
+	.button,
+	.button:link,
+	.button:visited {
+		color: $color;
+	}
+	.button:hover {
+		color: $link-hover-color;
+	}
+	.button:active {
+		color: $link-down-color;
+	}
+	// circled icons
+	.button:before {
+		font-size: 95%;
+		@include fontello-icon-before();
+	}
+	.preceding-button:before {
+		content: '\e800';
+	}
+	.following-button:before {
+		content: '\e801';
+	}
+	.close-button:before {
+		content: '\e805';
+	}
+}
+// Inline pill-style
+.fontello-pill-pager {
+	/* flexbox setup */
+	display: -webkit-flex;
+	-webkit-flex-direction: row;
+	display: flex;
+	flex-direction: row;
+
+	.button {
+		// width: 100%;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		display: block;
+		font-weight: 600;
+		font-size: 100%;
+		line-height: 1em;
+		// padding: 0.5em 0.75em;
+		padding: 0.4em 0.85em 0.45em 0.75em;
+		border-radius: 0.2em;
+		margin-right: 0.35em;
+		&:last-child {
+			margin-right: 0;
+		}
+	}
+	.preceding-button,
+	.following-button {
+		/* flexbox setup */
+		-webkit-flex: 1 0 0%;
+    	flex: 1 0 0%;
+	}
+	.close-button {
+		/* flexbox setup */
+		-webkit-flex: 0 1 auto;
+    	flex: 0 1 auto;
+	}
+	.button,
+	.button:link,
+	.button:visited {
+		color: $color;
+		background-color: $background-color;
+		border-width: 1px;
+		border-style: solid;
+		border-color: scale_color($background-color, $lightness: -5%);
+	}
+	.button:hover {
+		color: white;
+		background-color: $link-hover-color;
+		border-color: scale_color($link-hover-color, $lightness: -30%);
+	}
+	.button:active {
+		color: white;
+		background-color: $link-down-color;
+		border-color: scale_color($link-down-color, $lightness: -30%);
+	}
+	// big icons
+	.button:before {
+		font-size: 80%;
+		@include fontello-icon-before();
+	}
+	.preceding-button:before {
+		content: '\e808';
+	}
+	.following-button:before {
+		content: '\e809';
+	}
+	.close-button:before {
+		content: '\e80b';
+	}
+}

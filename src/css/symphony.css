@@ -1,0 +1,98 @@
+/* @override http://fulanito.localhost/workspace/assets/css/symphony.css */
+
+/*  Color palette
+ *	Hover: blue #5273C0; hsl(221,46%,53%)
+ */
+
+/* @group Form Controls
+/* -------------------------------- */
+
+	label > select:not([multiple]) {
+	}
+
+	select[multiple],
+	input[type="text"],
+	input[size],
+	textarea {
+		border:	1px solid hsla(0, 0%, 50%, 0.6);
+		-webkit-border-radius: 3px;
+		   -moz-border-radius: 3px;
+		        border-radius: 3px;
+	}
+	label > select[multiple],
+	label > input[type="text"],
+	label > input[size],
+	label > textarea {
+	    -webkit-box-shadow: 0.05em 0.1em 0.2em hsla(0, 0%, 0%,0.08) inset;
+	       -moz-box-shadow: 0.05em 0.1em 0.2em hsla(0, 0%, 0%,0.08) inset;
+	            box-shadow: 0.05em 0.1em 0.2em hsla(0, 0%, 0%,0.08) inset;
+	}
+/*	label > input[type="text"],
+	label > input[size],
+	label > textarea {
+	    padding: 0.4em;
+	}
+
+	select[multiple],
+	label > select[multiple] {
+		padding: 0;
+	}
+	select[multiple] option,
+	label > select[multiple] option {
+		padding: 0.05em 0.4em;
+	}
+
+	label > input[type="checkbox"] {
+		top: auto;
+	}*/
+
+	/* focus: text inputs */
+	.field-date select:focus,
+	.field-textarea textarea:focus,
+	.field label > input[type="text"]:focus {
+		border-color: #5273C0;
+	}
+	::selection {
+		color: #5273C0;
+		background-color: #e9effc;
+	}
+	::-moz-selection {
+		color: #5273C0;
+		background-color: #e9effc;
+	}
+/* @end */
+
+
+/* @group Association fields
+/* -------------------------------- */
+
+	/* published yes/no */
+	.page-index td.field-association {
+		/*position: relative;*/
+		color: transparent;
+	}
+	.page-index td.field-association a {
+		/*display: block;*/
+		float: left;
+		clear: left;
+		padding-top: 0;
+	}
+	.page-index td.field-association a:first-child {
+	}
+
+	span.published-Yes,
+	span.published-No {
+		display: inline !important;
+	}
+	.field-association span.published-Yes {
+	}
+	.field-association span.published-No {
+		color: rgba(0, 0, 0, 0.4);
+	}
+	.field-association span.published-No:after {
+		content: " (Unpublished)";
+		font-weight: bolder;
+	}
+/* @end */
+
+/* FINISTERRE ---------------------- */

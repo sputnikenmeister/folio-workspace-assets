@@ -1,5 +1,5 @@
 /**
- * @module model/ItemList
+ * @module app/model/ItemList
  * @requires module:backbone
  */
 

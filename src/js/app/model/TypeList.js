@@ -1,5 +1,5 @@
 /**
-* @module model/TypeList
+* @module app/model/TypeList
 * @requires module:backbone
 */
 
