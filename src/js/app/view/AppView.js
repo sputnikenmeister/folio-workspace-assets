@@ -8,26 +8,27 @@ var _ = require( "underscore" );
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
-/** @type {module:app/model/BundleList} */
-var BundleList = require( "../model/BundleList" );
-/** @type {module:app/model/KeywordList} */
-var KeywordList = require( "../model/KeywordList" );
-/** @type {module:app/model/TypeList} */
-var TypeList = require( "../model/TypeList" );
-/** @type {module:app/model/ImageList} */
-var ImageList = require( "../model/ImageList" );
+/** @type {module:app/model/collection/BundleList} */
+var bundleList = require( "../model/collection/BundleList" );
+/** @type {module:app/model/collection/KeywordList} */
+var keywordList = require( "../model/collection/KeywordList" );
+/** @type {module:app/model/collection/TypeList} */
+var typeList = require( "../model/collection/TypeList" );
+/** @type {module:app/model/collection/ImageList} */
+var ImageList = require( "../model/collection/ImageList" );
 
 /** @type {module:app/model} */
 // var model = require("../control/AppModel");
 
-/** @type {module:app/view/SelectableListView} */
-var SelectableListView = require( "./SelectableListView" );
-/** @type {module:app/view/GroupingListView} */
-var GroupingListView = require( "./GroupingListView" );
+/** @type {module:app/view/component/SelectableListView} */
+var SelectableListView = require( "./component/SelectableListView" );
+/** @type {module:app/view/component/GroupingListView} */
+var GroupingListView = require( "./component/GroupingListView" );
+/** @type {module:app/view/component/CollectionPagerView} */
+var CollectionPagerView = require( "./component/CollectionPagerView" );
+
 /** @type {module:app/view/BundleDetailView} */
 var BundleDetailView = require( "./BundleDetailView" );
-/** @type {module:app/view/CollectionPagerView} */
-var CollectionPagerView = require( "./CollectionPagerView" );
 /** @type {module:app/view/ImageListView} */
 var ImageListView = require( "./ImageListView" );
 
@@ -47,15 +48,12 @@ module.exports = Backbone.View.extend({
 		/*
 		 * initialize models
 		 */
-		this.bundleList = new BundleList(options["bundles"]);
-		this.keywordList = new KeywordList(options["keywords"]);
-		this.typeList = new TypeList(options["types"]);
+		this.bundleList = bundleList;
+		this.keywordList = keywordList;
+		this.typeList = typeList;
 		this.imageList = new ImageList();
-		// this.model = model;
-		// var bundleList = model.bundles();
-		// var keywordList = model.keywords();
-		// var typeList = model.types();
-		// var imageList = model.images();
+
+		_.bindAll(this, "showBundleItem", "showBundleList", "showBundleItemError");
 		/* model sync handlers */
 		this.listenTo(this.bundleList, "error", this.whenBundleSelect_error);
 
@@ -67,7 +65,7 @@ module.exports = Backbone.View.extend({
 			collection: this.bundleList,
 			associations: {
 				collection: this.keywordList,
-				key: "bundleIds"
+				key: "bIds"
 			}
 		});
 		this.listenTo(this.bundleListView, "view:itemSelect", this.whenBundleSelect);
@@ -78,11 +76,11 @@ module.exports = Backbone.View.extend({
 			collection: this.keywordList,
 			associations: {
 				collection: this.bundleList,
-				key: "keywordIds"
+				key: "kIds"
 			},
 			groupings: {
 				collection: this.typeList,
-				key: "typeIds"
+				key: "tIds"
 			},
 		});
 		// this.listenTo(this.keywordListView, "view:itemSelect", this.whenKeywordSelect);
@@ -110,21 +108,37 @@ module.exports = Backbone.View.extend({
 		// this.listenTo(this.imagePagerView, "view:itemSelect", this.whenImageSelect);
 
 		this.imageListView = new ImageListView({
-			collection:this.imageList, id: "bundle-images"
+			id: "bundle-images",
+			collection: this.imageList
 		});
-		this.$("#container-footer").before(this.imageListView.render().el);
+		this.$("#content").append(this.imageListView.render().el);
 		this.listenTo(this.imageListView, "view:itemSelect", this.whenImageSelect);
 
 		/*
 		 * initialize router
 		 */
 		this.router = new AppRouter();
-		this.listenToOnce(this.router,"route", this.initializeWithRoute);
+		// this.listenToOnce(this.router,"route", this.initializeWithRoute);
 		this.listenTo(this.router,"route:bundleList", this.routeToBundleList);
 		this.listenTo(this.router,"route:bundleItem", this.routeToBundleItem);
 
 		/* start router, which will request appropiate state */
 		Backbone.history.start({pushState: false, hashChange: true});
+	},
+
+	/*
+	 * Native events
+	 */
+
+	events: {
+		"click #site-name" : "onSitenameClick"
+	},
+
+	onSitenameClick: function(ev) {
+		if (!ev.isDefaultPrevented()) {
+			ev.preventDefault();
+			this.whenBundleDeselect();
+		}
 	},
 
 	/*
@@ -136,15 +150,17 @@ module.exports = Backbone.View.extend({
 	},
 
 	routeToBundleItem: function(handle) {
+		console.log("routeToBundleItem", arguments);
 		var model = this.bundleList.findWhere({handle: handle});
 		if (model) {
 			this.selectBundle(model);
 		} else {
-			this.doBundleItemError();
+			this.showBundleItemError();
 		}
 	},
 
 	routeToBundleList: function() {
+		console.log("routeToBundleList", arguments);
 		this.deselectBundle();
 	},
 
@@ -162,15 +178,6 @@ module.exports = Backbone.View.extend({
 		this.deselectBundle();
 	},
 
-	whenKeywordSelect: function(keyword) {
-		// this.router.navigate(/* implement route */);
-		this.filterBundles(keyword);
-	},
-
-	whenImageSelect: function(image) {
-		this.selectBundleImage(image);
-	},
-
 	/*
 	 * Handle model updates
 	 */
@@ -185,68 +192,57 @@ module.exports = Backbone.View.extend({
 
 	selectBundle: function(bundle) {
 		this.bundleList.select(bundle);
-		this.bundleListView.collapsed(true);
-		this.keywordListView.collapsed(true);
+		var whenCollapseDone = _.after(2, this.showBundleItem);
+		this.bundleListView.collapsed(true);//.done(whenCollapseDone);
+		this.keywordListView.collapsed(true);//.done(whenCollapseDone);
 
 		if (bundle.has("images")) {
-			this.selectBundle_sync(bundle);
+			this.showBundleItem();
 		} else {
-			this.listenToOnce(bundle, "sync", this.selectBundle_sync);
-			bundle.fetch();
+			// this.listenToOnce(bundle, "sync", this.selectBundle_sync);
+			bundle.fetch({
+				success: this.showBundleItem,
+				error: this.showBundleItemError,
+			});
 		}
-	},
-	selectBundle_sync: function(bundle) {
-		this.showBundleItem(bundle);
-	},
-	selectBundle_error: function(model, resp, opts) {
-		// TODO: something more useful here
-		console.log("AppView.whenFetchError (bundleList)", arguments);
-		this.showBundleItemError();
-	},
-
-	filterBundles: function(keyword) {
-		this.keywordList.select(keyword);
-		this.showBundleListFiltered(keyword);
-	},
-
-	selectBundleImage: function(image) {
-		this.imageList.select(image);
 	},
 
 	/*
-	* model is ready, update views
-	*/
+	 * model is ready, update views
+	 */
 
 	showBundleList: function() {
 		this.el.className = "app-bundle-list";
 		Backbone.trigger("app:bundleList");
 	},
 
-	showBundleItem: function(bundle) {
+	showBundleItem: function() {
 		this.el.className = "app-bundle-item";
-		Backbone.trigger("app:bundleItem", bundle);
+		Backbone.trigger("app:bundleItem", this.bundleList.selected);
 	},
 
-	showFilteredBundleList: function() {
-		console.log("AppView.showFilteredBundleList - not implemented");
-	},
 
 	showBundleItemError: function() {
 		console.log("AppView.showBundleItemError - not implemented");
 	},
 
-	/*
-	 * Native events
-	 */
-
-	events: {
-		"click #site-name" : "onSitenameClick"
+	whenImageSelect: function(image) {
+		this.selectBundleImage(image);
+	},
+	selectBundleImage: function(image) {
+		this.imageList.select(image);
 	},
 
-	onSitenameClick: function(ev) {
-		if (!ev.isDefaultPrevented()) {
-			ev.preventDefault();
-			this.whenBundleDeselect();
-		}
-	},
+	// whenKeywordSelect: function(keyword) {
+	// 	// this.router.navigate(/* implement route */);
+	// 	this.filterBundles(keyword);
+	// },
+	// filterBundles: function(keyword) {
+	// 	this.keywordList.select(keyword);
+	// 	this.showBundleListFiltered(keyword);
+	// },
+	// showFilteredBundleList: function() {
+	// 	console.log("AppView.showFilteredBundleList - not implemented");
+	// },
+
 });

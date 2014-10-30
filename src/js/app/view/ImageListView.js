@@ -10,10 +10,10 @@ var _ = require( "underscore" );
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
-/** @type {module:app/model/ImageItem} */
-var ImageItem = require( "../model/ImageItem" );
-/** @type {module:app/model/ImageList} */
-var ImageList = require( "../model/ImageList" );
+/** @type {module:app/model/item/ImageItem} */
+var ImageItem = require( "../model/item/ImageItem" );
+/** @type {module:app/model/collection/ImageList} */
+var ImageList = require( "../model/collection/ImageList" );
 /** @type {module:app/view/render/ImageView} */
 var ImageView = require( "./render/ImageView" );
 
@@ -34,13 +34,6 @@ module.exports  = Backbone.View.extend({
 	initialize: function(options) {
 		this.hammer = new Hammer.Manager(this.el);
 		this.hammer.add(new Hammer.Pan({direction: this.direction, threshold: 10}));
-
-		// var fnDelegate;
-		// fnDelegate = Hammer.bindFn(this.onPan, this);
-		// fnDelegate = Hammer.bindFn(this.onWindowResize, this);
-		// window.addEventListener("load", fnDelegate, false);
-		// window.addEventListener("orientationchange", fnDelegate, false);
-		// window.addEventListener("resize", fnDelegate, false);
 
 		_.bindAll(this, "onPan", "onWindowResize");
 		this.hammer.on("panstart panmove panend pancancel", this.onPan);
@@ -78,7 +71,7 @@ module.exports  = Backbone.View.extend({
 	},
 
 	render: function() {
-		var eltBuffer, maxSize = 0;
+		var eltBuffer, view, viewSize, maxSize = 0;
 
 		eltBuffer = document.createDocumentFragment();
 		// eltBuffer = document.createElement("div");
@@ -89,14 +82,18 @@ module.exports  = Backbone.View.extend({
 
 		this.collection.each(function(model, index, arr) {
 			// Create view and render element into buffer
-			var view = new ImageView({model: model});
+			view = new ImageView({model: model});
 			eltBuffer.appendChild(view.render().el);
 			this._itemViews[index] = this._itemViewsIndex[model.id] = view;
 			this._itemEls[index] = this._itemElsIndex[model.id] = view.el;
+
 			// Get the tallest height for the container
-			maxSize = Math.max(maxSize, view[this.getDirProp("computedWidth","computedHeight")]);
+			viewSize = view[this.getDirProp("computedHeight", "computedWidth")];
+			maxSize = Math.max(maxSize, viewSize);
+			console.log("[ImageListView] view "+ model.selector(), view.computedWidth, view.computedHeight);
 		}, this);
 
+		console.log("[ImageListView] max: " + this.getDirProp("computedWidth","computedHeight") + " = " + maxSize);
 		this.$el.empty();
 		this.$el.css(this.getDirProp("height", "width"), maxSize);
 		this.$el.append(eltBuffer);
@@ -117,23 +114,23 @@ module.exports  = Backbone.View.extend({
 		var percent = (100 / this.containerSize) * delta;
 		var animate = false;
 		var proposedIndex = this.currentIndex;
-		var numItems = this.collection.length;
+		var lastIndex = this.collection.length - 1;
 
 
 		if (ev.type == "panend" || ev.type == "pancancel") {
 			if (Math.abs(percent) > 20 && ev.type == "panend") {
 				// when panned by >20%, selection may need change
 				proposedIndex += (percent < 0) ? 1 : -1;
-				if (0 < proposedIndex < numItems) {
+				if (0 <= proposedIndex && proposedIndex <= lastIndex) {
 					this.trigger("view:itemSelect", this.collection.at(proposedIndex));
 					this.currentIndex = proposedIndex;
 				}
 			}
 			percent = 0;
 			animate = true;
-		} else if ((this.currentIndex == 0 && percent > 0) || (this.currentIndex == numItems - 1 && percent < 0)) {
+		} else if ((this.currentIndex == 0 && percent > 0) || (this.currentIndex == lastIndex && percent < 0)) {
 			// when at first or last index, add factor for a spring-like effect
-			percent *= 0.3;
+			percent *= 0.2;
 		}
 		this.show(this.currentIndex, percent, animate);
 	},

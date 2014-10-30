@@ -1,5 +1,5 @@
 /**
-* @module app/model/BundleItem
+* @module app/model/item/BundleItem
 * @requires module:backbone
 */
 
@@ -8,7 +8,7 @@ var Backbone = require( "backbone" );
 
 /**
  * @constructor
- * @type {module:app/model/BundleItem}
+ * @type {module:app/model/item/BundleItem}
  */
 module.exports = Backbone.Model.extend({
 
@@ -16,22 +16,19 @@ module.exports = Backbone.Model.extend({
 	 * @type {Object}
 	 */
 	defaults: {
-		excluded: false,
-		uid: "",
 		name: "",
 		handle: "",
 		desc: "",
 		completed: 0,
 		attrs: [],
-		keywordIds: [],
-		imageIds: [],
+		kIds: [],
+		iIds: [],
+		excluded: false,
 	},
 
-	// /** @override */
-	// url: function() {
-	// 	//return Backbone.Model.prototype.url.apply(this, arguments) + "/";
-	// 	return (this.collection.url || this.urlRoot) + this.attributes["handle"];
-	// },
+	selector: function() {
+		return "#b" + this.id;
+	},
 
 	/** @override */
 	toString: function() {

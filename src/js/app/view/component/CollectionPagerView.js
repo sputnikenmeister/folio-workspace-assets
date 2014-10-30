@@ -1,5 +1,5 @@
 /**
-* @module app/view/CollectionPagerView
+* @module app/view/component/CollectionPagerView
 * @requires module:backbone
 */
 
@@ -10,11 +10,11 @@ var _ = require( "underscore" );
 var Backbone = require( "backbone" );
 
 /** @type {string} */
-var viewTemplate = require( "./template/CollectionPagerView.tpl" );
+var viewTemplate = require( "../template/CollectionPagerView.tpl" );
 
 /**
  * @constructor
- * @type {module:app/view/CollectionPagerView}
+ * @type {module:app/view/component/CollectionPagerView}
  */
 module.exports = Backbone.View.extend({
 

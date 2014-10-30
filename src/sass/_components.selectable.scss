@@ -1,19 +1,9 @@
 
-/* START DEBUG */
-// .selectable-list {
-// 	background-color: scale_color($background-color, $lightness: -15%);
-// 	.item, .group {
-// 		background-color: scale_color($background-color, $lightness: -30%);
-// 	}
-// }
-
 .selectable-list {
 	.item {
 		display: block;
 		width: 100%;
-		a {
-			color: inherit;
-		}
+		a { color: inherit; }
 	}
 	.selected {
 		color: $link-color;
@@ -21,27 +11,9 @@
 	&.collapsed .selected {
 		color: inherit;
 	}
-	&:not(.collapsed) {
-		.group, .item {
-			&.excluded {
-				color: scale_color($color, $lightness: 50%);
-			}
-		}
-		.group, .item {
-			&:not(.excluded):not(.selected) {
-				color: scale_color($color, $blue: 50%);
-				// background-color: #ccc;
-			}
-		}
+	&:not(.collapsed) .excluded {
+		color: scale_color($color, $lightness: 50%);
 	}
-	// &.has-included:not(.collapsed) {
-	// 	.group,
-	// 	.item {
-	// 		&:not(.included):not(.selected) {
-	// 			color: #999999;
-	// 		}
-	// 	}
-	// }
 }
 
 #bundle-list {
@@ -83,22 +55,17 @@ $ease-fn: ease;
 $collapse-params: 1s $ease-fn;
 
 #bundle-list {
-	// &,
-	// &:not(.collapsed) {
-		.item {
-		//.item, .item:not(.selected) {
-			max-height: 1.5em;
-			visibility: visible;
-			opacity: 1;
-		}
-	// }
+	.item {
+		max-height: 1.5em;
+		visibility: visible;
+		opacity: 1;
+	}
 	&.collapsed {
-		.item.selected {
-			max-height: 0;//1.5em;// watch out!!!
-			// visibility: visible;
-			// opacity: 1;
-		}
-		// .item,
+		// .item.selected {
+		// 	max-height: 1.5em;// watch out!!!
+		// 	visibility: visible;
+		// 	opacity: 1;
+		// }
 		.item:not(.selected) {
 			max-height: 0;
 			visibility: hidden;
@@ -107,52 +74,17 @@ $collapse-params: 1s $ease-fn;
 	}
 }
 
-#bundle-list.animate {
-// #bundle-list {
-	// &,
-	// &:not(.collapsed) {
-		.item {
-		//.item, .item:not(.selected) {
-			transition-property: opacity, visibility, max-height;
-			transition-timing-function: $ease-fn;
-			transition-duration: 0.333s, 0s, 0.333s;
-			transition-delay: 0.666s, 0s, 0.333s;// wait, expand, fadein
-		}
-	// }
-	&.collapsed {
-		// .item.selected {
-		// 	transition-delay: 0.666s, 0s, 0.333s;// wait, expand, fadein
-		// }
-		.item:not(.selected) {
-			transition-delay: 0s, 1s, 0.333s;// fadeout, collapse, wait
-		}
-	}
-}
-
 #keyword-list {
-	// &:not(.collapsed) {
-		.item {
-			max-height: 1.5em;
-			visibility: visible;
-			opacity: 1;
-		}
-		.group {
-			opacity: 1;
-			visibility: visible;
-		}
-	// }
+	.item {
+		max-height: 1.5em;
+		visibility: visible;
+		opacity: 1;
+	}
+	.group {
+		visibility: visible;
+		opacity: 1;
+	}
 	&.collapsed {
-		// // .item:not(.excluded) {
-		// .item.included {
-		// 	max-height: 1.5em;
-		// 	visibility: visible;
-		// 	opacity: 1;
-		// }
-		// // .group:not(.excluded) {
-		// .group.included {
-		// 	visibility: visible;
-		// 	opacity: 1;
-		// }
 		.item.excluded {
 			max-height: 0;
 			visibility: hidden;
@@ -165,8 +97,45 @@ $collapse-params: 1s $ease-fn;
 	}
 }
 
+#bundle-list.animate,
+#keyword-list.animate  {
+	.group, .item {
+		transition-property: opacity, visibility, max-height;
+		transition-timing-function: $ease-fn, step-start, $ease-fn;
+		transition-duration: 0.3s, 1s, 0.3s;
+		transition-delay: 0.7s, 0s, 0.35s;// wait, expand, fadein
+	}
+	&.collapsed {
+		.group.excluded, .item.excluded, .item:not(.selected) {
+			transition-timing-function: $ease-fn, step-end, $ease-fn;
+			transition-delay: 0s, 0s, 0.35s;// fadeout, collapse, wait
+		}
+	}
+}
+
+// #bundle-list.animate {
+// 	.item {
+// 		transition-property: opacity, visibility, max-height;
+// 		transition-timing-function: $ease-fn, step-start, $ease-fn;
+// 		transition-duration: 0.3s, 1s, 0.3s;
+// 		transition-delay: 0.7s, 0s, 0.35s;// wait, expand, fadein
+// 	}
+// 	&.collapsed {
+// 		.item.selected {
+// 			transition-timing-function: $ease-fn, step-start, $ease-fn;
+// 			transition-delay: 0.35s, 0s, 0.35s;// fadeout, collapse, wait
+// 		}
+// 		.item:not(.selected) {
+// 			transition-timing-function: $ease-fn, step-end, $ease-fn;
+// 			transition-delay: 0.35s, 0s, 0.35s;// fadeout, collapse, wait
+// 		}
+// 	}
+// }
+
+/*
 // #keyword-list {
-#keyword-list.animate {
+// #keyword-list.animate {
+#none.animate {
 	// &:not(.collapsed) {
 		.item { animation: fromCollapsedItem $collapse-params; }
 		.group { animation: fromCollapsedGroup $collapse-params; }
@@ -197,7 +166,7 @@ $collapse-params: 1s $ease-fn;
 		visibility: visible;
 		opacity: 0;
 	}
-	60% {
+	70% {
 		max-height: 1.5em;
 		visibility: visible;
 		opacity: 0;
@@ -220,7 +189,7 @@ $collapse-params: 1s $ease-fn;
 		visibility: visible;
 		opacity: 0;
 	}
-	60% {
+	70% {
 		max-height: 0;
 		visibility: visible;
 		opacity: 0;
@@ -241,7 +210,7 @@ $collapse-params: 1s $ease-fn;
 		visibility: visible;
 		opacity: 0;
 	}
-	60% {
+	70% {
 		visibility: visible;
 		opacity: 0;
 	}
@@ -260,7 +229,7 @@ $collapse-params: 1s $ease-fn;
 		visibility: visible;
 		opacity: 0;
 	}
-	60% {
+	70% {
 		visibility: visible;
 		opacity: 0;
 	}
@@ -268,4 +237,4 @@ $collapse-params: 1s $ease-fn;
 		visibility: hidden;
 		opacity: 0;
 	}
-}
+}*/

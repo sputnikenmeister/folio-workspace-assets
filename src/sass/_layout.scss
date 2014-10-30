@@ -75,7 +75,6 @@ $gutter: 20px;
 	@at-root {
 		#header,
 		#navigation,
-		#content,
 		#container-footer {
 			width: $page-width;
 			margin: 0 auto;
@@ -93,11 +92,11 @@ $gutter: 20px;
 			position: relative;
 			min-height: 12rem;
 		}
-		#content {
-			// @include full-width;
-			position: relative;
-			clear: both;
-		}
+		// #content {
+		// 	// @include full-width;
+		// 	position: relative;
+		// 	clear: both;
+		// }
 	}
 }
 
@@ -151,7 +150,9 @@ $gutter: 20px;
  * View visibility by app state
  */
 // default
-#bundle-pager, #bundle-detail, #bundle-images-pager {
+#bundle-pager,
+#bundle-detail,
+#bundle-images-pager {
 	opacity: 0;
 	visibility: hidden;
 	max-height: auto;
@@ -161,7 +162,9 @@ $gutter: 20px;
 }
 // bundle-list
 .app-bundle-list {
-	#bundle-pager, #bundle-detail, #bundle-images-pager {
+	#bundle-pager,
+	#bundle-detail,
+	#bundle-images-pager {
 		// animation: fadeOut 1s;
 		opacity: 0;
 		visibility: hidden;
@@ -173,7 +176,9 @@ $gutter: 20px;
 }
 // bundle-item
 .app-bundle-item {
-	#bundle-pager, #bundle-detail, #bundle-images-pager {
+	#bundle-pager,
+	#bundle-detail,
+	#bundle-images-pager {
 		// animation: fadeIn 1s;
 		opacity: 1;
 		visibility: visible;

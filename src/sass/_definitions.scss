@@ -10,13 +10,14 @@ $dark-bgcolor: 		hsl(47, 5%, 25%);
 $color: $light-fgcolor;
 $background-color: $light-bgcolor;
 
-$link-color: 		hsl(10, 80%, 50%);
-$link-hover-color: 	hsl(10, 95%, 60%);
-$link-down-color: 	hsl(10, 95%, 30%);
+$link-color: hsl(10, 80%, 50%);
+// $link-color: scale_color($color, $red: 60%);
+$link-hover-color: scale_color($link-color, $lightness: 15%);//hsl(10, 95%, 60%);
+$link-down-color: scale_color($link-color, $lightness: -15%);//hsl(10, 95%, 30%);
 
 /*
-* Fonts
-*/
+ * Fonts
+ */
 // Font fallback lists
 $mono-fallback: Consolas, Menlo, "Andale Mono", monospace;
 $humanist-fallback: "Lucida Grande","Lucida Sans", Calibri, Tahoma, Verdana, Kalimati, sans-serif;
@@ -45,12 +46,13 @@ $base-font: 12px $font-webfont-sans;
 
 @mixin heading-font() {
 	font-family: $large-font-family;
-	font-size: 240%; letter-spacing: -0.04em;
+	font-size: 240%;
+	letter-spacing: -0.04em;
 	font-weight: 300;
 	font-style: normal;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	// -webkit-text-rendering: optimizelegibility;
+	-webkit-text-rendering: optimizelegibility;
 	text-rendering: optimizelegibility;
 }
 // Typography

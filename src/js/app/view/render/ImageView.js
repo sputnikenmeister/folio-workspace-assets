@@ -9,8 +9,8 @@ var _ = require( "underscore" );
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
-/** @type {module:app/model/ImageItem} */
-var ImageItem = require( "../../model/ImageItem" );
+/** @type {module:app/model/item/ImageItem} */
+var ImageItem = require( "../../model/item/ImageItem" );
 
 /** @type {string} */
 var viewTemplate = require( "../template/ImageView.tpl" );
@@ -22,7 +22,7 @@ var captionTemplate = require( "../template/ImageView.Caption.tpl" );
 /** @type {Object} */
 // var recipe = { prefix: "/workspace/uploads/", constraint: 700 };		// original file, resized by browser to 700
 var recipe = { prefix: "/image/1/700/0/uploads/", constraint: 700 };	// resize to 700
-// var recipe = { prefix: "/image/w480/uploads/", constraint: 480 };			// named recipe
+// var recipe = { prefix: "/image/w480/uploads/", constraint: 480 };	// named recipe
 
 /**
  * @constructor
@@ -66,7 +66,7 @@ module.exports = Backbone.View.extend({
 	 */
 	render: function() {
 		this.$el.html(this.template({
-			url: recipe.prefix + this.model.get("file"),
+			url: recipe.prefix + this.model.get("f"),
 			width: this.computedWidth,
 			height: this.computedHeight,
 			desc: this.model.get("desc")

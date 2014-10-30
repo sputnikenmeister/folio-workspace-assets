@@ -1,5 +1,5 @@
 /**
-* @module app/view/ItemListView
+* @module app/view/component/GroupingListView
 * @requires module:backbone
 */
 
@@ -9,18 +9,12 @@ var Backbone = require( "backbone" );
 /** @type {module:underscore} */
 var _ = require( "underscore" );
 
-/** @type {module:app/view/render/ItemView} */
-//var ItemView = require( "./render/ItemView" );
-
-/** @type {module:app/view/render/GroupingView} */
-// var GroupingView = require( "./render/GroupingView" );
-
-/** @type {module:app/view/SelectableListView} */
+/** @type {module:app/view/component/SelectableListView} */
 var SelectableListView = require( "./SelectableListView" );
 
 /**
  * @constructor
- * @type {module:app/view/GroupingView}
+ * @type {module:app/view/component/GroupingView}
  */
 var GroupingView = Backbone.View.extend({
 	/** @override */
@@ -31,7 +25,7 @@ var GroupingView = Backbone.View.extend({
 
 /**
  * @constructor
- * @type {module:app/view/GroupingListView}
+ * @type {module:app/view/component/GroupingListView}
  */
 module.exports = SelectableListView.extend({
 
@@ -95,14 +89,14 @@ module.exports = SelectableListView.extend({
 	* Create children views
 	*/
 	/** @private */
-	assignGroupingView: function(model, index, arr) {
+	assignGroupingView: function(item, index, arr) {
 		var view = new GroupingView({
-			model: model,
-			el: "#" + model.get("uid")
+			model: item,
+			el: item.selector()
 		});
 
-		this._groupingViews[index] = this._groupingViewsIndex[model.id] = view;
-		this._groupingEls[index] = this._groupingElsIndex[model.id] = view.el;
+		this._groupingViews[index] = this._groupingViewsIndex[item.id] = view;
+		this._groupingEls[index] = this._groupingElsIndex[item.id] = view.el;
 	},
 
 	/*

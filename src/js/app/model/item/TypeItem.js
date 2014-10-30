@@ -1,5 +1,5 @@
 /**
-* @module app/model/ImageItem
+* @module app/model/item/TypeItem
 * @requires module:backbone
 */
 
@@ -8,7 +8,7 @@ var Backbone = require( "backbone" );
 
 /**
  * @constructor
- * @type {module:app/model/ImageItem}
+ * @type {module:app/model/item/TypeItem}
  */
 module.exports = Backbone.Model.extend({
 
@@ -16,12 +16,14 @@ module.exports = Backbone.Model.extend({
 	 * @type {Object}
 	 */
 	defaults: {
-		uid: "",
-		file: "",
-		w: 0,
-		h: 0,
-		desc: "",
-		attrs: []
+		name: "",
+		handle: "",
+		attrs: [],
+		excluded: false,
+	},
+
+	selector: function() {
+		return "#t" + this.id;
 	},
 
 	/** @override */

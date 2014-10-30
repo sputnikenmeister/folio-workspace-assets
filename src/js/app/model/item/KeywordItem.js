@@ -1,5 +1,5 @@
 /**
-* @module app/model/TypeItem
+* @module app/model/item/KeywordItem
 * @requires module:backbone
 */
 
@@ -8,7 +8,7 @@ var Backbone = require( "backbone" );
 
 /**
  * @constructor
- * @type {module:app/model/TypeItem}
+ * @type {module:app/model/item/KeywordItem}
  */
 module.exports = Backbone.Model.extend({
 
@@ -16,10 +16,15 @@ module.exports = Backbone.Model.extend({
 	 * @type {Object}
 	 */
 	defaults: {
-		uid: "",
 		name: "",
 		handle: "",
-		attrs: []
+		attrs: [],
+		tId: 0,
+		excluded: false,
+	},
+
+	selector: function() {
+		return "#k" + this.id;
 	},
 
 	/** @override */
