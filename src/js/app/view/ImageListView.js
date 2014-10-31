@@ -111,14 +111,14 @@ module.exports  = Backbone.View.extend({
 	 */
 	onPan : function (ev) {
 		var delta = this.getDirProp(ev.deltaX, ev.deltaY);
-		var percent = (100 / this.containerSize) * delta;
+		var percent = delta / this.containerSize;
 		var animate = false;
 		var proposedIndex = this.currentIndex;
 		var lastIndex = this.collection.length - 1;
 
 
 		if (ev.type == "panend" || ev.type == "pancancel") {
-			if (Math.abs(percent) > 20 && ev.type == "panend") {
+			if (Math.abs(percent) > 0.2 && ev.type == "panend") {
 				// when panned by >20%, selection may need change
 				proposedIndex += (percent < 0) ? 1 : -1;
 				if (0 <= proposedIndex && proposedIndex <= lastIndex) {
@@ -148,10 +148,11 @@ module.exports  = Backbone.View.extend({
 	 * @param {Boolean} [animate]
 	 */
 	show: function(showIndex, percent, animate){
-		var elements = this.getAllItemElements();
-		var numElements = elements.length;
+		var els = this.getAllItemElements();
+		var numEls = els.length;
 		// out of bounds check
-		showIndex = Math.max(0, Math.min(showIndex, numElements - 1));
+		showIndex = Math.max(0, Math.min(showIndex, numEls - 1));
+		// non null check
 		percent = percent || 0;
 
 		if (animate) {
@@ -160,29 +161,39 @@ module.exports  = Backbone.View.extend({
 			this.$el.removeClass("animate");
 		}
 
-		var elementIndex, pos, translate, indexDelta;
-		for (elementIndex = 0; elementIndex < numElements; elementIndex++) {
-			pos = (this.containerSize / 100) * (((elementIndex - showIndex) * 100) + percent);
+		// _.reduce(els, function(memo, value, index, list) {
+		// 	memo += this.containerSize;
+		// 	this.applyChildTranslate(value, memo);
+		// 	return memo;
+		// }, this.containerSize * (percent - showIndex), this);
+		var leftGap = 100, rightGap = 50;
+		var elsIndex, pos, translate;
+		// pos = this.containerSize * (percent - showIndex);
+		for (elsIndex = 0; elsIndex < numEls; elsIndex++) {
 
-			// indexDelta =  (elementIndex - showIndex) / numElements;
-			// console.log("show:", pos, indexDelta);
-			// pos *= (elementIndex - showIndex) / numElements + 0.25;
+			pos = this.containerSize * ((elsIndex - showIndex) + percent);
 
-			if(this.direction & Hammer.DIRECTION_HORIZONTAL) {
-				translate = "translate3d(" + pos + "px, 0, 0)";
-			} else {
-				translate = "translate3d(0, " + pos + "px, 0)";
+			if (0 < pos) {
+				if (pos < this.containerSize) {
+					pos += rightGap/this.containerSize * pos;
+				} else {
+					pos += rightGap;
+				}
 			}
-			 elements[elementIndex].style.transform = translate;
-			 elements[elementIndex].style.mozTransform = translate;
-			 elements[elementIndex].style.webkitTransform = translate;
+			if (0 > pos) {
+				if (pos > (-this.containerSize)) {
+					pos += leftGap/this.containerSize * pos;
+				} else {
+					pos += -leftGap;
+				}
+			}
+
+			this.applyTranslate(els[elsIndex], pos);
+			// pos += this.containerSize;
 		}
 
-		this.currentIndex = showIndex;
+		// this.currentIndex = showIndex;
 	},
-
-	/** @type {Number} */
-	direction: Hammer.DIRECTION_HORIZONTAL,
 
 	/**
 	 * @param
@@ -192,6 +203,25 @@ module.exports  = Backbone.View.extend({
 	getDirProp: function (hProp, vProp) {
 		return (this.direction & Hammer.DIRECTION_HORIZONTAL) ? hProp : vProp;
 	},
+
+	/** @type {Number} */
+	direction: Hammer.DIRECTION_HORIZONTAL,
+
+	applyTranslate:function(elt, pos) {
+		var translate;
+		if(this.direction & Hammer.DIRECTION_HORIZONTAL) {
+			translate = "translate3d(" + pos + "px, 0, 0)";
+		} else {
+			translate = "translate3d(0, " + pos + "px, 0)";
+		}
+		elt.style.transform = translate;
+		elt.style.mozTransform = translate;
+		elt.style.webkitTransform = translate;
+	},
+
+	/*
+	 * Child view mgmt
+	 */
 
 	/** @private */
 	_itemViewsIndex: {},
