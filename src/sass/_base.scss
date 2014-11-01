@@ -10,7 +10,7 @@ body {
 h1 {
 }
 h2 {
-	@include heading;
+	@include heading-text;
 	margin-top: 0.75rem;
 	margin-bottom: 0.25rem;
 }

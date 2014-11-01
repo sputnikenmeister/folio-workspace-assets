@@ -79,11 +79,12 @@ module.exports = DeferredRenderView.extend({
 		if (this._collapsed && this.renderJobs.collapsed)
 			this.renderJobs.collapsed();
 
+		if (this.renderJobs.selection)
+			this.renderJobs.selection();
+
 		if (this.renderJobs.filters)
 			this.renderJobs.filters();
 
-		if (this.renderJobs.selection)
-			this.renderJobs.selection();
 
 		// If changing from collapsed, do it last
 		if (!this._collapsed && this.renderJobs.collapsed)
@@ -95,10 +96,14 @@ module.exports = DeferredRenderView.extend({
 	/** @private */
 	renderSelection: function(newItem, oldItem) {
 		if (newItem) {
-			this.getItemView(newItem).$el.addClass("selected");
+			this.itemViews.findByModel(newItem).$el
+			// this.getItemView(newItem).$el
+				.addClass("selected");
 		}
 		if (oldItem) {
-			this.getItemView(oldItem).$el.removeClass("selected");
+			this.itemViews.findByModel(oldItem).$el
+			// this.getItemView(oldItem).$el
+				.removeClass("selected");
 		}
 	},
 
@@ -124,16 +129,18 @@ module.exports = DeferredRenderView.extend({
 				}
 				if (isExcluded) {
 					excludedCount++;
-					this.getItemView(model).$el.addClass("excluded");
+					this.itemViews.findByModel(model).$el.addClass("excluded");
+					// this.getItemView(model).$el.addClass("excluded");
 				} else {
-					this.getItemView(model).$el.removeClass("excluded");
+					this.itemViews.findByModel(model).$el.removeClass("excluded");
+					// this.getItemView(model).$el.removeClass("excluded");
 				}
 			}, this);
 		} else {
 			this.collection.each(function(model, index, arr) {
 				model.unset("excluded");
-				this.getItemView(model).$el.removeClass("excluded")
-					.one;
+				this.itemViews.findByModel(model).$el.removeClass("excluded");
+				// this.getItemView(model).$el.removeClass("excluded");
 			}, this);
 		}
 
@@ -195,12 +202,16 @@ module.exports = DeferredRenderView.extend({
 		// console.log("[Events] expected count: " + eventCount);
 
 		_.each(newIncludes, function(id, index, arr) {
-			this.getItemView(id).$el.removeClass("excluded")
+			this.itemViews.findByCustom(id).$el
+			// this.getItemView(id).$el
+				.removeClass("excluded")
 				// .one("animationend webkitanimationend transitionend", whenAllAnimationsDone)
 				;
 		}, this);
 		_.each(newExcludes, function(id, index, arr) {
-			this.getItemView(id).$el.addClass("excluded")
+			this.itemViews.findByCustom(id).$el
+			// this.getItemView(id).$el
+				.addClass("excluded")
 				// .one("animationend webkitanimationend transitionend", whenAllAnimationsDone)
 				;
 		}, this);
@@ -296,9 +307,11 @@ module.exports = DeferredRenderView.extend({
 			el: item.selector()
 		});
 
-		this._itemIds[index] = item.id;
-		this._itemViews[index] = this._itemViewsIndex[item.id] = view;
-		this._itemEls[index] = this._itemElsIndex[item.id] = view.el;
+		// this._itemIds[index] = item.id;
+		// this._itemViews[index] = this._itemViewsIndex[item.id] = view;
+		// this._itemEls[index] = this._itemElsIndex[item.id] = view.el;
+
+		this.itemViews.add(view, item.id);
 
 		this.listenTo(view, "item:click", this.whenItemViewClick);
 	},
@@ -307,42 +320,44 @@ module.exports = DeferredRenderView.extend({
 	 * Child view helpers
 	 */
 
-	/** @private */
-	_itemIds: [],
-	/** @private */
-	getItemId: function(index) {
-		return this._itemIds[index];
-	},
-	/** @private */
-	getAllItemIds: function() {
-		return this._itemIds;
-	},
+	itemViews: new Backbone.ChildViewContainer(),
 
-	/** @private */
-	_itemViewsIndex: {},
-	/** @private */
-	getItemView: function(obj) {
-		return this._itemViewsIndex[obj] || this._itemViewsIndex[obj.id];
-	},
+	// /** @private */
+	// _itemIds: [],
+	// /** @private */
+	// getItemId: function(index) {
+	// 	return this._itemIds[index];
+	// },
+	// /** @private */
+	// getAllItemIds: function() {
+	// 	return this._itemIds;
+	// },
 
-	/** @private */
-	_itemElsIndex: {},
-	/** @private */
-	getItemElement: function(obj) {
-		return this._itemElsIndex[obj] || this._itemElsIndex[obj.id];
-	},
+	// /** @private */
+	// _itemViewsIndex: {},
+	// /** @private */
+	// getItemView: function(obj) {
+	// 	return this._itemViewsIndex[obj] || this._itemViewsIndex[obj.id];
+	// },
 
-	/** @private */
-	_itemViews: [],
-	/** @private */
-	getAllItemViews: function() {
-		return this._itemViews;
-	},
+	// /** @private */
+	// _itemElsIndex: {},
+	// /** @private */
+	// getItemElement: function(obj) {
+	// 	return this._itemElsIndex[obj] || this._itemElsIndex[obj.id];
+	// },
 
-	/** @private */
-	_itemEls: [],
-	/** @private */
-	getAllItemElements: function() {
-		return this._itemEls;
-	},
+	// /** @private */
+	// _itemViews: [],
+	// /** @private */
+	// getAllItemViews: function() {
+	// 	return this._itemViews;
+	// },
+
+	// /** @private */
+	// _itemEls: [],
+	// /** @private */
+	// getAllItemElements: function() {
+	// 	return this._itemEls;
+	// },
 });

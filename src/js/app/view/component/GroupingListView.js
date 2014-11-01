@@ -66,22 +66,27 @@ module.exports = SelectableListView.extend({
 		if (modelIds) {
 			this.groupings.collection.each(function(model, index, arr) {
 				if (_.contains(modelIds, model.id)) {
-					this.getGroupingView(model).$el
+					this.groupingViews.findByModel(model).$el
+					// this.getGroupingView(model).$el
 						// .addClass("included")
 						.removeClass("excluded")
 						;
 				} else {
-					this.getGroupingView(model).$el
+					this.groupingViews.findByModel(model).$el
+					// this.getGroupingView(model).$el
 						.addClass("excluded")
 						// .removeClass("included")
 						;
 				}
 			}, this);
 		} else {
-			this.$(this.getAllGroupingElements())
-				// .removeClass("included")
-				.removeClass("excluded")
-				;
+			this.groupingViews.each(function(view) {
+				view.$el.removeClass("excluded");
+			});
+			// this.$(this.getAllGroupingElements())
+			// 	// .removeClass("included")
+			// 	.removeClass("excluded")
+			// 	;
 		}
 	},
 
@@ -95,39 +100,42 @@ module.exports = SelectableListView.extend({
 			el: item.selector()
 		});
 
-		this._groupingViews[index] = this._groupingViewsIndex[item.id] = view;
-		this._groupingEls[index] = this._groupingElsIndex[item.id] = view.el;
+		// this._groupingViews[index] = this._groupingViewsIndex[item.id] = view;
+		// this._groupingEls[index] = this._groupingElsIndex[item.id] = view.el;
+
+		this.groupingViews.add(view, item.id);
 	},
 
 	/*
 	 * Child view helpers
 	 */
+	groupingViews: new Backbone.ChildViewContainer(),
 
-	/** @private */
-	_groupingViewsIndex: {},
-	/** @private */
-	getGroupingView: function(obj) {
-		return this._groupingViewsIndex[obj] || this._groupingViewsIndex[obj.id];
-	},
+	// /** @private */
+	// _groupingViewsIndex: {},
+	// /** @private */
+	// getGroupingView: function(obj) {
+	// 	return this._groupingViewsIndex[obj] || this._groupingViewsIndex[obj.id];
+	// },
 
-	/** @private */
-	_groupingElsIndex: {},
-	/** @private */
-	getGroupingElement: function(obj) {
-		return this._groupingElsIndex[obj] || this._groupingElsIndex[obj.id];
-	},
+	// /** @private */
+	// _groupingElsIndex: {},
+	// /** @private */
+	// getGroupingElement: function(obj) {
+	// 	return this._groupingElsIndex[obj] || this._groupingElsIndex[obj.id];
+	// },
 
-	/** @private */
-	_groupingViews: [],
-	/** @private */
-	getAllGroupingViews: function() {
-		return this._groupingViews;
-	},
+	// /** @private */
+	// _groupingViews: [],
+	// /** @private */
+	// getAllGroupingViews: function() {
+	// 	return this._groupingViews;
+	// },
 
-	/** @private */
-	_groupingEls: [],
-	/** @private */
-	getAllGroupingElements: function() {
-		return this._groupingEls;
-	},
+	// /** @private */
+	// _groupingEls: [],
+	// /** @private */
+	// getAllGroupingElements: function() {
+	// 	return this._groupingEls;
+	// },
 });

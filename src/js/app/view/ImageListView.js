@@ -31,6 +31,10 @@ module.exports  = Backbone.View.extend({
 
 	model: ImageItem,
 
+	events: {
+		"resize": "onWindowResize"
+	},
+
 	initialize: function(options) {
 		this.hammer = new Hammer.Manager(this.el);
 		this.hammer.add(new Hammer.Pan({direction: this.direction, threshold: 10}));
@@ -38,6 +42,7 @@ module.exports  = Backbone.View.extend({
 		_.bindAll(this, "onPan", "onWindowResize");
 		this.hammer.on("panstart panmove panend pancancel", this.onPan);
 		Backbone.$(window).on("load orientationchange resize", this.onWindowResize);
+		// this.listenTo(this.$el, "resize", this.onWindowResize);
 
 		this.listenTo(Backbone, "app:bundleList", this.whenAppBundleList);
 		this.listenTo(Backbone, "app:bundleItem", this.whenAppBundleItem);
@@ -62,47 +67,62 @@ module.exports  = Backbone.View.extend({
 	},
 
 	whenCollectionSelect: function(newItem, oldItem) {
-		if (newItem) {
-			this.getItemView(newItem).$el.addClass("selected");
-		}
+	// 	this.renderSelection(newItem, oldItem);
+	// },
+
+	// renderSelection: function(newItem, oldItem) {
 		if (oldItem) {
 			this.getItemView(oldItem).$el.removeClass("selected");
 		}
+
+		if (newItem) {
+			this.getItemView(newItem).$el.addClass("selected");
+		}
+	},
+
+	/** @private */
+	onWindowResize : function (ev) {
+		this.containerSize = this.el[this.getDirProp("offsetWidth", "offsetHeight")];
+		this.scrollToIndex(this.currentIndex, 0, false);
 	},
 
 	render: function() {
 		var eltBuffer, view, viewSize, maxSize = 0;
 
+		this.removeAllChildViews();
+
 		eltBuffer = document.createDocumentFragment();
 		// eltBuffer = document.createElement("div");
+		this.collection.each(function(model, index, arr) {
+			view = this.createChildViewAt(model, index);
+			eltBuffer.appendChild(view.render().el);
+			// Get the tallest height for the container
+			maxSize = Math.max(maxSize, view[this.getDirProp("computedHeight", "computedWidth")]);
+		}, this);
+
+		this.$el.css(this.getDirProp("height", "width"), maxSize);
+		this.$el.append(eltBuffer);
+		this.containerSize = this.el[this.getDirProp("offsetWidth", "offsetHeight")];
+
+		this.currentIndex = 0;
+		this.scrollToIndex(this.currentIndex, 0, false);
+
+		return this;
+	},
+
+	removeAllChildViews: function() {
 		this._itemViews = [];
 		this._itemViewsIndex = {};
 		this._itemEls = [];
 		this._itemElsIndex = {};
-
-		this.collection.each(function(model, index, arr) {
-			// Create view and render element into buffer
-			view = new ImageView({model: model});
-			eltBuffer.appendChild(view.render().el);
-			this._itemViews[index] = this._itemViewsIndex[model.id] = view;
-			this._itemEls[index] = this._itemElsIndex[model.id] = view.el;
-
-			// Get the tallest height for the container
-			viewSize = view[this.getDirProp("computedHeight", "computedWidth")];
-			maxSize = Math.max(maxSize, viewSize);
-			console.log("[ImageListView] view "+ model.selector(), view.computedWidth, view.computedHeight);
-		}, this);
-
-		console.log("[ImageListView] max: " + this.getDirProp("computedWidth","computedHeight") + " = " + maxSize);
 		this.$el.empty();
-		this.$el.css(this.getDirProp("height", "width"), maxSize);
-		this.$el.append(eltBuffer);
+	},
 
-		this.containerSize = this.el[this.getDirProp("offsetWidth", "offsetHeight")];
-		this.currentIndex = 0;
-		this.show(this.currentIndex);
-
-		return this;
+	createChildViewAt: function(model, index) {
+		var view = new ImageView({model: model});
+		this._itemViews[index] = this._itemViewsIndex[model.id] = view;
+		this._itemEls[index] = this._itemElsIndex[model.id] = view.el;
+		return view;
 	},
 
 	/**
@@ -116,29 +136,22 @@ module.exports  = Backbone.View.extend({
 		var proposedIndex = this.currentIndex;
 		var lastIndex = this.collection.length - 1;
 
-
 		if (ev.type == "panend" || ev.type == "pancancel") {
 			if (Math.abs(percent) > 0.2 && ev.type == "panend") {
 				// when panned by >20%, selection may need change
 				proposedIndex += (percent < 0) ? 1 : -1;
 				if (0 <= proposedIndex && proposedIndex <= lastIndex) {
 					this.trigger("view:itemSelect", this.collection.at(proposedIndex));
-					this.currentIndex = proposedIndex;
 				}
 			}
 			percent = 0;
 			animate = true;
-		} else if ((this.currentIndex == 0 && percent > 0) || (this.currentIndex == lastIndex && percent < 0)) {
-			// when at first or last index, add factor for a spring-like effect
-			percent *= 0.2;
+		} else {
+			if ((proposedIndex == 0 && percent > 0) || (proposedIndex == lastIndex && percent < 0)) {
+				percent *= 0.2; // when at first or last index, add feedback to gesture
+			}
 		}
-		this.show(this.currentIndex, percent, animate);
-	},
-
-	/** @private */
-	onWindowResize : function (ev) {
-		this.containerSize = this.el[this.getDirProp("offsetWidth", "offsetHeight")];
-		this.show(this.currentIndex);
+		this.scrollToIndex(proposedIndex, percent, animate);
 	},
 
 	/**
@@ -147,13 +160,12 @@ module.exports  = Backbone.View.extend({
 	 * @param {Number} [percent] percentage visible
 	 * @param {Boolean} [animate]
 	 */
-	show: function(showIndex, percent, animate){
-		var els = this.getAllItemElements();
-		var numEls = els.length;
-		// out of bounds check
-		showIndex = Math.max(0, Math.min(showIndex, numEls - 1));
-		// non null check
-		percent = percent || 0;
+	scrollToIndex: function(showIndex, percent, animate){
+		var els, numEls, elsIndex, pos;
+		els = this.getAllItemElements();
+		numEls = els.length;
+		showIndex = Math.max(0, Math.min(showIndex, numEls - 1)); // out of bounds check
+		percent = percent || 0; // non null check
 
 		if (animate) {
 			this.$el.addClass("animate");
@@ -161,38 +173,38 @@ module.exports  = Backbone.View.extend({
 			this.$el.removeClass("animate");
 		}
 
-		// _.reduce(els, function(memo, value, index, list) {
-		// 	memo += this.containerSize;
-		// 	this.applyChildTranslate(value, memo);
-		// 	return memo;
-		// }, this.containerSize * (percent - showIndex), this);
-		var leftGap = 100, rightGap = 50;
-		var elsIndex, pos, translate;
-		// pos = this.containerSize * (percent - showIndex);
+		// var beforeGap = 50, afterGap = 100;
 		for (elsIndex = 0; elsIndex < numEls; elsIndex++) {
-
 			pos = this.containerSize * ((elsIndex - showIndex) + percent);
-
-			if (0 < pos) {
-				if (pos < this.containerSize) {
-					pos += rightGap/this.containerSize * pos;
-				} else {
-					pos += rightGap;
-				}
-			}
-			if (0 > pos) {
-				if (pos > (-this.containerSize)) {
-					pos += leftGap/this.containerSize * pos;
-				} else {
-					pos += -leftGap;
-				}
-			}
-
+			// if (0 > pos) {
+			// 	if (pos > (-this.containerSize)) {
+			// 		pos += beforeGap/this.containerSize * pos;
+			// 	} else {
+			// 		pos += -beforeGap;
+			// 	}
+			// } else
+			// if (0 < pos) {
+			// 	if (pos < this.containerSize) {
+			// 		pos += afterGap/this.containerSize * pos;
+			// 	} else {
+			// 		pos += afterGap;
+			// 	}
+			// }
 			this.applyTranslate(els[elsIndex], pos);
-			// pos += this.containerSize;
 		}
+		this.currentIndex = showIndex;
+	},
 
-		// this.currentIndex = showIndex;
+	applyTranslate:function(elt, pos) {
+		var translate;
+		if(this.direction & Hammer.DIRECTION_HORIZONTAL) {
+			translate = "translate3d(" + pos + "px, 0, 0)";
+		} else {
+			translate = "translate3d(0, " + pos + "px, 0)";
+		}
+		elt.style.transform = translate;
+		elt.style.mozTransform = translate;
+		elt.style.webkitTransform = translate;
 	},
 
 	/**
@@ -206,18 +218,6 @@ module.exports  = Backbone.View.extend({
 
 	/** @type {Number} */
 	direction: Hammer.DIRECTION_HORIZONTAL,
-
-	applyTranslate:function(elt, pos) {
-		var translate;
-		if(this.direction & Hammer.DIRECTION_HORIZONTAL) {
-			translate = "translate3d(" + pos + "px, 0, 0)";
-		} else {
-			translate = "translate3d(0, " + pos + "px, 0)";
-		}
-		elt.style.transform = translate;
-		elt.style.mozTransform = translate;
-		elt.style.webkitTransform = translate;
-	},
 
 	/*
 	 * Child view mgmt

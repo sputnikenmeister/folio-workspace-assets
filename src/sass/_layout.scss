@@ -3,68 +3,44 @@
  */
 
 $page-width: 740px;
+$page-margin: 20px;
 $gutter: 20px;
 
+@mixin col-full-margins() {
+	margin-left: $page-margin;
+	margin-right: $page-margin;
+}
 @mixin full-width() {
-	margin-left: 20px;
-	margin-right: 20px;
+	@include col-full-margins;
 }
 @mixin col-full() {
-	margin-left: 20px;
-	margin-right: 20px;
+	margin-left: $page-margin;
+	margin-right: $page-margin;
 	width: calc(100% - 40px);
 }
 @mixin col-left-rel() {
 	position: relative;
-	margin-left: 20px;
+	margin-left: $page-margin;
 	margin-right: calc(38% + 20px);
 	width: calc(62% - 30px);
 }
 @mixin col-right-rel() {
 	position: relative;
-	margin-right: 20px;
+	margin-right: $page-margin;
 	float: right;
 	width: calc(38% - 30px);
 }
 @mixin col-left-abs() {
 	position: absolute;
 	right: calc(38% + 20px);
-	left: 20px;
+	left: $page-margin;
 }
 @mixin col-right-abs() {
 	position: absolute;
-	right: 20px;
+	right: $page-margin;
 	width: calc(38% - 20px);
 }
 
-/* START DEBUG */
-
-// #container {
-// 	// background-color: red;
-// 	// @include baseline-grid-background(1.5rem, hsla(0, 75%, 75%, 0.3));
-// }
-// #header,
-// #footer,
-// #container-footer {
-// 	background-color: aliceblue;//hsla(90, 75%, 75%, .2);
-// 	border-left: 1px solid blue;
-// 	border-right: 1px solid blue;
-// }
-// #navigation {
-// 	background-color: seashell;
-// 	border-left: 1px solid red;
-// 	border-right: 1px solid red;
-// }
-// #bundle-images{
-// 	background-color: ghostwhite;
-// }
-// #keyword-list,
-// #bundle-list {
-// 	// outline: 1px solid beige;//hsla(270, 75%, 75%, .5);
-// 	background-color: beige;//hsla(180, 75%, 75%, .1);
-// }
-
-/* END DEBUG */
 
 /*
  * View containers/wrappers
@@ -72,33 +48,30 @@ $gutter: 20px;
 #container {
 	width: 100%;
 	display: block;
-	@at-root {
-		#header,
-		#navigation,
-		#container-footer {
-			width: $page-width;
-			margin: 0 auto;
-			padding-left: 0;
-			padding-right: 0;
-		}
-		#header {
-			// @include full-width;
-			position: relative;
-			padding-top: 3.5rem;
-			padding-bottom: 1rem;
-		}
-		#navigation {
-			// @include full-width;
-			position: relative;
-			min-height: 12rem;
-		}
-		// #content {
-		// 	// @include full-width;
-		// 	position: relative;
-		// 	clear: both;
-		// }
-	}
 }
+#header,
+#navigation,
+#container-footer {
+	margin: 0 auto;
+	padding-left: 0;
+	padding-right: 0;
+}
+#header {
+	// @include full-width;
+	position: relative;
+	padding-top: 3.5rem;
+	padding-bottom: 1rem;
+}
+#navigation {
+	// @include full-width;
+	position: relative;
+	min-height: 12rem;
+}
+// #content {
+// 	// @include full-width;
+// 	position: relative;
+// 	clear: both;
+// }
 
 // from: folio.scss @import "compass/layout";
 @include sticky-footer(
@@ -109,11 +82,43 @@ $gutter: 20px;
 );
 
 #footer {
-	width: $page-width;
 	margin: 0 auto;
 	p {
-		@include full-width;
+		@include col-full-margins;
 		padding-top: 1em;
+	}
+}
+
+#header,
+#navigation,
+#container-footer,
+#footer {
+	width: 740px;
+}
+@media only screen and (min-width : 1024px) {
+	#header,
+	#navigation,
+	#container-footer,
+	#footer {
+		width: 960px;
+	}
+}
+
+#bundle-detail {
+	@include box-sizing(border-box);
+	margin: 0 auto;
+	width: 740px;//700px;
+	padding: 1.5rem 0;
+	>p, >h2, >div {
+		@include col-full-margins();
+	}
+	// top: 1.5rem; height: calc(100% - 3rem); left: calc(50% - 370px);
+}
+@media only screen and (min-width : 1024px) {
+	#bundle-detail {
+		position: absolute;
+		width: 220px;
+		left: calc(50% - 480px);
 	}
 }
 
@@ -136,77 +141,69 @@ $gutter: 20px;
 	width: 700px;
 	left: calc(50% - 350px);
 }
-#bundle-detail {
-}
-#bundle-images-pager {
-	width: auto;
-	margin-bottom: 1.5rem;
-	position: absolute;
-	left: 0;
-	bottom: 100%;
-}
+// #bundle-images-pager {
+// 	width: auto;
+// 	margin-bottom: 1.5rem;
+// 	position: absolute;
+// 	left: 0;
+// 	bottom: 100%;
+// }
 
 /*
  * View visibility by app state
  */
-// default
+// default,
+// bundle-list (.app-bundle-list)
 #bundle-pager,
 #bundle-detail,
 #bundle-images-pager {
-	opacity: 0;
 	visibility: hidden;
-	max-height: auto;
 }
 .image-list {
 	visibility: hidden;
-}
-// bundle-list
-.app-bundle-list {
-	#bundle-pager,
-	#bundle-detail,
-	#bundle-images-pager {
-		// animation: fadeOut 1s;
-		opacity: 0;
-		visibility: hidden;
-		max-height: 0;
-	}
-	.image-list {
-		visibility: hidden;
-	}
 }
 // bundle-item
 .app-bundle-item {
 	#bundle-pager,
 	#bundle-detail,
 	#bundle-images-pager {
-		// animation: fadeIn 1s;
-		opacity: 1;
 		visibility: visible;
-		max-height: auto;
 	}
 	.image-list {
 		visibility: visible;
 	}
 }
 
-@keyframes fadeOut {
-	from {
-		opacity: 1;
-	}
-	30%, to {
-		opacity: 0;
-		visibility: hidden;
-		max-height: 0;
-	}
-}
-@keyframes fadeIn {
-	from, 60% {
-		opacity: 0;
-		visibility: visible;
-		max-height: auto;
-	}
-	to {
-		opacity: 1;
-	}
-}
+// @mixin fadeIn {
+// 	// animation: fadeIn 1s;
+// 	opacity: 1;
+// 	visibility: visible;
+// 	max-height: auto;
+// }
+// @mixin fadeOut {
+// 	// animation: fadeOut 1s;
+// 	opacity: 0;
+// 	visibility: hidden;
+// 	max-height: 0;
+// }
 
+// @keyframes fadeOut {
+// 	from {
+// 		opacity: 1;
+// 	}
+// 	30%, to {
+// 		opacity: 0;
+// 		visibility: hidden;
+// 		max-height: 0;
+// 	}
+// }
+// @keyframes fadeIn {
+// 	from, 60% {
+// 		opacity: 0;
+// 		visibility: visible;
+// 		max-height: auto;
+// 	}
+// 	to {
+// 		opacity: 1;
+// 	}
+// }

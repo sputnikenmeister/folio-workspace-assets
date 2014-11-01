@@ -39,8 +39,6 @@ module.exports = Backbone.View.extend({
 				key: "bIds"
 			}
 		});
-		// this.listenTo(this.bundleListView, "view:itemSelect", this.whenBundleSelect);
-		// this.listenTo(this.bundleListView, "view:itemDeselect", this.whenBundleDeselect);
 
 		this.keywordListView = new GroupingListView({
 			el: "#keyword-list",
@@ -54,7 +52,25 @@ module.exports = Backbone.View.extend({
 				key: "tIds"
 			},
 		});
-		// this.listenTo(this.keywordListView, "view:itemSelect", this.whenKeywordSelect);
-	}
+
+		this.listenTo(this.bundleListView, "view:itemSelect", this.whenBundleSelect);
+		this.listenTo(this.bundleListView, "view:itemDeselect", this.whenBundleDeselect);
+		this.listenTo(this.keywordListView, "view:itemSelect", this.whenKeywordSelect);
+
+		this.listenTo(Backbone, "app:bundleItem", this.whenAppBundleItem);
+		this.listenTo(Backbone, "app:bundleList", this.whenAppBundleList);
+	},
+
+	whenBundleSelect: function(model) {
+	},
+
+	whenBundleDeselect: function() {
+	},
+
+	whenAppBundleItem: function(newItem) {
+	},
+
+	whenAppBundleList: function() {
+	},
 
 });

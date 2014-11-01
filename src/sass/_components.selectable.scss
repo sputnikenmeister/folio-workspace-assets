@@ -3,6 +3,9 @@
 	.item {
 		display: block;
 		width: 100%;
+		// white-space: nowrap;
+		// overflow: hidden;
+		// text-overflow: ellipsis;
 		a { color: inherit; }
 	}
 	.selected {
@@ -21,7 +24,7 @@
 	min-height: 3rem;
 
 	.item {
-		@include heading;
+		@include heading-text;
 		@include translateX(-2px);
 		.completed {
 			display: none;
@@ -97,7 +100,7 @@ $collapse-params: 1s $ease-fn;
 	}
 }
 
-#bundle-list.animate,
+// #bundle-list.animate,
 #keyword-list.animate  {
 	.group, .item {
 		transition-property: opacity, visibility, max-height;
@@ -106,31 +109,35 @@ $collapse-params: 1s $ease-fn;
 		transition-delay: 0.7s, 0s, 0.35s;// wait, expand, fadein
 	}
 	&.collapsed {
-		.group.excluded, .item.excluded, .item:not(.selected) {
+		.group.excluded, .item.excluded {
 			transition-timing-function: $ease-fn, step-end, $ease-fn;
 			transition-delay: 0s, 0s, 0.35s;// fadeout, collapse, wait
 		}
 	}
 }
 
-// #bundle-list.animate {
-// 	.item {
-// 		transition-property: opacity, visibility, max-height;
-// 		transition-timing-function: $ease-fn, step-start, $ease-fn;
-// 		transition-duration: 0.3s, 1s, 0.3s;
-// 		transition-delay: 0.7s, 0s, 0.35s;// wait, expand, fadein
-// 	}
-// 	&.collapsed {
-// 		.item.selected {
-// 			transition-timing-function: $ease-fn, step-start, $ease-fn;
-// 			transition-delay: 0.35s, 0s, 0.35s;// fadeout, collapse, wait
-// 		}
-// 		.item:not(.selected) {
-// 			transition-timing-function: $ease-fn, step-end, $ease-fn;
-// 			transition-delay: 0.35s, 0s, 0.35s;// fadeout, collapse, wait
-// 		}
-// 	}
-// }
+#bundle-list.animate {
+	.item {
+		transition-property: opacity, visibility, max-height;
+		transition-timing-function: $ease-fn, step-start, $ease-fn;
+		transition-duration: 0.3s, 1s, 0.3s;
+		transition-delay: 0.7s, 0s, 0.35s;// wait, expand, fadein
+	}
+	&.collapsed {
+		// .item.selected {
+		// 	transition-timing-function: $ease-fn, step-start, $ease-fn;
+		// 	transition-delay: 0.35s, 0s, 0.35s;// fadeout, collapse, wait
+		// }
+		// .item:not(.selected) {
+		// 	transition-timing-function: $ease-fn, step-end, $ease-fn;
+		// 	transition-delay: 0.35s, 0s, 0.35s;// fadeout, collapse, wait
+		// }
+		.item:not(.selected) {
+			transition-timing-function: $ease-fn, step-end, $ease-fn;
+			transition-delay: 0s, 0s, 0.35s;// fadeout, collapse, wait
+		}
+	}
+}
 
 /*
 // #keyword-list {

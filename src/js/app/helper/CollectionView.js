@@ -4,35 +4,57 @@
 */
 
 /** @type {module:underscore} */
-var _ = require( "underscore" );
+// var _ = require( "underscore" );
 
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+// var Backbone = require( "backbone" );
 
 /**
  * @constructor
  * @type {module:app/view/CollectionView}
  */
-module.exports = Backbone.View.extend({
+var CollectionView = function () {};
+
+CollectionView.prototype = {
 
 	/** @private */
-	assignView: function(view, index) {
+	addView: function(view, index) {
+		this._itemIds[index] = view.model.id;
 		this._itemViews[index] = this._itemViewsIndex[view.model.id] = view;
 		this._itemEls[index] = this._itemElsIndex[view.model.id] = view.el;
 	},
 
 	/** @private */
+	removeAllViews: function() {
+		this._itemViews.length = 0;
+		this._itemViewsIndex = {};
+		this._itemEls.length = 0;
+		this._itemElsIndex = {};
+	},
+
+	/** @private */
+	_itemIds: [],
+	/** @private */
+	getItemId: function(index) {
+		return this._itemIds[index];
+	},
+	/** @private */
+	getAllItemIds: function() {
+		return this._itemIds;
+	},
+
+	/** @private */
 	_itemViewsIndex: {},
 	/** @private */
-	getItemView: function(model) {
-		return this._itemViewsIndex[model.id];
+	getItemView: function(obj) {
+		return this._itemViewsIndex[obj] || this._itemViewsIndex[obj.id];
 	},
 
 	/** @private */
 	_itemElsIndex: {},
 	/** @private */
-	getItemElement: function(model) {
-		return this._itemElsIndex[model.id];
+	getItemElement: function(obj) {
+		return this._itemElsIndex[obj] || this._itemElsIndex[obj.id];
 	},
 
 	/** @private */
@@ -47,6 +69,7 @@ module.exports = Backbone.View.extend({
 	/** @private */
 	getAllItemElements: function() {
 		return this._itemEls;
-	}
+	},
+};
 
-});
+module.exports = CollectionView;

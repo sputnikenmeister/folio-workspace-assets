@@ -96,16 +96,17 @@ module.exports = Backbone.View.extend({
 		this.listenTo(this.bundlePagerView, "view:itemSelect", this.whenBundleSelect);
 		this.listenTo(this.bundlePagerView, "view:itemDeselect", this.whenBundleDeselect);
 
-		// this.bundleDetailView = new BundleDetailView({
-		// 	el: "#bundle-detail"
-		// 	collection:this.bundleList,
-		// });
-
 		// this.imagePagerView = new CollectionPagerView({
 		// 	collection:this.imageList, id: "bundle-images-pager", className: "rsquare-pager"
 		// });
 		// this.$("#navigation").append(this.imagePagerView.render().el);
 		// this.listenTo(this.imagePagerView, "view:itemSelect", this.whenImageSelect);
+
+		this.bundleDetailView = new BundleDetailView({
+			id: "bundle-detail",
+			collection:this.bundleList
+		});
+		this.$("#content").append(this.bundleDetailView.render().el);
 
 		this.imageListView = new ImageListView({
 			id: "bundle-images",
@@ -183,7 +184,7 @@ module.exports = Backbone.View.extend({
 	 */
 
 	deselectBundle: function() {
-		this.bundleList.select(null);
+		this.bundleList.deselect();
 		this.keywordListView.collapsed(false);
 		this.bundleListView.collapsed(false);
 

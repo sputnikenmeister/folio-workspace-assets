@@ -29,6 +29,10 @@ module.exports = Backbone.Collection.extend({
 		this.trigger("collection:select", newModel, oldModel);
 	},
 
+	deselect: function() {
+		this.select(null);
+	},
+
 	/** @return boolean	 */
 	hasFollowing:function(model) {
 		return this.indexOf(model) < (this.length - 1);
