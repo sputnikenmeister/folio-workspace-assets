@@ -13,7 +13,8 @@
  * @constructor
  * @type {module:app/view/CollectionView}
  */
-var CollectionView = function () {};
+var CollectionView = function () {
+};
 
 CollectionView.prototype = {
 

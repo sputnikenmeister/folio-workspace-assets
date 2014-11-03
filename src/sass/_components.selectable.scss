@@ -1,12 +1,20 @@
 
 .selectable-list {
+	position: relative;
+
 	.item {
 		display: block;
 		width: 100%;
 		// white-space: nowrap;
 		// overflow: hidden;
 		// text-overflow: ellipsis;
-		a { color: inherit; }
+		a {
+			color: inherit;
+			-webkit-transition: translate3d(0,0,0);
+		}
+	}
+	.group {
+		-webkit-transition: translate3d(0,0,0);
 	}
 	.selected {
 		color: $link-color;
@@ -64,13 +72,16 @@ $collapse-params: 1s $ease-fn;
 		opacity: 1;
 	}
 	&.collapsed {
+		.item {
+			max-height: 0;// watch out!!!
+		}
 		// .item.selected {
-		// 	max-height: 1.5em;// watch out!!!
+		// 	max-height: 1.5em;
 		// 	visibility: visible;
 		// 	opacity: 1;
 		// }
 		.item:not(.selected) {
-			max-height: 0;
+			// max-height: 0;
 			visibility: hidden;
 			opacity: 0;
 		}

@@ -37,7 +37,7 @@ module.exports  = Backbone.View.extend({
 
 	initialize: function(options) {
 		this.hammer = new Hammer.Manager(this.el);
-		this.hammer.add(new Hammer.Pan({direction: this.direction, threshold: 10}));
+		this.hammer.add(new Hammer.Pan({direction: this.direction, threshold: 20}));
 
 		_.bindAll(this, "onPan", "onWindowResize");
 		this.hammer.on("panstart panmove panend pancancel", this.onPan);
@@ -53,30 +53,35 @@ module.exports  = Backbone.View.extend({
 
 	/* App event handlers */
 	whenAppBundleList: function() {
-		this.collection.reset();
+		// this.collection.reset();
 	},
 
 	whenAppBundleItem: function(bundle) {
-		this.collection.reset(bundle.get("images"));
-		this.collection.select(this.collection.first());
+		// this.collection.reset(bundle.get("images"));
 	},
 
 	/* Model event handlers */
 	whenCollectionReset: function() {
 		this.render();
+		if (this.collection.length > 0) {
+			this.collection.select(this.collection.first());
+		}
+		// this.currentIndex = 0;
 	},
 
 	whenCollectionSelect: function(newItem, oldItem) {
-	// 	this.renderSelection(newItem, oldItem);
-	// },
+		this.renderSelection(newItem, oldItem);
+	},
 
-	// renderSelection: function(newItem, oldItem) {
+	renderSelection: function(newItem, oldItem) {
 		if (oldItem) {
 			this.getItemView(oldItem).$el.removeClass("selected");
+			this.currentIndex = 0;
 		}
 
 		if (newItem) {
 			this.getItemView(newItem).$el.addClass("selected");
+			this.currentIndex = this.collection.indexOf(newItem);
 		}
 	},
 
@@ -90,11 +95,12 @@ module.exports  = Backbone.View.extend({
 		var eltBuffer, view, viewSize, maxSize = 0;
 
 		this.removeAllChildViews();
+		this.$el.empty();
 
 		eltBuffer = document.createDocumentFragment();
 		// eltBuffer = document.createElement("div");
 		this.collection.each(function(model, index, arr) {
-			view = this.createChildViewAt(model, index);
+			view = this.createChildView(model, index);
 			eltBuffer.appendChild(view.render().el);
 			// Get the tallest height for the container
 			maxSize = Math.max(maxSize, view[this.getDirProp("computedHeight", "computedWidth")]);
@@ -111,14 +117,13 @@ module.exports  = Backbone.View.extend({
 	},
 
 	removeAllChildViews: function() {
-		this._itemViews = [];
+		this._itemViews.length = 0;//[];
 		this._itemViewsIndex = {};
-		this._itemEls = [];
+		this._itemEls.length = 0;//[];
 		this._itemElsIndex = {};
-		this.$el.empty();
 	},
 
-	createChildViewAt: function(model, index) {
+	createChildView: function(model, index) {
 		var view = new ImageView({model: model});
 		this._itemViews[index] = this._itemViewsIndex[model.id] = view;
 		this._itemEls[index] = this._itemElsIndex[model.id] = view.el;
@@ -132,26 +137,34 @@ module.exports  = Backbone.View.extend({
 	onPan : function (ev) {
 		var delta = this.getDirProp(ev.deltaX, ev.deltaY);
 		var percent = delta / this.containerSize;
-		var animate = false;
 		var proposedIndex = this.currentIndex;
 		var lastIndex = this.collection.length - 1;
 
-		if (ev.type == "panend" || ev.type == "pancancel") {
-			if (Math.abs(percent) > 0.2 && ev.type == "panend") {
-				// when panned by >20%, selection may need change
-				proposedIndex += (percent < 0) ? 1 : -1;
-				if (0 <= proposedIndex && proposedIndex <= lastIndex) {
+		var isOutOfBounds = (proposedIndex == 0 && percent > 0) || (proposedIndex == lastIndex && percent < 0);
+
+		switch(ev.type) {
+			case "panstart":
+				/* falls through */
+			case "panmove":
+				if (isOutOfBounds) {
+					percent *= 0.2; // when at first or last index, add feedback to gesture
+				}
+				this.scrollToIndex(proposedIndex, percent, false);
+				break;
+
+			case "panend":
+				if (!isOutOfBounds && Math.abs(percent) > 0.15) {
+					proposedIndex += (percent < 0) ? 1 : -1;
 					this.trigger("view:itemSelect", this.collection.at(proposedIndex));
 				}
-			}
-			percent = 0;
-			animate = true;
-		} else {
-			if ((proposedIndex == 0 && percent > 0) || (proposedIndex == lastIndex && percent < 0)) {
-				percent *= 0.2; // when at first or last index, add feedback to gesture
-			}
+				/* falls through */
+			case "pancancel":
+				this.scrollToIndex(proposedIndex, 0, true);
+				break;
+
+			default:
+				return;
 		}
-		this.scrollToIndex(proposedIndex, percent, animate);
 	},
 
 	/**
@@ -161,10 +174,11 @@ module.exports  = Backbone.View.extend({
 	 * @param {Boolean} [animate]
 	 */
 	scrollToIndex: function(showIndex, percent, animate){
-		var els, numEls, elsIndex, pos;
+		var els, elsNum, elsIndex, pos;
+
 		els = this.getAllItemElements();
-		numEls = els.length;
-		showIndex = Math.max(0, Math.min(showIndex, numEls - 1)); // out of bounds check
+		elsNum = els.length;
+		showIndex = Math.max(0, Math.min(showIndex, elsNum - 1)); // out of bounds check
 		percent = percent || 0; // non null check
 
 		if (animate) {
@@ -173,29 +187,30 @@ module.exports  = Backbone.View.extend({
 			this.$el.removeClass("animate");
 		}
 
-		// var beforeGap = 50, afterGap = 100;
-		for (elsIndex = 0; elsIndex < numEls; elsIndex++) {
+		var beforeGap = 0, afterGap = 0;
+
+		for (elsIndex = 0; elsIndex < elsNum; elsIndex++) {
 			pos = this.containerSize * ((elsIndex - showIndex) + percent);
-			// if (0 > pos) {
-			// 	if (pos > (-this.containerSize)) {
-			// 		pos += beforeGap/this.containerSize * pos;
-			// 	} else {
-			// 		pos += -beforeGap;
-			// 	}
-			// } else
-			// if (0 < pos) {
-			// 	if (pos < this.containerSize) {
-			// 		pos += afterGap/this.containerSize * pos;
-			// 	} else {
-			// 		pos += afterGap;
-			// 	}
-			// }
-			this.applyTranslate(els[elsIndex], pos);
+			if (beforeGap > 0 && 0 > pos) {
+				if (pos > (-this.containerSize)) {
+					pos += beforeGap/this.containerSize * pos;
+				} else {
+					pos += -beforeGap;
+				}
+			} else
+			if (afterGap > 0 && 0 < pos) {
+				if (pos < this.containerSize) {
+					pos += afterGap/this.containerSize * pos;
+				} else {
+					pos += afterGap;
+				}
+			}
+			this.applyScrollToChild(els[elsIndex], pos);
 		}
 		this.currentIndex = showIndex;
 	},
 
-	applyTranslate:function(elt, pos) {
+	applyScrollToChild:function(elt, pos) {
 		var translate;
 		if(this.direction & Hammer.DIRECTION_HORIZONTAL) {
 			translate = "translate3d(" + pos + "px, 0, 0)";

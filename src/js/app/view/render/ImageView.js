@@ -14,14 +14,17 @@ var ImageItem = require( "../../model/item/ImageItem" );
 
 /** @type {string} */
 var viewTemplate = require( "../template/ImageView.tpl" );
-// var viewTemplate = require( "../template/ImageView.Placeholder.tpl" );
 
 /** @type {string} */
-var captionTemplate = require( "../template/ImageView.Caption.tpl" );
+// var placeholderTemplate = require( "../template/ImageView.Placeholder.tpl" );
+
+/** @type {string} */
+// var captionTemplate = require( "../template/ImageView.Caption.tpl" );
 
 /** @type {Object} */
 // var recipe = { prefix: "/workspace/uploads/", constraint: 700 };		// original file, resized by browser to 700
-var recipe = { prefix: "/image/1/700/0/uploads/", constraint: 700 };	// resize to 700
+// var recipe = { prefix: "/image/1/700/0/uploads/", constraint: 700 };	// resize to 700
+var recipe = { prefix: "/image/1/620/0/uploads/", constraint: 620 };	// resize to 700
 // var recipe = { prefix: "/image/w480/uploads/", constraint: 480 };	// named recipe
 
 /**

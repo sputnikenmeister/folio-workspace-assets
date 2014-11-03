@@ -14,7 +14,7 @@
 	// overflow: visible;
 	overflow: hidden;
 	padding: 1.5rem 0; height: 100%;
-	margin: -1.5rem 0; width: 100%; min-width: 740px;
+	margin: -1.5rem 0; width: 100%; min-width: $page-width;
 	// margin: -1.5rem auto; width: 740px;
 	// margin: -1.5rem auto; width: calc(100% - 6rem); min-width: 740px;
 }
@@ -23,16 +23,18 @@
 }
 
 .image-item {
-	width: 740px;
-	left: calc(50% - 370px);
+	width: $page-width;
+	left: calc(50% - #{$page-width/2});
 	height: calc(100% - 3rem);
 	// top: 1.5rem; height: calc(100% - 3rem); left: calc(50% - 370px);
 	// right: 0;
 }
 @media only screen and (min-width : 1024px) {
 	.image-item {
-		width: 960px;
-		left: calc(50% - 480px);
+		// width: 960px;
+		// left: calc(50% - 480px);
+		width: $page-width-large;
+		left: calc(50% - #{$page-width-large/2});
 	}
 }
 
@@ -66,7 +68,7 @@
 
 		p {
 			@include heading-text;
-			margin: 1rem $page-margin;
+			margin: 1rem $gutter;
 		}
 		&, * {
 			user-select: none;

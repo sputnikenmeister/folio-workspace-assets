@@ -24,7 +24,8 @@ var GroupingListView = require( "./component/GroupingListView" );
  */
 module.exports = Backbone.View.extend({
 
-	el: "#navigation",
+	tagName: "div",
+	className: "navigation",
 
 	/** Setup listening to model changes */
 	initialize: function(options) {
@@ -32,7 +33,7 @@ module.exports = Backbone.View.extend({
 		 * initialize views
 		 */
 		this.bundleListView = new SelectableListView({
-			el: "#bundle-list",
+			el: this.$("#bundle-list"),
 			collection: bundleList,
 			associations: {
 				collection: keywordList,
@@ -41,7 +42,7 @@ module.exports = Backbone.View.extend({
 		});
 
 		this.keywordListView = new GroupingListView({
-			el: "#keyword-list",
+			el: this.$("#keyword-list"),
 			collection: keywordList,
 			associations: {
 				collection: bundleList,
@@ -53,9 +54,9 @@ module.exports = Backbone.View.extend({
 			},
 		});
 
+		// this.listenTo(this.keywordListView, "view:itemSelect", this.whenKeywordSelect);
 		this.listenTo(this.bundleListView, "view:itemSelect", this.whenBundleSelect);
 		this.listenTo(this.bundleListView, "view:itemDeselect", this.whenBundleDeselect);
-		this.listenTo(this.keywordListView, "view:itemSelect", this.whenKeywordSelect);
 
 		this.listenTo(Backbone, "app:bundleItem", this.whenAppBundleItem);
 		this.listenTo(Backbone, "app:bundleList", this.whenAppBundleList);
