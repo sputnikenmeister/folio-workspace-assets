@@ -6,11 +6,18 @@
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
-module.exports = Backbone.Router.extend({
+var AppRouter = Backbone.Router.extend({
 
 	routes: {
 		"bundles/:handle" : "bundleItem",
 		"" : "bundleList",
+	},
+
+	getApplicationRoot: function() {
+		return this.approot = this.approot || window.location;
+	},
+	setApplicationRoot: function(approot) {
+		this.approot = approot;
 	},
 
 	// bundleHandle: null,
@@ -26,3 +33,4 @@ module.exports = Backbone.Router.extend({
 	// }
 
 });
+module.exports = new AppRouter();

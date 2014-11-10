@@ -1,20 +1,16 @@
 
-.selectable-list {
+.list.selectable {
 	position: relative;
 
-	.item {
+	.list-item {
 		display: block;
-		width: 100%;
 		// white-space: nowrap;
-		// overflow: hidden;
+		// overflow-y: hidden;
 		// text-overflow: ellipsis;
+		-webkit-transition: translate3d(0,0,0);
 		a {
 			color: inherit;
-			-webkit-transition: translate3d(0,0,0);
 		}
-	}
-	.group {
-		-webkit-transition: translate3d(0,0,0);
 	}
 	.selected {
 		color: $link-color;
@@ -27,13 +23,24 @@
 	}
 }
 
+.list.grouped {
+	.list-group {
+		display: block;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		-webkit-transition: translate3d(0,0,0);
+	}
+}
+
 #bundle-list {
 	padding-top: 0.5rem;
 	min-height: 3rem;
 
-	.item {
+	.list-item {
 		@include heading-text;
 		@include translateX(-2px);
+		width: 100%;
 		.completed {
 			display: none;
 		}
@@ -42,19 +49,18 @@
 
 #keyword-list {
 	padding-top: 1rem;
-
-	.item {
-		width: 62%;
-		margin-left: 38%;
+	.list-item {
+		// width: 62%;
+		margin-left: calc(38% + #{$gutter/2});
 		line-height: 1.5rem;
 	}
-	.group {
+	.list-group {
 		@include small-caps;
-		// @include translateY(1px);
+		@include translateY(1px);
+		width: calc(38% - #{$gutter/2});
 		line-height: 1.5rem;
-		position: absolute;
-		width: calc(38% - 2rem);
-		left: 0;
+		left: 0; position: absolute;
+		// float: left; clear: left;
 	}
 }
 
@@ -62,25 +68,24 @@
  * Animations/Transitions
  */
 
-$ease-fn: ease;
-$collapse-params: 1s $ease-fn;
+$collapse-ease: ease;
 
 #bundle-list {
-	.item {
+	.list-item {
 		max-height: 1.5em;
 		visibility: visible;
 		opacity: 1;
 	}
 	&.collapsed {
-		.item {
+		.list-item {
 			max-height: 0;// watch out!!!
 		}
-		// .item.selected {
+		// .list-item.selected {
 		// 	max-height: 1.5em;
 		// 	visibility: visible;
 		// 	opacity: 1;
 		// }
-		.item:not(.selected) {
+		.list-item:not(.selected) {
 			// max-height: 0;
 			visibility: hidden;
 			opacity: 0;
@@ -89,22 +94,22 @@ $collapse-params: 1s $ease-fn;
 }
 
 #keyword-list {
-	.item {
+	.list-item {
 		max-height: 1.5em;
 		visibility: visible;
 		opacity: 1;
 	}
-	.group {
+	.list-group {
 		visibility: visible;
 		opacity: 1;
 	}
 	&.collapsed {
-		.item.excluded {
+		.list-item.excluded {
 			max-height: 0;
 			visibility: hidden;
 			opacity: 0;
 		}
-		.group.excluded {
+		.list-group.excluded {
 			visibility: hidden;
 			opacity: 0;
 		}
@@ -113,63 +118,65 @@ $collapse-params: 1s $ease-fn;
 
 // #bundle-list.animate,
 #keyword-list.animate  {
-	.group, .item {
+	.list-group, .list-item {
 		transition-property: opacity, visibility, max-height;
-		transition-timing-function: $ease-fn, step-start, $ease-fn;
+		transition-timing-function: $collapse-ease, step-start, $collapse-ease;
 		transition-duration: 0.3s, 1s, 0.3s;
 		transition-delay: 0.7s, 0s, 0.35s;// wait, expand, fadein
 	}
 	&.collapsed {
-		.group.excluded, .item.excluded {
-			transition-timing-function: $ease-fn, step-end, $ease-fn;
+		.list-group.excluded, .list-item.excluded {
+			transition-timing-function: $collapse-ease, step-end, $collapse-ease;
 			transition-delay: 0s, 0s, 0.35s;// fadeout, collapse, wait
 		}
 	}
 }
 
 #bundle-list.animate {
-	.item {
+	.list-item {
 		transition-property: opacity, visibility, max-height;
-		transition-timing-function: $ease-fn, step-start, $ease-fn;
+		transition-timing-function: $collapse-ease, step-start, $collapse-ease;
 		transition-duration: 0.3s, 1s, 0.3s;
 		transition-delay: 0.7s, 0s, 0.35s;// wait, expand, fadein
 	}
 	&.collapsed {
-		// .item.selected {
-		// 	transition-timing-function: $ease-fn, step-start, $ease-fn;
+		// .list-item.selected {
+		// 	transition-timing-function: $collapse-ease, step-start, $collapse-ease;
 		// 	transition-delay: 0.35s, 0s, 0.35s;// fadeout, collapse, wait
 		// }
-		// .item:not(.selected) {
-		// 	transition-timing-function: $ease-fn, step-end, $ease-fn;
+		// .list-item:not(.selected) {
+		// 	transition-timing-function: $collapse-ease, step-end, $collapse-ease;
 		// 	transition-delay: 0.35s, 0s, 0.35s;// fadeout, collapse, wait
 		// }
-		.item:not(.selected) {
-			transition-timing-function: $ease-fn, step-end, $ease-fn;
+		.list-item:not(.selected) {
+			transition-timing-function: $collapse-ease, step-end, $collapse-ease;
 			transition-delay: 0s, 0s, 0.35s;// fadeout, collapse, wait
 		}
 	}
 }
 
 /*
+$collapse-params: 1s $collapse-ease;
+
 // #keyword-list {
 // #keyword-list.animate {
 #none.animate {
 	// &:not(.collapsed) {
-		.item { animation: fromCollapsedItem $collapse-params; }
-		.group { animation: fromCollapsedGroup $collapse-params; }
-		// .item:not(.excluded) { animation: fromCollapsedItem $collapse-params; }
-		// .group:not(.excluded) { animation: fromCollapsedGroup $collapse-params; }
+		.list-item { animation: fromCollapsedItem $collapse-params; }
+		.list-group { animation: fromCollapsedGroup $collapse-params; }
+		// .list-item:not(.excluded) { animation: fromCollapsedItem $collapse-params; }
+		// .list-group:not(.excluded) { animation: fromCollapsedGroup $collapse-params; }
 	// }
 	&.collapsed {
-		// .item.included { animation: fromCollapsedItem $collapse-params; }
-		// .group.included { animation: fromCollapsedGroup $collapse-params; }
-		// .item:not(.included) { animation: toCollapsedItem $collapse-params; }
-		// .group:not(.included) { animation: toCollapsedGroup $collapse-params; }
+		// .list-item.included { animation: fromCollapsedItem $collapse-params; }
+		// .list-group.included { animation: fromCollapsedGroup $collapse-params; }
+		// .list-item:not(.included) { animation: toCollapsedItem $collapse-params; }
+		// .list-group:not(.included) { animation: toCollapsedGroup $collapse-params; }
 
-		// .item:not(.excluded) { animation: fromCollapsedItem $collapse-params; }
-		// .group:not(.excluded) { animation: fromCollapsedGroup $collapse-params; }
-		.item.excluded { animation: toCollapsedItem $collapse-params; }
-		.group.excluded { animation: toCollapsedGroup $collapse-params; }
+		// .list-item:not(.excluded) { animation: fromCollapsedItem $collapse-params; }
+		// .list-group:not(.excluded) { animation: fromCollapsedGroup $collapse-params; }
+		.list-item.excluded { animation: toCollapsedItem $collapse-params; }
+		.list-group.excluded { animation: toCollapsedGroup $collapse-params; }
 	}
 }
 

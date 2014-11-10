@@ -1,30 +1,30 @@
 /**
- * @module app/model
+ * @module app/control/AppModel
  * @requires module:backbone
  */
 
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
-/** @type {module:app/model/BundleList} */
-var BundleList = require( "../model/BundleList" );
-/** @type {module:app/model/KeywordList} */
-var KeywordList = require( "../model/KeywordList" );
-/** @type {module:app/model/TypeList} */
-var TypeList = require( "../model/TypeList" );
-/** @type {module:app/model/ImageList} */
-var ImageList = require( "../model/ImageList" );
+/** @type {module:app/model/collection/BundleList} */
+var BundleList = require( "../model/collection/BundleList" );
+/** @type {module:app/model/collection/KeywordList} */
+var KeywordList = require( "../model/collection/KeywordList" );
+/** @type {module:app/model/collection/TypeList} */
+var TypeList = require( "../model/collection/TypeList" );
+/** @type {module:app/model/collection/ImageList} */
+var ImageList = require( "../model/collection/ImageList" );
 
 /**
  * @constructor
- * @type {module:app/AppModel}
+ * @type {module:app/control/AppModel}
  */
 var AppModel = Backbone.Model.extend({
 	defaults: {
-		bundles: new BundleList(),
-		keywords: new KeywordList(),
-		types: new TypeList(),
-		images: new ImageList(),
+		// bundles: new BundleList(),
+		// keywords: new KeywordList(),
+		// types: new TypeList(),
+		// images: new ImageList(),
 
 		root: "",
 		selectedBundle: null,

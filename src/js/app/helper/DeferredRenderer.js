@@ -4,7 +4,7 @@
 */
 
 /** @type {module:underscore} */
-// var _ = require( "underscore" );
+var _ = require( "underscore" );
 
 /**
  * @constructor
@@ -16,19 +16,19 @@ var DeferredRenderer = function(){
 DeferredRenderer.prototype = {
 
 	/** @type {Object.<String, {Function|true}}>} */
-	renderJobs: null,
+//	renderJobs: null,
 
 	/** @type {long} */
 	renderRequestId: 0,
 
 	/**
-	* @param {String} [key]
-	* @param [value]
-	*/
+	 * @param {String} [key]
+	 * @param [value]
+	 */
 	requestRender: function(key, value) {
-		if (this.renderJobs == null) {
-			this.renderRequestId = window.requestAnimationFrame(this.getRenderCallback());
+		if (undefined === this.renderJobs) {
 			this.renderJobs = {};
+			this.renderRequestId = window.requestAnimationFrame(this.getRenderCallback());
 		}
 		if (key) {
 			this.renderJobs[key] = value? value: true;
@@ -40,14 +40,14 @@ DeferredRenderer.prototype = {
 
 	/** @private */
 	getRenderCallback: function() {
-		return this._renderCallback? this._renderCallback: this.validateRender.bind(this);
-		// return this._renderCallback? this._renderCallback: _.bind(this.validateRender,this);
+//		return this._renderCallback? this._renderCallback: this.validateRender.bind(this);
+		return this._renderCallback? this._renderCallback: _.bind(this.validateRender,this);
 	},
 
 	/** @private */
 	validateRender: function(timestamp) {
 		this.render(timestamp);
-		this.renderJobs = null;
+		delete this.renderJobs;
 	},
 };
 

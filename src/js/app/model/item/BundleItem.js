@@ -12,9 +12,7 @@ var Backbone = require( "backbone" );
  */
 module.exports = Backbone.Model.extend({
 
-	/**
-	 * @type {Object}
-	 */
+	/** @type {Object} */
 	defaults: {
 		name: "",
 		handle: "",
@@ -33,6 +31,6 @@ module.exports = Backbone.Model.extend({
 	/** @override */
 	toString: function() {
 		return this.id;
-	}
+	},
 
 });

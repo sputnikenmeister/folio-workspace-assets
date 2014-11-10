@@ -24,7 +24,9 @@ var GroupingListView = require( "./component/GroupingListView" );
  */
 module.exports = Backbone.View.extend({
 
+	/** @override */
 	tagName: "div",
+	/** @override */
 	className: "navigation",
 
 	/** Setup listening to model changes */

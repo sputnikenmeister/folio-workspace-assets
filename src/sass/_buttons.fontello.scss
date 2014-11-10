@@ -104,11 +104,12 @@
 	.button,
 	.button:link,
 	.button:visited {
-		color: $color;
-		background-color: $background-color;
+		// color: $color;
+		color: lighten($color, 35%);
+		background-color: $background-color;//scale_color($background-color, $alpha: -70%);
+		border-color: scale_color($color, $lightness: 35%, $alpha: -70%);
 		border-width: 1px;
 		border-style: solid;
-		border-color: scale_color($background-color, $lightness: -5%);
 	}
 	.button:hover {
 		color: white;

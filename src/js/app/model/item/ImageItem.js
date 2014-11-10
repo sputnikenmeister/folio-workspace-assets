@@ -3,8 +3,11 @@
 * @requires module:backbone
 */
 
+/** @type {module:underscore} */
+var _ = require( "underscore" );
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
+// require( "backbone.picky" );
 
 /**
  * @constructor
@@ -12,17 +15,21 @@ var Backbone = require( "backbone" );
  */
 module.exports = Backbone.Model.extend({
 
-	/**
-	 * @type {Object}
-	 */
+	/** @type {Object} */
 	defaults: {
 		f: "",
 		w: 0,
 		h: 0,
-		desc: "",
+		desc: "<p>No description</p>",
 		attrs: [],
 		bId: 0,
-		excluded: false,
+	},
+
+	initialize: function() {
+        Backbone.Cycle.SelectableModel.applyTo(this);
+ 		// Backbone.Select.Me.applyTo(this);
+		// var selectable = new Backbone.Picky.Selectable(this);
+		// _.extend(this, selectable);
 	},
 
 	selector: function() {
@@ -32,6 +39,6 @@ module.exports = Backbone.Model.extend({
 	/** @override */
 	toString: function() {
 		return this.id;
-	}
+	},
 
 });

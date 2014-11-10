@@ -1,1 +1,1 @@
-<div class="caption sc">{{desc}}</div>
+<div id="<%= longdesc %>" class="caption longdesc"><%= desc %></div>

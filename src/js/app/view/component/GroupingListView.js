@@ -3,11 +3,10 @@
 * @requires module:backbone
 */
 
-/** @type {module:backbone} */
-var Backbone = require( "backbone" );
-
 /** @type {module:underscore} */
 var _ = require( "underscore" );
+/** @type {module:backbone} */
+var Backbone = require( "backbone" );
 
 /** @type {module:app/view/component/SelectableListView} */
 var SelectableListView = require( "./SelectableListView" );
@@ -17,10 +16,10 @@ var SelectableListView = require( "./SelectableListView" );
  * @type {module:app/view/component/GroupingView}
  */
 var GroupingView = Backbone.View.extend({
-	// /** @override */
-	// tagName: "dt",
-	// /** @override */
-	// className: "group",
+	/** @override */
+	tagName: "dt",
+	/** @override */
+	className: "list-group",
 
 	// initialize: function(options) {
 	// 	this.listenTo(this.model, "change:excluded", this.onExcludedChange);
@@ -41,13 +40,18 @@ var GroupingView = Backbone.View.extend({
  */
 module.exports = SelectableListView.extend({
 
+	/** @override */
+	tagName: "dl",
+	/** @override */
+	className: "list selectable filterable grouped",
 	/** @private */
 	groupings: {},
-
 	/** @type {Backbone.ChildViewContainer} */
 	groupingViews: new Backbone.ChildViewContainer(),
 
+	/** @override */
 	initialize: function(options) {
+		/* call "super" */
 		SelectableListView.prototype.initialize.apply(this, arguments);
 
 		if (options["groupings"]) {
@@ -58,7 +62,6 @@ module.exports = SelectableListView.extend({
 
 	/** @private */
 	renderFilters: function(newAssoc, oldAssoc) {
-		// var assocIds;
 		var groupIds;
 		if (newAssoc) {
 			groupIds = newAssoc.get(this.groupings.key);

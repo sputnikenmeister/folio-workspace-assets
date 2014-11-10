@@ -3,12 +3,6 @@
 * @requires module:backbone
 */
 
-/** @type {module:underscore} */
-// var _ = require( "underscore" );
-
-/** @type {module:backbone} */
-// var Backbone = require( "backbone" );
-
 /**
  * @constructor
  * @type {module:app/view/CollectionView}

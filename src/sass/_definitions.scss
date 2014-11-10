@@ -25,12 +25,14 @@ $mono-fallback: Consolas, Menlo, "Andale Mono", monospace;
 $humanist-fallback: "Lucida Grande","Lucida Sans", Calibri, Tahoma, Verdana, Kalimati, sans-serif;
 
 // Typefaces seem to be loaded on demand, so we define all weights, used or not.
-@import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200italic,300,300italic,400,400italic,600,600italic,700,700italic,900,900italic");
-//@import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic");
-//@import url("http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,300italic,400italic,600italic,700italic&subset=latin,latin-ext");
-//@import url(http://fonts.googleapis.com/css?family=Chivo:400,900,400italic,900italic&subset=latin,latin-ext);
-//@import url(http://fonts.googleapis.com/css?family=Ek+Mukta:400,200,300,600,700,500,800&subset=latin,latin-ext);
-//@import url(http://fonts.googleapis.com/css?family=Hind:400,300,600,500,700&subset=latin,latin-ext);
+// CSS INCLUDED FROM HTML
+// @import url("../fonts/source-sans-pro/source-sans-pro.css");
+// @import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200italic,300,300italic,400,400italic,600,600italic,700,700italic,900,900italic");
+// @import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic");
+// @import url("http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,300italic,400italic,600italic,700italic&subset=latin,latin-ext");
+// @import url(http://fonts.googleapis.com/css?family=Chivo:400,900,400italic,900italic&subset=latin,latin-ext);
+// @import url(http://fonts.googleapis.com/css?family=Ek+Mukta:400,200,300,600,700,500,800&subset=latin,latin-ext);
+// @import url(http://fonts.googleapis.com/css?family=Hind:400,300,600,500,700&subset=latin,latin-ext);
 
 $font-webfont-sans: "Source Sans Pro", $humanist-fallback;
 // $font-webfont-sans: "Open Sans", $humanist-fallback;
@@ -48,32 +50,101 @@ $base-font: 12px $font-webfont-sans;
 // font-size: 3.42857rem; letter-spacing: -2px;
 // h2
 // font-size: 2.14286rem; letter-spacing: -1px;
-
+@mixin text-rendering-legibility {
+	-webkit-text-rendering: optimizelegibility;
+	text-rendering: optimizelegibility;
+}
+@mixin text-rendering-speed {
+	-webkit-text-rendering: optimizespeed;
+	text-rendering: optimizespeed;
+}
+@mixin font-smoothing {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
 @mixin heading-font() {
 	font-family: $large-font-family;
 	font-size: 240%;
-	letter-spacing: -0.04em;
+	// letter-spacing: -0.04em;
+	letter-spacing: -1px;
 	font-weight: 300;
 	font-style: normal;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	-webkit-text-rendering: optimizelegibility;
-	text-rendering: optimizelegibility;
+	@include text-rendering-legibility;
 }
 // Typography
 @mixin heading-text() {
 	@include heading-font;
 	line-height: 1.07;
+	@include font-smoothing;
 }
 @mixin heading-block() {
 	@include heading-font;
-	@include translateX(-2px);
 	line-height: 3rem;
+	@include translateX(-2px);
+	@include font-smoothing;
 }
 @mixin small-caps() {
 	font-size: 85%;
 	font-weight: 600;
-	line-height: 1.5rem;
 	text-transform: uppercase;
-	letter-spacing: 0.11em;
+	line-height: 1.5rem;
+	// letter-spacing: 0.11em;
+	letter-spacing: 1px;
+}
+
+@mixin spinner-icon {
+	content: '\e804';
+	font-family: "fontello";
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	text-align: center;
+	speak: none;
+	width: 1em;
+	margin-left: .2em;
+	display: inline-block;
+}
+
+$spinner-animation-name: spin;
+
+@mixin spinner-animation {
+	animation: $spinner-animation-name 2s infinite steps(48);
+}
+
+@keyframes spin {
+	0% {
+		transform: rotateZ(0deg);
+	}
+	100% {
+		transform: rotateZ(359deg);
+	}
+}
+
+@keyframes fadeIn {
+	0% {
+		visibility: hidden;
+	}
+	1% {
+		visibility: visible;
+		opacity: 0;
+	}
+	100% {
+		visibility: visible;
+		opacity: 1;
+	}
+}
+
+@keyframes fadeOut {
+	0% {
+		visibility: visible;
+		opacity: 1;
+	}
+	99% {
+		visibility: visible;
+		opacity: 0;
+	}
+	100% {
+		visibility: hidden;
+	}
 }

@@ -12,9 +12,7 @@ var Backbone = require( "backbone" );
  */
 module.exports = Backbone.Model.extend({
 
-	/**
-	 * @type {Object}
-	 */
+	/** @type {Object} */
 	defaults: {
 		name: "",
 		handle: "",

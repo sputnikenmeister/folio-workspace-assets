@@ -1,4 +1,4 @@
-<div class="placeholder" style="width: {{width}}px; height: {{height}}px; min-width: {{width}}px; min-height: {{height}}px">
-	{{desc}}
-	<p class="url">{{width}}×{{height}}px<br/>{{url}}</p>
+<div class="placeholder" style="width: <%= width %>px; height: <%= height %>px;">
+	<div id="<%= longdesc %>" class="caption longdesc"><%= desc %></div>
+	<p class="fileinfo"><%= filename %><br/><%= width %>×<%= height %>px</p>
 </div>

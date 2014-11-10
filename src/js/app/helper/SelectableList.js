@@ -1,5 +1,5 @@
 /**
- * @module app/model/SelectableList
+ * @module app/helper/SelectableList
  * @requires module:backbone
  */
 
@@ -8,11 +8,9 @@ var Backbone = require( "backbone" );
 
 /**
  * @constructor
- * @type {module:app/model/SelectableList}
+ * @type {module:app/helper/SelectableList}
  */
 module.exports = Backbone.Collection.extend({
-
-	selected: null,
 
 	initialize: function() {
 		this.listenTo(this, "reset", function(e) {
@@ -20,18 +18,25 @@ module.exports = Backbone.Collection.extend({
 		});
 	},
 
+	selected: null,
+
 	select: function(newModel) {
 		if (this.selected === newModel) {
 			return;
 		}
 		var oldModel = this.selected;
+		if (oldModel) {
+			this.trigger("deselect:one", oldModel);
+		}
 		this.selected = newModel;
-		this.trigger("collection:select", newModel, oldModel);
+		this.trigger(newModel? "select:one" : "select:none", newModel, oldModel);
 	},
 
 	deselect: function() {
 		this.select(null);
 	},
+
+    /* TODO: MOVE INTO MIXIN */
 
 	/** @return boolean	 */
 	hasFollowing:function(model) {

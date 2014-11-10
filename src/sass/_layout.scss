@@ -1,11 +1,12 @@
 /*
  * Layout
  */
-
+$breakpoint-large: 1024px;
 $page-width: 740px;
 $page-width-large: 960px;
-$page-margin: 60px;
+$page-margin: 40px;
 $gutter: 20px;
+$footer-height: 6rem;
 
 @mixin col-full-margins() {
 	margin-left: $page-margin;
@@ -20,154 +21,175 @@ $gutter: 20px;
 	width: calc(100% - #{$page-margin * 2});
 }
 @mixin col-left-rel() {
-	margin-left: $page-margin;
 	// margin-right: calc(38% + #{$gutter/2});
-	width: calc(62% - #{$page-margin + $gutter/2});
+	// margin-left: $page-margin; width: calc(62% - #{$page-margin + $gutter/2});
+	margin-left: 0; width: calc(62% - #{$gutter/2});
 }
 @mixin col-right-rel() {
-	margin-right: $page-margin;
 	float: right;
-	width: calc(38% - #{$page-margin + $gutter/2});
+	// margin-right: $page-margin; width: calc(38% - #{$page-margin + $gutter/2});
+	margin-right: 0; width: calc(38% - #{$gutter/2});
 }
 @mixin col-left-abs() {
 	position: absolute;
-	left: $page-margin;
-	width: calc(62% - #{$page-margin + $gutter/2});
+	// left: $page-margin; width: calc(62% - #{$page-margin + $gutter/2});
+	left: 0; width: calc(62% - #{$gutter/2});
 }
 @mixin col-right-abs() {
 	position: absolute;
-	right: $page-margin;
-	width: calc(38% - #{$page-margin + $gutter/2});
+	// right: $page-margin; width: calc(38% - #{$page-margin + $gutter/2});
+	right: 0; width: calc(38% - #{$gutter/2});
 }
 
-
-/*
- * View containers/wrappers
- */
+/* ---------------------- *
+ * Wrapper
+ * ---------------------- */
 #container {
 	width: 100%;
 	display: block;
 }
+
+/* ---------------------- *
+ * Footer stuff
+ * ---------------------- */
+// from: folio.scss @import "compass/layout";
+// @include sticky-footer( 6em, "#container", "#container-footer", "#footer" );
+/* compass-core-1.0.1/stylesheets/compass/layout/_sticky-footer.scss */
+html, body {
+  height: 100%;
+}
+#container {
+  clear: both;
+  min-height: 100%;
+  height: auto !important;
+  height: 100%;
+  margin-bottom: -$footer-height;
+}
+#container #container-footer {
+  height: $footer-height;
+}
+#footer {
+  clear: both;
+  position: relative;
+  height: $footer-height;
+}
+
+/* ---------------------- *
+ *	View Layout
+ * ---------------------- */
+
 #header,
 #navigation,
-#container-footer {
+#container-footer,
+#footer {
 	margin: 0 auto;
-	padding-left: 0;
-	padding-right: 0;
+	padding-left: $page-margin;
+	padding-right: $page-margin;
+	// width: $page-width;
+
+	width: #{$page-width - $page-margin*2};
+	@media only screen and (min-width: $breakpoint-large) {
+		// width: $page-width-large;
+		width: #{$page-width-large - $page-margin*2};
+	}
 }
+
 #header {
 	// @include full-width;
 	position: relative;
 	padding-top: 3.5rem;
 	padding-bottom: 1rem;
 }
+
 #navigation {
 	// @include full-width;
 	position: relative;
-	min-height: 12rem;
-}
-// #content {
-// 	// @include full-width;
-// 	position: relative;
-// 	clear: both;
-// }
-
-// from: folio.scss @import "compass/layout";
-@include sticky-footer(
-	6em,
-	"#container",
-	"#container-footer",
-	"#footer"
-);
-
-#footer {
-	margin: 0 auto;
-	p {
-		@include col-full-margins;
-		padding-top: 1em;
-	}
-}
-
-#header,
-#navigation,
-#container-footer,
-#footer {
-	width: $page-width;
-}
-@media only screen and (min-width : 1024px) {
-	#header,
-	#navigation,
-	#container-footer,
-	#footer {
-		width: $page-width-large;
-	}
-}
-
-#bundle-detail {
-	margin: 0 auto;
-	width: #{$page-width - $page-margin*2};
-	padding: 1.5rem $page-margin;
-}
-@media only screen and (min-width : 1024px) {
-	#bundle-detail {
-		position: absolute;
-		width: #{$page-width-large - $page-width - $page-margin + $gutter};
-		left: calc(50% - #{$page-width-large/2});
-	}
-}
-
-/*
- *	View Layout
- */
-#site-name {
-	@include heading-block;
-	@include col-full;
 }
 #bundle-list {
-	@include col-left-abs;
+	@include col-left-rel;
 }
 #keyword-list {
-	@include col-right-abs;
+	@include col-right-rel;
 }
+
+#content.viewport {
+	position: relative;
+	// margin: 0 auto; width: $page-width;
+}
+#bundle-images.image-list {
+	// position: static;
+	position: relative;
+}
+#bundle-detail {
+	width: #{$page-width - $page-margin*2};
+	padding: 1rem $page-margin;
+	margin: 0 auto;
+	height: 6rem;
+	// @include box-sizing(border-box);
+	@media only screen and (min-width: $breakpoint-large) {
+		position: absolute;
+		width: #{$page-width-large - $page-width - $page-margin};
+		left: calc(50% - #{$page-width-large/2});
+		height: calc(100% - 2rem);
+	}
+}
+
 #bundle-pager {
 	position: fixed;
 	bottom: 0.5rem;
+
 	width: #{$page-width - $page-margin*2};
 	left: calc(50% - #{$page-width/2 - $page-margin});
-}
-@media only screen and (min-width : 1024px) {
-	#bundle-pager {
+	@media only screen and (min-width: $breakpoint-large) {
 		width: #{$page-width-large - $page-margin*2};
 		left: calc(50% - #{$page-width-large/2 - $page-margin});
 	}
 }
-// #bundle-images-pager {
-// 	width: auto;
-// 	margin-bottom: 1.5rem;
-// 	position: absolute;
-// 	left: 0;
-// 	bottom: 100%;
-// }
 
 /*
- * View visibility by app state
+ * App States
  */
-.app-bundle-list {
-	#bundle-pager,
-	#bundle-detail,
-	#bundle-images {
-		transition: opacity 0.35s, visibility 0.35s step-end;
-		opacity: 0;
-		visibility: hidden;
-	}
+$apptx-duration: 0.35s;
+
+// Navigation
+#navigation {
+	min-height: 9rem;
+	height: auto;
 }
-// bundle-item
-.app-bundle-item {
-	#bundle-pager,
-	#bundle-detail,
-	#bundle-images {
-		transition: opacity 0.35s, visibility 0.35s step-start;
-		opacity: 1;
-		visibility: visible;
-	}
+.app-bundle-list #navigation {
+	transition: height $apptx-duration step-end;
+}
+.app-bundle-item #navigation {
+	transition: height $apptx-duration step-start;
+	height: 9rem;
+}
+
+// Bundle pager
+#bundle-pager {
+	visibility: hidden;
+}
+.app-bundle-item #bundle-pager {
+	visibility: visible;
+}
+
+// Content
+#content {
+	opacity: 0;
+	visibility: hidden;
+	max-height: 0;
+}
+.app-bundle-list #content {
+	transition:
+		opacity $apptx-duration ease,
+		visibility $apptx-duration step-end,
+		max-height $apptx-duration step-start;
+}
+.app-bundle-item #content {
+	transition:
+		opacity $apptx-duration ease,
+		visibility $apptx-duration step-start,
+		max-height $apptx-duration step-end;
+	opacity: 1;
+	visibility: visible;
+	max-height: none;
 }

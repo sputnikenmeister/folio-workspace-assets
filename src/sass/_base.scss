@@ -7,7 +7,14 @@ body {
 	color: $color;
 	background-color: $background-color;
 }
+p {
+	// font-size: 110%;
+	line-height: 1.5rem;
+	margin-top: 0;
+	margin-bottom: 1rem;
+}
 h1 {
+	@include heading-text;
 }
 h2 {
 	@include heading-text;
@@ -30,9 +37,11 @@ h4 {
 	// letter-spacing: 0;
 	// margin: 0.75em 0 1em;
 }
-p {
-	line-height: 1.5;
-	margin: 0 0 0.75em;
+em {
+	font-style: italic;
+}
+strong {
+	font-weight: bold;
 }
 code, pre, tt {
 	font-family: $mono-font-family;

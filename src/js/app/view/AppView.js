@@ -8,17 +8,10 @@ var _ = require( "underscore" );
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
-/** @type {module:app/model/collection/BundleList} */
-var bundleList = require( "../model/collection/BundleList" );
-/** @type {module:app/model/collection/KeywordList} */
-var keywordList = require( "../model/collection/KeywordList" );
-/** @type {module:app/model/collection/TypeList} */
-var typeList = require( "../model/collection/TypeList" );
-/** @type {module:app/model/collection/ImageList} */
-var ImageList = require( "../model/collection/ImageList" );
-
-/** @type {module:app/model} */
-// var model = require("../control/AppModel");
+/** @type {module:app/helper/SelectOneList} */
+var SelectOneList = require( "../helper/SelectOneList" );
+/** @type {module:app/helper/SelectableList} */
+// var SelectableList = require( "../helper/SelectableList" );
 
 /** @type {module:app/view/component/SelectableListView} */
 var SelectableListView = require( "./component/SelectableListView" );
@@ -33,7 +26,15 @@ var BundleDetailView = require( "./BundleDetailView" );
 var ImageListView = require( "./ImageListView" );
 
 /** @type {module:app/control/AppRouter} */
-var AppRouter = require( "../control/AppRouter" );
+var router = require( "../control/AppRouter" );
+/** @type {module:app/model/collection/BundleList} */
+var bundles = require( "../model/collection/BundleList" );
+/** @type {module:app/model/collection/KeywordList} */
+var keywords = require( "../model/collection/KeywordList" );
+/** @type {module:app/model/collection/TypeList} */
+var types = require( "../model/collection/TypeList" );
+/** @type {module:app/model/collection/ImageList} */
+var images = require( "../model/collection/ImageList" );
 
 /**
  * @constructor
@@ -41,84 +42,104 @@ var AppRouter = require( "../control/AppRouter" );
  */
 module.exports = Backbone.View.extend({
 
+	/** @override */
 	el: "body",
+	/** @type {module:app/control/AppRouter} */
+	router : router,
+	/** @type {module:app/model/collection/BundleList} */
+	bundles : bundles,
+	/** @type {module:app/model/collection/KeywordList} */
+	keywords : keywords,
+	/** @type {module:app/model/collection/TypeList} */
+	types : types,
+	/** @type {module:app/model/collection/ImageList} */
+	images : images,
+	/** @type {module:app/helper/SelectOneList} */
+	bundleImages: new SelectOneList(),// new SelectableList(null, { model:ImageItem });
 
 	/** Setup listening to model changes */
 	initialize: function(options) {
-		_.bindAll(this, "updateBundleImages","showBundleItem", "showBundleList", "showError");
+		_.bindAll(this, "showBundleItem", "showBundleList", "showError");
 
 		/*
 		 * initialize models
 		 */
-		this.bundleList = bundleList;
-		this.keywordList = keywordList;
-		this.typeList = typeList;
-		this.imageList = new ImageList();
-
+		this.listenTo(this.bundles, "select:one", this.fetchBundle);
+		// this.listenTo(this.bundles, "select:none", this.onBundleSelectNone);
+		this.images.imageSrcRoot = router.getApplicationRoot();
+		// selected bundle image list
+		this.bundleImages.imageSrcRoot = router.getApplicationRoot();
 
 		/*
 		 * initialize views
 		 */
 		this.bundleListView = new SelectableListView({
 			el: "#bundle-list",
-			collection: this.bundleList,
+			collection: this.bundles,
 			associations: {
-				collection: this.keywordList,
+				collection: this.keywords,
 				key: "bIds"
 			}
 		});
-		this.listenTo(this.bundleListView, "view:itemSelect", this.whenBundleSelect);
-		this.listenTo(this.bundleListView, "view:itemDeselect", this.whenBundleDeselect);
+		this.listenTo(this.bundleListView, "view:itemSelect", this.onBundleSelect);
+		this.listenTo(this.bundleListView, "view:itemDeselect", this.onBundleDeselect);
 
 		this.keywordListView = new GroupingListView({
 			el: "#keyword-list",
-			collection: this.keywordList,
+			collection: this.keywords,
 			associations: {
-				collection: this.bundleList,
+				collection: this.bundles,
 				key: "kIds"
 			},
 			groupings: {
-				collection: this.typeList,
+				collection: this.types,
 				key: "tIds"
 			},
 		});
 		this.keywordListView.setCollapsed(true);
-		// this.listenTo(this.keywordListView, "view:itemSelect", this.whenKeywordSelect);
+		// this.listenTo(this.keywordListView, "view:itemSelect", this.onKeywordSelect);
 
 		this.bundlePagerView = new CollectionPagerView({
 			id: "bundle-pager",
-			collection: this.bundleList,
+			collection: this.bundles,
 			className: "fontello-pill-pager",
 			labelAttribute: "name"
 		});
 		// append at the bottom of <body/>
 		this.$el.append(this.bundlePagerView.render().el);
-		this.listenTo(this.bundlePagerView, "view:itemSelect", this.whenBundleSelect);
-		this.listenTo(this.bundlePagerView, "view:itemDeselect", this.whenBundleDeselect);
+		this.listenTo(this.bundlePagerView, "view:itemSelect", this.onBundleSelect);
+		this.listenTo(this.bundlePagerView, "view:itemDeselect", this.onBundleDeselect);
 
-		// this.imagePagerView = new CollectionPagerView({
-		// 	collection:this.imageList, id: "bundle-images-pager", className: "rsquare-pager"
-		// });
-		// this.$("#navigation").append(this.imagePagerView.render().el);
-		// this.listenTo(this.imagePagerView, "view:itemSelect", this.whenImageSelect);
-
+		/*
+		 * detail views
+		 */
+		// selected bundle description
 		this.bundleDetailView = new BundleDetailView({
 			id: "bundle-detail",
-			collection:this.bundleList
+			collection: this.bundles
 		});
 		this.$("#content").append(this.bundleDetailView.render().el);
 
+
+		// carrousel
 		this.imageListView = new ImageListView({
 			id: "bundle-images",
-			collection: this.imageList
+			collection: this.bundleImages
 		});
 		this.$("#content").append(this.imageListView.render().el);
-		this.listenTo(this.imageListView, "view:itemSelect", this.whenImageSelect);
+		this.listenTo(this.imageListView, "view:itemSelect", this.onImageSelect);
+
+		// this.imagePagerView = new SelectableListView({
+		// 	id: "bundle-images-pager",
+		// 	collection: this.bundleImages,
+		// 	className: "dot-pager"
+		// });
+		// this.$("#content").append(this.imagePagerView.render().el);
+		// this.listenTo(this.imagePagerView, "view:itemSelect", this.onImageSelect);
 
 		/*
 		 * initialize router
 		 */
-		this.router = new AppRouter();
 		// this.listenToOnce(this.router,"route", this.initializeWithRoute);
 		this.listenTo(this.router,"route:bundleList", this.routeToBundleList);
 		this.listenTo(this.router,"route:bundleItem", this.routeToBundleItem);
@@ -138,7 +159,7 @@ module.exports = Backbone.View.extend({
 	onSitenameClick: function(ev) {
 		if (!ev.isDefaultPrevented()) {
 			ev.preventDefault();
-			this.whenBundleDeselect();
+			this.onBundleDeselect();
 		}
 	},
 
@@ -164,38 +185,46 @@ module.exports = Backbone.View.extend({
 		console.log("AppView.routeToBundleList", arguments);
 		this.deselectBundle();
 	},
+    
 	/* Handle view events */
-	whenBundleDeselect: function() {
+	onBundleDeselect: function() {
 		this.router.navigate("", {trigger: false});
 		this.deselectBundle();
 	},
+    
 	/* Handle model updates */
 	deselectBundle: function() {
-		var whenStateChangeEnd, stateChanging;
+		var onStateChangeEnd, stateChanging;
 
-		stateChanging = this.bundleList.selected !== null;
-		whenStateChangeEnd = this.showBundleList;
-		// this.keywordListView.collapsed(false);
+		stateChanging = this.bundles.selected !== null;
+		onStateChangeEnd = this.showBundleList;
 
 		this.el.className = "app-bundle-list";
 
 		if (stateChanging) {
-			whenStateChangeEnd = this.showBundleList;
-			// whenStateChangeEnd = _.after(2, whenStateChangeEnd);
-			// this.listenToOnce(this.bundleDetailView, "view:stateTransitionEnd", whenStateChangeEnd);
-			// this.listenToOnce(this.imageListView, "view:stateTransitionEnd", whenStateChangeEnd);
+			onStateChangeEnd = this.showBundleList;
+			// onStateChangeEnd = _.after(2, onStateChangeEnd);
+			// this.listenToOnce(this.bundleDetailView, "view:stateTransitionEnd", onStateChangeEnd);
+			// this.listenToOnce(this.imageListView, "view:stateTransitionEnd", onStateChangeEnd);
 		}
-		// whenStateChangeEnd();
-		_.delay(whenStateChangeEnd, 350);
+		// onStateChangeEnd();
+		_.delay(onStateChangeEnd, 350);
 	},
+    
 	/* model is ready, update views */
 	showBundleList: function() {
-		this.bundleList.deselect();
+		this.bundles.deselect();
 		this.bundleListView.setCollapsed(false);
+		// this.keywordListView.collapsed(false);
 		this.keywordListView.filterBy(null);
-		this.imageList.reset();
+		this.bundleImages.reset();
+
 		Backbone.trigger("app:bundleList");
 		console.log("AppView.showBundleList");
+	},
+
+	doBundleDeselect: function() {
+
 	},
 
 	/*
@@ -205,7 +234,7 @@ module.exports = Backbone.View.extend({
 	/* Handle router events */
 	routeToBundleItem: function(handle) {
 		console.log("AppView.routeToBundleItem", arguments);
-		var model = this.bundleList.findWhere({handle: handle});
+		var model = this.bundles.findWhere({handle: handle});
 		if (model) {
 			this.selectBundle(model);
 		} else {
@@ -213,47 +242,51 @@ module.exports = Backbone.View.extend({
 		}
 	},
 	/* Handle view events */
-	whenBundleSelect: function(model) {
+	onBundleSelect: function(model) {
 		this.router.navigate("bundles/" + model.get("handle"), {trigger: false});
 		this.selectBundle(model);
 	},
+    
 	/* Handle model updates */
 	selectBundle: function(bundle) {
-		var whenStateChangeEnd, stateChanging;
+		var onStateChangeEnd, stateChanging;
 
-		stateChanging = this.bundleList.selected === null;
-		whenStateChangeEnd = this.showBundleItem;
-		this.bundleList.select(bundle);
-		this.keywordListView.filterBy(bundle);
+		stateChanging = this.bundles.selected === null;
+		onStateChangeEnd = this.showBundleItem;
 
-		if (stateChanging) {
-			whenStateChangeEnd = _.after(2, whenStateChangeEnd);
-			// this.listenToOnce(this.bundleListView, "view:stateTransitionEnd", whenStateChangeEnd);
-			// this.listenToOnce(this.keywordListView, "view:stateTransitionEnd", whenStateChangeEnd);
-			_.delay(whenStateChangeEnd, 700);
+		this.bundles.select(bundle);
+		if (!this.bundleListView.getCollapsed()) {
 			this.bundleListView.setCollapsed(true);
 		}
+		// Apply filter to keywords
+		this.keywordListView.filterBy(bundle);
+		// Reset bundleImages with images by bundle ID (image.bId)
+		this.bundleImages.reset(this.images.where({ bId: this.bundles.selected.id }));
 
-		if (bundle.has("images")) {
-			this.updateBundleImages();
-			whenStateChangeEnd();
-		} else {
-			bundle.fetch()
-				.fail(this.showError)
-				.done(this.updateBundleImages)
-				.always(whenStateChangeEnd)
-				;
+		if (stateChanging) {
+			onStateChangeEnd = _.after(1, onStateChangeEnd);
+			// this.listenToOnce(this.bundleListView, "view:stateTransitionEnd", onStateChangeEnd);
+			// this.listenToOnce(this.keywordListView, "view:stateTransitionEnd", onStateChangeEnd);
+			_.delay(onStateChangeEnd, 700);
+		}
+
+	},
+
+	fetchBundle: function(bundle) {
+		if (!bundle.has("images")) {
+			bundle.fetch({ success: function(model) {
+				console.log("AppView.fetchBundle", model.get("handle"));
+				images.set(model.get("images"), {add: false, remove: false});
+			}})
+			.fail(this.showError);
 		}
 	},
-	updateBundleImages: function() {
-		console.log("AppView.updateBundleImages", arguments);
 
-		this.imageList.reset(this.bundleList.selected.get("images"));
-		Backbone.trigger("app:bundleItem", this.bundleList.selected);
-	},
 	/* model is ready, update views */
 	showBundleItem: function() {
 		console.log("AppView.showBundleItem");
+		// broadcast app-wide event
+		Backbone.trigger("app:bundleItem", this.bundles.selected);
 		this.el.className = "app-bundle-item";
 	},
 
@@ -262,19 +295,19 @@ module.exports = Backbone.View.extend({
 	 * to state: bundle-item/image
 	 */
 
-	whenImageSelect: function(image) {
+	onImageSelect: function(image) {
 		this.selectBundleImage(image);
 	},
 	selectBundleImage: function(image) {
-		this.imageList.select(image);
+		this.bundleImages.select(image);
 	},
 
-	// whenKeywordSelect: function(keyword) {
+	// onKeywordSelect: function(keyword) {
 	// 	// this.router.navigate(/* implement route */);
 	// 	this.filterBundles(keyword);
 	// },
 	// filterBundles: function(keyword) {
-	// 	this.keywordList.select(keyword);
+	// 	this.keywords.select(keyword);
 	// 	this.showBundleListFiltered(keyword);
 	// },
 	// showFilteredBundleList: function() {

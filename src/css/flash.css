@@ -11,12 +11,13 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 /* @end */
 
 /* @group Flash/SWFObject */
-html.flash, .flash body {
+html.flash,
+.flash body {
 	height: 100%;
 	color: hsl(47, 5%, 9%);
 	background: #ffffff;
 	position: relative;
-	font: 9pt/1.5 'Lucida Grande','Lucida Sans', Calibri, Tahoma, Kalimati, sans-serif;
+	font: 9pt/1.5 'Lucida Grande', Calibri,'Lucida Sans', Tahoma, Kalimati, sans-serif;
 }
 
 .flash body {

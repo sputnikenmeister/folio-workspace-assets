@@ -3,9 +3,6 @@
  * @requires module:backbone
  */
 
-/** @type {module:underscore} */
-var _ = require( "underscore" );
-
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
@@ -14,9 +11,9 @@ var Backbone = require( "backbone" );
  * @param {Backbone.Collection} [collection]
  * @type {module:app/helper/Iterator}
  */
-function Iterator(collection){
+var Iterator = function(collection) {
 	this.collection = collection;
-}
+};
 
 Iterator.prototype = {
 	/**

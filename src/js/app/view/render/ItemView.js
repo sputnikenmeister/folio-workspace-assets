@@ -1,7 +1,7 @@
- /**
-* @module app/app/view/render/ItemView
-* @requires module:backbone
-*/
+/**
+ * @module app/app/view/render/ItemView
+ * @requires module:backbone
+ */
 
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );

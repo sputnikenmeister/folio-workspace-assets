@@ -5,7 +5,6 @@
 
 /** @type {module:underscore} */
 var _ = require( "underscore" );
-
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
@@ -53,36 +52,39 @@ module.exports = DeferredRenderView.extend({
 	/** @override */
 	tagName: "ul",
 	/** @override */
-	className: "selectable-list",
+	className: "list selectable filterable",
 	/** @public @type {Object} */
 	associations: {},
 	/** @type {Backbone.ChildViewContainer} */
-	itemViews: new Backbone.ChildViewContainer(),
+	children: new Backbone.ChildViewContainer(),
 
 	/** @override */
 	initialize: function(options) {
-		this.listenTo(this.collection, "collection:select", this.whenCollectionSelect);
-		// this.listenTo(this.collection, "change:excluded", this.whenExcludedChange);
 		if (options["associations"]) {
 			this.associations = options["associations"];
 		}
 		// Create children
-		this.collection.each(this.assignItemView, this);
+		this.collection.each(this.assignChildView, this);
 		this.itemIds = this.collection.pluck("id");
 		// skipAnimation = true;
+
+		// this.listenTo(this.collection, "collection:select", this.whenCollectionSelect);
+		this.listenTo(this.collection, "select:one", this.onCollectionSelect);
+		this.listenTo(this.collection, "select:none", this.onCollectionSelect);
+		// this.listenTo(this.collection, "change:excluded", this.whenExcludedChange);
 	},
 
 	/*
 	 * Create children views
 	 */
 	/** @private */
-	assignItemView: function(item, index) {
+	assignChildView: function(item, index) {
 		var view = new ItemView({
 			model: item,
 			el: item.selector()
 		});
-		this.itemViews.add(view, item.id);
-		this.listenTo(view, "item:click", this.whenItemViewClick);
+		this.children.add(view, item.id);
+		this.listenTo(view, "item:click", this.onItemViewClick);
 	},
 
 	/*
@@ -123,7 +125,7 @@ module.exports = DeferredRenderView.extend({
 	 * --------------------------- */
 
 	/** @private */
-	whenItemViewClick: function(item) {
+	onItemViewClick: function(item) {
 		if (this.collection.selected !== item) {
 			this.trigger("view:itemSelect", item);
 		} else {
@@ -131,19 +133,22 @@ module.exports = DeferredRenderView.extend({
 		}
 	},
 
+	_currentItem: null,
 	/** @private */
-	whenCollectionSelect: function(newSelection, oldSelection) {
-		this.requestRender("selection", _.bind(this.renderSelection, this, newSelection, oldSelection));
+	onCollectionSelect: function(newItem){
+		var oldItem = this._currentItem;
+		this._currentItem = newItem;
+		this.requestRender("selection", _.bind(this.renderSelection, this, newItem, oldItem));
 	},
 
 	/** @private */
 	renderSelection: function(newItem, oldItem) {
 		if (newItem) {
-			this.itemViews.findByModel(newItem).$el
+			this.children.findByModel(newItem).$el
 				.addClass("selected");
 		}
 		if (oldItem) {
-			this.itemViews.findByModel(oldItem).$el
+			this.children.findByModel(oldItem).$el
 				.removeClass("selected");
 		}
 	},
@@ -203,7 +208,31 @@ module.exports = DeferredRenderView.extend({
 		if (oldAssoc) {
 			oldIds = oldAssoc.get(this.associations.key);
 		}
-		this.renderFilters_1(newIds, oldIds);
+		this.renderFilters_2(newIds, oldIds);
+	},
+
+	renderFilters_2: function(newIds, oldIds) {
+		var newIncludes, newExcludes, changedCount = 0;
+		// this.itemIds = this.itemIds || this.collection.pluck("id");
+
+		if (newIds) {
+			newExcludes = _.difference(oldIds || this.itemIds, newIds);
+			_.each(newExcludes, function(id) {
+				this.children.findByCustom(id).$el.addClass("excluded");
+			}, this);
+			changedCount += newExcludes.length;
+			// if (!oldIds) this.$el.removeClass("has-filter");
+		}
+		if (oldIds) {
+			newIncludes = _.difference(newIds || this.itemIds, oldIds);
+			_.each(newIncludes, function(id) {
+				this.children.findByCustom(id).$el.removeClass("excluded");
+			}, this);
+			changedCount += newIncludes.length;
+			// if (!newIds) this.$el.removeClass("has-filter");
+		}
+
+		return changedCount;
 	},
 
 	/** @private */
@@ -218,11 +247,11 @@ module.exports = DeferredRenderView.extend({
 				var isExcluded = !_.contains(newIds, model.id);
 				model.set("excluded", isExcluded);
 				if (isExcluded) {
-					excludedCount++;
-					this.itemViews.findByModel(model).$el
+					this.children.findByModel(model).$el
 						.addClass("excluded");
+					excludedCount++;
 				} else {
-					this.itemViews.findByModel(model).$el
+					this.children.findByModel(model).$el
 						.removeClass("excluded");
 				}
 				if (model.changed.excluded !== undefined) {
@@ -232,7 +261,7 @@ module.exports = DeferredRenderView.extend({
 		} else {
 			this.collection.each(function(model, index, arr) {
 				model.unset("excluded");
-				this.itemViews.findByModel(model).$el
+				this.children.findByModel(model).$el
 					.removeClass("excluded");
 			}, this);
 		}
@@ -247,66 +276,10 @@ module.exports = DeferredRenderView.extend({
 			expectedCount = changedCount;
 		}
 		this.lastExcludedCount = excludedCount;
-		console.log("[Models] expected count: " + expectedCount);
+
+		// console.log("[Models] expected count: " + expectedCount);
 		// _.delay(_.bind(this.trigger, this, "view:stateTransitionEnd"), 1000);
 		// return expectedCount;
 	},
-
-	/*
-	renderFilters_2: function(newIds, oldIds) {
-		var newIncludes, newExcludes, changedCount;
-		var whenAllAnimationsEnd;
-		//this.itemIds = this.collection.pluck("id");
-
-		if (newIds && oldIds) {
-			// exclude ids already matched by oldAssoc
-			newIncludes = _.difference(newIds, oldIds);
-			// exclude ids no longer matched by newAssoc
-			newExcludes = _.difference(oldIds, newIds);
-			changedCount = newIncludes.length + newExcludes.length;
-		} else if (newIds) {
-			// New filter set
-			newExcludes = _.difference(this.itemIds, newIds);
-			changedCount = newExcludes.length;
-			// this.$el.addClass("has-filter");
-		} else if (oldIds) {
-			// Clearing filter, no more exclusions
-			newIncludes = _.difference(this.itemIds, oldIds);
-			changedCount = newIncludes.length;
-			// this.$el.removeClass("has-filter");
-		} else {
-			// No changes (we shouldn't make it here)
-			// changedCount = 0;
-			// return 0;
-		}
-
-		// console.log("[Events] expected count: " + eventCount);
-
-		// whenAllAnimationsEnd = _.after(changedCount,
-		// 	_.bind(this.trigger, this, "view:stateTransitionEnd"));
-		// 	_.bind(function(ev){
-		// 		this.trigger("view:stateTransitionEnd");
-		// 		console.log("[Event view:stateTransitionEnd]", ev);
-		// 	}, this));
-
-		if (newIncludes) {
-			_.each(newIncludes, function(id, index, arr) {
-				this.itemViews.findByCustom(id).$el.removeClass("excluded")
-					// .one(ANIMATION_EVENTS, whenAllAnimationsEnd)
-					;
-			}, this);
-		}
-
-		if (newExcludes) {
-			_.each(newExcludes, function(id, index, arr) {
-				this.itemViews.findByCustom(id).$el.addClass("excluded")
-					// .one(ANIMATION_EVENTS, whenAllAnimationsEnd)
-					;
-			}, this);
-		}
-
-		return changedCount;
-	},
-	*/
 
 });

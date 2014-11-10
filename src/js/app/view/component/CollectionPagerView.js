@@ -5,7 +5,6 @@
 
 /** @type {module:underscore} */
 var _ = require( "underscore" );
-
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
@@ -20,7 +19,8 @@ module.exports = Backbone.View.extend({
 
 	tagName: "div",
 
-	template: _.template(viewTemplate),
+	// template: _.template(viewTemplate),
+	template: viewTemplate,
 
 	events: {
 		"click .preceding-button":	"onPrecedingClick",
@@ -35,6 +35,8 @@ module.exports = Backbone.View.extend({
 			this.labelAttribute = options["labelAttribute"];
 		}
 		this.listenTo(this.collection, "collection:select", this.whenCollectionSelect);
+		this.listenTo(this.collection, "select:one", this.whenCollectionSelect);
+		this.listenTo(this.collection, "select:none", this.whenCollectionSelect);
 		this.listenTo(this.collection, "reset", this.whenCollectionReset);
 	},
 
