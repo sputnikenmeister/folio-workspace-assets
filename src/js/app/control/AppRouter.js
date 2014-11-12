@@ -1,22 +1,26 @@
 /**
-* @module app/view/AppView
-* @requires module:backbone
-*/
+ * @module app/view/AppView
+ * @requires module:backbone
+ */
 
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
 
+/**
+ * @constructor
+ * @type {module:app/control/AppRouter}
+ */
 var AppRouter = Backbone.Router.extend({
 
 	routes: {
-		"bundles/:handle" : "bundleItem",
-		"" : "bundleList",
+		"bundles/:handle": "bundleItem",
+		"": "bundleList",
 	},
 
-	getApplicationRoot: function() {
+	getApplicationRoot: function () {
 		return this.approot = this.approot || window.location;
 	},
-	setApplicationRoot: function(approot) {
+	setApplicationRoot: function (approot) {
 		this.approot = approot;
 	},
 

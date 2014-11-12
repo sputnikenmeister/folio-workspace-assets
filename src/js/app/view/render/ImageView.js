@@ -29,7 +29,7 @@ module.exports = Backbone.View.extend({
 	/** @type {string} */
 	tagName: "div",
 	/** @type {string} */
-	className: "image-item",
+	className: "image-item pending",
 	/** @type {module:app/model/ImageItem} */
 	model: ImageItem,
 	/** @override */
@@ -226,6 +226,3 @@ module.exports = Backbone.View.extend({
 	},
 	*/
 });
-
-
-

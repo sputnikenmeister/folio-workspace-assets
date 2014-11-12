@@ -1,17 +1,9 @@
-.viewport {
-// 	position: relative;
-// 	padding: 1.5rem 0;
-// 	width: 100%;
-// 	margin: 0 auto;
-}
 
 /* carousel layout */
 .image-list {
 	overflow: hidden;
 	padding: 1.5rem 0; height: 100%;
 	margin: -1.5rem 0; width: 100%; min-width: $page-width;
-	// margin: -1.5rem auto; width: 740px;
-	// margin: -1.5rem auto; width: calc(100% - 6rem); min-width: 740px;
 }
 .image-item {
 	position: absolute;
@@ -21,18 +13,14 @@
 	width: $page-width;
 	left: calc(50% - #{$page-width/2});
 	height: calc(100% - 3rem);
-	// top: 1.5rem; height: calc(100% - 3rem); left: calc(50% - 370px);
-	// right: 0;
 	@media only screen and (min-width: $breakpoint-large) {
-		// width: 960px;
-		// left: calc(50% - 480px);
 		width: $page-width-large;
 		left: calc(50% - #{$page-width-large/2});
 	}
 }
 
 .image-list.animate > .image-item {
-	transition: all 0.3s;
+	transition: all 1.3s;
 }
 
 .image-item {
@@ -75,7 +63,7 @@
 		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
 
 		@include box-sizing(border-box);
-		padding: 1em $gutter;
+		padding: 1.5rem $gutter;
 		.caption {
 			@include heading-text;
 			@include translateX(-1px);
@@ -105,7 +93,7 @@
 		animation: spin 2s infinite steps(48), fadeIn 0.5s;
 	}
 	&.loaded .placeholder:after {
-		animation: spin 2s 1 steps(48);
+		animation: spin 1s 1 steps(24);
 	}
 	&.error	.placeholder:after {
 		animation: spin 1s 1 steps(24), fadeOut 1s;

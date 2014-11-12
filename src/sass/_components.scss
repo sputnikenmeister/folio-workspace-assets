@@ -21,6 +21,40 @@
 	// }
 }
 
+.list#bundle-images-pager {
+	// display: block;
+	// position: absolute;
+	// margin: 0 auto;
+	// height: calc(2rem + 2px);
+	// left: 0; right: 0;
+	// text-align: center;
+	overflow: hidden;
+	line-height: 0;
+
+	.list-item {
+		display: inline-block;
+		overflow: hidden;
+		width: 0.5rem; height: 0.5rem;
+		border-radius: 9999rem;
+		border: 1px solid lighten($color, 20%);
+		background-color: $background-color;
+		cursor: pointer;
+		margin: 0.75rem 1.5rem 0.75rem 0;
+
+		&:last-child {
+			margin-right: 0;
+		}
+		&:active {
+			border-color: $link-color;
+			background-color: $link-color;
+		}
+		&.selected {
+			border-color: $color;
+			background-color: $color;
+		}
+	}
+}
+
 #header {
 	@at-root #site-name {
 		@include heading-block;
@@ -57,4 +91,3 @@
 		}
 	}
 }
-

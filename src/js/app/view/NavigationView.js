@@ -7,11 +7,11 @@
 var Backbone = require( "backbone" );
 
 /** @type {module:app/model/collection/BundleList} */
-var bundleList = require( "../model/collection/BundleList" );
+var bundles = require( "../model/collection/BundleList" );
 /** @type {module:app/model/collection/KeywordList} */
-var keywordList = require( "../model/collection/KeywordList" );
+var keywords = require( "../model/collection/KeywordList" );
 /** @type {module:app/model/collection/TypeList} */
-var typeList = require( "../model/collection/TypeList" );
+var types = require( "../model/collection/TypeList" );
 
 /** @type {module:app/view/component/SelectableListView} */
 var SelectableListView = require( "./component/SelectableListView" );
@@ -36,44 +36,44 @@ module.exports = Backbone.View.extend({
 		 */
 		this.bundleListView = new SelectableListView({
 			el: this.$("#bundle-list"),
-			collection: bundleList,
+			collection: bundles,
 			associations: {
-				collection: keywordList,
+				collection: keywords,
 				key: "bIds"
 			}
 		});
 
 		this.keywordListView = new GroupingListView({
 			el: this.$("#keyword-list"),
-			collection: keywordList,
+			collection: keywords,
 			associations: {
-				collection: bundleList,
+				collection: bundles,
 				key: "kIds"
 			},
 			groupings: {
-				collection: typeList,
+				collection: types,
 				key: "tIds"
 			},
 		});
 
-		// this.listenTo(this.keywordListView, "view:itemSelect", this.whenKeywordSelect);
-		this.listenTo(this.bundleListView, "view:itemSelect", this.whenBundleSelect);
-		this.listenTo(this.bundleListView, "view:itemDeselect", this.whenBundleDeselect);
+		// this.listenTo(this.keywordListView, "view:itemSelect", this.onKeywordSelect);
+		this.listenTo(this.bundleListView, "view:itemSelect", this.onBundleSelect);
+		this.listenTo(this.bundleListView, "view:itemDeselect", this.onBundleDeselect);
 
-		this.listenTo(Backbone, "app:bundleItem", this.whenAppBundleItem);
-		this.listenTo(Backbone, "app:bundleList", this.whenAppBundleList);
+		this.listenTo(Backbone, "app:bundleItem", this.onAppBundleItem);
+		this.listenTo(Backbone, "app:bundleList", this.onAppBundleList);
 	},
 
-	whenBundleSelect: function(model) {
+	onBundleSelect: function(bundle) {
 	},
 
-	whenBundleDeselect: function() {
+	onBundleDeselect: function() {
 	},
 
-	whenAppBundleItem: function(newItem) {
+	onAppBundleItem: function(bundle) {
 	},
 
-	whenAppBundleList: function() {
+	onAppBundleList: function() {
 	},
 
 });

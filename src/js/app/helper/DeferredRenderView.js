@@ -1,16 +1,18 @@
 /**
-* @module app/app/helper/DeferredRenderView
-* @requires module:backbone
-*/
+ * @module app/app/helper/DeferredRenderView
+ * @requires module:backbone
+ */
 
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
 
 /** @type {module:app/helper/DeferredRenderer} */
-var DeferredRenderer = require( "./DeferredRenderer" );
+var DeferredRenderer = require("./DeferredRenderer");
 
 /**
  * @constructor
  * @type {module:app/helper/DeferredRenderView}
  */
-module.exports  = Backbone.View.extend(DeferredRenderer.prototype);
+var DeferredRenderView = Backbone.View.extend(DeferredRenderer.prototype);
+
+module.exports = DeferredRenderView;

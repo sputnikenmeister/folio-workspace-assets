@@ -12,8 +12,7 @@ var Backbone = require( "backbone" );
 
 /** @type {module:app/view/render/ImageView} */
 var ImageView = require( "./render/ImageView" );
-/** @type {module:app/model/collection/ImageList} */
-// var images = require( "../model/collection/ImageList" );
+require("backbone.babysitter");
 
 /**
  * @constructor
@@ -55,43 +54,6 @@ module.exports  = Backbone.View.extend({
 
 	},
 
-	/* App event handlers */
-	whenAppBundleList: function() {
-		// this.collection.reset();
-	},
-
-	whenAppBundleItem: function(bundle) {
-		// this.collection.reset(bundle.get("images"));
-	},
-
-	/* Model event handlers */
-	onCollectionReset: function() {
-		this.render();
-		if (this.collection.length > 0) {
-			var firstItem = this.collection.first();
-			// this.collection.select(firstItem);
-			this.children.findByModel(firstItem).startImageLoad();
-		}
-	},
-
-	/** @private */
-	onSelectNone: function() {
-		this.currentIndex = 0;
-	},
-	onSelectOne: function(image) {
-		this.currentIndex = this.collection.indexOf(image);
-		// nextImage = this.collection.following(newItem);
-		var nextImage = this.collection.nextNoLoop();
-		if (nextImage) {
-			this.children.findByModel(nextImage).startImageLoad();
-		}
-		this.children.findByModel(image).$el.addClass("selected");
-	},
-	onDeselectOne: function(image) {
-		this.children.findByModel(image).$el.removeClass("selected");
-	},
-
-
 	render: function() {
 		var eltBuffer, view, viewSize, maxSize = 0;
 
@@ -116,11 +78,70 @@ module.exports  = Backbone.View.extend({
 		return this;
 	},
 
+	/* --------------------------- *
+	 * Child views
+	 * --------------------------- */
+
+	/** @type {Backbone.ChildViewContainer} */
+	children: new Backbone.ChildViewContainer(),
+
+	createChildView: function(model, index) {
+		var view = new ImageView({model: model});
+		this.children.add(view);
+		return view;
+	},
+
+	removeChildren: function() {
+		this.children.each(this.removeChildView, this);
+	},
+
+	removeChildView: function(view) {
+		this.children.remove(view);
+		view.remove();
+		return view;
+	},
+
+	/* --------------------------- *
+	 * app state
+	 * --------------------------- */
+
+	/* App event handlers */
+	whenAppBundleList: function() {
+		// this.collection.reset();
+	},
+
+	whenAppBundleItem: function(bundle) {
+		// this.collection.reset(bundle.get("images"));
+	},
+
+	/* --------------------------- *
+	 * Selection
+	 * --------------------------- */
+
+	/* Model event handlers */
+	onCollectionReset: function() {
+		this.render();
+		this.animate = false;
+		// if (this.collection.length > 0) {
+		// 	var firstItem = this.collection.first();
+		// }
+	},
 
 	/** @private */
-	renderLayout : function () {
-		this.containerSize = this.container[this.getDirProp("offsetWidth", "offsetHeight")];
-		this.scrollToIndex(0, false);
+	onSelectNone: function() {
+	},
+	onSelectOne: function(image) {
+		this.children.findByModel(image).startImageLoad();
+		var nextImage = this.collection.nextNoLoop();
+		if (nextImage) {
+			this.children.findByModel(nextImage).startImageLoad();
+		}
+		this.scrollToIndex(0, this.animate);
+		this.animate = true;
+		// this.children.findByModel(image).$el.addClass("selected");
+	},
+	onDeselectOne: function(image) {
+		// this.children.findByModel(image).$el.removeClass("selected");
 	},
 
 	/**
@@ -128,7 +149,8 @@ module.exports  = Backbone.View.extend({
 	 * @param {Object} ev
 	 */
 	onPan : function (ev) {
-		var index = this.currentIndex;
+		var index = this.getScrollIndex();
+		// var index = this.currentIndex;
 		var delta = this.getDirProp(ev.deltaX, ev.deltaY);
 		// delta /= this.containerSize;
 
@@ -153,14 +175,22 @@ module.exports  = Backbone.View.extend({
 				if (!isOutOfBounds && Math.abs(delta/this.containerSize) > 0.15) {
 					this.trigger("view:itemSelect", (delta < 0)?
 						this.collection.next(): this.collection.prev());
+				} else {
+					this.scrollToIndex(0, true);
 				}
-			/* falls through */
+				break;
 			case "pancancel":
 				this.scrollToIndex(0, true);
 				break;
 			default:
 				return;
 		}
+	},
+
+	/** @private */
+	renderLayout : function () {
+		this.containerSize = this.container[this.getDirProp("offsetWidth", "offsetHeight")];
+		this.scrollToIndex(0, false);
 	},
 
 	/**
@@ -175,7 +205,7 @@ module.exports  = Backbone.View.extend({
 		}
 
 		var pos, scrollIndex;
-		scrollIndex = this.collection.selected? this.collection.indexOf(this.collection.selected) : 0;
+		scrollIndex = this.getScrollIndex();
 		// scrollIndex = Math.max(0, Math.min(scrollIndex, this.children.length - 1)); // out of bounds check
 		delta = delta || 0; // non null check
 
@@ -221,6 +251,10 @@ module.exports  = Backbone.View.extend({
 		elt.style.webkitTransform = translate;
 	},
 
+	getScrollIndex: function () {
+		return this.collection.selected? this.collection.indexOf(this.collection.selected) : 0;
+	},
+
 	/**
 	 * @param
 	 * @param
@@ -228,29 +262,6 @@ module.exports  = Backbone.View.extend({
 	 */
 	getDirProp: function (hProp, vProp) {
 		return (this.direction & Hammer.DIRECTION_HORIZONTAL) ? hProp : vProp;
-	},
-
-	/*
-	 * Child view mgmt
-	 */
-
-	/** @type {Backbone.ChildViewContainer} */
-	children: new Backbone.ChildViewContainer(),
-
-	createChildView: function(model, index) {
-		var view = new ImageView({model: model});
-		this.children.add(view);
-		return view;
-	},
-
-	removeChildren: function() {
-		this.children.each(this.removeChildView, this);
-	},
-
-	removeChildView: function(view) {
-		this.children.remove(view);
-		view.remove();
-		return view;
 	},
 
 });

@@ -1,123 +1,92 @@
 /**
-* @module app/view/component/SelectableListView
-* @requires module:backbone
-*/
+ * @module app/view/component/GroupingListView
+ * @requires module:backbone
+ */
 
 /** @type {module:underscore} */
-var _ = require( "underscore" );
+var _ = require("underscore");
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
+require("backbone.babysitter");
 
-/** @type {module:app/helper/DeferredRenderView} */
-var DeferredRenderView = require( "../../helper/DeferredRenderView" );
-
-/**
- * @constructor
- * @type {module:app/view/component/ItemView}
- */
-var ItemView = Backbone.View.extend({
-	/** @type {Object} */
-	events: {
-		"click ": "onClick",
-	},
-
-	onClick: function (ev) {
-		if (!ev.isDefaultPrevented()) {
-			ev.preventDefault();
-		}
-		this.trigger("item:click", this.model);
-	},
-
-	// initialize: function(options) {
-	// 	this.listenTo(this.model, "change:excluded", this.onExcludedChange);
-	// },
-
-	// onExcludedChange: function(model, value) {
-	// 	if (value) {
-	// 		this.$el.addClass("excluded");
-	// 	} else {
-	// 		this.$el.removeClass("excluded");
-	// 	}
-	// },
-});
-
-var ANIMATION_EVENTS = "animationend webkitanimationend transitionend";
-
-/**
- * @constructor
- * @type {module:app/view/component/SelectableListView}
- */
-module.exports = DeferredRenderView.extend({
+var SelectableListView = Backbone.View.extend({
 
 	/** @override */
 	tagName: "ul",
 	/** @override */
-	className: "list selectable filterable",
-	/** @public @type {Object} */
-	associations: {},
+	className: "list selectable",
+
+	initialize: function (options) {
+		// this.listenTo(this.collection, "all", function () {
+		// 	console.log(this.cid, arguments);
+		// });
+		this.listenTo(this.collection, "add remove reset", this.onCollectionChange);
+		//this.addCollectionListeners();
+		this.onCollectionChange();
+	},
+
+	onCollectionChange: function () {
+		if (this.collection.length > 1) {
+			this.addCollectionListeners();
+		} else {
+			this.removeCollectionListeners();
+		}
+		this.render();
+	},
+
+	addCollectionListeners: function () {
+		//		this.listenTo(this.collection, "select:one", this.onSelectOne);
+		//		this.listenTo(this.collection, "deselect:one", this.onDeselectOne);
+	},
+
+	removeCollectionListeners: function () {
+		//		this.stopListening(this.collection, "select:one", this.onSelectOne);
+		//		this.stopListening(this.collection, "deselect:one", this.onDeselectOne);
+	},
+
+	render: function () {
+		var eltBuffer, view, viewSize, maxSize = 0;
+
+		this.removeChildren();
+		this.$el.empty();
+
+		if (this.collection.length > 1) {
+			eltBuffer = document.createDocumentFragment();
+			this.collection.each(function (model, index, arr) {
+				view = this.createChildView(model, index);
+				eltBuffer.appendChild(view.render().el);
+			}, this);
+
+			this.$el.append(eltBuffer);
+		}
+		return this;
+	},
+
+	/* --------------------------- *
+	 * Child views
+	 * --------------------------- */
+
 	/** @type {Backbone.ChildViewContainer} */
 	children: new Backbone.ChildViewContainer(),
 
-	/** @override */
-	initialize: function(options) {
-		if (options["associations"]) {
-			this.associations = options["associations"];
-		}
-		// Create children
-		this.collection.each(this.assignChildView, this);
-		this.itemIds = this.collection.pluck("id");
-		// skipAnimation = true;
-
-		// this.listenTo(this.collection, "collection:select", this.whenCollectionSelect);
-		this.listenTo(this.collection, "select:one", this.onCollectionSelect);
-		this.listenTo(this.collection, "select:none", this.onCollectionSelect);
-		// this.listenTo(this.collection, "change:excluded", this.whenExcludedChange);
-	},
-
-	/*
-	 * Create children views
-	 */
-	/** @private */
-	assignChildView: function(item, index) {
-		var view = new ItemView({
-			model: item,
-			el: item.selector()
+	createChildView: function (model, index) {
+		var view = new SelectableRenderer({
+			model: model
 		});
-		this.children.add(view, item.id);
-		this.listenTo(view, "item:click", this.onItemViewClick);
+		this.children.add(view);
+		this.listenTo(view, "item:click", this.onChildViewClick);
+		return view;
 	},
 
-	/*
-	* Render functions
-	*/
+	removeChildren: function () {
+		this.children.each(this.removeChildView, this);
+	},
 
-	skipAnimation: false,
-
-	/** @override */
-	render: function(timestamp) {
-
-		if (this.skipAnimation) {
-			this.$el.removeClass("animate");
-			this.skipAnimation = false;
-		} else {
-			this.$el.addClass("animate");
-		}
-
-		// If changing to collapsed, do it first
-		if (this._collapsed && this.renderJobs.collapsed)
-			this.renderJobs.collapsed();
-
-		if (this.renderJobs.selection)
-			this.renderJobs.selection();
-
-		if (this.renderJobs.filters)
-			this.renderJobs.filters();
-
-		// If changing from collapsed, do it last
-		if (!this._collapsed && this.renderJobs.collapsed)
-			this.renderJobs.collapsed();
-
-		return this;
+	removeChildView: function (view) {
+		this.stopListening(view);
+		this.children.remove(view);
+		view.remove();
+		return view;
 	},
 
 	/* --------------------------- *
@@ -125,7 +94,7 @@ module.exports = DeferredRenderView.extend({
 	 * --------------------------- */
 
 	/** @private */
-	onItemViewClick: function(item) {
+	onChildViewClick: function (item) {
 		if (this.collection.selected !== item) {
 			this.trigger("view:itemSelect", item);
 		} else {
@@ -133,153 +102,61 @@ module.exports = DeferredRenderView.extend({
 		}
 	},
 
-	_currentItem: null,
-	/** @private */
-	onCollectionSelect: function(newItem){
-		var oldItem = this._currentItem;
-		this._currentItem = newItem;
-		this.requestRender("selection", _.bind(this.renderSelection, this, newItem, oldItem));
-	},
+	// /** @private */
+	// onSelectOne: function (model) {
+	// 	var view = this.children.findByModel(model);
+	// 	if (view)
+	// 		view.$el.addClass("selected");
+	// },
 
-	/** @private */
-	renderSelection: function(newItem, oldItem) {
-		if (newItem) {
-			this.children.findByModel(newItem).$el
-				.addClass("selected");
-		}
-		if (oldItem) {
-			this.children.findByModel(oldItem).$el
-				.removeClass("selected");
-		}
-	},
-
-	/* --------------------------- *
-	 * Collapse
-	 * --------------------------- */
-
-	/** @private */
-	_collapsed: false,
-
-	/**
-	 * @param {Boolean}
-	 * @return {?Boolean}
-	 */
-	setCollapsed: function(value) {
-		if (value === this._collapsed) {
-			return;
-		}
-		this._collapsed = value;
-		this.requestRender("collapsed", _.bind(this.renderCollapsed, this, value));
-	},
-	getCollapsed: function() {
-		return this._collapsed;
-	},
-
-	/** @private */
-	renderCollapsed: function(value) {
-		if (value) {
-			this.$el.addClass("collapsed");
-		} else {
-			this.$el.removeClass("collapsed");
-		}
-	},
-
-	/* --------------------------- *
-	 * Filter
-	 * --------------------------- */
-
-	_currentFilter: null,
-
-	filterBy:function(model) {
-		if (model === this._currentFilter) {
-			return;
-		}
-		var lastFilter = this._currentFilter;
-		this._currentFilter = model;
-		this.requestRender("filters", _.bind(this.renderFilters, this, this._currentFilter, lastFilter));
-	},
-
-	/** @private */
-	renderFilters: function(newAssoc, oldAssoc) {
-		var newIds, oldIds;
-		if (newAssoc) {
-			newIds = newAssoc.get(this.associations.key);
-		}
-		if (oldAssoc) {
-			oldIds = oldAssoc.get(this.associations.key);
-		}
-		this.renderFilters_2(newIds, oldIds);
-	},
-
-	renderFilters_2: function(newIds, oldIds) {
-		var newIncludes, newExcludes, changedCount = 0;
-		// this.itemIds = this.itemIds || this.collection.pluck("id");
-
-		if (newIds) {
-			newExcludes = _.difference(oldIds || this.itemIds, newIds);
-			_.each(newExcludes, function(id) {
-				this.children.findByCustom(id).$el.addClass("excluded");
-			}, this);
-			changedCount += newExcludes.length;
-			// if (!oldIds) this.$el.removeClass("has-filter");
-		}
-		if (oldIds) {
-			newIncludes = _.difference(newIds || this.itemIds, oldIds);
-			_.each(newIncludes, function(id) {
-				this.children.findByCustom(id).$el.removeClass("excluded");
-			}, this);
-			changedCount += newIncludes.length;
-			// if (!newIds) this.$el.removeClass("has-filter");
-		}
-
-		return changedCount;
-	},
-
-	/** @private */
-	lastExcludedCount: 0,
-	/** @private */
-	renderFilters_1: function(newIds, oldIds) {
-		var newCount, oldCount, expectedCount;
-		var changedCount = 0, excludedCount = 0;
-
-		if (newIds && newIds.length) {
-			this.collection.each(function(model, index, arr) {
-				var isExcluded = !_.contains(newIds, model.id);
-				model.set("excluded", isExcluded);
-				if (isExcluded) {
-					this.children.findByModel(model).$el
-						.addClass("excluded");
-					excludedCount++;
-				} else {
-					this.children.findByModel(model).$el
-						.removeClass("excluded");
-				}
-				if (model.changed.excluded !== undefined) {
-					changedCount++;
-				}
-			}, this);
-		} else {
-			this.collection.each(function(model, index, arr) {
-				model.unset("excluded");
-				this.children.findByModel(model).$el
-					.removeClass("excluded");
-			}, this);
-		}
-
-		oldCount = this.lastExcludedCount;
-		newCount = excludedCount;
-		if (newCount == 0) {
-			expectedCount = oldCount;
-		} else if (oldCount == 0) {
-			expectedCount = newCount;
-		} else {
-			expectedCount = changedCount;
-		}
-		this.lastExcludedCount = excludedCount;
-
-		// console.log("[Models] expected count: " + expectedCount);
-		// _.delay(_.bind(this.trigger, this, "view:stateTransitionEnd"), 1000);
-		// return expectedCount;
-	},
-
+	// onDeselectOne: function (model) {
+	// 	var view = this.children.findByModel(model);
+	// 	if (view)
+	// 		view.$el.removeClass("selected");
+	// },
 });
+
+/**
+ * @constructor
+ * @type {module:app/view/render/FilterableRenderer}
+ */
+var SelectableRenderer = Backbone.View.extend({
+
+	/** @override */
+	tagName: "li",
+	/** @override */
+	className: "list-item",
+	/** @override */
+	events: {
+		"click ": "onClick",
+	},
+
+
+	initialize: function (options) {
+		this.listenTo(this.model, "selected", function () {
+			// this.el.checked = true;
+			this.$el.addClass("selected");
+		});
+		this.listenTo(this.model, "deselected", function () {
+			// this.el.checked = false;
+			this.$el.removeClass("selected");
+		});
+	},
+
+	/** @override */
+	render: function () {
+		// this.el.name = "sel" + this.model.get("bId");
+		// this.el.type = "radio";
+		this.$el.text(" ");// = "&nbsp;";
+		return this;
+	},
+
+	onClick: function (event) {
+		if (!event.isDefaultPrevented()) {
+			event.preventDefault();
+			this.trigger("item:click", this.model);
+		}
+	},
+});
+
+module.exports = SelectableListView;

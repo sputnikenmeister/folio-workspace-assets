@@ -86,7 +86,6 @@ html, body {
 	padding-left: $page-margin;
 	padding-right: $page-margin;
 	// width: $page-width;
-
 	width: #{$page-width - $page-margin*2};
 	@media only screen and (min-width: $breakpoint-large) {
 		// width: $page-width-large;
@@ -112,6 +111,21 @@ html, body {
 	@include col-right-rel;
 }
 
+#bundle-images-pager {
+	display: block;
+	position: absolute;
+	bottom: 100%;
+	@include box-sizing(border-box);
+	padding: 0 $page-margin;
+	width: $page-width;
+	left: calc(50% - #{$page-width/2});
+	@media only screen and (min-width: $breakpoint-large) {
+		width: $page-width-large;
+		left: calc(50% - #{$page-width-large/2});
+		padding-left: #{$page-width-large - $page-width + $page-margin};
+	}
+}
+
 #content.viewport {
 	position: relative;
 	// margin: 0 auto; width: $page-width;
@@ -121,12 +135,14 @@ html, body {
 	position: relative;
 }
 #bundle-detail {
+	display: none;
 	width: #{$page-width - $page-margin*2};
 	padding: 1rem $page-margin;
 	margin: 0 auto;
 	height: 6rem;
 	// @include box-sizing(border-box);
 	@media only screen and (min-width: $breakpoint-large) {
+		display: block;
 		position: absolute;
 		width: #{$page-width-large - $page-width - $page-margin};
 		left: calc(50% - #{$page-width-large/2});
