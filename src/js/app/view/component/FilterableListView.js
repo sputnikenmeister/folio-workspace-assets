@@ -48,8 +48,12 @@ module.exports = DeferredRenderView.extend({
 
 	skipAnimation: false,
 
+	render: function() {
+		return this;
+	},
+
 	/** @override */
-	render: function (timestamp) {
+	deferredRender: function (timestamp) {
 
 		if (this.skipAnimation) {
 			this.$el.removeClass("animate");
@@ -59,20 +63,15 @@ module.exports = DeferredRenderView.extend({
 		}
 
 		// If changing to collapsed, do it first
-		if (this._collapsed && this.renderJobs.collapsed)
-			this.renderJobs.collapsed();
-
-		if (this.renderJobs.selection)
-			this.renderJobs.selection();
-
-		if (this.renderJobs.filters)
-			this.renderJobs.filters();
-
+		if (this.getCollapsed()) {
+			this.validateRender("collapsed");
+		}
+		this.validateRender("selection");
+		this.validateRender("filters");
 		// If changing from collapsed, do it last
-		if (!this._collapsed && this.renderJobs.collapsed)
-			this.renderJobs.collapsed();
-
-		return this;
+		if (!this.getCollapsed()) {
+			this.validateRender("collapsed");
+		}
 	},
 
 
@@ -264,7 +263,7 @@ module.exports = DeferredRenderView.extend({
 var FilterableRenderer = Backbone.View.extend({
 	/** @type {Object} */
 	events: {
-		"click ": "onClick",
+		"click": "onClick",
 	},
 
 	onClick: function (ev) {

@@ -13,8 +13,8 @@ var keywords = require( "../model/collection/KeywordList" );
 /** @type {module:app/model/collection/TypeList} */
 var types = require( "../model/collection/TypeList" );
 
-/** @type {module:app/view/component/SelectableListView} */
-var SelectableListView = require( "./component/SelectableListView" );
+/** @type {module:app/view/component/FilterableListView} */
+var FilterableListView = require("./component/FilterableListView");
 /** @type {module:app/view/component/GroupingListView} */
 var GroupingListView = require( "./component/GroupingListView" );
 
@@ -29,36 +29,34 @@ module.exports = Backbone.View.extend({
 	/** @override */
 	className: "navigation",
 
+	/** @type {module:app/model/collection/BundleList} */
+	bundles: bundles,
+	/** @type {module:app/model/collection/KeywordList} */
+	keywords: keywords,
+	/** @type {module:app/model/collection/TypeList} */
+	types: types,
+
 	/** Setup listening to model changes */
 	initialize: function(options) {
 		/*
 		 * initialize views
 		 */
-		this.bundleListView = new SelectableListView({
-			el: this.$("#bundle-list"),
-			collection: bundles,
-			associations: {
-				collection: keywords,
-				key: "bIds"
-			}
+		this.bundleListView = new FilterableListView({
+			el: "#bundle-list",
+			collection: this.bundles,
+			associations: { collection: this.keywords, key: "bIds" }
 		});
-
-		this.keywordListView = new GroupingListView({
-			el: this.$("#keyword-list"),
-			collection: keywords,
-			associations: {
-				collection: bundles,
-				key: "kIds"
-			},
-			groupings: {
-				collection: types,
-				key: "tIds"
-			},
-		});
-
-		// this.listenTo(this.keywordListView, "view:itemSelect", this.onKeywordSelect);
 		this.listenTo(this.bundleListView, "view:itemSelect", this.onBundleSelect);
 		this.listenTo(this.bundleListView, "view:itemDeselect", this.onBundleDeselect);
+
+		this.keywordListView = new GroupingListView({
+			el: "#keyword-list",
+			collection: this.keywords,
+			associations: { collection: this.bundles, key: "kIds" },
+			groupings: { collection: this.types, key: "tIds" },
+		});
+		this.keywordListView.setCollapsed(true);
+		// this.listenTo(this.keywordListView, "view:itemSelect", this.onKeywordSelect);
 
 		this.listenTo(Backbone, "app:bundleItem", this.onAppBundleItem);
 		this.listenTo(Backbone, "app:bundleList", this.onAppBundleList);
@@ -70,7 +68,7 @@ module.exports = Backbone.View.extend({
 	onBundleDeselect: function() {
 	},
 
-	onAppBundleItem: function(bundle) {
+	onAppBundleItem: function() {
 	},
 
 	onAppBundleList: function() {

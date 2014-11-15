@@ -1,3 +1,4 @@
+/*global Image */
 /**
  * @module app/app/view/render/ImageView
  * @requires module:backbone
@@ -10,13 +11,20 @@ var Backbone = require( "backbone" );
 
 /** @type {module:app/model/item/ImageItem} */
 var ImageItem = require( "../../model/item/ImageItem" );
-
-/** @type {string} */
+/** @type {Function} */
 var viewTemplate = require( "../template/ImageView.tpl" );
-/** @type {string} */
+/** @type {Function} */
 var placeholderTemplate = require( "../template/ImageView.Placeholder.tpl" );
-/** @type {string} */
-var captionTemplate = require( "../template/ImageView.Caption.tpl" );
+/** @type {Function} */
+//var captionTemplate = require( "../template/ImageView.Caption.tpl" );
+
+// var approot = require("../../control/Router").getApplicationRoot();
+
+/** @type {Function} */
+var imageSrcTemplate = _.template(window.approot + "/image/1/<%= constraint %>/0/uploads/<%= filename %>");
+// var imageSrcTemplate = _.template("<%= approot %>/image/1/<%= constraint %>/0/uploads/<%= filename %>");
+/** @type {Function} */
+var longdescTemplate = _.template("i<%= id %>-caption");
 
 // var templateSettings = { interpolate: /\{\{(.+?)\}\}/g };
 
@@ -38,55 +46,79 @@ module.exports = Backbone.View.extend({
 	},
 
 	/** @param {Object} @return {string} */
-	template: viewTemplate,
-	/** @param {Object} @return {string} */
-	placeholderTemplate: placeholderTemplate,
+	template: placeholderTemplate,
 
 	/** @override */
 	initialize: function(opts) {
-		_.bindAll(this, "onError", "onLoad");
-		this.startImageLoad = _.once(this.startImageLoad);
+		_.bindAll(this, "onError", "onLoad", "requestImageLoad");
+		this.requestImageLoad = _.once(this.requestImageLoad);
+		// this.addSelectionListeners();
 	},
+
+	// addSelectionListeners: function () {
+	// 	var sibling = this.model.next();
+	// 	if (sibling) {
+	// 		this.listenTo(sibling, "selected", this.onSelectChange);
+	// 	}
+	// 	sibling = this.model.prev();
+	// 	if (sibling) {
+	// 		this.listenTo(sibling, "selected", this.onSelectChange);
+	// 	}
+	// 	this.listenTo(this.model, "selected", this.onSelectChange);
+	// },
+	// addSelectionListeners: function(){
+	// 	var sibling = this.model.next();
+	// 	if (sibling) {
+	// 		this.stopListening(sibling, "selected", this.onSelectChange);
+	// 	}
+	// 	sibling = this.model.prev();
+	// 	if (sibling) {
+	// 		this.stopListening(sibling, "selected", this.onSelectChange);
+	// 	}
+	// 	this.stopListening(this.model, "selected", this.onSelectChange);
+	// },
+
+	// onSelectChange: function() {
+	// 	this.requestImageLoad();
+	// 	this.removeCollectionListeners();
+	// },
 
 	/** @return {this} */
 	render: function() {
-		var tpldata = {
+		var attrs = {
 			src: 		this.getImageSrc(),
 			width: 		this.getConstrainedWidth(),
 			height: 	this.getConstrainedHeight(),
 			longdesc: 	this.getLongDesc(),
 			alt: 		this.getImageAlt(),
 			desc: 		this.model.get("desc"),
-			filename: 	this.model.get("f"),
+			filename: 	this.model.cid + " " +this.model.get("f"),
 		};
+		this.$el.html(this.template(attrs));
 
-		this.$el.html(this.placeholderTemplate(tpldata));
-		// this.$el.html(this.template(tpldata));
-		// this.startImageLoad();
+		if (this.model.selected) {
+			this.requestImageLoad();
+		}
 
 		return this;
 	},
 
 	/** @type {Number} */
 	constraint: 660,
-	/** @type {Function} */
-	imageSrcTemplate: _.template("<%= approot %>/image/1/<%= constraint %>/0/uploads/<%= filename %>"),
 	/** @return {String} */
 	getImageSrc: function() {
 		// original file: "{approot}/workspace/uploads/{filename}"
 		// named recipe: "{approot}/image/{recipe-name}/uploads/{filename}"
-		return this.imageSrc || (this.imageSrc = this.imageSrcTemplate({
-			approot: this.model.collection.imageSrcRoot,
+		return this.imageSrc || (this.imageSrc = imageSrcTemplate({
+			// approot: this.model.collection.imageSrcRoot,
 			constraint: this.constraint,
 			filename: this.model.get("f"),
 		}));
 	},
 
-	/** @type {Function} */
-	longdescTemplate: _.template("i<%= id %>-caption"),
 	/** @return {String} */
 	getLongDesc: function() {
-		return this.longdesc || (this.longdesc = this.longdescTemplate(this.model));
+		return this.longdesc || (this.longdesc = longdescTemplate(this.model));
 	},
 
 	/** @return {String} */
@@ -114,7 +146,6 @@ module.exports = Backbone.View.extend({
 		// var image = document.createElement("img");
 		// image.width = this.getConstrainedWidth();
 		// image.height = this.getConstrainedHeight();
-		/*global Image */
 		var image = new Image(this.getConstrainedWidth(), this.getConstrainedHeight());
 		image.longDesc = this.getLongDesc();
 		image.alt = this.getImageAlt();
@@ -126,13 +157,13 @@ module.exports = Backbone.View.extend({
 	 * -------------------------- */
 
 	/** @public */
-	startImageLoad:function(){
+	requestImageLoad: function(){
 		var image = this.createImageElement();
 
 		this.loadImage(image, this.getImageSrc())
 			.then(this.onLoad, this.onError);
 
-		this.$el.addClass("loading");
+		this.$el.removeClass("pending").addClass("loading");
 		this.$el.append(image);
 	},
 

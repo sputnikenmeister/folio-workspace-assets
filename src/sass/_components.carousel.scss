@@ -20,7 +20,7 @@
 }
 
 .image-list.animate > .image-item {
-	transition: all 1.3s;
+	transition: all 0.4s;
 }
 
 .image-item {
@@ -88,6 +88,11 @@
 		position: absolute;
 		top: calc(50% - 1em);
 		left: calc(50% - 1em);
+	}
+	&.pending .placeholder:after {
+		animation: none;
+		visibility: hidden;
+		opacity: 0;
 	}
 	&.loading .placeholder:after {
 		animation: spin 2s infinite steps(48), fadeIn 0.5s;

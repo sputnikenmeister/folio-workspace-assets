@@ -33,7 +33,6 @@ module.exports = Backbone.View.extend({
 		if (options["labelAttribute"]) {
 			this.labelAttribute = options["labelAttribute"];
 		}
-		this.listenTo(this.collection, "collection:select", this.onCollectionSelect);
 		this.listenTo(this.collection, "select:one", this.onCollectionSelect);
 		this.listenTo(this.collection, "select:none", this.onCollectionSelect);
 		this.listenTo(this.collection, "reset", this.onCollectionReset);

@@ -2,15 +2,23 @@
  * @module app/App
  */
 
-/** @type {module:jquery} */
-var $ = require("jquery");
 /** @type {module:underscore} */
 var _ = require("underscore");
+
+/** @type {module:jquery} */
+var $ = require("jquery");
+window.$ = window.jQuery = $;
+require("hammerjs");
+require("jquery-hammerjs");
+require("velocity-animate");
+
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-// require("backbone.babysitter");
-// require("backbone.cycle");
 Backbone.$ = $;
+require("backbone.babysitter");
+require("backbone.picky");
+require("backbone.cycle");
+require("backbone-view-options");
 
 /** @type {module:app/model/collection/BundleList} */
 var bundleList = require("./model/collection/BundleList");
@@ -21,8 +29,8 @@ var typeList = require("./model/collection/TypeList");
 /** @type {module:app/model/collection/ImageList} */
 var imageList = require("./model/collection/ImageList");
 
-/** @type {module:app/control/AppRouter} */
-var router = require("./control/AppRouter");
+/** @type {module:app/control/Router} */
+var router = require("./control/Router");
 /** @type {module:app/view/AppView} */
 var AppView = require("./view/AppView");
 
@@ -57,7 +65,7 @@ $(document).ready(function ($) {
 		keywordList.reset(keywords);
 		typeList.reset(types);
 
-		router.setApplicationRoot(window.bootstrap["root"]);
+		// router.setApplicationRoot(window.bootstrap["root"]);
 
 		/* jshint -W051 */
 		delete window.bootstrap;

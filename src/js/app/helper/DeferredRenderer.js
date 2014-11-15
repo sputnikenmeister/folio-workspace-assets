@@ -19,7 +19,6 @@ DeferredRenderer.prototype = {
 
 	/** @type {long} */
 	renderRequestId: 0,
-
 	/**
 	 * @param {String} [key]
 	 * @param [value]
@@ -27,7 +26,7 @@ DeferredRenderer.prototype = {
 	requestRender: function (key, value) {
 		if (undefined === this.renderJobs) {
 			this.renderJobs = {};
-			this.renderRequestId = window.requestAnimationFrame(this.getRenderCallback());
+			this.renderRequestId = _.defer(this.getRenderCallback()); //window.requestAnimationFrame(this.getRenderCallback());
 		}
 		if (key) {
 			this.renderJobs[key] = value ? value : true;
@@ -35,18 +34,23 @@ DeferredRenderer.prototype = {
 	},
 
 	/** @private */
-	_renderCallback: null,
-
-	/** @private */
 	getRenderCallback: function () {
-		return this._renderCallback ? this._renderCallback : _.bind(this.validateRender, this);
+		return this.renderCallback || (this.renderCallback = _.bind(this.applyRender, this));
 	},
 
 	/** @private */
-	validateRender: function (timestamp) {
-		this.render(timestamp);
+	applyRender: function (timestamp) {
+		this.deferredRender(timestamp);
 		delete this.renderJobs;
 	},
+
+	/** @private */
+	validateRender: function(key) {
+		if (this.renderJobs[key]) this.renderJobs[key]();
+	},
+
+	/** @abstract */
+	deferredRender: function () {},
 };
 
 module.exports = DeferredRenderer;

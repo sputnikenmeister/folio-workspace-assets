@@ -10,16 +10,12 @@ var Backbone = require("backbone");
 require("backbone.babysitter");
 
 var SelectableListView = Backbone.View.extend({
-
 	/** @override */
 	tagName: "ul",
 	/** @override */
 	className: "list selectable",
 
 	initialize: function (options) {
-		// this.listenTo(this.collection, "all", function () {
-		// 	console.log(this.cid, arguments);
-		// });
 		this.listenTo(this.collection, "add remove reset", this.onCollectionChange);
 		//this.addCollectionListeners();
 		this.onCollectionChange();
@@ -35,17 +31,17 @@ var SelectableListView = Backbone.View.extend({
 	},
 
 	addCollectionListeners: function () {
-		//		this.listenTo(this.collection, "select:one", this.onSelectOne);
-		//		this.listenTo(this.collection, "deselect:one", this.onDeselectOne);
+		// this.listenTo(this.collection, "select:one", this.onSelectOne);
+		// this.listenTo(this.collection, "deselect:one", this.onDeselectOne);
 	},
 
 	removeCollectionListeners: function () {
-		//		this.stopListening(this.collection, "select:one", this.onSelectOne);
-		//		this.stopListening(this.collection, "deselect:one", this.onDeselectOne);
+		// this.stopListening(this.collection, "select:one", this.onSelectOne);
+		// this.stopListening(this.collection, "deselect:one", this.onDeselectOne);
 	},
 
 	render: function () {
-		var eltBuffer, view, viewSize, maxSize = 0;
+		var eltBuffer, view;
 
 		this.removeChildren();
 		this.$el.empty();
@@ -97,8 +93,6 @@ var SelectableListView = Backbone.View.extend({
 	onChildViewClick: function (item) {
 		if (this.collection.selected !== item) {
 			this.trigger("view:itemSelect", item);
-		} else {
-			this.trigger("view:itemDeselect");
 		}
 	},
 
@@ -118,7 +112,7 @@ var SelectableListView = Backbone.View.extend({
 
 /**
  * @constructor
- * @type {module:app/view/render/FilterableRenderer}
+ * @type {module:app/view/render/SelectableRenderer}
  */
 var SelectableRenderer = Backbone.View.extend({
 
@@ -128,34 +122,34 @@ var SelectableRenderer = Backbone.View.extend({
 	className: "list-item",
 	/** @override */
 	events: {
-		"click ": "onClick",
+		"click a": "onClick",
 	},
-
+	/** @override */
+	template: _.template("<a href=\"<%= href %>\"><%= label %></a>"),
 
 	initialize: function (options) {
 		this.listenTo(this.model, "selected", function () {
-			// this.el.checked = true;
 			this.$el.addClass("selected");
 		});
 		this.listenTo(this.model, "deselected", function () {
-			// this.el.checked = false;
 			this.$el.removeClass("selected");
 		});
 	},
 
 	/** @override */
 	render: function () {
-		// this.el.name = "sel" + this.model.get("bId");
-		// this.el.type = "radio";
-		this.$el.text(" ");// = "&nbsp;";
+		this.$el.html(this.template({
+			href: this.model.cid,
+			label: this.model.toString()
+		}));
 		return this;
 	},
 
 	onClick: function (event) {
 		if (!event.isDefaultPrevented()) {
 			event.preventDefault();
-			this.trigger("item:click", this.model);
 		}
+		this.trigger("item:click", this.model);
 	},
 });
 

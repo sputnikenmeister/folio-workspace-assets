@@ -25,11 +25,19 @@ module.exports = Backbone.View.extend({
 	template: viewTemplate,
 
 	initialize: function (options) {
-		this.listenTo(Backbone, "app:bundleItem", this.whenAppBundleItem);
-		this.listenTo(Backbone, "app:bundleList", this.whenAppBundleList);
+		// this.listenTo(Backbone, "app:bundleItem", this.whenAppBundleItem);
+		// this.listenTo(Backbone, "app:bundleList", this.whenAppBundleList);
+		this.addCollectionListeners();
 	},
 
-	whenAppBundleItem: function (bundle) {
+	// whenAppBundleItem: function () {
+	// 	this.addCollectionListeners();
+	// },
+	// whenAppBundleList: function () {
+	// 	this.removeCollectionListeners();
+	// },
+
+	addCollectionListeners: function () {
 		this.listenTo(this.collection, "select:one select:none", this.render);
 		this.listenTo(this.collection, "select:one", this.addModelListeners);
 		this.listenTo(this.collection, "deselect:one", this.removeModelListeners);
@@ -39,7 +47,7 @@ module.exports = Backbone.View.extend({
 		this.render();
 	},
 
-	whenAppBundleList: function () {
+	removeCollectionListeners: function () {
 		this.stopListening(this.collection);
 		if (this.collection.selected) {
 			this.removeModelListeners(this.collection.selected);
