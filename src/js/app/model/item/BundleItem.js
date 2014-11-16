@@ -24,6 +24,15 @@ module.exports = Backbone.Model.extend({
 		excluded: false,
 	},
 
+	initialize: function(attrs, options) {
+		// if (!this.isNew())
+		// 	this.selector = "#b" + this.id;
+	},
+
+	parse: function(resp, options) {
+		return resp;
+	},
+
 	selector: function() {
 		return "#b" + this.id;
 	},

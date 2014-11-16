@@ -13,7 +13,7 @@ var Backbone = require( "backbone" );
 var FilterableRenderer = Backbone.View.extend({
 
 	events: {
-		"click ": "onClick",
+		"click": "onClick",
 	},
 
 	onClick: function (event) {
@@ -22,6 +22,18 @@ var FilterableRenderer = Backbone.View.extend({
 			this.trigger("item:click", this.model);
 		}
 	},
+
+	// initialize: function(options) {
+	// 	this.listenTo(this.model, "change:excluded", this.onExcludedChange);
+	// },
+
+	// onExcludedChange: function(model, value) {
+	// 	if (value) {
+	// 		this.$el.addClass("excluded");
+	// 	} else {
+	// 		this.$el.removeClass("excluded");
+	// 	}
+	// },
 });
 
 module.exports = FilterableRenderer;

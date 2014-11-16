@@ -17,6 +17,12 @@ var Router = Backbone.Router.extend({
 		"": "bundleList",
 	},
 
+	initialize: function() {
+		this.on("route", function(ev, route) {
+			console.log(["Router.route", ev].concat(route).join(" "));
+		});
+	},
+
 	bundleItem: function(handle) {
 	},
 

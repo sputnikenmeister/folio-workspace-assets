@@ -15,7 +15,7 @@ var Backbone = require( "backbone" );
 /** @type {module:app/view/render/ImageView} */
 var ImageView = require( "./render/ImageView" );
 /** @type {module:app/helper/DeferredRenderView} */
-// var DeferredRenderView = require("../helper/DeferredRenderView");
+var DeferredRenderView = require("../helper/DeferredRenderView");
 
 /**
  * @constructor
@@ -28,43 +28,40 @@ module.exports  = Backbone.View.extend({
 	tagName: "div",
 	/** @override */
 	className: "image-list",
-	/** @type {Number} */
-	threshold: 20,
-	/** @type {Number} */
+	/** @type {Number} factor 0-1 */
+	selectThreshold: 0.15,
+	/** @type {int} In pixels */
+	panThreshold: 20,
+	/** @type {int} */
 	direction: Hammer.DIRECTION_HORIZONTAL,
 
 	events: {
-		"panstart" : "onPan",
-		"panmove" : "onPan",
-		"panend" : "onPan",
-		"pancancel" : "onPan"
-	},
-
-	onPanEvent: function(ev) {
-		console.log(ev.type);
+		"panstart" : "onPanMove",
+		"panmove" : "onPanMove",
+		"panend" : "onPanEnd",
+		"pancancel" : "onPanCancel"
 	},
 
 	initialize: function(options) {
-		_.bindAll(this, "onPan", "onContainerResize");
-
 		this.hammer = new Hammer.Manager(this.el);
 		this.hammer.add(new Hammer.Pan({
 			direction: this.direction,
-			threshold: this.threshold,
+			threshold: this.panThreshold,
 		}));
-
 		// this.hammer.on("panstart panmove panend pancancel", this.onPan);
-		Backbone.$(window).on("orientationchange resize", this.onContainerResize);
-		// this.listenTo(Backbone.$(window), "orientationchange resize", this.onContainerResize);
+
+		_.bindAll(this, "onResize");
+		Backbone.$(window).on("orientationchange resize", this.onResize);
 
 		this.listenTo(this.collection, "reset", this.onCollectionReset);
 		this.listenTo(this.collection, "deselect:one", this.onDeselectOne);
 		this.listenTo(this.collection, "select:one", this.onSelectOne);
 		this.listenTo(this.collection, "select:none", this.onSelectNone);
+	},
 
-		// this.listenTo(Backbone, "app:bundleList", this.whenAppBundleList);
-		// this.listenTo(Backbone, "app:bundleItem", this.whenAppBundleItem);
-
+	remove: function() {
+		Backbone.View.prototype.remove.apply(this, arguments);
+		Backbone.$(window).off("orientationchange resize", this.onResize);
 	},
 
 	/* --------------------------- *
@@ -77,67 +74,69 @@ module.exports  = Backbone.View.extend({
 
 	// /** @override */
 	// deferredRender: function (timestamp) {
-	// 	if (this.renderJobs.updateChildren)
-	// 		this.renderJobs.updateChildren();
-	// 	if (this.renderJobs.scrollBy)
-	// 		this.renderJobs.scrollBy();
+	// 	this.validateRender("updateChildren");
+	// 	this.validateRender("scrollBy");
 	// },
 
 	/* --------------------------- *
 	 * Hammer/DOM events
 	 * --------------------------- */
 
-	/**
-	 * handle pan
-	 * @param {Object} ev
-	 */
-	onPan : function (ev) {
-		var index = this.getScrollIndex();
-		// var delta = this.getDirProp(ev.deltaX, ev.deltaY);
+	/** @param {Object} ev */
+	onPanMove: function(ev) {
 		var delta = this.getDirProp(ev.gesture.deltaX, ev.gesture.deltaY);
-		var size = this.getContainerSize();
+		// remove threshold to prevent jump
+		delta += (delta < 0) ? this.panThreshold : -this.panThreshold;
+		// when at first or last index, add feedback to gesture
+		if (this.isOutOfBounds(delta)) {
+			delta *= 0.2;
+		}
+		this.scrollBy(delta, false);
+	},
 
-		var isOutOfBounds =
-			(index == 0 && delta > 0) ||
-			(index == this.children.length - 1 && delta < 0);
-
-		switch(ev.type) {
-			case "panstart":
-			/* falls through */
-			case "panmove":
-				if (isOutOfBounds) {
-					// when at first or last index,
-					// add feedback to gesture
-					delta *= 0.2;
-				} else {
-					// remove threshold to prevent jump
-					delta += (delta < 0) ? this.threshold : -this.threshold;
-				}
-				this.scrollBy(delta/size, false);
-				break;
-			case "panend":
-				if (!isOutOfBounds && Math.abs(delta/size) > 0.15) {
-					this.trigger("view:itemSelect", (delta < 0)?
-						this.collection.next(): this.collection.prev());
-				} else {
-					this.scrollBy(0, true);
-				}
-				break;
-			case "pancancel":
-				this.scrollBy(0, true);
-				break;
-			default:
-				break;
+	/** @param {Object} ev */
+	onPanEnd: function(ev) {
+		var delta = this.getDirProp(ev.gesture.deltaX, ev.gesture.deltaY);
+		// If beyond select threshold, trigger selection
+		if (Math.abs(delta) > this.getSelectThreshold() && !this.isOutOfBounds(delta)) {
+			this.trigger("view:itemSelect", (delta < 0)?
+				this.collection.nextNoLoop(): this.collection.prevNoLoop());
+		} else {
+			this.scrollBy(0, true);
 		}
 	},
 
+	/** @param {Object} ev */
+	onPanCancel: function(ev) {
+		this.scrollBy(0, true);
+	},
+
+	/** @param {Object} ev */
+	onResize: function (ev) {
+		this.containerSize = null;
+		this.scrollBy(0, false);
+	},
+
 	/* --------------------------- *
-	 * app state
+	 * helper functions
 	 * --------------------------- */
 
-	whenAppBundleList: function() {},
+	isOutOfBounds: function(delta) {
+		var index = this.getScrollIndex();
+		return (index == 0 && delta > 0) || (index == this.children.length - 1 && delta < 0);
+	},
 
-	whenAppBundleItem: function() {},
+	getScrollIndex: function () {
+		return this.collection.selected? this.collection.indexOf(this.collection.selected) : 0;
+	},
+
+	getContainerSize: function () {
+		return this.containerSize || (this.containerSize = this.el[this.getDirProp("offsetWidth", "offsetHeight")]);
+	},
+
+	getSelectThreshold: function(delta) {
+		return this.selectThreshold * this.getContainerSize();
+	},
 
 	/* --------------------------- *
 	 * Selection
@@ -146,19 +145,27 @@ module.exports  = Backbone.View.extend({
 	/* Model event handlers */
 	onCollectionReset: function() {
 		this.updateChildren();
-		// this.render();
 		this.animate = false;
 	},
 
 	/** @private */
 	onSelectOne: function(image) {
-		this.requestImageLoad(image);
-		this.requestImageLoad(this.collection.nextNoLoop());
-		this.requestImageLoad(this.collection.prevNoLoop());
+		// this.requestImageLoad(image);
+		// this.requestImageLoad(this.collection.nextNoLoop());
+		// this.requestImageLoad(this.collection.prevNoLoop());
 
 		this.scrollBy(0, this.animate);
 		this.animate = true;
 	},
+
+	// requestImageLoad: function (model) {
+	// 	if (model) {
+	// 		var view = this.children.findByModel(model);
+	// 		if (view) {
+	// 			view.requestImageLoad();
+	// 		}
+	// 	}
+	// },
 
 	onSelectNone: function() {},
 
@@ -167,35 +174,6 @@ module.exports  = Backbone.View.extend({
 	/* --------------------------- *
 	 * Child views
 	 * --------------------------- */
-
-	updateChildren: function() {
-	// 	this.requestRender("updateChildren", _.bind(this.renderUpdateChildren, this));
-	// },
-	// renderUpdateChildren: function() {
-		var elBuffer, elSize, view, viewSize, maxSize = 0;
-
-		this.removeChildren();
-		this.$el.empty();
-
-		if (this.collection.length) {
-			elBuffer = document.createDocumentFragment();
-			// elBuffer = document.createElement("div");
-			this.collection.each(function(model, index, arr) {
-				view = this.createChildView(model, index);
-				elBuffer.appendChild(view.render().el);
-				this.scrollElementTo(view.el, elSize * index);
-
-				// Get the tallest height for the container
-				viewSize = view[this.getDirProp("getConstrainedHeight", "getConstrainedWidth")]();
-				maxSize = Math.max(maxSize, viewSize);
-			}, this);
-
-			this.$el.css(this.getDirProp("height", "width"), maxSize);
-			this.$el.append(elBuffer);
-		} else {
-			this.$el.css(this.getDirProp("height", "width"), "");
-		}
-	},
 
 	/** @type {Backbone.ChildViewContainer} */
 	children: new Backbone.ChildViewContainer(),
@@ -216,12 +194,40 @@ module.exports  = Backbone.View.extend({
 		return view;
 	},
 
+	updateChildren: function() {
+	// 	this.requestRender("updateChildren", _.bind(this.renderUpdateChildren, this));
+	// },
+	// renderUpdateChildren: function() {
+		var elBuffer, view, maxSize = 0;
+		var containerSize = this.getContainerSize();
+
+		this.removeChildren();
+		this.$el.empty();
+
+		if (this.collection.length) {
+			elBuffer = document.createDocumentFragment();
+			this.collection.each(function(model, index, arr) {
+				view = this.createChildView(model, index);
+				elBuffer.appendChild(view.render().el);
+				// Get the largest *opposite* dimension for the container
+				maxSize = Math.max(maxSize,
+					view[this.getDirProp("getConstrainedHeight", "getConstrainedWidth")]());
+				// this.scrollElementTo(view.el, containerSize * index);
+			}, this);
+
+			this.$el.css(this.getDirProp("height", "width"), maxSize);
+			this.$el.append(elBuffer);
+		} else {
+			this.$el.css(this.getDirProp("height", "width"), "0");
+		}
+	},
+
 	/* --------------------------- *
 	 * Scroll
 	 * --------------------------- */
 
 	/**
-	 * @param {Number} [delta] percentage visible
+	 * @param {Number} [delta] pixels visible
 	 * @param {Boolean} [animate]
 	 */
 	scrollBy: function(delta, animate) {
@@ -241,7 +247,7 @@ module.exports  = Backbone.View.extend({
 		scrollIndex = this.getScrollIndex();
 
 		this.collection.each(function(model, index) {
-			pos = size * ((index - scrollIndex) + delta);
+			pos = (size * (index - scrollIndex)) + delta;
 			this.scrollElementTo(this.children.findByModel(model).el, pos);
 		}, this);
 	},
@@ -256,19 +262,6 @@ module.exports  = Backbone.View.extend({
 		el.style.transform = translate;
 		el.style.mozTransform = translate;
 		el.style.webkitTransform = translate;
-	},
-
-	getScrollIndex: function () {
-		return this.collection.selected? this.collection.indexOf(this.collection.selected) : 0;
-	},
-
-	getContainerSize: function () {
-		return this.containerSize || (this.containerSize = this.el[this.getDirProp("offsetWidth", "offsetHeight")]);
-	},
-
-	onContainerResize: function () {
-		this.containerSize = null;
-		this.scrollBy(0, false);
 	},
 
 	getScrollTransformAt: function(pos) {
@@ -294,15 +287,6 @@ module.exports  = Backbone.View.extend({
 
 	getDirProp: function (hProp, vProp) {
 		return (this.direction & Hammer.DIRECTION_HORIZONTAL) ? hProp : vProp;
-	},
-
-	requestImageLoad: function (model) {
-		if (model) {
-			var view = this.children.findByModel(model);
-			if (view) {
-				view.requestImageLoad();
-			}
-		}
 	},
 
 });

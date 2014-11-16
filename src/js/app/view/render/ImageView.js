@@ -18,8 +18,6 @@ var placeholderTemplate = require( "../template/ImageView.Placeholder.tpl" );
 /** @type {Function} */
 //var captionTemplate = require( "../template/ImageView.Caption.tpl" );
 
-// var approot = require("../../control/Router").getApplicationRoot();
-
 /** @type {Function} */
 var imageSrcTemplate = _.template(window.approot + "/image/1/<%= constraint %>/0/uploads/<%= filename %>");
 // var imageSrcTemplate = _.template("<%= approot %>/image/1/<%= constraint %>/0/uploads/<%= filename %>");
@@ -50,51 +48,51 @@ module.exports = Backbone.View.extend({
 
 	/** @override */
 	initialize: function(opts) {
-		_.bindAll(this, "onError", "onLoad", "requestImageLoad");
+		_.bindAll(this, "onError", "onLoad", "onProgress", "requestImageLoad");
 		this.requestImageLoad = _.once(this.requestImageLoad);
-		// this.addSelectionListeners();
+		this.listenToSelection();
 	},
 
-	// addSelectionListeners: function () {
-	// 	var sibling = this.model.next();
-	// 	if (sibling) {
-	// 		this.listenTo(sibling, "selected", this.onSelectChange);
-	// 	}
-	// 	sibling = this.model.prev();
-	// 	if (sibling) {
-	// 		this.listenTo(sibling, "selected", this.onSelectChange);
-	// 	}
-	// 	this.listenTo(this.model, "selected", this.onSelectChange);
-	// },
-	// addSelectionListeners: function(){
-	// 	var sibling = this.model.next();
-	// 	if (sibling) {
-	// 		this.stopListening(sibling, "selected", this.onSelectChange);
-	// 	}
-	// 	sibling = this.model.prev();
-	// 	if (sibling) {
-	// 		this.stopListening(sibling, "selected", this.onSelectChange);
-	// 	}
-	// 	this.stopListening(this.model, "selected", this.onSelectChange);
-	// },
+	/** @public */
+	requestImageLoad: function(){
+		this.stopListeningToSelection();
+		this.startImageLoad();
+	},
 
-	// onSelectChange: function() {
-	// 	this.requestImageLoad();
-	// 	this.removeCollectionListeners();
-	// },
+	listenToSelection: function () {
+		var sibling;
+		if (sibling = this.model.nextNoLoop())
+			this.listenTo(sibling, "selected", this.requestImageLoad);
+		if (sibling = this.model.prevNoLoop())
+			this.listenTo(sibling, "selected", this.requestImageLoad);
+		this.listenTo(this.model, "selected", this.requestImageLoad);
+	},
+	stopListeningToSelection: function(){
+		var sibling;
+		if (sibling = this.model.nextNoLoop())
+			this.stopListening(sibling, "selected", this.requestImageLoad);
+		if (sibling = this.model.prevNoLoop())
+			this.stopListening(sibling, "selected", this.requestImageLoad);
+		this.stopListening(this.model, "selected", this.requestImageLoad);
+	},
 
 	/** @return {this} */
 	render: function() {
-		var attrs = {
-			src: 		this.getImageSrc(),
+		// var attrs = {
+		// 	src: 		this.getImageSrc(),
+		// 	filename: 	this.model.get("f"),
+		// 	width: 		this.getConstrainedWidth(),
+		// 	height: 	this.getConstrainedHeight(),
+		// 	longdesc: 	this.getLongDesc(),
+		// 	alt: 		this.getImageAlt(),
+		// 	desc: 		this.model.get("desc"),
+		// };
+
+		this.$el.html(this.template({
+			filename: 	this.model.get("f"),
 			width: 		this.getConstrainedWidth(),
 			height: 	this.getConstrainedHeight(),
-			longdesc: 	this.getLongDesc(),
-			alt: 		this.getImageAlt(),
-			desc: 		this.model.get("desc"),
-			filename: 	this.model.cid + " " +this.model.get("f"),
-		};
-		this.$el.html(this.template(attrs));
+		}));
 
 		if (this.model.selected) {
 			this.requestImageLoad();
@@ -107,10 +105,7 @@ module.exports = Backbone.View.extend({
 	constraint: 660,
 	/** @return {String} */
 	getImageSrc: function() {
-		// original file: "{approot}/workspace/uploads/{filename}"
-		// named recipe: "{approot}/image/{recipe-name}/uploads/{filename}"
 		return this.imageSrc || (this.imageSrc = imageSrcTemplate({
-			// approot: this.model.collection.imageSrcRoot,
 			constraint: this.constraint,
 			filename: this.model.get("f"),
 		}));
@@ -143,10 +138,9 @@ module.exports = Backbone.View.extend({
 	/** @return {HTMLImageElement} */
 	createImageElement: function() {
 		// Create a new image object
-		// var image = document.createElement("img");
-		// image.width = this.getConstrainedWidth();
-		// image.height = this.getConstrainedHeight();
-		var image = new Image(this.getConstrainedWidth(), this.getConstrainedHeight());
+		var image = document.createElement("img");
+		image.width = this.getConstrainedWidth();
+		image.height = this.getConstrainedHeight();
 		image.longDesc = this.getLongDesc();
 		image.alt = this.getImageAlt();
 		return image;
@@ -156,25 +150,28 @@ module.exports = Backbone.View.extend({
 	 * image loading
 	 * -------------------------- */
 
-	/** @public */
-	requestImageLoad: function(){
+	startImageLoad: function() {
 		var image = this.createImageElement();
+		this.$el.append(image);
 
 		this.loadImage(image, this.getImageSrc())
-			.then(this.onLoad, this.onError);
+			.then(this.onLoad, this.onError, this.onProgress);
 
-		this.$el.removeClass("pending").addClass("loading");
-		this.$el.append(image);
 	},
 
 	onLoad: function(image, ev) {
 		this.$el.removeClass("loading").addClass("loaded");
-		console.log("ImageView.onLoad_basic: " + this.model.get("f"));
+		console.log("ImageView.onLoad: " + this.model.get("f"));
 	},
 
-	onError: function(err, ev) {
+	onError: function(image, err, ev) {
 		this.$el.removeClass("loading").addClass("error");
 		console.log("ImageView.onError: " + this.model.get("f"));
+	},
+
+	onProgress: function(image) {
+		this.$el.removeClass("pending").addClass("loading");
+		// console.log("ImageView.onProgress: " + this.model.get("f"));
 	},
 
 	loadImage: function(image, url) {
@@ -186,12 +183,15 @@ module.exports = Backbone.View.extend({
 			image.onload = image.onerror = image.onabort = null;
 		};
 		image.onerror = function(ev) {
-			deferred.reject(Error("There was a network error."), ev);
+			deferred.reject(image, Error("There was a network error."), ev);
 			image.onload = image.onerror = image.onabort = null;
 		};
 		image.onabort = image.onerror;
 
-		_.defer(function() { image.src = url; });
+		_.defer(function() {
+			image.src = url;
+			deferred.notify(image);
+		});
 		return deferred.promise();
 	},
 
