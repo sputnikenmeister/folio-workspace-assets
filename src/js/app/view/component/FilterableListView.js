@@ -29,12 +29,15 @@ module.exports = DeferredRenderView.extend({
 
 	/** @override */
 	initialize: function (options) {
+		this.itemIds = this.collection.pluck("id");
 		if (options["associations"]) {
 			this.associations = options["associations"];
 		}
+		if (options["collapsed"]) {
+			this.renderCollapsed(options["collapsed"]);
+		}
 		// Create children
 		this.collection.each(this.assignChildView, this);
-		this.itemIds = this.collection.pluck("id");
 		// skipAnimation = true;
 
 		this.listenTo(this.collection, "select:one", this.onCollectionSelect);
@@ -99,9 +102,9 @@ module.exports = DeferredRenderView.extend({
 	/** @private */
 	onChildViewClick: function (item) {
 		if (this.collection.selected !== item) {
-			this.trigger("view:itemSelect", item);
+			this.trigger("view:select:one", item);
 		} else {
-			this.trigger("view:itemDeselect");
+			this.trigger("view:select:none");
 		}
 	},
 
@@ -269,13 +272,13 @@ var FilterableRenderer = Backbone.View.extend({
 	onClick: function (ev) {
 		if (!ev.isDefaultPrevented()) {
 			ev.preventDefault();
+			this.trigger("item:click", this.model);
 		}
-		this.trigger("item:click", this.model);
 	},
 
-	// initialize: function(options) {
-	// 	this.listenTo(this.model, "change:excluded", this.onExcludedChange);
-	// },
+	initialize: function(options) {
+		// this.listenTo(this.model, "change:excluded", this.onExcludedChange);
+	},
 
 	// onExcludedChange: function(model, value) {
 	// 	if (value) {

@@ -134,10 +134,11 @@ html, body {
 	// position: static;
 	position: relative;
 }
-#bundle-detail {
+.item-detail {
 	display: none;
+	overflow: hidden;
 	width: #{$page-width - $page-margin*2};
-	padding: 1rem $page-margin;
+	padding: 1.25rem $page-margin;
 	margin: 0 auto;
 	height: 6rem;
 	// @include box-sizing(border-box);
@@ -146,8 +147,15 @@ html, body {
 		position: absolute;
 		width: #{$page-width-large - $page-width - $page-margin};
 		left: calc(50% - #{$page-width-large/2});
-		height: calc(100% - 2rem);
+		height: calc(100% - 2.5rem);
 	}
+}
+#image-detail.item-detail {
+	transform: translateY(-2.75rem);
+}
+#image-detail.item-detail .description {
+	@include small-caps;
+	// bottom: 0; position: absolute;
 }
 
 #bundle-pager {
@@ -169,7 +177,7 @@ $apptx-duration: 0.35s;
 
 // Navigation
 #navigation {
-	min-height: 9rem;
+	min-height: 12rem;
 	height: auto;
 }
 .app-bundle-list #navigation {
@@ -177,7 +185,7 @@ $apptx-duration: 0.35s;
 }
 .app-bundle-item #navigation {
 	transition: height $apptx-duration step-start;
-	height: 9rem;
+	height: 12rem;
 }
 
 // Bundle pager

@@ -87,6 +87,8 @@ module.exports = Backbone.View.extend({
 		// 	alt: 		this.getImageAlt(),
 		// 	desc: 		this.model.get("desc"),
 		// };
+		this.$el.css("height", this.getConstrainedHeight());
+		this.$el.css("min-width", this.getConstrainedWidth());
 
 		this.$el.html(this.template({
 			filename: 	this.model.get("f"),

@@ -8,8 +8,7 @@ var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 /** @type {string} */
-var viewTemplate = require("./template/BundleDetailView.tpl");
-// viewTemplate = _.template(viewTemplate);
+var viewTemplate = require("./template/DescriptionView.tpl");
 
 /**
  * @constructor
@@ -20,11 +19,10 @@ module.exports = Backbone.View.extend({
 	/** @override */
 	tagName: "div",
 	/** @override */
-	className: "bundle-detail",
-	/** @override */
 	template: viewTemplate,
 
 	initialize: function (options) {
+		options.template && (this.template = options.template);
 		this.listenTo(this.collection, "select:one", this.addModelListeners);
 		this.listenTo(this.collection, "deselect:one", this.removeModelListeners);
 		if (this.collection.selected) {
@@ -43,12 +41,28 @@ module.exports = Backbone.View.extend({
 	},
 
 	render: function () {
+		if (this.content) {
+			var promise = this.$(this.content)
+				.delay(200).animate({opacity: 0}, {duration: 150}).promise();
+			promise.then(function() {
+				console.log(this, arguments);
+				this.remove();
+			});
+			delete this.content;
+		}
 		var item = this.collection.selected;
 		if (item) {
-			this.$el.html(this.template(item.attributes));
-		} else {
-			this.$el.empty();
+			this.content = this.createRenderedElement(item);
+			this.$el.append(this.content);
+			this.$(this.content).css({opacity: 0})
+				.delay(400).animate({opacity: 1},{duration: 150});
 		}
 		return this;
+	},
+
+	createRenderedElement: function(item) {
+		var elt = document.createElement("div");
+		elt.innerHTML = this.template(item.attributes);
+		return (elt.childElementCount == 1)? elt.children[0]: elt;
 	},
 });

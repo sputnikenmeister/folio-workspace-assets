@@ -22,15 +22,15 @@ module.exports = Backbone.Collection.extend({
 	model: ImageItem,
 
 	initialize: function( models, options ) {
-		var opts = _.extend({
-			enableModelSharing: true,
-			selectIfRemoved: "prev",
-			initialSelection: "none",
-		}, options);
-		Backbone.Cycle.SelectableCollection.applyTo(this, models, opts);
-		// Backbone.Select.One.applyTo( this, models, opts );
+		// options = _.extend({
+		// 	enableModelSharing: false,
+		// 	selectIfRemoved: "prev",
+		// 	initialSelection: "none",
+		// }, options);
+		// Backbone.Select.One.applyTo( this, models, options );
 		// var singleSelect = new Backbone.Picky.SingleSelect(this);
 		// _.extend(this, singleSelect);
+		Backbone.Cycle.SelectableCollection.applyTo(this, models, options);
 	},
 
 	reset: function () {

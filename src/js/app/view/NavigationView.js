@@ -17,6 +17,8 @@ var types = require( "../model/collection/TypeList" );
 var FilterableListView = require("./component/FilterableListView");
 /** @type {module:app/view/component/GroupingListView} */
 var GroupingListView = require( "./component/GroupingListView" );
+/** @type {module:app/control/Presenter} */
+var presenter = require("../control/Presenter");
 
 /**
  * @constructor
@@ -51,21 +53,23 @@ module.exports = Backbone.View.extend({
 			collection: this.keywords,
 			associations: { collection: this.bundles, key: "kIds" },
 			groupings: { collection: this.types, key: "tIds" },
+			collapsed: true,
 		});
-		this.keywordListView.setCollapsed(true);
-		// this.listenTo(this.keywordListView, "view:itemSelect", this.onKeywordSelect);
+		// this.keywordListView.setCollapsed(true);
 
-		this.listenTo(this.bundleListView, "view:itemSelect", function(bundle) {
-			this.trigger("view:itemSelect", bundle);
+		this.listenTo(this.bundleListView, "view:select:one", function(bundle) {
+			presenter.selectBundle(bundle);
+			// this.trigger("view:select:one", bundle);
 		});
-		this.listenTo(this.bundleListView, "view:itemDeselect", function() {
-			this.trigger("view:itemDeselect");
+		this.listenTo(this.bundleListView, "view:select:none", function() {
+			presenter.deselectBundle();
+			// this.trigger("view:select:none");
 		});
 
 		this.listenTo(this.bundles, "select:one", this.onBundleSelect);
 		this.listenTo(this.bundles, "select:none", this.onBundleDeselect);
-		this.listenTo(Backbone, "app:bundleItem", this.onAppBundleItem);
-		this.listenTo(Backbone, "app:bundleList", this.onAppBundleList);
+		// this.listenTo(Backbone, "app:bundle:item", this.onAppBundleItem);
+		// this.listenTo(Backbone, "app:bundle:list", this.onAppBundleList);
 	},
 
 	onBundleSelect: function(bundle) {
@@ -78,22 +82,10 @@ module.exports = Backbone.View.extend({
 		this.keywordListView.filterBy(null);
 	},
 
-	onAppBundleItem: function() {
-	},
-
-	onAppBundleList: function() {
-	},
-
-	// onKeywordSelect: function(keyword) {
-	// 	// this.router.navigate(/* implement route */);
-	// 	this.filterBundles(keyword);
+	// onAppBundleItem: function() {
 	// },
-	// filterBundles: function(keyword) {
-	// 	this.keywords.select(keyword);
-	// 	this.showBundleListFiltered(keyword);
-	// },
-	// showFilteredBundleList: function() {
-	// 	console.log("AppView.showFilteredBundleList - not implemented");
+
+	// onAppBundleList: function() {
 	// },
 
 });

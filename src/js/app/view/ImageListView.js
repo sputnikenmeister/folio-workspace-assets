@@ -69,6 +69,8 @@ module.exports  = Backbone.View.extend({
 	 * --------------------------- */
 
 	render: function() {
+		this.updateChildren();
+		this.scrollBy(0, false);
 		return this;
 	},
 
@@ -99,7 +101,7 @@ module.exports  = Backbone.View.extend({
 		var delta = this.getDirProp(ev.gesture.deltaX, ev.gesture.deltaY);
 		// If beyond select threshold, trigger selection
 		if (Math.abs(delta) > this.getSelectThreshold() && !this.isOutOfBounds(delta)) {
-			this.trigger("view:itemSelect", (delta < 0)?
+			this.trigger("view:select:one", (delta < 0)?
 				this.collection.nextNoLoop(): this.collection.prevNoLoop());
 		} else {
 			this.scrollBy(0, true);
@@ -150,10 +152,6 @@ module.exports  = Backbone.View.extend({
 
 	/** @private */
 	onSelectOne: function(image) {
-		// this.requestImageLoad(image);
-		// this.requestImageLoad(this.collection.nextNoLoop());
-		// this.requestImageLoad(this.collection.prevNoLoop());
-
 		this.scrollBy(0, this.animate);
 		this.animate = true;
 	},
@@ -198,27 +196,30 @@ module.exports  = Backbone.View.extend({
 	// 	this.requestRender("updateChildren", _.bind(this.renderUpdateChildren, this));
 	// },
 	// renderUpdateChildren: function() {
-		var elBuffer, view, maxSize = 0;
+		var elBuffer, child, childSize, maxSize = 0;
 		var containerSize = this.getContainerSize();
 
 		this.removeChildren();
-		this.$el.empty();
+		// this.$el.empty();
 
 		if (this.collection.length) {
 			elBuffer = document.createDocumentFragment();
+
 			this.collection.each(function(model, index, arr) {
-				view = this.createChildView(model, index);
-				elBuffer.appendChild(view.render().el);
+				child = this.createChildView(model, index);
+				elBuffer.appendChild(child.render().el);
 				// Get the largest *opposite* dimension for the container
-				maxSize = Math.max(maxSize,
-					view[this.getDirProp("getConstrainedHeight", "getConstrainedWidth")]());
-				// this.scrollElementTo(view.el, containerSize * index);
+				childSize = child[this.getDirProp("constrainedHeight", "constrainedWidth")];
+				// childSize = child[this.getDirProp("getConstrainedHeight", "getConstrainedWidth")]());
+				maxSize = Math.max(maxSize, childSize);
 			}, this);
 
 			this.$el.css(this.getDirProp("height", "width"), maxSize);
 			this.$el.append(elBuffer);
+			console.log("ImageListView.children " + this.collection.length + " " + maxSize);
 		} else {
-			this.$el.css(this.getDirProp("height", "width"), "0");
+			this.$el.css(this.getDirProp("height", "width"), "");
+			console.log("ImageListView.empty");
 		}
 	},
 
@@ -248,20 +249,20 @@ module.exports  = Backbone.View.extend({
 
 		this.collection.each(function(model, index) {
 			pos = (size * (index - scrollIndex)) + delta;
-			this.scrollElementTo(this.children.findByModel(model).el, pos);
+			this.scrollChildTo(this.children.findByModel(model), pos);
 		}, this);
 	},
 
-	scrollElementTo: function (el, pos) {
+	scrollChildTo: function (view, pos) {
 		var translate;
 		if(this.direction & Hammer.DIRECTION_HORIZONTAL) {
 			translate = "translate3d(" + pos + "px, 0, 0)";
 		} else {
 			translate = "translate3d(0, " + pos + "px, 0)";
 		}
-		el.style.transform = translate;
-		el.style.mozTransform = translate;
-		el.style.webkitTransform = translate;
+		view.el.style.transform = translate;
+		view.el.style.mozTransform = translate;
+		view.el.style.webkitTransform = translate;
 	},
 
 	getScrollTransformAt: function(pos) {

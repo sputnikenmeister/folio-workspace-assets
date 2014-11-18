@@ -65,5 +65,13 @@ Iterator.prototype = {
 		return this.collection.at(index > -1 ? index : this.collection.length - 1);
 	}
 };
+// var iteratorMethods = _.keys(Iterator.prototype);
+// _.each(iteratorMethods, function(method) {
+// 	Model.prototype[method] = function() {
+// 		var args = slice.call(arguments);
+// 		args.unshift(this.selected);
+// 		return Iterator.prototype[method].apply(this, args);
+// 	};
+// });
 
 module.exports = Iterator;

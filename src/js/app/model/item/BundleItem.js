@@ -20,7 +20,6 @@ module.exports = Backbone.Model.extend({
 		completed: 0,
 		attrs: [],
 		kIds: [],
-		iIds: [],
 		excluded: false,
 	},
 

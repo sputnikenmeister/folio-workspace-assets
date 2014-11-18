@@ -3,8 +3,6 @@
  * @requires module:backbone
  */
 
-// /** @type {module:app/helper/SelectableList} */
-// var SelectableList = require( "../../helper/SelectableList" );
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
@@ -17,10 +15,19 @@ var ImageItem = require( "../item/ImageItem" );
  */
 var ImageList = Backbone.Collection.extend({
 
-	/**
-	 * @type {Backbone.Model}
-	 */
-	model: ImageItem
+	/** @type {Backbone.Model} */
+	model: ImageItem,
+
+	initialize: function( models, options ) {
+		Backbone.Cycle.SelectableCollection.applyTo(this, models, options);
+	},
+
+	reset: function () {
+		Backbone.Collection.prototype.reset.apply(this, arguments);
+		if (this.length) {
+			this.selectAt(0);
+		}
+	}
 
 });
 

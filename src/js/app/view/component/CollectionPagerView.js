@@ -41,7 +41,7 @@ module.exports = Backbone.View.extend({
 	onPrecedingClick: function (ev) {
 		if (!ev.isDefaultPrevented()) {
 			ev.preventDefault();
-			this.trigger("view:itemSelect", this.collection.precedingOrLast(this.collection.selected));
+			this.trigger("view:select:one", this.collection.precedingOrLast(this.collection.selected));
 			// this.trigger("view:itemPreceding");
 		}
 	},
@@ -49,7 +49,7 @@ module.exports = Backbone.View.extend({
 	onFollowingClick: function (ev) {
 		if (!ev.isDefaultPrevented()) {
 			ev.preventDefault();
-			this.trigger("view:itemSelect", this.collection.followingOrFirst(this.collection.selected));
+			this.trigger("view:select:one", this.collection.followingOrFirst(this.collection.selected));
 			// this.trigger("view:itemFollowing");
 		}
 	},
@@ -57,7 +57,7 @@ module.exports = Backbone.View.extend({
 	onCloseClick: function (ev) {
 		if (!ev.isDefaultPrevented()) {
 			ev.preventDefault();
-			this.trigger("view:itemDeselect");
+			this.trigger("view:select:none");
 		}
 	},
 

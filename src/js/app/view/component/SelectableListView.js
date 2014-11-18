@@ -92,7 +92,7 @@ var SelectableListView = Backbone.View.extend({
 	/** @private */
 	onChildViewClick: function (item) {
 		if (this.collection.selected !== item) {
-			this.trigger("view:itemSelect", item);
+			this.trigger("view:select:one", item);
 		}
 	},
 
@@ -125,7 +125,7 @@ var SelectableRenderer = Backbone.View.extend({
 		"click a": "onClick",
 	},
 	/** @override */
-	template: _.template("<a href=\"<%= href %>\"><%= label %></a>"),
+	template: _.template("<a href=\"images/<%= href %>\"><%= label %></a>"),
 
 	initialize: function (options) {
 		this.listenTo(this.model, "selected", function () {
@@ -138,8 +138,11 @@ var SelectableRenderer = Backbone.View.extend({
 
 	/** @override */
 	render: function () {
+		if (this.model.selected) {
+			this.$el.addClass("selected");
+		}
 		this.$el.html(this.template({
-			href: this.model.cid,
+			href: this.model.id,
 			label: this.model.toString()
 		}));
 		return this;
@@ -148,8 +151,8 @@ var SelectableRenderer = Backbone.View.extend({
 	onClick: function (event) {
 		if (!event.isDefaultPrevented()) {
 			event.preventDefault();
+			this.trigger("item:click", this.model);
 		}
-		this.trigger("item:click", this.model);
 	},
 });
 

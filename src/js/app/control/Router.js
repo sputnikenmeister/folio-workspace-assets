@@ -5,6 +5,10 @@
 
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {module:app/model/collection/BundleList} */
+var bundles = require("../model/collection/BundleList");
+/** @type {module:app/model/collection/ImageList} */
+var images = require("../model/collection/ImageList");
 
 /**
  * @constructor
@@ -13,21 +17,25 @@ var Backbone = require("backbone");
 var Router = Backbone.Router.extend({
 
 	routes: {
-		"bundles/:handle": "bundleItem",
-		"": "bundleList",
+		"bundles/:bundle/:image": "bundleItem",
+		"bundles/:bundle": "bundleItemRedirect",
+		"bundles": "bundleList",
+		"": "bundleListRedirect",
 	},
 
 	initialize: function() {
-		this.on("route", function(ev, route) {
-			console.log(["Router.route", ev].concat(route).join(" "));
+		this.on("route", function() {
+			console.log("Router.route", arguments);
 		});
 	},
 
-	bundleItem: function(handle) {
+	bundleListRedirect: function() {
+		this.navigate("bundles", { trigger: true, replace: true });
 	},
 
-	bundleList:function() {
-	}
+	bundleItemRedirect: function (bundle) {
+		this.navigate("bundles/" + bundle + "/0", { trigger: true, replace: true });
+	},
 
 });
 module.exports = new Router();
