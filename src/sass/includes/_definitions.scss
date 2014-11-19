@@ -92,35 +92,6 @@ $base-font: 12px $font-webfont-sans;
 	letter-spacing: 1px;
 }
 
-@mixin spinner-icon {
-	content: '\e804';
-	font-family: "fontello";
-	font-style: normal;
-	font-weight: normal;
-	font-variant: normal;
-	text-transform: none;
-	text-align: center;
-	speak: none;
-	width: 1em;
-	margin-left: .2em;
-	display: inline-block;
-}
-
-$spinner-animation-name: spin;
-
-@mixin spinner-animation {
-	animation: $spinner-animation-name 2s infinite steps(48);
-}
-
-@keyframes spin {
-	0% {
-		transform: rotateZ(0deg);
-	}
-	100% {
-		transform: rotateZ(359deg);
-	}
-}
-
 @keyframes fadeIn {
 	0% {
 		visibility: hidden;

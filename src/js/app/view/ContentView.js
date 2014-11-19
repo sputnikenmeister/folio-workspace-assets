@@ -29,7 +29,7 @@ var imageDescTemplate = require("./template/DescriptionView.Image.tpl");
  * @constructor
  * @type {module:app/view/ContentView}
  */
-module.exports = Backbone.View.extend({
+var ContentView = Backbone.View.extend({
 
 	/** @type {module:app/model/collection/BundleList} */
 	bundles: bundles,
@@ -40,46 +40,42 @@ module.exports = Backbone.View.extend({
 
 	/** Setup listening to model changes */
 	initialize: function (options) {
-		/*
-		 * initialize views
-		 */
+		// carrousel
+		this.imageListView = new ImageListView({
+			id: "bundle-images",
+			collection: images
+		});
+		// dot nav
+		this.imagePagerView = new SelectableListView({
+			id: "images-pager",
+			className: "list selectable dots",
+			collection: images,
+		});
 		// selected bundle description
 		this.bundleDetailView = new DescriptionView({
 			id: "bundle-detail",
 			className: "item-detail",
 			template: bundleDescTemplate,
-			collection: this.bundles
+			collection: bundles
 		});
-		this.$el.append(this.bundleDetailView.render().el);
-
 		// selected image description
 		this.imageDetailView = new DescriptionView({
 			id: "image-detail",
 			className: "item-detail",
 			template: imageDescTemplate,
-			collection: this.images
+			collection: images
 		});
-		this.$el.append(this.imageDetailView.render().el);
+		this.$el.append(
+			this.bundleDetailView.render().el,
+			this.imageListView.render().el,
+			this.imageDetailView.render().el,
+			this.imagePagerView.render().el
+		);
 
-		// carrousel
-		this.imageListView = new ImageListView({
-			id: "bundle-images",
-			collection: this.images
-		});
-		this.$el.append(this.imageListView.render().el);
-		this.listenTo(this.imageListView, "view:select:one", this.onImageSelectOne);
-
-		// dot nav
-		this.imagePagerView = new SelectableListView({
-			id: "bundle-images-pager",
-			collection: this.images,
-		});
-		this.$el.append(this.imagePagerView.render().el);
-		this.listenTo(this.imagePagerView, "view:select:one", this.onImageSelectOne);
-	},
-
-	onImageSelectOne: function (image) {
-		this.presenter.selectImage(image);
+		presenter.listenTo(this.imageListView, "view:select:one", presenter.selectImage);
+		presenter.listenTo(this.imagePagerView, "view:select:one", presenter.selectImage);
 	},
 
 });
+
+module.exports = ContentView;

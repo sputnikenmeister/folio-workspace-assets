@@ -45,29 +45,21 @@ module.exports = Backbone.View.extend({
 		 */
 		this.bundleListView = new FilterableListView({
 			el: "#bundle-list",
-			collection: this.bundles,
-			associations: { collection: this.keywords, key: "bIds" }
+			collection: bundles,
+			associations: { collection: keywords, key: "bIds" }
 		});
 		this.keywordListView = new GroupingListView({
 			el: "#keyword-list",
-			collection: this.keywords,
-			associations: { collection: this.bundles, key: "kIds" },
-			groupings: { collection: this.types, key: "tIds" },
+			collection: keywords,
+			associations: { collection: bundles, key: "kIds" },
+			groupings: { collection: types, key: "tIds" },
 			collapsed: true,
 		});
-		// this.keywordListView.setCollapsed(true);
+		presenter.listenTo(this.bundleListView, "view:select:one", presenter.selectBundle);
+		presenter.listenTo(this.bundleListView, "view:select:none", presenter.deselectBundle);
 
-		this.listenTo(this.bundleListView, "view:select:one", function(bundle) {
-			presenter.selectBundle(bundle);
-			// this.trigger("view:select:one", bundle);
-		});
-		this.listenTo(this.bundleListView, "view:select:none", function() {
-			presenter.deselectBundle();
-			// this.trigger("view:select:none");
-		});
-
-		this.listenTo(this.bundles, "select:one", this.onBundleSelect);
-		this.listenTo(this.bundles, "select:none", this.onBundleDeselect);
+		this.listenTo(bundles, "select:one", this.onBundleSelect);
+		this.listenTo(bundles, "select:none", this.onBundleDeselect);
 		// this.listenTo(Backbone, "app:bundle:item", this.onAppBundleItem);
 		// this.listenTo(Backbone, "app:bundle:list", this.onAppBundleList);
 	},

@@ -9,7 +9,7 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 
 /** @type {module:app/view/component/CollectionPagerView} */
-// var CollectionPagerView = require("./component/CollectionPagerView");
+var CollectionPagerView = require("./component/CollectionPagerView");
 /** @type {module:app/view/NavigationView} */
 var NavigationView = require("./NavigationView");
 /** @type {module:app/view/ContentView} */
@@ -27,10 +27,6 @@ var presenter = require("../control/Presenter");
 module.exports = Backbone.View.extend({
 	/** @override */
 	el: "body",
-	/** @type {module:app/model/collection/BundleList} */
-	bundles: bundles,
-	/** @type {module:app/control/Presenter} */
-	presenter: presenter,
 	/** @override */
 	events: {
 		"click #site-name": "onSitenameClick"
@@ -45,6 +41,7 @@ module.exports = Backbone.View.extend({
 		this.contentView = new ContentView({
 			el: "#content"
 		});
+		this.createBundlePager();
 
 		this.listenTo(Backbone, "all", this.onApplicationEvent);
 		/* start router, which will request appropiate state */
@@ -54,7 +51,7 @@ module.exports = Backbone.View.extend({
 	onSitenameClick: function (ev) {
 		if (!ev.isDefaultPrevented()) {
 			ev.preventDefault();
-			this.presenter.deselectBundle();
+			presenter.deselectBundle();
 		}
 	},
 
@@ -63,7 +60,7 @@ module.exports = Backbone.View.extend({
 		switch (eventName){
 			case "app:error":
 				console.log("AppView.showError - not implemented");
-				this.presenter.deselectBundle();
+				presenter.deselectBundle();
 				break;
 			// case "app:bundle:item":
 			// case "app:bundle:list":
@@ -73,18 +70,25 @@ module.exports = Backbone.View.extend({
 		}
 	},
 
-	// createBundlePager: function () {
-	// 	this.bundlePagerView = new CollectionPagerView({
-	// 		id: "bundle-pager",
-	// 		collection: this.bundles,
-	// 		className: "fontello-pill-pager",
-	// 		labelAttribute: "name"
-	// 	});
-	// 	// append at the bottom of <body/>
-	// 	this.$el.append(this.bundlePagerView.render().el);
-	// 	this.listenTo(this.bundlePagerView, "view:select:one", this.selectBundle);
-	// 	this.listenTo(this.bundlePagerView, "view:select:none", this.deselectBundle);
-	// 	return this.bundlePagerView;
-	// },
+	createBundlePager: function () {
+		this.bundlePagerView = new CollectionPagerView({
+			id: "bundle-pager",
+			collection: bundles,
+			className: "fontello-pill-pager",
+			labelAttribute: "name"
+		});
+		// append at the bottom of <body/>
+		this.$el.append(this.bundlePagerView.render().el);
+		presenter.listenTo(this.bundlePagerView, "view:select:one", presenter.selectBundle);
+		presenter.listenTo(this.bundlePagerView, "view:select:none", presenter.deselectBundle);
+
+		// this.listenTo(this.bundleListView, "view:select:one", function(bundle) {
+		// 	this.presenter.selectBundle(bundle);
+		// });
+		// this.listenTo(this.bundleListView, "view:select:none", function() {
+		// 	this.presenter.deselectBundle();
+		// });
+		return this.bundlePagerView;
+	},
 
 });

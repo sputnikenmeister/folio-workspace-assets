@@ -69,6 +69,5 @@ $(document).ready(function ($) {
 		delete window.bootstrap;
 		/* jshint +W051 */
 	}
-
 	window.app = new AppView();
 });

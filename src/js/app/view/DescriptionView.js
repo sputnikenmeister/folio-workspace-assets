@@ -22,14 +22,16 @@ module.exports = Backbone.View.extend({
 	template: viewTemplate,
 
 	initialize: function (options) {
+		_.bindAll(this, "deferredRender");
+		// options
 		options.template && (this.template = options.template);
+		// listeners
 		this.listenTo(this.collection, "select:one", this.addModelListeners);
 		this.listenTo(this.collection, "deselect:one", this.removeModelListeners);
 		if (this.collection.selected) {
 			this.addModelListeners(this.collection.selected);
 		}
 		this.listenTo(this.collection, "select:one select:none", this.render);
-		this.render();
 	},
 
 	addModelListeners: function (model) {
@@ -41,21 +43,32 @@ module.exports = Backbone.View.extend({
 	},
 
 	render: function () {
-		if (this.content) {
-			var promise = this.$(this.content)
-				.delay(200).animate({opacity: 0}, {duration: 150}).promise();
-			promise.then(function() {
-				console.log(this, arguments);
-				this.remove();
-			});
-			delete this.content;
+		_.defer(this.deferredRender);
+		return this;
+	},
+
+	deferredRender: function () {
+		if (this.$content) {
+			this.$content
+				.stop().css(_.extend({
+					width: this.$content.outerWidth(),
+					height: this.$content.outerHeight(),
+					position: "absolute"
+				}, this.$content.position()))
+				.delay(300).animate({opacity: 0}, {duration: 150})
+				.promise().always(function() {
+					this.remove();
+				})
+				;
+			delete this.$content;
 		}
 		var item = this.collection.selected;
 		if (item) {
-			this.content = this.createRenderedElement(item);
-			this.$el.append(this.content);
-			this.$(this.content).css({opacity: 0})
-				.delay(400).animate({opacity: 1},{duration: 150});
+			this.$content = Backbone.$(this.createRenderedElement(item));
+			this.$content
+				.appendTo(this.$el).css({opacity: 0})
+				.delay(500).animate({opacity: 1}, {duration: 150})
+				;
 		}
 		return this;
 	},

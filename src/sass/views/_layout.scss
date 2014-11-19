@@ -56,22 +56,25 @@ $footer-height: 6rem;
 // @include sticky-footer( 6em, "#container", "#container-footer", "#footer" );
 /* compass-core-1.0.1/stylesheets/compass/layout/_sticky-footer.scss */
 html, body {
-  height: 100%;
+	height: 100%;
 }
+
 #container {
-  clear: both;
-  min-height: 100%;
-  height: auto !important;
-  height: 100%;
-  margin-bottom: -$footer-height;
+	clear: both;
+	min-height: 100%;
+	height: auto !important;
+	height: 100%;
+	margin-bottom: -$footer-height;
 }
+
 #container #container-footer {
-  height: $footer-height;
+	height: $footer-height;
 }
+
 #footer {
-  clear: both;
-  position: relative;
-  height: $footer-height;
+	clear: both;
+	position: relative;
+	height: $footer-height;
 }
 
 /* ---------------------- *
@@ -85,56 +88,40 @@ html, body {
 	margin: 0 auto;
 	padding-left: $page-margin;
 	padding-right: $page-margin;
-	// width: $page-width;
 	width: #{$page-width - $page-margin*2};
+
 	@media only screen and (min-width: $breakpoint-large) {
-		// width: $page-width-large;
 		width: #{$page-width-large - $page-margin*2};
 	}
 }
 
 #header {
-	// @include full-width;
 	position: relative;
 	padding-top: 3.5rem;
 	padding-bottom: 1rem;
 }
 
 #navigation {
-	// @include full-width;
 	position: relative;
 }
+
 #bundle-list {
 	@include col-left-rel;
 }
+
 #keyword-list {
 	@include col-right-rel;
 }
 
-#bundle-images-pager {
-	display: block;
-	position: absolute;
-	bottom: 100%;
-	@include box-sizing(border-box);
-	padding: 0 $page-margin;
-	width: $page-width;
-	left: calc(50% - #{$page-width/2});
-	@media only screen and (min-width: $breakpoint-large) {
-		width: $page-width-large;
-		left: calc(50% - #{$page-width-large/2});
-		padding-left: #{$page-width-large - $page-width + $page-margin};
-	}
-}
-
 #content.viewport {
 	position: relative;
-	// margin: 0 auto; width: $page-width;
 }
-#bundle-images.image-list {
-	// position: static;
+
+#bundle-images {
 	position: relative;
 }
-.item-detail {
+
+#bundle-detail {
 	display: none;
 	overflow: hidden;
 	width: #{$page-width - $page-margin*2};
@@ -142,28 +129,40 @@ html, body {
 	margin: 0 auto;
 	height: 6rem;
 	// @include box-sizing(border-box);
+
 	@media only screen and (min-width: $breakpoint-large) {
 		display: block;
 		position: absolute;
 		width: #{$page-width-large - $page-width - $page-margin};
 		left: calc(50% - #{$page-width-large/2});
 		height: calc(100% - 2.5rem);
+		top: 0;
 	}
 }
-#image-detail.item-detail {
-	transform: translateY(-2.75rem);
-}
-#image-detail.item-detail .description {
-	@include small-caps;
-	// bottom: 0; position: absolute;
+
+#image-detail,
+#images-pager {
+	@include box-sizing(border-box);
+	display: block;
+	position: absolute;
+	bottom: 100%;
+	padding: 0 $page-margin;
+	width: $page-width;
+	left: calc(50% - #{$page-width/2});
+
+	@media only screen and (min-width: $breakpoint-large) {
+		width: $page-width-large;
+		left: calc(50% - #{$page-width-large/2});
+		padding-left: #{$page-width-large - $page-width + $page-margin};
+	}
 }
 
 #bundle-pager {
 	position: fixed;
 	bottom: 0.5rem;
-
 	width: #{$page-width - $page-margin*2};
 	left: calc(50% - #{$page-width/2 - $page-margin});
+
 	@media only screen and (min-width: $breakpoint-large) {
 		width: #{$page-width-large - $page-margin*2};
 		left: calc(50% - #{$page-width-large/2 - $page-margin});
