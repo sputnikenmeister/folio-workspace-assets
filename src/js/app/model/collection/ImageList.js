@@ -26,6 +26,8 @@ var ImageList = Backbone.Collection.extend({
 		Backbone.Collection.prototype.reset.apply(this, arguments);
 		if (this.length) {
 			this.selectAt(0);
+		} else {
+			this.deselect();
 		}
 	}
 

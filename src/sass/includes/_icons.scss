@@ -16,7 +16,7 @@
 	text-decoration: inherit;
 	width: 1em;
 	text-align: center;
-	content: '\e805';
+	// content: '\e805';
 	/* fix buttons height, for twitter bootstrap */
 	line-height: 1em;
 }
@@ -32,7 +32,7 @@
 }
 
 @mixin spinner-icon {
-	content: '\e804';
+	content: '\e800';
 	font-family: "fontello";
 	font-style: normal;
 	font-weight: normal;
@@ -43,19 +43,4 @@
 	width: 1em;
 	margin-left: .2em;
 	display: inline-block;
-}
-
-$spinner-animation-name: spin;
-
-@mixin spinner-animation {
-	animation: $spinner-animation-name 2s infinite steps(48);
-}
-
-@keyframes spin {
-	0% {
-		transform: rotateZ(0deg);
-	}
-	100% {
-		transform: rotateZ(359deg);
-	}
 }

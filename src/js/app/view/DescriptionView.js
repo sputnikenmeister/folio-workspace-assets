@@ -1,6 +1,5 @@
 /**
- * @module app/view/BundleDetailView
- * @requires module:backbone
+ * @module app/view/DescriptionView
  */
 
 /** @type {module:underscore} */
@@ -12,12 +11,13 @@ var viewTemplate = require("./template/DescriptionView.tpl");
 
 /**
  * @constructor
- * @type {module:app/view/BundleDetailView}
+ * @type {module:app/view/DescriptionView}
  */
 module.exports = Backbone.View.extend({
-
 	/** @override */
 	tagName: "div",
+	/** @override */
+	className: "item-detail",
 	/** @override */
 	template: viewTemplate,
 
@@ -26,50 +26,99 @@ module.exports = Backbone.View.extend({
 		// options
 		options.template && (this.template = options.template);
 		// listeners
-		this.listenTo(this.collection, "select:one", this.addModelListeners);
-		this.listenTo(this.collection, "deselect:one", this.removeModelListeners);
+		// this.listenTo(this.collection, "reset", this.unsetModel);
+		this.listenTo(this.collection, "deselect:one", this.unsetModel);
+		this.listenTo(this.collection, "select:one", this.setModel);
+
 		if (this.collection.selected) {
-			this.addModelListeners(this.collection.selected);
+			this.setModel(this.collection.selected);
 		}
-		this.listenTo(this.collection, "select:one select:none", this.render);
 	},
 
-	addModelListeners: function (model) {
-		this.listenTo(model, "change", this.render);
-	},
-
-	removeModelListeners: function (model) {
+	unsetModel: function (model) {
+		// clear only if a different model hasn't been set
+		if (this.model === model) {
+			this.model = null;
+		}
 		this.stopListening(model);
+		this.requestRender();
 	},
 
-	render: function () {
-		_.defer(this.deferredRender);
-		return this;
+	setModel: function(model) {
+		this.model = model;
+		this.listenTo(model, "change", this.requestRender);
+		this.requestRender();
+	},
+
+	requestRender: function() {
+		if (!this.renderPending) {
+			this.renderPending = true;
+			_.defer(this.deferredRender);
+		}
 	},
 
 	deferredRender: function () {
+		this.render();
+		this.renderPending = false;
+	},
+
+	render: function () {
+
+		// var $container = this.$el;
+		// var item, contentRect;
+
 		if (this.$content) {
+			// Get content's size while still in the flow
+			var contentRect = _.extend({
+				width: this.$content.innerWidth(),
+				height: this.$content.innerHeight(),
+				position: "absolute"
+			}, this.$content.position());
+			// Have the parent keep it's size
+			this.$el.css({
+				"min-width": contentRect.width,
+				"min-height": contentRect.height,
+			});
 			this.$content
-				.stop().css(_.extend({
-					width: this.$content.outerWidth(),
-					height: this.$content.outerHeight(),
-					position: "absolute"
-				}, this.$content.position()))
-				.delay(300).animate({opacity: 0}, {duration: 150})
-				.promise().always(function() {
-					this.remove();
+				.clearQueue()
+				.css(contentRect)
+				.delay(300)
+				.velocity({opacity: 0}, 150)
+				.promise().always(function($content) {
+					$content.parent().removeAttr("style");
+					$content.remove();
 				})
 				;
 			delete this.$content;
 		}
-		var item = this.collection.selected;
-		if (item) {
-			this.$content = Backbone.$(this.createRenderedElement(item));
+
+		if (this.model) {
+			this.$content = Backbone.$(this.createRenderedElement(this.model));
 			this.$content
-				.appendTo(this.$el).css({opacity: 0})
-				.delay(500).animate({opacity: 1}, {duration: 150})
+				.css({opacity: 0})
+				.appendTo(this.$el)
+				.delay(550)
+				.velocity({opacity: 1}, 150)
 				;
 		}
+
+		// if ($container.children().length) {
+		// 	$container.css({
+		// 		"min-width": $container.children().outerWidth(),
+		// 		"min-height": $container.children().outerHeight(),
+		// 	});
+		// }
+		// this.$el.children().promise().always(function($content) {
+		// 	if ($container.children().length) {
+		// 		$container.css({
+		// 			"min-width": $container.children().outerWidth(),
+		// 			"min-height": $container.children().outerHeight(),
+		// 		});
+		// 	} else {
+		// 		$container.removeAttr("style");
+		// 	}
+		// 	console.log("DescriptionView.render.promise", $container[0].id, ($container.children().length), $container.css("min-width"), $container.css("min-height"));
+		// });
 		return this;
 	},
 

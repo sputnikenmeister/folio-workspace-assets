@@ -40,11 +40,11 @@
 		background-color: lighten($inverse-background-color, 47%);
 	}
 	img {
-		transition: opacity 0.5s 0.1s;
 		visibility: hidden;
 		opacity: 0;
 	}
 	&.loaded img {
+		transition: opacity 0.3s 0.1s;
 		visibility: visible;
 		opacity: 1;
 	}
@@ -96,13 +96,55 @@
 	}
 	&.loading .placeholder:after {
 		animation: spin 2s infinite steps(48), fadeIn 0.5s;
+		visibility: visible;
+		opacity: 1;
 	}
 	&.loaded .placeholder:after {
-		animation: spin 1s 1 steps(24);
+		animation: spin 1s steps(24), fadeOut 0s 1s;
+		visibility: hidden;
+		opacity: 0;
 	}
 	&.error	.placeholder:after {
-		animation: spin 1s 1 steps(24), fadeOut 1s;
+		animation: spin 1s steps(24), fadeOut 1s;
+		visibility: hidden;
 		opacity: 0;
+	}
+}
+
+@keyframes spin {
+	0% {
+		transform: rotateZ(0deg);
+	}
+	100% {
+		transform: rotateZ(359deg);
+	}
+}
+
+@keyframes fadeIn {
+	0% {
+		visibility: hidden;
+	}
+	1% {
+		visibility: visible;
+		opacity: 0;
+	}
+	100% {
+		visibility: visible;
+		opacity: 1;
+	}
+}
+
+@keyframes fadeOut {
+	0% {
+		visibility: visible;
+		opacity: 1;
+	}
+	99% {
+		visibility: visible;
+		opacity: 0;
+	}
+	100% {
+		visibility: hidden;
 	}
 }
 

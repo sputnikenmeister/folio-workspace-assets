@@ -21,8 +21,8 @@ var DeferredRenderView = require("../helper/DeferredRenderView");
  * @constructor
  * @type {module:app/view/ImageListView}
  */
-// module.exports  = DeferredRenderView.extend({
-module.exports  = Backbone.View.extend({
+module.exports  = DeferredRenderView.extend({
+// module.exports  = Backbone.View.extend({
 
 	/** @override */
 	tagName: "div",
@@ -43,6 +43,9 @@ module.exports  = Backbone.View.extend({
 	},
 
 	initialize: function(options) {
+		if (options.direction === Hammer.DIRECTION_VERTICAL)
+			this.direction = Hammer.DIRECTION_VERTICAL;
+
 		this.hammer = new Hammer.Manager(this.el);
 		this.hammer.add(new Hammer.Pan({
 			direction: this.direction,
@@ -54,31 +57,13 @@ module.exports  = Backbone.View.extend({
 		Backbone.$(window).on("orientationchange resize", this.onResize);
 
 		this.listenTo(this.collection, "reset", this.onCollectionReset);
-		this.listenTo(this.collection, "deselect:one", this.onDeselectOne);
 		this.listenTo(this.collection, "select:one", this.onSelectOne);
-		this.listenTo(this.collection, "select:none", this.onSelectNone);
 	},
 
 	remove: function() {
 		Backbone.View.prototype.remove.apply(this, arguments);
 		Backbone.$(window).off("orientationchange resize", this.onResize);
 	},
-
-	/* --------------------------- *
-	 * Render
-	 * --------------------------- */
-
-	render: function() {
-		this.updateChildren();
-		this.scrollBy(0, false);
-		return this;
-	},
-
-	// /** @override */
-	// deferredRender: function (timestamp) {
-	// 	this.validateRender("updateChildren");
-	// 	this.validateRender("scrollBy");
-	// },
 
 	/* --------------------------- *
 	 * Hammer/DOM events
@@ -104,24 +89,177 @@ module.exports  = Backbone.View.extend({
 			this.trigger("view:select:one", (delta < 0)?
 				this.collection.nextNoLoop(): this.collection.prevNoLoop());
 		} else {
-			this.scrollBy(0, true);
+			this.scrollToSelection(true);
 		}
 	},
 
 	/** @param {Object} ev */
 	onPanCancel: function(ev) {
-		this.scrollBy(0, true);
+		this.scrollToSelection(true);
 	},
 
 	/** @param {Object} ev */
 	onResize: function (ev) {
-		this.containerSize = null;
-		this.scrollBy(0, false);
+		delete this.containerSize;
+		this.scrollToSelection(false);
+	},
+
+	/* --------------------------- *
+	 * Selection
+	 * --------------------------- */
+
+	/* Model event handlers */
+	onCollectionReset: function() {
+		this.render();
+	},
+
+	/** @private */
+	onSelectOne: function(image) {
+		this.scrollToSelection(true);
+	},
+
+	/* --------------------------- *
+	 * Render
+	 * --------------------------- */
+
+	render: function() {
+		this.renderChildren();
+		this.scrollToSelection(false);
+		return this;
+	},
+
+	/** @override */
+	deferredRender: function (timestamp) {
+		// console.log("ImageListView.render: " + (this.skipAnimation?"deferred":"animated"));
+
+		if (this.skipAnimation) {
+			this.$el.removeClass("animate");
+			this.skipAnimation = false;
+		} else {
+			this.$el.addClass("animate");
+		}
+
+		this.validateRender("renderChildren");
+		this.validateRender("scrollBy");
+	},
+
+	/* --------------------------- *
+	 * Child create
+	 * --------------------------- */
+
+	renderChildren: function() {
+		this.requestRender("renderChildren", _.bind(this.renderChildren_deferred, this));
+	},
+	renderChildren_deferred: function() {
+		var childBuffer, child, childSize, maxSize = 0;
+		var containerSize = this.getContainerSize();
+
+		this.removeChildren();
+
+		if (this.collection.length) {
+			childBuffer = document.createDocumentFragment();
+
+			this.collection.each(function(model, index) {
+				child = this.createChildView(model, index);
+				childBuffer.appendChild(child.render().el);
+				// Get the largest *opposite* dimension for the container
+				// childSize = child[this.getDirProp("getConstrainedHeight", "getConstrainedWidth")]();
+				// maxSize = Math.max(maxSize, childSize);
+			}, this);
+
+			this.$el.append(childBuffer);
+			// console.log(maxSize, this.el.getBoundingClientRect(), this.el.clientHeight, this.el.offsetHeight,
+			//	this.$el.outerHeight(), this.$el.innerHeight(), this.$el.children().outerHeight());
+			maxSize = this.$el.children()[this.getDirProp("outerHeight", "outerWidth")]();
+			this.$el.css(this.getDirProp("minHeight", "minWidth"), maxSize);
+		} else {
+			this.$el.css(this.getDirProp("minHeight", "minWidth"), "");
+		}
+		console.log("ImageListView.children: " + (this.collection.length || "empty"));
+	},
+
+	/* --------------------------- *
+	 * Scroll/layout
+	 * --------------------------- */
+
+	scrollToSelection: function (animate) {
+		this.scrollBy(0, animate);
+	},
+
+	scrollBy: function(delta, animate) {
+		// console.log("ImageListView.scrollBy: " + (!animate? "deferred":"animated"));
+
+		this.skipAnimation = this.skipAnimation || !animate;
+		this.requestRender("scrollBy", _.bind(this.scrollBy_deferred, this, delta));
+
+	},
+	scrollBy_deferred: function(delta) {
+		var pos, scrollIndex, size;
+
+		delta = delta || 0; // non null check
+		size = this.getContainerSize();
+		scrollIndex = this.getScrollIndex();
+
+		this.collection.each(function(model, index) {
+			pos = (size * (index - scrollIndex)) + delta;
+			this.scrollChildTo(this.children.findByModel(model), pos);
+		}, this);
+
+	},
+
+	// scrollChildTo: function (view, pos, animate) {
+	scrollChildTo: function (view, pos) {
+		var translate = (this.direction & Hammer.DIRECTION_HORIZONTAL)? "translate3d(" + pos + "px,0,0)" : "translate3d(0," + pos + "px,0)";
+		view.el.style.transform = translate;
+		view.el.style.mozTransform = translate;
+		view.el.style.webkitTransform = translate;
+	},
+
+	scrollChildTo_interpolate: function (view, pos) {
+		// if (animate) {
+		// 	view.$el.animate(css, 300);
+		// } else {
+			// _.extend(view.el.style, this.interpolate(pos));
+			view.$el.css(this.interpolate(pos));
+		// }
+	},
+
+	interpolate: function() {
+		var css = {}; // keep in closure and reuse same object
+		// overwrite this method with the right variant
+		this.interpolate = (this.direction & Hammer.DIRECTION_HORIZONTAL)?
+			function(pos) { css.transform = css.mozTransform = css.webkitTransform = "translate3d(" + pos + "px,0,0)"; return css;}:
+			function(pos) { css.transform = css.mozTransform = css.webkitTransform = "translate3d(0," + pos + "px,0)"; return css;};
+		return this.interpolate.apply(this, arguments);
+	},
+
+	getScrollTransformAt: function(pos) {
+		var	size = this.getContainerSize(),
+			beforeGap = 0, afterGap = 0, val = 0;
+
+		if (beforeGap > 0 && 0 > pos) {
+			if (pos > (-size)) {
+				val = beforeGap/size * pos;
+			} else {
+				val = -beforeGap;
+			}
+		} else if (afterGap > 0 && 0 < pos) {
+			if (pos < size) {
+				val = afterGap/size * pos;
+			} else {
+				val = afterGap;
+			}
+		}
+		return val;
 	},
 
 	/* --------------------------- *
 	 * helper functions
 	 * --------------------------- */
+
+	getDirProp: function (hProp, vProp) {
+		return (this.direction & Hammer.DIRECTION_HORIZONTAL) ? hProp : vProp;
+	},
 
 	isOutOfBounds: function(delta) {
 		var index = this.getScrollIndex();
@@ -141,36 +279,7 @@ module.exports  = Backbone.View.extend({
 	},
 
 	/* --------------------------- *
-	 * Selection
-	 * --------------------------- */
-
-	/* Model event handlers */
-	onCollectionReset: function() {
-		this.updateChildren();
-		this.animate = false;
-	},
-
-	/** @private */
-	onSelectOne: function(image) {
-		this.scrollBy(0, this.animate);
-		this.animate = true;
-	},
-
-	// requestImageLoad: function (model) {
-	// 	if (model) {
-	// 		var view = this.children.findByModel(model);
-	// 		if (view) {
-	// 			view.requestImageLoad();
-	// 		}
-	// 	}
-	// },
-
-	onSelectNone: function() {},
-
-	onDeselectOne: function(image) {},
-
-	/* --------------------------- *
-	 * Child views
+	 * Child view mgmt
 	 * --------------------------- */
 
 	/** @type {Backbone.ChildViewContainer} */
@@ -190,104 +299,6 @@ module.exports  = Backbone.View.extend({
 		this.children.remove(view);
 		view.remove();
 		return view;
-	},
-
-	updateChildren: function() {
-	// 	this.requestRender("updateChildren", _.bind(this.renderUpdateChildren, this));
-	// },
-	// renderUpdateChildren: function() {
-		var elBuffer, child, childSize, maxSize = 0;
-		var containerSize = this.getContainerSize();
-
-		this.removeChildren();
-		// this.$el.empty();
-
-		if (this.collection.length) {
-			elBuffer = document.createDocumentFragment();
-
-			this.collection.each(function(model, index, arr) {
-				child = this.createChildView(model, index);
-				elBuffer.appendChild(child.render().el);
-				// Get the largest *opposite* dimension for the container
-				childSize = child[this.getDirProp("constrainedHeight", "constrainedWidth")];
-				// childSize = child[this.getDirProp("getConstrainedHeight", "getConstrainedWidth")]());
-				maxSize = Math.max(maxSize, childSize);
-			}, this);
-
-			this.$el.css(this.getDirProp("height", "width"), maxSize);
-			this.$el.append(elBuffer);
-			console.log("ImageListView.children " + this.collection.length + " " + maxSize);
-		} else {
-			this.$el.css(this.getDirProp("height", "width"), "");
-			console.log("ImageListView.empty");
-		}
-	},
-
-	/* --------------------------- *
-	 * Scroll
-	 * --------------------------- */
-
-	/**
-	 * @param {Number} [delta] pixels visible
-	 * @param {Boolean} [animate]
-	 */
-	scrollBy: function(delta, animate) {
-	// 	this.requestRender("scrollBy", _.bind(this.renderScrollBy, this, delta, animate));
-	// },
-	// renderScrollBy: function(delta, animate) {
-		var pos, scrollIndex, size;
-
-		if (animate) {
-			this.$el.addClass("animate");
-		} else {
-			this.$el.removeClass("animate");
-		}
-
-		delta = delta || 0; // non null check
-		size = this.getContainerSize();
-		scrollIndex = this.getScrollIndex();
-
-		this.collection.each(function(model, index) {
-			pos = (size * (index - scrollIndex)) + delta;
-			this.scrollChildTo(this.children.findByModel(model), pos);
-		}, this);
-	},
-
-	scrollChildTo: function (view, pos) {
-		var translate;
-		if(this.direction & Hammer.DIRECTION_HORIZONTAL) {
-			translate = "translate3d(" + pos + "px, 0, 0)";
-		} else {
-			translate = "translate3d(0, " + pos + "px, 0)";
-		}
-		view.el.style.transform = translate;
-		view.el.style.mozTransform = translate;
-		view.el.style.webkitTransform = translate;
-	},
-
-	getScrollTransformAt: function(pos) {
-		var	size = this.getContainerSize(),
-			beforeGap = 0, afterGap = 0, val = 0;
-
-		if (beforeGap > 0 && 0 > pos) {
-			if (pos > (-size)) {
-				val = beforeGap/size * pos;
-			} else {
-				val = -beforeGap;
-			}
-		} else
-		if (afterGap > 0 && 0 < pos) {
-			if (pos < size) {
-				val = afterGap/size * pos;
-			} else {
-				val = afterGap;
-			}
-		}
-		return val;
-	},
-
-	getDirProp: function (hProp, vProp) {
-		return (this.direction & Hammer.DIRECTION_HORIZONTAL) ? hProp : vProp;
 	},
 
 });

@@ -20,7 +20,7 @@ module.exports = Backbone.Model.extend({
 		f: "",
 		w: 0,
 		h: 0,
-		desc: "<p>No description</p>",
+		desc: "<p><em>No description</em></p>",
 		attrs: [],
 		bId: 0,
 	},
@@ -31,6 +31,11 @@ module.exports = Backbone.Model.extend({
 		// var selectable = new Backbone.Picky.Selectable(this);
 		// _.extend(this, selectable);
 	},
+
+	// parse: function(response, options) {
+	// 	console.log("parse", response);
+	// 	return response;
+	// },
 
 	selector: function() {
 		return "#i" + this.id;

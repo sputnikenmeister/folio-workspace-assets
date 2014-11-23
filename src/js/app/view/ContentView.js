@@ -1,7 +1,6 @@
 /**
-* @module app/view/NavigationView
-* @requires module:backbone
-*/
+ * @module app/view/NavigationView
+ */
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -22,7 +21,9 @@ var images = require("../model/collection/ImageList");
 /** @type {module:app/control/Presenter} */
 var presenter = require("../control/Presenter");
 
-var bundleDescTemplate = require("./template/DescriptionView.Bundle.tpl");
+/** @type {Function} */
+// var bundleDescTemplate = require("./template/DescriptionView.Bundle.tpl");
+/** @type {Function} */
 var imageDescTemplate = require("./template/DescriptionView.Image.tpl");
 
 /**
@@ -32,11 +33,11 @@ var imageDescTemplate = require("./template/DescriptionView.Image.tpl");
 var ContentView = Backbone.View.extend({
 
 	/** @type {module:app/model/collection/BundleList} */
-	bundles: bundles,
+	// bundles: bundles,
 	/** @type {module:app/model/collection/ImageList} */
-	images: images,
+	// images: images,
 	/** @type {module:app/control/Presenter} */
-	presenter: presenter,
+	// presenter: presenter,
 
 	/** Setup listening to model changes */
 	initialize: function (options) {
@@ -45,30 +46,32 @@ var ContentView = Backbone.View.extend({
 			id: "bundle-images",
 			collection: images
 		});
+
 		// dot nav
 		this.imagePagerView = new SelectableListView({
 			id: "images-pager",
-			className: "list selectable dots",
 			collection: images,
 		});
+		this.imagePagerView.$el.addClass("dots-fontello");
+
 		// selected bundle description
 		this.bundleDetailView = new DescriptionView({
 			id: "bundle-detail",
-			className: "item-detail",
-			template: bundleDescTemplate,
+			// template: bundleDescTemplate,
 			collection: bundles
 		});
+
 		// selected image description
 		this.imageDetailView = new DescriptionView({
 			id: "image-detail",
-			className: "item-detail",
 			template: imageDescTemplate,
 			collection: images
 		});
+
 		this.$el.append(
 			this.bundleDetailView.render().el,
-			this.imageListView.render().el,
 			this.imageDetailView.render().el,
+			this.imageListView.render().el,
 			this.imagePagerView.render().el
 		);
 

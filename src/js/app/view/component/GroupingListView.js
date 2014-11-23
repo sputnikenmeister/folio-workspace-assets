@@ -29,15 +29,15 @@ module.exports = FilterableListView.extend({
 	/** @override */
 	initialize: function(options) {
 		FilterableListView.prototype.initialize.apply(this, arguments);
-		if (options["groupings"]) {
-			this.groupings = options["groupings"];
+		if (options.groupings) {
+			this.groupings = options.groupings;
 			this.groupings.collection.each(this.assignGroupingView, this);
 		}
 	},
 
 	/** @private */
-	renderFilters: function(newAssoc, oldAssoc) {
-		FilterableListView.prototype.renderFilters.apply(this, arguments);
+	renderFilterBy: function(newAssoc) {
+		FilterableListView.prototype.renderFilterBy.apply(this, arguments);
 		var groupIds;
 		if (newAssoc) {
 			groupIds = newAssoc.get(this.groupings.key);
@@ -66,14 +66,13 @@ module.exports = FilterableListView.extend({
 	* Create children views
 	*/
 	/** @private */
-	assignGroupingView: function(item, index, arr) {
+	assignGroupingView: function(item) {
 		var view = new GroupingRenderer({
 			model: item,
 			el: item.selector()
 		});
 		this.groupingViews.add(view, item.id);
 	},
-
 });
 
 /**

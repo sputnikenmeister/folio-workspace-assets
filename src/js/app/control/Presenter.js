@@ -1,6 +1,5 @@
 /**
  * @module app/control/Presenter
- * @requires module:backbone
  */
 
 /** @type {module:underscore} */
@@ -25,6 +24,7 @@ var images = require( "../model/collection/ImageList" );
  * @type {module:app/control/Presenter}
  */
 function Presenter() {
+	_.bindAll(this, "routeToBundleItem", "routeToBundleList")
 	this.bundles = bundles;
 	this.images = images;
 
@@ -36,15 +36,22 @@ function Presenter() {
 	};
 	this.router = new Backbone.Router({
 		routes: {
-			"bundles/:bundleHandle/:imageIndex": "bundleItem",
+			"bundles/:bundleHandle/:imageIndex": _.bind(this.routeToBundleItem, this),//"bundleItem",
 			"bundles/:bundleHandle": bundleRedirect,
-			"bundles": "bundleList",
+			"bundles": _.bind(this.routeToBundleList, this),//"bundleList",
 			"": rootRedirect,
 		}
 	});
 
-	this.listenTo(this.router, "route:bundleItem", this.routeToBundleItem);
-	this.listenTo(this.router, "route:bundleList", this.routeToBundleList);
+	// this.listenTo(this.router, "route:bundleItem", this.routeToBundleItem);
+	// this.listenTo(this.router, "route:bundleList", this.routeToBundleList);
+
+	var traceEvent = function(label) {
+		return function(ev) { console.log(label, ev, Array.prototype.slice.call(arguments).join(" ")); };
+	};
+	// this.listenTo(this.bundles, "all", traceEvent("bundles"));
+	// this.listenTo(this.images, "all", traceEvent("images"));
+	// this.listenTo(this.router, "all", traceEvent("router"));
 }
 
 _.extend(Presenter.prototype, Backbone.Events, {
@@ -90,7 +97,6 @@ _.extend(Presenter.prototype, Backbone.Events, {
 	/* Handle model updates */
 	doSelectBundle: function (bundle) {
 		var stateChanging = bundles.selected === null;
-		var onStateChangeEnd = this.showBundleItem;
 
 		bundles.select(bundle);
 		images.reset(bundle.get("images"));
@@ -98,7 +104,10 @@ _.extend(Presenter.prototype, Backbone.Events, {
 		if (stateChanging) {
 			_.delay(function (context) {
 				Backbone.trigger("app:bundle:item");
+				context.applySelectionStyles();
 			}, 700, this);
+		} else {
+			this.applySelectionStyles();
 		}
 	},
 
@@ -117,21 +126,39 @@ _.extend(Presenter.prototype, Backbone.Events, {
 	},
 	/* Handle model updates */
 	doDeselectBundle: function () {
-		var stateChanging = bundles.selected !== null;
-		var onStateChangeEnd = this.showBundleList;
-
-		if (stateChanging) {
-			Backbone.trigger("app:bundle:list");
-			_.delay(function () {
-				bundles.deselect();
-				images.reset();
-			}, 350);
-		}
+		// bundles.deselect();
+		// images.reset();
+		Backbone.trigger("app:bundle:list");
+		this.clearSelectionStyles();
+		_.delay(function (context) {
+			bundles.deselect();
+			images.reset();
+		}, 350, this);
 	},
 
 	/* --------------------------- *
 	 * Helpers
 	 * --------------------------- */
+
+	bodyStyles: ["background", "background-color", "color"],
+
+	clearSelectionStyles: function() {
+		Backbone.$("body").removeAttr("style");
+	},
+	applySelectionStyles: function() {
+	 	var css = {};
+	 	_.each(bundles.selected.get("attrs"), function(o) {
+	 		o = o.split(":");
+	 		css[o[0]] = o[1].replace(/(?:hsla?\(|rgba?\()([^\)]+)/g, function(m) {
+	 			return m.replace(/\s+/g,",");
+	 			//return m.split(" ").join(",");
+	 		});
+	 		console.log(o);
+	 	});
+	 	css = _.pick(css, this.bodyStyles);
+	 	console.log(css);
+	 	Backbone.$("body").removeAttr("style").css(css);
+	},
 
 	// fetchBundleData: function (bundle) {
 	// 	if (!bundle.has("images")) {

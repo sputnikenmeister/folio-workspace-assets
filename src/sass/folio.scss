@@ -4,14 +4,13 @@
 @import "compass/css3/transform";
 @import "compass/css3/box-sizing";
 
-
 @import "includes/_definitions";
 @import "includes/_icons";
 @import "includes/_base";
 @import "views/_layout";
 @import "views/_content";
-@import "components/_selectable.dots.scss";
 @import "components/_filterable";
 @import "components/_carousel";
+@import "components/_selectable.dots-fontello.scss";
 @import "components/_pager.fontello";
-//@import "_~debug";
+// @import "includes/_~debug";

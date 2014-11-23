@@ -7,7 +7,7 @@
  * View inner elements
  * ---------------------- */
 #bundle-detail {
-	color: lighten($color, 15%);
+	// color: lighten($color, 15%);
 	.name {
 		display: none;
 	}
@@ -38,7 +38,8 @@
 }
 
 #footer {
-	color: lighten($color, 35%);
+	// color: lighten($color, 35%);
+	opacity: 0.65;
 	a {
 		color: inherit;
 		&:hover {

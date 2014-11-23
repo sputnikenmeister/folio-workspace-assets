@@ -14,22 +14,22 @@ var DeferredRenderer = function () {};
 
 DeferredRenderer.prototype = {
 
-	/** @type {Object.<String, {Function|true}}>} */
-	//	renderJobs: null,
+	/** @type {Object} */
+	// renderJobs: {},
 
-	/** @type {long} */
-	renderRequestId: 0,
 	/**
 	 * @param {String} [key]
 	 * @param [value]
 	 */
 	requestRender: function (key, value) {
-		if (undefined === this.renderJobs) {
+		if (this.renderRequestId === undefined) {
+			this.renderRequestId = window.requestAnimationFrame(this.getRenderCallback());
 			this.renderJobs = {};
-			this.renderRequestId = _.defer(this.getRenderCallback()); //window.requestAnimationFrame(this.getRenderCallback());
+			// this.renderRequestId = window.setTimeout(this.getRenderCallback(), 1);
+			// this.renderRequestId = _.defer(this.getRenderCallback());
 		}
 		if (key) {
-			this.renderJobs[key] = value ? value : true;
+			this.renderJobs[key] = value? value : true;
 		}
 	},
 
@@ -39,14 +39,25 @@ DeferredRenderer.prototype = {
 	},
 
 	/** @private */
-	applyRender: function (timestamp) {
-		this.deferredRender(timestamp);
-		delete this.renderJobs;
+	applyRender: function () {
+		this.deferredRender();
+		this.renderRequestId = undefined;
+	},
+
+	renderNow: function(){
+		if (this.renderRequestId) {
+			window.cancelAnimationFrame(this.renderRequestId);
+			// window.clearTimeout(this.renderRequestId)
+		}
+		this.applyRender();
 	},
 
 	/** @private */
 	validateRender: function(key) {
-		if (this.renderJobs[key]) this.renderJobs[key]();
+		if (_.isFunction(this.renderJobs[key])) {
+			this.renderJobs[key].call();
+			this.renderJobs[key] = undefined;
+		}
 	},
 
 	/** @abstract */

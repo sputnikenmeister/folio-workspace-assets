@@ -30,18 +30,20 @@ module.exports = DeferredRenderView.extend({
 	/** @override */
 	initialize: function (options) {
 		this.itemIds = this.collection.pluck("id");
-		if (options["associations"]) {
-			this.associations = options["associations"];
-		}
-		if (options["collapsed"]) {
-			this.renderCollapsed(options["collapsed"]);
-		}
 		// Create children
 		this.collection.each(this.assignChildView, this);
-		// skipAnimation = true;
 
-		this.listenTo(this.collection, "select:one", this.onCollectionSelect);
-		this.listenTo(this.collection, "select:none", this.onCollectionSelect);
+		if (options.associations) {
+			this.associations = options.associations;
+			this.filterBy(this.associations.collection.selected);
+		}
+
+		this.setSelection(this.collection.selected);
+		this.setCollapsed(_.isBoolean(options.collapsed)? options.collapsed : false);
+		this.skipAnimation = true;
+
+		this.listenTo(this.collection, "select:one", this.setSelection);
+		this.listenTo(this.collection, "select:none", this.setSelection);
 		// this.listenTo(this.collection, "change:excluded", this.whenExcludedChange);
 	},
 
@@ -49,28 +51,24 @@ module.exports = DeferredRenderView.extend({
 	 * Render
 	 * --------------------------- */
 
-	skipAnimation: false,
-
 	render: function() {
 		return this;
 	},
 
 	/** @override */
-	deferredRender: function (timestamp) {
-
+	deferredRender: function () {
 		if (this.skipAnimation) {
 			this.$el.removeClass("animate");
 			this.skipAnimation = false;
 		} else {
 			this.$el.addClass("animate");
 		}
-
 		// If changing to collapsed, do it first
 		if (this.getCollapsed()) {
 			this.validateRender("collapsed");
 		}
 		this.validateRender("selection");
-		this.validateRender("filters");
+		this.validateRender("filterBy");
 		// If changing from collapsed, do it last
 		if (!this.getCollapsed()) {
 			this.validateRender("collapsed");
@@ -92,15 +90,11 @@ module.exports = DeferredRenderView.extend({
 			el: item.selector()
 		});
 		this.children.add(view, item.id);
-		this.listenTo(view, "item:click", this.onChildViewClick);
+		this.listenTo(view, "item:click", this.onChildClick);
 	},
 
-	/* --------------------------- *
-	 * Selection
-	 * --------------------------- */
-
 	/** @private */
-	onChildViewClick: function (item) {
+	onChildClick: function (item) {
 		if (this.collection.selected !== item) {
 			this.trigger("view:select:one", item);
 		} else {
@@ -108,12 +102,52 @@ module.exports = DeferredRenderView.extend({
 		}
 	},
 
-	_currentItem: null,
+	/* --------------------------- *
+	 * Collapse
+	 * --------------------------- */
+
 	/** @private */
-	onCollectionSelect: function (newVal) {
-		var oldVal = this._currentItem;
-		this._currentItem = newVal;
-		this.requestRender("selection", _.bind(this.renderSelection, this, newVal, oldVal));
+	_collapsed: undefined,
+
+	/**
+	 * @param {Boolean}
+	 * @return {?Boolean}
+	 */
+	setCollapsed: function (collapsed) {
+		if (collapsed === this._collapsed) {
+			return;
+		}
+		this._collapsed = collapsed;
+		this.requestRender("collapsed", _.bind(this.renderCollapsed, this, collapsed));
+	},
+	getCollapsed: function () {
+		return this._collapsed;
+	},
+
+	/** @private */
+	renderCollapsed: function (collapsed) {
+		if (collapsed) {
+			this.$el.addClass("collapsed");
+		} else {
+			this.$el.removeClass("collapsed");
+		}
+	},
+
+	/* --------------------------- *
+	 * Selection
+	 * --------------------------- */
+
+	/** @private */
+	_selectedItem: undefined,
+
+	/** @param {Backbone.Model|null} */
+	setSelection: function (item) {
+		if (item === this._selectedItem) {
+			return;
+		}
+		var oldVal = this._selectedItem;
+		this._selectedItem = item;
+		this.requestRender("selection", _.bind(this.renderSelection, this, item, oldVal));
 	},
 
 	/** @private */
@@ -127,65 +161,35 @@ module.exports = DeferredRenderView.extend({
 	},
 
 	/* --------------------------- *
-	 * Collapse
-	 * --------------------------- */
-
-	/** @private */
-	_collapsed: false,
-
-	/**
-	 * @param {Boolean}
-	 * @return {?Boolean}
-	 */
-	setCollapsed: function (value) {
-		if (value === this._collapsed) {
-			return;
-		}
-		this._collapsed = value;
-		this.requestRender("collapsed", _.bind(this.renderCollapsed, this, value));
-	},
-	getCollapsed: function () {
-		return this._collapsed;
-	},
-
-	/** @private */
-	renderCollapsed: function (value) {
-		if (value) {
-			this.$el.addClass("collapsed");
-		} else {
-			this.$el.removeClass("collapsed");
-		}
-	},
-
-	/* --------------------------- *
 	 * Filter
 	 * --------------------------- */
 
-	_currentFilter: null,
+	_filter: undefined,
 
-	filterBy: function (newVal) {
-		if (newVal === this._currentFilter) {
+	filterBy: function (filter) {
+		if (filter === this._filter) {
 			return;
 		}
-		var oldVal = this._currentFilter;
-		this._currentFilter = newVal;
-		this.requestRender("filters", _.bind(this.renderFilters, this, newVal, oldVal));
+		var oldVal = this._filter;
+		this._filter = filter;
+		this.requestRender("filterBy", _.bind(this.renderFilterBy, this, filter, oldVal));
 	},
 
 	/** @private */
-	renderFilters: function (newAssoc, oldAssoc) {
+	renderFilterBy: function (newVal, oldVal) {
 		var newIds, oldIds;
-		if (newAssoc) {
-			newIds = newAssoc.get(this.associations.key);
+		if (newVal) {
+			newIds = newVal.get(this.associations.key);
 		}
-		if (oldAssoc) {
-			oldIds = oldAssoc.get(this.associations.key);
+		if (oldVal) {
+			oldIds = oldVal.get(this.associations.key);
 		}
 		this.renderFiltersById(newIds, oldIds);
 	},
 
 	renderFiltersById: function (newIds, oldIds) {
-		var newIncludes, newExcludes, changedCount = 0;
+		var newIncludes, newExcludes;
+		var changedCount = 0;
 		// this.itemIds = this.itemIds || this.collection.pluck("id");
 
 		if (newIds) {
@@ -193,7 +197,7 @@ module.exports = DeferredRenderView.extend({
 			_.each(newExcludes, function (id) {
 				this.children.findByCustom(id).$el.addClass("excluded");
 			}, this);
-			changedCount += newExcludes.length;
+			// changedCount += newExcludes.length;
 			// if (!oldIds) this.$el.removeClass("has-filter");
 		}
 		if (oldIds) {
@@ -201,11 +205,11 @@ module.exports = DeferredRenderView.extend({
 			_.each(newIncludes, function (id) {
 				this.children.findByCustom(id).$el.removeClass("excluded");
 			}, this);
-			changedCount += newIncludes.length;
+			// changedCount += newIncludes.length;
 			// if (!newIds) this.$el.removeClass("has-filter");
 		}
 
-		return changedCount;
+		// return changedCount;
 	},
 
 	/** @private */
@@ -266,19 +270,15 @@ module.exports = DeferredRenderView.extend({
 var FilterableRenderer = Backbone.View.extend({
 	/** @type {Object} */
 	events: {
-		"click": "onClick",
-	},
-
-	onClick: function (ev) {
-		if (!ev.isDefaultPrevented()) {
-			ev.preventDefault();
+		"click": function (ev) {
+			ev.isDefaultPrevented() || ev.preventDefault();
 			this.trigger("item:click", this.model);
 		}
 	},
 
-	initialize: function(options) {
-		// this.listenTo(this.model, "change:excluded", this.onExcludedChange);
-	},
+	// initialize: function(options) {
+	// 	this.listenTo(this.model, "change:excluded", this.onExcludedChange);
+	// },
 
 	// onExcludedChange: function(model, value) {
 	// 	if (value) {

@@ -1,6 +1,5 @@
 /**
 * @module app/view/NavigationView
-* @requires module:backbone
 */
 
 /** @type {module:backbone} */
@@ -40,44 +39,35 @@ module.exports = Backbone.View.extend({
 
 	/** Setup listening to model changes */
 	initialize: function(options) {
-		/*
-		 * initialize views
-		 */
 		this.bundleListView = new FilterableListView({
 			el: "#bundle-list",
 			collection: bundles,
-			associations: { collection: keywords, key: "bIds" }
+			collapsed: (bundles.selected !== null),
+			associations: { collection: keywords, key: "bIds" },
 		});
 		this.keywordListView = new GroupingListView({
 			el: "#keyword-list",
 			collection: keywords,
+			collapsed: true,
 			associations: { collection: bundles, key: "kIds" },
 			groupings: { collection: types, key: "tIds" },
-			collapsed: true,
 		});
+
 		presenter.listenTo(this.bundleListView, "view:select:one", presenter.selectBundle);
 		presenter.listenTo(this.bundleListView, "view:select:none", presenter.deselectBundle);
 
-		this.listenTo(bundles, "select:one", this.onBundleSelect);
-		this.listenTo(bundles, "select:none", this.onBundleDeselect);
-		// this.listenTo(Backbone, "app:bundle:item", this.onAppBundleItem);
-		// this.listenTo(Backbone, "app:bundle:list", this.onAppBundleList);
+		this.listenTo(bundles, "select:one select:none", this.render);
 	},
 
-	onBundleSelect: function(bundle) {
-		this.bundleListView.setCollapsed(true);
-		this.keywordListView.filterBy(bundle);
+	render: function() {
+		if (bundles.selected) {
+			this.bundleListView.setCollapsed(true);
+			this.keywordListView.filterBy(bundles.selected);
+		} else {
+			this.bundleListView.setCollapsed(false);
+			this.keywordListView.filterBy(null);
+		}
+		return this;
 	},
-
-	onBundleDeselect: function() {
-		this.bundleListView.setCollapsed(false);
-		this.keywordListView.filterBy(null);
-	},
-
-	// onAppBundleItem: function() {
-	// },
-
-	// onAppBundleList: function() {
-	// },
 
 });

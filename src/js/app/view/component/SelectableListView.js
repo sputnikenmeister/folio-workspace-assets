@@ -122,10 +122,10 @@ var SelectableRenderer = Backbone.View.extend({
 	className: "list-item",
 	/** @override */
 	events: {
-		"click a": "onClick",
+		"click": "onClick",
 	},
 	/** @override */
-	template: _.template("<a href=\"images/<%= href %>\"><%= label %></a>"),
+	template: _.template("<a href=\"#<%= href %>\"><%= label %></a>"),
 
 	initialize: function (options) {
 		this.listenTo(this.model, "selected", function () {
@@ -142,17 +142,15 @@ var SelectableRenderer = Backbone.View.extend({
 			this.$el.addClass("selected");
 		}
 		this.$el.html(this.template({
-			href: this.model.id,
+			href: this.model.cid,
 			label: this.model.toString()
 		}));
 		return this;
 	},
 
-	onClick: function (event) {
-		if (!event.isDefaultPrevented()) {
-			event.preventDefault();
-			this.trigger("item:click", this.model);
-		}
+	onClick: function (ev) {
+		ev.isDefaultPrevented() || ev.preventDefault();
+		this.trigger("item:click", this.model);
 	},
 });
 

@@ -15,75 +15,44 @@ var viewTemplate = require("../template/CollectionPagerView.tpl");
  * @type {module:app/view/component/CollectionPagerView}
  */
 module.exports = Backbone.View.extend({
-
+	/** @override */
 	tagName: "div",
-
-	// template: _.template(viewTemplate),
+	/** @type {Function} */
 	template: viewTemplate,
+	/** @type {String|Function} */
+	labelAttribute: "name",
 
+	/** @type {Object.<{String|Function}>}*/
 	events: {
-		"click .preceding-button": "onPrecedingClick",
-		"click .following-button": "onFollowingClick",
-		"click .close-button": "onCloseClick"
-	},
-
-	initialize: function (options) {
-		//		if (options["labelFunction"])
-		//			this.labelFunction = options["labelFunction"];
-		if (options["labelAttribute"]) {
-			this.labelAttribute = options["labelAttribute"];
-		}
-		this.listenTo(this.collection, "select:one", this.onCollectionSelect);
-		this.listenTo(this.collection, "select:none", this.onCollectionSelect);
-		this.listenTo(this.collection, "reset", this.onCollectionReset);
-	},
-
-	onPrecedingClick: function (ev) {
-		if (!ev.isDefaultPrevented()) {
-			ev.preventDefault();
-			this.trigger("view:select:one", this.collection.precedingOrLast(this.collection.selected));
-			// this.trigger("view:itemPreceding");
-		}
-	},
-
-	onFollowingClick: function (ev) {
-		if (!ev.isDefaultPrevented()) {
-			ev.preventDefault();
-			this.trigger("view:select:one", this.collection.followingOrFirst(this.collection.selected));
-			// this.trigger("view:itemFollowing");
-		}
-	},
-
-	onCloseClick: function (ev) {
-		if (!ev.isDefaultPrevented()) {
-			ev.preventDefault();
+		"click .preceding-button": function (ev) {
+			ev.isDefaultPrevented() || ev.preventDefault();
+			this.trigger("view:select:one", this.collection.precedingOrLast());
+		},
+		"click .following-button": function (ev) {
+			ev.isDefaultPrevented() || ev.preventDefault();
+			this.trigger("view:select:one", this.collection.followingOrFirst());
+		},
+		"click .close-button": function (ev) {
+			ev.isDefaultPrevented() || ev.preventDefault();
 			this.trigger("view:select:none");
 		}
 	},
 
-	labelAttribute: null,
-
-	getItemLabel: function (item) {
-		if (item.has(this.labelAttribute))
-			return item.get(this.labelAttribute);
-		return item.toString();
+	/** @override */
+	initialize: function (options) {
+		options.labelAttribute && (this.labelAttribute = options.labelAttribute);
+		this.listenTo(this.collection, "select:one select:none", this.render);
+		this.listenTo(this.collection, "reset", this.render);
 	},
 
-	onCollectionSelect: function (newItem, oldItem) {
-		this.render();
-	},
-
-	onCollectionReset: function () {
-		this.render();
-	},
-
+	/** @override */
 	render: function () {
-		if (this.collection.selected && this.collection.length > 1) {
-			var preceding = this.collection.precedingOrLast(this.collection.selected);
-			var following = this.collection.followingOrFirst(this.collection.selected);
+		if (this.collection.length > 1 && this.collection.selected) {
+			var preceding = this.collection.precedingOrLast();
+			var following = this.collection.followingOrFirst();
 			this.$el.html(this.template({
-				"preceding_label": this.getItemLabel(preceding),
-				"following_label": this.getItemLabel(following),
+				"preceding_label": this.getLabel(preceding),
+				"following_label": this.getLabel(following),
 				"close_label": "Close",
 				"preceding_href": "#preceding", //this.preceding.get("handle"),
 				"following_href": "#following", //this.following.get("handle"),
@@ -93,5 +62,12 @@ module.exports = Backbone.View.extend({
 			this.$el.empty();
 		}
 		return this;
-	}
+	},
+
+	/** @param {Object} model */
+	getLabel: function (model) {
+		if (model.has(this.labelAttribute))
+			return model.get(this.labelAttribute);
+		return model.toString();
+	},
 });

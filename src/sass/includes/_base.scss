@@ -4,7 +4,7 @@ html {
 }
 body {
 	line-height: 1.5;
-	color: $color;
+	color: lighten($color, 10%);
 	background-color: $background-color;
 }
 p {

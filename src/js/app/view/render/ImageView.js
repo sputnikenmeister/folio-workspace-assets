@@ -11,15 +11,16 @@ var Backbone = require( "backbone" );
 
 /** @type {module:app/model/item/ImageItem} */
 var ImageItem = require( "../../model/item/ImageItem" );
+
 /** @type {Function} */
-var viewTemplate = require( "../template/ImageView.tpl" );
+// var viewTemplate = require( "../template/ImageView.tpl" );
 /** @type {Function} */
 var placeholderTemplate = require( "../template/ImageView.Placeholder.tpl" );
 /** @type {Function} */
 //var captionTemplate = require( "../template/ImageView.Caption.tpl" );
-
 /** @type {Function} */
-var imageSrcTemplate = _.template(window.approot + "/image/1/<%= constraint %>/0/uploads/<%= filename %>");
+// var imageSrcTemplate = _.template(window.approot + "/image/1/<%= constraint %>/0/uploads/<%= filename %>");
+var imageSrcTemplate = _.template(window.approot + "/workspace/uploads/<%= filename %>");
 // var imageSrcTemplate = _.template("<%= approot %>/image/1/<%= constraint %>/0/uploads/<%= filename %>");
 /** @type {Function} */
 var longdescTemplate = _.template("i<%= id %>-caption");
@@ -40,7 +41,9 @@ module.exports = Backbone.View.extend({
 	model: ImageItem,
 	/** @override */
 	events: {
-		"dragstart img": function(ev) { ev.preventDefault(); } /* prevent conflict with hammer.js */
+		"dragstart img": function(ev) {
+			ev.preventDefault();
+		} /* prevent conflict with hammer.js */
 	},
 
 	/** @param {Object} @return {string} */
@@ -61,34 +64,23 @@ module.exports = Backbone.View.extend({
 
 	listenToSelection: function () {
 		var sibling;
-		if (sibling = this.model.nextNoLoop())
-			this.listenTo(sibling, "selected", this.requestImageLoad);
-		if (sibling = this.model.prevNoLoop())
-			this.listenTo(sibling, "selected", this.requestImageLoad);
+		if (sibling = this.model.nextNoLoop()) this.listenTo(sibling, "selected", this.requestImageLoad);
+		if (sibling = this.model.prevNoLoop()) this.listenTo(sibling, "selected", this.requestImageLoad);
 		this.listenTo(this.model, "selected", this.requestImageLoad);
 	},
 	stopListeningToSelection: function(){
 		var sibling;
-		if (sibling = this.model.nextNoLoop())
-			this.stopListening(sibling, "selected", this.requestImageLoad);
-		if (sibling = this.model.prevNoLoop())
-			this.stopListening(sibling, "selected", this.requestImageLoad);
+		if (sibling = this.model.nextNoLoop()) this.stopListening(sibling, "selected", this.requestImageLoad);
+		if (sibling = this.model.prevNoLoop()) this.stopListening(sibling, "selected", this.requestImageLoad);
 		this.stopListening(this.model, "selected", this.requestImageLoad);
 	},
 
 	/** @return {this} */
 	render: function() {
-		// var attrs = {
-		// 	src: 		this.getImageSrc(),
-		// 	filename: 	this.model.get("f"),
-		// 	width: 		this.getConstrainedWidth(),
-		// 	height: 	this.getConstrainedHeight(),
-		// 	longdesc: 	this.getLongDesc(),
-		// 	alt: 		this.getImageAlt(),
-		// 	desc: 		this.model.get("desc"),
-		// };
-		this.$el.css("height", this.getConstrainedHeight());
-		this.$el.css("min-width", this.getConstrainedWidth());
+		this.$el.css({
+			height: this.getConstrainedHeight(),
+			minWidth: this.getConstrainedWidth(),
+		});
 
 		this.$el.html(this.template({
 			filename: 	this.model.get("f"),
@@ -140,7 +132,7 @@ module.exports = Backbone.View.extend({
 	/** @return {HTMLImageElement} */
 	createImageElement: function() {
 		// Create a new image object
-		var image = document.createElement("img");
+		var image = new Image();//document.createElement("img");
 		image.width = this.getConstrainedWidth();
 		image.height = this.getConstrainedHeight();
 		image.longDesc = this.getLongDesc();

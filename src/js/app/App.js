@@ -16,9 +16,10 @@ require("velocity-animate");
 var Backbone = require("backbone");
 Backbone.$ = $;
 require("backbone.babysitter");
-require("backbone.picky");
+require("backbone.select");
 require("backbone.cycle");
-require("backbone-view-options");
+// require("backbone.picky");
+// require("backbone-view-options");
 
 /** @type {module:app/model/collection/TypeList} */
 var typeList = require("./model/collection/TypeList");

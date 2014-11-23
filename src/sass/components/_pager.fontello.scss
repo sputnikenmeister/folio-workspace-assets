@@ -22,13 +22,13 @@
 		@include fontello-icon-before();
 	}
 	.preceding-button:before {
-		content: '\e800';
+		content: '\e807';
 	}
 	.following-button:before {
-		content: '\e801';
+		content: '\e808';
 	}
 	.close-button:before {
-		content: '\e805';
+		content: '\e806';
 	}
 }
 // Inline pill-style
@@ -48,8 +48,8 @@
 		font-weight: 600;
 		font-size: 100%;
 		line-height: 1em;
-		// padding: 0.5em 0.75em;
-		padding: 0.4em 0.85em 0.45em 0.75em;
+		padding: 0.5em 0.75em;
+		// padding: 0.5em 0.85em 0.45em 0.75em;
 		border-radius: 0.2em;
 		margin-right: 0.35em;
 		&:last-child {
@@ -72,7 +72,7 @@
 	.button:visited {
 		// color: $color;
 		color: lighten($color, 35%);
-		background-color: $background-color;//scale_color($background-color, $alpha: -70%);
+		background-color: $background-color;
 		border-color: scale_color($color, $lightness: 35%, $alpha: -70%);
 		border-width: 1px;
 		border-style: solid;
@@ -80,25 +80,27 @@
 	.button:hover {
 		color: white;
 		background-color: $link-hover-color;
-		border-color: scale_color($link-hover-color, $lightness: -30%);
+		// border-color: scale_color($link-hover-color, $lightness: -30%);
+		border-color: darken($link-hover-color, 8%);
 	}
 	.button:active {
 		color: white;
 		background-color: $link-down-color;
-		border-color: scale_color($link-down-color, $lightness: -30%);
+		// border-color: scale_color($link-down-color, $lightness: -30%);
+		border-color: darken($link-down-color, 8%);
 	}
 	// big icons
 	.button:before {
-		font-size: 80%;
+		font-size: 90%;
 		@include fontello-icon-before();
 	}
 	.preceding-button:before {
-		content: '\e808';
+		content: '\e807';
 	}
 	.following-button:before {
-		content: '\e809';
+		content: '\e808';
 	}
 	.close-button:before {
-		content: '\e80b';
+		content: '\e806';
 	}
 }
