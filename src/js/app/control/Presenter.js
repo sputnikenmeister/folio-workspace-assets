@@ -24,22 +24,22 @@ var images = require( "../model/collection/ImageList" );
  * @type {module:app/control/Presenter}
  */
 function Presenter() {
-	_.bindAll(this, "routeToBundleItem", "routeToBundleList")
 	this.bundles = bundles;
 	this.images = images;
 
-	var bundleRedirect = function (bundleHandle) {
+	// _.bindAll(this, "routeToBundleItem", "routeToBundleList");
+	var redirectToBundleItem = function (bundleHandle) {
 		this.navigate("bundles/" + bundleHandle + "/0", { trigger: true, replace: true });
 	};
-	var rootRedirect = function() {
+	var redirectToBundleList = function() {
 		this.navigate("bundles", { trigger: true, replace: true });
 	};
 	this.router = new Backbone.Router({
 		routes: {
-			"bundles/:bundleHandle/:imageIndex": _.bind(this.routeToBundleItem, this),//"bundleItem",
-			"bundles/:bundleHandle": bundleRedirect,
-			"bundles": _.bind(this.routeToBundleList, this),//"bundleList",
-			"": rootRedirect,
+			"bundles/:bundleHandle/:imageIndex": _.bind(this.routeToBundleItem, this),
+			"bundles/:bundleHandle": redirectToBundleItem,
+			"bundles": _.bind(this.routeToBundleList, this),
+			"": redirectToBundleList,
 		}
 	});
 

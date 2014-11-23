@@ -1,5 +1,5 @@
 /**
- * @module app/view/ImageListView
+ * @module app/view/Carousel
  * @requires module:backbone
  */
 
@@ -12,14 +12,14 @@ var Velocity = require("velocity-animate");
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
-/** @type {module:app/view/render/ImageView} */
-var ImageView = require( "./render/ImageView" );
+/** @type {module:app/view/render/ImageRenderer} */
+var ImageRenderer = require( "./render/ImageRenderer" );
 /** @type {module:app/helper/DeferredRenderView} */
 var DeferredRenderView = require("../helper/DeferredRenderView");
 
 /**
  * @constructor
- * @type {module:app/view/ImageListView}
+ * @type {module:app/view/Carousel}
  */
 module.exports  = DeferredRenderView.extend({
 // module.exports  = Backbone.View.extend({
@@ -130,7 +130,7 @@ module.exports  = DeferredRenderView.extend({
 
 	/** @override */
 	deferredRender: function (timestamp) {
-		// console.log("ImageListView.render: " + (this.skipAnimation?"deferred":"animated"));
+		// console.log("Carousel.render: " + (this.skipAnimation?"deferred":"animated"));
 
 		if (this.skipAnimation) {
 			this.$el.removeClass("animate");
@@ -175,7 +175,7 @@ module.exports  = DeferredRenderView.extend({
 		} else {
 			this.$el.css(this.getDirProp("minHeight", "minWidth"), "");
 		}
-		console.log("ImageListView.children: " + (this.collection.length || "empty"));
+		console.log("Carousel.children: " + (this.collection.length || "empty"));
 	},
 
 	/* --------------------------- *
@@ -187,7 +187,7 @@ module.exports  = DeferredRenderView.extend({
 	},
 
 	scrollBy: function(delta, animate) {
-		// console.log("ImageListView.scrollBy: " + (!animate? "deferred":"animated"));
+		// console.log("Carousel.scrollBy: " + (!animate? "deferred":"animated"));
 
 		this.skipAnimation = this.skipAnimation || !animate;
 		this.requestRender("scrollBy", _.bind(this.scrollBy_deferred, this, delta));
@@ -286,7 +286,7 @@ module.exports  = DeferredRenderView.extend({
 	children: new Backbone.ChildViewContainer(),
 
 	createChildView: function(model, index) {
-		var view = new ImageView({model: model});
+		var view = new ImageRenderer({model: model});
 		this.children.add(view);
 		return view;
 	},

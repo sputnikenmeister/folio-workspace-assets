@@ -1,7 +1,6 @@
 /*global Image */
 /**
- * @module app/app/view/render/ImageView
- * @requires module:backbone
+ * @module app/app/view/render/ImageRenderer
  */
 
 /** @type {module:underscore} */
@@ -13,11 +12,11 @@ var Backbone = require( "backbone" );
 var ImageItem = require( "../../model/item/ImageItem" );
 
 /** @type {Function} */
-// var viewTemplate = require( "../template/ImageView.tpl" );
+// var viewTemplate = require( "../template/ImageRenderer.tpl" );
 /** @type {Function} */
-var placeholderTemplate = require( "../template/ImageView.Placeholder.tpl" );
+var placeholderTemplate = require( "../template/ImageRenderer.Placeholder.tpl" );
 /** @type {Function} */
-//var captionTemplate = require( "../template/ImageView.Caption.tpl" );
+//var captionTemplate = require( "../template/ImageRenderer.Caption.tpl" );
 /** @type {Function} */
 // var imageSrcTemplate = _.template(window.approot + "/image/1/<%= constraint %>/0/uploads/<%= filename %>");
 var imageSrcTemplate = _.template(window.approot + "/workspace/uploads/<%= filename %>");
@@ -29,7 +28,7 @@ var longdescTemplate = _.template("i<%= id %>-caption");
 
 /**
  * @constructor
- * @type {module:app/view/render/ImageView}
+ * @type {module:app/view/render/ImageRenderer}
  */
 module.exports = Backbone.View.extend({
 
@@ -155,17 +154,17 @@ module.exports = Backbone.View.extend({
 
 	onLoad: function(image, ev) {
 		this.$el.removeClass("loading").addClass("loaded");
-		console.log("ImageView.onLoad: " + this.model.get("f"));
+		console.log("ImageRenderer.onLoad: " + this.model.get("f"));
 	},
 
 	onError: function(image, err, ev) {
 		this.$el.removeClass("loading").addClass("error");
-		console.log("ImageView.onError: " + this.model.get("f"));
+		console.log("ImageRenderer.onError: " + this.model.get("f"));
 	},
 
 	onProgress: function(image) {
 		this.$el.removeClass("pending").addClass("loading");
-		// console.log("ImageView.onProgress: " + this.model.get("f"));
+		// console.log("ImageRenderer.onProgress: " + this.model.get("f"));
 	},
 
 	loadImage: function(image, url) {
@@ -203,7 +202,7 @@ module.exports = Backbone.View.extend({
 	onLoad_xhr: function(response) {
 		// The first runs when the promise resolves, with the request.reponse
 		// specified within the resolve() method.
-		console.log("ImageView.onLoad_xhr: " + this.model.get("f"), response);
+		console.log("ImageRenderer.onLoad_xhr: " + this.model.get("f"), response);
 
 		var image = this.createImageElement();
 		image.src = window.URL.createObjectURL(new Blob([response]));
@@ -214,7 +213,7 @@ module.exports = Backbone.View.extend({
 
 	onProgress: function(request, ev) {
 		// if (ev instanceof ProgressEvent) {}
-		console.log("ImageView.onProgress: " + this.model.get("f"), (ev.loaded / ev.total).toFixed(3));
+		console.log("ImageRenderer.onProgress: " + this.model.get("f"), (ev.loaded / ev.total).toFixed(3));
 	},
 
 	// @see https://github.com/mdn/promises-test/blob/gh-pages/index.html
@@ -228,7 +227,7 @@ module.exports = Backbone.View.extend({
 		request.onload = function(ev) {
 			if (request.status == 200) {
 				// If successful, resolve the promise by passing back the request response
-				console.log("- ImageView loadImage_xhr.onload:" + request.statusText, arguments);
+				console.log("- ImageRenderer loadImage_xhr.onload:" + request.statusText, arguments);
 				deferred.resolve(request.response);
 			} else {
 				// If it fails, reject the promise with a error message

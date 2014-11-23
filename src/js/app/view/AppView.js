@@ -8,8 +8,8 @@ var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 
-/** @type {module:app/view/component/CollectionPagerView} */
-var CollectionPagerView = require("./component/CollectionPagerView");
+/** @type {module:app/view/component/CollectionPager} */
+var CollectionPager = require("./component/CollectionPager");
 /** @type {module:app/view/NavigationView} */
 var NavigationView = require("./NavigationView");
 /** @type {module:app/view/ContentView} */
@@ -48,24 +48,29 @@ module.exports = Backbone.View.extend({
 		this.contentView = new ContentView({
 			el: "#content"
 		});
-		this.bundlePager = this.createBundlePager();
+		this.initDebug();
 	},
 
 	onApplicationEvent: function(eventName) {
+		this.el.className = eventName.split(":").join("-");
 		console.log("AppView.onApplicationEvent " + eventName);
 		switch (eventName){
+			case "app:bundle:item":
+				// this.$el.attach(this.bundlePager.el);
+				break;
+			// case "app:bundle:list":
+			// case "app:error":
 			case "app:error":
 				console.log("AppView.showError - not implemented");
 				presenter.deselectBundle();
 				break;
 			default:
-				this.el.className = eventName.split(":").join("-");
 				break;
 		}
 	},
 
-	createBundlePager: function () {
-		var pager = new CollectionPagerView({
+	initDebug: function () {
+		var pager = new CollectionPager({
 			id: "bundle-pager",
 			collection: bundles,
 			className: "fontello-pill-pager",
@@ -75,7 +80,6 @@ module.exports = Backbone.View.extend({
 		this.$el.append(pager.render().el);
 		presenter.listenTo(pager, "view:select:one", presenter.selectBundle);
 		presenter.listenTo(pager, "view:select:none", presenter.deselectBundle);
-		return pager;
 	},
 
 });

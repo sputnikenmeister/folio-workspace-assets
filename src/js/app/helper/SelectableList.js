@@ -14,7 +14,7 @@ var Backbone = require("backbone");
  */
 var SelectableList = Backbone.Collection.extend({
 
-	initialize: function (models, options) {
+	/*initialize: function (models, options) {
 		options = _.defaults({}, options, {initialSelection: "none", silentInitial: true});
 		var initialOptions = {silent: options.silentInitial};
 		if (options.initialSelection == "first") {
@@ -28,6 +28,18 @@ var SelectableList = Backbone.Collection.extend({
 			});
 			this.deselect(initialOptions);
 		}
+	},*/
+
+	initialize: function (models, options) {
+		options = _.defaults({}, options, {initialSelection: "none", silentInitial: true});
+		this.initialSelection = options.initialSelection;
+		this.initialOptions = {silent: options.silentInitial};
+	},
+
+	reset: function (models, options) {
+		this.deselect(this.initialOptions);
+		Backbone.Collection.prototype.reset.apply(this, arguments);
+		if (this.initialSelection == "first" && this.length) this.select(models[0], this.initialOptions);
 	},
 
 	select: function (newModel, options) {

@@ -17,28 +17,27 @@ var SelectableListView = Backbone.View.extend({
 
 	initialize: function (options) {
 		this.listenTo(this.collection, "add remove reset", this.onCollectionChange);
-		//this.addCollectionListeners();
 		this.onCollectionChange();
 	},
 
 	onCollectionChange: function () {
-		if (this.collection.length > 1) {
-			this.addCollectionListeners();
-		} else {
-			this.removeCollectionListeners();
-		}
+		// if (this.collection.length > 1) {
+		// 	this.addCollectionListeners();
+		// } else {
+		// 	this.removeCollectionListeners();
+		// }
 		this.render();
 	},
 
-	addCollectionListeners: function () {
-		// this.listenTo(this.collection, "select:one", this.onSelectOne);
-		// this.listenTo(this.collection, "deselect:one", this.onDeselectOne);
-	},
+	// addCollectionListeners: function () {
+	// 	this.listenTo(this.collection, "select:one", this.onSelectOne);
+	// 	this.listenTo(this.collection, "deselect:one", this.onDeselectOne);
+	// },
 
-	removeCollectionListeners: function () {
-		// this.stopListening(this.collection, "select:one", this.onSelectOne);
-		// this.stopListening(this.collection, "deselect:one", this.onDeselectOne);
-	},
+	// removeCollectionListeners: function () {
+	// 	this.stopListening(this.collection, "select:one", this.onSelectOne);
+	// 	this.stopListening(this.collection, "deselect:one", this.onDeselectOne);
+	// },
 
 	render: function () {
 		var eltBuffer, view;

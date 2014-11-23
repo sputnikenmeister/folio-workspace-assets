@@ -1,5 +1,5 @@
 /**
- * @module app/view/DescriptionView
+ * @module app/view/component/CollectionStack
  */
 
 /** @type {module:underscore} */
@@ -7,11 +7,11 @@ var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 /** @type {string} */
-var viewTemplate = require("./template/DescriptionView.tpl");
+var viewTemplate = require("../template/CollectionStack.tpl");
 
 /**
  * @constructor
- * @type {module:app/view/DescriptionView}
+ * @type {module:app/component/CollectionStack}
  */
 module.exports = Backbone.View.extend({
 	/** @override */
@@ -117,7 +117,7 @@ module.exports = Backbone.View.extend({
 		// 	} else {
 		// 		$container.removeAttr("style");
 		// 	}
-		// 	console.log("DescriptionView.render.promise", $container[0].id, ($container.children().length), $container.css("min-width"), $container.css("min-height"));
+		// 	console.log("CollectionStack.render.promise", $container[0].id, ($container.children().length), $container.css("min-width"), $container.css("min-height"));
 		// });
 		return this;
 	},
