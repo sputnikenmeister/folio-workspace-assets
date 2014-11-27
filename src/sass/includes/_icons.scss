@@ -2,7 +2,7 @@
  * Fontello Icons
  */
 
-@import url("../fonts/fontello.css");
+@import "../fonts/_fontello";
 
 @mixin fontello-icon-base() {
 	font-family: "fontello";

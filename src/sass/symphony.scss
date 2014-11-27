@@ -6,26 +6,26 @@
 	$focus-color: #5273c0;//hsl(221,46%,53%);
 	$focus-background-color: #e9effc;
 
-/* @group Form Controls
+/* Form Controls
 /* -------------------------------- */
 
-	select[multiple],
-	input[type="text"],
-	input[size],
-	textarea {
-		border:	1px solid hsla(0, 0%, 50%, 0.6);
-		-webkit-border-radius: 3px;
-		   -moz-border-radius: 3px;
-		        border-radius: 3px;
-	}
-	label > select[multiple],
-	label > input[type="text"],
-	label > input[size],
-	label > textarea {
-	    -webkit-box-shadow: 0.05em 0.1em 0.2em hsla(0, 0%, 0%, 0.08) inset;
-	       -moz-box-shadow: 0.05em 0.1em 0.2em hsla(0, 0%, 0%, 0.08) inset;
-	            box-shadow: 0.05em 0.1em 0.2em hsla(0, 0%, 0%, 0.08) inset;
-	}
+	// select[multiple],
+	// input[type="text"],
+	// input[size],
+	// textarea {
+	// 	border:	1px solid hsla(0, 0%, 50%, 0.6);
+	// 	-webkit-border-radius: 3px;
+	// 	   -moz-border-radius: 3px;
+	// 	        border-radius: 3px;
+	// }
+	// label > select[multiple],
+	// label > input[type="text"],
+	// label > input[size],
+	// label > textarea {
+	//     -webkit-box-shadow: 0.05em 0.1em 0.2em hsla(0, 0%, 0%, 0.08) inset;
+	//        -moz-box-shadow: 0.05em 0.1em 0.2em hsla(0, 0%, 0%, 0.08) inset;
+	//             box-shadow: 0.05em 0.1em 0.2em hsla(0, 0%, 0%, 0.08) inset;
+	// }
 
 	// label > input[type="text"],
 	// label > input[size],
@@ -63,9 +63,8 @@
 		color: $focus-color;
 		background-color: $focus-background-color;
 	}
-/* @end */
 
-/* @group Association fields
+/* Association fields
 /* -------------------------------- */
 
 	/* published yes/no */
@@ -123,6 +122,5 @@
 			text-overflow: ellipsis;
 		}
 	}
-/* @end */
 
 /* FINISTERRE ---------------------- */

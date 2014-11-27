@@ -73,11 +73,10 @@ module.exports = Backbone.View.extend({
 		var pager = new CollectionPager({
 			id: "bundle-pager",
 			collection: bundles,
-			className: "fontello-pill-pager",
 			labelAttribute: "name"
 		});
 		// append at the bottom of <body/>
-		this.$el.append(pager.render().el);
+		this.$("#debug").append(pager.render().el);
 		presenter.listenTo(pager, "view:select:one", presenter.selectBundle);
 		presenter.listenTo(pager, "view:select:none", presenter.deselectBundle);
 	},

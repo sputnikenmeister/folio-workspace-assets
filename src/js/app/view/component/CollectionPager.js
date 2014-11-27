@@ -17,6 +17,8 @@ var viewTemplate = require("../template/CollectionPager.tpl");
 module.exports = Backbone.View.extend({
 	/** @override */
 	tagName: "div",
+	/** @override */
+	className: "pager",
 	/** @type {Function} */
 	template: viewTemplate,
 	/** @type {String|Function} */

@@ -1,6 +1,5 @@
 /**
  * @module app/helper/SelectableList
- * @requires module:backbone
  */
 
 /** @type {module:underscore} */

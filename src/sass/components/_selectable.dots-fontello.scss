@@ -3,15 +3,31 @@
 	.list-item {
 		display: inline-block;
 		text-align: center;
-		padding-right: 0.5rem;
-		width: 1.5rem; height: 1.5rem;
-		&:first-child { margin-left: -0.25rem; }
-		&:last-child { margin-right: -0.25rem; padding-right: 0; }
+		padding: 0 0.25rem;
+		width: 2rem; height: 1.5rem;
+		&:first-child { margin-left: -0.75rem; }
+		&:last-child { margin-right: -0.75rem; padding-right: 0; }
 
-		a { color: inherit; }
+		position: relative;
+		a {
+			// text-align: center;
+			color: inherit;
+		}
+		.label {
+			display: none;
+		}
 		// label visible on hover
-		a { visibility: hidden; }
-		&:hover a { visibility: visible; }
+		// .label {
+		// 	visibility: hidden;
+		// 	position: absolute;
+		// 	top: -1.5em;
+		// 	// transform: translate(-50%, 0);
+		// 	white-space: nowrap;
+		// 	display: block;
+		// 	left: 0; right: 0;
+		// 	text-align: center;
+		// }
+		// &.selected .label { visibility: visible; }
  		// show link cursor, except on selected
 		cursor: pointer;
 		&.selected, &.selected a { cursor: default; }
@@ -19,6 +35,7 @@
 		&:after {
 			@include fontello-icon-base;
 			visibility: visible;
+			font-size: 80%;
 		}
 		&:after 					{ content: '\e80c'; }
 		// &:link:after				{ content: '\e80c'; }

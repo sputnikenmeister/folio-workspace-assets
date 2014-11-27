@@ -1,7 +1,8 @@
-/*global Image */
 /**
  * @module app/app/view/render/ImageRenderer
  */
+ 
+/*global Image */
 
 /** @type {module:underscore} */
 var _ = require( "underscore" );
@@ -95,7 +96,7 @@ module.exports = Backbone.View.extend({
 	},
 
 	/** @type {Number} */
-	constraint: 660,
+	constraint: 700,//660
 	/** @return {String} */
 	getImageSrc: function() {
 		return this.imageSrc || (this.imageSrc = imageSrcTemplate({

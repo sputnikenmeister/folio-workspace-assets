@@ -124,7 +124,7 @@ var SelectableRenderer = Backbone.View.extend({
 		"click": "onClick",
 	},
 	/** @override */
-	template: _.template("<a href=\"#<%= href %>\"><%= label %></a>"),
+	template: _.template("<span class=\"label\"><%= label %></span><a href=\"#<%= href %>\"><b></b></a>"),
 
 	initialize: function (options) {
 		this.listenTo(this.model, "selected", function () {

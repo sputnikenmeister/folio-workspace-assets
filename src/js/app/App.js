@@ -10,6 +10,7 @@ var $ = require("jquery");
 window.$ = window.jQuery = $;
 require("hammerjs");
 require("jquery-hammerjs");
+require("jquery.transit");
 require("velocity-animate");
 
 /** @type {module:backbone} */
@@ -34,7 +35,7 @@ var AppView = require("./view/AppView");
 $(document).ready(function ($) {
 	"use strict";
 
-	// Fix-ups to bootstrap data
+	// Fix-ups to bootstrap data.
 	if (window.bootstrap) {
 		var types, keywords, bundles, images;
 

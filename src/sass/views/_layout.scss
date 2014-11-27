@@ -4,7 +4,7 @@
 $breakpoint-large: 1024px;
 $page-width: 740px;
 $page-width-large: 960px;
-$page-margin: 40px;
+$page-margin: 20px;
 $gutter: 20px;
 $footer-height: 8rem;
 
@@ -23,12 +23,14 @@ $footer-height: 8rem;
 @mixin col-left-rel() {
 	// margin-right: calc(38% + #{$gutter/2});
 	// margin-left: $page-margin; width: calc(62% - #{$page-margin + $gutter/2});
-	margin-left: 0; width: calc(62% - #{$gutter/2});
+	margin-left: 0;
+	width: calc(62% - #{$gutter/2});
 }
 @mixin col-right-rel() {
 	float: right;
 	// margin-right: $page-margin; width: calc(38% - #{$page-margin + $gutter/2});
-	margin-right: 0; width: calc(38% - #{$gutter/2});
+	margin-right: 0;
+	width: calc(38% - #{$gutter/2});
 }
 @mixin col-left-abs() {
 	position: absolute;
@@ -94,12 +96,6 @@ html, body {
 	}
 }
 
-#header {
-	position: relative;
-	padding-top: 3.5rem;
-	padding-bottom: 1rem;
-}
-
 #navigation {
 	position: relative;
 }
@@ -121,19 +117,20 @@ html, body {
 }
 
 #bundle-detail {
-	display: none;
 	overflow: hidden;
-	width: #{$page-width - $page-margin*2};
 	padding: 1.25rem $page-margin;
-	margin: 0 auto;
+
+	display: none;
+	// margin: 0 auto;
+	// width: #{$page-width - $page-margin*2};
 	// height: 6rem;
 	// @include box-sizing(border-box);
 	@media only screen and (min-width: $breakpoint-large) {
 		display: block;
 		position: absolute;
 		width: #{$page-width-large - $page-width - $page-margin};
-		left: calc(50% - #{$page-width-large/2});
-		// height: calc(100% - 2.5rem);
+		right: calc(50% - #{$page-width-large/2});
+		max-height: calc(100% - 2.5rem);
 		// top: 0;
 	}
 }
@@ -150,70 +147,130 @@ html, body {
 	@media only screen and (min-width: $breakpoint-large) {
 		width: $page-width-large;
 		left: calc(50% - #{$page-width-large/2});
-		padding-left: #{$page-width-large - $page-width + $page-margin};
+		padding-right: #{$page-width-large - $page-width + $page-margin};
 	}
 }
+#image-detail {
+	text-align: left;
+}
+#images-pager {
+	text-align: right;
+}
 
-#bundle-pager {
+#debug {
 	position: fixed;
 	bottom: 0;
 	width: 100%;
+	color:hsl(245, 2%, 40%);
+	background-color:hsl(60, 4%, 5%);
+	line-height: 1em;
+	padding: 0.5em 0.75em;
+	a {
+		color: inherit;
+	}
+	.button, dt, dd {
+		display: block;
+		padding: 0 0.75em;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	dd {
+		border-left: 1px solid hsl(245, 2%, 40%);
+	}
+	dt {
+		font-weight: inherit;
+		font-style: italic;
+	}
+
+	// flex-box stuff
+
+	&, #symphony-links, #bundle-pager {
+		display: -webkit-flex;
+		-webkit-flex-direction: row;
+		display: flex;
+		flex-direction: row;
+	}
+	#symphony-links, #bundle-pager {
+		-webkit-flex: 1 0 0%;
+		flex: 1 0 0%;
+	}
 	.button {
-		font-weight: 400;
-		color:hsl(245, 2%, 40%);
-		background-color:hsl(60, 4%, 5%);
-		border-style: none; border-width: 0; border-radius: 0;
-		margin-right: 0;
+		-webkit-flex: 1 0 0%;
+		flex: 1 0 0%;
+	}
+	dt, dd {
+		-webkit-flex: 0 1 auto;
+    	flex: 0 1 auto;
+	}
+
+	// icons
+	.button:before, .button:after {
+		font-size: 90%;
+	}
+	.preceding-button:before {
+		content: '\e807';
+		@include fontello-icon-before();
+	}
+	.following-button:after {
+		content: '\e808';
+		@include fontello-icon-after();
+	}
+	.close-button:before {
+		content: '\e806';
+		@include fontello-icon-before();
 	}
 }
-// #bundle-pager {
-// 	position: fixed;
-// 	bottom: 0.5rem;
-// 	width: #{$page-width - $page-margin*2};
-// 	left: calc(50% - #{$page-width/2 - $page-margin});
-// 	@media only screen and (min-width: $breakpoint-large) {
-// 		width: #{$page-width-large - $page-margin*2};
-// 		left: calc(50% - #{$page-width-large/2 - $page-margin});
-// 	}
-// }
 
 /*
  * App States
  */
 $apptx-duration: 0.35s;
 
-// Navigation
-#navigation {
-	opacity: 0;
-	visibility: hidden;
-	height: auto;
-	min-height: 12rem;
+#header {
+	position: relative;
+	padding-top: 3.5rem;
+	padding-bottom: 1rem;
 }
-.app-bundle-list #navigation {
-	transition:
-		// opacity $apptx-duration ease,
-		// visibility $apptx-duration step-start,
-		height $apptx-duration step-end;
-	opacity: 1;
-	visibility: visible;
-	height: auto;
+#site-name {
+	display: inline-block;
+	transition: transform $apptx-duration;
+	transform: translate3d(-2px,0,0);
 }
-.app-bundle-item #navigation {
-	transition:
-		// opacity $apptx-duration ease,
-		// visibility $apptx-duration step-start,
-		height $apptx-duration step-start;
-	opacity: 1;
-	visibility: visible;
-	height: 12rem;
+.app-bundle-item #site-name {
+	transform: translate3d(calc(-100% - #{$gutter}),0,0);
 }
 
-// Bundle pager
-#bundle-pager {
-	visibility: hidden;
+#navigation {
+	transition: transform $apptx-duration;
+	// transition-duration: $apptx-duration;
+	// transition-property: transform, height;
+	// transition-timing-function: ease, step-end;
 }
-.app-bundle-item #bundle-pager {
+.app-bundle-list #navigation {
+	// transition-timing-function: ease, step-end;
+}
+.app-bundle-item #navigation {
+	// transition-timing-function: ease, step-start;
+	transform: translate3d(0,-3.75em,0);
+}
+
+// Navigation
+#navigation {
+	min-height: 9rem;
+	height: auto;
+	visibility: hidden;
+	opacity: 0;
+}
+.app-bundle-list #navigation {
+	height: auto;
 	visibility: visible;
+	opacity: 1;
+}
+.app-bundle-item #navigation {
+	height: 9rem;
+	visibility: visible;
+	opacity: 1;
 }
 
 // Content
@@ -223,17 +280,17 @@ $apptx-duration: 0.35s;
 	max-height: 0;
 }
 .app-bundle-list #content {
-	transition:
+	// transition:
 		// opacity $apptx-duration ease,
 		// visibility $apptx-duration step-end,
-		max-height $apptx-duration step-start;
+		// max-height $apptx-duration step-start;
 	max-height: 0;
 }
 .app-bundle-item #content {
-	transition:
+	// transition:
 		// opacity $apptx-duration ease,
 		// visibility $apptx-duration step-start,
-		max-height $apptx-duration step-end;
+		// max-height $apptx-duration step-end;
 	// opacity: 1;
 	// visibility: visible;
 	max-height: none;
@@ -241,6 +298,6 @@ $apptx-duration: 0.35s;
 
 body {
 	transition:
-		color 0.35s 0.2s,// step-end,
-		background-color 0.35s 0.35s;
+		color $apptx-duration 0.35s steps(6),
+		background-color $apptx-duration 0.35s linear;
 }

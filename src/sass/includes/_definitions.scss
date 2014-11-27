@@ -9,11 +9,11 @@ $dark-bgcolor: 		hsl(47, 5%, 25%);
 
 $color: $light-fgcolor;
 $background-color: $light-bgcolor;
+
 $inverse-color: $dark-fgcolor;
 $inverse-background-color: $dark-bgcolor;
 
-$link-color: hsl(10, 80%, 50%);
-// $link-color: scale_color($color, $red: 60%);
+$link-color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
 $link-hover-color: scale_color($link-color, $lightness: 15%);//hsl(10, 95%, 60%);
 $link-down-color: scale_color($link-color, $lightness: -15%);//hsl(10, 95%, 30%);
 
@@ -24,18 +24,11 @@ $link-down-color: scale_color($link-color, $lightness: -15%);//hsl(10, 95%, 30%)
 $mono-fallback: Consolas, Menlo, "Andale Mono", monospace;
 $humanist-fallback: "Lucida Grande","Lucida Sans", Calibri, Tahoma, Verdana, Kalimati, sans-serif;
 
-// Typefaces seem to be loaded on demand, so we define all weights, used or not.
-// CSS INCLUDED FROM HTML
-// @import url("../fonts/source-sans-pro/source-sans-pro.css");
-// @import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200italic,300,300italic,400,400italic,600,600italic,700,700italic,900,900italic");
-// @import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic");
-// @import url("http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,300italic,400italic,600italic,700italic&subset=latin,latin-ext");
-// @import url("http://fonts.googleapis.com/css?family=Chivo:400,900,400italic,900italic&subset=latin,latin-ext");
-// @import url("http://fonts.googleapis.com/css?family=Ek+Mukta:400,200,300,600,700,500,800&subset=latin,latin-ext");
-// @import url("http://fonts.googleapis.com/css?family=Hind:400,300,600,500,700&subset=latin,latin-ext");
-
-$font-webfont-sans: "Source Sans Pro", $humanist-fallback;
-// $font-webfont-sans: "Open Sans", $humanist-fallback;
+// Include at compile-time
+@import "fonts/_franklin-gothic-fs";
+$font-webfont-sans: "Franklin Gothic FS", $humanist-fallback;
+// @import "fonts/_source-sans-pro";
+// $font-webfont-sans: "Source Sans Pro", $humanist-fallback;
 
 // font family aliases (these are used elsewhere)
 $large-font-family: $font-webfont-sans;
@@ -43,13 +36,11 @@ $small-font-family: $humanist-fallback;
 $mono-font-family: $mono-fallback;
 
 // font shorthands aliases (these are used elsewhere)
-$base-font: 12px $font-webfont-sans;
+$base-font: 12px/18px $font-webfont-sans;
 // $base-font: 8pt/1.5 $font-system-sans;
 
-// h1
-// font-size: 3.42857rem; letter-spacing: -2px;
-// h2
-// font-size: 2.14286rem; letter-spacing: -1px;
+// h1 font-size: 3.42857rem; letter-spacing: -2px;
+// h2 font-size: 2.14286rem; letter-spacing: -1px;
 @mixin text-rendering-legibility {
 	-webkit-text-rendering: optimizelegibility;
 	text-rendering: optimizelegibility;
@@ -63,31 +54,31 @@ $base-font: 12px $font-webfont-sans;
 	-moz-osx-font-smoothing: grayscale;
 }
 @mixin heading-font() {
-	font-family: $large-font-family;
-	font-size: 240%;
-	// letter-spacing: -0.04em;
-	letter-spacing: -1px;
-	font-weight: 300;
-	font-style: normal;
 	@include text-rendering-legibility;
+	font-family: $large-font-family;
+	// font-size: 240%; font-weight: 300;
+	font-size: 24px; font-weight: 600;
+	font-style: normal;
+	letter-spacing: -1px;
 }
 // Typography
 @mixin heading-text() {
-	@include heading-font;
-	line-height: 1.07;
 	@include font-smoothing;
+	@include heading-font;
+	line-height: 1;
+	// line-height: 1.07;
 }
 @mixin heading-block() {
+	@include font-smoothing;
 	@include heading-font;
 	line-height: 3rem;
-	@include translateX(-2px);
-	@include font-smoothing;
+	transform: translateX(-2px);
 }
 @mixin small-caps() {
+	// @include font-smoothing;
 	font-size: 85%;
 	font-weight: 600;
-	text-transform: uppercase;
 	line-height: 1.5rem;
-	// letter-spacing: 0.11em;
 	letter-spacing: 1px;
+	text-transform: uppercase;
 }

@@ -20,7 +20,10 @@
 }
 
 .image-list.animate > .image-item {
-	transition: all 0.4s;
+	transform: translate3d(0,0,0);
+}
+.image-list.animate > .image-item {
+	// transition: all 0.4s;
 }
 
 .image-item {
@@ -31,13 +34,14 @@
 	img, .placeholder {
 		position: absolute;
 		display: block;
-		right: $page-margin;
+		left: $page-margin;
 	}
 
 	// Image
 	img {
 		border: 0 none;
 		background-color: lighten($inverse-background-color, 47%);
+		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
 	}
 	img {
 		visibility: hidden;
@@ -60,7 +64,6 @@
 		color: $inverse-color;
 		background-color: lighten($inverse-background-color, 47%);
 		border: 1px solid lighten($inverse-background-color, 42%);
-		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
 
 		@include box-sizing(border-box);
 		padding: 1.5rem $gutter;
@@ -79,36 +82,36 @@
 	}
 
 	// Spinner
-	.placeholder:after {
-		@include spinner-icon;
-		@include font-smoothing;
-		@include text-rendering-speed;
-		font-size: 2rem;
-		text-decoration: none;
-		position: absolute;
-		top: calc(50% - 1em);
-		left: calc(50% - 1em);
-	}
-	&.pending .placeholder:after {
-		animation: none;
-		visibility: hidden;
-		opacity: 0;
-	}
-	&.loading .placeholder:after {
-		animation: spin 2s infinite steps(48), fadeIn 0.5s;
-		visibility: visible;
-		opacity: 1;
-	}
-	&.loaded .placeholder:after {
-		animation: spin 1s steps(24), fadeOut 0s 1s;
-		visibility: hidden;
-		opacity: 0;
-	}
-	&.error	.placeholder:after {
-		animation: spin 1s steps(24), fadeOut 1s;
-		visibility: hidden;
-		opacity: 0;
-	}
+	// .placeholder:after {
+	// 	@include spinner-icon;
+	// 	@include font-smoothing;
+	// 	@include text-rendering-speed;
+	// 	font-size: 2rem;
+	// 	text-decoration: none;
+	// 	position: absolute;
+	// 	top: calc(50% - 1em);
+	// 	left: calc(50% - 1em);
+	// }
+	// &.pending .placeholder:after {
+	// 	animation: none;
+	// 	visibility: hidden;
+	// 	opacity: 0;
+	// }
+	// &.loading .placeholder:after {
+	// 	animation: spin 2s infinite steps(48), fadeIn 0.5s;
+	// 	visibility: visible;
+	// 	opacity: 1;
+	// }
+	// &.loaded .placeholder:after {
+	// 	animation: spin 1s steps(24), fadeOut 0s 1s;
+	// 	visibility: hidden;
+	// 	opacity: 0;
+	// }
+	// &.error	.placeholder:after {
+	// 	animation: spin 1s steps(24), fadeOut 1s;
+	// 	visibility: hidden;
+	// 	opacity: 0;
+	// }
 }
 
 @keyframes spin {

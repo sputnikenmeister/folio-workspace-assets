@@ -19,6 +19,10 @@ var images = require( "../model/collection/ImageList" );
 /** @type {module:app/control/Router} */
 // var router = require( "./Router" );
 
+function invert(s) {
+	return s.replace(/(\,|\;)/g, function(m) { return (m == ",")?";":","; });
+}
+
 /**
  * @constructor
  * @type {module:app/control/Presenter}
@@ -52,6 +56,9 @@ function Presenter() {
 	// this.listenTo(this.bundles, "all", traceEvent("bundles"));
 	// this.listenTo(this.images, "all", traceEvent("images"));
 	// this.listenTo(this.router, "all", traceEvent("router"));
+
+	this.listenTo(this.bundles, "select:one", this.onBundleItem);
+	this.listenTo(this.bundles, "select:none", this.onBundleList);
 }
 
 _.extend(Presenter.prototype, Backbone.Events, {
@@ -64,6 +71,8 @@ _.extend(Presenter.prototype, Backbone.Events, {
 		this.router.navigate("bundles/" + bundles.selected.get("handle") + "/" + (images.indexOf(image)), {trigger: false});
 		this.doSelectImage(image);
 	},
+	routeToImage: function (bundleHandle, imageIndex) {
+	},
 	doSelectImage: function(image) {
 		images.select(image);
 	},
@@ -75,13 +84,13 @@ _.extend(Presenter.prototype, Backbone.Events, {
 	/* Handle view events */
 	selectBundle: function (model) {
 		this.router.navigate("bundles/" + model.get("handle") + "/0", {trigger: false});
-		this.doSelectBundle(model);
+		this._selectBundle(model);
 	},
 	/* Handle router events */
 	routeToBundleItem: function (bundleHandle, imageIndex) {
 		var bundle = bundles.findWhere({handle: bundleHandle});
 		if (bundle) {
-			this.doSelectBundle(bundle);
+			this._selectBundle(bundle);
 			if (imageIndex) {
 				var image = images.at(imageIndex);
 				if (image) {
@@ -95,20 +104,19 @@ _.extend(Presenter.prototype, Backbone.Events, {
 		}
 	},
 	/* Handle model updates */
-	doSelectBundle: function (bundle) {
-		var stateChanging = bundles.selected === null;
-
-		bundles.select(bundle);
-		images.reset(bundle.get("images"));
-
-		if (stateChanging) {
+	_selectBundle: function (bundle) {
+		if (bundles.selected === null) {
 			_.delay(function (context) {
-				Backbone.trigger("app:bundle:item");
-				context.applySelectionStyles();
+				Backbone.trigger("app:bundle:item", bundle);
 			}, 700, this);
-		} else {
-			this.applySelectionStyles();
 		}
+		bundles.select(bundle);
+	},
+
+	onBundleItem: function(bundle) {
+		images.reset(bundle.get("images"));
+		this.applySelectionStyles();
+		document.title = "Portfolio – " + bundles.selected.get("name");
 	},
 
 	/* -------------------------------
@@ -118,29 +126,32 @@ _.extend(Presenter.prototype, Backbone.Events, {
 	/* Handle view events */
 	deselectBundle: function () {
 		this.router.navigate("bundles", { trigger: false });
-		this.doDeselectBundle();
+		this._deselectBundle();
 	},
 	/* Handle router events */
 	routeToBundleList: function () {
-		this.doDeselectBundle();
+		this._deselectBundle();
 	},
 	/* Handle model updates */
-	doDeselectBundle: function () {
-		// bundles.deselect();
-		// images.reset();
-		Backbone.trigger("app:bundle:list");
-		this.clearSelectionStyles();
+	_deselectBundle: function () {
 		_.delay(function (context) {
 			bundles.deselect();
-			images.reset();
 		}, 350, this);
+
+		Backbone.trigger("app:bundle:list");
+	},
+
+	onBundleList: function() {
+		images.reset();
+		this.clearSelectionStyles();
+		document.title = "Portfolio";
 	},
 
 	/* --------------------------- *
 	 * Helpers
 	 * --------------------------- */
 
-	bodyStyles: ["background", "background-color", "color"],
+	bodyStyles: ["background", "background-color", "color", "-moz-osx-font-smoothing", "-webkit-font-smoothing"],
 
 	clearSelectionStyles: function() {
 		Backbone.$("body").removeAttr("style");
@@ -148,16 +159,14 @@ _.extend(Presenter.prototype, Backbone.Events, {
 	applySelectionStyles: function() {
 	 	var css = {};
 	 	_.each(bundles.selected.get("attrs"), function(o) {
+	 		// console.log(o);
 	 		o = o.split(":");
-	 		css[o[0]] = o[1].replace(/(?:hsla?\(|rgba?\()([^\)]+)/g, function(m) {
-	 			return m.replace(/\s+/g,",");
-	 			//return m.split(" ").join(",");
-	 		});
-	 		console.log(o);
+	 		if (o.length > 1)
+	 			css[o[0]] = invert(o[1]);
 	 	});
 	 	css = _.pick(css, this.bodyStyles);
-	 	console.log(css);
 	 	Backbone.$("body").removeAttr("style").css(css);
+	 	console.log(css);
 	},
 
 	// fetchBundleData: function (bundle) {
@@ -177,23 +186,3 @@ _.extend(Presenter.prototype, Backbone.Events, {
 });
 
 module.exports = new Presenter();
-// module.exports = (function(){
-// 	var instance = null;
-// 	return {
-// 		/**
-// 		 * Construct Router
-// 		 * @returns {module:app/control/Mediator}
-// 		 */
-// 		init: function(){
-// 			instance = new Mediator();
-// 			return this.getInstance();
-// 		},
-// 		/**
-// 		 * Go singleton
-// 		 * @returns {module:app/control/Mediator}
-// 		 */
-// 		getInstance: function() {
-// 			return instance;
-// 		}
-// 	};
-// }());

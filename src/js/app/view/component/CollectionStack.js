@@ -63,10 +63,6 @@ module.exports = Backbone.View.extend({
 	},
 
 	render: function () {
-
-		// var $container = this.$el;
-		// var item, contentRect;
-
 		if (this.$content) {
 			// Get content's size while still in the flow
 			var contentRect = _.extend({
@@ -76,14 +72,14 @@ module.exports = Backbone.View.extend({
 			}, this.$content.position());
 			// Have the parent keep it's size
 			this.$el.css({
-				"min-width": contentRect.width,
-				"min-height": contentRect.height,
+				minWidth: contentRect.width,
+				minHeight: contentRect.height,
 			});
 			this.$content
 				.clearQueue()
 				.css(contentRect)
 				.delay(300)
-				.velocity({opacity: 0}, 150)
+				.transit({opacity: 0}, 150)
 				.promise().always(function($content) {
 					$content.parent().removeAttr("style");
 					$content.remove();
@@ -91,34 +87,15 @@ module.exports = Backbone.View.extend({
 				;
 			delete this.$content;
 		}
-
 		if (this.model) {
 			this.$content = Backbone.$(this.createRenderedElement(this.model));
 			this.$content
 				.css({opacity: 0})
 				.appendTo(this.$el)
 				.delay(550)
-				.velocity({opacity: 1}, 150)
+				.transit({opacity: 1}, 150)
 				;
 		}
-
-		// if ($container.children().length) {
-		// 	$container.css({
-		// 		"min-width": $container.children().outerWidth(),
-		// 		"min-height": $container.children().outerHeight(),
-		// 	});
-		// }
-		// this.$el.children().promise().always(function($content) {
-		// 	if ($container.children().length) {
-		// 		$container.css({
-		// 			"min-width": $container.children().outerWidth(),
-		// 			"min-height": $container.children().outerHeight(),
-		// 		});
-		// 	} else {
-		// 		$container.removeAttr("style");
-		// 	}
-		// 	console.log("CollectionStack.render.promise", $container[0].id, ($container.children().length), $container.css("min-width"), $container.css("min-height"));
-		// });
 		return this;
 	},
 

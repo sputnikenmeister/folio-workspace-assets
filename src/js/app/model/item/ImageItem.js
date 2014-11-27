@@ -17,12 +17,13 @@ module.exports = Backbone.Model.extend({
 
 	/** @type {Object} */
 	defaults: {
+		bId: 0,
+		o: 0,
 		f: "",
 		w: 0,
 		h: 0,
 		desc: "<p><em>No description</em></p>",
 		attrs: [],
-		bId: 0,
 	},
 
 	initialize: function() {

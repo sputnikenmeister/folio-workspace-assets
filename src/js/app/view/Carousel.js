@@ -51,13 +51,13 @@ module.exports  = DeferredRenderView.extend({
 			direction: this.direction,
 			threshold: this.panThreshold,
 		}));
-		// this.hammer.on("panstart panmove panend pancancel", this.onPan);
 
 		_.bindAll(this, "onResize");
 		Backbone.$(window).on("orientationchange resize", this.onResize);
 
 		this.listenTo(this.collection, "reset", this.onCollectionReset);
 		this.listenTo(this.collection, "select:one", this.onSelectOne);
+		// this.hammer.on("panstart panmove panend pancancel", function(ev) { console.log(ev.type); });
 	},
 
 	remove: function() {
@@ -70,6 +70,12 @@ module.exports  = DeferredRenderView.extend({
 	 * --------------------------- */
 
 	/** @param {Object} ev */
+	onResize: function (ev) {
+		delete this.containerSize;
+		this.scrollToSelection(true);
+	},
+
+	/** @param {Object} ev */
 	onPanMove: function(ev) {
 		var delta = this.getDirProp(ev.gesture.deltaX, ev.gesture.deltaY);
 		// remove threshold to prevent jump
@@ -78,7 +84,7 @@ module.exports  = DeferredRenderView.extend({
 		if (this.isOutOfBounds(delta)) {
 			delta *= 0.2;
 		}
-		this.scrollBy(delta, false);
+		this.scrollBy(delta, true);
 	},
 
 	/** @param {Object} ev */
@@ -87,20 +93,14 @@ module.exports  = DeferredRenderView.extend({
 		// If beyond select threshold, trigger selection
 		if (Math.abs(delta) > this.getSelectThreshold() && !this.isOutOfBounds(delta)) {
 			this.trigger("view:select:one", (delta < 0)?
-				this.collection.nextNoLoop(): this.collection.prevNoLoop());
+				this.collection.nextNoLoop(): this.collection.prevNoLoop(), {source:this});
 		} else {
-			this.scrollToSelection(true);
+			this.scrollToSelection(false);
 		}
 	},
 
 	/** @param {Object} ev */
 	onPanCancel: function(ev) {
-		this.scrollToSelection(true);
-	},
-
-	/** @param {Object} ev */
-	onResize: function (ev) {
-		delete this.containerSize;
 		this.scrollToSelection(false);
 	},
 
@@ -110,12 +110,13 @@ module.exports  = DeferredRenderView.extend({
 
 	/* Model event handlers */
 	onCollectionReset: function() {
+		console.log("Carousel.onCollectionReset");
 		this.render();
 	},
 
 	/** @private */
 	onSelectOne: function(image) {
-		this.scrollToSelection(true);
+		this.scrollToSelection(false);
 	},
 
 	/* --------------------------- *
@@ -123,115 +124,97 @@ module.exports  = DeferredRenderView.extend({
 	 * --------------------------- */
 
 	render: function() {
+		console.log("Carousel.render");
 		this.renderChildren();
-		this.scrollToSelection(false);
+		this.scrollToSelection(true);
 		return this;
 	},
 
 	/** @override */
 	deferredRender: function (timestamp) {
 		// console.log("Carousel.render: " + (this.skipAnimation?"deferred":"animated"));
-
-		if (this.skipAnimation) {
-			this.$el.removeClass("animate");
-			this.skipAnimation = false;
-		} else {
-			this.$el.addClass("animate");
-		}
+		// if (this.skipAnimation) {
+		// 	this.$el.removeClass("animate");
+		// } else {
+		// 	this.$el.addClass("animate");
+		// }
 
 		this.validateRender("renderChildren");
 		this.validateRender("scrollBy");
+
+		this.animationRequests.length = 0;
+		this.skipAnimation = false;
 	},
+
+	animationRequests: [],
 
 	/* --------------------------- *
 	 * Child create
 	 * --------------------------- */
 
 	renderChildren: function() {
-		this.requestRender("renderChildren", _.bind(this.renderChildren_deferred, this));
+		this.requestRender("renderChildren", _.bind(this.renderChildren_immediate, this));
 	},
-	renderChildren_deferred: function() {
-		var childBuffer, child, childSize, maxSize = 0;
-		var containerSize = this.getContainerSize();
+	renderChildren_immediate: function() {
+		console.log("Carousel.children: " + (this.collection.length || "empty"));
+		var childBuffer, child, crossSize = 0;
 
 		this.removeChildren();
-
 		if (this.collection.length) {
 			childBuffer = document.createDocumentFragment();
-
 			this.collection.each(function(model, index) {
 				child = this.createChildView(model, index);
 				childBuffer.appendChild(child.render().el);
-				// Get the largest *opposite* dimension for the container
-				// childSize = child[this.getDirProp("getConstrainedHeight", "getConstrainedWidth")]();
-				// maxSize = Math.max(maxSize, childSize);
+				// Get the largest child cross size
+				crossSize = Math.max(crossSize, child[this.getDirProp("constrainedHeight", "constrainedWidth")]);
 			}, this);
-
+			this.$el.css(this.getDirProp("minHeight", "minWidth"), crossSize);
 			this.$el.append(childBuffer);
-			// console.log(maxSize, this.el.getBoundingClientRect(), this.el.clientHeight, this.el.offsetHeight,
-			//	this.$el.outerHeight(), this.$el.innerHeight(), this.$el.children().outerHeight());
-			maxSize = this.$el.children()[this.getDirProp("outerHeight", "outerWidth")]();
-			this.$el.css(this.getDirProp("minHeight", "minWidth"), maxSize);
 		} else {
 			this.$el.css(this.getDirProp("minHeight", "minWidth"), "");
 		}
-		console.log("Carousel.children: " + (this.collection.length || "empty"));
 	},
 
 	/* --------------------------- *
 	 * Scroll/layout
 	 * --------------------------- */
 
-	scrollToSelection: function (animate) {
-		this.scrollBy(0, animate);
+	scrollToSelection: function (skipAnimation) {
+		this.scrollBy(0, skipAnimation);
 	},
 
-	scrollBy: function(delta, animate) {
+	scrollBy: function(delta, skipAnimation) {
 		// console.log("Carousel.scrollBy: " + (!animate? "deferred":"animated"));
+		this.animationRequests.push((skipAnimation?"immediate":"animated"));
 
-		this.skipAnimation = this.skipAnimation || !animate;
-		this.requestRender("scrollBy", _.bind(this.scrollBy_deferred, this, delta));
+		this.skipAnimation = this.skipAnimation || skipAnimation;
+		this.requestRender("scrollBy", _.bind(this.scrollBy_immediate, this, delta, this.getScrollIndex()));
 
 	},
-	scrollBy_deferred: function(delta) {
-		var pos, scrollIndex, size;
+	scrollBy_immediate: function(delta, scrollIndex) {
+		console.log("Carousel.scrollBy", this.animationRequests.concat(), this.skipAnimation?"skipping":"animating");
+		var pos, size;
 
 		delta = delta || 0; // non null check
 		size = this.getContainerSize();
-		scrollIndex = this.getScrollIndex();
+		scrollIndex = (scrollIndex || this.getScrollIndex());
 
 		this.collection.each(function(model, index) {
 			pos = (size * (index - scrollIndex)) + delta;
 			this.scrollChildTo(this.children.findByModel(model), pos);
 		}, this);
-
 	},
 
-	// scrollChildTo: function (view, pos, animate) {
 	scrollChildTo: function (view, pos) {
-		var translate = (this.direction & Hammer.DIRECTION_HORIZONTAL)? "translate3d(" + pos + "px,0,0)" : "translate3d(0," + pos + "px,0)";
-		view.el.style.transform = translate;
-		view.el.style.mozTransform = translate;
-		view.el.style.webkitTransform = translate;
+		var translate = (this.direction & Hammer.DIRECTION_HORIZONTAL)?
+			"translate3d(" + pos + "px,0,0)" : "translate3d(0," + pos + "px,0)";
+		if (this.skipAnimation) {
+			view.$el.css({transform: translate});
+		} else {
+			view.$el.transition({transform: translate}, 400);
+		}
 	},
 
-	scrollChildTo_interpolate: function (view, pos) {
-		// if (animate) {
-		// 	view.$el.animate(css, 300);
-		// } else {
-			// _.extend(view.el.style, this.interpolate(pos));
-			view.$el.css(this.interpolate(pos));
-		// }
-	},
-
-	interpolate: function() {
-		var css = {}; // keep in closure and reuse same object
-		// overwrite this method with the right variant
-		this.interpolate = (this.direction & Hammer.DIRECTION_HORIZONTAL)?
-			function(pos) { css.transform = css.mozTransform = css.webkitTransform = "translate3d(" + pos + "px,0,0)"; return css;}:
-			function(pos) { css.transform = css.mozTransform = css.webkitTransform = "translate3d(0," + pos + "px,0)"; return css;};
-		return this.interpolate.apply(this, arguments);
-	},
 
 	getScrollTransformAt: function(pos) {
 		var	size = this.getContainerSize(),
@@ -271,12 +254,21 @@ module.exports  = DeferredRenderView.extend({
 	},
 
 	getContainerSize: function () {
-		return this.containerSize || (this.containerSize = this.el[this.getDirProp("offsetWidth", "offsetHeight")]);
+		if (this.containerSize === undefined || this.containerSize === 0) {
+			this.containerSize = this.el[this.getDirProp("offsetWidth", "offsetHeight")];
+		}
+		return this.containerSize;
 	},
 
 	getSelectThreshold: function(delta) {
 		return this.selectThreshold * this.getContainerSize();
 	},
+
+	// setCSSTransform: function (el, transform) {
+	// 	el.style.transform = transform;
+	// 	el.style.mozTransform = transform;
+	// 	el.style.webkitTransform = transform;
+	// },
 
 	/* --------------------------- *
 	 * Child view mgmt

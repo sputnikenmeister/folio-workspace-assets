@@ -33,7 +33,7 @@
 }
 
 #bundle-list {
-	padding-top: 0.5rem;
+	padding-top: 0.25rem;
 	min-height: 3rem;
 
 	.list-item {
@@ -47,7 +47,7 @@
 }
 
 #keyword-list {
-	padding-top: 1rem;
+	padding-top: 0.75rem;
 	.list-item {
 		// width: 62%;
 		margin-left: calc(38% + #{$gutter/2});

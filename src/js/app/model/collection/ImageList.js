@@ -1,7 +1,9 @@
 /**
  * @module app/model/collection/ImageList
- * @requires module:backbone
  */
+
+/** @type {module:underscore} */
+var _ = require("underscore");
 
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
@@ -18,19 +20,21 @@ var ImageList = Backbone.Collection.extend({
 	/** @type {Backbone.Model} */
 	model: ImageItem,
 
+	comparator: "o",
+
 	initialize: function( models, options ) {
 		Backbone.Cycle.SelectableCollection.applyTo(this, models, options);
 	},
 
-	reset: function () {
+    reset: function(models, options) {
 		Backbone.Collection.prototype.reset.apply(this, arguments);
-		if (this.length) {
-			this.selectAt(0);
+		if (models && models.length) {
+			this.selectAt(0, options);
 		} else {
-			this.deselect();
+			this.deselect(options);
 		}
 	}
 
 });
 
-module.exports = new ImageList();
+module.exports = new ImageList(void 0, {comparator: "o"});

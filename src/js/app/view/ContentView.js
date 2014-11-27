@@ -22,7 +22,7 @@ var images = require("../model/collection/ImageList");
 var presenter = require("../control/Presenter");
 
 /** @type {Function} */
-// var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
+var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
 var imageDescTemplate = require("./template/CollectionStack.Image.tpl");
 
@@ -32,93 +32,72 @@ var imageDescTemplate = require("./template/CollectionStack.Image.tpl");
  */
 var ContentView = Backbone.View.extend({
 
-	/** @type {module:app/model/collection/BundleList} */
-	// bundles: bundles,
-	/** @type {module:app/model/collection/ImageList} */
-	// images: images,
-	/** @type {module:app/control/Presenter} */
-	// presenter: presenter,
-
 	/** Setup listening to model changes */
 	initialize: function (options) {
-		// carrousel
-		this.imageCarousel = new Carousel({
-			id: "bundle-images",
-			collection: images
-		});
-
-		// dot nav
-		this.imagePager= new SelectableListView({
-			id: "images-pager",
-			collection: images,
-		});
-		this.imagePager.$el.addClass("dots-fontello");
-
-		// selected bundle description
-		this.bundleDetailView = new CollectionStack({
-			id: "bundle-detail",
-			// template: bundleDescTemplate,
-			collection: bundles
-		});
-
-		// selected image description
-		this.imageDetailView = new CollectionStack({
-			id: "image-detail",
-			template: imageDescTemplate,
-			collection: images
-		});
-
-		this.$children = Backbone.$([
-			this.bundleDetailView.render().el,
-			this.imageDetailView.render().el,
-			this.imageCarousel.render().el,
-			this.imagePager.render().el
-		]);
-		// this.$el.append(
-		// 	this.bundleDetailView.render().el,
-		// 	this.imageDetailView.render().el,
-		// 	this.imageCarousel.render().el,
-		// 	this.imagePager.render().el
-		// );
-
-		presenter.listenTo(this.imageCarousel, "view:select:one", presenter.selectImage);
-		presenter.listenTo(this.imagePager, "view:select:one", presenter.selectImage);
-
 		this.listenTo(Backbone, "all", this.onApplicationEvent);
 	},
 
 	onApplicationEvent: function(eventName) {
-		switch (eventName){
+		switch (eventName) {
 			case "app:bundle:item":
-				// this.$el.append(this.$children);
-				this.imageCarousel.render();
-				// this.$children.appendTo(this.$el);
-				this.$children.css({opacity: 0})
-					.appendTo(this.$el)
-					.velocity({opacity: 1}, 300)
-					;
-				// this.$el.append(
-				// 	this.bundleDetailView.render().el,
-				// 	this.imageDetailView.render().el,
-				// 	this.imageCarousel.render().el,
-				// 	this.imagePager.render().el
-				// );
+				this.createChildren();
 				break;
 			case "app:bundle:list":
 				/* falls through */
 			default:
-				// this.$el.detach(this.$children);
-				// this.$children.detach();
-				this.$children
-					.clearQueue()
-					.velocity({opacity: 0}, 300)
-					.promise().always(function($content) {
-						$content.detach();
-					})
-					;
-				// this.$el.empty();
+				this.removeChildren();
 				break;
 		}
+	},
+
+	createChildren: function() {
+		// carrousel
+		this.imageCarousel = new Carousel({ id: "bundle-images", collection: images});
+		presenter.listenTo(this.imageCarousel, "view:select:one", presenter.selectImage);
+		// dot nav
+		this.imagePager= new SelectableListView({id: "images-pager",collection: images});
+		this.imagePager.$el.addClass("dots-fontello");
+		presenter.listenTo(this.imagePager, "view:select:one", presenter.selectImage);
+		// selected bundle/image description
+		this.bundleDetail = new CollectionStack({id: "bundle-detail",template: bundleDescTemplate,collection: bundles});
+		this.imageDetail = new CollectionStack({id: "image-detail",	template: imageDescTemplate,collection: images});
+
+		var children = document.createDocumentFragment();
+		children.appendChild(this.bundleDetail.render().el);
+		children.appendChild(this.imageDetail.render().el);
+		children.appendChild(this.imagePager.render().el);
+		children.appendChild(this.imageCarousel.render().el);
+		this.el.appendChild(children);
+
+		// this.$children = Backbone.$([
+		// 		this.bundleDetail.render().el,
+		// 		this.imageDetail.render().el,
+		// 		this.imagePager.render().el,
+		// 		this.imageCarousel.render().el,
+		// 	])
+		// 	.css({opacity: 0})
+		// 	.appendTo(this.$el)
+		// 	.transit({opacity: 1}, 300)
+		// 	;
+
+	},
+
+	removeChildren: function() {
+		presenter.stopListening(this.imageCarousel);
+		presenter.stopListening(this.imagePager);
+
+		this.bundleDetail.remove();
+		this.imageDetail.remove();
+		this.imagePager.remove();
+		this.imageCarousel.remove();
+
+		// this.$children
+		// 	.clearQueue()
+		// 	.transit({opacity: 0}, 300)
+		// 	.promise().always(function($children) {
+		// 		$children.css({display: "none"});
+		// 	})
+		// 	;
 	},
 
 });
