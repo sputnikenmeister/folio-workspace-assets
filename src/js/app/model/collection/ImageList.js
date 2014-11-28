@@ -26,15 +26,14 @@ var ImageList = Backbone.Collection.extend({
 		Backbone.Cycle.SelectableCollection.applyTo(this, models, options);
 	},
 
-    reset: function(models, options) {
-		Backbone.Collection.prototype.reset.apply(this, arguments);
-		if (models && models.length) {
-			this.selectAt(0, options);
-		} else {
-			this.deselect(options);
-		}
-	}
-
+	// reset: function(models, options) {
+	// 	Backbone.Collection.prototype.reset.apply(this, arguments);
+	// 	if (models && models.length) {
+	// 		this.selectAt(0, options);
+	// 	} else {
+	// 		this.deselect(options);
+	// 	}
+	// }
 });
 
 module.exports = new ImageList(void 0, {comparator: "o"});

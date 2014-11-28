@@ -17,8 +17,8 @@ var ContentView = require("./ContentView");
 
 /** @type {module:app/model/collection/BundleList} */
 var bundles = require("../model/collection/BundleList");
-/** @type {module:app/control/Presenter} */
-var presenter = require("../control/Presenter");
+/** @type {module:app/control/Controller} */
+var controller = require("../control/Controller");
 
 /**
  * @constructor
@@ -31,7 +31,7 @@ module.exports = Backbone.View.extend({
 	events: {
 		"click #site-name": function(ev) {
 			ev.isDefaultPrevented() || ev.preventDefault();
-			presenter.deselectBundle();
+			controller.deselectBundle();
 		}
 	},
 
@@ -63,7 +63,7 @@ module.exports = Backbone.View.extend({
 			// case "app:error":
 			case "app:error":
 				console.log("AppView.showError - not implemented");
-				presenter.deselectBundle();
+				controller.deselectBundle();
 				break;
 			default:
 				break;
@@ -80,10 +80,10 @@ module.exports = Backbone.View.extend({
 		this.$("#debug-toolbar").append(pager.render().el);
 
 		this.$("#debug-toolbar #tools").click(function(ev) {
-			Backbone.$(document.body).toggleClass("debug-grid");
+			Backbone.$("#container").toggleClass("debug-grid");
 		});
-		presenter.listenTo(pager, "view:select:one", presenter.selectBundle);
-		presenter.listenTo(pager, "view:select:none", presenter.deselectBundle);
+		controller.listenTo(pager, "view:select:one", controller.selectBundle);
+		controller.listenTo(pager, "view:select:none", controller.deselectBundle);
 	},
 
 });

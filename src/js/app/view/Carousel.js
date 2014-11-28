@@ -182,15 +182,14 @@ module.exports  = DeferredRenderView.extend({
 	},
 
 	scrollBy: function(delta, skipAnimation) {
-		// console.log("Carousel.scrollBy: " + (!animate? "deferred":"animated"));
-		this.animationRequests.push((skipAnimation?"immediate":"animated"));
+		this.animationRequests.push(skipAnimation? "immediate" : "animated");
 
 		this.skipAnimation = this.skipAnimation || skipAnimation;
 		this.requestRender("scrollBy", _.bind(this.scrollBy_immediate, this, delta, this.getScrollIndex()));
 
 	},
 	scrollBy_immediate: function(delta, scrollIndex) {
-		console.log("Carousel.scrollBy", this.animationRequests.concat(), this.skipAnimation?"skipping":"animating");
+		console.log("Carousel.scrollBy", this.skipAnimation? "skipping" : "animating", this.animationRequests.concat());
 		var pos, size;
 
 		delta = delta || 0; // non null check

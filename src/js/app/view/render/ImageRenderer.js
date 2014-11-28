@@ -1,7 +1,7 @@
 /**
  * @module app/app/view/render/ImageRenderer
  */
- 
+
 /*global Image */
 
 /** @type {module:underscore} */
@@ -155,12 +155,12 @@ module.exports = Backbone.View.extend({
 
 	onLoad: function(image, ev) {
 		this.$el.removeClass("loading").addClass("loaded");
-		console.log("ImageRenderer.onLoad: " + this.model.get("f"));
+		// console.log("ImageRenderer.onLoad: " + this.model.get("f"));
 	},
 
 	onError: function(image, err, ev) {
 		this.$el.removeClass("loading").addClass("error");
-		console.log("ImageRenderer.onError: " + this.model.get("f"));
+		// console.log("ImageRenderer.onError: " + this.model.get("f"));
 	},
 
 	onProgress: function(image) {

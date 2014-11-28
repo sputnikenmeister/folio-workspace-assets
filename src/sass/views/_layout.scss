@@ -97,17 +97,7 @@ html, body {
 	}
 }
 
-#navigation {
-	position: relative;
-}
 
-#bundle-list {
-	@include col-left-rel;
-}
-
-#keyword-list {
-	@include col-right-rel;
-}
 
 #content.viewport {
 	position: relative;
@@ -163,15 +153,54 @@ html, body {
  */
 $apptx-duration: 0.35s;
 
+
 #header {
 	position: relative;
 	padding-top: 3.5rem;
 	padding-bottom: 1rem;
 }
+
+// Navigation
+#navigation {
+	position: relative;
+}
+	#navigation {
+		min-height: 9rem;
+		height: auto;
+		visibility: hidden;
+		opacity: 0;
+	}
+	.app-bundle-list #navigation {
+		height: auto;
+		visibility: visible;
+		opacity: 1;
+	}
+	.app-bundle-item #navigation {
+		height: 9rem;
+		visibility: visible;
+		opacity: 1;
+	}
+
 #site-name {
+	@include heading-font;
+	padding-top: 0.5rem;
+	line-height: 1.5rem;
+}
+#bundle-list {
+	@include col-left-rel;
+	padding-top: 0.5rem;
+	min-height: 2rem;
+}
+#keyword-list {
+	@include col-right-rel;
+	padding-top: 0.5rem;
+}
+
+#site-name {
+	position: relative;
 	display: inline-block;
 	transition: transform $apptx-duration;
-	transform: translate3d(-2px,0,0);
+	transform: translate3d(-1px,0,0);
 }
 .app-bundle-item #site-name {
 	transform: translate3d(calc(-100% - #{$gutter}),0,0);
@@ -179,35 +208,12 @@ $apptx-duration: 0.35s;
 
 #navigation {
 	transition: transform $apptx-duration;
-	// transition-duration: $apptx-duration;
-	// transition-property: transform, height;
-	// transition-timing-function: ease, step-end;
 }
-.app-bundle-list #navigation {
-	// transition-timing-function: ease, step-end;
-}
-.app-bundle-item #navigation {
-	// transition-timing-function: ease, step-start;
-	transform: translate3d(0,-3.75em,0);
-}
-
-// Navigation
-#navigation {
-	min-height: 9rem;
-	height: auto;
-	visibility: hidden;
-	opacity: 0;
-}
-.app-bundle-list #navigation {
-	height: auto;
-	visibility: visible;
-	opacity: 1;
-}
-.app-bundle-item #navigation {
-	height: 9rem;
-	visibility: visible;
-	opacity: 1;
-}
+	.app-bundle-list #navigation {
+	}
+	.app-bundle-item #navigation {
+		transform: translate3d(0,-3.5em,0);
+	}
 
 // Content
 #content {

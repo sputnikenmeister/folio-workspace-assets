@@ -27,9 +27,9 @@ function invert(s) {
 
 /**
  * @constructor
- * @type {module:app/control/Presenter}
+ * @type {module:app/control/Controller}
  */
-function Presenter() {
+function Controller() {
 	this.bundles = bundles;
 	this.images = images;
 
@@ -63,7 +63,7 @@ function Presenter() {
 	this.listenTo(this.bundles, "select:none", this.onBundleList);
 }
 
-_.extend(Presenter.prototype, Backbone.Events, {
+_.extend(Controller.prototype, Backbone.Events, {
 
 	/* --------------------------- *
 	 * Select Image
@@ -85,7 +85,7 @@ _.extend(Presenter.prototype, Backbone.Events, {
 
 	/* Handle view events */
 	selectBundle: function (model) {
-		this.router.navigate("bundles/" + model.get("handle") + "/0", {trigger: false});
+		this.router.navigate("bundles/" + model.get("handle") + "/0", {trigger: true});
 		this._selectBundle(model);
 	},
 	/* Handle router events */
@@ -154,43 +154,36 @@ _.extend(Presenter.prototype, Backbone.Events, {
 	 * --------------------------- */
 
 	bodyStyles: ["background", "background-color", "color", "-moz-osx-font-smoothing", "-webkit-font-smoothing"],
+	imageStyles: ["box-shadow"],
 
 	clearSelectionStyles: function() {
 		Backbone.$("body").removeAttr("style");
 	},
 	applySelectionStyles: function() {
 		var css = {};
-
-		_.each(bundles.selected.get("attrs"), function(o) {
-			o = o.split(":");
-			if (o.length > 1)
-				css[o[0]] = invert(o[1]);
+		_.each(bundles.selected.get("attrs"), function(attr) {
+			if (attr.indexOf(":") > 0) {
+				attr = attr.split(":");
+				css[attr[0]] = invert(attr[1]);
+			}
 		});
 		css = _.pick(css, this.bodyStyles);
 		Backbone.$("body").removeAttr("style").css(css);
 
-		////
-		var bgColor, fgColor;
-		var bodyCssRule = _.findWhere(document.styleSheets[0].cssRules, {selectorText: "body"});
-		var bodyBgColor = bodyCssRule.style.backgroundColor;
-		bodyBgColor = new Color(bodyBgColor).toHexString();
-
+		var bgColor, bgColorString, cssRule;
 		if (css["background-color"]) {
-			bgColor = new Color(css["background-color"]);
+			bgColorString = css["background-color"];
 		} else {
-			bgColor = new Color(bodyBgColor);
+			cssRule = _.findWhere(document.styleSheets[0].cssRules, {selectorText: "body"});
+			bgColorString = new Color(cssRule.style.backgroundColor || "#f3f3f2").toHexString();
 		}
+		bgColor = new Color(bgColorString);
 
-		var selectorText = ".image-item .placeholder";
-		var bgPh = bgColor.lightness("-=0.05");
-		var borderPh = bgColor.lightness("-=0.08");
+		cssRule = _.findWhere(document.styleSheets[0].cssRules, {selectorText: ".image-item .placeholder"});
+		cssRule.style.backgroundColor = bgColor.lightness("-=0.05").toHexString();
+		cssRule.style.borderColor = bgColor.lightness("-=0.08").toHexString();
 
-		var cssRule = _.findWhere(document.styleSheets[0].cssRules, {selectorText: selectorText});
-		cssRule.style.backgroundColor = bgPh.toHexString();
-		cssRule.style.borderColor = borderPh.toHexString();
-
-		console.log("Color attrs: ", css);
-		console.log("Color bgColor: ", bodyBgColor, [bgColor, bgPh, borderPh]);
+		console.log("CSS: ", bgColorString, css);
 	},
 
 	// fetchBundleData: function (bundle) {
@@ -209,4 +202,4 @@ _.extend(Presenter.prototype, Backbone.Events, {
 	// },
 });
 
-module.exports = new Presenter();
+module.exports = new Controller();

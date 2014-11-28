@@ -55,27 +55,14 @@ $base-font: 12px $font-webfont-sans;
 }
 @mixin heading-font() {
 	@include text-rendering-legibility;
+	@include font-smoothing;
 	font-family: $large-font-family;
-	// font-size: 240%; font-weight: 300;
-	font-size: 24px; font-weight: 600;
+	font-size: 24px;
+	font-weight: 600;
 	font-style: normal;
 	letter-spacing: -1px;
 }
-// Typography
-@mixin heading-text() {
-	@include font-smoothing;
-	@include heading-font;
-	line-height: 1;
-	// line-height: 1.07;
-}
-@mixin heading-block() {
-	@include font-smoothing;
-	@include heading-font;
-	line-height: 3rem;
-	transform: translateX(-2px);
-}
 @mixin small-caps() {
-	// @include font-smoothing;
 	font-size: 85%;
 	font-weight: 600;
 	line-height: 1.5rem;

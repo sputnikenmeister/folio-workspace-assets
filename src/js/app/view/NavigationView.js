@@ -16,8 +16,8 @@ var types = require( "../model/collection/TypeList" );
 var FilterableListView = require("./component/FilterableListView");
 /** @type {module:app/view/component/GroupingListView} */
 var GroupingListView = require( "./component/GroupingListView" );
-/** @type {module:app/control/Presenter} */
-var presenter = require("../control/Presenter");
+/** @type {module:app/control/Controller} */
+var controller = require("../control/Controller");
 
 /**
  * @constructor
@@ -53,8 +53,8 @@ module.exports = Backbone.View.extend({
 			groupings: { collection: types, key: "tIds" },
 		});
 
-		presenter.listenTo(this.bundleListView, "view:select:one", presenter.selectBundle);
-		presenter.listenTo(this.bundleListView, "view:select:none", presenter.deselectBundle);
+		controller.listenTo(this.bundleListView, "view:select:one", controller.selectBundle);
+		controller.listenTo(this.bundleListView, "view:select:none", controller.deselectBundle);
 
 		this.listenTo(bundles, "select:one select:none", this.render);
 	},

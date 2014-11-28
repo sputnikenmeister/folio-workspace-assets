@@ -1,13 +1,12 @@
 .sc {
 	@include small-caps;
-	@include translateY(1px);
+	transform: translateY(1px);
 }
 
 /* ---------------------- *
  * View inner elements
  * ---------------------- */
 #bundle-detail {
-	// color: lighten($color, 15%);
 	.name {
 		display: none;
 	}
@@ -15,24 +14,24 @@
 		display: none;
 	}
 	.description {
-	// 	overflow: hidden;
-	// 	text-overflow: ellipsis;
-	// 	height: 100%;
+		p {
+			@include text-rendering-legibility;
+			@include font-smoothing;
+			font-family: $large-font-family;
+			font-size: 2rem;
+			font-weight: 300;
+			// font-style: italic;
+			letter-spacing: -1px;
+			line-height: 2rem;
+		}
 	}
 }
 
 #image-detail.item-detail {
 	.description {
-	}
-	p {
-		margin-bottom: 0;
-	}
-}
-
-#header {
-	@at-root #site-name {
-		@include heading-block;
-		// @include col-full;
+		p {
+			margin-bottom: 0;
+		}
 	}
 }
 

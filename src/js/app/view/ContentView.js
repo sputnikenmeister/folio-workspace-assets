@@ -18,8 +18,8 @@ var CollectionStack = require("./component/CollectionStack");
 var bundles = require("../model/collection/BundleList");
 /** @type {module:app/model/collection/ImageList} */
 var images = require("../model/collection/ImageList");
-/** @type {module:app/control/Presenter} */
-var presenter = require("../control/Presenter");
+/** @type {module:app/control/Controller} */
+var controller = require("../control/Controller");
 
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
@@ -52,15 +52,15 @@ var ContentView = Backbone.View.extend({
 
 	createChildren: function() {
 		// carrousel
-		this.imageCarousel = new Carousel({ id: "bundle-images", collection: images});
-		presenter.listenTo(this.imageCarousel, "view:select:one", presenter.selectImage);
+		this.imageCarousel = new Carousel({id: "bundle-images", collection: images});
+		controller.listenTo(this.imageCarousel, "view:select:one", controller.selectImage);
 		// dot nav
-		this.imagePager= new SelectableListView({id: "images-pager",collection: images});
+		this.imagePager = new SelectableListView({id: "images-pager", collection: images});
 		this.imagePager.$el.addClass("dots-fontello");
-		presenter.listenTo(this.imagePager, "view:select:one", presenter.selectImage);
+		controller.listenTo(this.imagePager, "view:select:one", controller.selectImage);
 		// selected bundle/image description
-		this.bundleDetail = new CollectionStack({id: "bundle-detail",template: bundleDescTemplate,collection: bundles});
-		this.imageDetail = new CollectionStack({id: "image-detail",	template: imageDescTemplate,collection: images});
+		this.bundleDetail = new CollectionStack({id: "bundle-detail", template: bundleDescTemplate, collection: bundles});
+		this.imageDetail = new CollectionStack({id: "image-detail",	template: imageDescTemplate, collection: images});
 
 		var children = document.createDocumentFragment();
 		children.appendChild(this.bundleDetail.render().el);
@@ -83,8 +83,8 @@ var ContentView = Backbone.View.extend({
 	},
 
 	removeChildren: function() {
-		presenter.stopListening(this.imageCarousel);
-		presenter.stopListening(this.imagePager);
+		controller.stopListening(this.imageCarousel);
+		controller.stopListening(this.imagePager);
 
 		this.bundleDetail.remove();
 		this.imageDetail.remove();

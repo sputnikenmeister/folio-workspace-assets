@@ -1,6 +1,5 @@
 .list.filterable {
 	position: relative;
-
 	.list-item {
 		display: block;
 		// white-space: nowrap;
@@ -33,12 +32,10 @@
 }
 
 #bundle-list {
-	padding-top: 0.25rem;
-	min-height: 3rem;
-
 	.list-item {
-		@include heading-text;
-		@include translateX(-2px);
+		@include heading-font;
+		line-height: 1em;
+		transform: translateX(-1px);
 		width: 100%;
 		.completed {
 			display: none;
@@ -47,7 +44,6 @@
 }
 
 #keyword-list {
-	padding-top: 0.75rem;
 	.list-item {
 		// width: 62%;
 		margin-left: calc(38% + #{$gutter/2});

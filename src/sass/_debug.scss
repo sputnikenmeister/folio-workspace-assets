@@ -18,27 +18,30 @@ $thistle: 			hsla(300, 24%, 80%, 1);
 $salmon: 			hsla(6, 93%, 71%, 1);
 
 .debug-grid {
-	#container {
-		background-image: image-url("debug-background.svg");
-		background-position: calc(50% + #{($page-width-large - $page-width)/2}) top;
-		background-repeat: no-repeat;
-		@media only screen and (min-width: $breakpoint-large) {
-			background-position: 50% top;
-		}
-	}
+	// & {
+	// 	background-image: image-url("debug-background.svg");
+	// 	background-position: calc(50% + #{($page-width-large - $page-width)/2}) top;
+	// 	background-repeat: no-repeat;
+	// 	@media only screen and (min-width: $breakpoint-large) {
+	// 		background-position: 50% top;
+	// 	}
+	// }
 	#header, #footer,
 	#container-footer {
+		// background-color: transparentize($deepskyblue, 0.8);
 		border-left: 1px dashed $deepskyblue;
 		border-right: 1px dashed $deepskyblue;
 	}
 	#navigation {
+		// background-color: transparentize($salmon, 0.8);
 		border-left: 1px dashed $salmon;
 		border-right: 1px dashed $salmon;
 		#keyword-list, #bundle-list {
 			outline: 1px dashed $lightcoral;
-			.list-item {
-			}
 		}
+	}
+	#site-name, .list-item {
+		// background-color: transparentize($darkseagreen, 0.6);
 	}
 	#content {
 		.item-detail {
@@ -62,7 +65,7 @@ $salmon: 			hsla(6, 93%, 71%, 1);
 	color: hsl(245, 2%, 40%);
 	background-color: hsl(60, 4%, 5%);
 	line-height: 1em;
-	padding: 0.5em 0.75em;
+	padding: 0.5em 0;
 	@include small-caps();
 	@include font-smoothing();
 
@@ -81,11 +84,9 @@ $salmon: 			hsla(6, 93%, 71%, 1);
 	}
 	dt {
 		font-weight: normal;
-		// font-style: italic;
 	}
 
 	// flex-box stuff
-
 	&, #tools, #bundle-pager {
 		display: -webkit-flex;
 		-webkit-flex-direction: row;
