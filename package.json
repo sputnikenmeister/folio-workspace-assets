@@ -1,0 +1,31 @@
+{
+  "name": "folio-sym-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "fontello-cli": "^0.3.0",
+    "grunt": "~0.4.5",
+    "grunt-autoprefixer": "~1.0.1",
+    "grunt-browserify": "^3.1.0",
+    "grunt-browserify-bower": "^0.1.4",
+    "grunt-contrib-compass": "~1.0.1",
+    "grunt-contrib-jshint": "~0.10.0",
+    "grunt-contrib-uglify": "^0.6.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-exorcise": "^0.2.0",
+    "grunt-fontello": "^0.1.3",
+    "grunt-modernizr": "^0.6.0",
+    "node-underscorify": "0.0.12"
+  },
+  "dependencies": {
+    "backbone": "^1.0.0 <1.2.0",
+    "backbone.babysitter": "^0.1.5",
+    "backbone.cycle": "^1.0.8",
+    "backbone.select": "^1.2.7",
+    "hammerjs": "^2.0.4",
+    "jquery": "^2.1.1",
+    "jquery-hammerjs": "^2.0.0",
+    "jquery.transit": "^0.9.12",
+    "underscore": "^1.5.0 <1.7.0"
+  }
+}

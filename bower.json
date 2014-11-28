@@ -1,0 +1,26 @@
+{
+  "name": "folio-sym-workspace",
+  "version": "0.1.0",
+  "authors": [
+    "Pablo Canillas <pablo@canillas.name>"
+  ],
+  "description": "Symphony CMS workspace, for personal portfolio website",
+  "moduleType": [
+    "node"
+  ],
+  "license": "none",
+  "private": true,
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "backbone.picky": "~0.2.0",
+    "jquery-color": "~2.1.2"
+  },
+  "devDependencies": {},
+  "resolutions": {
+    "hammerjs": "~2.0.4",
+    "jquery-hammerjs": "~2.0.0",
+    "jquery": "2.1.x"
+  }
+}

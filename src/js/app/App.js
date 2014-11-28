@@ -12,7 +12,6 @@ require("hammerjs");
 require("jquery-hammerjs");
 require("jquery.transit");
 require("jquery-color");
-// require("velocity-animate");
 
 /** @type {module:backbone} */
 var Backbone = require("backbone");
@@ -21,7 +20,6 @@ require("backbone.babysitter");
 require("backbone.select");
 require("backbone.cycle");
 // require("backbone.picky");
-// require("backbone-view-options");
 
 /** @type {module:app/model/collection/TypeList} */
 var typeList = require("./model/collection/TypeList");

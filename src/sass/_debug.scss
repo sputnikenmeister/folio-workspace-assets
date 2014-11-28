@@ -99,6 +99,10 @@ $salmon: 			hsla(6, 93%, 71%, 1);
 	.button {
 		-webkit-flex: 1 0 0%;
 		flex: 1 0 0%;
+		&:last-child {
+			-webkit-flex: 0 1 auto;
+    		flex: 0 1 auto;
+		}
 	}
 	dt, dd {
 		-webkit-flex: 0 1 auto;
