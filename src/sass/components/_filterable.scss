@@ -52,16 +52,17 @@
 		// width: 62%;
 		margin-left: calc(38% + #{$gutter/2});
 		line-height: 1.5rem;
+		font-size: 110%;
 	}
 	.list-group {
 		span {
 			@include small-caps;
 		}
 		// @include translateY(1px);
+		text-indent: 1px; // overflow: hidden crops some typefaces
 		width: calc(38% - #{$gutter/2});
 		line-height: 1.5rem;
 		left: 0; position: absolute;
-		// float: left; clear: left;
 	}
 }
 

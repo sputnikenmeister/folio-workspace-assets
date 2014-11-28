@@ -48,7 +48,7 @@
 		opacity: 0;
 	}
 	&.loaded img {
-		transition: opacity 0.3s 0.1s;
+		transition: opacity 0.2s 0.2s, visibility 0.2s 0.2s step-start;
 		visibility: visible;
 		opacity: 1;
 	}
@@ -61,18 +61,19 @@
 
 	// Placeholder
 	.placeholder {
-		color: $inverse-color;
-		background-color: lighten($inverse-background-color, 47%);
-		border: 1px solid lighten($inverse-background-color, 42%);
+		// color: $inverse-color;
+		// background-color: lighten($inverse-background-color, 47%);
+		border: 1px solid transparent;// lighten($inverse-background-color, 42%);
 
 		@include box-sizing(border-box);
 		padding: 1.5rem $gutter;
-		.caption {
-			@include heading-text;
-			@include translateX(-1px);
-		}
+		// .caption {
+		// 	@include heading-text;
+		// 	@include translateX(-1px);
+		// }
 		.fileinfo {
 			font-size: 1.1rem;
+			display: none;
 		}
 	}
 	&.error .placeholder {

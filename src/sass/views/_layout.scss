@@ -44,15 +44,7 @@ $footer-height: 8rem;
 }
 
 /* ---------------------- *
- * Wrapper
- * ---------------------- */
-#container {
-	width: 100%;
-	display: block;
-}
-
-/* ---------------------- *
- * Footer stuff
+ * Vertical flow
  * ---------------------- */
 // from: folio.scss @import "compass/layout";
 // @include sticky-footer( 6em, "#container", "#container-footer", "#footer" );
@@ -77,6 +69,15 @@ html, body {
 	clear: both;
 	position: relative;
 	height: $footer-height;
+}
+
+/* ---------------------- *
+ * Wrapper
+ * ---------------------- */
+
+#container {
+	width: 100%;
+	display: block;
 }
 
 /* ---------------------- *
@@ -155,71 +156,6 @@ html, body {
 }
 #images-pager {
 	text-align: right;
-}
-
-#debug {
-	position: fixed;
-	bottom: 0;
-	width: 100%;
-	color:hsl(245, 2%, 40%);
-	background-color:hsl(60, 4%, 5%);
-	line-height: 1em;
-	padding: 0.5em 0.75em;
-	a {
-		color: inherit;
-	}
-	.button, dt, dd {
-		display: block;
-		padding: 0 0.75em;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-	dd {
-		border-left: 1px solid hsl(245, 2%, 40%);
-	}
-	dt {
-		font-weight: inherit;
-		font-style: italic;
-	}
-
-	// flex-box stuff
-
-	&, #symphony-links, #bundle-pager {
-		display: -webkit-flex;
-		-webkit-flex-direction: row;
-		display: flex;
-		flex-direction: row;
-	}
-	#symphony-links, #bundle-pager {
-		-webkit-flex: 1 0 0%;
-		flex: 1 0 0%;
-	}
-	.button {
-		-webkit-flex: 1 0 0%;
-		flex: 1 0 0%;
-	}
-	dt, dd {
-		-webkit-flex: 0 1 auto;
-    	flex: 0 1 auto;
-	}
-
-	// icons
-	.button:before, .button:after {
-		font-size: 90%;
-	}
-	.preceding-button:before {
-		content: '\e807';
-		@include fontello-icon-before();
-	}
-	.following-button:after {
-		content: '\e808';
-		@include fontello-icon-after();
-	}
-	.close-button:before {
-		content: '\e806';
-		@include fontello-icon-before();
-	}
 }
 
 /*

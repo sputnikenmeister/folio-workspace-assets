@@ -1,0 +1,125 @@
+/**
+ * Debug colors
+ * @see http://dev.w3.org/csswg/css-color/#named-colors
+ * ultralight colors: lavender,seashell,aliceblue,ghostwhite
+ */
+
+/* lightblue: 		hsl(195, 53%, 79%) */
+$lightblue: 		hsla(195, 75%, 50%, 1);
+/* lightcoral: 		hsl(6, 93%, 71%) */
+$lightcoral: 		hsla(6, 93%, 71%, 1);
+/* deepbluesky: 	hsl(195, 100%, 50%) */
+$deepskyblue: 		hsla(195, 100%, 50%, 1);
+/* darkseagreen:	hsl(120, 25%, 65%) */
+$darkseagreen:		hsla(120, 25%, 65%, 1);
+/* thistle: 		hsl(300, 24%, 80%) */
+$thistle: 			hsla(300, 24%, 80%, 1);
+/* salmon: 			hsl(6, 93%, 71%) */
+$salmon: 			hsla(6, 93%, 71%, 1);
+
+.debug-grid {
+	#container {
+		background-image: image-url("debug-background.svg");
+		background-position: calc(50% + #{($page-width-large - $page-width)/2}) top;
+		background-repeat: no-repeat;
+		@media only screen and (min-width: $breakpoint-large) {
+			background-position: 50% top;
+		}
+	}
+	#header, #footer,
+	#container-footer {
+		border-left: 1px dashed $deepskyblue;
+		border-right: 1px dashed $deepskyblue;
+	}
+	#navigation {
+		border-left: 1px dashed $salmon;
+		border-right: 1px dashed $salmon;
+		#keyword-list, #bundle-list {
+			outline: 1px dashed $lightcoral;
+			.list-item {
+			}
+		}
+	}
+	#content {
+		.item-detail {
+			outline: 1px dashed $darkseagreen;
+			.description {
+				// background-color: lavender;
+			}
+		}
+		.image-list {
+			.image-item {
+				outline: 1px dashed $thistle;
+			}
+		}
+	}
+}
+
+#debug-toolbar {
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	color: hsl(245, 2%, 40%);
+	background-color: hsl(60, 4%, 5%);
+	line-height: 1em;
+	padding: 0.5em 0.75em;
+	@include small-caps();
+	@include font-smoothing();
+
+	a {
+		color: inherit;
+	}
+	.button, dt, dd {
+		display: block;
+		padding: 0 0.75em;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	dd {
+		border-left: 1px solid hsl(245, 2%, 20%);
+	}
+	dt {
+		font-weight: normal;
+		// font-style: italic;
+	}
+
+	// flex-box stuff
+
+	&, #tools, #bundle-pager {
+		display: -webkit-flex;
+		-webkit-flex-direction: row;
+		display: flex;
+		flex-direction: row;
+	}
+	#tools, #bundle-pager {
+		-webkit-flex: 1 0 0%;
+		flex: 1 0 0%;
+	}
+	.button {
+		-webkit-flex: 1 0 0%;
+		flex: 1 0 0%;
+	}
+	dt, dd {
+		-webkit-flex: 0 1 auto;
+    	flex: 0 1 auto;
+	}
+
+	// icons
+	.button:before, .button:after {
+		// font-size: 90%;
+	}
+	.preceding-button:before {
+		content: '\e807';
+		@include fontello-icon-before();
+	}
+	.following-button:after {
+		content: '\e808';
+		@include fontello-icon-after();
+	}
+	.close-button:before {
+		content: '\e806';
+		@include fontello-icon-before();
+	}
+}
+

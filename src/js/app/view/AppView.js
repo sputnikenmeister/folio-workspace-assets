@@ -48,7 +48,8 @@ module.exports = Backbone.View.extend({
 		this.contentView = new ContentView({
 			el: "#content"
 		});
-		this.initDebug();
+
+		if (window.DEBUG) this.initDebug();
 	},
 
 	onApplicationEvent: function(eventName) {
@@ -76,7 +77,11 @@ module.exports = Backbone.View.extend({
 			labelAttribute: "name"
 		});
 		// append at the bottom of <body/>
-		this.$("#debug").append(pager.render().el);
+		this.$("#debug-toolbar").append(pager.render().el);
+
+		this.$("#debug-toolbar #tools").click(function(ev) {
+			Backbone.$(document.body).toggleClass("debug-grid");
+		});
 		presenter.listenTo(pager, "view:select:one", presenter.selectBundle);
 		presenter.listenTo(pager, "view:select:none", presenter.deselectBundle);
 	},

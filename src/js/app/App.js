@@ -11,7 +11,8 @@ window.$ = window.jQuery = $;
 require("hammerjs");
 require("jquery-hammerjs");
 require("jquery.transit");
-require("velocity-animate");
+require("jquery-color");
+// require("velocity-animate");
 
 /** @type {module:backbone} */
 var Backbone = require("backbone");
@@ -39,10 +40,10 @@ $(document).ready(function ($) {
 	if (window.bootstrap) {
 		var types, keywords, bundles, images;
 
-		types = window.bootstrap["all-types"];
-		keywords = window.bootstrap["all-keywords"],
-		bundles = window.bootstrap["all-bundles"],
-		images = window.bootstrap["all-images"];
+		types = window.bootstrap["types-all"];
+		keywords = window.bootstrap["keywords-all"],
+		bundles = window.bootstrap["bundles-all"],
+		images = window.bootstrap["images-all"];
 
 		// Attach images to their bundles
 		var imagesByBundle = _.groupBy(images, "bId");

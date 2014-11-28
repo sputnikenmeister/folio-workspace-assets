@@ -6,6 +6,8 @@
 var _ = require( "underscore" );
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
+/** @type {module:jquery-color} */
+var Color = Backbone.$.Color;
 
 /** @type {module:app/model/collection/TypeList} */
 var types = require( "../model/collection/TypeList" );
@@ -157,16 +159,38 @@ _.extend(Presenter.prototype, Backbone.Events, {
 		Backbone.$("body").removeAttr("style");
 	},
 	applySelectionStyles: function() {
-	 	var css = {};
-	 	_.each(bundles.selected.get("attrs"), function(o) {
-	 		// console.log(o);
-	 		o = o.split(":");
-	 		if (o.length > 1)
-	 			css[o[0]] = invert(o[1]);
-	 	});
-	 	css = _.pick(css, this.bodyStyles);
-	 	Backbone.$("body").removeAttr("style").css(css);
-	 	console.log(css);
+		var css = {};
+
+		_.each(bundles.selected.get("attrs"), function(o) {
+			o = o.split(":");
+			if (o.length > 1)
+				css[o[0]] = invert(o[1]);
+		});
+		css = _.pick(css, this.bodyStyles);
+		Backbone.$("body").removeAttr("style").css(css);
+
+		////
+		var bgColor, fgColor;
+		var bodyCssRule = _.findWhere(document.styleSheets[0].cssRules, {selectorText: "body"});
+		var bodyBgColor = bodyCssRule.style.backgroundColor;
+		bodyBgColor = new Color(bodyBgColor).toHexString();
+
+		if (css["background-color"]) {
+			bgColor = new Color(css["background-color"]);
+		} else {
+			bgColor = new Color(bodyBgColor);
+		}
+
+		var selectorText = ".image-item .placeholder";
+		var bgPh = bgColor.lightness("-=0.05");
+		var borderPh = bgColor.lightness("-=0.08");
+
+		var cssRule = _.findWhere(document.styleSheets[0].cssRules, {selectorText: selectorText});
+		cssRule.style.backgroundColor = bgPh.toHexString();
+		cssRule.style.borderColor = borderPh.toHexString();
+
+		console.log("Color attrs: ", css);
+		console.log("Color bgColor: ", bodyBgColor, [bgColor, bgPh, borderPh]);
 	},
 
 	// fetchBundleData: function (bundle) {

@@ -7,8 +7,6 @@
 var _ = require( "underscore" );
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
-/** @type {module:velocity-animate} */
-var Velocity = require("velocity-animate");
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
 
