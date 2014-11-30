@@ -30,9 +30,14 @@ var SelectableList = Backbone.Collection.extend({
 	},*/
 
 	initialize: function (models, options) {
-		options = _.defaults({}, options, {initialSelection: "none", silentInitial: true});
+		options = _.defaults({}, options, {
+			initialSelection: "none",
+			silentInitial: true
+		});
 		this.initialSelection = options.initialSelection;
-		this.initialOptions = {silent: options.silentInitial};
+		this.initialOptions = {
+			silent: options.silentInitial
+		};
 	},
 
 	reset: function (models, options) {

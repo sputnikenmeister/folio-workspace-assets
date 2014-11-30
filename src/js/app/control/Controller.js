@@ -179,9 +179,9 @@ _.extend(Controller.prototype, Backbone.Events, {
 
 	clearSelectionStyles: function () {
 		Backbone.$("body").removeAttr("style");
-		//		Styles.setCSSProperty(".text-color-faded", "color", "");
-		//		Styles.setCSSProperty(".image-item .placeholder", "backgroundColor", "");
-		//		Styles.setCSSProperty(".image-item .placeholder", "borderColor", "");
+		//Styles.setCSSProperty(".text-color-faded", "color", "");
+		//Styles.setCSSProperty(".image-item .placeholder", "backgroundColor", "");
+		//Styles.setCSSProperty(".image-item .placeholder", "borderColor", "");
 	},
 
 	applySelectionStyles: function () {
@@ -196,7 +196,7 @@ _.extend(Controller.prototype, Backbone.Events, {
 
 		var fgColor, bgColor, cssRule;
 		// background color derivates
-		bgColor = new Color(attrs["background-color"] || Styles.getCSSProperty("body", "backgroundColor") || "hsl(47, 5%, 95%)");
+		bgColor = new Color(attrs["background-color"] || Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
 		cssRule = Styles.getCSSRule(".image-item .placeholder");
 		cssRule.style.backgroundColor = bgColor.lightness("-=0.05").toHexString();
 		cssRule.style.borderColor = bgColor.lightness("-=0.08").toHexString();
@@ -207,9 +207,10 @@ _.extend(Controller.prototype, Backbone.Events, {
 		cssRule.style.color = fgColor.lightness(fgColor.lightness() * 0.666 + bgColor.lightness() * 0.333).toHexString();
 
 		// box-shadow
-		Styles.setCSSProperty(".image-item img", "boxShadow", attrs["box-shadow"]);
+		Styles.setCSSProperty(".image-item img", "box-shadow", attrs["box-shadow"]);
+		Styles.setCSSProperty(".image-item img", "border-radius", attrs["border-radius"]);
 
-		console.log("CSS: ", bgColor.toHslaString(), fgColor.toHslaString(), attrs);
+		//console.log("CSS: ", bgColor.toHslaString(), fgColor.toHslaString(), attrs);
 	},
 });
 

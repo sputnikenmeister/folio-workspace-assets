@@ -54,78 +54,58 @@ var ContentView = Backbone.View.extend({
 	},
 
 	createChildren: function () {
-		var container, children;
-
-		// dot nav
-		this.imagePager = new SelectableListView({
-			id: "images-pager",
-			collection: images
-		});
-		this.imagePager.$el.addClass("dots-fontello text-color-faded");
-		controller.listenTo(this.imagePager, "view:select:one", controller.selectImage);
-
+		var container, buffer;
+		// create & render children outside the dom
+		buffer = document.createDocumentFragment();
+		// content-detail (layout container)
+		container = document.createElement("div");
+		container.id = "content-detail";
+		buffer.appendChild(container);
 		// selected bundle/image description
 		this.bundleDetail = new CollectionStack({
 			id: "bundle-detail",
 			template: bundleDescTemplate,
 			collection: bundles
 		});
+		container.appendChild(this.bundleDetail.render().el);
 		this.imageDetail = new CollectionStack({
 			id: "image-detail",
 			template: imageDescTemplate,
 			collection: images
 		});
-
-		// content-detail (container)
-		container = document.createElement("div");
-		container.id = "content-detail";
-		container.appendChild(this.bundleDetail.render().el);
 		container.appendChild(this.imageDetail.render().el);
-		container.appendChild(this.imagePager.render().el);
-
-		// carrousel
+		// dot nav, if there's more than one image
+		if (images.length > 1) {
+			this.imagePager = new SelectableListView({
+				id: "images-pager",
+				collection: images
+			});
+			this.imagePager.$el.addClass("dots-fontello text-color-faded");
+			controller.listenTo(this.imagePager, "view:select:one", controller.selectImage);
+			container.appendChild(this.imagePager.render().el);
+		}
+		// carousel
 		this.imageCarousel = new Carousel({
 			id: "bundle-images",
 			collection: images
 		});
 		controller.listenTo(this.imageCarousel, "view:select:one", controller.selectImage);
-
-		children = document.createDocumentFragment();
-		children.appendChild(container);
-		children.appendChild(this.imageCarousel.render().el);
-		this.el.appendChild(children);
-
-		// this.$children = Backbone.$([
-		// 		this.bundleDetail.render().el,
-		// 		this.imageDetail.render().el,
-		// 		this.imagePager.render().el,
-		// 		this.imageCarousel.render().el,
-		// 	])
-		// 	.css({opacity: 0})
-		// 	.appendTo(this.$el)
-		// 	.transit({opacity: 1}, 300)
-		// 	;
-
+		buffer.appendChild(this.imageCarousel.render().el);
+		this.el.appendChild(buffer);
 	},
 
 	removeChildren: function () {
-		controller.stopListening(this.imageCarousel);
-		controller.stopListening(this.imagePager);
-
-		this.bundleDetail.remove();
+		if (this.imagePager) {
+			controller.stopListening(this.imagePager);
+			this.imagePager.remove();
+		}
 		this.imageDetail.remove();
-		this.imagePager.remove();
+		this.bundleDetail.remove();
+
+		controller.stopListening(this.imageCarousel);
 		this.imageCarousel.remove();
 
 		this.$el.empty(); // removes div#content-detail
-
-		// this.$children
-		// 	.clearQueue()
-		// 	.transit({opacity: 0}, 300)
-		// 	.promise().always(function($children) {
-		// 		$children.css({display: "none"});
-		// 	})
-		// 	;
 	},
 
 });

@@ -3,6 +3,9 @@
  * @module app/helper/Styles
  */
 
+/** @type {module:jquery} */
+var jQuery = require("jquery");
+
 /** @type {module:underscore} */
 var _ = require("underscore");
 
@@ -10,6 +13,14 @@ var _rules = {};
 var _aliases = {};
 var _initialValues = {};
 
+var refreshCSSRule = function(selector) {
+	if (!_.isEmpty(selector)) {
+		_aliases.hasOwnProperty(selector) && (selector = _aliases[selector]);
+		_rules[selector] = _.findWhere(document.styleSheets[0].cssRules, {
+			selectorText: selector
+		});
+	}
+};
 /**
  * @param [selector]
  */
@@ -31,17 +42,18 @@ var getCSSRule = function (selector) {
  */
 var getCSSProperty = function (selector, propName) {
 	try {
-		return getCSSRule(selector).styles[propName];
+		return getCSSRule(selector).style[jQuery.camelCase(propName)];
 	} catch (e) {
 		return "";
 	}
 };
 
 var setCSSProperty = function (selector, propName, value) {
-	var key = selector + "$$" + propName;
-	var rule = getCSSRule(selector);
-	_initialValues.hasOwnProperty(key) || (_initialValues[key] = rule.style[propName]);
-	rule.style[propName] = _.isEmpty(value) ? _initialValues[key] : value;
+	var name = jQuery.camelCase(propName),
+		key = selector + "$$" + propName,
+		rule = getCSSRule(selector);
+	_initialValues.hasOwnProperty(key) || (_initialValues[key] = rule.style[name]);
+	rule.style[name] = _.isEmpty(value) ? _initialValues[key] : value;
 };
 
 /**
@@ -52,4 +64,5 @@ module.exports = {
 	getCSSRule: getCSSRule,
 	getCSSProperty: getCSSProperty,
 	setCSSProperty: setCSSProperty,
+	refreshCSSRule: refreshCSSRule,
 };

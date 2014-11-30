@@ -3,14 +3,14 @@
  */
 
 /** @type {module:underscore} */
-var _ = require( "underscore" );
+var _ = require("underscore");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
 
 /** @type {module:app/view/render/ImageRenderer} */
-var ImageRenderer = require( "./render/ImageRenderer" );
+var ImageRenderer = require("./render/ImageRenderer");
 /** @type {module:app/helper/DeferredRenderView} */
 var DeferredRenderView = require("../helper/DeferredRenderView");
 
@@ -18,8 +18,8 @@ var DeferredRenderView = require("../helper/DeferredRenderView");
  * @constructor
  * @type {module:app/view/Carousel}
  */
-module.exports  = DeferredRenderView.extend({
-// module.exports  = Backbone.View.extend({
+//module.exports  = Backbone.View.extend({
+module.exports = DeferredRenderView.extend({
 
 	/** @override */
 	tagName: "div",
@@ -32,14 +32,16 @@ module.exports  = DeferredRenderView.extend({
 	/** @type {int} */
 	direction: Hammer.DIRECTION_HORIZONTAL,
 
+	/** @override */
 	events: {
-		"panstart" : "onPanMove",
-		"panmove" : "onPanMove",
-		"panend" : "onPanEnd",
-		"pancancel" : "onPanCancel"
+		"panstart": "onPanMove",
+		"panmove": "onPanMove",
+		"panend": "onPanEnd",
+		"pancancel": "onPanCancel"
 	},
 
-	initialize: function(options) {
+	/** @override */
+	initialize: function (options) {
 		if (options.direction === Hammer.DIRECTION_VERTICAL)
 			this.direction = Hammer.DIRECTION_VERTICAL;
 
@@ -57,7 +59,7 @@ module.exports  = DeferredRenderView.extend({
 		// this.hammer.on("panstart panmove panend pancancel", function(ev) { console.log(ev.type); });
 	},
 
-	remove: function() {
+	remove: function () {
 		Backbone.View.prototype.remove.apply(this, arguments);
 		Backbone.$(window).off("orientationchange resize", this.onResize);
 	},
@@ -73,7 +75,7 @@ module.exports  = DeferredRenderView.extend({
 	},
 
 	/** @param {Object} ev */
-	onPanMove: function(ev) {
+	onPanMove: function (ev) {
 		var delta = this.getDirProp(ev.gesture.deltaX, ev.gesture.deltaY);
 		// remove threshold to prevent jump
 		delta += (delta < 0) ? this.panThreshold : -this.panThreshold;
@@ -81,23 +83,26 @@ module.exports  = DeferredRenderView.extend({
 		if (this.isOutOfBounds(delta)) {
 			delta *= 0.2;
 		}
-		this.scrollBy(delta, true);
+		this.scrollByNow(delta);
+		//this.scrollBy(delta, true);
 	},
 
 	/** @param {Object} ev */
-	onPanEnd: function(ev) {
+	onPanEnd: function (ev) {
 		var delta = this.getDirProp(ev.gesture.deltaX, ev.gesture.deltaY);
 		// If beyond select threshold, trigger selection
 		if (Math.abs(delta) > this.getSelectThreshold() && !this.isOutOfBounds(delta)) {
-			this.trigger("view:select:one", (delta < 0)?
-				this.collection.nextNoLoop(): this.collection.prevNoLoop(), {source:this});
+			this.trigger("view:select:one", (delta < 0) ?
+				this.collection.nextNoLoop() : this.collection.prevNoLoop(), {
+					source: this
+				});
 		} else {
 			this.scrollToSelection(false);
 		}
 	},
 
 	/** @param {Object} ev */
-	onPanCancel: function(ev) {
+	onPanCancel: function (ev) {
 		this.scrollToSelection(false);
 	},
 
@@ -106,13 +111,13 @@ module.exports  = DeferredRenderView.extend({
 	 * --------------------------- */
 
 	/* Model event handlers */
-	onCollectionReset: function() {
-		console.log("Carousel.onCollectionReset");
+	onCollectionReset: function () {
+		//console.log("Carousel.onCollectionReset");
 		this.render();
 	},
 
 	/** @private */
-	onSelectOne: function(image) {
+	onSelectOne: function (image) {
 		this.scrollToSelection(false);
 	},
 
@@ -120,8 +125,8 @@ module.exports  = DeferredRenderView.extend({
 	 * Render
 	 * --------------------------- */
 
-	render: function() {
-		console.log("Carousel.render");
+	render: function () {
+		//console.log("Carousel.render");
 		this.renderChildren();
 		this.scrollToSelection(true);
 		return this;
@@ -129,37 +134,29 @@ module.exports  = DeferredRenderView.extend({
 
 	/** @override */
 	deferredRender: function (timestamp) {
-		// console.log("Carousel.render: " + (this.skipAnimation?"deferred":"animated"));
-		// if (this.skipAnimation) {
-		// 	this.$el.removeClass("animate");
-		// } else {
-		// 	this.$el.addClass("animate");
-		// }
-
 		this.validateRender("renderChildren");
 		this.validateRender("scrollBy");
-
-		this.animationRequests.length = 0;
+		//this.animationRequests.length = 0;
 		this.skipAnimation = false;
 	},
 
-	animationRequests: [],
+	//animationRequests: [],
 
 	/* --------------------------- *
 	 * Child create
 	 * --------------------------- */
 
-	renderChildren: function() {
-		this.requestRender("renderChildren", _.bind(this.renderChildren_immediate, this));
+	renderChildren: function () {
+		this.requestRender("renderChildren", _.bind(this._renderChildren, this));
 	},
-	renderChildren_immediate: function() {
-		console.log("Carousel.children: " + (this.collection.length || "empty"));
+	_renderChildren: function () {
+		//console.log("Carousel.children: " + (this.collection.length || "empty"));
 		var childBuffer, child, crossSize = 0;
 
 		this.removeChildren();
 		if (this.collection.length) {
 			childBuffer = document.createDocumentFragment();
-			this.collection.each(function(model, index) {
+			this.collection.each(function (model, index) {
 				child = this.createChildView(model, index);
 				childBuffer.appendChild(child.render().el);
 				// Get the largest child cross size
@@ -176,55 +173,71 @@ module.exports  = DeferredRenderView.extend({
 	 * Scroll/layout
 	 * --------------------------- */
 
+
 	scrollToSelection: function (skipAnimation) {
 		this.scrollBy(0, skipAnimation);
 	},
 
-	scrollBy: function(delta, skipAnimation) {
-		this.animationRequests.push(skipAnimation? "immediate" : "animated");
-
+	scrollBy: function (delta, skipAnimation) {
+		//this.animationRequests.push(skipAnimation ? "immediate" : "animated");
 		this.skipAnimation = this.skipAnimation || skipAnimation;
-		this.requestRender("scrollBy", _.bind(this.scrollBy_immediate, this, delta, this.getScrollIndex()));
+		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta, this.getScrollIndex()));
 
 	},
-	scrollBy_immediate: function(delta, scrollIndex) {
-		console.log("Carousel.scrollBy", this.skipAnimation? "skipping" : "animating", this.animationRequests.concat());
-		var pos, size;
 
+	scrollByNow: function (delta) {
+		//if (this.getContainerSize() < 1) { console.warn("Carousel container size is >0", this.getContainerSize()); }
+		this._scrollBy(delta, this.getScrollIndex(), true);
+	},
+
+	_scrollBy: function (delta, scrollIndex, skipAnimation) {
+		//console.log("Carousel.scrollBy", this.skipAnimation ? "skipping" : "animating", this.animationRequests.concat());
+		var pos, size;
 		delta = delta || 0; // non null check
 		size = this.getContainerSize();
-		scrollIndex = (scrollIndex || this.getScrollIndex());
-
-		this.collection.each(function(model, index) {
+		scrollIndex = scrollIndex || this.getScrollIndex();
+		skipAnimation = _.isBoolean(skipAnimation) || this.skipAnimation;
+		// note: looping through the models, what if views have not been created yet?
+		this.collection.each(function (model, index) {
 			pos = (size * (index - scrollIndex)) + delta;
-			this.scrollChildTo(this.children.findByModel(model), pos);
+			this._scrollChildTo(this.children.findByModel(model), pos, skipAnimation);
 		}, this);
 	},
 
-	scrollChildTo: function (view, pos) {
-		var translate = (this.direction & Hammer.DIRECTION_HORIZONTAL)?
+	_scrollChildTo: function (view, pos, skipAnimation) {
+		var translate = (this.direction & Hammer.DIRECTION_HORIZONTAL) ?
 			"translate3d(" + pos + "px,0,0)" : "translate3d(0," + pos + "px,0)";
-		if (this.skipAnimation) {
-			view.$el.css({transform: translate});
+		if (skipAnimation) {
+			//view.$el.css({ transform: translate });
+			this.setCSSTransform(view.el, translate);
 		} else {
-			view.$el.transition({transform: translate}, 400);
+			view.$el.transit({
+				transform: translate
+			}, 400);
 		}
 	},
 
+	setCSSTransform: function (el, transform) {
+		// faster than jquery?
+		el.style.transform = transform;
+		el.style.mozTransform = transform;
+		el.style.webkitTransform = transform;
+	},
 
-	getScrollTransformAt: function(pos) {
-		var	size = this.getContainerSize(),
-			beforeGap = 0, afterGap = 0, val = 0;
-
+	getScrollTransformAt: function (pos) {
+		var size = this.getContainerSize(),
+			beforeGap = 0,
+			afterGap = 0,
+			val = 0;
 		if (beforeGap > 0 && 0 > pos) {
 			if (pos > (-size)) {
-				val = beforeGap/size * pos;
+				val = beforeGap / size * pos;
 			} else {
 				val = -beforeGap;
 			}
 		} else if (afterGap > 0 && 0 < pos) {
 			if (pos < size) {
-				val = afterGap/size * pos;
+				val = afterGap / size * pos;
 			} else {
 				val = afterGap;
 			}
@@ -240,13 +253,13 @@ module.exports  = DeferredRenderView.extend({
 		return (this.direction & Hammer.DIRECTION_HORIZONTAL) ? hProp : vProp;
 	},
 
-	isOutOfBounds: function(delta) {
+	isOutOfBounds: function (delta) {
 		var index = this.getScrollIndex();
 		return (index == 0 && delta > 0) || (index == this.children.length - 1 && delta < 0);
 	},
 
 	getScrollIndex: function () {
-		return this.collection.selected? this.collection.indexOf(this.collection.selected) : 0;
+		return this.collection.selected ? this.collection.indexOf(this.collection.selected) : 0;
 	},
 
 	getContainerSize: function () {
@@ -256,15 +269,9 @@ module.exports  = DeferredRenderView.extend({
 		return this.containerSize;
 	},
 
-	getSelectThreshold: function(delta) {
+	getSelectThreshold: function (delta) {
 		return this.selectThreshold * this.getContainerSize();
 	},
-
-	// setCSSTransform: function (el, transform) {
-	// 	el.style.transform = transform;
-	// 	el.style.mozTransform = transform;
-	// 	el.style.webkitTransform = transform;
-	// },
 
 	/* --------------------------- *
 	 * Child view mgmt
@@ -273,20 +280,21 @@ module.exports  = DeferredRenderView.extend({
 	/** @type {Backbone.ChildViewContainer} */
 	children: new Backbone.ChildViewContainer(),
 
-	createChildView: function(model, index) {
-		var view = new ImageRenderer({model: model});
+	createChildView: function (model, index) {
+		var view = new ImageRenderer({
+			model: model
+		});
 		this.children.add(view);
 		return view;
 	},
 
-	removeChildren: function() {
+	removeChildren: function () {
 		this.children.each(this.removeChildView, this);
 	},
 
-	removeChildView: function(view) {
+	removeChildView: function (view) {
 		this.children.remove(view);
 		view.remove();
 		return view;
 	},
-
 });

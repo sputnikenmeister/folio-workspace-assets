@@ -90,48 +90,24 @@ html, body {
 
 #content-detail {
 	position: absolute;
-	left: 0; right: 0;
+	left: 0; right: 0; top: 1.5rem;
 }
 
 #bundle-detail {
 	overflow: hidden;
-//	padding: 1.25rem $page-margin-right 1.25rem $page-margin-left;
-//
 	display: none;
-//	// margin: 0 auto;
-//	// width: #{$page-width - $page-margin*2};
-//	// height: 6rem;
-//	// @include box-sizing(border-box);
 	@media only screen and (min-width: $breakpoint-large) {
 		display: block;
-//		position: relative;
 		width: #{$page-width-large - $page-width - $gutter};
-//		right: calc(50% - #{$page-width-large/2});
-//		max-height: calc(100% - 2.5rem);
-//		top: 0;
-		//---
 		margin-left: auto;
 	}
 }
 
 #image-detail,
 #images-pager {
-//	box-sizing: border-box;
-////	@include box-sizing(border-box);
 	display: block;
 	position: absolute;
 	bottom: 100%;
-//	padding: 0 $page-margin-right 0 $page-margin-left;
-//	width: $page-width;
-//	left: calc(50% - #{$page-width/2});
-//	@media only screen and (min-width: $breakpoint-large) {
-//		width: $page-width-large;
-//		left: calc(50% - #{$page-width-large/2});
-//		padding-right: #{$page-width-large - $page-width + $page-margin-right};
-//	}
-}
-#content-detail #image-detail,
-#content-detail #images-pager{
 	left: $page-margin-left;
 	right: $page-margin-right;
 	@media only screen and (min-width: $breakpoint-large) {
@@ -139,12 +115,13 @@ html, body {
 	}
 }
 
-
 #image-detail {
-	text-align: left;
+	bottom: calc(100% + 1.5rem);
+//	text-align: left;
 }
 #images-pager {
-	text-align: right;
+	bottom: calc(100% + 1.5rem);
+	text-align: center;
 }
 
 /*

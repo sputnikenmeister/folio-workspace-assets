@@ -26,7 +26,7 @@ DeferredRenderer.prototype = {
 			this.renderRequestId = window.requestAnimationFrame(this.getRenderCallback());
 			this.renderJobs = {};
 			// this.renderRequestId = window.setTimeout(this.getRenderCallback(), 1);
-			// this.renderRequestId = _.defer(this.getRenderCallback()); 
+			// this.renderRequestId = _.defer(this.getRenderCallback());
 		}
 		if (key) {
 			this.renderJobs[key] = value ? value : true;

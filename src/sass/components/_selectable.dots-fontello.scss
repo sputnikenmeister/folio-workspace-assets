@@ -3,10 +3,12 @@
 	.list-item {
 		display: inline-block;
 		text-align: center;
-		padding: 0 0.25rem;
-		width: 2rem; height: 1.5rem;
-		&:first-child { margin-left: -0.75rem; }
-		&:last-child { margin-right: -0.75rem; padding-right: 0; }
+		height: 1.5rem;
+		width: 1.5rem;
+//		padding: 0 0.25rem;
+		margin-right: 0.25rem;
+		&:first-child { margin-left: -0.65rem; }
+		&:last-child { margin-right: -0.65rem; }
 
 		position: relative;
 		a {

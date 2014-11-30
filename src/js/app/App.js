@@ -1,12 +1,6 @@
-/*jslint nomen: true, vars: true, undef: true, eqeq: true, bitwise: true */
-/*global require, module*/
-
 /**
  * @module app/App
  */
-
-/** @type {module:underscore} */
-var _ = require("underscore");
 
 /** @type {module:jquery} */
 var $ = require("jquery");
@@ -16,26 +10,28 @@ require("jquery-hammerjs");
 require("jquery.transit");
 require("jquery-color");
 
+/** @type {module:underscore} */
+var _ = require("underscore");
+
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 Backbone.$ = $;
 require("backbone.babysitter");
 require("backbone.select");
 require("backbone.cycle");
-// require("backbone.picky");
-
-/** @type {module:app/model/collection/TypeList} */
-var typeList = require("./model/collection/TypeList");
-/** @type {module:app/model/collection/KeywordList} */
-var keywordList = require("./model/collection/KeywordList");
-/** @type {module:app/model/collection/BundleList} */
-var bundleList = require("./model/collection/BundleList");
-
-/** @type {module:app/view/AppView} */
-var AppView = require("./view/AppView");
 
 $(document).ready(function ($) {
 	"use strict";
+
+	/** @type {module:app/model/collection/TypeList} */
+	var typeList = require("./model/collection/TypeList");
+	/** @type {module:app/model/collection/KeywordList} */
+	var keywordList = require("./model/collection/KeywordList");
+	/** @type {module:app/model/collection/BundleList} */
+	var bundleList = require("./model/collection/BundleList");
+
+	/** @type {module:app/view/AppView} */
+	var AppView = require("./view/AppView");
 
 	// Fix-ups to bootstrap data.
 	if (window.bootstrap) {

@@ -14,6 +14,7 @@ var viewTemplate = require("../template/CollectionStack.tpl");
  * @type {module:app/component/CollectionStack}
  */
 module.exports = Backbone.View.extend({
+
 	/** @override */
 	tagName: "div",
 	/** @override */
