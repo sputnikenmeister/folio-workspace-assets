@@ -1,3 +1,6 @@
+/*jslint nomen: true, vars: true, undef: true, eqeq: true, bitwise: true */
+/*global require, module*/
+
 /**
  * @module app/App
  */
@@ -39,8 +42,8 @@ $(document).ready(function ($) {
 		var types, keywords, bundles, images;
 
 		types = window.bootstrap["types-all"];
-		keywords = window.bootstrap["keywords-all"],
-		bundles = window.bootstrap["bundles-all"],
+		keywords = window.bootstrap["keywords-all"];
+		bundles = window.bootstrap["bundles-all"];
 		images = window.bootstrap["images-all"];
 
 		// Attach images to their bundles
@@ -52,7 +55,7 @@ $(document).ready(function ($) {
 			bo.tIds = [];
 			bo.images = imagesByBundle[bo.id];
 			_.each(keywords, function (ko, ki, ka) {
-				if (bi === 0) ko.bIds = [];
+				if (bi === 0) { ko.bIds = []; }
 				if (_.contains(bo.kIds, ko.id)) {
 					ko.bIds.push(bo.id);
 					if (!_.contains(bo.tIds, ko.tId)) {
@@ -65,7 +68,6 @@ $(document).ready(function ($) {
 		typeList.reset(types);
 		keywordList.reset(keywords);
 		bundleList.reset(bundles);
-
 		/* jshint -W051 */
 		delete window.bootstrap;
 		/* jshint +W051 */

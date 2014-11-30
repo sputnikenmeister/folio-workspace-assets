@@ -1,6 +1,5 @@
 /**
  * @module app/view/Carousel
- * @requires module:backbone
  */
 
 /** @type {module:underscore} */

@@ -1,3 +1,6 @@
+/*jslint nomen: true, vars: true, undef: true, eqeq: true, bitwise: true, sloppy: true, white: true */
+/*global require, module*/
+
 /**
  * @module app/view/NavigationView
  */
@@ -5,7 +8,7 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
 
 /** @type {module:app/view/Carousel} */
 var Carousel = require("./Carousel");
@@ -37,35 +40,58 @@ var ContentView = Backbone.View.extend({
 		this.listenTo(Backbone, "all", this.onApplicationEvent);
 	},
 
-	onApplicationEvent: function(eventName) {
+	onApplicationEvent: function (eventName) {
 		switch (eventName) {
-			case "app:bundle:item":
-				this.createChildren();
-				break;
-			case "app:bundle:list":
-				/* falls through */
-			default:
-				this.removeChildren();
-				break;
+		case "app:bundle:item":
+			this.createChildren();
+			break;
+		case "app:bundle:list":
+			/* falls through */
+		default:
+			this.removeChildren();
+			break;
 		}
 	},
 
-	createChildren: function() {
-		// carrousel
-		this.imageCarousel = new Carousel({id: "bundle-images", collection: images});
-		controller.listenTo(this.imageCarousel, "view:select:one", controller.selectImage);
-		// dot nav
-		this.imagePager = new SelectableListView({id: "images-pager", collection: images});
-		this.imagePager.$el.addClass("dots-fontello");
-		controller.listenTo(this.imagePager, "view:select:one", controller.selectImage);
-		// selected bundle/image description
-		this.bundleDetail = new CollectionStack({id: "bundle-detail", template: bundleDescTemplate, collection: bundles});
-		this.imageDetail = new CollectionStack({id: "image-detail",	template: imageDescTemplate, collection: images});
+	createChildren: function () {
+		var container, children;
 
-		var children = document.createDocumentFragment();
-		children.appendChild(this.bundleDetail.render().el);
-		children.appendChild(this.imageDetail.render().el);
-		children.appendChild(this.imagePager.render().el);
+		// dot nav
+		this.imagePager = new SelectableListView({
+			id: "images-pager",
+			collection: images
+		});
+		this.imagePager.$el.addClass("dots-fontello text-color-faded");
+		controller.listenTo(this.imagePager, "view:select:one", controller.selectImage);
+
+		// selected bundle/image description
+		this.bundleDetail = new CollectionStack({
+			id: "bundle-detail",
+			template: bundleDescTemplate,
+			collection: bundles
+		});
+		this.imageDetail = new CollectionStack({
+			id: "image-detail",
+			template: imageDescTemplate,
+			collection: images
+		});
+
+		// content-detail (container)
+		container = document.createElement("div");
+		container.id = "content-detail";
+		container.appendChild(this.bundleDetail.render().el);
+		container.appendChild(this.imageDetail.render().el);
+		container.appendChild(this.imagePager.render().el);
+
+		// carrousel
+		this.imageCarousel = new Carousel({
+			id: "bundle-images",
+			collection: images
+		});
+		controller.listenTo(this.imageCarousel, "view:select:one", controller.selectImage);
+
+		children = document.createDocumentFragment();
+		children.appendChild(container);
 		children.appendChild(this.imageCarousel.render().el);
 		this.el.appendChild(children);
 
@@ -82,7 +108,7 @@ var ContentView = Backbone.View.extend({
 
 	},
 
-	removeChildren: function() {
+	removeChildren: function () {
 		controller.stopListening(this.imageCarousel);
 		controller.stopListening(this.imagePager);
 
@@ -90,6 +116,8 @@ var ContentView = Backbone.View.extend({
 		this.imageDetail.remove();
 		this.imagePager.remove();
 		this.imageCarousel.remove();
+
+		this.$el.empty(); // removes div#content-detail
 
 		// this.$children
 		// 	.clearQueue()

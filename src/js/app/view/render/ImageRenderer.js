@@ -17,15 +17,18 @@ var ImageItem = require( "../../model/item/ImageItem" );
 /** @type {Function} */
 var placeholderTemplate = require( "../template/ImageRenderer.Placeholder.tpl" );
 /** @type {Function} */
-//var captionTemplate = require( "../template/ImageRenderer.Caption.tpl" );
-/** @type {Function} */
-// var imageSrcTemplate = _.template(window.approot + "/image/1/<%= constraint %>/0/uploads/<%= filename %>");
 var imageSrcTemplate = _.template(window.approot + "/workspace/uploads/<%= filename %>");
-// var imageSrcTemplate = _.template("<%= approot %>/image/1/<%= constraint %>/0/uploads/<%= filename %>");
+// var imageSrcTemplate = _.template(window.approot + "/image/1/<%= constraint %>/0/uploads/<%= filename %>");
 /** @type {Function} */
 var longdescTemplate = _.template("i<%= id %>-caption");
 
-// var templateSettings = { interpolate: /\{\{(.+?)\}\}/g };
+/** @type {module:app/helper/Styles} */
+var Styles = require( "../../helper/Styles" );
+/** @type {Number} */
+function getConstraint() {
+//	return Styles.getCSSRule(".image-item img").style.width || 700;
+	return 700;
+}
 
 /**
  * @constructor
@@ -78,7 +81,7 @@ module.exports = Backbone.View.extend({
 	/** @return {this} */
 	render: function() {
 		this.$el.css({
-			height: this.getConstrainedHeight(),
+			minHeight: this.getConstrainedHeight(),
 			minWidth: this.getConstrainedWidth(),
 		});
 
@@ -95,12 +98,10 @@ module.exports = Backbone.View.extend({
 		return this;
 	},
 
-	/** @type {Number} */
-	constraint: 700,//660
 	/** @return {String} */
 	getImageSrc: function() {
 		return this.imageSrc || (this.imageSrc = imageSrcTemplate({
-			constraint: this.constraint,
+			constraint: getConstraint(),
 			filename: this.model.get("f"),
 		}));
 	},
@@ -119,14 +120,15 @@ module.exports = Backbone.View.extend({
 	constrainedWidth: NaN,
 	/** @return {Number} */
 	getConstrainedWidth: function() {
-		return this.constrainedWidth || (this.constrainedWidth = this.constraint);
+		return this.constrainedWidth || (this.constrainedWidth = getConstraint());
 	},
 
 	/** @type {Number} */
 	constrainedHeight: NaN,
 	/** @return {Number} */
 	getConstrainedHeight: function() {
-		return this.constrainedHeight || (this.constrainedHeight = Math.floor((this.constraint / this.model.get("w")) * this.model.get("h")));
+		return this.constrainedHeight || (this.constrainedHeight =
+										  Math.floor((getConstraint() / this.model.get("w")) * this.model.get("h")));
 	},
 
 	/** @return {HTMLImageElement} */

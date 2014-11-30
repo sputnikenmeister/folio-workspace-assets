@@ -8,17 +8,17 @@ module.exports = function (grunt) {
 	/* Sass: Compass (requires compass gem) */
 	grunt.loadNpmTasks("grunt-contrib-compass");
 	grunt.config("compass.options", {
-		sassDir			: "src/sass",
-		cssDir			: "css",
-		imagesDir		: "images",
-		fontsDir		: "fonts",
-		javascriptsDir	: "js",
-		httpPath		: "/workspace/assets",
+		sassDir: "src/sass",
+		cssDir: "css",
+		imagesDir: "images",
+		fontsDir: "fonts",
+		javascriptsDir: "js",
+		httpPath: "/workspace/assets",
 	});
 	grunt.config("compass.client.options", {
-		specify			: "src/sass/folio.scss",
-		sourcemap		: true,
-		outputStyle		: "compressed",
+		specify: "src/sass/folio.scss",
+		sourcemap: true,
+		outputStyle: "compressed",
 	});
 
 	/* CSS prefixes (-moz-, -webkit-, etc.) */
@@ -94,14 +94,14 @@ module.exports = function (grunt) {
 	];
 	grunt.config("browserify.vendor.options.require", vendorRequires);
 	grunt.config("browserify.vendor.options.alias", [
-		'./bower_components/jquery-color/jquery.color.js:jquery-color'
+		"./bower_components/jquery-color/jquery.color.js:jquery-color"
 	]);
 	grunt.config("browserify.vendor.options.shim", {
 		"jquery-color": {
-			// path: './bower_components/jquery-color/jquery.color.js',
-			exports: 'jquery-color',
+			// path: "./bower_components/jquery-color/jquery.color.js",
+			exports: "jquery-color",
 			depends: {
-				jquery: '$'
+				jquery: "$"
 			}
 		},
 	});
@@ -146,7 +146,7 @@ module.exports = function (grunt) {
 	});
 
 	/* Uglify */
-	grunt.loadNpmTasks('grunt-contrib-uglify');
+	grunt.loadNpmTasks("grunt-contrib-uglify");
 	grunt.config("uglify", {
 		options: {
 			mangle: false,
@@ -175,42 +175,43 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks("grunt-contrib-watch");
 	grunt.config("watch", {
 		options: {
-			livereload: false, spawn: false, forever: true
+			spawn: false
 		},
 		"reload-config": {
 			files: ["gruntfile.js"],
 		},
-		"process-sources": {
-			tasks: ["jshint"],
-			files: ["src/js/**/*.js"],
-		},
-		"process-build": {
+//		"lint-scripts": {
+//			tasks: ["jshint"],
+//			files: ["src/js/**/*.js"],
+//		},
+		"build-scripts": {
 			tasks: ["exorcise:client"],
 			files: ["js/folio.js"],
 		},
-		"styles": {
+		"build-styles": {
 			tasks: ["compass:client", "autoprefixer:client"],
 			files: ["src/sass/**/*.scss"],
-		},
+		}
 	});
 
 	// DEBUG: check config result
 	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
 
 	// Other
-	grunt.registerTask("buildBower1", 	["browserifyBower:vendor", "browserify:vendor", "exorcise:vendor", "uglify:vendor"]);
-	grunt.registerTask("buildBower2", 	["browserify:vendor", "exorcise:vendor", "uglify:vendor"]);
-	grunt.registerTask("buildVendor", 	["buildBower2"]);
+	//	grunt.registerTask("buildVendor", 	["browserifyBower:vendor", "browserify:vendor", "exorcise:vendor", "uglify:vendor"]);
+	grunt.registerTask("buildVendor", ["browserify:vendor", "exorcise:vendor", "uglify:vendor"]);
 	// Simple build
-	grunt.registerTask("buildStyles", 	["compass:client", "autoprefixer:client"]);
-	grunt.registerTask("buildClient", 	["jshint", "browserify:client", "exorcise:client", "uglify:client"]);
-	grunt.registerTask("buildScripts", 	["buildVendor", "buildClient"]);
-	grunt.registerTask("build", 		["buildStyles", "buildScripts"]);
+	grunt.registerTask("buildStyles", ["compass:client", "autoprefixer:client"]);
+	grunt.registerTask("buildClient", ["browserify:client", "exorcise:client", "uglify:client"]);
+	grunt.registerTask("buildScripts", ["buildVendor", "buildClient"]);//"jshint", 
+	grunt.registerTask("build", ["buildStyles", "buildScripts"]);
 	// Watch build
-	grunt.registerTask("buildWatch", 	["browserify:watchable", "watch"]);
-	grunt.registerTask("sublimeWatch", 	["buildWatch"]);
+	grunt.registerTask("watchAll", ["browserify:watchable", "watch"]);
+//	grunt.registerTask("watchEditor", ["browserify:watchable", "watch:build-scripts", "watch:build-styles", ]);
+	grunt.registerTask("sublimeBuild", ["watchAll"]);
+	grunt.registerTask("watchEditor", ["watchAll"]);
 	// Default task
-	grunt.registerTask("default", 		["build"]);
+	grunt.registerTask("default", ["build"]);
 
 
 };

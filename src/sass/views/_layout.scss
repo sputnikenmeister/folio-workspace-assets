@@ -1,58 +1,14 @@
-/*
- * Layout
- */
-$breakpoint-large: 1024px;
-$page-width: 740px;
-$page-width-large: 960px;
-$page-margin: 20px;
-$gutter: 20px;
-$footer-height: 8rem;
-
-@mixin col-full-margins() {
-	margin-left: $page-margin;
-	margin-right: $page-margin;
-}
-@mixin full-width() {
-	@include col-full-margins;
-}
-@mixin col-full() {
-	margin-left: $page-margin;
-	margin-right: $page-margin;
-	width: calc(100% - #{$page-margin * 2});
-}
-@mixin col-left-rel() {
-	// margin-right: calc(38% + #{$gutter/2});
-	// margin-left: $page-margin; width: calc(62% - #{$page-margin + $gutter/2});
-	margin-left: 0;
-	width: calc(62% - #{$gutter/2});
-}
-@mixin col-right-rel() {
-	float: right;
-	// margin-right: $page-margin; width: calc(38% - #{$page-margin + $gutter/2});
-	margin-right: 0;
-	width: calc(38% - #{$gutter/2});
-}
-@mixin col-left-abs() {
-	position: absolute;
-	// left: $page-margin; width: calc(62% - #{$page-margin + $gutter/2});
-	left: 0; width: calc(62% - #{$gutter/2});
-}
-@mixin col-right-abs() {
-	position: absolute;
-	// right: $page-margin; width: calc(38% - #{$page-margin + $gutter/2});
-	right: 0; width: calc(38% - #{$gutter/2});
-}
-
 /* ---------------------- *
  * Vertical flow
  * ---------------------- */
 // from: folio.scss @import "compass/layout";
 // @include sticky-footer( 6em, "#container", "#container-footer", "#footer" );
-/* compass-core-1.0.1/stylesheets/compass/layout/_sticky-footer.scss */
+// compass-core-1.0.1/stylesheets/compass/layout/_sticky-footer.scss
+$footer-height: 8rem;
+
 html, body {
 	height: 100%;
 }
-
 #container {
 	clear: both;
 	min-height: 100%;
@@ -60,11 +16,9 @@ html, body {
 	height: 100%;
 	margin-bottom: -$footer-height;
 }
-
 #container #container-footer {
 	height: $footer-height;
 }
-
 #footer {
 	clear: both;
 	position: relative;
@@ -86,61 +40,106 @@ html, body {
 
 #header,
 #navigation,
+#content-detail,
 #container-footer,
 #footer {
 	margin: 0 auto;
-	padding-left: $page-margin;
-	padding-right: $page-margin;
-	width: #{$page-width - $page-margin*2};
+	padding-left: $page-margin-left;
+	padding-right: $page-margin-right;
+	width: #{$page-width - ($page-margin-right + $page-margin-left)};
 	@media only screen and (min-width: $breakpoint-large) {
-		width: #{$page-width-large - $page-margin*2};
+		width: #{$page-width-large - ($page-margin-right + $page-margin-left)};
 	}
 }
 
-
-
-#content.viewport {
+#content {
 	position: relative;
 }
+
+/* ---------------------- *
+ * Carousel
+ * ---------------------- */
 
 #bundle-images {
 	position: relative;
 }
+/* carousel layout */
+.image-list {
+	overflow: hidden;
+	padding: 1.5rem 0; height: 100%;
+	margin: -1.5rem 0; width: 100%; min-width: $page-width;
+}
+.image-item {
+	position: absolute;
+}
+
+.image-item {
+	width: $page-width;
+	left: calc(50% - #{$page-width/2});
+	height: calc(100% - 3rem);
+	@media only screen and (min-width: $breakpoint-large) {
+		width: $page-width-large;
+		left: calc(50% - #{$page-width-large/2});
+	}
+}
+
+
+/* ---------------------- *
+ * Content panels
+ * ---------------------- */
+
+#content-detail {
+	position: absolute;
+	left: 0; right: 0;
+}
 
 #bundle-detail {
 	overflow: hidden;
-	padding: 1.25rem $page-margin;
-
+//	padding: 1.25rem $page-margin-right 1.25rem $page-margin-left;
+//
 	display: none;
-	// margin: 0 auto;
-	// width: #{$page-width - $page-margin*2};
-	// height: 6rem;
-	// @include box-sizing(border-box);
+//	// margin: 0 auto;
+//	// width: #{$page-width - $page-margin*2};
+//	// height: 6rem;
+//	// @include box-sizing(border-box);
 	@media only screen and (min-width: $breakpoint-large) {
 		display: block;
-		position: absolute;
-		width: #{$page-width-large - $page-width - $page-margin};
-		right: calc(50% - #{$page-width-large/2});
-		max-height: calc(100% - 2.5rem);
-		// top: 0;
+//		position: relative;
+		width: #{$page-width-large - $page-width - $gutter};
+//		right: calc(50% - #{$page-width-large/2});
+//		max-height: calc(100% - 2.5rem);
+//		top: 0;
+		//---
+		margin-left: auto;
 	}
 }
 
 #image-detail,
 #images-pager {
-	@include box-sizing(border-box);
+//	box-sizing: border-box;
+////	@include box-sizing(border-box);
 	display: block;
 	position: absolute;
 	bottom: 100%;
-	padding: 0 $page-margin;
-	width: $page-width;
-	left: calc(50% - #{$page-width/2});
+//	padding: 0 $page-margin-right 0 $page-margin-left;
+//	width: $page-width;
+//	left: calc(50% - #{$page-width/2});
+//	@media only screen and (min-width: $breakpoint-large) {
+//		width: $page-width-large;
+//		left: calc(50% - #{$page-width-large/2});
+//		padding-right: #{$page-width-large - $page-width + $page-margin-right};
+//	}
+}
+#content-detail #image-detail,
+#content-detail #images-pager{
+	left: $page-margin-left;
+	right: $page-margin-right;
 	@media only screen and (min-width: $breakpoint-large) {
-		width: $page-width-large;
-		left: calc(50% - #{$page-width-large/2});
-		padding-right: #{$page-width-large - $page-width + $page-margin};
+		padding-right: #{$page-width-large - $page-width};
 	}
 }
+
+
 #image-detail {
 	text-align: left;
 }
@@ -151,95 +150,14 @@ html, body {
 /*
  * App States
  */
-$apptx-duration: 0.35s;
-
-
-#header {
-	position: relative;
-	padding-top: 3.5rem;
-	padding-bottom: 1rem;
-}
-
-// Navigation
-#navigation {
-	position: relative;
-}
-	#navigation {
-		min-height: 9rem;
-		height: auto;
-		visibility: hidden;
-		opacity: 0;
-	}
-	.app-bundle-list #navigation {
-		height: auto;
-		visibility: visible;
-		opacity: 1;
-	}
-	.app-bundle-item #navigation {
-		height: 9rem;
-		visibility: visible;
-		opacity: 1;
-	}
-
-#site-name {
-	@include heading-font;
-	padding-top: 0.5rem;
-	line-height: 1.5rem;
-}
-#bundle-list {
-	@include col-left-rel;
-	padding-top: 0.5rem;
-	min-height: 2rem;
-}
-#keyword-list {
-	@include col-right-rel;
-	padding-top: 0.5rem;
-}
-
-#site-name {
-	position: relative;
-	display: inline-block;
-	transition: transform $apptx-duration;
-	transform: translate3d(-1px,0,0);
-}
-.app-bundle-item #site-name {
-	transform: translate3d(calc(-100% - #{$gutter}),0,0);
-}
-
-#navigation {
-	transition: transform $apptx-duration;
-}
-	.app-bundle-list #navigation {
-	}
-	.app-bundle-item #navigation {
-		transform: translate3d(0,-3.5em,0);
-	}
-
-// Content
-#content {
-	// opacity: 0;
-	// visibility: hidden;
-	max-height: 0;
-}
-.app-bundle-list #content {
-	// transition:
-		// opacity $apptx-duration ease,
-		// visibility $apptx-duration step-end,
-		// max-height $apptx-duration step-start;
-	max-height: 0;
-}
-.app-bundle-item #content {
-	// transition:
-		// opacity $apptx-duration ease,
-		// visibility $apptx-duration step-start,
-		// max-height $apptx-duration step-end;
-	// opacity: 1;
-	// visibility: visible;
-	max-height: none;
-}
-
 body {
-	transition:
-		color $apptx-duration 0.35s steps(6),
-		background-color $apptx-duration 0.35s linear;
+	color: lighten($color, 10%);
+	background-color: $background-color;
+	transition: color $duration $duration steps(6),
+				background-color $duration $duration linear;
 }
+.text-color-faded {
+	color: lighten($color, 40%);
+	transition: color $duration $duration steps(6);
+}
+

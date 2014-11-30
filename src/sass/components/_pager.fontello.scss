@@ -34,8 +34,8 @@
 // Inline pill-style
 .fontello-pill-pager {
 	/* flexbox setup */
-	display: -webkit-flex;
-	-webkit-flex-direction: row;
+//	display: -webkit-flex;
+//	-webkit-flex-direction: row;
 	display: flex;
 	flex-direction: row;
 
@@ -59,12 +59,12 @@
 	.preceding-button,
 	.following-button {
 		/* flexbox setup */
-		-webkit-flex: 1 0 0%;
+//		-webkit-flex: 1 0 0%;
     	flex: 1 0 0%;
 	}
 	.close-button {
 		/* flexbox setup */
-		-webkit-flex: 0 1 auto;
+//		-webkit-flex: 0 1 auto;
     	flex: 0 1 auto;
 	}
 	.button,

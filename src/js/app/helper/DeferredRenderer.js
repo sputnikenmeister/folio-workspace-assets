@@ -26,10 +26,10 @@ DeferredRenderer.prototype = {
 			this.renderRequestId = window.requestAnimationFrame(this.getRenderCallback());
 			this.renderJobs = {};
 			// this.renderRequestId = window.setTimeout(this.getRenderCallback(), 1);
-			// this.renderRequestId = _.defer(this.getRenderCallback());
+			// this.renderRequestId = _.defer(this.getRenderCallback()); 
 		}
 		if (key) {
-			this.renderJobs[key] = value? value : true;
+			this.renderJobs[key] = value ? value : true;
 		}
 	},
 
@@ -44,7 +44,7 @@ DeferredRenderer.prototype = {
 		this.renderRequestId = undefined;
 	},
 
-	renderNow: function(){
+	renderNow: function () {
 		if (this.renderRequestId) {
 			window.cancelAnimationFrame(this.renderRequestId);
 			// window.clearTimeout(this.renderRequestId)
@@ -53,7 +53,7 @@ DeferredRenderer.prototype = {
 	},
 
 	/** @private */
-	validateRender: function(key) {
+	validateRender: function (key) {
 		if (_.isFunction(this.renderJobs[key])) {
 			this.renderJobs[key].call();
 			this.renderJobs[key] = undefined;

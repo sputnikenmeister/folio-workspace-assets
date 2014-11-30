@@ -7,10 +7,11 @@
 @import "includes/_definitions";
 @import "includes/_icons";
 @import "includes/_base";
-@import "views/_layout";
-@import "views/_content";
 @import "components/_filterable";
 @import "components/_carousel";
 @import "components/_selectable.dots-fontello.scss";
 @import "components/_pager.fontello";
+@import "views/_layout";
+@import "views/_navigation";
+@import "views/_content";
 @import "_debug";

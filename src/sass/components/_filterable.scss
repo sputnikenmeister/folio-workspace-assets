@@ -31,37 +31,6 @@
 	}
 }
 
-#bundle-list {
-	.list-item {
-		@include heading-font;
-		line-height: 1em;
-		transform: translateX(-1px);
-		width: 100%;
-		.completed {
-			display: none;
-		}
-	}
-}
-
-#keyword-list {
-	.list-item {
-		// width: 62%;
-		margin-left: calc(38% + #{$gutter/2});
-		line-height: 1.5rem;
-		font-size: 110%;
-	}
-	.list-group {
-		span {
-			@include small-caps;
-		}
-		// @include translateY(1px);
-		text-indent: 1px; // overflow: hidden crops some typefaces
-		width: calc(38% - #{$gutter/2});
-		line-height: 1.5rem;
-		left: 0; position: absolute;
-	}
-}
-
 /*
  * Animations/Transitions
  */

@@ -1,0 +1,72 @@
+#header {
+	position: relative;
+	padding-top: 3.5rem;
+	padding-bottom: 1rem;
+}
+#site-name {
+	position: relative;
+	display: inline-block;
+	transition: transform $duration;
+	transform: translate3d(-1px,0,0);
+	@include heading-font;
+	padding-top: 0.5rem;
+	line-height: 1.5rem;
+}
+.app-bundle-item #site-name {
+	transform: translate3d(calc(-100% - #{$gutter}),0,0);
+}
+
+// Navigation
+#navigation {
+	position: relative;
+	height: auto;
+	min-height: 9rem;
+	visibility: visible; opacity: 1;
+	transition: transform $duration;
+}
+.app-initial #navigation {
+	visibility: hidden; opacity: 0;
+}
+.app-bundle-list #navigation {
+	height: auto;
+}
+.app-bundle-item #navigation {
+	transform: translate3d(0, -3.75em, 0);
+	height: 9rem;
+}
+
+/*
+ * App States
+ */
+#bundle-list {
+	@include col-left-rel;
+	padding-top: 0.75rem;
+	min-height: 2rem;
+	.list-item {
+		width: 100%;
+		line-height: 1em;
+		@include heading-font;
+		transform: translateX(-1px);
+		.completed {
+			display: none;
+		}
+	}
+}
+
+#keyword-list {
+	@include col-right-rel;
+	padding-top: 0.75rem;
+	.list-item {
+		margin-left: calc(38% + #{$gutter/2});
+		font-size: 1.1rem;
+		line-height: 1.5rem;
+	}
+	.list-group {
+		width: calc(38% - #{$gutter/2});
+		position: absolute;
+		left: 1px;
+		span {
+			@include small-caps;
+		}
+	}
+}

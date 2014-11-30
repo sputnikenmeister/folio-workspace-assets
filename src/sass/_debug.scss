@@ -18,14 +18,12 @@ $thistle: 			hsla(300, 24%, 80%, 1);
 $salmon: 			hsla(6, 93%, 71%, 1);
 
 .debug-grid {
-	// & {
-	// 	background-image: image-url("debug-background.svg");
-	// 	background-position: calc(50% + #{($page-width-large - $page-width)/2}) top;
-	// 	background-repeat: no-repeat;
-	// 	@media only screen and (min-width: $breakpoint-large) {
-	// 		background-position: 50% top;
-	// 	}
-	// }
+	background-image: image-url("debug-background.svg");
+	background-position: calc(50% + #{($page-width-large - $page-width)/2 + ($page-margin-left - $page-margin-right)}) top;
+	background-repeat: no-repeat;
+	@media only screen and (min-width: $breakpoint-large) {
+		background-position: calc(50% + #{$page-margin-left - $page-margin-right}) top;
+	}
 	#header, #footer,
 	#container-footer {
 		// background-color: transparentize($deepskyblue, 0.8);
@@ -78,6 +76,8 @@ $salmon: 			hsla(6, 93%, 71%, 1);
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		cursor: pointer;
+		user-select: none;
 	}
 	dd {
 		border-left: 1px solid hsl(245, 2%, 20%);
@@ -86,22 +86,17 @@ $salmon: 			hsla(6, 93%, 71%, 1);
 		font-weight: normal;
 	}
 
-	// flex-box stuff
+	// flex-box stuff prefixed
 	&, #tools, #bundle-pager {
-		display: -webkit-flex;
-		-webkit-flex-direction: row;
 		display: flex;
 		flex-direction: row;
 	}
 	#tools, #bundle-pager {
-		-webkit-flex: 1 0 0%;
 		flex: 1 0 0%;
 	}
 	.button {
-		-webkit-flex: 1 0 0%;
 		flex: 1 0 0%;
 		&:last-child {
-			-webkit-flex: 0 1 auto;
     		flex: 0 1 auto;
 		}
 	}
