@@ -1,11 +1,91 @@
-.sc {
-	@include font-smoothing();
-	@include small-caps();
+#content {
+	position: relative;
 }
 
 /* ---------------------- *
- * View inner elements
+ * Carousel
  * ---------------------- */
+
+#bundle-images {
+	position: relative;
+}
+/* carousel layout */
+.image-list {
+	overflow: hidden;
+	padding: 1.5rem 0; height: 100%;
+	margin: -1.5rem 0; width: 100%; min-width: $page-width;
+}
+.image-item {
+	position: absolute;
+}
+.image-item {
+	width: $page-width;
+	left: calc(50% - #{$page-width/2});
+	height: calc(100% - 3rem);
+	@media only screen and (min-width: $breakpoint-large) {
+		width: $page-width-large;
+		left: calc(50% - #{$page-width-large/2});
+	}
+}
+
+/* ---------------------- *
+ * Other content views
+ * ---------------------- */
+
+#content-detail {
+	position: absolute;
+	left: 0; right: 0; top: 0;
+}
+
+#bundle-detail {
+	overflow: hidden;
+	display: none;
+	@media only screen and (min-width: $breakpoint-large) {
+		display: block;
+		margin-top: 1.5rem;
+		width: #{$page-width-large - $page-width - $gutter};
+//		margin-left: auto;
+		float: right;
+		clear: none;
+	}
+}
+
+#image-detail,
+#images-pager {
+//	float: left;
+//	clear: none;
+	display: inline-block;
+
+//	bottom: 100%;
+//	left: $page-margin-left;
+//	right: $page-margin-right;
+//	@media only screen and (min-width: $breakpoint-large) {
+//		padding-right: #{$page-width-large - $page-width};
+//	}
+}
+
+#image-detail {
+	position: relative;
+	transform: translateY(-1.5em);
+//	bottom: calc(100% + 1.5rem);
+//	text-align: left;
+}
+#images-pager {
+	.list-item:last-child {
+//		margin-right: 1rem;
+		//margin added to last child so it doesn't take space when empty
+	}
+	transform: translateY(-1.5em);
+//	bottom: calc(100% + 1.5rem);
+//	text-align: center;
+}
+
+
+
+/* ---------------------- *
+ * Content inner elements
+ * ---------------------- */
+
 #bundle-detail {
 	.name {
 		display: none;
@@ -31,21 +111,6 @@
 	.description {
 		p {
 			margin-bottom: 0;
-		}
-	}
-}
-
-#footer {
-	// color: lighten($color, 35%);
-	opacity: 0.65;
-	.copyright, {
-		padding-top: 3em;
-		margin-top: 0;
-	}
-	a {
-		color: inherit;
-		&:hover {
-			text-decoration: underline;
 		}
 	}
 }

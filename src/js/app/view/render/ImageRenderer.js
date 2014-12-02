@@ -1,37 +1,41 @@
 /**
- * @module app/app/view/render/ImageRenderer
+ * @module app/view/render/ImageRenderer
  */
 
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+var Deferred = Backbone.$.Deferred;
 
 /** @type {module:app/model/item/ImageItem} */
 var ImageItem = require("../../model/item/ImageItem");
 
 /** @type {Function} */
-// var viewTemplate = require( "../template/ImageRenderer.tpl" );
-/** @type {Function} */
 var placeholderTemplate = require("../template/ImageRenderer.Placeholder.tpl");
+/** @type {Function} */
+// var viewTemplate = require( "../template/ImageRenderer.tpl" );
+
+/** @type {Function} */
+var longdescTemplate = _.template("i<%= id %>-caption");
 /** @type {Function} */
 var imageSrcTemplate = _.template(window.approot + "/workspace/uploads/<%= filename %>");
 // var imageSrcTemplate = _.template(window.approot + "/image/1/<%= constraint %>/0/uploads/<%= filename %>");
-/** @type {Function} */
-var longdescTemplate = _.template("i<%= id %>-caption");
 
 /** @type {module:app/helper/Styles} */
 var Styles = require("../../helper/Styles");
+/** @type {module:backbone} */
+var Strings = require("../../helper/Strings");
 
 /* --------------------------
  * Static Private
  * -------------------------- */
 
 /** @return {Number} */
-var getConstraint = (function() {
+var getConstraint = (function () {
 	var c;
-	return function() {
-		return c || (c = Number(Styles.getCSSProperty(".image-item img", "width").replace(/px$/, ""))) || 700;
+	return function () {
+		return c || (c = Number(Styles.getCSSProperty(".image-item img", "width").replace(/px$/, ""))); // || 700;
 	};
 })();
 
@@ -47,15 +51,15 @@ module.exports = Backbone.View.extend({
 	className: "image-item pending",
 	/** @type {module:app/model/ImageItem} */
 	model: ImageItem,
+	/** @param {Object} @return {string} */
+	template: placeholderTemplate,
+
 	/** @override */
 	events: {
 		"dragstart img": function (ev) {
 			ev.preventDefault();
 		} /* prevent conflict with hammer.js */
 	},
-
-	/** @param {Object} @return {string} */
-	template: placeholderTemplate,
 
 	/** @override */
 	initialize: function (opts) {
@@ -72,14 +76,14 @@ module.exports = Backbone.View.extend({
 
 	listenToSelection: function () {
 		var sibling;
-		if (sibling = this.model.nextNoLoop()) this.listenTo(sibling, "selected", this.requestImageLoad);
-		if (sibling = this.model.prevNoLoop()) this.listenTo(sibling, "selected", this.requestImageLoad);
+		if (sibling = this.model.collection.following(this.model)) this.listenTo(sibling, "selected", this.requestImageLoad);
+		if (sibling = this.model.collection.preceding(this.model)) this.listenTo(sibling, "selected", this.requestImageLoad);
 		this.listenTo(this.model, "selected", this.requestImageLoad);
 	},
 	stopListeningToSelection: function () {
 		var sibling;
-		if (sibling = this.model.nextNoLoop()) this.stopListening(sibling, "selected", this.requestImageLoad);
-		if (sibling = this.model.prevNoLoop()) this.stopListening(sibling, "selected", this.requestImageLoad);
+		if (sibling = this.model.collection.following(this.model)) this.stopListening(sibling, "selected", this.requestImageLoad);
+		if (sibling = this.model.collection.preceding(this.model)) this.stopListening(sibling, "selected", this.requestImageLoad);
 		this.stopListening(this.model, "selected", this.requestImageLoad);
 	},
 
@@ -89,17 +93,14 @@ module.exports = Backbone.View.extend({
 			minHeight: this.getConstrainedHeight(),
 			minWidth: this.getConstrainedWidth(),
 		});
-
 		this.$el.html(this.template({
 			filename: this.model.get("f"),
 			width: this.getConstrainedWidth(),
 			height: this.getConstrainedHeight(),
 		}));
-
 		if (this.model.selected) {
 			this.requestImageLoad();
 		}
-
 		return this;
 	},
 
@@ -118,7 +119,7 @@ module.exports = Backbone.View.extend({
 
 	/** @return {String} */
 	getImageAlt: function () {
-		return this.imageAlt || (this.imageAlt = this.model.get("desc").replace(/<[^>]+>/g, ""));
+		return this.imageAlt || (this.imageAlt = Strings.stripTags(this.model.get("desc")));
 	},
 
 	/** @type {Number} */
@@ -161,21 +162,21 @@ module.exports = Backbone.View.extend({
 
 	onLoad: function (image, ev) {
 		this.$el.removeClass("loading").addClass("loaded");
-		// console.log("ImageRenderer.onLoad: " + this.model.get("f"));
+//		 console.log("ImageRenderer.onLoad: " + this.model.get("f"));
 	},
 
 	onError: function (image, err, ev) {
 		this.$el.removeClass("loading").addClass("error");
-		// console.log("ImageRenderer.onError: " + this.model.get("f"));
+//		 console.log("ImageRenderer.onError: " + this.model.get("f"));
 	},
 
 	onProgress: function (image) {
 		this.$el.removeClass("pending").addClass("loading");
-		// console.log("ImageRenderer.onProgress: " + this.model.get("f"));
+//		 console.log("ImageRenderer.onProgress: " + this.model.get("f"));
 	},
 
 	loadImage: function (image, url) {
-		var deferred = Backbone.$.Deferred();
+		var deferred = new Deferred();
 		// var image = this.createImageElement();
 
 		image.onload = function (ev) {
@@ -225,7 +226,7 @@ module.exports = Backbone.View.extend({
 
 	// @see https://github.com/mdn/promises-test/blob/gh-pages/index.html
 	loadImage_xhr: function (src) {
-		var deferred = Backbone.$.Deferred();
+		var deferred = new Deferred();
 		var request = new XMLHttpRequest();
 		request.open("GET", src, true);
 		request.responseType = "arraybuffer";

@@ -136,9 +136,9 @@ _.extend(Controller.prototype, Backbone.Events, {
 	},
 
 	onBundleItem: function (bundle) {
-		images.reset(bundle.get("images"));
-		this.applySelectionStyles();
 		document.title = "Portfolio – " + bundles.selected.get("name");
+		this.applySelectionStyles();
+		images.reset(bundle.get("images"));
 	},
 
 	/* -------------------------------
@@ -163,14 +163,13 @@ _.extend(Controller.prototype, Backbone.Events, {
 		_.delay(function (context) {
 			bundles.deselect();
 		}, 350, this);
-
 		Backbone.trigger("app:bundle:list");
 	},
 
 	onBundleList: function () {
-		images.reset();
-		this.clearSelectionStyles();
 		document.title = "Portfolio";
+		this.clearSelectionStyles();
+		images.reset();
 	},
 
 	/* --------------------------- *
@@ -179,9 +178,12 @@ _.extend(Controller.prototype, Backbone.Events, {
 
 	clearSelectionStyles: function () {
 		Backbone.$("body").removeAttr("style");
-		//Styles.setCSSProperty(".text-color-faded", "color", "");
-		//Styles.setCSSProperty(".image-item .placeholder", "backgroundColor", "");
-		//Styles.setCSSProperty(".image-item .placeholder", "borderColor", "");
+//		Styles.setCSSProperty("body", "color", "");
+//		Styles.setCSSProperty("body", "background-color", "");
+
+//		Styles.setCSSProperty(".text-color-faded", "color", "");
+//		Styles.setCSSProperty(".image-item .placeholder", "backgroundColor", "");
+//		Styles.setCSSProperty(".image-item .placeholder", "borderColor", "");
 	},
 
 	applySelectionStyles: function () {
@@ -192,17 +194,20 @@ _.extend(Controller.prototype, Backbone.Events, {
 				attrs[attr[0]] = swap(attr[1]);
 			}
 		});
+
 		Backbone.$("body").removeAttr("style").css(_.pick(attrs, bodyStyles));
+//		Styles.setCSSProperty("body", "color", attrs["color"]);
+//		Styles.setCSSProperty("body", "background-color", attrs["background-color"]);
 
 		var fgColor, bgColor, cssRule;
 		// background color derivates
-		bgColor = new Color(attrs["background-color"] || Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
+		bgColor = new Color(attrs["background-color"] || Styles.getCSSProperty("body", "background-color"));// || "hsl(47, 5%, 95%)");
 		cssRule = Styles.getCSSRule(".image-item .placeholder");
 		cssRule.style.backgroundColor = bgColor.lightness("-=0.05").toHexString();
 		cssRule.style.borderColor = bgColor.lightness("-=0.08").toHexString();
 
 		// text color derivates
-		fgColor = new Color(attrs["color"] || Styles.getCSSProperty("body", "color") || "hsl(47, 5%, 15%)");
+		fgColor = new Color(attrs["color"] || Styles.getCSSProperty("body", "color"));// || "hsl(47, 5%, 15%)");
 		cssRule = Styles.getCSSRule(".text-color-faded");
 		cssRule.style.color = fgColor.lightness(fgColor.lightness() * 0.666 + bgColor.lightness() * 0.333).toHexString();
 

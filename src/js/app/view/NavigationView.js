@@ -61,9 +61,11 @@ module.exports = Backbone.View.extend({
 
 	render: function() {
 		if (bundles.selected) {
+//			this.el.style.maxHeight = "9rem";
 			this.bundleListView.setCollapsed(true);
 			this.keywordListView.filterBy(bundles.selected);
 		} else {
+//			this.el.style.maxHeight = "";
 			this.bundleListView.setCollapsed(false);
 			this.keywordListView.filterBy(null);
 		}

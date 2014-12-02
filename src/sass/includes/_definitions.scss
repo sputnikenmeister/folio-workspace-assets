@@ -65,9 +65,10 @@ $base-font: 12px $font-webfont-sans;
 @mixin small-caps() {
 	font-size: 85%;
 	font-weight: 600;
-	line-height: 1.5rem;
 	letter-spacing: 1px;
 	text-transform: uppercase;
+	line-height: 1.5rem;
+	vertical-align: baseline;
 }
 
 /* Animation */

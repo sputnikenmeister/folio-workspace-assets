@@ -1,15 +1,15 @@
 /**
-* @module app/view/component/GroupingListView
-* @requires module:backbone
-*/
+ * @module app/view/component/GroupingListView
+ * @requires module:backbone
+ */
 
 /** @type {module:underscore} */
-var _ = require( "underscore" );
+var _ = require("underscore");
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
 
 /** @type {module:app/view/component/FilterableListView} */
-var FilterableListView = require( "./FilterableListView" );
+var FilterableListView = require("./FilterableListView");
 
 /**
  * @constructor
@@ -27,16 +27,18 @@ module.exports = FilterableListView.extend({
 	groupingViews: new Backbone.ChildViewContainer(),
 
 	/** @override */
-	initialize: function(options) {
+	initialize: function (options) {
 		FilterableListView.prototype.initialize.apply(this, arguments);
+		options.renderer && (this.renderer = options.renderer);
 		if (options.groupings) {
 			this.groupings = options.groupings;
+			//this.groupings = _.defaults(options.groupings, this.groupings);
 			this.groupings.collection.each(this.assignGroupingView, this);
 		}
 	},
 
 	/** @private */
-	renderFilterBy: function(newAssoc) {
+	renderFilterBy: function (newAssoc) {
 		FilterableListView.prototype.renderFilterBy.apply(this, arguments);
 		var groupIds;
 		if (newAssoc) {
@@ -46,9 +48,9 @@ module.exports = FilterableListView.extend({
 	},
 
 	/** @private */
-	renderChildrenGroups: function(modelIds) {
+	renderChildrenGroups: function (modelIds) {
 		if (modelIds) {
-			this.groupings.collection.each(function(model, index, arr) {
+			this.groupings.collection.each(function (model, index, arr) {
 				if (_.contains(modelIds, model.id)) {
 					this.groupingViews.findByModel(model).$el.removeClass("excluded");
 				} else {
@@ -56,17 +58,17 @@ module.exports = FilterableListView.extend({
 				}
 			}, this);
 		} else {
-			this.groupingViews.each(function(view) {
+			this.groupingViews.each(function (view) {
 				view.$el.removeClass("excluded");
 			});
 		}
 	},
 
 	/*
-	* Create children views
-	*/
+	 * Create children views
+	 */
 	/** @private */
-	assignGroupingView: function(item) {
+	assignGroupingView: function (item) {
 		var view = new GroupingRenderer({
 			model: item,
 			el: item.selector()

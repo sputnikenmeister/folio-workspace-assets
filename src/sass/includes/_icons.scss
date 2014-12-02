@@ -11,22 +11,23 @@
 	font-variant: normal;
 	text-transform: none;
 	speak: none;
-
+}
+@mixin fontello-icon-pseudo() {
+	@include fontello-icon-base();
+	width: 1em;
 	display: inline-block;
 	text-decoration: inherit;
-	width: 1em;
 	text-align: center;
-	// content: '\e805';
 	/* fix buttons height, for twitter bootstrap */
-	line-height: 1em;
+//	line-height: 1em;
 }
 @mixin fontello-icon-after() {
-	@include fontello-icon-base();
+	@include fontello-icon-pseudo();
 	margin-right: -0.1em;
 	margin-left: .4em;
 }
 @mixin fontello-icon-before() {
-	@include fontello-icon-base();
+	@include fontello-icon-pseudo();
 	margin-left: -0.1em;
 	margin-right: .4em;
 }

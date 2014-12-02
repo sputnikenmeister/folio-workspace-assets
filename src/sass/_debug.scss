@@ -34,12 +34,15 @@ $salmon: 			hsla(6, 93%, 71%, 1);
 		// background-color: transparentize($salmon, 0.8);
 		border-left: 1px dashed $salmon;
 		border-right: 1px dashed $salmon;
-		#keyword-list, #bundle-list {
-			outline: 1px dashed $lightcoral;
-		}
+//		#keyword-list, #bundle-list {
+//			outline: 1px dashed $lightcoral;
+//		}
 	}
 	#site-name, .list-item {
 		// background-color: transparentize($darkseagreen, 0.6);
+	}
+	.selectable {
+		outline: 1px dashed $lightcoral;
 	}
 	#content {
 		.item-detail {
@@ -53,6 +56,12 @@ $salmon: 			hsla(6, 93%, 71%, 1);
 				outline: 1px dashed $thistle;
 			}
 		}
+	}
+	.dots-fontello.list-item {
+		background-color: blue;
+		a { background-color: blue; }
+		.label { background-color: cyan; }
+		& a:before { background-color: yellow; }
 	}
 }
 

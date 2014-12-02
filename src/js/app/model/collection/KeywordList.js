@@ -15,9 +15,7 @@ var KeywordItem = require( "../item/KeywordItem" );
  */
 var KeywordList = SelectableList.extend({
 
-	/**
-	 * @type {Backbone.Model}
-	 */
+	/** @type {Backbone.Model} */
 	model: KeywordItem
 
 });

@@ -4,6 +4,7 @@
 // from: folio.scss @import "compass/layout";
 // @include sticky-footer( 6em, "#container", "#container-footer", "#footer" );
 // compass-core-1.0.1/stylesheets/compass/layout/_sticky-footer.scss
+
 $footer-height: 8rem;
 
 html, body {
@@ -35,7 +36,7 @@ html, body {
 }
 
 /* ---------------------- *
- *	View Layout
+ * Top-level horizontal flow
  * ---------------------- */
 
 #header,
@@ -52,89 +53,21 @@ html, body {
 	}
 }
 
-#content {
-	position: relative;
-}
-
 /* ---------------------- *
- * Carousel
+ * Footer
  * ---------------------- */
 
-#bundle-images {
-	position: relative;
-}
-/* carousel layout */
-.image-list {
-	overflow: hidden;
-	padding: 1.5rem 0; height: 100%;
-	margin: -1.5rem 0; width: 100%; min-width: $page-width;
-}
-.image-item {
-	position: absolute;
-}
-
-.image-item {
-	width: $page-width;
-	left: calc(50% - #{$page-width/2});
-	height: calc(100% - 3rem);
-	@media only screen and (min-width: $breakpoint-large) {
-		width: $page-width-large;
-		left: calc(50% - #{$page-width-large/2});
+#footer {
+	// color: lighten($color, 35%);
+	opacity: 0.65;
+	.copyright, {
+		padding-top: 3em;
+		margin-top: 0;
+	}
+	a {
+		color: inherit;
+		&:hover {
+			text-decoration: underline;
+		}
 	}
 }
-
-
-/* ---------------------- *
- * Content panels
- * ---------------------- */
-
-#content-detail {
-	position: absolute;
-	left: 0; right: 0; top: 1.5rem;
-}
-
-#bundle-detail {
-	overflow: hidden;
-	display: none;
-	@media only screen and (min-width: $breakpoint-large) {
-		display: block;
-		width: #{$page-width-large - $page-width - $gutter};
-		margin-left: auto;
-	}
-}
-
-#image-detail,
-#images-pager {
-	display: block;
-	position: absolute;
-	bottom: 100%;
-	left: $page-margin-left;
-	right: $page-margin-right;
-	@media only screen and (min-width: $breakpoint-large) {
-		padding-right: #{$page-width-large - $page-width};
-	}
-}
-
-#image-detail {
-	bottom: calc(100% + 1.5rem);
-//	text-align: left;
-}
-#images-pager {
-	bottom: calc(100% + 1.5rem);
-	text-align: center;
-}
-
-/*
- * App States
- */
-body {
-	color: lighten($color, 10%);
-	background-color: $background-color;
-	transition: color $duration $duration steps(6),
-				background-color $duration $duration linear;
-}
-.text-color-faded {
-	color: lighten($color, 40%);
-	transition: color $duration $duration steps(6);
-}
-

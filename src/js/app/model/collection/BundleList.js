@@ -15,6 +15,8 @@ var BundleItem = require( "../item/BundleItem" );
  */
 var BundleList = SelectableList.extend({
 
+//	comparator: "completed",
+
 	/** @type {Backbone.Model} */
 	model: BundleItem,
 
@@ -23,4 +25,6 @@ var BundleList = SelectableList.extend({
 
 });
 
-module.exports = new BundleList();
+module.exports = new BundleList(void 0, {
+	comparator: "completed"
+});

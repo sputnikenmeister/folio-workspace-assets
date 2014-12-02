@@ -34,7 +34,7 @@ module.exports = DeferredRenderView.extend({
 
 	/** @override */
 	events: {
-		"panstart": "onPanMove",
+		"panstart": "onPanStart",
 		"panmove": "onPanMove",
 		"panend": "onPanEnd",
 		"pancancel": "onPanCancel"
@@ -60,8 +60,9 @@ module.exports = DeferredRenderView.extend({
 	},
 
 	remove: function () {
-		Backbone.View.prototype.remove.apply(this, arguments);
+		this.removeChildren();
 		Backbone.$(window).off("orientationchange resize", this.onResize);
+		Backbone.View.prototype.remove.apply(this, arguments);
 	},
 
 	/* --------------------------- *
@@ -75,35 +76,43 @@ module.exports = DeferredRenderView.extend({
 	},
 
 	/** @param {Object} ev */
+	onPanStart: function (ev) {
+		var delta = this.getDirProp(ev.gesture.deltaX, ev.gesture.deltaY);
+		// save threshold to prevent jump
+		this.thresholdOffset = (delta < 0) ? this.panThreshold : -this.panThreshold;
+		this.onPanMove(ev);
+	},
+
+	/** @param {Object} ev */
 	onPanMove: function (ev) {
 		var delta = this.getDirProp(ev.gesture.deltaX, ev.gesture.deltaY);
-		// remove threshold to prevent jump
-		delta += (delta < 0) ? this.panThreshold : -this.panThreshold;
+		delta += this.thresholdOffset;
+//		delta += (delta < 0) ? this.panThreshold : -this.panThreshold;
 		// when at first or last index, add feedback to gesture
 		if (this.isOutOfBounds(delta)) {
 			delta *= 0.2;
 		}
 		this.scrollByNow(delta);
-		//this.scrollBy(delta, true);
 	},
 
 	/** @param {Object} ev */
 	onPanEnd: function (ev) {
 		var delta = this.getDirProp(ev.gesture.deltaX, ev.gesture.deltaY);
+		delta += this.thresholdOffset;
 		// If beyond select threshold, trigger selection
 		if (Math.abs(delta) > this.getSelectThreshold() && !this.isOutOfBounds(delta)) {
 			this.trigger("view:select:one", (delta < 0) ?
-				this.collection.nextNoLoop() : this.collection.prevNoLoop(), {
-					source: this
-				});
+				this.collection.following() : this.collection.preceding());//, {source: this});
 		} else {
 			this.scrollToSelection(false);
 		}
+		delete this.thresholdOffset;
 	},
 
 	/** @param {Object} ev */
 	onPanCancel: function (ev) {
 		this.scrollToSelection(false);
+		delete this.thresholdOffset;
 	},
 
 	/* --------------------------- *
@@ -180,9 +189,8 @@ module.exports = DeferredRenderView.extend({
 
 	scrollBy: function (delta, skipAnimation) {
 		//this.animationRequests.push(skipAnimation ? "immediate" : "animated");
-		this.skipAnimation = this.skipAnimation || skipAnimation;
+		_.isBoolean(skipAnimation) && (this.skipAnimation = this.skipAnimation || skipAnimation);
 		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta, this.getScrollIndex()));
-
 	},
 
 	scrollByNow: function (delta) {
@@ -196,7 +204,7 @@ module.exports = DeferredRenderView.extend({
 		delta = delta || 0; // non null check
 		size = this.getContainerSize();
 		scrollIndex = scrollIndex || this.getScrollIndex();
-		skipAnimation = _.isBoolean(skipAnimation) || this.skipAnimation;
+		skipAnimation = _.isBoolean(skipAnimation)? skipAnimation : this.skipAnimation;
 		// note: looping through the models, what if views have not been created yet?
 		this.collection.each(function (model, index) {
 			pos = (size * (index - scrollIndex)) + delta;
@@ -209,7 +217,7 @@ module.exports = DeferredRenderView.extend({
 			"translate3d(" + pos + "px,0,0)" : "translate3d(0," + pos + "px,0)";
 		if (skipAnimation) {
 			//view.$el.css({ transform: translate });
-			this.setCSSTransform(view.el, translate);
+			this._setCSSTransform(view.el, translate);
 		} else {
 			view.$el.transit({
 				transform: translate
@@ -217,18 +225,15 @@ module.exports = DeferredRenderView.extend({
 		}
 	},
 
-	setCSSTransform: function (el, transform) {
+	_setCSSTransform: function (el, transform) {
 		// faster than jquery?
 		el.style.transform = transform;
 		el.style.mozTransform = transform;
 		el.style.webkitTransform = transform;
 	},
 
-	getScrollTransformAt: function (pos) {
-		var size = this.getContainerSize(),
-			beforeGap = 0,
-			afterGap = 0,
-			val = 0;
+	_positionTransformFilter: function (pos, size, beforeGap, afterGap) {
+		var val = 0;
 		if (beforeGap > 0 && 0 > pos) {
 			if (pos > (-size)) {
 				val = beforeGap / size * pos;
@@ -280,8 +285,11 @@ module.exports = DeferredRenderView.extend({
 	/** @type {Backbone.ChildViewContainer} */
 	children: new Backbone.ChildViewContainer(),
 
+	/** @type {Function} */
+	renderer: ImageRenderer,
+
 	createChildView: function (model, index) {
-		var view = new ImageRenderer({
+		var view = new this.renderer({
 			model: model
 		});
 		this.children.add(view);

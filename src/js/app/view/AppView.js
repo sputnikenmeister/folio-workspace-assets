@@ -38,7 +38,6 @@ module.exports = Backbone.View.extend({
 
 	/** Setup listening to model changes */
 	initialize: function (options) {
-		this.listenTo(Backbone, "all", this.onApplicationEvent);
 
 		/* start router, which will request appropiate state */
 		Backbone.history.start({
@@ -53,25 +52,25 @@ module.exports = Backbone.View.extend({
 		this.contentView = new ContentView({
 			el: "#content"
 		});
-		if (window.DEBUG) {
-			this.initDebug();
-		}
+
+		this.listenTo(Backbone, "all", this.onApplicationEvent);
+		this.listenTo(Backbone, "app:error", this.onApplicationError);
+
+		window.DEBUG && this.initDebug();
 	},
 
 	onApplicationEvent: function (eventName) {
 		this.el.className = eventName.split(":").join("-");
 		console.log("AppView.onApplicationEvent " + eventName);
-		switch (eventName) {
-			//case "app:bundle:item":
-			//case "app:bundle:list":
-			//case "app:error":
-		case "app:error":
-			console.log("AppView.showError - not implemented");
-			controller.deselectBundle();
-			break;
-		default:
-			break;
-		}
+		//switch (eventName) {
+		//	case "app:bundle:item":
+		//	case "app:bundle:list":
+		//	case "app:error":
+		//}
+	},
+
+	onApplicationError: function () {
+		console.log("AppView.onApplicationError", arguments);
 	},
 
 	initDebug: function () {

@@ -3,6 +3,8 @@ html {
 	line-height: 1;
 }
 body {
+	color: lighten($color, 10%);
+	background-color: $background-color;
 	line-height: 1.5;
 }
 p {
@@ -63,3 +65,38 @@ a {
 		hsl(203, 100%, 50%)	 // color
 	);
 }
+
+/* ---------------------- *
+ * Typographic classes
+ * ---------------------- */
+.sc {
+	@include font-smoothing();
+	@include small-caps();
+}
+
+/* ---------------------- *
+ * Dynamic color classes
+ * ---------------------- */
+
+body {
+	transition: color $duration $duration steps(6),
+				background-color $duration $duration linear;
+}
+.text-color-faded {
+	color: lighten($color, 40%);
+	&.animated {
+		transition: color $duration $duration steps(6);
+	}
+}
+
+//.color-observer {
+//	&.text-color {
+//		color: lighten($color, 40%);
+//	}
+//	&.border-color {
+//		border-color: lighten($color, 40%);
+//	}
+//	&.bg-color {
+//		background-color: lighten($color, 40%);
+//	}
+//}

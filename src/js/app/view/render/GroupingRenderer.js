@@ -1,11 +1,11 @@
 /**
-* jscs standard:Jquery
-* @module app/app/view/render/GroupingRenderer
-* @requires module:backbone
-*/
+ * jscs standard:Jquery
+ * @module app/view/render/GroupingRenderer
+ * @requires module:backbone
+ */
 
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
 
 /**
  * @constructor

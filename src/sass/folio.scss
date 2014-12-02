@@ -1,8 +1,8 @@
 @import "compass/reset";
-@import "compass/layout";
+//@import "compass/layout";
 @import "compass/css3/selection";
-@import "compass/css3/transform";
-@import "compass/css3/box-sizing";
+//@import "compass/css3/transform";
+//@import "compass/css3/box-sizing";
 
 @import "includes/_definitions";
 @import "includes/_icons";
@@ -10,6 +10,7 @@
 @import "components/_filterable";
 @import "components/_carousel";
 @import "components/_selectable.dots-fontello.scss";
+@import "components/_selectable.image-symbol.scss";
 @import "components/_pager.fontello";
 @import "views/_layout";
 @import "views/_navigation";

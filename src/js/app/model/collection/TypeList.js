@@ -15,9 +15,7 @@ var TypeItem = require( "../item/TypeItem" );
  */
 var TypeList = Backbone.Collection.extend({
 
-	/**
-	 * @type {Backbone.Model}
-	 */
+	/** @type {Backbone.Model} */
 	model: TypeItem
 
 });

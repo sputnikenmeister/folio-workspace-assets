@@ -1,6 +1,5 @@
 /**
  * @module app/view/component/GroupingListView
- * @requires module:backbone
  */
 
 /** @type {module:underscore} */
@@ -14,30 +13,15 @@ var SelectableListView = Backbone.View.extend({
 	tagName: "ul",
 	/** @override */
 	className: "list selectable",
+	/** @type {module:app/view/component/DefaultSelectableRenderer} */
+	renderer: require("../render/DefaultSelectableRenderer"),
 
 	initialize: function (options) {
-		this.listenTo(this.collection, "add remove reset", this.onCollectionChange);
-		this.onCollectionChange();
+		options.renderer && (this.renderer = options.renderer);
+		this.listenTo(this.collection, "add remove reset", this.render);
+//		this.listenTo(this.collection, "add remove reset", this.updateCollectionListeners);
+//		this.onCollectionChange();
 	},
-
-	onCollectionChange: function () {
-		// if (this.collection.length > 1) {
-		// 	this.addCollectionListeners();
-		// } else {
-		// 	this.removeCollectionListeners();
-		// }
-		this.render();
-	},
-
-	// addCollectionListeners: function () {
-	// 	this.listenTo(this.collection, "select:one", this.onSelectOne);
-	// 	this.listenTo(this.collection, "deselect:one", this.onDeselectOne);
-	// },
-
-	// removeCollectionListeners: function () {
-	// 	this.stopListening(this.collection, "select:one", this.onSelectOne);
-	// 	this.stopListening(this.collection, "deselect:one", this.onDeselectOne);
-	// },
 
 	render: function () {
 		var eltBuffer, view;
@@ -45,13 +29,12 @@ var SelectableListView = Backbone.View.extend({
 		this.removeChildren();
 		this.$el.empty();
 
-		if (this.collection.length > 1) {
+		if (this.collection.length) {
 			eltBuffer = document.createDocumentFragment();
 			this.collection.each(function (model, index, arr) {
 				view = this.createChildView(model, index);
 				eltBuffer.appendChild(view.render().el);
 			}, this);
-
 			this.$el.append(eltBuffer);
 		}
 		return this;
@@ -65,11 +48,11 @@ var SelectableListView = Backbone.View.extend({
 	children: new Backbone.ChildViewContainer(),
 
 	createChildView: function (model, index) {
-		var view = new SelectableRenderer({
+		var view = new (this.renderer)({
 			model: model
 		});
 		this.children.add(view);
-		this.listenTo(view, "item:click", this.onChildViewClick);
+		this.listenTo(view, "renderer:click", this.onChildViewClick);
 		return view;
 	},
 
@@ -85,7 +68,7 @@ var SelectableListView = Backbone.View.extend({
 	},
 
 	/* --------------------------- *
-	 * Selection
+	 * Child event handlers
 	 * --------------------------- */
 
 	/** @private */
@@ -95,62 +78,40 @@ var SelectableListView = Backbone.View.extend({
 		}
 	},
 
-	// /** @private */
-	// onSelectOne: function (model) {
-	// 	var view = this.children.findByModel(model);
-	// 	if (view)
-	// 		view.$el.addClass("selected");
-	// },
-
-	// onDeselectOne: function (model) {
-	// 	var view = this.children.findByModel(model);
-	// 	if (view)
-	// 		view.$el.removeClass("selected");
-	// },
-});
-
-/**
- * @constructor
- * @type {module:app/view/render/SelectableRenderer}
- */
-var SelectableRenderer = Backbone.View.extend({
-
-	/** @override */
-	tagName: "li",
-	/** @override */
-	className: "list-item",
-	/** @override */
-	events: {
-		"click": "onClick",
-	},
-	/** @override */
-	template: _.template("<span class=\"label\"><%= label %></span><a href=\"#<%= href %>\"><b></b></a>"),
-
-	initialize: function (options) {
-		this.listenTo(this.model, "selected", function () {
-			this.$el.addClass("selected");
-		});
-		this.listenTo(this.model, "deselected", function () {
-			this.$el.removeClass("selected");
-		});
-	},
-
-	/** @override */
-	render: function () {
-		if (this.model.selected) {
-			this.$el.addClass("selected");
-		}
-		this.$el.html(this.template({
-			href: this.model.cid,
-			label: this.model.toString()
-		}));
-		return this;
-	},
-
-	onClick: function (ev) {
-		ev.isDefaultPrevented() || ev.preventDefault();
-		this.trigger("item:click", this.model);
-	},
+//	/* --------------------------- *
+//	 * Collection event handlers
+//	 * --------------------------- */
+//
+//	updateCollectionListeners: function () {
+//		if (this.collection.length > 1) {
+//			this.addCollectionListeners();
+//		} else {
+//			this.removeCollectionListeners();
+//		}
+//	},
+//
+//	addCollectionListeners: function () {
+//		this.listenTo(this.collection, "select:one", this.onSelectOne);
+//		this.listenTo(this.collection, "deselect:one", this.onDeselectOne);
+//	},
+//
+//	removeCollectionListeners: function () {
+//		this.stopListening(this.collection, "select:one", this.onSelectOne);
+//		this.stopListening(this.collection, "deselect:one", this.onDeselectOne);
+//	},
+//
+//	/** @private */
+//	onSelectOne: function (model) {
+//		var view = this.children.findByModel(model);
+//		if (view)
+//			view.$el.addClass("selected");
+//	},
+//
+//	onDeselectOne: function (model) {
+//		var view = this.children.findByModel(model);
+//		if (view)
+//			view.$el.removeClass("selected");
+//	},
 });
 
 module.exports = SelectableListView;

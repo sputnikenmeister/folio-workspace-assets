@@ -53,12 +53,20 @@ var SelectableList = Backbone.Collection.extend({
 		var oldModel = this.selected;
 		var triggerEvents = !(options && options.silent);
 		if (oldModel) {
-			if (_.isFunction(oldModel.deselect)) oldModel.deselect(options);
+			if (_.isFunction(oldModel.deselect)) {
+				oldModel.deselect(options);
+			} else if (triggerEvents) {
+				oldModel.trigger("deselected");
+			}
 			if (triggerEvents) this.trigger("deselect:one", oldModel);
 		}
 		this.selected = newModel;
 		if (newModel) {
-			if (_.isFunction(newModel.select)) newModel.select(options);
+			if (_.isFunction(newModel.select)) {
+				newModel.select(options);
+			} else if (triggerEvents) {
+				newModel.trigger("selected");
+			}
 			if (triggerEvents) this.trigger("select:one", newModel, oldModel);
 		} else {
 			if (triggerEvents) this.trigger("select:none", newModel, oldModel);

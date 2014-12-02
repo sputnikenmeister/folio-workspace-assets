@@ -1,10 +1,10 @@
 /**
- * @module app/app/view/render/FilterableRenderer
+ * @module app/view/render/FilterableRenderer
  * @requires module:backbone
  */
 
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
 
 /**
  * @constructor
