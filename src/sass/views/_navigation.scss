@@ -64,7 +64,9 @@
 	.list-group {
 		width: calc(38% - #{$gutter/2});
 		position: absolute;
-		left: 1px;
+		transform: translateX(1px);
+		line-height: 1.5rem;
+//		left: 1px;
 		span {
 			@include small-caps;
 		}

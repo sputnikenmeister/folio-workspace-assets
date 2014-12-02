@@ -89,8 +89,8 @@ module.exports = function (grunt) {
 		"jquery-hammerjs",
 		"jquery.transit",
 		"backbone.babysitter",
-		"backbone.select",
-		"backbone.cycle",
+//		"backbone.select",
+//		"backbone.cycle",
 	];
 	grunt.config("browserify.vendor.options.require", vendorRequires);
 	grunt.config("browserify.vendor.options.alias", [
@@ -203,7 +203,7 @@ module.exports = function (grunt) {
 	// Simple build
 	grunt.registerTask("buildStyles", ["compass:client", "autoprefixer:client"]);
 	grunt.registerTask("buildClient", ["browserify:client", "exorcise:client", "uglify:client"]);
-	grunt.registerTask("buildScripts", ["buildVendor", "buildClient"]);//"jshint", 
+	grunt.registerTask("buildScripts", ["buildVendor", "buildClient"]);//"jshint",
 	grunt.registerTask("build", ["buildStyles", "buildScripts"]);
 	// Watch build
 	grunt.registerTask("watchAll", ["browserify:watchable", "watch"]);

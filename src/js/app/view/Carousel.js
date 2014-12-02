@@ -18,7 +18,6 @@ var DeferredRenderView = require("../helper/DeferredRenderView");
  * @constructor
  * @type {module:app/view/Carousel}
  */
-//module.exports  = Backbone.View.extend({
 module.exports = DeferredRenderView.extend({
 
 	/** @override */
@@ -87,7 +86,6 @@ module.exports = DeferredRenderView.extend({
 	onPanMove: function (ev) {
 		var delta = this.getDirProp(ev.gesture.deltaX, ev.gesture.deltaY);
 		delta += this.thresholdOffset;
-//		delta += (delta < 0) ? this.panThreshold : -this.panThreshold;
 		// when at first or last index, add feedback to gesture
 		if (this.isOutOfBounds(delta)) {
 			delta *= 0.2;
@@ -106,13 +104,13 @@ module.exports = DeferredRenderView.extend({
 		} else {
 			this.scrollToSelection(false);
 		}
-		delete this.thresholdOffset;
+		this.thresholdOffset = void 0;
 	},
 
 	/** @param {Object} ev */
 	onPanCancel: function (ev) {
 		this.scrollToSelection(false);
-		delete this.thresholdOffset;
+		this.thresholdOffset = void 0;
 	},
 
 	/* --------------------------- *
@@ -136,8 +134,13 @@ module.exports = DeferredRenderView.extend({
 
 	render: function () {
 		//console.log("Carousel.render");
-		this.renderChildren();
-		this.scrollToSelection(true);
+		if (this.el.parentElement) {
+			this.renderChildrenNow();
+			this.scrollByNow(0);
+		} else {
+			this.renderChildren();
+			this.scrollToSelection(true);
+		}
 		return this;
 	},
 
@@ -145,16 +148,16 @@ module.exports = DeferredRenderView.extend({
 	deferredRender: function (timestamp) {
 		this.validateRender("renderChildren");
 		this.validateRender("scrollBy");
-		//this.animationRequests.length = 0;
 		this.skipAnimation = false;
 	},
-
-	//animationRequests: [],
 
 	/* --------------------------- *
 	 * Child create
 	 * --------------------------- */
 
+	renderChildrenNow: function (){
+		this._renderChildren();
+	},
 	renderChildren: function () {
 		this.requestRender("renderChildren", _.bind(this._renderChildren, this));
 	},
@@ -171,7 +174,9 @@ module.exports = DeferredRenderView.extend({
 				// Get the largest child cross size
 				crossSize = Math.max(crossSize, child[this.getDirProp("constrainedHeight", "constrainedWidth")]);
 			}, this);
-			this.$el.css(this.getDirProp("minHeight", "minWidth"), crossSize);
+			if (crossSize > 0) {
+				this.$el.css(this.getDirProp("minHeight", "minWidth"), crossSize);
+			}
 			this.$el.append(childBuffer);
 		} else {
 			this.$el.css(this.getDirProp("minHeight", "minWidth"), "");
@@ -181,7 +186,6 @@ module.exports = DeferredRenderView.extend({
 	/* --------------------------- *
 	 * Scroll/layout
 	 * --------------------------- */
-
 
 	scrollToSelection: function (skipAnimation) {
 		this.scrollBy(0, skipAnimation);

@@ -17,8 +17,6 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 Backbone.$ = $;
 require("backbone.babysitter");
-require("backbone.select");
-require("backbone.cycle");
 
 $(document).ready(function ($) {
 	"use strict";
@@ -65,7 +63,7 @@ $(document).ready(function ($) {
 		keywordList.reset(keywords);
 		bundleList.reset(bundles);
 		/* jshint -W051 */
-		delete window.bootstrap;
+		window.bootstrap = void 0;
 		/* jshint +W051 */
 	}
 	window.app = new AppView();

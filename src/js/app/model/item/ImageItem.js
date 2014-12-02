@@ -7,7 +7,6 @@
 var _ = require( "underscore" );
 /** @type {module:backbone} */
 var Backbone = require( "backbone" );
-// require( "backbone.picky" );
 
 /**
  * @constructor
@@ -25,18 +24,6 @@ module.exports = Backbone.Model.extend({
 		desc: "<p><em>No description</em></p>",
 		attrs: [],
 	},
-
-	initialize: function() {
-        Backbone.Cycle.SelectableModel.applyTo(this);
- 		// Backbone.Select.Me.applyTo(this);
-		// var selectable = new Backbone.Picky.Selectable(this);
-		// _.extend(this, selectable);
-	},
-
-	// parse: function(response, options) {
-	// 	console.log("parse", response);
-	// 	return response;
-	// },
 
 	selector: function() {
 		return "#i" + this.id;
