@@ -14,7 +14,8 @@
 		"clearInterval": false,
 		"module": true,
 		"$": true,
-		"_": true
+		"_": true,
+		"DEBUG": true
 	},
 	"boss": true,
 	"curly": false,

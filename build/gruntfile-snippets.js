@@ -29,6 +29,18 @@ pkg_json = {
 	grunt.registerTask("debug", [ "compass:debug", "autoprefixer:styles", "jshint", "cjsc:debug" ]);
 	grunt.registerTask("dist", [ "compass:dist", "autoprefixer:styles", "jshint", "cjsc:dist"]);
 
+	/* Add bower deps to browserify */
+	grunt.loadNpmTasks("grunt-browserify-bower");
+	grunt.config("browserifyBower.vendor", {
+		options: {
+			file: "./js/vendor-bower.js",
+			forceResolve: {
+				"backbone.picky": "lib/backbone.picky.js",
+				"jquery-color": "jquery.color.js"
+			}
+		}
+	});
+
 	grunt.loadNpmTasks("grunt-bowercopy");
 	grunt.config("bowercopy",
 	{

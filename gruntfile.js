@@ -53,79 +53,92 @@ module.exports = function (grunt) {
 	 * browserify
 	 */
 	grunt.loadNpmTasks("grunt-browserify");
-	grunt.config("browserify", {
-		"vendor": {
-			dest: "./js/vendor.js",
-			src: [],
-			options: {
-				browserifyOptions: {
-					debug: true
-				},
+	grunt.config("browserify.vendor",  {
+		dest: "./js/folio-vendor.js",
+		src: [],
+		options: {
+			browserifyOptions: {
+				debug: true
 			},
-		},
-		"client": {
-			dest: "./js/folio.js",
-			src: [
-				"./src/js/app/App.js"
+			require: [
+				"jquery", "hammerjs", "jquery-hammerjs", "jquery.transit",
+				"underscore","backbone", "backbone.babysitter"
 			],
-			options: {
-				browserifyOptions: {
-					baseDir: "src/js/",
-					fullPaths: false,
-					debug: true
+			alias: [
+				"./bower_components/jquery-color/jquery.color.js:jquery-color"
+			],
+			shim: {
+				"jquery-color": {
+					// path: "./bower_components/jquery-color/jquery.color.js",
+					exports: "jquery-color",
+					depends: {
+						jquery: "$"
+					}
 				},
-				transform: [
-					"node-underscorify"
-				]
 			}
+		},
+	});
+	/** browserify:client */
+	grunt.config("browserify.client",  {
+		dest: "./js/folio-client.js",
+		src: [
+			"./src/js/app/App.js"
+		],
+		options: {
+			browserifyOptions: {
+				baseDir: "src/js/",
+				fullPaths: false,
+				debug: true
+			},
+			transform: [
+				"node-underscorify"
+			],
+			external: ["jquery-color"].concat(grunt.config("browserify.vendor.options.require"))
 		}
 	});
 
-	var vendorRequires = [
-		"jquery",
-		"underscore",
-		"backbone",
-		"hammerjs",
-		"jquery-hammerjs",
-		"jquery.transit",
-		"backbone.babysitter",
-//		"backbone.select",
-//		"backbone.cycle",
-	];
-	grunt.config("browserify.vendor.options.require", vendorRequires);
-	grunt.config("browserify.vendor.options.alias", [
-		"./bower_components/jquery-color/jquery.color.js:jquery-color"
-	]);
-	grunt.config("browserify.vendor.options.shim", {
-		"jquery-color": {
-			// path: "./bower_components/jquery-color/jquery.color.js",
-			exports: "jquery-color",
-			depends: {
-				jquery: "$"
-			}
-		},
-	});
-
-	/** browserify:client */
-	grunt.config("browserify.client.options.external", vendorRequires.concat([
-		"jquery-color",
-	])); // Vendor requires as externals
+//	var vendorRequires =;
+//	grunt.config("browserify.vendor.options.require", vendorRequires);
+//	grunt.config("browserify.vendor.options.alias", );
+//	grunt.config("browserify.vendor.options.shim", );
+//	grunt.config("browserify.client.options.external", vendorRequires.concat([
+//		"jquery-color",
+//	])); // Vendor requires as externals
 
 	/** browserify:watchable */
 	grunt.config("browserify.watchable", grunt.config("browserify.client")); // Duplicate browserify.client task for watch
 	grunt.config("browserify.watchable.options.watch", true);
 
-	/* Add bower deps to browserify */
-	// grunt.loadNpmTasks("grunt-browserify-bower");
-	// grunt.config("browserifyBower.vendor", {
-	// 	options: {
-	// 		file: "./js/vendor-bower.js",
-	// 		forceResolve: {
-	// 			"backbone.picky": "lib/backbone.picky.js",
-	// 			"jquery-color": "jquery.color.js"
-	// 		}
-	// 	}
-	// });
+
+	/** browserify:dist */
+	grunt.config("browserify.dist", {
+		dest: "./js/folio.js",
+		src: [
+			"./src/js/app/App.js"
+		],
+		options: {
+			browserifyOptions: {
+				fullPaths: false,
+				debug: true
+			},
+			transform: [
+				"node-underscorify"
+			],
+			alias: [
+				"./bower_components/jquery-color/jquery.color.js:jquery-color"
+			],
+			shim: {
+				"jquery-color": {
+					// path: "./bower_components/jquery-color/jquery.color.js",
+					exports: "jquery-color",
+					depends: {
+						jquery: "$"
+					}
+				},
+			}
+		}
+	});
+
 
 	/* Extract source maps from browserify */
 	grunt.loadNpmTasks("grunt-exorcise");
@@ -133,12 +146,17 @@ module.exports = function (grunt) {
 		options: {
 			root: "/workspace/assets/"
 		},
-		"vendor": {
+		vendor: {
 			files: {
-				"js/vendor.js.map": ["js/vendor.js"]
+				"js/folio-vendor.js.map": ["js/folio-vendor.js"]
 			}
 		},
-		"client": {
+		client: {
+			files: {
+				"js/folio-client.js.map": ["js/folio-client.js"]
+			}
+		},
+		dist: {
 			files: {
 				"js/folio.js.map": ["js/folio.js"]
 			}
@@ -149,24 +167,46 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks("grunt-contrib-uglify");
 	grunt.config("uglify", {
 		options: {
-			mangle: false,
 			sourceMap: true,
 		},
-		"vendor": {
+		vendor: {
 			options: {
 				mangle: true,
-				sourceMapIn: "js/vendor.js.map"
+				sourceMapIn: "js/folio-vendor.js.map"
 			},
 			files: {
-				"js/vendor.min.js": ["js/vendor.js"]
+				"js/folio-vendor.min.js": ["js/folio-vendor.js"]
 			}
 		},
-		"client": {
+		client: {
 			options: {
-				sourceMapIn: "js/folio.js.map"
+				mangle: false,
+				sourceMapIn: "js/folio-client.js.map",
+				compress: {
+					global_defs: {
+    					DEBUG: true
+					}
+				}
 			},
 			files: {
-				"js/folio.min.js": ["js/folio.js"]
+				"js/folio-client.min.js": ["js/folio-client.js"]
+			}
+		},
+		dist: {
+			options: {
+				mangle: true,
+//				beautify: true,
+				sourceMapIn: "js/folio.js.map",
+				compress: {
+					global_defs: {
+    					"DEBUG": false
+					},
+					dead_code: true,
+        			drop_console: true
+				}
+			},
+			files: {
+				"js/folio.js": ["js/folio.js"]
 			}
 		},
 	});
@@ -186,7 +226,7 @@ module.exports = function (grunt) {
 //		},
 		"build-scripts": {
 			tasks: ["exorcise:client"],
-			files: ["js/folio.js"],
+			files: ["js/folio-client.js"],
 		},
 		"build-styles": {
 			tasks: ["compass:client", "autoprefixer:client"],
@@ -196,6 +236,7 @@ module.exports = function (grunt) {
 
 	// DEBUG: check config result
 	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
+	grunt.registerTask("distScripts", ["browserify:dist", "exorcise:dist", "uglify:dist"]);
 
 	// Other
 	//	grunt.registerTask("buildVendor", 	["browserifyBower:vendor", "browserify:vendor", "exorcise:vendor", "uglify:vendor"]);
@@ -208,8 +249,8 @@ module.exports = function (grunt) {
 	// Watch build
 	grunt.registerTask("watchAll", ["browserify:watchable", "watch"]);
 //	grunt.registerTask("watchEditor", ["browserify:watchable", "watch:build-scripts", "watch:build-styles", ]);
-	grunt.registerTask("sublimeBuild", ["watchAll"]);
-	grunt.registerTask("watchEditor", ["watchAll"]);
+//	grunt.registerTask("sublimeBuild", ["watchAll"]);
+	grunt.registerTask("watchInEditor", ["watchAll"]);
 	// Default task
 	grunt.registerTask("default", ["build"]);
 

@@ -56,7 +56,23 @@ module.exports = Backbone.View.extend({
 		this.listenTo(Backbone, "all", this.onApplicationEvent);
 		this.listenTo(Backbone, "app:error", this.onApplicationError);
 
-		window.DEBUG && this.initDebug();
+		if (DEBUG) {
+			var pager = new CollectionPager({
+				id: "bundle-pager",
+				collection: bundles,
+				labelAttribute: "name"
+			});
+			// append at the bottom of <body/>
+			this.$("#debug-toolbar").append(pager.render().el);
+
+			this.$("#debug-toolbar #tools").click(function (ev) {
+				Backbone.$("#container").toggleClass("debug-grid");
+			});
+			controller.listenTo(pager, "view:select:one", controller.selectBundle);
+			controller.listenTo(pager, "view:select:none", controller.deselectBundle);
+		} else {
+			this.$("#debug-toolbar").remove();
+		}
 	},
 
 	onApplicationEvent: function (eventName) {
@@ -73,20 +89,5 @@ module.exports = Backbone.View.extend({
 		console.log("AppView.onApplicationError", arguments);
 	},
 
-	initDebug: function () {
-		var pager = new CollectionPager({
-			id: "bundle-pager",
-			collection: bundles,
-			labelAttribute: "name"
-		});
-		// append at the bottom of <body/>
-		this.$("#debug-toolbar").append(pager.render().el);
-
-		this.$("#debug-toolbar #tools").click(function (ev) {
-			Backbone.$("#container").toggleClass("debug-grid");
-		});
-		controller.listenTo(pager, "view:select:one", controller.selectBundle);
-		controller.listenTo(pager, "view:select:none", controller.deselectBundle);
-	},
 
 });
