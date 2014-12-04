@@ -9,13 +9,13 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {module:hammerjs} */
+var Hammer = require("hammerjs");
 
 /** @type {module:app/control/Controller} */
 var controller = require("../control/Controller");
 /** @type {module:app/model/collection/BundleList} */
 var bundles = require("../model/collection/BundleList");
-/** @type {module:app/model/collection/ImageList} */
-var images = require("../model/collection/ImageList");
 
 /** @type {module:app/view/Carousel} */
 var Carousel = require("./Carousel");
@@ -42,43 +42,36 @@ var ContentView = Backbone.View.extend({
 
 	/** Setup listening to model changes */
 	initialize: function (options) {
-//		this.listenTo(Backbone, "all", this.onApplicationEvent);
-		this.listenTo(Backbone, "app:bundle:item", this.createChildren);
-		this.listenTo(Backbone, "app:bundle:list", this.removeChildren);
+//		this.hammer = new Hammer.Manager(this.el);
+//		this.hammer.add(new Hammer.Swipe({
+//			direction: Hammer.DIRECTION_VERTICAL,
+//			threshold: 10,
+//		}));
+//		this.hammer.on("swipeup", function() {
+//			bundles.selected && controller.selectBundle(bundles.followingOrFirst());
+//		});
+//		this.hammer.on("swipedown", function() {
+//			bundles.selected && controller.selectBundle(bundles.precedingOrLast());
+//		});
+
+		this.listenTo(Backbone, {
+			"app:bundle:item": this.createChildren,
+			"app:bundle:list": this.removeChildren
+		});
 	},
 
-	render: function() {
+	render: function () {
 		return this;
 	},
 
-	onApplicationEvent: function (eventName) {
-		switch (eventName) {
-		case "app:bundle:item":
-			this.createChildren();
-			this.listenTo(bundles, "select:one", this.updateChildren);
-			break;
-		case "app:bundle:list":
-			this.removeChildren();
-			this.stopListening(bundles);
-			break;
-		}
-	},
-
-	updateChildren: function () {
-//		this.removeChildren();
-//		this.createChildren();
-	},
+	/* -------------------------------
+	 * Bundle Components
+	 * ------------------------------- */
 
 	createChildren: function () {
-		var container, buffer;
-
-		// create & render children outside the dom
-		buffer = document.createDocumentFragment();
-
 		// content-detail (layout container)
-		container = document.createElement("div");
-		container.id = "content-detail";
-		buffer.appendChild(container);
+		this.container = document.createElement("div");
+		this.container.id = "content-detail";
 
 		// selected bundle description
 		this.bundleDetail = new CollectionStack({
@@ -87,60 +80,85 @@ var ContentView = Backbone.View.extend({
 			model: bundles.selected,
 			template: bundleDescTemplate,
 		});
-		container.appendChild(this.bundleDetail.render().el);
+		this.container.appendChild(this.bundleDetail.render().el);
+		this.el.appendChild(this.container);
+		this.createImageChildren(bundles.selected);
+		this.listenTo(bundles, "select:one", this.updateChildren);
+	},
 
-		// dot nav
-		this.imagePager = new SelectableListView({
-			id: "images-pager",
-			collection: images,
-			renderer: DotNavigationRenderer
-		});
-		controller.listenTo(this.imagePager, "view:select:one", controller.selectImage);
-		container.appendChild(this.imagePager.render().el);
-
-		// selected image description
-//		this.imageDetail = new CollectionStack({
-//			id: "image-detail",
-//			collection: images,
-//			model: images.selected,
-//			template: imageDescTemplate,
-//		});
-//		this.imageDetail.$el.addClass("text-color-faded animated");
-//		container.appendChild(this.imageDetail.render().el);
-
-		// carousel
-		this.imageCarousel = new Carousel({
-			id: "bundle-images",
-			collection: images,
-			renderer: ImageRenderer
-		});
-		controller.listenTo(this.imageCarousel, "view:select:one", controller.selectImage);
-		buffer.appendChild(this.imageCarousel.render().el);
-
-		this.el.appendChild(buffer);
+	updateChildren: function () {
+		this.removeImageChildren();
+		this.createImageChildren();
 	},
 
 	removeChildren: function () {
-		controller.stopListening(this.imageCarousel);
-		this.imageCarousel.remove();
-
+		this.stopListening(bundles);
+		this.removeImageChildren();
 		this.bundleDetail.remove();
-
-		if (this.imagePager) {
-			controller.stopListening(this.imagePager);
-			this.imagePager.remove();
-		}
-//		if (this.imageDetail) {
-//			this.imageDetail.remove();
-//		}
-
 		this.$el.empty(); // removes div#content-detail
 	},
 
 	/** @override */
-	remove: function() {
+	remove: function () {
 		this.removeChildren();
 		Backbone.View.prototype.remove.apply(this, arguments);
+	},
+
+	/* -------------------------------
+	 * bundle/images Components
+	 * ------------------------------- */
+
+	createImageChildren: function () {
+		var bundle = bundles.selected;
+		// dot nav
+		this.imagePager = new SelectableListView({
+//			id: "images-pager-" + bundle.get("handle"),
+			collection: bundle.get("images"),
+			renderer: DotNavigationRenderer
+		});
+		this.imagePager.$el.addClass("images-pager mutable-faded");
+		controller.listenTo(this.imagePager, "view:select:one", controller.selectImage);
+		this.container.appendChild(this.imagePager.render().el);
+
+		// carousel
+		this.imageCarousel = new Carousel({
+//			id: "carousel-" + bundle.get("handle"),
+			collection: bundle.get("images"),
+			renderer: ImageRenderer
+		});
+//		this.hammer.get("swipe").requireFailure(this.imageCarousel.hammer.get("pan"));
+//		this.imageCarousel.hammer.get("pan").requireFailure(this.hammer.get("swipe"));
+		controller.listenTo(this.imageCarousel, "view:select:one", controller.selectImage);
+		this.el.appendChild(this.imageCarousel.render().el);
+
+//		this.imageCarousel.render().$el
+//					.css({opacity:0})
+////					.css({transform: "translateY(100%)"})
+//					.delay(550)
+//					.appendTo(this.$el)
+//					.transit({opacity:1}, 300);
+////					.transit({transform: "translateY(0)"}, 300);
+	},
+
+	removeImageChildren: function () {
+		controller.stopListening(this.imagePager);
+		this.imagePager.remove();
+		this.imagePager = void 0;
+
+//		this.hammer.get("swipe").dropRequireFailure(this.imageCarousel.hammer.get("pan"));
+//		this.imageCarousel.hammer.get("pan").dropRequireFailure(this.hammer.get("swipe"));
+		controller.stopListening(this.imageCarousel);
+		this.imageCarousel.remove();
+		this.imageCarousel = void 0;
+
+//		carousel.$el
+//			.delay(300)
+//			.css({opacity: 1})
+//			.transit({opacity: 0}, 150)
+//			.promise()
+//			.done(function() {
+//				carousel.remove();
+//			});
 	},
 
 });

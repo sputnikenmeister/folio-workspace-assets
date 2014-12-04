@@ -23,7 +23,7 @@ module.exports = DeferredRenderView.extend({
 	/** @override */
 	tagName: "div",
 	/** @override */
-	className: "image-list",
+	className: "carousel",
 	/** @type {Number} factor 0-1 */
 	selectThreshold: 0.15,
 	/** @type {int} In pixels */
@@ -50,18 +50,26 @@ module.exports = DeferredRenderView.extend({
 			threshold: this.panThreshold,
 		}));
 
+//		_.bindAll(this, "onPanStart", "onPanMove", "onPanEnd", "onPanCancel");
+//		this.hammer.on("panstart", this.onPanStart);
+//		this.hammer.on("panmove", this.onPanMove);
+//		this.hammer.on("panend", this.onPanEnd);
+//		this.hammer.on("pancancel", this.onPanCancel);
+//		this.hammer.on("panstart panmove panend pancancel", function(ev) { console.log(ev.type); });
+
 		_.bindAll(this, "onResize");
 		Backbone.$(window).on("orientationchange resize", this.onResize);
 
 		this.listenTo(this.collection, "reset", this.onCollectionReset);
 		this.listenTo(this.collection, "select:one", this.onSelectOne);
-		// this.hammer.on("panstart panmove panend pancancel", function(ev) { console.log(ev.type); });
 	},
 
 	remove: function () {
 		this.removeChildren();
-		Backbone.$(window).off("orientationchange resize", this.onResize);
 		Backbone.View.prototype.remove.apply(this, arguments);
+		Backbone.$(window).off("orientationchange resize", this.onResize);
+//		this.hammer.off("panstart panmove panend pancancel");
+		this.hammer.destroy();
 	},
 
 	/* --------------------------- *

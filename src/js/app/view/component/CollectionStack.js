@@ -31,24 +31,25 @@ module.exports = Backbone.View.extend({
 		this.listenTo(this.collection, "deselect:one", this.unsetModel);
 		this.listenTo(this.collection, "select:one", this.setModel);
 
-		if (this.model) {
-			this.skipAnimation = true;
-			this.listenTo(this.model, "change", this.onModelChange);
+		this.skipAnimation = true;
+
+//		if (this.collection.selected) {
+//			this.listenTo(this.model, "change", this.onModelChange);
 //			this.setModel(this.collection.selected);
-		}
+//		}
 	},
 
 	onCollectionReset: function() {
-		console.log("onCollectionReset", this.el.id);
-		if (this.collection.selected) {
+//		console.log("onCollectionReset", this.el.id);
+//		if (this.collection.selected) {
 			this.skipAnimation = true;
 //			this.setModel(this.collection.selected);
-		}
+//		}
 	},
 
 	unsetModel: function (model) {
 		// clear only if a different model hasn't been set
-		console.log("unsetModel",this.el.id, String(model));
+//		console.log("unsetModel",this.el.id, String(model));
 		if (this.model === model) {
 			this.model = null;
 			this.stopListening(model);
@@ -57,7 +58,7 @@ module.exports = Backbone.View.extend({
 	},
 
 	setModel: function(model) {
-		console.log("setModel",this.el.id, String(model));
+//		console.log("setModel",this.el.id, String(model));
 		if (this.model !== model) {
 			this.model = model;
 			this.listenTo(model, "change", this.requestRender);
@@ -78,7 +79,7 @@ module.exports = Backbone.View.extend({
 	},
 
 	render: function () {
-		console.log("render", this.el.id, String(this.model));
+//		console.log("render", this.el.id, String(this.model));
 		if (this.skipAnimation) {
 			if (this.$content) {
 				this.$content.clearQueue().remove();

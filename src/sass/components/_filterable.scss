@@ -1,13 +1,19 @@
+.list-item {
+	a {
+		color: inherit;
+	}
+}
+
 .list.filterable {
 	position: relative;
 	.list-item {
 		display: block;
-		// white-space: nowrap;
-		// overflow-y: hidden;
-		// text-overflow: ellipsis;
 		-webkit-transition: translate3d(0,0,0);
 		a {
-			color: inherit;
+			display: block;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
 		}
 	}
 	.selected {
@@ -67,6 +73,7 @@ $collapse-ease: ease;
 		opacity: 1;
 	}
 	.list-group {
+		height: 1.5em;
 		visibility: visible;
 		opacity: 1;
 	}

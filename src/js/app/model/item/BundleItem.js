@@ -1,10 +1,21 @@
 /**
-* @module app/model/item/BundleItem
-* @requires module:backbone
-*/
+ * @module app/model/item/BundleItem
+ * @requires module:backbone
+ */
 
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
+/** @type {module:underscore} */
+var _ = require("underscore");
+/** @type {module:app/utils/strings/stripTags} */
+var stripTags = require("../../utils/strings/stripTags");
+/** @type {module:app/utils/strings/parseTaglist} */
+var parseSymAttrs = require("../../utils/strings/parseSymAttrs");
+
+/** @type {module:app/helper/SelectableList} */
+var SelectableList = require("../../helper/SelectableList");
+/** @type {module:app/model/item/ImageItem} */
+var ImageItem = require("../item/ImageItem");
 
 /**
  * @constructor
@@ -18,26 +29,53 @@ module.exports = Backbone.Model.extend({
 		handle: "",
 		desc: "",
 		completed: 0,
-		attrs: [],
+		attrs: {},
 		kIds: [],
 		excluded: false,
 	},
 
-	initialize: function(attrs, options) {
-		// if (!this.isNew())
-		// 	this.selector = "#b" + this.id;
+	mutators: {
+		text: function () {
+			return stripTags(this.get("desc"));
+		},
+		images: {
+			set: function (key, value, options, set) {
+				set(key, new SelectableList(value, {
+					model: ImageItem,
+					comparator: "o"
+				}), options);
+			}
+		},
+		attrs: {
+			set: function (key, value, options, set) {
+				if (_.isArray(value)) {
+					var attrs = {};
+					_.each(value, function (attr) {
+						var idx = attr.indexOf(":");
+						if (idx > 0) {
+							attrs[attr.substring(0, idx)] = parseSymAttrs(attr.substring(idx + 1));
+						} // else drop it
+					});
+					set(key, attrs, options);
+				} else {
+					set(key, value, options);
+				}
+			}
+		}
 	},
 
-	parse: function(resp, options) {
+	initialize: function (attrs, options) {},
+
+	parse: function (resp, options) {
 		return resp;
 	},
 
-	selector: function() {
+	selector: function () {
 		return "#b" + this.id;
 	},
 
 	/** @override */
-	toString: function() {
+	toString: function () {
 		return this.id;
 	},
 

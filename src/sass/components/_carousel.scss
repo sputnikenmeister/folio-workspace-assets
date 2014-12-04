@@ -1,123 +1,87 @@
-.image-list.animate > .image-item {
-	transform: translate3d(0,0,0);
+.carousel.animate > .image-item {
+	transform: translate3d(0, 0, 0);
 	// transition: all 0.4s;
 }
 
-.image-list * {
+.carousel * {
 	user-select: none;
 	cursor: default;
 }
-
+// States for .image-item: .idle > .pending > [ .done | .error ]
 .image-item {
+	&.idle {
+		display: none;
+	}
 	// Common size
 	@mixin image-content-size() {
 		position: absolute;
 		display: block;
+		box-sizing: border-box;
 		left: $page-margin-left;
 		width: $page-width - $page-margin-left - $page-margin-right;
 	}
 	// Image
 	img {
-		@include image-content-size();
+		// *** mutable properties: must be in the first matching rule
 		border: 0 none;
 		background-color: transparent;
 		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
+		@include image-content-size();
 	}
-	img {
+	&.idle img {
+		display: none;
+	}
+	&.pending img {
 		visibility: hidden;
 		opacity: 0;
 	}
-	&.loaded img {
-		transition: opacity $duration;
+	&.done img {
+		transition: opacity $duration $duration;
 		visibility: visible;
 		opacity: 1;
 	}
-//	&.loading img { display: none; }
-	//&.error img { }
-
+	&.error img {
+		display: none;
+	}
 	// Placeholder
 	.placeholder {
-		@include image-content-size();
-		box-sizing: border-box;
+		// *** mutable properties: must be in the first matching rule
 		border: 1px solid transparent;
+		color: $background-color;
+		@include image-content-size();
 	}
-	&.loaded .placeholder {
-		transition: visibility $duration step-end;
+	&.done .placeholder {
+		transition: visibility $duration $duration step-end;
 		visibility: hidden;
 	}
-	&.error .placeholder {
-		transition: background-color 0.5s, border-color 0.5s;
-		background-color: lighten($link-color, 5%);
-		border-color: lighten($link-color, 0%);
+	//&.error .placeholder {}
+
+	// Placeholder label
+	@mixin placeholder-message {
+		font-size: 5rem;
+		font-weight: 600;
+		font-style: italic;
+		text-transform: uppercase;
+		letter-spacing: -0.05em;
+		// Centering
+		text-align: center;
+		position: absolute;
+		line-height: 1;
+		top: 50%;
+		width: 100%;
+		margin-top: -0.5em;
+		// just in case
+		overflow: hidden;
+		white-space: nowrap;
 	}
-
-	// Spinner
-	// .placeholder:after {
-	// 	@include spinner-icon;
-	// 	@include font-smoothing;
-	// 	@include text-rendering-speed;
-	// 	font-size: 2rem;
-	// 	text-decoration: none;
-	// 	position: absolute;
-	// 	top: calc(50% - 1em);
-	// 	left: calc(50% - 1em);
-	// }
-	// &.pending .placeholder:after {
-	// 	animation: none;
-	// 	visibility: hidden;
-	// 	opacity: 0;
-	// }
-	// &.loading .placeholder:after {
-	// 	animation: spin 2s infinite steps(48), fadeIn 0.5s;
-	// 	visibility: visible;
-	// 	opacity: 1;
-	// }
-	// &.loaded .placeholder:after {
-	// 	animation: spin 1s steps(24), fadeOut 0s 1s;
-	// 	visibility: hidden;
-	// 	opacity: 0;
-	// }
-	// &.error	.placeholder:after {
-	// 	animation: spin 1s steps(24), fadeOut 1s;
-	// 	visibility: hidden;
-	// 	opacity: 0;
-	// }
+	&.pending .placeholder:after,
+	&.error .placeholder:after {
+		@include placeholder-message();
+	}
+	&.pending .placeholder:after {
+		content: "Loading";
+	}
+	&.error .placeholder:after {
+		content: "Error";
+	}
 }
-
-//@keyframes spin {
-//	0% {
-//		transform: rotateZ(0deg);
-//	}
-//	100% {
-//		transform: rotateZ(359deg);
-//	}
-//}
-//
-//@keyframes fadeIn {
-//	0% {
-//		visibility: hidden;
-//	}
-//	1% {
-//		visibility: visible;
-//		opacity: 0;
-//	}
-//	100% {
-//		visibility: visible;
-//		opacity: 1;
-//	}
-//}
-//
-//@keyframes fadeOut {
-//	0% {
-//		visibility: visible;
-//		opacity: 1;
-//	}
-//	99% {
-//		visibility: visible;
-//		opacity: 0;
-//	}
-//	100% {
-//		visibility: hidden;
-//	}
-//}
-

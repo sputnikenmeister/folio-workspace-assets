@@ -17,6 +17,7 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 Backbone.$ = $;
 require("backbone.babysitter");
+require("backbone.mutators");
 
 $(document).ready(function ($) {
 	"use strict";

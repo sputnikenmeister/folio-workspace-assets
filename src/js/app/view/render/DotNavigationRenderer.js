@@ -8,8 +8,6 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 /** @type {string} */
 var viewTemplate = require("../template/DotNavigationRenderer.tpl");
-/** @type {module:backbone} */
-var Strings = require("../../helper/Strings");
 
 /**
  * @constructor
@@ -20,7 +18,7 @@ var DotNavigationRenderer = Backbone.View.extend({
 	/** @override */
 	tagName: "li",
 	/** @override */
-	className: "list-item dots-fontello text-color-faded animated",
+	className: "list-item dots-fontello",
 	/** @override */
 	template: viewTemplate,
 	/** @override */
@@ -31,6 +29,7 @@ var DotNavigationRenderer = Backbone.View.extend({
 		}
 	},
 
+	/** @override */
 	initialize: function (options) {
 		this.listenTo(this.model, "selected", function () {
 			this.$el.addClass("selected");
@@ -44,13 +43,12 @@ var DotNavigationRenderer = Backbone.View.extend({
 	render: function () {
 		this.$el.html(this.template({
 			href: this.model.cid,
-			label: Strings.stripTags(this.model.get("desc"))
+			name: this.model.get("name")
 		}));
-//		if (this.model.collection.length === 1) {
-//			this.$el.addClass("single-item");
-//		}
 		if (this.model.selected) {
 			this.$el.addClass("selected");
+		} else {
+			this.$el.removeClass("selected");
 		}
 		return this;
 	},

@@ -42,8 +42,13 @@ var DefaultSelectableRenderer = Backbone.View.extend({
 	render: function () {
 		this.$el.html(this.template({
 			href: this.model.cid,
-			label: this.model.toString()
+			name: this.model.get("name")
 		}));
+		if (this.model.selected) {
+			this.$el.addClass("selected");
+		} else {
+			this.$el.removeClass("selected");
+		}
 		return this;
 	},
 

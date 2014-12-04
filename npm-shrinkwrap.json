@@ -1,0 +1,35 @@
+{
+  "name": "folio-sym-workspace",
+  "version": "0.1.0",
+  "dependencies": {
+    "Backbone.Mutators": {
+      "version": "0.4.4",
+      "dependencies": {
+        "underscore": {
+          "version": "1.6.0"
+        }
+      }
+    },
+    "backbone": {
+      "version": "*"
+    },
+    "backbone.babysitter": {
+      "version": "*"
+    },
+    "hammerjs": {
+      "version": "*"
+    },
+    "jquery": {
+      "version": "*"
+    },
+    "jquery-hammerjs": {
+      "version": "*"
+    },
+    "jquery.transit": {
+      "version": "*"
+    },
+    "underscore": {
+      "version": "1.6.0"
+    }
+  }
+}

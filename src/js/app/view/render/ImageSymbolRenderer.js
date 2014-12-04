@@ -6,8 +6,8 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {module:app/helper/Styles} */
-var Styles = require("../../helper/Styles");
+/** @type {module:app/utils/Styles} */
+var Styles = require("../../utils/Styles");
 
 /** @type {string} */
 //var viewTemplate = require("../template/DefaultSelectableRenderer.tpl");

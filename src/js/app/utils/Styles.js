@@ -1,6 +1,6 @@
 /**
  * Some static helper functions
- * @module app/helper/Styles
+ * @module app/utils/Styles
  */
 
 /** @type {module:jquery} */

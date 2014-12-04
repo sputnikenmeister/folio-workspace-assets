@@ -22,10 +22,12 @@ var longdescTemplate = _.template("i<%= id %>-caption");
 var imageSrcTemplate = _.template(window.approot + "/workspace/uploads/<%= filename %>");
 // var imageSrcTemplate = _.template(window.approot + "/image/1/<%= constraint %>/0/uploads/<%= filename %>");
 
-/** @type {module:app/helper/Styles} */
-var Styles = require("../../helper/Styles");
-/** @type {module:backbone} */
-var Strings = require("../../helper/Strings");
+/** @type {module:app/utils/Styles} */
+var Styles = require("../../utils/Styles");
+/** @type {module:app/utils/strings/stripTags} */
+var stripTags = require("../../utils/strings/stripTags");
+/** @type {module:app/utils/strings/stripTags} */
+var loadImageXHR = require("../../utils/fn/loadImageXHR");
 
 /* --------------------------
  * Static Private
@@ -48,7 +50,7 @@ module.exports = Backbone.View.extend({
 	/** @type {string} */
 	tagName: "div",
 	/** @type {string} */
-	className: "image-item pending",
+	className: "image-item idle",
 	/** @type {module:app/model/ImageItem} */
 	model: ImageItem,
 	/** @param {Object} @return {string} */
@@ -75,15 +77,15 @@ module.exports = Backbone.View.extend({
 	},
 
 	listenToSelection: function () {
-		var sibling;
-		if (sibling = this.model.collection.following(this.model)) this.listenTo(sibling, "selected", this.requestImageLoad);
-		if (sibling = this.model.collection.preceding(this.model)) this.listenTo(sibling, "selected", this.requestImageLoad);
+		var sibling, owner = this.model.collection;
+		if (sibling = owner.following(this.model)) this.listenTo(sibling, "selected", this.requestImageLoad);
+		if (sibling = owner.preceding(this.model)) this.listenTo(sibling, "selected", this.requestImageLoad);
 		this.listenTo(this.model, "selected", this.requestImageLoad);
 	},
 	stopListeningToSelection: function () {
-		var sibling;
-		if (sibling = this.model.collection.following(this.model)) this.stopListening(sibling, "selected", this.requestImageLoad);
-		if (sibling = this.model.collection.preceding(this.model)) this.stopListening(sibling, "selected", this.requestImageLoad);
+		var sibling, owner = this.model.collection;
+		if (sibling = owner.following(this.model)) this.stopListening(sibling, "selected", this.requestImageLoad);
+		if (sibling = owner.preceding(this.model)) this.stopListening(sibling, "selected", this.requestImageLoad);
 		this.stopListening(this.model, "selected", this.requestImageLoad);
 	},
 
@@ -119,7 +121,7 @@ module.exports = Backbone.View.extend({
 
 	/** @return {String} */
 	getImageAlt: function () {
-		return this.imageAlt || (this.imageAlt = Strings.stripTags(this.model.get("desc")));
+		return this.imageAlt || (this.imageAlt = stripTags(this.model.get("desc")));
 	},
 
 	/** @type {Number} */
@@ -144,7 +146,7 @@ module.exports = Backbone.View.extend({
 		image.width = this.getConstrainedWidth();
 		image.height = this.getConstrainedHeight();
 		image.longDesc = this.getLongDesc();
-		image.alt = this.getImageAlt();
+		image.alt = this.model.get("text");
 		return image;
 	},
 
@@ -153,45 +155,43 @@ module.exports = Backbone.View.extend({
 	 * -------------------------- */
 
 	startImageLoad: function () {
+		this.$el.removeClass("idle").addClass("pending");
 		var image = this.createImageElement();
 		this.$el.append(image);
-
-		this.loadImage(image, this.getImageSrc())
-			.then(this.onLoad, this.onError, this.onProgress);
+		this.loadImage(image, this.getImageSrc()).then(this.onLoad, this.onError, this.onProgress);
 	},
 
-	onLoad: function (image, ev) {
-		this.$el.removeClass("loading").addClass("loaded");
-//		 console.log("ImageRenderer.onLoad: " + this.model.get("f"));
+	onLoad: function (url, source, ev) {
+		this.$el.removeClass("pending").addClass("done");
+		console.info("ImageRenderer.onLoad: " + url);
+	},
+	onProgress: function (progress, source, ev) {
+		//console.log("ImageRenderer.onProgress: " + this.model.get("f"), (progress).toFixed(3));
+	},
+	onError: function (err, source, ev) {
+		this.$el.removeClass("pending").addClass("error");
+		console.warn("ImageRenderer.onError: " + String(err), arguments);
 	},
 
-	onError: function (image, err, ev) {
-		this.$el.removeClass("loading").addClass("error");
-//		 console.log("ImageRenderer.onError: " + this.model.get("f"));
-	},
-
-	onProgress: function (image) {
-		this.$el.removeClass("pending").addClass("loading");
-//		 console.log("ImageRenderer.onProgress: " + this.model.get("f"));
-	},
 
 	loadImage: function (image, url) {
 		var deferred = new Deferred();
-		// var image = this.createImageElement();
-
 		image.onload = function (ev) {
-			deferred.resolve(image, ev);
+			deferred.resolve(url, image, ev);
 			image.onload = image.onerror = image.onabort = null;
 		};
 		image.onerror = function (ev) {
-			deferred.reject(image, Error("There was a network error."), ev);
-			image.onload = image.onerror = image.onabort = null;
+			deferred.reject(Error("There was a network error."), image, ev);
 		};
 		image.onabort = image.onerror;
-
+		deferred.always(function () {
+			image.onload = void 0;
+			image.onerror = void 0;
+			image.onabort = void 0;
+		});
 		_.defer(function () {
 			image.src = url;
-			deferred.notify(image);
+			deferred.notify(0, image, void 0); // mock notify
 		});
 		return deferred.promise();
 	},
@@ -199,62 +199,21 @@ module.exports = Backbone.View.extend({
 	/* --------------------------
 	 * image load xhr
 	 * -------------------------- */
-	/*global XMLHttpRequest, Image, Promise, Blob */
 
 	///*
 	startImageLoad_xhr: function () {
-		this.loadImage_xhr(this.getImageSrc()).then(this.onLoad_xhr, this.onError, this.onProgress_xhr);
-		this.$el.addClass("loading");
+		var promise = loadImageXHR(this.getImageSrc());
+		promise.then(this.onLoad_xhr, this.onError, this.onProgress);
+		this.$el.removeClass("idle").addClass("pending");
 	},
 
-	onLoad_xhr: function (response) {
-		// The first runs when the promise resolves, with the request.reponse
-		// specified within the resolve() method.
-		console.log("ImageRenderer.onLoad_xhr: " + this.model.get("f"), response);
-
+	onLoad_xhr: function (url, request, ev) {
 		var image = this.createImageElement();
-		image.src = window.URL.createObjectURL(new Blob([response]));
-
-		this.$el.removeClass("loading").addClass("loaded");
-		this.$el.prepend(image);
+		image.src = url;
+		this.$el.append(image);
+		this.$el.removeClass("pending").addClass("done");
+		console.log("ImageRenderer.onLoad_xhr: " + this.model.get("f"), request.response);
 	},
 
-	onProgress_xhr: function (request, ev) {
-		// if (ev instanceof ProgressEvent) {}
-		console.log("ImageRenderer.onProgress: " + this.model.get("f"), (ev.loaded / ev.total).toFixed(3));
-	},
-
-	// @see https://github.com/mdn/promises-test/blob/gh-pages/index.html
-	loadImage_xhr: function (src) {
-		var deferred = new Deferred();
-		var request = new XMLHttpRequest();
-		request.open("GET", src, true);
-		request.responseType = "arraybuffer";
-
-		// When the request loads, check whether it was successful
-		request.onload = function (ev) {
-			if (request.status == 200) {
-				// If successful, resolve the promise by passing back the request response
-				console.log("- ImageRenderer loadImage_xhr.onload:" + request.statusText, arguments);
-				deferred.resolve(request.response);
-			} else {
-				// If it fails, reject the promise with a error message
-				deferred.reject(Error("Image didn\'t load successfully; error code:" + request.statusText));
-			}
-		};
-		request.onerror = function (ev) {
-			// Also deal with the case when the entire request fails to begin with
-			// This is probably a network error, so reject the promise with an appropriate message
-			deferred.reject(Error("There was a network error."), ev);
-		};
-		request.onabort = request.ontimeout = request.onerror;
-		request.onprogress = function (ev) {
-			deferred.notify(request, ev);
-		};
-		request.onloadstart = request.onloadend = request.onprogress;
-
-		_.defer(_.bind(request.send, request));
-		return deferred.promise();
-	},
 	//*/
 });

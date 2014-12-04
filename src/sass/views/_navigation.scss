@@ -1,3 +1,8 @@
+
+.app-initial #container {
+	visibility: hidden;
+}
+
 #header {
 	position: relative;
 	padding-top: 3.5rem;
@@ -23,9 +28,6 @@
 	min-height: 9rem;
 	visibility: visible; opacity: 1;
 	transition: transform $duration;
-}
-.app-initial #navigation {
-	visibility: hidden; opacity: 0;
 }
 .app-bundle-list #navigation {
 	height: auto;

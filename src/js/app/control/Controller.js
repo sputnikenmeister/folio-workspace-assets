@@ -15,21 +15,13 @@ var types = require("../model/collection/TypeList");
 var keywords = require("../model/collection/KeywordList");
 /** @type {module:app/model/collection/BundleList} */
 var bundles = require("../model/collection/BundleList");
-/** @type {module:app/model/collection/ImageList} */
-var images = require("../model/collection/ImageList");
 
-/** @type {module:app/helper/Styles} */
-var Styles = require("../helper/Styles");
+/** @type {module:app/utils/Styles} */
+var Styles = require("../utils/Styles");
 
 /* --------------------------- *
  * Static private
  * --------------------------- */
-
-var swap = function (s) {
-	return s.replace(/(\,|\;)/g, function (m) {
-		return (m == ",") ? ";" : ",";
-	});
-};
 
 var bodyStyles = ["background", "background-color", "color", "-moz-osx-font-smoothing", "-webkit-font-smoothing"];
 
@@ -60,8 +52,15 @@ function Controller() {
 		}
 	});
 
+	this.listenToOnce(this.router, "all", function() {
+		Backbone.$(document.body).removeClass("app-initial").addClass("app-ready");
+	});
+
 	// this.listenTo(this.router, "route:bundleItem", this.routeToBundleItem);
 	// this.listenTo(this.router, "route:bundleList", this.routeToBundleList);
+
+	this.listenTo(bundles, "select:one", this.onBundleItem);
+	this.listenTo(bundles, "select:none", this.onBundleList);
 
 	// var traceEvent = function(label) {
 	// 	return function(ev) { console.log(label, ev, Array.prototype.slice.call(arguments).join(" ")); };
@@ -69,9 +68,6 @@ function Controller() {
 	// this.listenTo(this.bundles, "all", traceEvent("bundles"));
 	// this.listenTo(this.images, "all", traceEvent("images"));
 	// this.listenTo(this.router, "all", traceEvent("router"));
-
-	this.listenTo(bundles, "select:one", this.onBundleItem);
-	this.listenTo(bundles, "select:none", this.onBundleList);
 }
 
 _.extend(Controller.prototype, Backbone.Events, {
@@ -81,16 +77,16 @@ _.extend(Controller.prototype, Backbone.Events, {
 	 * --------------------------- */
 
 	selectImage: function (image) {
-		this.router.navigate("bundles/" + bundles.selected.get("handle") + "/" + (images.indexOf(image)), {
+		this.router.navigate("bundles/" + bundles.selected.get("handle") + "/" + (bundles.selected.get("images").indexOf(image)), {
 			trigger: false
 		});
-		this.doSelectImage(image);
+		this._selectImage(image);
 	},
 
 	routeToImage: function (bundleHandle, imageIndex) {},
 
-	doSelectImage: function (image) {
-		images.select(image);
+	_selectImage: function (image) {
+		bundles.selected.get("images").select(image);
 	},
 
 	/* -------------------------------
@@ -98,22 +94,24 @@ _.extend(Controller.prototype, Backbone.Events, {
 	 * ------------------------------- */
 
 	/* Handle view events */
-	selectBundle: function (model) {
-		this.router.navigate("bundles/" + model.get("handle") + "/0", {
+	selectBundle: function (bundle) {
+		this.router.navigate("bundles/" + bundle.get("handle") + "/0", {
 			trigger: true
 		});
-		this._selectBundle(model);
+		this._selectBundle(bundle);
 	},
 
 	/* Handle router events */
-	routeToBundleItem: function (bundleHandle, imageIndex) {
-		var bundle = bundles.findWhere({
-			handle: bundleHandle
+	routeToBundleItem: function (handle, imageIndex) {
+		var bundle, images, image;
+		bundle = bundles.findWhere({
+			handle: handle
 		});
 		if (bundle) {
 			this._selectBundle(bundle);
 			if (imageIndex) {
-				var image = images.at(imageIndex);
+				images = bundle.get("images");
+				image = images.at(imageIndex);
 				if (image) {
 					images.select(image);
 				} else {
@@ -131,14 +129,11 @@ _.extend(Controller.prototype, Backbone.Events, {
 			_.delay(function (context) {
 				Backbone.trigger("app:bundle:item", bundle);
 			}, 700, this);
+			Backbone.trigger("app:bundle:item:before", bundle);
+		} else {
+			Backbone.trigger("app:bundle:item:change", bundle);
 		}
 		bundles.select(bundle);
-	},
-
-	onBundleItem: function (bundle) {
-		document.title = "Portfolio – " + bundles.selected.get("name");
-		this.applySelectionStyles();
-		images.reset(bundle.get("images"));
 	},
 
 	/* -------------------------------
@@ -162,14 +157,23 @@ _.extend(Controller.prototype, Backbone.Events, {
 	_deselectBundle: function () {
 		_.delay(function (context) {
 			bundles.deselect();
+			Backbone.trigger("app:bundle:list:after");
 		}, 350, this);
 		Backbone.trigger("app:bundle:list");
+	},
+
+	/* --------------------------- *
+	 * Helpers
+	 * --------------------------- */
+
+	onBundleItem: function (bundle) {
+		document.title = "Portfolio – " + bundles.selected.get("name");
+		this.applySelectionStyles();
 	},
 
 	onBundleList: function () {
 		document.title = "Portfolio";
 		this.clearSelectionStyles();
-		images.reset();
 	},
 
 	/* --------------------------- *
@@ -177,43 +181,49 @@ _.extend(Controller.prototype, Backbone.Events, {
 	 * --------------------------- */
 
 	clearSelectionStyles: function () {
-		Backbone.$("body").removeAttr("style");
-//		Styles.setCSSProperty("body", "color", "");
-//		Styles.setCSSProperty("body", "background-color", "");
+//		Backbone.$("body").removeAttr("style");
+		Styles.setCSSProperty("body", "color", "");
+		Styles.setCSSProperty("body", "background-color", "");
 
-//		Styles.setCSSProperty(".text-color-faded", "color", "");
+//		Styles.setCSSProperty(".mutable-faded", "color", "");
 //		Styles.setCSSProperty(".image-item .placeholder", "backgroundColor", "");
 //		Styles.setCSSProperty(".image-item .placeholder", "borderColor", "");
 	},
 
 	applySelectionStyles: function () {
-		var attrs = {};
-		_.each(bundles.selected.get("attrs"), function (attr) {
-			if (attr.indexOf(":") > 0) {
-				attr = attr.split(":");
-				attrs[attr[0]] = swap(attr[1]);
-			}
-		});
+		var attrs = bundles.selected.get("attrs");
 
-		Backbone.$("body").removeAttr("style").css(_.pick(attrs, bodyStyles));
-//		Styles.setCSSProperty("body", "color", attrs["color"]);
-//		Styles.setCSSProperty("body", "background-color", attrs["background-color"]);
+//		Backbone.$("body").removeAttr("style").css(_.pick(attrs, bodyStyles));
+		Styles.setCSSProperty("body", "color", attrs["color"]);
+		Styles.setCSSProperty("body", "background-color", attrs["background-color"]);
+//		Styles.setCSSProperty(".mutable", "color", attrs["color"]);
+//		Styles.setCSSProperty(".mutable", "background-color", attrs["background-color"]);
 
-		var fgColor, bgColor, cssRule;
-		// background color derivates
-		bgColor = new Color(attrs["background-color"] || Styles.getCSSProperty("body", "background-color"));// || "hsl(47, 5%, 95%)");
-		cssRule = Styles.getCSSRule(".image-item .placeholder");
-		cssRule.style.backgroundColor = bgColor.lightness("-=0.05").toHexString();
-		cssRule.style.borderColor = bgColor.lightness("-=0.08").toHexString();
-
-		// text color derivates
-		fgColor = new Color(attrs["color"] || Styles.getCSSProperty("body", "color"));// || "hsl(47, 5%, 15%)");
-		cssRule = Styles.getCSSRule(".text-color-faded");
-		cssRule.style.color = fgColor.lightness(fgColor.lightness() * 0.666 + bgColor.lightness() * 0.333).toHexString();
-
-		// box-shadow
+		// image-item img
 		Styles.setCSSProperty(".image-item img", "box-shadow", attrs["box-shadow"]);
 		Styles.setCSSProperty(".image-item img", "border-radius", attrs["border-radius"]);
+
+		// mutable classes
+		var fgColor, bgColor, bgLum, fgLum, cssRule;
+		bgColor = new Color(attrs["background-color"] || Styles.getCSSProperty("body", "background-color"));// || "hsl(47, 5%, 95%)");
+		fgColor = new Color(attrs["color"] || Styles.getCSSProperty("body", "color"));// || "hsl(47, 5%, 15%)");
+		bgLum = bgColor.lightness();
+		fgLum = fgColor.lightness();
+
+		// background color derivates
+		cssRule = Styles.getCSSRule(".image-item .placeholder");
+		cssRule.style.backgroundColor = bgColor.lightness(fgLum * 0.200 + bgLum * 0.800).toHexString();
+//		Styles.setCSSProperty(".image-item .placeholder", "background-color", bgColor.lightness(fgLum * 0.200 + bgLum * 0.800).toHexString());
+		cssRule.style.borderColor = bgColor.lightness(fgLum * 0.200 + bgLum * 0.800).toHexString();
+//		Styles.setCSSProperty(".image-item .placeholder", "border-color", bgColor.lightness(fgLum * 0.200 + bgLum * 0.800).toHexString());
+		cssRule.style.color =  bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString();
+//		Styles.setCSSProperty(".image-item .placeholder", "color", bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString());
+
+		// text color derivates
+		cssRule = Styles.getCSSRule(".mutable-faded");
+		cssRule.style.color = fgColor.lightness(fgLum * 0.666 + bgLum * 0.333).toHexString();
+//		Styles.setCSSProperty(".mutable-faded", "color", fgColor.lightness(fgLum * 0.666 + bgLum * 0.333).toHexString());
+//		Styles.setCSSProperty(".mutable-color", "color", fgColor.toHexString());
 
 		//console.log("CSS: ", bgColor.toHslaString(), fgColor.toHslaString(), attrs);
 	},

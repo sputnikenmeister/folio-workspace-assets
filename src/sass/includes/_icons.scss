@@ -1,7 +1,6 @@
 /*
  * Fontello Icons
  */
-
 @import "../fonts/_fontello";
 
 @mixin fontello-icon-base() {
@@ -14,12 +13,12 @@
 }
 @mixin fontello-icon-pseudo() {
 	@include fontello-icon-base();
-	width: 1em;
 	display: inline-block;
 	text-decoration: inherit;
 	text-align: center;
+	width: 1em;
 	/* fix buttons height, for twitter bootstrap */
-//	line-height: 1em;
+	//line-height: 1em;
 }
 @mixin fontello-icon-after() {
 	@include fontello-icon-pseudo();
@@ -30,18 +29,4 @@
 	@include fontello-icon-pseudo();
 	margin-left: -0.1em;
 	margin-right: .4em;
-}
-
-@mixin spinner-icon {
-	content: '\e800';
-	font-family: "fontello";
-	font-style: normal;
-	font-weight: normal;
-	font-variant: normal;
-	text-transform: none;
-	text-align: center;
-	speak: none;
-	width: 1em;
-	margin-left: .2em;
-	display: inline-block;
 }

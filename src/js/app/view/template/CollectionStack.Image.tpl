@@ -1,1 +1,1 @@
-<div id="desc_i<%= id %>" class="description image-caption sc"><%= desc %></div>
+<div id="desc_i<%= id %>" class="description"><%= desc %></div>

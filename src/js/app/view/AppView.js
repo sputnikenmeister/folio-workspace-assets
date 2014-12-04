@@ -53,10 +53,22 @@ module.exports = Backbone.View.extend({
 			el: "#content"
 		});
 
-		this.listenTo(Backbone, "all", this.onApplicationEvent);
-		this.listenTo(Backbone, "app:error", this.onApplicationError);
+		this.listenTo(Backbone, {
+			"app:bundle:item": function() {
+				this.$el.removeClass("app-bundle-list").addClass("app-bundle-item");
+			},
+			"app:bundle:list": function() {
+				this.$el.removeClass("app-bundle-item").addClass("app-bundle-list");
+			},
+			"app:error": this.onApplicationError,
+		});
 
 		if (DEBUG) {
+			// error trace
+			this.listenTo(Backbone, "all", function(eventType){
+				console.info("AppView::" + eventType);
+			});
+			// pager
 			var pager = new CollectionPager({
 				id: "bundle-pager",
 				collection: bundles,
@@ -75,18 +87,8 @@ module.exports = Backbone.View.extend({
 		}
 	},
 
-	onApplicationEvent: function (eventName) {
-		this.el.className = eventName.split(":").join("-");
-		console.log("AppView.onApplicationEvent " + eventName);
-		//switch (eventName) {
-		//	case "app:bundle:item":
-		//	case "app:bundle:list":
-		//	case "app:error":
-		//}
-	},
-
 	onApplicationError: function () {
-		console.log("AppView.onApplicationError", arguments);
+		console.error("AppView::Error", arguments);
 	},
 
 

@@ -38,31 +38,35 @@ $salmon: 			hsla(6, 93%, 71%, 1);
 //			outline: 1px dashed $lightcoral;
 //		}
 	}
-	#site-name, .list-item {
-		// background-color: transparentize($darkseagreen, 0.6);
+	#site-name, .list-item, .list-group {
+		 background-color: transparentize($darkseagreen, 0.6);
 	}
 	.selectable {
 		outline: 1px dashed $lightcoral;
 	}
 	#content {
+		#content-detail {
+			background-color: transparentize($salmon, 0.8);
+			outline: 1px dashed $lightcoral;
+		}
 		.item-detail {
 			outline: 1px dashed $darkseagreen;
-			.description {
-				// background-color: lavender;
-			}
+//			.description {
+//				 background-color: lavender;
+//			}
 		}
-		.image-list {
+		.carousel {
 			.image-item {
 				outline: 1px dashed $thistle;
 			}
 		}
 	}
-	.dots-fontello.list-item {
-		background-color: blue;
-		a { background-color: blue; }
-		.label { background-color: cyan; }
-		& a:before { background-color: yellow; }
-	}
+//	.dots-fontello.list-item {
+//		background-color: blue;
+//		a { background-color: blue; }
+//		.label { background-color: cyan; }
+//		& a:before { background-color: yellow; }
+//	}
 }
 
 #debug-toolbar {

@@ -1,1 +1,1 @@
-<a href="#<%= href %>"><span class="label"><%= label %></span></a>
+<a href="#<%= href %>"><span class="label"><%= name %></span></a>

@@ -1,0 +1,22 @@
+
+/* ---------------------- *
+ * Dynamic color classes
+ * ---------------------- */
+
+.mutable-faded {
+	color: lighten($color, 40%);
+}
+.mutable-color {
+	color: inherit;
+}
+.mutable {
+	color: inherit;
+	background-color: inherit;
+}
+body {
+	// Color values specified in "_base.scss"
+	transition-timing-function: steps(4), ease;
+	transition-property: color, background-color;
+	transition-duration: #{$duration*2};
+//	transition-delay: $duration;
+}
