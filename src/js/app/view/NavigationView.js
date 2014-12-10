@@ -28,23 +28,39 @@ module.exports = Backbone.View.extend({
 	/** @override */
 	tagName: "div",
 	/** @override */
-	className: "navigation",
+	className: function() {
+		return "navigation";
+	},
+//	/** @override */
+//	events: {
+//		"click #site-name a": function (ev) {
+//			ev.isDefaultPrevented() || ev.preventDefault();
+//			controller.deselectBundle();
+//		}
+//	},
 
-	/** Setup listening to model changes */
+	/** @override */
 	initialize: function (options) {
+		//this.listenTo(this.$("#site-name a"), "click", function (ev) {
+		this.$("#site-name a").on("click", function (ev) {
+			ev.isDefaultPrevented() || ev.preventDefault();
+			controller.deselectBundle();
+		});
+
+		// collapsed is set later by showBundleItem/showBundleList
 		this.bundleListView = new FilterableListView({
 			el: "#bundle-list",
 			collection: bundles,
-			collapsed: (bundles.selected !== null),
 			associations: {
 				collection: keywords,
 				key: "bIds"
 			},
 		});
+
 		this.keywordListView = new GroupingListView({
 			el: "#keyword-list",
-			collection: keywords,
 			collapsed: true,
+			collection: keywords,
 			associations: {
 				collection: bundles,
 				key: "kIds"
@@ -54,41 +70,36 @@ module.exports = Backbone.View.extend({
 				key: "tIds"
 			},
 		});
+
 		controller.listenTo(this.bundleListView, {
 			"view:select:one": controller.selectBundle,
 			"view:select:none": controller.deselectBundle
 		});
 
 		this.listenTo(bundles, {
-			"select:one": function () {
-				this.bundleListView.setCollapsed(true);
-				this.keywordListView.filterBy(bundles.selected);
-			},
-			"select:none": function () {
-				this.bundleListView.setCollapsed(false);
-				this.keywordListView.filterBy(null);
-			}
-		});
-		this.listenTo(Backbone, {
-			"app:bundle:item": function () {},
-			"app:bundle:list": function () {}
+			"select:one": this.showBundleItem,
+			"select:none": this.showBundleList
 		});
 
-//		controller.listenTo(this.bundleListView, "view:select:one", controller.selectBundle);
-//		controller.listenTo(this.bundleListView, "view:select:none", controller.deselectBundle);
-
-//		this.listenTo(bundles, "select:one select:none", this.render);
+		if (bundles.selected) {
+			this.showBundleItem();
+		} else {
+			this.showBundleList();
+		}
 	},
 
-//	render: function () {
-//		if (bundles.selected) {
-//			this.bundleListView.setCollapsed(true);
-//			this.keywordListView.filterBy(bundles.selected);
-//		} else {
-//			this.bundleListView.setCollapsed(false);
-//			this.keywordListView.filterBy(null);
-//		}
-//		return this;
-//	},
+	showBundleList: function() {
+		this.$el.removeClass("bundle-item").addClass("bundle-list");
+		this.keywordListView.filterBy(null);
+		this.bundleListView.setCollapsed(false);
+	},
+	showBundleItem: function() {
+		this.$el.removeClass("bundle-list").addClass("bundle-item");
+		this.keywordListView.filterBy(bundles.selected);
+		this.bundleListView.setCollapsed(true);
+	},
+//	changeBundleList: function() {
+//		this.keywordListView.filterBy(bundles.selected);
+//	}
 
 });

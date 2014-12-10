@@ -32,35 +32,29 @@ module.exports = Backbone.View.extend({
 		this.listenTo(this.collection, "select:one", this.setModel);
 
 		this.skipAnimation = true;
-
-//		if (this.collection.selected) {
-//			this.listenTo(this.model, "change", this.onModelChange);
-//			this.setModel(this.collection.selected);
-//		}
+		this._model = this.collection.selected;
+		if (this._model) {
+			this._model = this.collection.selected;
+			this.listenTo(this._model, "change", this.requestRender);
+		}
 	},
 
 	onCollectionReset: function() {
-//		console.log("onCollectionReset", this.el.id);
-//		if (this.collection.selected) {
-			this.skipAnimation = true;
-//			this.setModel(this.collection.selected);
-//		}
+		this.skipAnimation = true;
 	},
 
 	unsetModel: function (model) {
 		// clear only if a different model hasn't been set
-//		console.log("unsetModel",this.el.id, String(model));
-		if (this.model === model) {
-			this.model = null;
+		if (this._model && this._model === model) {
+			this._model = null;
 			this.stopListening(model);
 			this.requestRender();
 		}
 	},
 
 	setModel: function(model) {
-//		console.log("setModel",this.el.id, String(model));
-		if (this.model !== model) {
-			this.model = model;
+		if (model && model !== this._model) {
+			this._model = model;
 			this.listenTo(model, "change", this.requestRender);
 			this.requestRender();
 		}
@@ -79,14 +73,13 @@ module.exports = Backbone.View.extend({
 	},
 
 	render: function () {
-//		console.log("render", this.el.id, String(this.model));
 		if (this.skipAnimation) {
 			if (this.$content) {
-				this.$content.clearQueue().remove();
 				this.$el.removeAttr("style");
+				this.$content.clearQueue().remove();
 			}
-			if (this.model) {
-				this.$content = Backbone.$(this.createRenderedElement(this.model));
+			if (this._model) {
+				this.$content = this.$createContentElement(this._model);
 				this.$content.appendTo(this.$el);
 			}
 			this.skipAnimation = false;
@@ -94,40 +87,50 @@ module.exports = Backbone.View.extend({
 			if (this.$content) {
 				// Get content's size while still in the flow
 				var contentRect = _.extend({
-					width: this.$el.outerWidth()+1,
-					height: this.$el.outerHeight()+1,
+					width: this.$el.innerWidth(),
+					minHeight: this.$el.innerHeight(),
 					position: "absolute",
 					display: "block",
 				}, this.$content.position());
+
 				// Have the parent keep it's size
 				this.$el.css({
-					minWidth: contentRect.width-1,
-					minHeight: contentRect.height-1,
+					minWidth: this.$el.outerWidth,
+					minHeight: this.$el.outerHeight,
 				});
+
+				// Fade it out
 				this.$content
 					.clearQueue()
 					.css(contentRect)
-					.delay(300)
-					.transit({opacity: 0}, 150)
-					.promise().always(function($content) {
-						$content.parent().removeAttr("style");
-						$content.remove();
+//					.delay(350)
+					.transit({opacity: 0}, 300)
+					.promise().always(function($this) {
+						$this.parent().removeAttr("style");
+						$this.remove();
 					});
 				delete this.$content;
 			}
-			if (this.model) {
-				this.$content = Backbone.$(this.createRenderedElement(this.model));
+			if (this._model) {
+				this.$content = this.$createContentElement(this._model);
 				this.$content
 					.css({opacity: 0})
+					.delay(700)
 					.appendTo(this.$el)
-					.delay(550)
-					.transit({opacity: 1}, 150);
+					.transit({opacity: 1}, 300);
 			}
+		}
+		if (this.skipAnimation) {
+			this.skipAnimation = false;
 		}
 		return this;
 	},
 
-	createRenderedElement: function(item) {
+	$createContentElement: function(item) {
+		return Backbone.$(this._createContentElement(item));
+	},
+
+	_createContentElement: function(item) {
 		var elt = document.createElement("div");
 		elt.innerHTML = this.template(item.attributes);
 		return (elt.childElementCount == 1)? elt.children[0]: elt;

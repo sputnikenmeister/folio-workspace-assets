@@ -4,10 +4,4 @@ _~*.scss
 /.sass-cache
 /node_modules
 /bower_components
-/css
 /flash
-/fonts
-/js
-/lib
-/html
-/src/js/vendor

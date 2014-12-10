@@ -5,7 +5,7 @@
 // @include sticky-footer( 6em, "#container", "#container-footer", "#footer" );
 // compass-core-1.0.1/stylesheets/compass/layout/_sticky-footer.scss
 
-$footer-height: 8rem;
+$footer-height: 7.5rem;
 
 html, body {
 	height: 100%;
@@ -33,6 +33,17 @@ html, body {
 #container {
 	width: 100%;
 	display: block;
+	transition-property: opacity, visibility;
+	transition-duration: $duration;
+	transition-delay: $duration;
+}
+.app-ready #container {
+	visibility: visible;
+	opacity: 1;
+}
+.app-initial #container {
+	visibility: hidden;
+	opacity: 0;
 }
 
 /* ---------------------- *
@@ -45,12 +56,26 @@ html, body {
 #container-footer,
 #footer {
 	margin: 0 auto;
+	box-sizing: border-box;
 	padding-left: $page-margin-left;
 	padding-right: $page-margin-right;
-	width: #{$page-width - ($page-margin-right + $page-margin-left)};
+	width: $page-width;
 	@media only screen and (min-width: $breakpoint-large) {
-		width: #{$page-width-large - ($page-margin-right + $page-margin-left)};
+		width: $page-width-large;
 	}
+}
+
+#header {
+	height: 3rem;
+	padding-top: 1.25rem;
+	padding-bottom: 0.25rem;
+	h3 {
+		display: none;
+	}
+}
+
+#content {
+	width: 100%;
 }
 
 /* ---------------------- *
@@ -58,8 +83,6 @@ html, body {
  * ---------------------- */
 
 #footer {
-	// color: lighten($color, 35%);
-//	opacity: 0.65;
 	.copyright, {
 		padding-top: 3em;
 		margin-top: 0;

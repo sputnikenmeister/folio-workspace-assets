@@ -2,24 +2,24 @@
  * @module app/App
  */
 
+/** @type {module:underscore} */
+var _ = require("underscore");
+
 /** @type {module:jquery} */
-var $ = require("jquery");
-window.$ = window.jQuery = $;
+var jQuery = require("jquery");
+window.jQuery = jQuery;
 require("hammerjs");
 require("jquery-hammerjs");
 require("jquery.transit");
 require("jquery-color");
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-Backbone.$ = $;
+Backbone.$ = jQuery;
 require("backbone.babysitter");
-require("backbone.mutators");
+require("Backbone.Mutators");
 
-$(document).ready(function ($) {
+jQuery(document).ready(function() {
 	"use strict";
 
 	/** @type {module:app/model/collection/TypeList} */

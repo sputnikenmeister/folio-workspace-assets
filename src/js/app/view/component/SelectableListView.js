@@ -15,12 +15,15 @@ var SelectableListView = Backbone.View.extend({
 	className: "list selectable",
 	/** @type {module:app/view/component/DefaultSelectableRenderer} */
 	renderer: require("../render/DefaultSelectableRenderer"),
+	/** @type {Backbone.ChildViewContainer} */
+	children: null,
 
 	initialize: function (options) {
 		options.renderer && (this.renderer = options.renderer);
 		this.listenTo(this.collection, "add remove reset", this.render);
 //		this.listenTo(this.collection, "add remove reset", this.updateCollectionListeners);
 //		this.onCollectionChange();
+		this.children = new Backbone.ChildViewContainer();
 	},
 
 	render: function () {
@@ -43,9 +46,6 @@ var SelectableListView = Backbone.View.extend({
 	/* --------------------------- *
 	 * Child views
 	 * --------------------------- */
-
-	/** @type {Backbone.ChildViewContainer} */
-	children: new Backbone.ChildViewContainer(),
 
 	createChildView: function (model, index) {
 		var view = new (this.renderer)({

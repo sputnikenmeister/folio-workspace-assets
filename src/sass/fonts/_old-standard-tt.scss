@@ -1,0 +1,29 @@
+@font-face {
+	font-family: 'Old Standard TT';
+	src: font-url('old-standard-tt/OldStandard-Regular.eot');
+	src: local('Old Standard TT Regular'),
+		local('OldStandardTT-Regular'),
+		font-url('old-standard-tt/OldStandard-Regular.woff') format('woff'),
+		font-url('old-standard-tt/OldStandard-Regular.ttf') format('truetype'),
+		font-url('old-standard-tt/OldStandard-Regular.svg#OldStandardTT-Regular') format('svg');
+}
+@font-face {
+	font-family: 'Old Standard TT';
+	font-style: italic;
+	src: font-url('old-standard-tt/OldStandard-Italic.eot');
+	src: local('Old Standard TT Italic'),
+		local('OldStandardTT-Italic'),
+		font-url('old-standard-tt/OldStandard-Italic.woff') format('woff'),
+		font-url('old-standard-tt/OldStandard-Italic.ttf') format('truetype'),
+		font-url('old-standard-tt/OldStandard-Italic.svg#OldStandardTT-Italic') format('svg');
+}
+@font-face {
+	font-family: 'Old Standard TT';
+	font-weight: bold;
+	src: font-url('old-standard-tt/OldStandard-Bold.eot');
+	src: local('Old Standard TT Bold'),
+		local('OldStandardTT-Bold'),
+		font-url('old-standard-tt/OldStandard-Bold.woff') format('woff'),
+		font-url('old-standard-tt/OldStandard-Bold.ttf') format('truetype'),
+		font-url('old-standard-tt/OldStandard-Bold.svg#OldStandardTT-Bold') format('svg');
+}

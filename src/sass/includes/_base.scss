@@ -1,76 +1,161 @@
+// ------------------------------------
+// Base
+// ------------------------------------
+
+// ------------------------------------
+// private (do not use directly)
+// ------------------------------------
+$light-fgcolor: 	hsl(47, 5%, 15%);
+$light-bgcolor: 	hsl(47, 5%, 92%);
+
+$dark-fgcolor: 		hsl(47, 5%, 95%);
+$dark-bgcolor: 		hsl(47, 5%, 25%);
+
+$inverse-color: $dark-fgcolor;
+$inverse-background-color: $dark-bgcolor;
+
+// Font fallback lists
+$mono-fallback: Consolas, Menlo, "Andale Mono", monospace;
+$humanist-fallback: "Lucida Grande","Lucida Sans", Calibri, Tahoma, Verdana, Kalimati, sans-serif;
+$modern-fallback: "georgia", sans-serif;
+
+// Webfonts included at compile-time
+@import "fonts/_franklin-gothic-fs";
+$font-webfont-sans: "Franklin Gothic FS", $humanist-fallback;
+//@import "fonts/_old-standard-tt";
+//$font-webfont-serif: "Old Standard TT", $modern-fallback;
+//@import "fonts/_source-sans-pro";
+//$font-webfont-sans: "Source Sans Pro", $humanist-fallback;
+
+// ------------------------------------
+// Public value definitions
+// ------------------------------------
+
+// colors
+$color: $light-fgcolor;
+$background-color: $light-bgcolor;
+
+// link-colors
+$link-color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
+$link-hover-color: scale_color($link-color, $lightness: 15%);//hsl(10, 95%, 60%);
+$link-down-color: scale_color($link-color, $lightness: -15%);//hsl(10, 95%, 30%);
+
+// selection-colors
+$selection-bgcolor: hsl(203, 100%, 90%);
+$selection-fgcolor: hsl(203, 100%, 50%);
+
+///* Time base unit (transition/animation) */
+$duration: 0.35s;
+$ease: ease-in-out;
+
+///* Size base units */
+$hu: 20px;
+$vu: 12px;
+
+///* Layout */
+$breakpoint-large: 		1024px;
+$page-width: 			740px;
+$page-width-large: 		960px;
+$page-margin-left: 		1*$hu;
+$page-margin-right: 	1*$hu;
+$gutter: 				2*$hu;
+$aside-width: 			$page-width-large - $page-width - $gutter;
+
+// font-family
+$large-font-family: $font-webfont-sans;
+$small-font-family: $humanist-fallback;
+$mono-font-family: $mono-fallback;
+
+// font shorthands
+$base-font: 12px/1 $font-webfont-sans;
+// $base-font: 8pt/1.5 $font-system-sans;
+
+// ------------------------------------
+// Typography mixins
+// ------------------------------------
+
+// h1 font-size: 3.42857rem; letter-spacing: -2px;
+// h2 font-size: 2.14286rem; letter-spacing: -1px;
+@mixin heading-font($size: 2rem,$weight: 600, $lead: 2rem) {
+	font-family: $large-font-family;
+	font-size: $size;
+	font-weight: $weight;
+	font-kerning: normal;
+	line-height: $lead;
+	letter-spacing: -1px;
+	@include text-rendering-legibility;
+	@include font-smoothing;
+}
+@mixin paragraph-font($size: 1rem, $weight: 400, $lead: 1.5rem) {
+	font-size: $size;
+	font-weight: $weight;
+	line-height: $lead;
+}
+@mixin small-caps($size: 0.85rem,$weight: 600, $lead: 1.5rem) {
+	font-size: $size;
+	font-weight: $weight;
+	line-height: $lead;
+	letter-spacing: 1px;
+	vertical-align: baseline;
+	text-transform: uppercase;
+}
+
+// ------------------------------------
+// Elements
+// ------------------------------------
+
 html {
 	font: $base-font;
-	line-height: 1;
 }
 body {
 	color: lighten($color, 10%);
 	background-color: $background-color;
-	line-height: 1.5;
-}
-p {
-	// font-size: 110%;
 	line-height: 1.5rem;
-	margin-top: 0;
-	margin-bottom: 1rem;
+//	@include font-smoothing;
 }
+
+p {
+	@include paragraph-font;
+}
+
 h1 {
 	@include heading-font;
 }
+
 h2 {
 	@include heading-font;
-	margin-top: 0.75rem;
-	margin-bottom: 0.25rem;
 }
+
 h3 {
-	font-family: $large-font-family;
-	// font-size: 150%;
-	font-weight: 400;
-	// line-height: 1.8;
-	// letter-spacing: 0;
-	// margin: 0.75em 0 1em;
+	font-size: 1rem;
+	font-weight: 600;
 }
-h4 {
-	font-family: $large-font-family;
-	// font-size: 125%;
-	font-weight: 400;
-	// line-height: 2.0;
-	// letter-spacing: 0;
-	// margin: 0.75em 0 1em;
-}
+
 em {
 	font-style: italic;
 }
+
 strong {
 	font-weight: bold;
 }
-code, pre, tt {
-	font-family: $mono-font-family;
-	// color: hsl(47, 5%, 9%);
-	// background-color: hsl(205, 61%, 94%);
-}
-blockquote {
-	// color: hsl(47, 40%, 40%);
-	// background-color: hsl(47, 61%, 97%);
-	padding: 0.5em;
-	padding-left: 2em;
-	// border-left: 1px solid hsl(47, 30%, 80%);
-}
+
 a {
 	text-decoration: none;
-	color: $link-color;
-}
-* {
-	@include selection(
-		hsl(203, 100%, 90%), // background-color
-		hsl(203, 100%, 50%)	 // color
-	);
+	color: inherit;
 }
 
-/* ---------------------- *
- * Typographic classes
- * ---------------------- */
+*::selection{
+	color: $selection-fgcolor;
+	background-color: $selection-bgcolor;
+}
+//@import "compass/css3/selection";
+//* { @include selection($selection-bgcolor, $selection-fgcolor); }
+
+// ------------------------------------
+// Definitions helper classes
+// ------------------------------------
+
 .sc {
-	@include font-smoothing();
+//	@include font-smoothing();
 	@include small-caps();
 }
-

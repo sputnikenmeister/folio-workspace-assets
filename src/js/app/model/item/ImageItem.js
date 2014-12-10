@@ -32,6 +32,9 @@ module.exports = Backbone.Model.extend({
 		name: function () {
 			return this.get("text") || this.get("f");
 		},
+		handle: function () {
+			return this.get("f");
+		},
 		text: function () {
 			return stripTags(this.get("desc"));
 		},

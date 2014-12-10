@@ -19,8 +19,8 @@ var placeholderTemplate = require("../template/ImageRenderer.Placeholder.tpl");
 /** @type {Function} */
 var longdescTemplate = _.template("i<%= id %>-caption");
 /** @type {Function} */
-var imageSrcTemplate = _.template(window.approot + "/workspace/uploads/<%= filename %>");
-// var imageSrcTemplate = _.template(window.approot + "/image/1/<%= constraint %>/0/uploads/<%= filename %>");
+var imageSrcTemplate = _.template(window.approot + "workspace/uploads/<%= filename %>");
+// var imageSrcTemplate = _.template(window.approot + "image/1/<%= constraint %>/0/uploads/<%= filename %>");
 
 /** @type {module:app/utils/Styles} */
 var Styles = require("../../utils/Styles");
@@ -67,7 +67,16 @@ module.exports = Backbone.View.extend({
 	initialize: function (opts) {
 		_.bindAll(this, "onError", "onLoad", "onProgress", "requestImageLoad");
 		this.requestImageLoad = _.once(this.requestImageLoad);
-		this.listenToSelection();
+	},
+
+	checkForSelection: function () {
+		var owner = this.model.collection;
+		if (this.model.selected || (owner.selected &&
+				(owner.following(this.model) === owner.selected || owner.preceding(this.model) === owner.selected ))) {
+			this.requestImageLoad();
+		} else {
+			this.listenToSelection();
+		}
 	},
 
 	/** @public */
@@ -100,9 +109,7 @@ module.exports = Backbone.View.extend({
 			width: this.getConstrainedWidth(),
 			height: this.getConstrainedHeight(),
 		}));
-		if (this.model.selected) {
-			this.requestImageLoad();
-		}
+		this.checkForSelection();
 		return this;
 	},
 
@@ -165,9 +172,11 @@ module.exports = Backbone.View.extend({
 		this.$el.removeClass("pending").addClass("done");
 		console.info("ImageRenderer.onLoad: " + url);
 	},
+
 	onProgress: function (progress, source, ev) {
-		//console.log("ImageRenderer.onProgress: " + this.model.get("f"), (progress).toFixed(3));
+//		console.log("ImageRenderer.onProgress: " + this.model.get("f"), (progress).toFixed(3));
 	},
+
 	onError: function (err, source, ev) {
 		this.$el.removeClass("pending").addClass("error");
 		console.warn("ImageRenderer.onError: " + String(err), arguments);

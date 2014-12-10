@@ -28,22 +28,16 @@ module.exports = Backbone.View.extend({
 
 	/** @override */
 	el: "body",
-	/** @override */
-	events: {
-		"click #site-name": function (ev) {
-			ev.isDefaultPrevented() || ev.preventDefault();
-			controller.deselectBundle();
-		}
-	},
 
 	/** Setup listening to model changes */
 	initialize: function (options) {
-
 		/* start router, which will request appropiate state */
 		Backbone.history.start({
 			pushState: false,
 			hashChange: true
 		});
+
+		this.$el.removeClass("app-initial").addClass("app-ready");
 
 		/* initialize views */
 		this.navigationView = new NavigationView({
@@ -54,12 +48,6 @@ module.exports = Backbone.View.extend({
 		});
 
 		this.listenTo(Backbone, {
-			"app:bundle:item": function() {
-				this.$el.removeClass("app-bundle-list").addClass("app-bundle-item");
-			},
-			"app:bundle:list": function() {
-				this.$el.removeClass("app-bundle-item").addClass("app-bundle-list");
-			},
 			"app:error": this.onApplicationError,
 		});
 
@@ -76,12 +64,18 @@ module.exports = Backbone.View.extend({
 			});
 			// append at the bottom of <body/>
 			this.$("#debug-toolbar").append(pager.render().el);
-
-			this.$("#debug-toolbar #tools").click(function (ev) {
-				Backbone.$("#container").toggleClass("debug-grid");
-			});
 			controller.listenTo(pager, "view:select:one", controller.selectBundle);
 			controller.listenTo(pager, "view:select:none", controller.deselectBundle);
+
+			this.$("#debug-toolbar #show-grid").click(function (ev) {
+				Backbone.$("#container").toggleClass("debug-grid");
+			});
+			this.$("#debug-toolbar #show-blocks").click(function (ev) {
+				Backbone.$("#container").toggleClass("debug-blocks");
+			});
+//			this.$("#debug-toolbar #edit-backend").click(function (ev) {
+//				Backbone.$("#container").toggleClass("debug-blocks");
+//			});
 		} else {
 			this.$("#debug-toolbar").remove();
 		}

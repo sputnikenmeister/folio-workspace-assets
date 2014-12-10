@@ -79,6 +79,13 @@ var SelectableList = Backbone.Collection.extend({
 		this.select(null, options);
 	},
 
+	selectAt: function (index, options) {
+		if (0 > index || index >= this.length) {
+			new RangeError("index is out of bounds");
+		}
+		this.select(this.at(index), options);
+	},
+
 	/* TODO: MOVE INTO MIXIN */
 
 	/** @return boolean	 */

@@ -18,21 +18,18 @@ module.exports = function (grunt) {
 	grunt.config("compass.client.options", {
 		specify: "src/sass/folio.scss",
 		sourcemap: true,
-		outputStyle: "compressed",
 	});
 
-	/* CSS prefixes (-moz-, -webkit-, etc.) */
+	/* CSS prefixes */
 	grunt.loadNpmTasks("grunt-autoprefixer");
-	grunt.config("autoprefixer.client", {
-		options: {
-			map: true //{ inline: false }
-		},
-		files: {
-			"css/folio.css": "css/folio.css"
-		}
+	grunt.config("autoprefixer.options", {
+		map: true, //{ inline: false },
+		//browsers: [ "ie > 8", "> 1%", "last 2 versions", "Firefox ESR", "Opera 12.1"]
 	});
-	// grunt.config("autoprefixer.flash.files",
-	// 	{ "css/flash.css": "css/flash.css"});
+	grunt.config("autoprefixer.client.files", {
+		"css/folio.css": "css/folio.css"
+	});
+	// grunt.config("autoprefixer.flash.files", { "css/flash.css": "css/flash.css"});
 
 	/* --------------------------------
 	 * Javascript
@@ -49,9 +46,7 @@ module.exports = function (grunt) {
 		]
 	});
 
-	/*
-	 * browserify
-	 */
+	/* browserify */
 	grunt.loadNpmTasks("grunt-browserify");
 	grunt.config("browserify.vendor", {
 		dest: "./js/folio-vendor.js",
@@ -61,7 +56,7 @@ module.exports = function (grunt) {
 				debug: true
 			},
 			require: [
-				"backbone.babysitter", "Backbone.Mutators", "backbone",
+				"backbone.babysitter", "backbone", "Backbone.Mutators",
 				"jquery.transit", "jquery-hammerjs", "hammerjs", "jquery",
 				"underscore"
 			],
@@ -70,9 +65,9 @@ module.exports = function (grunt) {
 			]
 		},
 	});
-	/** browserify:client */
+	/* browserify:client */
 	grunt.config("browserify.client", {
-		dest: "./js/folio-client.js",
+		dest: "js/folio-client.js",
 		src: [
 			"./src/js/app/App.js"
 		],
@@ -87,37 +82,15 @@ module.exports = function (grunt) {
 			external: ["jquery-color"].concat(grunt.config("browserify.vendor.options.require"))
 		}
 	});
-
-	/** browserify:watchable */
+	/* browserify:watchable */
 	grunt.config("browserify.watchable", grunt.config("browserify.client")); // Duplicate browserify.client task for watch
 	grunt.config("browserify.watchable.options.watch", true);
-
-
-	/** browserify:dist */
-	grunt.config("browserify.dist", {
-		dest: "./js/folio.js",
-		src: [
-			"./src/js/app/App.js"
-		],
-		options: {
-			browserifyOptions: {
-				fullPaths: false,
-				debug: true
-			},
-			transform: [
-				"node-underscorify"
-			],
-			alias: [
-				"./bower_components/jquery-color/jquery.color.js:jquery-color"
-			]
-		}
-	});
 
 	/* Extract source maps from browserify */
 	grunt.loadNpmTasks("grunt-exorcise");
 	grunt.config("exorcise", {
 		options: {
-			root: "/workspace/assets/"
+			root: "../"
 		},
 		vendor: {
 			files: {
@@ -129,11 +102,6 @@ module.exports = function (grunt) {
 				"js/folio-client.js.map": ["js/folio-client.js"]
 			}
 		},
-		dist: {
-			files: {
-				"js/folio.js.map": ["js/folio.js"]
-			}
-		},
 	});
 
 	/* Uglify */
@@ -142,7 +110,8 @@ module.exports = function (grunt) {
 		options: {},
 		vendor: {
 			options: {
-				mangle: true,
+				mangle: false,
+				beautify: true,
 				sourceMap: true,
 				sourceMapIn: "js/folio-vendor.js.map"
 			},
@@ -166,23 +135,6 @@ module.exports = function (grunt) {
 				"js/folio-client.js": ["js/folio-client.js"]
 			}
 		},
-		dist: {
-			options: {
-				mangle: true,
-				sourceMap: true,
-				sourceMapIn: "js/folio.js.map",
-				compress: {
-					global_defs: {
-						"DEBUG": false
-					},
-					dead_code: true,
-					drop_console: true
-				}
-			},
-			files: {
-				"js/folio.js": ["js/folio.js"]
-			}
-		},
 	});
 
 	/* Watch tasks */
@@ -194,10 +146,10 @@ module.exports = function (grunt) {
 		"reload-config": {
 			files: ["gruntfile.js"],
 		},
-		//		"lint-scripts": {
-		//			tasks: ["jshint"],
-		//			files: ["src/js/**/*.js"],
-		//		},
+		//"lint-scripts": {
+		//	tasks: ["jshint"],
+		//	files: ["src/js/**/*.js"],
+		//},
 		"build-scripts": {
 			tasks: ["exorcise:client"],
 			files: ["js/folio-client.js"],
@@ -210,23 +162,75 @@ module.exports = function (grunt) {
 
 	// DEBUG: check config result
 	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
-	grunt.registerTask("distScripts", ["browserify:dist", "exorcise:dist", "uglify:dist"]);
 
-	// Other
-	//	grunt.registerTask("buildVendor", 	["browserifyBower:vendor", "browserify:vendor", "exorcise:vendor", "uglify:vendor"]);
 	grunt.registerTask("buildVendor", ["browserify:vendor", "exorcise:vendor", "uglify:vendor"]);
-	// Simple build
-	grunt.registerTask("buildStyles", ["compass:client", "autoprefixer:client"]);
 	grunt.registerTask("buildClient", ["browserify:client", "exorcise:client", "uglify:client"]);
 	grunt.registerTask("buildScripts", ["buildVendor", "buildClient"]); //"jshint",
-	grunt.registerTask("build", ["buildStyles", "buildScripts"]);
+	grunt.registerTask("buildStyles", ["compass:client", "autoprefixer:client"]);
+
 	// Watch build
 	grunt.registerTask("watchAll", ["browserify:watchable", "watch"]);
-	//	grunt.registerTask("watchEditor", ["browserify:watchable", "watch:build-scripts", "watch:build-styles", ]);
-	//	grunt.registerTask("sublimeBuild", ["watchAll"]);
 	grunt.registerTask("watchInEditor", ["watchAll"]);
+
 	// Default task
+	grunt.registerTask("build", ["buildStyles", "buildScripts"]);
 	grunt.registerTask("default", ["build"]);
 
+	/* --------------------------------
+	 * dist
+	 * -------------------------------- */
+
+	grunt.config("compass.dist.options", {
+		specify: "src/sass/folio.scss",
+		sourcemap: false,
+		outputStyle: "compressed"
+	});
+
+	grunt.config("autoprefixer.dist", {
+		options: {
+			map: false
+		},
+		files: {
+			"css/folio.css": "css/folio.css"
+		}
+	});
+
+	grunt.config("browserify.dist", {
+		dest: "./js/folio.js",
+		src: [
+			"./src/js/app/App.js"
+		],
+		options: {
+			browserifyOptions: {
+				fullPaths: false,
+				debug: false
+			},
+			transform: [
+				"node-underscorify"
+			],
+			alias: [
+				"./bower_components/jquery-color/jquery.color.js:jquery-color"
+			]
+		}
+	});
+
+	grunt.config("uglify.dist", {
+		options: {
+			mangle: true,
+			sourceMap: false,
+			compress: {
+				global_defs: {
+					"DEBUG": false
+				},
+				dead_code: true,
+				drop_console: true
+			}
+		},
+		files: {
+			"js/folio.js": ["./js/folio.js"]
+		}
+	});
+
+	grunt.registerTask("dist", ["compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
 
 };

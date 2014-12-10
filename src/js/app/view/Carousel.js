@@ -18,7 +18,7 @@ var DeferredRenderView = require("../helper/DeferredRenderView");
  * @constructor
  * @type {module:app/view/Carousel}
  */
-module.exports = DeferredRenderView.extend({
+var Carousel = DeferredRenderView.extend({
 
 	/** @override */
 	tagName: "div",
@@ -39,6 +39,9 @@ module.exports = DeferredRenderView.extend({
 		"pancancel": "onPanCancel"
 	},
 
+	/** @type {Backbone.ChildViewContainer} */
+//	children: new Backbone.ChildViewContainer,//function () { return ; },
+
 	/** @override */
 	initialize: function (options) {
 		if (options.direction === Hammer.DIRECTION_VERTICAL)
@@ -49,6 +52,8 @@ module.exports = DeferredRenderView.extend({
 			direction: this.direction,
 			threshold: this.panThreshold,
 		}));
+
+		this.children = new Backbone.ChildViewContainer();
 
 //		_.bindAll(this, "onPanStart", "onPanMove", "onPanEnd", "onPanCancel");
 //		this.hammer.on("panstart", this.onPanStart);
@@ -65,10 +70,10 @@ module.exports = DeferredRenderView.extend({
 	},
 
 	remove: function () {
-		this.removeChildren();
-		Backbone.View.prototype.remove.apply(this, arguments);
-		Backbone.$(window).off("orientationchange resize", this.onResize);
 //		this.hammer.off("panstart panmove panend pancancel");
+		this.removeChildren();
+		Backbone.View.prototype.remove.apply(this);
+		Backbone.$(window).off("orientationchange resize", this.onResize);
 		this.hammer.destroy();
 	},
 
@@ -108,7 +113,7 @@ module.exports = DeferredRenderView.extend({
 		// If beyond select threshold, trigger selection
 		if (Math.abs(delta) > this.getSelectThreshold() && !this.isOutOfBounds(delta)) {
 			this.trigger("view:select:one", (delta < 0) ?
-				this.collection.following() : this.collection.preceding());//, {source: this});
+				this.collection.following() : this.collection.preceding());
 		} else {
 			this.scrollToSelection(false);
 		}
@@ -128,11 +133,13 @@ module.exports = DeferredRenderView.extend({
 	/* Model event handlers */
 	onCollectionReset: function () {
 		//console.log("Carousel.onCollectionReset");
+		this._resetPending = true;
 		this.render();
 	},
 
 	/** @private */
 	onSelectOne: function (image) {
+//		console.log("Carousel.onSelectOne");
 		this.scrollToSelection(false);
 	},
 
@@ -160,6 +167,36 @@ module.exports = DeferredRenderView.extend({
 	},
 
 	/* --------------------------- *
+	 * Child view
+	 * --------------------------- */
+
+	/** @type {Function} */
+	renderer: ImageRenderer,
+
+	createChildView: function (item) {
+		var view = new this.renderer({
+//			id: item.get("handle"),
+			model: item
+		});
+		this.children.add(view);
+		return view;
+	},
+
+	removeChildren: function () {
+//		console.log("Carousel.removeChildren", this.children.toArray(), this.collection.toArray());
+//		this.collection.each(function (item, index) {
+//			this.removeChildView(this.children.findByModel(item));
+//		}, this);
+		this.children.each(this.removeChildView, this);
+	},
+
+	removeChildView: function (view) {
+		this.children.remove(view);
+		view.remove();
+		return view;
+	},
+
+	/* --------------------------- *
 	 * Child create
 	 * --------------------------- */
 
@@ -171,13 +208,15 @@ module.exports = DeferredRenderView.extend({
 	},
 	_renderChildren: function () {
 		//console.log("Carousel.children: " + (this.collection.length || "empty"));
-		var childBuffer, child, crossSize = 0;
-
-		this.removeChildren();
+		var childBuffer, crossSize = 0;
+		if (this._resetPending) {
+			this.removeChildren();
+			delete this._resetPending;
+		}
 		if (this.collection.length) {
 			childBuffer = document.createDocumentFragment();
-			this.collection.each(function (model, index) {
-				child = this.createChildView(model, index);
+			this.collection.each(function (item, index) {
+				var child = this.createChildView(item, index);
 				childBuffer.appendChild(child.render().el);
 				// Get the largest child cross size
 				crossSize = Math.max(crossSize, child[this.getDirProp("constrainedHeight", "constrainedWidth")]);
@@ -195,23 +234,27 @@ module.exports = DeferredRenderView.extend({
 	 * Scroll/layout
 	 * --------------------------- */
 
+//	animationRequests: [],
+
 	scrollToSelection: function (skipAnimation) {
 		this.scrollBy(0, skipAnimation);
 	},
 
 	scrollBy: function (delta, skipAnimation) {
-		//this.animationRequests.push(skipAnimation ? "immediate" : "animated");
+//		this.animationRequests.push(skipAnimation ? "immediate" : "animated");
 		_.isBoolean(skipAnimation) && (this.skipAnimation = this.skipAnimation || skipAnimation);
 		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta, this.getScrollIndex()));
 	},
 
 	scrollByNow: function (delta) {
-		//if (this.getContainerSize() < 1) { console.warn("Carousel container size is >0", this.getContainerSize()); }
+		if (this.getContainerSize() < 1) { console.warn("Carousel container size is >0", this.getContainerSize()); }
 		this._scrollBy(delta, this.getScrollIndex(), true);
 	},
 
 	_scrollBy: function (delta, scrollIndex, skipAnimation) {
-		//console.log("Carousel.scrollBy", this.skipAnimation ? "skipping" : "animating", this.animationRequests.concat());
+//		console.log("Carousel.scrollBy", this.skipAnimation ? "skipping" : "animating", this.animationRequests.concat());
+//		this.animationRequests.length = 0;
+
 		var pos, size;
 		delta = delta || 0; // non null check
 		size = this.getContainerSize();
@@ -228,8 +271,8 @@ module.exports = DeferredRenderView.extend({
 		var translate = (this.direction & Hammer.DIRECTION_HORIZONTAL) ?
 			"translate3d(" + pos + "px,0,0)" : "translate3d(0," + pos + "px,0)";
 		if (skipAnimation) {
-			//view.$el.css({ transform: translate });
-			this._setCSSTransform(view.el, translate);
+			view.$el.css({ transform: translate });
+//			this._setCSSTransform(view.el, translate);
 		} else {
 			view.$el.transit({
 				transform: translate
@@ -286,35 +329,9 @@ module.exports = DeferredRenderView.extend({
 		return this.containerSize;
 	},
 
-	getSelectThreshold: function (delta) {
+	getSelectThreshold: function () {
 		return this.selectThreshold * this.getContainerSize();
 	},
-
-	/* --------------------------- *
-	 * Child view mgmt
-	 * --------------------------- */
-
-	/** @type {Backbone.ChildViewContainer} */
-	children: new Backbone.ChildViewContainer(),
-
-	/** @type {Function} */
-	renderer: ImageRenderer,
-
-	createChildView: function (model, index) {
-		var view = new this.renderer({
-			model: model
-		});
-		this.children.add(view);
-		return view;
-	},
-
-	removeChildren: function () {
-		this.children.each(this.removeChildView, this);
-	},
-
-	removeChildView: function (view) {
-		this.children.remove(view);
-		view.remove();
-		return view;
-	},
 });
+
+module.exports = Carousel;

@@ -13,15 +13,13 @@
   "ignore": [
     "**/.*"
   ],
-  "dependencies": {
-    "source-sans-pro": "~2.010"
-  },
-  "devDependencies": {
-    "jquery-color": "~2.1.2"
-  },
   "resolutions": {
     "hammerjs": "~2.0.4",
     "jquery-hammerjs": "~2.0.0",
     "jquery": "2.1.x"
+  },
+  "dependencies": {
+    "backbone.mutators": "~0.4.4",
+    "jquery-color": "~2.1.2"
   }
 }

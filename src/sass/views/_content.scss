@@ -1,6 +1,7 @@
 #content {
 	position: relative;
-//	overflow: hidden;
+//	margin: -1.5rem 0;
+//	padding: 1.75rem 0;
 }
 
 /* ---------------------- *
@@ -11,8 +12,12 @@
 .carousel {
 	overflow: hidden;
 	position: relative;
-	padding: 1.5rem 0; height: 100%;
-	margin: -1.5rem 0; width: 100%; min-width: $page-width;
+	width: 100%;
+	min-width: $page-width;
+//	height: 100%;
+//	margin: -1.5rem 0;
+	padding: 1.75rem 0;
+//	top: 1.75rem;
 }
 .image-item {
 	position: absolute;
@@ -25,39 +30,35 @@
 	}
 }
 
+
 /* ---------------------- *
  * Other content views
  * ---------------------- */
 
 #content-detail {
 	position: absolute;
-	left: 0; right: 0; top: 0;
+	left: 0; right: 0;
+	height: 100%;
+}
+
+.images-pager {
+    top: -1.5rem;
+    height: 1.5rem;
+//	margin-top: -3rem;
+	position: absolute;
+    display: inline-block;
 }
 
 #bundle-detail {
-	overflow: hidden;
 	display: none;
 	@media only screen and (min-width: $breakpoint-large) {
 		display: block;
-		margin-top: 1.5rem;
-		width: #{$page-width-large - $page-width - $gutter};
-//		margin-left: auto;
 		float: right;
-		clear: none;
+		margin-top: 1.5rem;
+		box-sizing: border-box;
+		width: #{$page-width-large - $page-width - $gutter};
 	}
 }
-
-//#image-detail,
-//.images-pager {
-//	float: left;
-//	clear: none;
-//	bottom: 100%;
-//	left: $page-margin-left;
-//	right: $page-margin-right;
-//	@media only screen and (min-width: $breakpoint-large) {
-//		padding-right: #{$page-width-large - $page-width};
-//	}
-//}
 
 //#image-detail {
 //	display: inline-block;
@@ -66,43 +67,22 @@
 ////	bottom: calc(100% + 1.5rem);
 //}
 
-.images-pager {
-    top: 0;
-    height: 1.5rem;
-	margin-top: -1.5rem;
-	position: absolute;
-    display: inline-block;
-}
-
 /* ---------------------- *
  * Content inner elements
  * ---------------------- */
 
-#bundle-detail {
-	.name {
-		display: none;
-	}
-	.completed {
-		display: none;
-	}
-	.description {
-		p {
-			@include text-rendering-legibility;
-			@include font-smoothing;
-//			font-family: $large-font-family;
-			font-size: 1.5rem;
-			font-weight: normal;
-			// font-style: italic;
-			letter-spacing: -0.05em;
-			line-height: 1.5rem;
-		}
+.item-detail {
+	p {
+//		@include paragraph-font($size: 12px, $lead: 15px);
+		font-size: 13px;
+		line-height: 16px;
+		margin-bottom: 1rem;
+		margin-top: 0;
 	}
 }
 
-#image-detail.item-detail {
-	.description {
-		p {
-			margin-bottom: 0;
-		}
-	}
-}
+//#image-detail {
+//	p {
+//		margin-bottom: 0;
+//	}
+//}

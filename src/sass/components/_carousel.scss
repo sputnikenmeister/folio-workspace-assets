@@ -1,7 +1,7 @@
-.carousel.animate > .image-item {
-	transform: translate3d(0, 0, 0);
-	// transition: all 0.4s;
-}
+//.carousel.animate > .image-item {
+//	transform: translate3d(0, 0, 0);
+//	// transition: all 0.4s;
+//}
 
 .carousel * {
 	user-select: none;
@@ -24,7 +24,7 @@
 	img {
 		// *** mutable properties: must be in the first matching rule
 		border: 0 none;
-		background-color: transparent;
+		background-color: $background-color;
 		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
 		@include image-content-size();
 	}

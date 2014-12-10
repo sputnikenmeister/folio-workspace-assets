@@ -6,57 +6,56 @@
 var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
+/** @type {module:app/helper/View} */
+var View = require("./View");
 
 /**
  * @constructor
  * @type {module:app/helper/DeferredRenderView}
  */
-var DeferredRenderView = Backbone.View.extend({
-
-	/** @type {Object} */
-	// renderJobs: {},
+var DeferredRenderView = View.extend({
 
 	/**
 	 * @param {String} [key]
 	 * @param [value]
 	 */
 	requestRender: function (key, value) {
-		if (this.renderRequestId === undefined) {
-			// this.renderRequestId = window.setTimeout(this.getRenderCallback(), 1);
-			// this.renderRequestId = _.defer(this.getRenderCallback());
-			this.renderRequestId = window.requestAnimationFrame(this.getRenderCallback());
-			this.renderJobs = {};
+		if (this._renderRequestId === undefined) {
+//			this._renderRequestId = window.setTimeout(this.getRenderCallback(), 1);
+//			this._renderRequestId = _.defer(this.getRenderCallback());
+			this._renderRequestId = window.requestAnimationFrame(this.getRenderCallback());
+			this._renderJobs = {};
 		}
 		if (key) {
-			this.renderJobs[key] = value ? value : true;
+			this._renderJobs[key] = value ? value : true;
 		}
-	},
-
-	/** @private */
-	getRenderCallback: function () {
-		return this.renderCallback || (this.renderCallback = _.bind(this.applyRender, this));
-	},
-
-	/** @private */
-	applyRender: function () {
-		this.deferredRender();
-		this.renderRequestId = undefined;
 	},
 
 	renderNow: function () {
-		if (this.renderRequestId) {
-			window.cancelAnimationFrame(this.renderRequestId);
-			// window.clearTimeout(this.renderRequestId)
+		if (_.isNumber(this._renderRequestId)) {
+			window.cancelAnimationFrame(this._renderRequestId);
+//			window.clearTimeout(this._renderRequestId);
 		}
 		this.applyRender();
 	},
 
 	/** @private */
 	validateRender: function (key) {
-		if (_.isFunction(this.renderJobs[key])) {
-			this.renderJobs[key].call();
-			this.renderJobs[key] = undefined;
+		if (_.isFunction(this._renderJobs[key])) {
+			this._renderJobs[key].call();
+			delete this._renderJobs[key];
 		}
+	},
+
+	/** @private */
+	getRenderCallback: function () {
+		return this._renderCallback || (this._renderCallback = _.bind(this.applyRender, this));
+	},
+
+	/** @private */
+	applyRender: function () {
+		this.deferredRender();
+		this._renderRequestId = undefined;
 	},
 
 	/** @abstract */

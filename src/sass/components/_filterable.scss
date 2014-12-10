@@ -9,12 +9,6 @@
 	.list-item {
 		display: block;
 		-webkit-transition: translate3d(0,0,0);
-		a {
-			display: block;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-		}
 	}
 	.selected {
 		color: $link-color;
@@ -29,19 +23,9 @@
 
 .list.grouped {
 	.list-group {
-		display: block;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 		-webkit-transition: translate3d(0,0,0);
 	}
 }
-
-/*
- * Animations/Transitions
- */
-
-$collapse-ease: ease;
 
 #bundle-list {
 	.list-item {
@@ -73,7 +57,7 @@ $collapse-ease: ease;
 		opacity: 1;
 	}
 	.list-group {
-		height: 1.5em;
+//		height: 1.5em;
 		visibility: visible;
 		opacity: 1;
 	}
@@ -90,6 +74,11 @@ $collapse-ease: ease;
 	}
 }
 
+/*
+ * Animations/Transitions
+ */
+$collapse-ease: $ease;
+
 // #bundle-list.animate,
 #keyword-list.animate  {
 	.list-group, .list-item {
@@ -103,9 +92,9 @@ $collapse-ease: ease;
 			transition-timing-function: $collapse-ease, step-end, $collapse-ease;
 			transition-delay: 0s, 0s, 0.35s;// fadeout, collapse, wait
 		}
-		transition: height 1s step-end;
+//		transition: height 1s step-end;
 	}
-	transition: height 1s step-start;
+//	transition: height 1s step-start;
 }
 
 #bundle-list.animate {
@@ -132,11 +121,9 @@ $collapse-ease: ease;
 }
 
 /*
-$collapse-params: 1s $collapse-ease;
+$collapse-params: 1s linear;
 
-// #keyword-list {
-// #keyword-list.animate {
-#none.animate {
+.filterable.animate {
 	// &:not(.collapsed) {
 		.list-item { animation: fromCollapsedItem $collapse-params; }
 		.list-group { animation: fromCollapsedGroup $collapse-params; }

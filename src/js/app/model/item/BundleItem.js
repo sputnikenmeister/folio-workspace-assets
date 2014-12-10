@@ -40,6 +40,9 @@ module.exports = Backbone.Model.extend({
 		},
 		images: {
 			set: function (key, value, options, set) {
+				_.each(value, function(o) {
+					o.bundle = this;
+				}, this);
 				set(key, new SelectableList(value, {
 					model: ImageItem,
 					comparator: "o"
@@ -50,11 +53,11 @@ module.exports = Backbone.Model.extend({
 			set: function (key, value, options, set) {
 				if (_.isArray(value)) {
 					var attrs = {};
-					_.each(value, function (attr) {
-						var idx = attr.indexOf(":");
-						if (idx > 0) {
-							attrs[attr.substring(0, idx)] = parseSymAttrs(attr.substring(idx + 1));
-						} // else drop it
+					_.each(value, function (s) {
+						var i = s.indexOf(":");
+						if (i > 0) {
+							attrs[s.substring(0, i)] = parseSymAttrs(s.substring(i + 1));
+						}
 					});
 					set(key, attrs, options);
 				} else {
