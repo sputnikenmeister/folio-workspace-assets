@@ -1,15 +1,18 @@
-/*global XMLHttpRequest, Image, Promise, Blob */
-/**
- * @see https://github.com/mdn/promises-test/blob/gh-pages/index.html
- */
+/*global XMLHttpRequest, Blob */
 
-/** */
+/** @type {{module:jquery}.Deferred} */
 var Deferred = require("jquery").Deferred;
 
-module.exports = function (src) {
+/**
+ * @param
+ * @param
+ * @return
+ */
+module.exports = function (url, context) {
+	// @see https://github.com/mdn/promises-test/blob/gh-pages/index.html
 	var deferred = new Deferred();
 	var request = new XMLHttpRequest();
-	request.open("GET", src, true);
+	request.open("GET", url, true);
 	request.responseType = "arraybuffer";
 
 	// When the request loads, check whether it was successful

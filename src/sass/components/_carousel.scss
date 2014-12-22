@@ -1,63 +1,52 @@
-//.carousel.animate > .image-item {
-//	transform: translate3d(0, 0, 0);
-//	// transition: all 0.4s;
-//}
-
 .carousel * {
 	user-select: none;
 	cursor: default;
 }
-// States for .image-item: .idle > .pending > [ .done | .error ]
-.image-item {
-	&.idle {
-		display: none;
-	}
-	// Common size
-	@mixin image-content-size() {
-		position: absolute;
-		display: block;
+.carousel-item {
+	display: block;
+	position: absolute;
+}
+.carousel-item.empty-item {
+	height: auto;
+}
+
+.default-carousel-item {
+	.placeholder {
 		box-sizing: border-box;
-		left: $page-margin-left;
-		width: $page-width - $page-margin-left - $page-margin-right;
+		color: $background-color;
+		background-color: $color;
+		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
+		box-sizing: border-box;
+		min-height: 100%;
+		padding: 1.5rem;
 	}
-	// Image
+}
+
+.image-item {
 	img {
-		// *** mutable properties: must be in the first matching rule
+		// *** "mutable" properties: must be in the first matching rule
 		border: 0 none;
 		background-color: $background-color;
 		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
-		@include image-content-size();
+
+		position: absolute;
+		box-sizing: border-box;
+//		min-height: 100%;
+		top: 1.5rem;
 	}
-	&.idle img {
-		display: none;
-	}
-	&.pending img {
-		visibility: hidden;
-		opacity: 0;
-	}
-	&.done img {
-		transition: opacity $duration $duration;
-		visibility: visible;
-		opacity: 1;
-	}
-	&.error img {
-		display: none;
-	}
-	// Placeholder
+
 	.placeholder {
-		// *** mutable properties: must be in the first matching rule
+		// *** "mutable" properties: must be in the first matching rule
 		border: 1px solid transparent;
 		color: $background-color;
-		@include image-content-size();
-	}
-	&.done .placeholder {
-		transition: visibility $duration $duration step-end;
-		visibility: hidden;
-	}
-	//&.error .placeholder {}
 
-	// Placeholder label
-	@mixin placeholder-message {
+		position: relative;
+		box-sizing: border-box;
+		height: 100%;
+//		margin: 1.5rem;
+	}
+
+	.placeholder:after {
 		font-size: 5rem;
 		font-weight: 600;
 		font-style: italic;
@@ -74,14 +63,47 @@
 		overflow: hidden;
 		white-space: nowrap;
 	}
-	&.pending .placeholder:after,
-	&.error .placeholder:after {
-		@include placeholder-message();
+
+//	img {
+//		visibility: hidden;
+//		opacity: 0;
+//	}
+
+	&.idle {
+		visibility: hidden;
+		img {
+			display: none;
+		}
 	}
-	&.pending .placeholder:after {
-		content: "Loading";
+
+	&.pending {
+		img {
+			visibility: hidden;
+			opacity: 0;
+		}
+		.placeholder:after {
+			content: "Loading";
+		}
 	}
-	&.error .placeholder:after {
-		content: "Error";
+
+	&.done {
+		img {
+			transition: opacity $duration $duration;
+			visibility: visible;
+			opacity: 1;
+		}
+		.placeholder {
+			transition: visibility $duration $duration step-end;
+			visibility: hidden;
+		}
+	}
+
+	&.error {
+		img {
+			display: none;
+		}
+		.placeholder:after {
+			content: "Error";
+		}
 	}
 }

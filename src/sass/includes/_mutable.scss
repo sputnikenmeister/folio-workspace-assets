@@ -5,18 +5,25 @@
 
 .mutable-faded {
 	color: lighten($color, 40%);
+	border-color: lighten($color, 60%);
 }
+
 .mutable-color {
 	color: inherit;
 }
+
+.mutable-border {
+}
+
 .mutable {
 	color: inherit;
 	background-color: inherit;
 }
+
 body {
 	// Color values specified in "_base.scss"
-	transition-timing-function: steps(4), ease;
+	transition-timing-function: steps(4), $ease;
 	transition-property: color, background-color;
-	transition-duration: #{$duration*2};
+	transition-duration: #{$duration * 2};
 //	transition-delay: $duration;
 }

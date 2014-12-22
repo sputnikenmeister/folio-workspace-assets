@@ -5,7 +5,7 @@
 // @include sticky-footer( 6em, "#container", "#container-footer", "#footer" );
 // compass-core-1.0.1/stylesheets/compass/layout/_sticky-footer.scss
 
-$footer-height: 7.5rem;
+$footer-height: 6rem;
 
 html, body {
 	height: 100%;
@@ -24,6 +24,7 @@ html, body {
 	clear: both;
 	position: relative;
 	height: $footer-height;
+	overflow: hidden;
 }
 
 /* ---------------------- *
@@ -33,7 +34,14 @@ html, body {
 #container {
 	width: 100%;
 	display: block;
+	min-width: $page-width;
+	@media only screen and (min-width: $breakpoint-large) {
+		min-width: $page-width-large;
+	}
+}
+#container {
 	transition-property: opacity, visibility;
+	transition-timing-function: ease, step-start;
 	transition-duration: $duration;
 	transition-delay: $duration;
 }
@@ -44,6 +52,9 @@ html, body {
 .app-initial #container {
 	visibility: hidden;
 	opacity: 0;
+}
+.app-initial #container * {
+	transition: none !important;
 }
 
 /* ---------------------- *
@@ -57,40 +68,12 @@ html, body {
 #footer {
 	margin: 0 auto;
 	box-sizing: border-box;
-	padding-left: $page-margin-left;
-	padding-right: $page-margin-right;
-	width: $page-width;
+	width: $page-inner-width;
 	@media only screen and (min-width: $breakpoint-large) {
-		width: $page-width-large;
-	}
-}
-
-#header {
-	height: 3rem;
-	padding-top: 1.25rem;
-	padding-bottom: 0.25rem;
-	h3 {
-		display: none;
+		width: $page-inner-width-large;
 	}
 }
 
 #content {
 	width: 100%;
-}
-
-/* ---------------------- *
- * Footer
- * ---------------------- */
-
-#footer {
-	.copyright, {
-		padding-top: 3em;
-		margin-top: 0;
-	}
-	a {
-		color: inherit;
-		&:hover {
-			text-decoration: underline;
-		}
-	}
 }

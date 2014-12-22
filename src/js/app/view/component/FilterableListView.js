@@ -1,14 +1,13 @@
 /**
  * @module app/view/component/FilterableListView
- * @requires module:backbone
  */
 
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-require("backbone.babysitter");
-
+/** @type {module:backbone.babysitter} */
+var Container = require("backbone.babysitter");
 /** @type {module:app/helper/DeferredRenderView} */
 var DeferredRenderView = require("../../helper/DeferredRenderView");
 
@@ -31,6 +30,7 @@ module.exports = DeferredRenderView.extend({
 	initialize: function (options) {
 		this.itemIds = this.collection.pluck("id");
 		// Create children
+		this.children = new Container();
 		this.collection.each(this.assignChildView, this);
 
 		if (options.associations) {
@@ -56,7 +56,7 @@ module.exports = DeferredRenderView.extend({
 	},
 
 	/** @override */
-	deferredRender: function () {
+	renderLater: function () {
 		if (this.skipAnimation) {
 			this.$el.removeClass("animate");
 			this.skipAnimation = false;

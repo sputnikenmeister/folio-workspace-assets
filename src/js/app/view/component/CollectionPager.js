@@ -1,20 +1,22 @@
 /**
  * @module app/view/component/CollectionPager
- * @requires module:backbone
  */
 
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {string} */
+/** @type {module:app/helper/View} */
+var View = require("../../helper/View");
+
+/** @type {Function} */
 var viewTemplate = require("../template/CollectionPager.tpl");
 
 /**
  * @constructor
  * @type {module:app/view/component/CollectionPager}
  */
-module.exports = Backbone.View.extend({
+module.exports = View.extend({
 	/** @override */
 	tagName: "div",
 	/** @override */
@@ -42,6 +44,7 @@ module.exports = Backbone.View.extend({
 
 	/** @override */
 	initialize: function (options) {
+		options.template && (this.template = options.template);
 		options.labelAttribute && (this.labelAttribute = options.labelAttribute);
 		this.listenTo(this.collection, "select:one select:none", this.render);
 		this.listenTo(this.collection, "reset", this.render);
@@ -54,11 +57,11 @@ module.exports = Backbone.View.extend({
 			var following = this.collection.followingOrFirst();
 			this.$el.html(this.template({
 				"preceding_label": this.getLabel(preceding),
+				"preceding_href": preceding.get("handle"),
 				"following_label": this.getLabel(following),
+				"following_href": following.get("handle"),
 				"close_label": "Close",
-				"preceding_href": "#preceding", //this.preceding.get("handle"),
-				"following_href": "#following", //this.following.get("handle"),
-				"close_href": "#close",
+				"close_href": "close",
 			}));
 		} else {
 			this.$el.empty();

@@ -1,13 +1,13 @@
 /**
  * @module app/view/component/GroupingListView
- * @requires module:backbone
  */
 
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-
+/** @type {module:backbone.babysitter} */
+var Container = require("backbone.babysitter");
 /** @type {module:app/view/component/FilterableListView} */
 var FilterableListView = require("./FilterableListView");
 
@@ -23,8 +23,8 @@ module.exports = FilterableListView.extend({
 	className: "list selectable filterable grouped",
 	/** @private */
 	groupings: {},
-	/** @type {Backbone.ChildViewContainer} */
-	groupingViews: new Backbone.ChildViewContainer(),
+//	/** @type {Backbone.ChildViewContainer} */
+//	groupingViews: new Backbone.ChildViewContainer(),
 
 	/** @override */
 	initialize: function (options) {
@@ -33,6 +33,7 @@ module.exports = FilterableListView.extend({
 		if (options.groupings) {
 			this.groupings = options.groupings;
 			//this.groupings = _.defaults(options.groupings, this.groupings);
+			this.groupingViews = new Container();
 			this.groupings.collection.each(this.assignGroupingView, this);
 		}
 	},

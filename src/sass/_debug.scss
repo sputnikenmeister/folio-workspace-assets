@@ -73,70 +73,47 @@ $darkseagreen:		hsla(120, 25%, 65%, 1);
 //	}
 }
 
-#debug-toolbar {
-	position: fixed;
-	bottom: 0;
-	width: 100%;
-	color: hsl(245, 2%, 40%);
-	background-color: hsl(60, 4%, 5%);
-	line-height: 1em;
-	padding: 0.5em 0;
-	@include small-caps();
-	@include font-smoothing();
-
-	a {
-		color: inherit;
-	}
-	.button, dt, dd {
+.toolbar {
+	display: flex;
+	flex-direction: row;
+	& > * {
+		-webkit-flex: 0 1 auto;
+    	flex: 0 1 auto;
 		display: block;
-		padding: 0 0.75em;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		cursor: pointer;
 		user-select: none;
+		margin: auto 0;
+		padding: 0 0.75em;
+		border-color: inherit;
+		border-left-style: solid;
+		border-left-width: thin;
 	}
-	dd {
-		border-left: 1px solid hsl(245, 2%, 20%);
+	& > *:first-child {
+//		padding-left: 0;
+		border-left: 0 none;
 	}
-	dt {
-		font-weight: normal;
+	& > *:last-child {
+//		padding-right: 0;
 	}
+}
 
-	// flex-box stuff prefixed
-	&, #tools, #bundle-pager {
-		display: flex;
-		flex-direction: row;
-	}
-	#tools, #bundle-pager {
-		flex: 1 0 0%;
-	}
-	.button {
-		flex: 1 0 0%;
-		&:last-child {
-    		flex: 0 1 auto;
-		}
-	}
+#debug-toolbar {
+	color: hsl(245, 2%, 40%);
+	background-color: hsl(60, 4%, 5%);
+
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	height: 1.5rem;
+	padding: 0.5em 0;
 	dt, dd {
-		-webkit-flex: 0 1 auto;
-    	flex: 0 1 auto;
-	}
-
-	// icons
-	.button:before, .button:after {
-		// font-size: 90%;
-	}
-	.preceding-button:before {
-		content: '\e807';
-		@include fontello-icon-before();
-	}
-	.following-button:after {
-		content: '\e808';
-		@include fontello-icon-after();
-	}
-	.close-button:before {
-		content: '\e806';
-		@include fontello-icon-before();
+		@include small-caps;
+		@include font-smoothing;
+		line-height: 1em;
+		height: 1em;
 	}
 }
 

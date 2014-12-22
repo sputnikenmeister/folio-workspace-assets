@@ -1,5 +1,5 @@
 // Bulleted text-list-style
-.fontello-pager {
+.pager.fontello {
 	.button {
 		font-weight: 600;
 		font-size: 115%;
@@ -19,79 +19,6 @@
 	// circled icons
 	.button:before {
 		font-size: 95%;
-		@include fontello-icon-before();
-	}
-	.preceding-button:before {
-		content: '\e807';
-	}
-	.following-button:before {
-		content: '\e808';
-	}
-	.close-button:before {
-		content: '\e806';
-	}
-}
-// Inline pill-style
-.fontello-pill-pager {
-	/* flexbox setup */
-//	display: -webkit-flex;
-//	-webkit-flex-direction: row;
-	display: flex;
-	flex-direction: row;
-
-	.button {
-		// width: 100%;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		display: block;
-		font-weight: 600;
-		font-size: 100%;
-		line-height: 1em;
-		padding: 0.5em 0.75em;
-		// padding: 0.5em 0.85em 0.45em 0.75em;
-		border-radius: 0.2em;
-		margin-right: 0.35em;
-		&:last-child {
-			margin-right: 0;
-		}
-	}
-	.preceding-button,
-	.following-button {
-		/* flexbox setup */
-//		-webkit-flex: 1 0 0%;
-    	flex: 1 0 0%;
-	}
-	.close-button {
-		/* flexbox setup */
-//		-webkit-flex: 0 1 auto;
-    	flex: 0 1 auto;
-	}
-	.button,
-	.button:link,
-	.button:visited {
-		// color: $color;
-		color: lighten($color, 35%);
-		background-color: $background-color;
-		border-color: scale_color($color, $lightness: 35%, $alpha: -70%);
-		border-width: 1px;
-		border-style: solid;
-	}
-	.button:hover {
-		color: white;
-		background-color: $link-hover-color;
-		// border-color: scale_color($link-hover-color, $lightness: -30%);
-		border-color: darken($link-hover-color, 8%);
-	}
-	.button:active {
-		color: white;
-		background-color: $link-down-color;
-		// border-color: scale_color($link-down-color, $lightness: -30%);
-		border-color: darken($link-down-color, 8%);
-	}
-	// big icons
-	.button:before {
-		font-size: 90%;
 		@include fontello-icon-before();
 	}
 	.preceding-button:before {

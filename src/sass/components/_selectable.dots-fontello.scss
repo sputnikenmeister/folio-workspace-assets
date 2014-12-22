@@ -1,4 +1,5 @@
-.dots-fontello.list-item {
+.dots-fontello.list-item,
+.dots-fontello .list-item {
 	@include font-smoothing();
 	display: inline-block;
 	font-size: 0.85rem;
@@ -47,6 +48,8 @@
 	// &:active:after				{ content: '\e803'; }
 	&.selected a:before				{ content: '\e80b'; }
 	&.selected:hover a:before		{ content: '\e80b'; }
+
+	&.null-item a:before			{ content: '\e807'; }
 
 	// show link cursor, except on selected
 	user-select: none;

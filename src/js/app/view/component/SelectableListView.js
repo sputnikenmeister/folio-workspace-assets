@@ -6,24 +6,45 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-require("backbone.babysitter");
+/** @type {module:backbone.babysitter} */
+var Container = require("backbone.babysitter");
+/** @type {module:app/helper/View} */
+var View = require("../../helper/View");
 
-var SelectableListView = Backbone.View.extend({
+var NullRenderer = View.extend({
+	/** @override */
+	tagName: "li",
+	/** @override */
+	className: "list-item null-item",
+	/** @override */
+	events: {
+		"click": "onClick",
+	},
+	render: function() {
+		this.$el.html("<a href=\"#clear\"><b> </b></a>");
+		return this;
+	},
+
+	onClick: function (ev) {
+		ev.isDefaultPrevented() || ev.preventDefault();
+		this.trigger("renderer:click");
+	},
+});
+
+var SelectableListView = View.extend({
 	/** @override */
 	tagName: "ul",
 	/** @override */
 	className: "list selectable",
 	/** @type {module:app/view/component/DefaultSelectableRenderer} */
 	renderer: require("../render/DefaultSelectableRenderer"),
-	/** @type {Backbone.ChildViewContainer} */
-	children: null,
 
 	initialize: function (options) {
 		options.renderer && (this.renderer = options.renderer);
 		this.listenTo(this.collection, "add remove reset", this.render);
 //		this.listenTo(this.collection, "add remove reset", this.updateCollectionListeners);
 //		this.onCollectionChange();
-		this.children = new Backbone.ChildViewContainer();
+		this.children = new Container();
 	},
 
 	render: function () {
@@ -34,6 +55,9 @@ var SelectableListView = Backbone.View.extend({
 
 		if (this.collection.length) {
 			eltBuffer = document.createDocumentFragment();
+			view = this.createNullView();
+			eltBuffer.appendChild(view.render().el);
+
 			this.collection.each(function (model, index, arr) {
 				view = this.createChildView(model, index);
 				eltBuffer.appendChild(view.render().el);
@@ -76,6 +100,20 @@ var SelectableListView = Backbone.View.extend({
 		if (this.collection.selected !== item) {
 			this.trigger("view:select:one", item);
 		}
+	},
+
+	/* --------------------------- *
+	 * Null child view
+	 * --------------------------- */
+
+	createNullView: function (model, index) {
+		var view = new NullRenderer({
+		});
+		this.children.add(view);
+		this.listenTo(view, "renderer:click", function() {
+			this.trigger("view:select:none");
+		});
+		return view;
 	},
 
 //	/* --------------------------- *

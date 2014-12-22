@@ -12,6 +12,8 @@ var keywords = require("../model/collection/KeywordList");
 /** @type {module:app/model/collection/TypeList} */
 var types = require("../model/collection/TypeList");
 
+/** @type {module:app/helper/View} */
+var View = require("../helper/View");
 /** @type {module:app/view/component/FilterableListView} */
 var FilterableListView = require("./component/FilterableListView");
 /** @type {module:app/view/component/GroupingListView} */
@@ -23,14 +25,12 @@ var controller = require("../control/Controller");
  * @constructor
  * @type {module:app/view/NavigationView}
  */
-module.exports = Backbone.View.extend({
+module.exports = View.extend({
 
 	/** @override */
 	tagName: "div",
 	/** @override */
-	className: function() {
-		return "navigation";
-	},
+	className: "navigation",
 //	/** @override */
 //	events: {
 //		"click #site-name a": function (ev) {
@@ -42,13 +42,15 @@ module.exports = Backbone.View.extend({
 	/** @override */
 	initialize: function (options) {
 		//this.listenTo(this.$("#site-name a"), "click", function (ev) {
+		//this.$siteNameButton = this.$("#site-name");
+		//this.$siteNameButton.find("a").on("click", function (ev) {
 		this.$("#site-name a").on("click", function (ev) {
 			ev.isDefaultPrevented() || ev.preventDefault();
 			controller.deselectBundle();
 		});
 
 		// collapsed is set later by showBundleItem/showBundleList
-		this.bundleListView = new FilterableListView({
+		this.bundlesView = new FilterableListView({
 			el: "#bundle-list",
 			collection: bundles,
 			associations: {
@@ -57,7 +59,7 @@ module.exports = Backbone.View.extend({
 			},
 		});
 
-		this.keywordListView = new GroupingListView({
+		this.keywordsView = new GroupingListView({
 			el: "#keyword-list",
 			collapsed: true,
 			collection: keywords,
@@ -71,7 +73,7 @@ module.exports = Backbone.View.extend({
 			},
 		});
 
-		controller.listenTo(this.bundleListView, {
+		controller.listenTo(this.bundlesView, {
 			"view:select:one": controller.selectBundle,
 			"view:select:none": controller.deselectBundle
 		});
@@ -90,16 +92,16 @@ module.exports = Backbone.View.extend({
 
 	showBundleList: function() {
 		this.$el.removeClass("bundle-item").addClass("bundle-list");
-		this.keywordListView.filterBy(null);
-		this.bundleListView.setCollapsed(false);
+		this.keywordsView.filterBy(null);
+		this.bundlesView.setCollapsed(false);
 	},
 	showBundleItem: function() {
 		this.$el.removeClass("bundle-list").addClass("bundle-item");
-		this.keywordListView.filterBy(bundles.selected);
-		this.bundleListView.setCollapsed(true);
+		this.keywordsView.filterBy(bundles.selected);
+		this.bundlesView.setCollapsed(true);
 	},
 //	changeBundleList: function() {
-//		this.keywordListView.filterBy(bundles.selected);
+//		this.keywordsView.filterBy(bundles.selected);
 //	}
 
 });

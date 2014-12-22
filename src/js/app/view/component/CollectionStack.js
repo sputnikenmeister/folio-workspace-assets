@@ -6,6 +6,9 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {module:app/helper/View} */
+var View = require("../../helper/View");
+
 /** @type {string} */
 var viewTemplate = require("../template/CollectionStack.tpl");
 
@@ -13,7 +16,7 @@ var viewTemplate = require("../template/CollectionStack.tpl");
  * @constructor
  * @type {module:app/component/CollectionStack}
  */
-module.exports = Backbone.View.extend({
+module.exports = View.extend({
 
 	/** @override */
 	tagName: "div",

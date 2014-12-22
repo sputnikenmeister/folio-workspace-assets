@@ -7,11 +7,20 @@
 	-webkit-text-rendering: optimizelegibility;
 	text-rendering: optimizelegibility;
 }
+
 @mixin text-rendering-speed {
 	-webkit-text-rendering: optimizespeed;
 	text-rendering: optimizespeed;
 }
+
 @mixin font-smoothing {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+}
+
+@mixin ellpsis ($display: block) {
+	display: $display;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }

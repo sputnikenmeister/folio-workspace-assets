@@ -18,7 +18,7 @@ var DotNavigationRenderer = Backbone.View.extend({
 	/** @override */
 	tagName: "li",
 	/** @override */
-	className: "list-item dots-fontello",
+	className: "list-item",
 	/** @override */
 	template: viewTemplate,
 	/** @override */

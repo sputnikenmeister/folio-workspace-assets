@@ -67,7 +67,7 @@ module.exports = function (grunt) {
 	});
 	/* browserify:client */
 	grunt.config("browserify.client", {
-		dest: "js/folio-client.js",
+		dest: "./js/folio-client.js",
 		src: [
 			"./src/js/app/App.js"
 		],
@@ -90,16 +90,17 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks("grunt-exorcise");
 	grunt.config("exorcise", {
 		options: {
+			strict: false,
 			root: "../"
 		},
 		vendor: {
 			files: {
-				"js/folio-vendor.js.map": ["js/folio-vendor.js"]
+				"./js/folio-vendor.js.map": ["./js/folio-vendor.js"]
 			}
 		},
 		client: {
 			files: {
-				"js/folio-client.js.map": ["js/folio-client.js"]
+				"./js/folio-client.js.map": ["./js/folio-client.js"]
 			}
 		},
 	});
@@ -113,10 +114,11 @@ module.exports = function (grunt) {
 				mangle: false,
 				beautify: true,
 				sourceMap: true,
-				sourceMapIn: "js/folio-vendor.js.map"
+				sourceMapIn: "./js/folio-vendor.js.map",
+				sourceMapIncludeSources: false,
 			},
 			files: {
-				"js/folio-vendor.js": ["js/folio-vendor.js"]
+				"./js/folio-vendor.js": ["./js/folio-vendor.js"]
 			}
 		},
 		client: {
@@ -124,7 +126,8 @@ module.exports = function (grunt) {
 				mangle: false,
 				beautify: true,
 				sourceMap: true,
-				sourceMapIn: "js/folio-client.js.map",
+				sourceMapIn: "./js/folio-client.js.map",
+				sourceMapIncludeSources: false,
 				compress: {
 					global_defs: {
 						DEBUG: true
@@ -132,9 +135,14 @@ module.exports = function (grunt) {
 				}
 			},
 			files: {
-				"js/folio-client.js": ["js/folio-client.js"]
+				"./js/folio-client.js": ["./js/folio-client.js"]
 			}
 		},
+	});
+
+	grunt.loadNpmTasks("grunt-contrib-clean");
+	grunt.config("clean", {
+		src: ["./js/", "./css/"]
 	});
 
 	/* Watch tasks */
@@ -144,37 +152,45 @@ module.exports = function (grunt) {
 			spawn: false
 		},
 		"reload-config": {
+			options: {
+				spawn: true
+			},
 			files: ["gruntfile.js"],
-		},
-		//"lint-scripts": {
-		//	tasks: ["jshint"],
-		//	files: ["src/js/**/*.js"],
-		//},
-		"build-scripts": {
-			tasks: ["exorcise:client"],
-			files: ["js/folio-client.js"],
+			tasks: ["clean", "compass:client", "autoprefixer:client", "browserify:vendor", "browserify:client"],
 		},
 		"build-styles": {
 			tasks: ["compass:client", "autoprefixer:client"],
 			files: ["src/sass/**/*.scss"],
-		}
+		},
+		//"process-sources": {
+		//	tasks: ["jshint"],
+		//	files: ["src/js/**/*.js"],
+		//},
+		"process-vendor": {
+			tasks: ["exorcise:vendor", "uglify:vendor"],
+			files: ["js/folio-vendor.js"],
+		},
+		"process-client": {
+			tasks: ["exorcise:client", "uglify:client"],
+			files: ["js/folio-client.js"],
+		},
 	});
 
 	// DEBUG: check config result
 	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
 
+	grunt.registerTask("buildStyles", ["compass:client", "autoprefixer:client"]);
 	grunt.registerTask("buildVendor", ["browserify:vendor", "exorcise:vendor", "uglify:vendor"]);
 	grunt.registerTask("buildClient", ["browserify:client", "exorcise:client", "uglify:client"]);
 	grunt.registerTask("buildScripts", ["buildVendor", "buildClient"]); //"jshint",
-	grunt.registerTask("buildStyles", ["compass:client", "autoprefixer:client"]);
 
-	// Watch build
+	// Task Groups
 	grunt.registerTask("watchAll", ["browserify:watchable", "watch"]);
-	grunt.registerTask("watchInEditor", ["watchAll"]);
+	grunt.registerTask("buildAll", ["buildStyles", "buildScripts"]);
+	grunt.registerTask("buildAndWatch", ["buildAll", "watchAll"]);
 
 	// Default task
-	grunt.registerTask("build", ["buildStyles", "buildScripts"]);
-	grunt.registerTask("default", ["build"]);
+	grunt.registerTask("default", ["buildAll"]);
 
 	/* --------------------------------
 	 * dist

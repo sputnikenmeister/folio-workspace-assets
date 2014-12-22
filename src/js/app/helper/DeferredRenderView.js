@@ -2,10 +2,10 @@
  * @module app/helper/DeferredRenderView
  */
 
-/** @type {module:backbone} */
-var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
+/** @type {module:backbone} */
+var Backbone = require("backbone");
 /** @type {module:app/helper/View} */
 var View = require("./View");
 
@@ -54,12 +54,12 @@ var DeferredRenderView = View.extend({
 
 	/** @private */
 	applyRender: function () {
-		this.deferredRender();
+		this.renderLater();
 		this._renderRequestId = undefined;
 	},
 
 	/** @abstract */
-	deferredRender: function () {},
+	renderLater: function () {},
 
 });
 

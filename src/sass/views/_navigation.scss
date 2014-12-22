@@ -1,38 +1,47 @@
+#header {
+	height: 3rem;
+	padding-top: 1.25rem;
+	padding-bottom: 0.25rem;
+	h3 {
+		display: none;
+	}
+}
 
-$navigation_min-height: 12rem;
+/* ---------------------- *
+ * Navigation
+ * ---------------------- */
+
+$navigation_min-height: 10.5rem;
 $nav-root_height: 4.5rem;
 
-// Navigation
 #navigation {
 	position: relative;
 	min-height: $navigation_min-height;
 	padding-top: 0.75rem;
 	height: auto;
-	&.bundle-list {
-		height: auto;
-	}
-	&.bundle-item {
-		height: $navigation_min-height;
-	}
 	#site-name, #bundle-list, #keyword-list {
 		transition: transform $duration $ease;
 	}
 	&.bundle-list {
+		height: auto;
 		#site-name {
 			transform: translate3d(-1px,0,0);
+			transition-delay: $duration * 2;
 		}
 		#bundle-list, #keyword-list {
 			transform: translate3d(0, 0, 0);
+			transition-delay: $duration * 1;
 		}
 	}
 	&.bundle-item {
+		height: $navigation_min-height;
 		#site-name {
 			transform: translate3d(calc(-100% - #{$hu}),0,0);
-//			transition-delay: 0.7s;
+			transition-delay: $duration * 0;
 		}
 		#bundle-list, #keyword-list {
 			transform: translate3d(0, #{-$nav-root_height}, 0);
-//			transition-delay: 0.7s;
+			transition-delay: $duration * 1;
 		}
 	}
 }
@@ -49,53 +58,55 @@ $nav-root_height: 4.5rem;
 }
 
 #site-name {
-	@include heading-font($weight: 400);
+	@include heading-font($weight: 600);
 	position: relative;
 	display: inline-block;
-//	color: $color;
+	color: $link-color;
 }
 
 #bundle-list {
 	position: absolute;
-	left: $page-margin-left;
+	left: 0;// $page-margin-left;
 	width: calc(62% - #{$gutter});
 	@include heading-font();
-
 	.list-item {
 		transform: translateX(-1px);
 		width: 100%;
 		.completed {
 			display: none;
 		}
+		a > em {
+			font-style: normal;
+			font-weight: 400;
+		}
 	}
 }
 
 #keyword-list {
 	position: absolute;
-	right: $page-margin-right;
+	right: 0;
 	width: 38%;
 	@include paragraph-font();
-
 	.list-item {
-		margin-left: calc(38% + #{$hu});
+		margin-left: auto;
+		width: $aside-inner-width;
+		a {
+			font-size: 13px;
+		}
 	}
 	.list-group {
 		position: absolute;
-		width: calc(38% + #{$hu});
+		width: calc(100% - #{$aside-inner-width + $gutter});
 		span {
 			@include small-caps();
 		}
 	}
 	@media only screen and (min-width: $breakpoint-large) {
 		.list-item {
-			margin-left: auto;
-			width: $aside-width;
+			width: $aside-inner-width-large;
 		}
-//		.list-group {}
+		.list-group {
+			width: calc(100% - #{$aside-inner-width-large + $gutter});
+		}
 	}
 }
-
-//		display: block;
-//		white-space: nowrap;
-//		overflow: hidden;
-//		text-overflow: ellipsis;

@@ -11,6 +11,15 @@ var stripTags = require("../../utils/strings/stripTags");
 /** @type {module:app/utils/strings/parseTaglist} */
 var parseSymAttrs = require("../../utils/strings/parseSymAttrs");
 
+/** @type {Object} */
+var imageUrlTemplates = {
+	"original" : _.template(window.approot + "workspace/uploads/<%= f %>"),
+	"constrain-width" : _.template(window.approot + "image/1/<%= width %>/0/uploads/<%= f %>"),
+	"constrain-height" : _.template(window.approot + "image/1/0/<%= height %>/uploads/<%= f %>")
+};
+/** @type {Function} */
+var longdescTemplate = _.template("i<%= id %>-caption");
+
 /**
  * @constructor
  * @type {module:app/model/item/ImageItem}
@@ -46,7 +55,9 @@ module.exports = Backbone.Model.extend({
 						var idx = attr.indexOf(":");
 						if (idx > 0) {
 							attrs[attr.substring(0, idx)] = parseSymAttrs(attr.substring(idx + 1));
-						} // else drop it
+						} else {
+							attrs[attr] = "";
+						}
 					});
 					set(key, attrs, options);
 				} else {
@@ -54,6 +65,15 @@ module.exports = Backbone.Model.extend({
 				}
 			}
 		}
+	},
+
+	initialize: function() {
+		_.once(_.bind(this.getImageUrl, this));
+		_.once(_.bind(this.selector, this));
+	},
+
+	getImageUrl: function() {
+		return imageUrlTemplates.original(this.attributes);
 	},
 
 	selector: function() {

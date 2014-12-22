@@ -52,6 +52,7 @@ var SelectableList = Backbone.Collection.extend({
 		}
 		var oldModel = this.selected;
 		var triggerEvents = !(options && options.silent);
+
 		if (oldModel) {
 			if (_.isFunction(oldModel.deselect)) {
 				oldModel.deselect(options);
@@ -61,7 +62,10 @@ var SelectableList = Backbone.Collection.extend({
 			}
 			if (triggerEvents) this.trigger("deselect:one", oldModel);
 		}
+
 		this.selected = newModel;
+		this.selectedIndex = this.indexOf(newModel);
+
 		if (newModel) {
 			if (_.isFunction(newModel.select)) {
 				newModel.select(options);
@@ -69,9 +73,9 @@ var SelectableList = Backbone.Collection.extend({
 				newModel.selected = true;
 				newModel.trigger("selected");
 			}
-			if (triggerEvents) this.trigger("select:one", newModel);//, oldModel);
+			if (triggerEvents) this.trigger("select:one", newModel);
 		} else {
-			if (triggerEvents) this.trigger("select:none", newModel);//, oldModel);
+			if (triggerEvents) this.trigger("select:none", newModel);
 		}
 	},
 

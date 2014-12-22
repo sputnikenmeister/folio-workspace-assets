@@ -44,22 +44,28 @@ $link-down-color: scale_color($link-color, $lightness: -15%);//hsl(10, 95%, 30%)
 $selection-bgcolor: hsl(203, 100%, 90%);
 $selection-fgcolor: hsl(203, 100%, 50%);
 
-///* Time base unit (transition/animation) */
+// Time base unit (transition/animation)
 $duration: 0.35s;
-$ease: ease-in-out;
+$ease: ease;
 
 ///* Size base units */
 $hu: 20px;
 $vu: 12px;
 
-///* Layout */
-$breakpoint-large: 		1024px;
-$page-width: 			740px;
-$page-width-large: 		960px;
-$page-margin-left: 		1*$hu;
-$page-margin-right: 	1*$hu;
-$gutter: 				2*$hu;
-$aside-width: 			$page-width-large - $page-width - $gutter;
+// Layout
+$breakpoint-large: 			1024px;
+$page-width: 				740px;
+$page-width-large: 			960px;
+$page-margin-left: 			1 * $hu;
+$page-margin-right: 		1 * $hu;
+$gutter: 					2 * $hu;
+
+$page-inner-width:			$page-width - $page-margin-left - $page-margin-right;
+$page-inner-width-large:	$page-width-large - $page-margin-left - $page-margin-right;
+$aside-width:				$hu*8;
+$aside-width-large: 		$page-inner-width-large - $page-inner-width;
+$aside-inner-width:			$aside-width - $gutter/2;
+$aside-inner-width-large:	$aside-width-large - $gutter/2;
 
 // font-family
 $large-font-family: $font-webfont-sans;
@@ -68,7 +74,6 @@ $mono-font-family: $mono-fallback;
 
 // font shorthands
 $base-font: 12px/1 $font-webfont-sans;
-// $base-font: 8pt/1.5 $font-system-sans;
 
 // ------------------------------------
 // Typography mixins
@@ -76,7 +81,7 @@ $base-font: 12px/1 $font-webfont-sans;
 
 // h1 font-size: 3.42857rem; letter-spacing: -2px;
 // h2 font-size: 2.14286rem; letter-spacing: -1px;
-@mixin heading-font($size: 2rem,$weight: 600, $lead: 2rem) {
+@mixin heading-font($size: 2rem, $weight: 600, $lead: 2rem) {
 	font-family: $large-font-family;
 	font-size: $size;
 	font-weight: $weight;
@@ -86,12 +91,14 @@ $base-font: 12px/1 $font-webfont-sans;
 	@include text-rendering-legibility;
 	@include font-smoothing;
 }
+
 @mixin paragraph-font($size: 1rem, $weight: 400, $lead: 1.5rem) {
 	font-size: $size;
 	font-weight: $weight;
 	line-height: $lead;
 }
-@mixin small-caps($size: 0.85rem,$weight: 600, $lead: 1.5rem) {
+
+@mixin small-caps($size: 0.85rem, $weight: 600, $lead: 1.5rem) {
 	font-size: $size;
 	font-weight: $weight;
 	line-height: $lead;
@@ -107,23 +114,23 @@ $base-font: 12px/1 $font-webfont-sans;
 html {
 	font: $base-font;
 }
+
 body {
-	color: lighten($color, 10%);
+	color: $color;
 	background-color: $background-color;
 	line-height: 1.5rem;
-//	@include font-smoothing;
 }
 
 p {
-	@include paragraph-font;
+	@include paragraph-font();
 }
 
 h1 {
-	@include heading-font;
+	@include heading-font();
 }
 
 h2 {
-	@include heading-font;
+	@include heading-font();
 }
 
 h3 {
@@ -144,7 +151,7 @@ a {
 	color: inherit;
 }
 
-*::selection{
+*::selection {
 	color: $selection-fgcolor;
 	background-color: $selection-bgcolor;
 }

@@ -12,6 +12,12 @@ var _ = require("underscore");
  * @type {module:app/helper/View}
  */
 var View = Backbone.View.extend({
+	constructor: function(options) {
+		if (options && options.className && this.className) {
+			options.className += " " + _.result(this, 'className');
+		}
+		Backbone.View.apply(this, arguments);
+	}
 });
 
 module.exports = View;
