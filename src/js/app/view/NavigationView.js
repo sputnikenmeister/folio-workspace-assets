@@ -21,6 +21,11 @@ var GroupingListView = require("./component/GroupingListView");
 /** @type {module:app/control/Controller} */
 var controller = require("../control/Controller");
 
+/** @type {Function} */
+var bundlePagerTemplate = require("./template/CollectionPager.Bundle.tpl");
+/** @type {module:app/view/component/CollectionPager} */
+var CollectionPager = require("./component/CollectionPager");
+
 /**
  * @constructor
  * @type {module:app/view/NavigationView}
@@ -73,6 +78,21 @@ module.exports = View.extend({
 			},
 		});
 
+		// Component: bundle pager
+		this.bundlePager = new CollectionPager({
+//			id: "bundle-pager",
+			className: "folio mutable-faded",
+			collection: bundles,
+			template: bundlePagerTemplate,
+			labelAttribute: "name",
+		});
+		this.bundlePager.render().$el.appendTo(this.el);
+
+		controller.listenTo(this.bundlePager, {
+			"view:select:one": controller.selectBundle,
+			"view:select:none": controller.deselectBundle
+		});
+
 		controller.listenTo(this.bundlesView, {
 			"view:select:one": controller.selectBundle,
 			"view:select:none": controller.deselectBundle
@@ -82,7 +102,6 @@ module.exports = View.extend({
 			"select:one": this.showBundleItem,
 			"select:none": this.showBundleList
 		});
-
 		if (bundles.selected) {
 			this.showBundleItem();
 		} else {

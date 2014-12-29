@@ -38,6 +38,12 @@ var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
 var imageDescTemplate = require("./template/CollectionStack.Image.tpl");
 
+//var BundleDetail = CollectionStack.extend({
+//	id: "bundle-detail",
+//	collection: bundles,
+//	template: bundleDescTemplate,
+//	className: "bundle-detail full-width"
+//});
 
 /**
  * @constructor
@@ -45,17 +51,13 @@ var imageDescTemplate = require("./template/CollectionStack.Image.tpl");
  */
 var ContentView = View.extend({
 
-	/** Setup listening to model changes */
 	initialize: function (options) {
-
-		// content-detail (layout container)
+		// Element: content-detail (layout container)
 		this.container = document.createElement("div");
 		this.container.id = "content-detail";
 		this.$el.append(this.container);
 
-		/* -------------------------------
-		 * selected bundle detail
-		 * ------------------------------- */
+		// Component: bundle detail
 //		this.bundleDetail = new CollectionStack({
 //			id: "bundle-detail",
 //			collection: bundles,
@@ -64,6 +66,11 @@ var ContentView = View.extend({
 //		});
 //		this.bundleDetail.render().$el.appendTo(this.container);
 
+//		// Component: bundle pager
+//		this.bundlePager = require("./instance/createBundlePager").call();
+//		this.bundlePager.render().$el.appendTo(this.container);
+
+		// Model listeners
 		this.listenTo(bundles, {
 			"select:one": this._onBundleSelect,
 			"deselect:one": this._onBundleDeselect
@@ -75,12 +82,11 @@ var ContentView = View.extend({
 
 	/** @override */
 	remove: function () {
-		View.prototype.remove.apply(this, arguments);
 		if (bundles.selected) {
 			this.removeChildren();
 		}
-//		this.bundleDetail.remove();
 		this.$el.remove(this.container);
+		View.prototype.remove.apply(this, arguments);
 	},
 
 	/* -------------------------------
@@ -97,34 +103,28 @@ var ContentView = View.extend({
 		this.stopListening(this.pager);
 		this.stopListening(this.carousel);
 
-		//var deferred = new Deferred();
 		if (skipAnimation) {
 			this.imageDetail.remove();
 			this.pager.remove();
 			this.carousel.remove();
-		//	deferred.resolveWith(this);
 		} else {
-			this.imageDetail.stopListening();
 			this.pager.stopListening();
 			this.carousel.stopListening();
-			this.$([this.imageDetail.el, this.pager.el, this.carousel.el])
-				.css({
-					position: "absolute"
-				})
-				.transit({
-					opacity: 0
-				}, 300, "ease", _.bind(function (carousel, pager, imageDetail) {
-					imageDetail.remove();
-					pager.remove();
-					carousel.remove();
-					//deferred.resolveWith(this);
-				}, this, this.carousel, this.pager, this.imageDetail));
+			this.$([
+				this.imageDetail.el,
+				this.pager.el,
+				this.carousel.el
+			]).css({position: "absolute"})
+				.transit({opacity: 0}, 300, "ease")
+				.queue(function(next) {
+					View.findByElement(this).remove();
+					next();
+				});
 		}
 
 		this.pager = void 0;
 		this.carousel = void 0;
 		this.imageDetail = void 0;
-		//return deferred.promise();
 	},
 
 	/* -------------------------------
@@ -146,25 +146,36 @@ var ContentView = View.extend({
 			renderer: DotNavigationRenderer,
 			className: "images-pager dots-fontello mutable-faded"
 		});
+		this.pager.render().$el.appendTo(this.container);
+
 		this.carousel = new Carousel({
 			collection: images,
 			renderer: ImageRenderer,
 			emptyRenderer: View.extend({
 				className: "carousel-item empty-item",
+				initialize: function (options) {
+					this.listenTo(this.collection, {
+						"select:one": function () { this.$el.removeClass("selected"); },
+						"select:none": function () { this.$el.addClass("selected"); }
+					});
+					if (!this.collection.selected) {
+						this.$el.addClass("selected");
+					}
+				},
 				render: function() {
 					this.$el.html(bundleDescTemplate(bundle.attributes));
 					return this;
 				}
 			})
 		});
+		this.carousel.render().$el.appendTo(this.el);
+
 		this.imageDetail = new CollectionStack({
 			collection: images,
 			template: imageDescTemplate,
 			className: "image-detail aside"
 		});
 		this.imageDetail.render().$el.appendTo(this.container);
-		this.pager.render().$el.appendTo(this.container);
-		this.carousel.render().$el.appendTo(this.el);
 
 		/* -------------------------------
 		 * Attach event handlers
@@ -184,13 +195,13 @@ var ContentView = View.extend({
 //			"select:none": this._onSelectNoImage
 //		});
 
-		if (images.selected) {
-			this._onOneImageSelected();
-//			this.listenToOnce(this.carousel.collection, "select:none", this._onNoImageSelected);
-		} else {
-			this._onNoImageSelected();
-//			this.listenToOnce(this.carousel.collection, "select:one", this._onOneImageSelected);
-		}
+//		if (images.selected) {
+//			this._onOneImageSelected();
+////			this.listenToOnce(this.carousel.collection, "select:none", this._onNoImageSelected);
+//		} else {
+//			this._onNoImageSelected();
+////			this.listenToOnce(this.carousel.collection, "select:one", this._onOneImageSelected);
+//		}
 
 		/* -------------------------------
 		 * Show/animate views
@@ -200,8 +211,11 @@ var ContentView = View.extend({
 		if (skipAnimation) {
 			//deferred.resolveWith(this);
 		} else {
-			this.$([this.imageDetail.el, this.pager.el, this.carousel.el])
-				.css({
+			this.$([
+				this.imageDetail.el,
+				this.pager.el,
+				this.carousel.el
+			]).css({
 					opacity: 0
 				}).delay(700)
 				.transit({
@@ -215,15 +229,15 @@ var ContentView = View.extend({
 	 * Image view listeners
 	 * ------------------------------- */
 
-	_onOneImageSelected: function () {
-//		this.bundleDetail.$el.fadeOut();
-		this.listenToOnce(this.carousel.collection, "select:none", this._onNoImageSelected);
-	},
-
-	_onNoImageSelected: function () {
-//		this.bundleDetail.$el.fadeIn();
-		this.listenToOnce(this.carousel.collection, "select:one", this._onOneImageSelected);
-	},
+//	_onOneImageSelected: function () {
+////		this.bundleDetail.$el.fadeOut();
+//		this.listenToOnce(this.carousel.collection, "select:none", this._onNoImageSelected);
+//	},
+//
+//	_onNoImageSelected: function () {
+////		this.bundleDetail.$el.fadeIn();
+//		this.listenToOnce(this.carousel.collection, "select:one", this._onOneImageSelected);
+//	},
 
 });
 

@@ -62,8 +62,12 @@ function Controller() {
 	this.listenTo(bundles, "select:one", this._onBundleSelectOne);
 	this.listenTo(bundles, "select:none", this._onBundleSelectNone);
 
-	this.listenTo(this.router,	"route", 		traceArgs("Router \t", "info"));
-	this.listenTo(bundles,		"all",			traceArgs("Bundles\t", "info"));
+	if (DEBUG) {
+		// error trace
+		this.listenTo(this.router,	"route", 		traceArgs("Router \t", "info"));
+		this.listenTo(Backbone,		"all",  		traceArgs("App    \t", "info"));
+		this.listenTo(bundles,		"all",			traceArgs("Bundles\t", "info"));
+	}
 }
 
 _.extend(Controller.prototype, Backbone.Events, {
@@ -240,9 +244,9 @@ _.extend(Controller.prototype, Backbone.Events, {
 
 		// .image-item .placeholder
 		cssRule = Styles.getCSSRule(".image-item .placeholder");
-		cssRule.style.backgroundColor = bgColor.lightness(fgLum * 0.100 + bgLum * 0.900).toHexString();
+		cssRule.style.backgroundColor = bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString();
 //		Styles.setCSSProperty(".image-item .placeholder", "background-color", bgColor.lightness(fgLum * 0.200 + bgLum * 0.800).toHexString());
-		cssRule.style.borderColor = bgColor.lightness(fgLum * 0.200 + bgLum * 0.800).toHexString();
+		cssRule.style.borderColor = bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString();
 //		Styles.setCSSProperty(".image-item .placeholder", "border-color", bgColor.lightness(fgLum * 0.200 + bgLum * 0.800).toHexString());
 		cssRule.style.color =  bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString();
 //		Styles.setCSSProperty(".image-item .placeholder", "color", bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString());

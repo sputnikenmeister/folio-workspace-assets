@@ -6,6 +6,8 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {module:cookies-js} */
+var Cookies = require("cookies-js");
 
 /** @type {module:app/view/NavigationView} */
 var NavigationView = require("./NavigationView");
@@ -23,7 +25,7 @@ var controller = require("../control/Controller");
  * @constructor
  * @type {module:app/view/AppView}
  */
-module.exports = Backbone.View.extend({
+var AppView = Backbone.View.extend({
 
 	/** @override */
 	el: "body",
@@ -42,16 +44,7 @@ module.exports = Backbone.View.extend({
 		});
 
 		if (DEBUG) {
-			// error trace
-			this.listenTo(Backbone, "all", function(eventType){
-				console.info("AppView::" + eventType);
-			});
-			this.$("#show-grid").click(function (ev) {
-				Backbone.$("#container").toggleClass("debug-grid");
-			})
-			this.$("#show-blocks").click(function (ev) {
-				Backbone.$("#container").toggleClass("debug-blocks");
-			});
+			this.debugToolbar = new DebugToolbar({el: "#debug-toolbar"});
 		} else {
 			this.$("#debug-toolbar").remove();
 		}
@@ -70,4 +63,55 @@ module.exports = Backbone.View.extend({
 		}, this));
 	},
 
+});
+module.exports = AppView;
+
+var DebugToolbar = Backbone.View.extend({
+	initialize: function (options) {
+		var backendEl = this.$("#edit-backend");
+		this.listenTo(bundles, {
+			"select:one": function(bundle) {
+				backendEl.attr("href", approot + "symphony/publish/bundles/edit/" + bundle.id);
+			},
+			"select:none": function() {
+				backendEl.attr("href", approot + "symphony/publish/bundles/");
+			}
+		});
+
+		var container = Backbone.$("#container");
+		this.initDebugToggle("debug-grid", this.$("#show-grid"), container);
+		this.initDebugToggle("debug-blocks", this.$("#show-blocks"), container);
+//		if (Cookies.get("debug-grid")) {
+//			this.$container.addClass("debug-grid");
+//		}
+//		if (Cookies.get("debug-blocks")) {
+//			this.$container.addClass("debug-blocks");
+//		}
+//		this.$container = container;
+	},
+
+//	events: {
+//		"click #show-grid": "toggleGrid",
+//		"click #show-blocks": "toggleBlocks"
+//	},
+
+	initDebugToggle: function (name, toggleEl, targetEl) {
+		toggleEl.on("click", function (ev) {
+			targetEl.toggleClass(name);
+			Cookies.set(name, targetEl.hasClass(name)? "true": "");
+		});
+		if (Cookies.get(name)) {
+			targetEl.addClass(name);
+		}
+	}
+
+//	toggleGrid: function() {
+//		this.$container.toggleClass("debug-grid");
+//		Cookies.set("debug-grid", this.$container.hasClass("debug-grid")? "true": "");
+//	},
+//
+//	toggleBlocks: function() {
+//		this.$container.toggleClass("debug-blocks");
+//		Cookies.set("debug-blocks", this.$container.hasClass("debug-blocks")? "true": "");
+//	}
 });

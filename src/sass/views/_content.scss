@@ -21,28 +21,35 @@
 
 .carousel-item {
 //	box-sizing: border-box;
-	left: calc(50% - #{$page-width/2 - $page-margin-left});
-	width: $page-inner-width - $aside-width - $gutter/2;
+	left: calc(50% - #{$page-width / 2});
+	width: $page-inner-width - $aside-width - $page-margin-left;
 	padding-right: $aside-width + $gutter;
+	padding-left: $page-margin-left;
 
 //	width: $page-inner-width-large - $aside-width-large;
 //	padding-left: $aside-width;
 	@media only screen and (min-width: $breakpoint-large) {
 //		left: calc(50% - #{$page-width-large/2 - $page-margin-left});
-		width: $page-inner-width-large - $aside-width-large - $gutter/2;
-		left: calc(50% - #{$page-width-large/2 - $page-margin-left});
-		padding-left: 0;
+		width: $page-inner-width-large - $aside-width-large - $page-margin-left;
+		left: calc(50% - #{$page-width-large / 2});
 		padding-right: $aside-width-large + $gutter;
-//		width: auto;
-//		padding: 0 6rem;
-//
+		padding-left: $page-margin-left;
 	}
 }
 .carousel-item.empty-item {
+	.content {
+		margin-right: -$aside-width - $page-margin-right;
+//		@media only screen and (min-width: $breakpoint-large) {
+//			margin-right: -$aside-width-large - $page-margin-right;
+//		}
+	}
 	p {
-		@include heading-font($size: 36px, $weight: 300, $lead: 42px);
-		margin-bottom: 1rem;
+		@include heading-font($size: 28px, $weight: 300, $lead: 30px);
+		margin-bottom: 15px;
 		margin-top: 0;
+		&:first-child {
+			margin-top: -5px;
+		}
 	}
 }
 
@@ -88,4 +95,10 @@
 		margin-bottom: 1rem;
 		margin-top: 0;
 	}
+}
+
+#navigation .pager {
+	position: absolute;
+    display: inline-block;
+    top: -1.5rem;
 }

@@ -16,6 +16,8 @@ $salmon: 			hsla(6, 93%, 71%, 1);
 $thistle: 			hsla(300, 24%, 80%, 1);
 /* darkseagreen:	hsl(120, 25%, 65%) */
 $darkseagreen:		hsla(120, 25%, 65%, 1);
+/* darkolivegreen:	hsl(???) */
+$darkolivegreen:	darkolivegreen;
 
 .debug-grid {
 	background-image: image-url("debug-background.svg");
@@ -47,20 +49,20 @@ $darkseagreen:		hsla(120, 25%, 65%, 1);
 	}
 
 	#content {
-		background-color: transparentize($lightblue, 0.8);
-		.carousel {
-			background-color: transparentize($thistle, 0.7);
-			.image-item {
-				outline: 1px dashed $darkseagreen;
-			}
-		}
 		#content-detail {
-			background-color: transparentize($thistle, 0.8);
-			outline: 1px dashed $deepskyblue;
+//			background-color: transparentize($darkseagreen, 0.7);
+			outline: 1px dashed $darkseagreen;
+		}
+		.carousel {
+			background-color: transparentize($thistle, 0.5);
+			.carousel-item {
+				outline: 1px dashed $deepskyblue;
+		 		background-color: transparentize($deepskyblue, 0.8);
+			}
 		}
 		.item-detail {
 			outline: 1px dashed $deepskyblue;
-			.description {
+			.content {
 				background-color: transparentize($lightblue, 0.7);
 			}
 		}

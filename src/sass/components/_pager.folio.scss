@@ -1,0 +1,26 @@
+.pager.folio {
+	.button {
+		@include small-caps();
+		@include font-smoothing();
+		display: inline-block;
+		box-sizing: border-box;
+		white-space: nowrap;
+		cursor: pointer;
+		user-select: none;
+		margin-left: 2em;
+		&:first-child {
+			margin-left: 0;
+		}
+	}
+	.following-button {
+		margin-left: 2em;
+	}
+	.preceding-button:before {
+		content: '\e807';
+		@include fontello-icon-before();
+	}
+	.following-button:after {
+		content: '\e808';
+		@include fontello-icon-after();
+	}
+}

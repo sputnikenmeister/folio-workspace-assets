@@ -1,2 +1,2 @@
 <div class="placeholder"></div>
-<img alt="<%= name %>" longdesc="#caption-<%= id %>" />
+<img class="content" alt="<%= name %>" longdesc="#caption-<%= id %>" />

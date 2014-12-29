@@ -28,25 +28,19 @@ var FooterView = View.extend({
 	className: "footer mutable-faded",
 
 	initialize: function (options) {
-		this.$el.addClass(this.className);
+		// element is already in the dom, so explicitly add css classes
+//		this.$el.addClass(this.className);
 		// pager
-		this.pager = new CollectionPager({
-			id: "bundle-pager",
+		var pager = new CollectionPager({
 			collection: bundles,
 			template: pagerTemplate,
 			labelAttribute: "name",
 		});
-		this.pager.render().$el.prependTo(this.el);
-		this.listenTo(this.pager, "view:select:one", this._onChildSelectOne);
-		this.listenTo(this.pager, "view:select:none", this._onChildSelectNone);
-	},
-
-	_onChildSelectOne: function (bundle) {
-		controller.selectBundle(bundle);
-	},
-
-	_onChildSelectNone: function () {
-		controller.deselectBundle();
+		pager.render().$el.prependTo(this.el);
+		controller.listenTo(pager, {
+			"view:select:one": controller.selectBundle,
+			"view:select:none": controller.deselectBundle
+		});
 	},
 });
 

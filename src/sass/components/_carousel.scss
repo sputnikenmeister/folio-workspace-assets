@@ -1,13 +1,33 @@
 .carousel * {
-	user-select: none;
-	cursor: default;
+	user-select: none !important;
+	cursor: grab !important;
 }
+
+.carousel.panning * {
+	cursor: grabbing !important;
+}
+
 .carousel-item {
 	display: block;
 	position: absolute;
 }
+
 .carousel-item.empty-item {
 	height: auto;
+	.content {
+		transition: opacity #{$duration} $ease;
+		opacity: 0;
+	}
+	&.selected {
+		.content {
+			opacity: 1;
+		}
+	}
+	@at-root .panning .empty-item {
+		.content {
+			opacity: 1;
+		}
+	}
 }
 
 .default-carousel-item {
@@ -64,41 +84,39 @@
 		white-space: nowrap;
 	}
 
-//	img {
-//		visibility: hidden;
-//		opacity: 0;
-//	}
+	img {
+		transition: opacity #{$duration * 2} $ease;
+		opacity: 0;
+	}
 
 	&.idle {
-		visibility: hidden;
+//		visibility: hidden;
 		img {
 			display: none;
 		}
 	}
 
-	&.pending {
+	&.selected.pending {
 		img {
-			visibility: hidden;
 			opacity: 0;
 		}
 		.placeholder:after {
 			content: "Loading";
 		}
 	}
-
-	&.done {
+	&.done.selected {
 		img {
-			transition: opacity $duration $duration;
-			visibility: visible;
 			opacity: 1;
-		}
-		.placeholder {
-			transition: visibility $duration $duration step-end;
-			visibility: hidden;
 		}
 	}
 
-	&.error {
+	@at-root .panning .image-item.done.candidate {
+		img {
+			opacity: 1;
+		}
+	}
+
+	&.selected.error {
 		img {
 			display: none;
 		}
@@ -107,3 +125,5 @@
 		}
 	}
 }
+
+
