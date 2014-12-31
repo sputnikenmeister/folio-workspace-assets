@@ -22,6 +22,7 @@ var DefaultEmptyRenderer = View.extend({
 	className: "carousel-item empty-item",
 	initialize: function (options) {
 		this.listenTo(this.collection, "select:one select:none", this.render);
+		this.$el.html("<div class=\"content sizing\"></div");
 	},
 	render: function() {
 		if (this.collection.selected) {
@@ -84,6 +85,7 @@ var Carousel = DeferredRenderView.extend({
 			"reset": this._onCollectionReset,
 			"select:one": this._onSelectOne,
 			"select:none": this._onSelectNone,
+			"deselect:one": this._onDeselectOne,
 		});
 	},
 
@@ -176,13 +178,19 @@ var Carousel = DeferredRenderView.extend({
 		this.render();
 	},
 
+	_onDeselectOne: function (model) {
+		this.children.findByModel(model).$el.removeClass("selected");
+	},
+
 	/** @private */
-	_onSelectOne: function (image) {
+	_onSelectOne: function (model) {
+		this.children.findByModel(model).$el.addClass("selected");
 		this.scrollByLater(0, ANIMATED);
 	},
 
 	/** @private */
-	_onSelectNone: function (image) {
+	_onSelectNone: function () {
+		this.selectEmptyView();
 		this.scrollByLater(0, ANIMATED);
 	},
 
@@ -212,10 +220,21 @@ var Carousel = DeferredRenderView.extend({
 	 * Create children
 	 * --------------------------- */
 
+	selectEmptyView: function () {
+		this.emptyChild.$el.addClass("selected");
+		this.listenToOnce(this.collection, "select:one", function(model) {
+			this.emptyChild.$el.removeClass("selected");
+		});
+	},
+
 	createEmptyChildView: function () {
-		return this.emptyChild = new this.emptyRenderer({
+		this.emptyChild = new this.emptyRenderer({
 			collection: this.collection
 		});
+		if (!this.collection.selected) {
+			this.selectEmptyView();
+		}
+		return this.emptyChild;
 	},
 
 	removeEmptyChildView: function () {
@@ -228,11 +247,15 @@ var Carousel = DeferredRenderView.extend({
 	},
 
 	createChildView: function (item) {
-		var view = new this.renderer({
-			model: item
+		var child = new this.renderer({
+			model: item,
+//			className: (item.selected? "selected": void 0)
 		});
-		this.children.add(view);
-		return view;
+		this.children.add(child);
+		if (item.selected) {
+			this.children.findByModel(item).$el.addClass("selected");
+		}
+		return child;
 	},
 
 	removeChildView: function (view) {
@@ -273,6 +296,8 @@ var Carousel = DeferredRenderView.extend({
 	 * resize
 	 * --------------------------- */
 
+	_childSizes: {},
+
 	/** @param {Object} ev */
 	_onResize: function (ev) {
 		this.updateSize();
@@ -281,26 +306,25 @@ var Carousel = DeferredRenderView.extend({
 
 	updateSize: function() {
 		var size;
-//		var minSize = Number.POSITIVE_INFINITY;
-		var maxSize = 0;
+		var pos = 0;
+		var maxOuter = 0;
 		var maxAcross = 0;
-
 		var measure = function(child) {
 			size = this.measureChild(child.render());
-//			minSize = Math.min(minSize, size.inner);
-			maxSize = Math.max(maxSize, size.outer);
+			size.pos = pos;
+			pos += size.outer;
+			maxOuter = Math.max(maxOuter, size.outer);
 			maxAcross = Math.max(maxAcross, size.across);
 		};
 
-		this.children.each(measure, this);
 		measure.call(this, this.emptyChild);
+		maxAcross = 0; // Explicitly ignore emptyChild's across size
+		this.children.each(measure, this);
 
-		this.childSize = maxSize;
+		this.childSize = maxOuter;
 		this.containerSize = this.el[this.dirProp("offsetWidth", "offsetHeight")];
 		this.$el.css(this.dirProp("minHeight", "minWidth"), (maxAcross > 0)? maxAcross: "");
 	},
-
-	_childSizes: {},
 
 	measureChild: function(child) {
 		var sizes = {};
@@ -319,7 +343,6 @@ var Carousel = DeferredRenderView.extend({
 			sizes.before = 0;
 			sizes.after = 0;
 		}
-//		console.log("carousel sizes", sizes);
 
 		return this._childSizes[child.cid] = sizes;
 	},
@@ -342,43 +365,74 @@ var Carousel = DeferredRenderView.extend({
 	},
 
 	_scrollBy: function (delta, scrollIndex, skipAnimation) {
-		var pos, size, child;
 		skipAnimation = _.isBoolean(skipAnimation)? skipAnimation : this.skipAnimation;
 
+		var child, sizes, sChild, sSizes, pos;
+		sChild = this.collection.selected? this.children.findByModel(this.collection.selected) : this.emptyChild;
+		sSizes = this._childSizes[sChild.cid];
+
+		var scroll = _.bind(function (child) {
+			var scrollPos = 0;
+			sizes = this._childSizes[child.cid];
+			scrollPos = sizes.pos - sSizes.pos + delta;
+			scrollPos += this._scrollOffset(sizes, scrollPos);
+			this._scrollChildTo(child, scrollPos, skipAnimation);
+		}, this);
+
+		scroll(this.emptyChild);
+
+//		var pos, size, child;
 //		size = this.containerSize;
-		size = this.childSize;
-		pos = (size * (-1 - scrollIndex)) + delta;
-		pos += this._scrollOffset(this.emptyChild, pos, size);
+//		size = this.childSize;
+//		pos = (size * (-1 - scrollIndex)) + delta;
+//		pos += this._scrollOffset(this.emptyChild, pos, size);
+
+//		pos = this._scrollPosition(this.emptyChild, -1, scrollIndex, delta);
+//		this._scrollChildTo(this.emptyChild, pos, skipAnimation);
+
 		this._scrollChildTo(this.emptyChild, pos, skipAnimation);
 
 		// NOTE: looping through the models, not children; what if they have not been created yet?
 		this.collection.each(function (model, index) {
-			child = this.children.findByModel(model);
-			pos = (size * (index - scrollIndex)) + delta;
-			pos += this._scrollOffset(child, pos, size);
-			this._scrollChildTo(child, pos, skipAnimation);
+//			child = this.children.findByModel(model);
+//			pos = (size * (index - scrollIndex)) + delta;
+//			pos += this._scrollOffset(child, pos, size);
+
+//			pos = this._scrollPosition(child, index, scrollIndex, delta);
+//			this._scrollChildTo(child, pos, skipAnimation);
+
+			scroll(this.children.findByModel(model));
 		}, this);
 	},
 
-	_scrollOffset: function (child, pos, size) {
-		var val = 0;
-		var s = this._childSizes[child.cid];
+//	_scrollPosition: function(child, index, scrollIndex, delta) {
+//		var pos = 0;
+//		var size = this.childSize;
+//		pos = (size * (index - scrollIndex)) + delta;
+//		pos += this._scrollOffset(child, pos, sc.outer);
+//		return pos;
+//	},
+
+	_scrollOffset: function (s, pos) {
+		var offset = 0;
+//		var s = this._childSizes[child.cid];
+//		var size = s.outer;
 
 		if (0 > pos) {
-			if (Math.abs(pos) < size) {
-				val += (-s.after) / size * pos;
+			if (Math.abs(pos) < s.outer) {
+				offset += (-s.after) / s.outer * pos;
 			} else {
-				val += (-s.after) * -1;
+				offset += (-s.after) * -1;
 			}
 		} else
 		if (0 <= pos) {
-			if (Math.abs(pos) < size) {
-				val -= s.before / size * pos;
+			if (Math.abs(pos) < s.outer) {
+				offset -= s.before / s.outer * pos;
 			} else {
-				val -= s.before;
+				offset -= s.before;
 			}
 		}
-		return val;
+		return offset;
 	},
 
 	_scrollChildTo: function (view, pos, skipAnimation) {
