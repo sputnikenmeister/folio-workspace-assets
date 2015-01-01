@@ -110,3 +110,9 @@ $nav-root_height: 4.5rem;
 		}
 	}
 }
+
+#navigation .bundle-nav.pager {
+	position: absolute;
+    display: inline-block;
+    top: -1.5rem;
+}

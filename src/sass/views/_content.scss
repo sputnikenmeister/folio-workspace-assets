@@ -20,35 +20,21 @@
 }
 
 .carousel-item {
-//	box-sizing: border-box;
-	left: calc(50% - #{$page-width / 2});
-	width: $page-inner-width - $aside-width - $page-margin-left;
-	padding-right: $aside-width + $gutter;
+	box-sizing: border-box;
 	padding-left: $page-margin-left;
-
-//	width: $page-inner-width-large - $aside-width-large;
-//	padding-left: $aside-width;
+	padding-right: $aside-width + $gutter;
+	width: $page-width;
+	left: calc(50% - #{$page-width / 2});
 	@media only screen and (min-width: $breakpoint-large) {
-//		left: calc(50% - #{$page-width-large/2 - $page-margin-left});
-		width: $page-inner-width-large - $aside-width-large - $page-margin-left;
-		left: calc(50% - #{$page-width-large / 2});
-		padding-right: $aside-width-large + $gutter;
 		padding-left: $page-margin-left;
+		padding-right: $aside-width-large + $gutter;
+		width: $page-width-large;
+		left: calc(50% - #{$page-width-large / 2});
 	}
-}
-.carousel-item.empty-item {
-	.content {
-		margin-right: -$aside-width - $page-margin-right;
-//		@media only screen and (min-width: $breakpoint-large) {
-//			margin-right: -$aside-width-large - $page-margin-right;
-//		}
-	}
-	p {
-		@include heading-font($size: 28px, $weight: 300, $lead: 30px);
-		margin-bottom: 15px;
-		margin-top: 0;
-		&:first-child {
-			margin-top: -5px;
+	&.empty-item {
+		padding-right: $page-margin-right;
+		p {
+			margin-right: $hu;
 		}
 	}
 }
@@ -97,8 +83,8 @@
 	}
 }
 
-#navigation .pager {
-	position: absolute;
-    display: inline-block;
-    top: -1.5rem;
-}
+//#content .bundle-nav.pager {
+//	position: absolute;
+//    display: inline-block;
+//    top: -13.5rem
+//}

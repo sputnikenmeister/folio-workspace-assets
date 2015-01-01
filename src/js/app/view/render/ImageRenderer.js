@@ -48,7 +48,7 @@ module.exports = Backbone.View.extend({
 	initialize: function (opts) {
 		this._loadImage = _.once(_.bind(this._loadImage, this));
 		this.createChildren();
-		this.addModelListeners();
+		this.addSiblingListeners();
 	},
 
 	createChildren: function() {
@@ -64,14 +64,13 @@ module.exports = Backbone.View.extend({
 		var w = this.$placeholder.innerWidth();
 		var h = Math.floor((w / this.model.get("w")) * this.model.get("h"));
 
-		this.$image.attr({width: w+2, height: h+2}).css(this.$placeholder.position());
-		//this.$placeholder.css("height", h - 2);
+		this.$image.attr({width: w + 2, height: h + 2}).css(this.$placeholder.position());
 		this.$el.css("height", h);
 
 		return this;
 	},
 
-	addModelListeners: function () {
+	addSiblingListeners: function () {
 		var owner = this.model.collection;
 		var m = owner.indexOf(this.model);
 		var check = function (n) {
@@ -80,29 +79,15 @@ module.exports = Backbone.View.extend({
 		};
 
 		if (check(owner.selectedIndex)) {
-			this.$el.addClass("candidate");
 			this._loadImage();
+		} else {
+			this.listenTo(owner, "select:one select:none", function(model) {
+				if (check(owner.selectedIndex)) {
+					this.stopListening(owner);
+					this._loadImage();
+				}
+			});
 		}
-		this.listenTo(owner, "select:one select:none", function(model) {
-			if (check(owner.selectedIndex)) {
-				this.$el.addClass("candidate");
-				this._loadImage();
-			} else {
-				this.$el.removeClass("candidate");
-			}
-		});
-
-		if (this.model.selected) {
-			this.$el.addClass("selected");
-		}
-		this.listenTo(this.model, {
-			"selected": function () {
-				this.$el.addClass("selected");
-			},
-			"deselected": function () {
-				this.$el.removeClass("selected");
-			}
-		});
 	},
 
 	_loadImage: function() {

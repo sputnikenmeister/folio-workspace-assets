@@ -13,33 +13,28 @@
 }
 
 .carousel-item.empty-item {
-	height: auto;
+	height: calc(100% - 3.5rem);
+	p {
+		@include heading-font($size: 28px, $weight: 300, $lead: 30px);
+		margin-bottom: 15px;
+		margin-top: 0;
+		&:first-child {
+			margin-top: -5px;
+		}
+	}
 	.content {
 		transition: opacity #{$duration} $ease;
-		opacity: 0;
+		opacity: 0.2;
 	}
-	&.selected {
-		.content {
-			opacity: 1;
-		}
+	&.selected .content {
+		opacity: 1;
 	}
-	@at-root .panning .empty-item {
-		.content {
-			opacity: 1;
-		}
+	&.candidate .content {
+		opacity: 1;
 	}
-}
-
-.default-carousel-item {
-	.placeholder {
-		box-sizing: border-box;
-		color: $background-color;
-		background-color: $color;
-		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
-		box-sizing: border-box;
-		min-height: 100%;
-		padding: 1.5rem;
-	}
+//	@at-root .panning .empty-item.candidate .content {
+//		opacity: 1;
+//	}
 }
 
 .image-item {
@@ -48,24 +43,39 @@
 		border: 0 none;
 		background-color: $background-color;
 		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
-
 		position: absolute;
 		box-sizing: border-box;
-//		min-height: 100%;
 		top: 1.5rem;
+	}
+
+	img {
+		transition: opacity #{$duration * 2} $ease;
+		opacity: 0;
+	}
+	&.idle img {
+			display: none;
+	}
+	&.error img {
+			display: none;
+	}
+	&.done.selected img {
+			opacity: 1;
+	}
+//	@at-root .panning .image-item.done.candidate img {
+//			opacity: 1;
+//	}
+	&.done.candidate img {
+			opacity: 1;
 	}
 
 	.placeholder {
 		// *** "mutable" properties: must be in the first matching rule
 		border: 1px solid transparent;
 		color: $background-color;
-
 		position: relative;
 		box-sizing: border-box;
 		height: 100%;
-//		margin: 1.5rem;
 	}
-
 	.placeholder:after {
 		font-size: 5rem;
 		font-weight: 600;
@@ -83,47 +93,22 @@
 		overflow: hidden;
 		white-space: nowrap;
 	}
-
-	img {
-		transition: opacity #{$duration * 2} $ease;
-		opacity: 0;
+	&.pending.selected .placeholder:after {
+		content: "Loading";
 	}
-
-	&.idle {
-//		visibility: hidden;
-		img {
-			display: none;
-		}
-	}
-
-	&.selected.pending {
-		img {
-			opacity: 0;
-		}
-		.placeholder:after {
-			content: "Loading";
-		}
-	}
-	&.done.selected {
-		img {
-			opacity: 1;
-		}
-	}
-
-	@at-root .panning .image-item.done.candidate {
-		img {
-			opacity: 1;
-		}
-	}
-
-	&.selected.error {
-		img {
-			display: none;
-		}
-		.placeholder:after {
-			content: "Error";
-		}
+	&.error .placeholder:after {
+		content: "Error";
 	}
 }
 
+.default-carousel-item {
+	.placeholder {
+		color: $background-color;
+		background-color: $color;
+		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
+		box-sizing: border-box;
+		min-height: 100%;
+		padding: 1.5rem;
+	}
+}
 

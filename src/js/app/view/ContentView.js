@@ -38,13 +38,6 @@ var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
 var imageDescTemplate = require("./template/CollectionStack.Image.tpl");
 
-//var BundleDetail = CollectionStack.extend({
-//	id: "bundle-detail",
-//	collection: bundles,
-//	template: bundleDescTemplate,
-//	className: "bundle-detail full-width"
-//});
-
 /**
  * @constructor
  * @type {module:app/view/ContentView}
@@ -65,10 +58,6 @@ var ContentView = View.extend({
 //			className: "bundle-detail full-width"
 //		});
 //		this.bundleDetail.render().$el.appendTo(this.container);
-
-//		// Component: bundle pager
-//		this.bundlePager = require("./instance/createBundlePager").call();
-//		this.bundlePager.render().$el.appendTo(this.container);
 
 		// Model listeners
 		this.listenTo(bundles, {
@@ -152,18 +141,12 @@ var ContentView = View.extend({
 			collection: images,
 			renderer: ImageRenderer,
 			emptyRenderer: View.extend({
+				model: bundle,
+				collection: images,
+				template: bundleDescTemplate,
 				className: "carousel-item empty-item",
-				initialize: function (options) {
-					this.listenTo(this.collection, {
-						"select:one": function () { this.$el.removeClass("selected"); },
-						"select:none": function () { this.$el.addClass("selected"); }
-					});
-					if (!this.collection.selected) {
-						this.$el.addClass("selected");
-					}
-				},
 				render: function() {
-					this.$el.html(bundleDescTemplate(bundle.attributes));
+					this.$el.html(this.template(this.model.attributes));
 					return this;
 				}
 			})

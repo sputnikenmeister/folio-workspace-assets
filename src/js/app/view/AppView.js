@@ -49,7 +49,7 @@ var AppView = Backbone.View.extend({
 			this.$("#debug-toolbar").remove();
 		}
 
-		/* start router, which will request appropiate state */
+		// start router, which will request appropiate state
 		Backbone.history.start({
 			pushState: false,
 			hashChange: true

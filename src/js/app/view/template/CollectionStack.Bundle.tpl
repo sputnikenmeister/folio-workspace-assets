@@ -1,1 +1,1 @@
-<div class="content description"><%= desc %></div>
+<div class="content sizing description"><%= desc %></div>

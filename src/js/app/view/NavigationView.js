@@ -11,6 +11,8 @@ var bundles = require("../model/collection/BundleList");
 var keywords = require("../model/collection/KeywordList");
 /** @type {module:app/model/collection/TypeList} */
 var types = require("../model/collection/TypeList");
+/** @type {module:app/control/Controller} */
+var controller = require("../control/Controller");
 
 /** @type {module:app/helper/View} */
 var View = require("../helper/View");
@@ -18,13 +20,11 @@ var View = require("../helper/View");
 var FilterableListView = require("./component/FilterableListView");
 /** @type {module:app/view/component/GroupingListView} */
 var GroupingListView = require("./component/GroupingListView");
-/** @type {module:app/control/Controller} */
-var controller = require("../control/Controller");
+/** @type {module:app/view/component/CollectionPager} */
+var CollectionPager = require("./component/CollectionPager");
 
 /** @type {Function} */
 var bundlePagerTemplate = require("./template/CollectionPager.Bundle.tpl");
-/** @type {module:app/view/component/CollectionPager} */
-var CollectionPager = require("./component/CollectionPager");
 
 /**
  * @constructor
@@ -80,8 +80,7 @@ module.exports = View.extend({
 
 		// Component: bundle pager
 		this.bundlePager = new CollectionPager({
-//			id: "bundle-pager",
-			className: "folio mutable-faded",
+			className: "bundle-nav folio mutable-faded",
 			collection: bundles,
 			template: bundlePagerTemplate,
 			labelAttribute: "name",

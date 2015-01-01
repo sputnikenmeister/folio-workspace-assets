@@ -24,6 +24,7 @@ var View = Backbone.View.extend({
 	},
 
 	remove: function() {
+		this.trigger("view:remove", this);
 		delete _viewsByCid[this.cid];
 		return Backbone.View.prototype.remove.apply(this, arguments);
 	},
