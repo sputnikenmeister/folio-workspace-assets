@@ -3,43 +3,40 @@
  * ---------------------- */
 
 #footer {
-
-	.pager, .pager + * {
-		padding-top: 1em;
-		margin-top: 0;
-	}
-
 	.copyright {
+		display: none;
 	}
-
-	.pager {
-		float: right;
-	}
-
-	.button {
-		@include small-caps();
-		@include font-smoothing();
-		display: inline-block;
-		box-sizing: border-box;
-		white-space: nowrap;
-		cursor: pointer;
-		user-select: none;
-		margin-left: 2em;
-	}
-	.button:first-child {
-		margin-left: 0;
-	}
-	.preceding-button:before {
-		content: '\e807';
-		@include fontello-icon-before();
-	}
-	.following-button:after {
-		content: '\e808';
-		@include fontello-icon-after();
-	}
-	.close-button:before {
-		content: '\e806';
-		@include fontello-icon-before();
-	}
+//	.pager, .pager + * {
+//		padding-top: 1em;
+//		margin-top: 0;
+//	}
+//	.pager {
+//		float: right;
+//		&, * { user-select: none !important; }
+//	}
+//	.button {
+//		@include small-caps();
+//		@include font-smoothing();
+//		display: inline-block;
+//		box-sizing: border-box;
+//		white-space: nowrap;
+//		cursor: pointer;
+//		margin-left: 2em;
+//	}
+//	.button:first-child {
+//		margin-left: 0;
+//	}
+//	.preceding-button:before {
+//		content: '\e807';
+//		@include fontello-icon-before();
+//	}
+//	.following-button:after {
+//		content: '\e808';
+//		@include fontello-icon-after();
+//	}
+//	.close-button:before {
+//		content: '\e806';
+//		@include fontello-icon-before();
+//	}
 }
 

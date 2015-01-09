@@ -15,15 +15,19 @@ var View = require("./View");
  */
 var DeferredRenderView = View.extend({
 
+	constructor: function(options) {
+		_.bindAll(this, "applyRender");
+		View.apply(this, arguments);
+	},
+
 	/**
 	 * @param {String} [key]
 	 * @param [value]
 	 */
 	requestRender: function (key, value) {
-		if (this._renderRequestId === undefined) {
+		if (_.isUndefined(this._renderRequestId)) {
 //			this._renderRequestId = window.setTimeout(this.getRenderCallback(), 1);
-//			this._renderRequestId = _.defer(this.getRenderCallback());
-			this._renderRequestId = window.requestAnimationFrame(this.getRenderCallback());
+			this._renderRequestId = window.requestAnimationFrame(this.applyRender);
 			this._renderJobs = {};
 		}
 		if (key) {
@@ -48,14 +52,9 @@ var DeferredRenderView = View.extend({
 	},
 
 	/** @private */
-	getRenderCallback: function () {
-		return this._renderCallback || (this._renderCallback = _.bind(this.applyRender, this));
-	},
-
-	/** @private */
 	applyRender: function () {
 		this.renderLater();
-		this._renderRequestId = undefined;
+		delete this._renderRequestId;
 	},
 
 	/** @abstract */

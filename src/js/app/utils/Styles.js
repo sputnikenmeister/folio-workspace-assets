@@ -56,12 +56,22 @@ var setCSSProperty = function (selector, propName, value) {
 	rule.style[name] = _.isEmpty(value) ? _initialValues[key] : value;
 };
 
+var createCSSRule = function (selector, style) {
+	var cssText = "";
+	for (var prop in style) {
+		cssText += prop + ":" + style[prop] + ";";
+	}
+	var sheet = document.styleSheets[0];
+	sheet.insertRule(selector + "{" + cssText + "}", sheet.cssRules.length);
+};
+
 /**
  * Some static helper functions
  * @type {Object}
  */
 module.exports = {
 	getCSSRule: getCSSRule,
+	createCSSRule: createCSSRule,
 	getCSSProperty: getCSSProperty,
 	setCSSProperty: setCSSProperty,
 	refreshCSSRule: refreshCSSRule,

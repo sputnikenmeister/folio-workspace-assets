@@ -6,20 +6,20 @@
 var _ = require("underscore");
 
 /** @type {module:jquery} */
-var jQuery = require("jquery");
-window.jQuery = jQuery;
+var $ = require("jquery");
+
+/** @type {module:backbone} */
+var Backbone = require("backbone");
+
+window.jQuery = Backbone.$ = $;
 require("hammerjs");
 require("jquery-hammerjs");
 require("jquery.transit");
 require("jquery-color");
-
-/** @type {module:backbone} */
-var Backbone = require("backbone");
-Backbone.$ = jQuery;
 require("backbone.babysitter");
 require("Backbone.Mutators");
 
-jQuery(document).ready(function() {
+$(document).ready(function() {
 	"use strict";
 
 	/** @type {module:app/view/AppView} */

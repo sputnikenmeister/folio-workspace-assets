@@ -6,10 +6,13 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {module:jquery-color} */
-var Color = Backbone.$.Color;
+
+/** @type {module:jquery} */
+var $ = Backbone.$;
 /** @type {Function} */
-var Deferred = Backbone.$.Deferred;
+var Color = $.Color;
+/** @type {Function} */
+var Deferred = $.Deferred;
 
 /** @type {module:app/utils/Styles} */
 var Styles = require("../utils/Styles");
@@ -35,42 +38,49 @@ var bodyStyles = ["background", "background-color", "color", "-moz-osx-font-smoo
  * @constructor
  * @type {module:app/control/Controller}
  */
-function Controller() {
-	this.router = new Backbone.Router({
-		routes: {
-			"bundles/:bundleHandle(/:imageIndex)": "bundleItem",
-//			"bundles/:bundleHandle": function (handle) {
-//				/* redirect to first image */
-//				this.navigate("bundles/" + handle + "/0", {
-//					trigger: true, replace: true
-//				});
-//			},
-			"bundles": "bundleList",
-			"": function () {
-				/* redirect root to bundleList */
-				this.navigate("bundles", {
-					trigger: true, replace: true
-				});
-			}
+var Controller = Backbone.Router.extend({
+
+	/** @override */
+	routes: {
+		"bundles/:bundleHandle(/:imageIndex)": "toBundleItem",
+		"bundles": "toBundleList",
+		"": function () {
+			this.navigate("bundles", {
+				trigger: true, replace: true
+			});
 		}
-	});
+	},
 
-	this.listenTo(this.router, "route:bundleItem", this.routeToBundleItem);
-	this.listenTo(this.router, "route:bundleList", this.routeToBundleList);
+	/** @override */
+	initialize: function (options) {
+		this.listenToOnce(bundles, "all", this.initializeBundleStyles);
 
-	this.listenTo(bundles, "deselect:one", this._onBundleDeselectOne);
-	this.listenTo(bundles, "select:one", this._onBundleSelectOne);
-	this.listenTo(bundles, "select:none", this._onBundleSelectNone);
+		this.listenTo(bundles, {
+//			"deselect:one": this._onBundleDeselectOne,
+			"select:one": this._onBundleSelectOne,
+			"select:none": this._onBundleSelectNone
+		});
 
-	if (DEBUG) {
-		// error trace
-		this.listenTo(this.router,	"route", 		traceArgs("Router \t", "info"));
-		this.listenTo(Backbone,		"all",  		traceArgs("App    \t", "info"));
-		this.listenTo(bundles,		"all",			traceArgs("Bundles\t", "info"));
-	}
-}
+		if (DEBUG) {
+			// error trace
+			var bundleTracer =	traceArgs("Bundles \t", "info");
+			var imageTracer = 	traceArgs("Images  \t", "info");
+			var routeTracer = 	traceArgs("Router  \t", "info");
+			var appTracer = 	traceArgs("App     \t", "info");
 
-_.extend(Controller.prototype, Backbone.Events, {
+			this.listenTo(this, "route", routeTracer);
+			this.listenTo(Backbone,	"all", appTracer);
+			this.listenTo(bundles, {
+				"all": bundleTracer,
+				"select:one": function(bundle) {
+					this.listenTo(bundle.get("images"), "all", imageTracer);
+				},
+				"deselect:one": function(bundle) {
+					this.stopListening(bundle.get("images"), "all", imageTracer);
+				}
+			});
+		}
+	},
 
 	/* ---------------------------
 	 * Public command methods
@@ -110,14 +120,14 @@ _.extend(Controller.prototype, Backbone.Events, {
 				location += "/" + imageIndex;
 			}
 		}
-		this.router.navigate(location, {trigger: false});
+		this.navigate(location, {trigger: false});
 	},
 
 	/* --------------------------- *
 	 * External redirects
 	 * --------------------------- */
 
-	routeToBundleItem: function (bundleHandle, imageIndex) {
+	toBundleItem: function (bundleHandle, imageIndex) {
 		var bundle, image;
 		bundle = bundles.findWhere({handle: bundleHandle});
 		if (!bundle) {
@@ -132,7 +142,7 @@ _.extend(Controller.prototype, Backbone.Events, {
 		this._changeSelection(bundle, image);
 	},
 
-	routeToBundleList: function () {
+	toBundleList: function () {
 		this._changeSelection();
 	},
 
@@ -160,99 +170,98 @@ _.extend(Controller.prototype, Backbone.Events, {
 	 * Model listeners
 	 * --------------------------- */
 
-	_location: {},
-
-	_onBundleDeselectOne: function (bundle) {
-		this.stopListening(bundle.get("images"));
-	},
+//	_onBundleDeselectOne: function (bundle) {
+//		this.stopListening(bundle.get("images"), {
+//			"select:one": this._onImageSelectOne,
+//			"deselect:one": this._onImageSelectNone
+//		});
+//		this.clearBundleStyles(bundle);
+//	},
 
 	_onBundleSelectOne: function (bundle) {
-		this.listenTo(bundle.get("images"), "select:one", this._onImageSelectOne);
-		this.listenTo(bundle.get("images"), "select:none", this._onImageSelectNone);
-		this.listenTo(bundle.get("images"), "all", traceArgs("Images \t", "info"));
+//		this.listenTo(bundle.get("images"),{
+//			"select:one": this._onImageSelectOne,
+//			"select:none": this._onImageSelectNone
+//		});
 
-		this._location.bundle = bundle.get("handle");
-		this.applyBundleStyles(bundle);
 		document.title = "Portfolio – " + stripTags(bundle.get("name"));
+//		this.applyBundleStyles(bundle);
 	},
 
 	_onBundleSelectNone: function () {
-		delete this._location.bundle;
-		this.clearBundleStyles();
 		document.title = "Portfolio";
 	},
 
-	_onImageSelectOne: function (image) {
-		this._location.image = image.get("handle");
-		this.applyImageStyles(image);
-	},
+//	_onImageSelectOne: function (image) {
+//		this.applyImageStyles(image);
+//	},
 
-	_onImageSelectNone: function () {
-		delete this._location.image;
-		this.clearImageStyles();
-	},
+//	_onImageDeselectOne: function (image) {
+//		this.clearImageStyles(image);
+//	},
+
+//	_onImageSelectNone: function () {
+//	},
 
 	/* --------------------------- *
 	 * Helpers
 	 * --------------------------- */
 
-	clearImageStyles: function () {
-	},
+//	clearImageStyles: function (image) {
+//	},
 
-	applyImageStyles: function (image) {
-	},
+//	applyImageStyles: function (image) {
+//	},
 
-	clearBundleStyles: function () {
-		Styles.setCSSProperty("body", "color", "");
-		Styles.setCSSProperty("body", "background-color", "");
-		Styles.setCSSProperty(".mutable-faded", "color", "");
-		Styles.setCSSProperty(".mutable-faded", "border-color", "");
-	},
+	initializeBundleStyles: function() {
+		var fgColor, bgColor, bgLum, fgLum;
+		var bgDefault, fgDefault;
+		var attrs, className;
 
-	applyBundleStyles: function (bundle) {
-		var fgColor, bgColor, bgLum, fgLum, cssRule;
-		var attrs = bundle.get("attrs");
+		bgDefault = Styles.getCSSProperty("body", "background-color");// || "hsl(47, 5%, 95%)");
+		fgDefault = Styles.getCSSProperty("body", "color");// || "hsl(47, 5%, 15%)");
 
-		Styles.setCSSProperty("body", "color", attrs["color"]);
-		Styles.setCSSProperty("body", "background-color", attrs["background-color"]);
+		bundles.each(function (bundle) {
+			attrs = bundle.get("attrs");
+			className = bundle.get("handle");
 
-		// image-item img
-		Styles.setCSSProperty(".image-item img", "box-shadow", attrs["box-shadow"]);
-		Styles.setCSSProperty(".image-item img", "border", attrs["border"]);
-		Styles.setCSSProperty(".image-item img", "border-radius", attrs["border-radius"]);
-		Styles.setCSSProperty(".image-item img", "background-color", attrs["background-color"]);
+			bgColor = new Color(attrs["background-color"] || bgDefault);
+			fgColor = new Color(attrs["color"] || fgDefault);
 
-		// base colors for mutable classes
-		bgColor = new Color(attrs["background-color"] || Styles.getCSSProperty("body", "background-color"));// || "hsl(47, 5%, 95%)");
-		fgColor = new Color(attrs["color"] || Styles.getCSSProperty("body", "color"));// || "hsl(47, 5%, 15%)");
+			bgLum = bgColor.lightness();
+			fgLum = fgColor.lightness();
 
-		// get luminosity
-		bgLum = bgColor.lightness();
-		fgLum = fgColor.lightness();
+			Styles.createCSSRule("body." + className, _.extend({
+					"-webkit-font-smoothing": (bgLum < fgLum? "antialiased" : "auto"),
+					"-moz-osx-font-smoothing": (bgLum < fgLum? "grayscale" : "auto"),
+				}, _.pick(attrs, ["background-color", "background", "color"])));
 
-		cssRule = Styles.getCSSRule("body");
-		cssRule.style.WebkitFontSmoothing = (bgLum < fgLum)? "antialiased":"";
-		cssRule.style.MozOSXFontSmoothing = (bgLum < fgLum)? "grayscale":"";
-//		Styles.setCSSProperty("body", "-webkit-font-smoothing", "antialiased");
+			Styles.createCSSRule("." + className + " .mutable-faded", {
+				"border-color": fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString(),
+				"color": fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString(),
+			});
 
-		// text color derivates
-		Styles.setCSSProperty(".mutable-faded", "color", fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString());
-		Styles.setCSSProperty(".mutable-faded", "border-color", fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString());
-//		cssRule = Styles.getCSSRule(".mutable-faded");
-//		cssRule.style.color = fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString();
-//		cssRule.style.borderColor = fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString();
+			Styles.createCSSRule("." + className + " > .image-item img",
+				_.pick(attrs, ["box-shadow", "border", "border-radius", "background-color"]));
 
-		// .image-item .placeholder
-		cssRule = Styles.getCSSRule(".image-item .placeholder");
-		cssRule.style.backgroundColor = bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString();
-//		Styles.setCSSProperty(".image-item .placeholder", "background-color", bgColor.lightness(fgLum * 0.200 + bgLum * 0.800).toHexString());
-		cssRule.style.borderColor = bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString();
-//		Styles.setCSSProperty(".image-item .placeholder", "border-color", bgColor.lightness(fgLum * 0.200 + bgLum * 0.800).toHexString());
-		cssRule.style.color =  bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString();
-//		Styles.setCSSProperty(".image-item .placeholder", "color", bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString());
+			Styles.createCSSRule("." + className + " > .image-item .placeholder", {
+				"background-color": bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
+				"border-color": bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString(),
+				"color": bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString(),
+			});
+		});
 
 
-		//console.log("CSS: ", bgColor.toHslaString(), fgColor.toHslaString(), attrs);
+		var $body = Backbone.$("body");
+
+		this.listenTo(bundles, {
+			"deselect:one": function (bundle) {
+				$body.removeClass(bundle.get("handle"));
+			},
+			"select:one": function (bundle) {
+				$body.addClass(bundle.get("handle"));
+			},
+		});
 	},
 });
 

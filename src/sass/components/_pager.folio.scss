@@ -1,4 +1,5 @@
 .pager.folio {
+	display: inline-block;
 	.button {
 		@include small-caps();
 		@include font-smoothing();

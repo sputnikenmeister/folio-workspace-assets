@@ -17,7 +17,7 @@ var DeferredRenderView = require("../../helper/DeferredRenderView");
  * @constructor
  * @type {module:app/view/component/SelectableListView}
  */
-module.exports = DeferredRenderView.extend({
+var FilterableListView = DeferredRenderView.extend({
 
 	/** @override */
 	tagName: "ul",
@@ -42,8 +42,10 @@ module.exports = DeferredRenderView.extend({
 		this.setCollapsed(_.isBoolean(options.collapsed)? options.collapsed : false);
 		this.skipAnimation = true;
 
-		this.listenTo(this.collection, "select:one", this.setSelection);
-		this.listenTo(this.collection, "select:none", this.setSelection);
+		this.listenTo(this.collection, {
+			"select:one": this.setSelection,
+			"select:none": this.setSelection
+		});
 		// this.listenTo(this.collection, "change:excluded", this.whenExcludedChange);
 	},
 
@@ -80,17 +82,15 @@ module.exports = DeferredRenderView.extend({
 	 * Child views
 	 * --------------------------- */
 
-	/** @type {Backbone.ChildViewContainer} */
-	children: new Backbone.ChildViewContainer(),
-
 	/** @private */
 	assignChildView: function (item, index) {
-		var view = new FilterableRenderer({
+		var view = new FilterableListView.FilterableRenderer({
 			model: item,
 			el: item.selector()
 		});
 		this.children.add(view, item.id);
-		this.listenTo(view, "item:click", this.onChildClick);
+		this.listenTo(view, "renderer:click", this.onChildClick);
+		return view;
 	},
 
 	/** @private */
@@ -261,30 +261,32 @@ module.exports = DeferredRenderView.extend({
 	},
 	*/
 
+}, {
+	/**
+	 * @constructor
+	 * @type {module:app/view/component/ItemView}
+	 */
+	FilterableRenderer: Backbone.View.extend({
+		/** @type {Object} */
+		events: {
+			"click": function (ev) {
+				ev.isDefaultPrevented() || ev.preventDefault();
+				this.trigger("renderer:click", this.model);
+			}
+		},
+
+		// initialize: function(options) {
+		// 	this.listenTo(this.model, "change:excluded", this.onExcludedChange);
+		// },
+
+		// onExcludedChange: function(model, value) {
+		// 	if (value) {
+		// 		this.$el.addClass("excluded");
+		// 	} else {
+		// 		this.$el.removeClass("excluded");
+		// 	}
+		// },
+	})
 });
 
-/**
- * @constructor
- * @type {module:app/view/component/ItemView}
- */
-var FilterableRenderer = Backbone.View.extend({
-	/** @type {Object} */
-	events: {
-		"click": function (ev) {
-			ev.isDefaultPrevented() || ev.preventDefault();
-			this.trigger("item:click", this.model);
-		}
-	},
-
-	// initialize: function(options) {
-	// 	this.listenTo(this.model, "change:excluded", this.onExcludedChange);
-	// },
-
-	// onExcludedChange: function(model, value) {
-	// 	if (value) {
-	// 		this.$el.addClass("excluded");
-	// 	} else {
-	// 		this.$el.removeClass("excluded");
-	// 	}
-	// },
-});
+module.exports = FilterableListView;

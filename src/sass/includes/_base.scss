@@ -54,18 +54,23 @@ $vu: 12px;
 
 // Layout
 $breakpoint-large: 			1024px;
-$page-width: 				700px;
-$page-width-large: 			960px;
-$page-margin-left: 			1 * $hu;
-$page-margin-right: 		1 * $hu;
 $gutter: 					2 * $hu;
+$page-margin-left: 			1 * $hu;
+$page-margin-right: 		3 * $hu;
+
+$page-width: 				35 * $hu;//700px;
+$page-width-large: 			47 * $hu;//940px;
+$aside-width:				11 * $hu;
+$aside-width-large: 		13 * $hu;
+$main-width:				$page-width - $aside-width;
+$main-width-large:			$page-width-large - $aside-width-large;
 
 $page-inner-width:			$page-width - $page-margin-left - $page-margin-right;
 $page-inner-width-large:	$page-width-large - $page-margin-left - $page-margin-right;
-$aside-width:				$hu*8;
-$aside-width-large: 		$page-inner-width-large - $page-inner-width;
-$aside-inner-width:			$aside-width - $gutter/2;
-$aside-inner-width-large:	$aside-width-large - $gutter/2;
+$aside-inner-width:			$aside-width - $page-margin-right - $gutter/2;
+$aside-inner-width-large:	$aside-width-large - $page-margin-right - $gutter/2;
+$main-inner-width:			$main-width - $page-margin-left - $gutter/2;
+$main-inner-width-large:	$main-width-large - $page-margin-left - $gutter/2;
 
 // font-family
 $large-font-family: $font-webfont-sans;
@@ -130,12 +135,11 @@ h1 {
 }
 
 h2 {
-	@include heading-font();
+	@include heading-font($size: 28px, $weight: 300, $lead: 30px);
 }
 
 h3 {
-	font-size: 1rem;
-	font-weight: 600;
+	@include heading-font($size: 20px, $weight: 300, $lead: 24px);
 }
 
 em {
@@ -149,6 +153,9 @@ strong {
 a {
 	text-decoration: none;
 	color: inherit;
+	&:focus {
+		outline: 0 none;
+	}
 }
 
 *::selection {
@@ -165,4 +172,11 @@ a {
 .sc {
 //	@include font-smoothing();
 	@include small-caps();
+}
+
+div {
+	-webkit-tap-highlight-color: transparent;
+}
+a {
+	-webkit-tap-highlight-color: initial;
 }

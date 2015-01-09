@@ -22,6 +22,8 @@ var FilterableListView = require("./component/FilterableListView");
 var GroupingListView = require("./component/GroupingListView");
 /** @type {module:app/view/component/CollectionPager} */
 var CollectionPager = require("./component/CollectionPager");
+/** @type {module:app/view/component/Carousel} */
+var Carousel = require("./component/Carousel");
 
 /** @type {Function} */
 var bundlePagerTemplate = require("./template/CollectionPager.Bundle.tpl");
@@ -33,26 +35,16 @@ var bundlePagerTemplate = require("./template/CollectionPager.Bundle.tpl");
 module.exports = View.extend({
 
 	/** @override */
-	tagName: "div",
-	/** @override */
 	className: "navigation",
-//	/** @override */
-//	events: {
-//		"click #site-name a": function (ev) {
-//			ev.isDefaultPrevented() || ev.preventDefault();
-//			controller.deselectBundle();
-//		}
-//	},
+	/** @override */
+	events: {
+		"click #site-name a": "onSitenameClick"
+	},
 
 	/** @override */
 	initialize: function (options) {
-		//this.listenTo(this.$("#site-name a"), "click", function (ev) {
-		//this.$siteNameButton = this.$("#site-name");
-		//this.$siteNameButton.find("a").on("click", function (ev) {
-		this.$("#site-name a").on("click", function (ev) {
-			ev.isDefaultPrevented() || ev.preventDefault();
-			controller.deselectBundle();
-		});
+//		this.$sitename = this.$("#site-name a");
+//		this.$sitename.on("click", _.bind(this.onSitenameClick, this));
 
 		// collapsed is set later by showBundleItem/showBundleList
 		this.bundlesView = new FilterableListView({
@@ -62,6 +54,10 @@ module.exports = View.extend({
 				collection: keywords,
 				key: "bIds"
 			},
+		});
+		controller.listenTo(this.bundlesView, {
+			"view:select:one": controller.selectBundle,
+			"view:select:none": controller.deselectBundle
 		});
 
 		this.keywordsView = new GroupingListView({
@@ -86,40 +82,42 @@ module.exports = View.extend({
 			labelAttribute: "name",
 		});
 		this.bundlePager.render().$el.appendTo(this.el);
-
 		controller.listenTo(this.bundlePager, {
 			"view:select:one": controller.selectBundle,
 			"view:select:none": controller.deselectBundle
 		});
 
-		controller.listenTo(this.bundlesView, {
-			"view:select:one": controller.selectBundle,
-			"view:select:none": controller.deselectBundle
-		});
-
 		this.listenTo(bundles, {
-			"select:one": this.showBundleItem,
-			"select:none": this.showBundleList
+			"select:one": this.onSelectOne,
+			"select:none": this.onSelectNone
 		});
 		if (bundles.selected) {
-			this.showBundleItem();
+			this.onSelectOne();
 		} else {
-			this.showBundleList();
+			this.onSelectNone();
 		}
 	},
 
-	showBundleList: function() {
+//	remove: function () {
+//		this.$sitename.off("click");
+//		View.prototype.remove.apply(this, arguments);
+//	},
+
+	onSelectNone: function() {
 		this.$el.removeClass("bundle-item").addClass("bundle-list");
 		this.keywordsView.filterBy(null);
 		this.bundlesView.setCollapsed(false);
 	},
-	showBundleItem: function() {
+
+	onSelectOne: function() {
 		this.$el.removeClass("bundle-list").addClass("bundle-item");
 		this.keywordsView.filterBy(bundles.selected);
 		this.bundlesView.setCollapsed(true);
 	},
-//	changeBundleList: function() {
-//		this.keywordsView.filterBy(bundles.selected);
-//	}
+
+	onSitenameClick: function (ev) {
+		ev.isDefaultPrevented() || ev.preventDefault();
+		controller.deselectBundle();
+	},
 
 });

@@ -10,26 +10,8 @@ var Backbone = require("backbone");
 var Container = require("backbone.babysitter");
 /** @type {module:app/helper/View} */
 var View = require("../../helper/View");
-
-var NullRenderer = View.extend({
-	/** @override */
-	tagName: "li",
-	/** @override */
-	className: "list-item null-item",
-	/** @override */
-	events: {
-		"click": "onClick",
-	},
-	render: function() {
-		this.$el.html("<a href=\"#clear\"><b> </b></a>");
-		return this;
-	},
-
-	onClick: function (ev) {
-		ev.isDefaultPrevented() || ev.preventDefault();
-		this.trigger("renderer:click");
-	},
-});
+/** @type {module:app/view/component/DefaultSelectableRenderer} */
+var DefaultSelectableRenderer = require("../render/DefaultSelectableRenderer");
 
 var SelectableListView = View.extend({
 	/** @override */
@@ -37,7 +19,7 @@ var SelectableListView = View.extend({
 	/** @override */
 	className: "list selectable",
 	/** @type {module:app/view/component/DefaultSelectableRenderer} */
-	renderer: require("../render/DefaultSelectableRenderer"),
+	renderer: DefaultSelectableRenderer,
 
 	initialize: function (options) {
 		options.renderer && (this.renderer = options.renderer);
@@ -106,8 +88,9 @@ var SelectableListView = View.extend({
 	 * Null child view
 	 * --------------------------- */
 
-	createNullView: function (model, index) {
-		var view = new NullRenderer({
+	createNullView: function () {
+		var view = new SelectableListView.NullRenderer({
+			collection: this.collection
 		});
 		this.children.add(view);
 		this.listenTo(view, "renderer:click", function() {
@@ -115,6 +98,44 @@ var SelectableListView = View.extend({
 		});
 		return view;
 	},
+
+	/* --------------------------- *
+	 * Empty view
+	 * --------------------------- */
+
+//	selectEmptyView: function () {
+//		this.emptyChild.$el.addClass("selected");
+//		this.listenToOnce(this.collection, "select:one", function(model) {
+//			this.emptyChild.$el.removeClass("selected");
+//		});
+//	},
+//
+//	createEmptyChildView: function () {
+//		var view = new NullRenderer({
+//			collection: this.collection
+//		});
+//		this.children.add(view);
+//		view.$el.on("click", _.bind(function (ev) {
+//			if (this.collection.selectedIndex != -1) {
+//				ev.isDefaultPrevented() || ev.preventDefault();
+//				this.trigger("view:select:none");
+//			}
+//		}, this));
+//		if (this.collection.selectedIndex == -1) {
+//			this.selectEmptyView();
+//		}
+//		return this.emptyChild;
+//	},
+//
+//	removeEmptyChildView: function () {
+//		if (this.emptyChild) {
+//			this.emptyChild.$el.off("mouseup");
+//			this.emptyChild.remove();
+//			delete this.emptyChild;
+//		} else {
+//			console.warn("Carousel.removeEmptyChildView called while emptyChild is undefined");
+//		}
+//	},
 
 //	/* --------------------------- *
 //	 * Collection event handlers
@@ -150,6 +171,42 @@ var SelectableListView = View.extend({
 //		if (view)
 //			view.$el.removeClass("selected");
 //	},
+}, {
+	NullRenderer: View.extend({
+
+		/** @override */
+		tagName: "li",
+		/** @override */
+		className: "list-item null-item",
+
+		/** @override */
+		events: {
+			"click": function (ev) {
+				ev.isDefaultPrevented() || ev.preventDefault();
+				this.trigger("renderer:click", this.model);
+			}
+		},
+
+		/** @override */
+		initialize: function (options) {
+			var handler = function () {
+				this.$el.addClass("selected");
+				this.listenToOnce(this.collection, "select:one", function(model) {
+					this.$el.removeClass("selected");
+				});
+			};
+			this.listenTo(this.collection, "select:none", handler);
+			if (!this.collection.selected) {
+				handler.call(this);
+			}
+		},
+
+		/** @override */
+		render: function() {
+			this.$el.html("<a href=\"#clear\"><b> </b></a>");
+			return this;
+		},
+	})
 });
 
 module.exports = SelectableListView;

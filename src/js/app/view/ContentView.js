@@ -9,10 +9,6 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {module:hammerjs} */
-var Hammer = require("hammerjs");
-/** @type {jQuery.Deferred} */
-var Deferred = Backbone.$.Deferred;
 
 /** @type {module:app/control/Controller} */
 var controller = require("../control/Controller");
@@ -32,6 +28,8 @@ var CollectionStack = require("./component/CollectionStack");
 var ImageRenderer = require("./render/ImageRenderer");
 /** @type {module:app/view/render/DotNavigationRenderer} */
 var DotNavigationRenderer = require("./render/DotNavigationRenderer");
+/** @type {module:app/view/render/CarouselEmptyRenderer} */
+var CarouselEmptyRenderer = require("./render/CarouselEmptyRenderer");
 
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
@@ -45,25 +43,42 @@ var imageDescTemplate = require("./template/CollectionStack.Image.tpl");
 var ContentView = View.extend({
 
 	initialize: function (options) {
+		this.children = [];
+
 		// Element: content-detail (layout container)
 		this.container = document.createElement("div");
 		this.container.id = "content-detail";
 		this.$el.append(this.container);
 
-		// Component: bundle detail
-//		this.bundleDetail = new CollectionStack({
-//			id: "bundle-detail",
+//		// Create carousel2
+//		var view = new Carousel({
+//			className: "bundle-carousel",
+//			direction: Carousel.DIRECTION_VERTICAL,
 //			collection: bundles,
-//			template: bundleDescTemplate,
-//			className: "bundle-detail full-width"
+////			renderer: ImageRenderer,
+////			emptyRenderer: CarouselEmptyRenderer.extend({
+////				model: bundle,
+////				template: bundleDescTemplate,
+////			}),
 //		});
-//		this.bundleDetail.render().$el.appendTo(this.container);
+//		view.$el.appendTo(this.el);
+//		view.render();
+//		controller.listenTo(view, {
+//			"view:select:one": controller.selectBundle,
+//			"view:select:none": controller.deselectBundle
+//		});
+//		this.bundleCarousel = view;
 
 		// Model listeners
 		this.listenTo(bundles, {
-			"select:one": this._onBundleSelect,
-			"deselect:one": this._onBundleDeselect
+			"select:one": function (bundle) {
+				this.createChildren(bundle, false);
+			},
+			"deselect:one": function (bundle) {
+				this.removeChildren(bundle, false);
+			}
 		});
+
 		if (bundles.selected) {
 			this.createChildren(bundles.selected, true);
 		}
@@ -72,155 +87,103 @@ var ContentView = View.extend({
 	/** @override */
 	remove: function () {
 		if (bundles.selected) {
-			this.removeChildren();
+			this.removeChildren(bundles.selected, true);
 		}
 		this.$el.remove(this.container);
 		View.prototype.remove.apply(this, arguments);
 	},
 
 	/* -------------------------------
-	 * removeChildren
+	 * Remove children
 	 * ------------------------------- */
-
-	_onBundleDeselect: function (bundle) {
-		this.removeChildren(bundle, false);
-	},
 	removeChildren: function (bundle, skipAnimation) {
 		var images = bundle.get("images");
 
 		this.stopListening(images);
-		this.stopListening(this.pager);
-		this.stopListening(this.carousel);
-
-		if (skipAnimation) {
-			this.imageDetail.remove();
-			this.pager.remove();
-			this.carousel.remove();
-		} else {
-			this.pager.stopListening();
-			this.carousel.stopListening();
-			this.$([
-				this.imageDetail.el,
-				this.pager.el,
-				this.carousel.el
-			]).css({position: "absolute"})
-				.transit({opacity: 0}, 300, "ease")
-				.queue(function(next) {
-					View.findByElement(this).remove();
-					next();
-				});
-		}
-
-		this.pager = void 0;
-		this.carousel = void 0;
-		this.imageDetail = void 0;
+		_.each(this.children, function(child) {
+			controller.stopListening(child);
+			if (skipAnimation) {
+				child.remove();
+			} else {
+				child.$el.css({position: "absolute"}).transit({opacity: 0}, 300)
+					.queue(function(next) {
+						child.remove();
+						next();
+					});
+			}
+		});
+		this.children.length = 0;
 	},
 
 	/* -------------------------------
-	 * createChildren
+	 * Create children on bundle select
 	 * ------------------------------- */
-
-	_onBundleSelect: function (bundle) {
-		this.createChildren(bundle, false);
-	},
 	createChildren: function (bundle, skipAnimation) {
-		var images = bundle.get("images");
+		var view, images = bundle.get("images");
 
-		/* -------------------------------
-		 * Create views
-		 * ------------------------------- */
-
-		this.pager = new SelectableListView({
+		// Create carousel2
+		view = new Carousel({
+			className: "label-carousel",
 			collection: images,
-			renderer: DotNavigationRenderer,
-			className: "images-pager dots-fontello mutable-faded"
+//			renderer: ImageRenderer,
+//			emptyRenderer: CarouselEmptyRenderer.extend({
+//				model: bundle,
+//				template: bundleDescTemplate,
+//			}),
 		});
-		this.pager.render().$el.appendTo(this.container);
+		view.render().$el.appendTo(this.el);
+		controller.listenTo(view, {
+			"view:select:one": controller.selectImage,
+			"view:select:none": controller.deselectImage
+		});
+		this.children[this.children.length] = view;
 
-		this.carousel = new Carousel({
+		// Create carousel
+		view = new Carousel({
+			className: bundle.get("handle") + " image-carousel",
 			collection: images,
 			renderer: ImageRenderer,
-			emptyRenderer: View.extend({
+			emptyRenderer: CarouselEmptyRenderer.extend({
 				model: bundle,
-				collection: images,
 				template: bundleDescTemplate,
-				className: "carousel-item empty-item",
-				render: function() {
-					this.$el.html(this.template(this.model.attributes));
-					return this;
-				}
-			})
+			}),
 		});
-		this.carousel.render().$el.appendTo(this.el);
-
-		this.imageDetail = new CollectionStack({
-			collection: images,
-			template: imageDescTemplate,
-			className: "image-detail aside"
-		});
-		this.imageDetail.render().$el.appendTo(this.container);
-
-		/* -------------------------------
-		 * Attach event handlers
-		 * ------------------------------- */
-
-		controller.listenTo(this.pager, {
+		view.render().$el.appendTo(this.el);
+		controller.listenTo(view, {
 			"view:select:one": controller.selectImage,
 			"view:select:none": controller.deselectImage
 		});
-		controller.listenTo(this.carousel, {
-			"view:select:one": controller.selectImage,
-			"view:select:none": controller.deselectImage
-		});
+		this.children[this.children.length] = view;
 
-//		this.listenTo(images, {
-//			"select:one": this._onSelecteOneImage,
-//			"select:none": this._onSelectNoImage
+		// Create pager
+//		view = new SelectableListView({
+//			collection: images,
+//			renderer: DotNavigationRenderer,
+//			className: "images-pager dots-fontello mutable-faded"
 //		});
-
-//		if (images.selected) {
-//			this._onOneImageSelected();
-////			this.listenToOnce(this.carousel.collection, "select:none", this._onNoImageSelected);
-//		} else {
-//			this._onNoImageSelected();
-////			this.listenToOnce(this.carousel.collection, "select:one", this._onOneImageSelected);
-//		}
-
-		/* -------------------------------
-		 * Show/animate views
-		 * ------------------------------- */
-
-		//var deferred = new Deferred();
-		if (skipAnimation) {
-			//deferred.resolveWith(this);
-		} else {
-			this.$([
-				this.imageDetail.el,
-				this.pager.el,
-				this.carousel.el
-			]).css({
-					opacity: 0
-				}).delay(700)
-				.transit({
-					opacity: 1
-				}, 300);//, "ease", _.bind(deferred.resolveWith, deferred, this));
-		}
-		//return deferred.promise();
-	},
-
-	/* -------------------------------
-	 * Image view listeners
-	 * ------------------------------- */
-
-//	_onOneImageSelected: function () {
-////		this.bundleDetail.$el.fadeOut();
-//		this.listenToOnce(this.carousel.collection, "select:none", this._onNoImageSelected);
-//	},
+//		view.render().$el.appendTo(this.container);
+//		controller.listenTo(view, {
+//			"view:select:one": controller.selectImage,
+//			"view:select:none": controller.deselectImage
+//		});
+//		this.children[this.children.length] = view;
 //
-//	_onNoImageSelected: function () {
-////		this.bundleDetail.$el.fadeIn();
-//		this.listenToOnce(this.carousel.collection, "select:one", this._onOneImageSelected);
-//	},
+//		// Create detail
+//		view = new CollectionStack({
+//			collection: images,
+//			template: imageDescTemplate,
+//			className: "image-detail aside"
+//		});
+//		view.render().$el.appendTo(this.container);
+//		this.children[this.children.length] = view;
+
+		// Show views
+		if (!skipAnimation) {
+			_.each(this.children, function(child) {
+				child.$el.css({opacity: 0}).delay(700).transit({opacity: 1}, 300);
+			});
+		}
+	},
 
 });
 

@@ -34,7 +34,7 @@ module.exports = Backbone.View.extend({
 	className: "carousel-item image-item idle",
 	/** @type {module:app/model/ImageItem} */
 	model: ImageItem,
-	/** @param {Object} @return {string} */
+	/** @type {Function} */
 	template: viewTemplate,
 
 	/** @override */
@@ -53,6 +53,7 @@ module.exports = Backbone.View.extend({
 
 	createChildren: function() {
 		this.$el.html(this.template(this.model.toJSON()));
+
 		this.$placeholder = this.$(".placeholder");
 		this.placeholder = this.$placeholder[0];
 		this.$image = this.$("img");
@@ -61,10 +62,10 @@ module.exports = Backbone.View.extend({
 
 	/** @return {this} */
 	render: function () {
-		var w = this.$placeholder.innerWidth();
-		var h = Math.floor((w / this.model.get("w")) * this.model.get("h"));
+		var w = this.$placeholder.outerWidth();
+		var h = Math.round((w / this.model.get("w")) * this.model.get("h"));
 
-		this.$image.attr({width: w + 2, height: h + 2}).css(this.$placeholder.position());
+		this.$image.attr({width: w, height: h}).css(this.$placeholder.position());
 		this.$el.css("height", h);
 
 		return this;

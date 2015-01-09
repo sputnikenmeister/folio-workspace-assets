@@ -4,17 +4,7 @@
 		display: block;
 		-webkit-transition: translate3d(0,0,0);
 	}
-//	.selected {
-//		color: $link-color;
-//	}
-//	&.collapsed .selected {
-//		color: inherit;
-//	}
-//	&:not(.collapsed) .excluded {
-//		color: scale_color($color, $lightness: 50%);
-//	}
 }
-
 .list.grouped {
 	.list-group {
 		display: block;
@@ -53,6 +43,8 @@
 	}
 	.list-group {
 //		height: 1.5em;
+//		max-height: 0;
+		max-height: 2em;
 		visibility: visible;
 		opacity: 1;
 	}
@@ -63,6 +55,7 @@
 			opacity: 0;
 		}
 		.list-group.excluded {
+			max-height: 0;
 			visibility: hidden;
 			opacity: 0;
 		}

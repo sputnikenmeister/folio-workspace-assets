@@ -34,12 +34,16 @@
 		visibility: hidden;
 		opacity: 0;
 	}
-	&.selected .label {
-		transition: visibility $duration $duration,
-					opacity $duration $duration;
+	&:not(.selected):hover .label {
 		visibility: visible;
 		opacity: 1;
 	}
+//	&.selected .label {
+//		transition: visibility $duration $duration,
+//					opacity $duration $duration;
+//		visibility: visible;
+//		opacity: 1;
+//	}
 
 	& a:before 						{ content: '\e80c'; }
 	// &:link:after					{ content: '\e80c'; }
@@ -47,9 +51,11 @@
 	&:hover a:before				{ content: '\e801'; }
 	// &:active:after				{ content: '\e803'; }
 	&.selected a:before				{ content: '\e80b'; }
-	&.selected:hover a:before		{ content: '\e80b'; }
+//	&.selected:hover a:before		{ content: '\e80b'; }
 
-	&.null-item a:before			{ content: '\e807'; }
+	&.null-item a:before					{ content: '\e80d'; }
+	&.null-item.selected a:before			{ content: '\e80d'; }
+//	&.null-item.selected:hover a:before		{ content: '\e80e'; }
 
 	// show link cursor, except on selected
 	user-select: none;
@@ -65,18 +71,3 @@
 //		text-align: center;
 //	}
 }
-
-// .icon-dot-filled:before { content: '\e801'; }
-// .icon-dot-empty:before { content: '\e802'; }
-// .icon-dot-thin:before { content: '\e803'; }
-// .icon-dot-circled:before { content: '\e804'; }
-// .icon-small-dot-empty:before { content: '\e80b'; }
-// .icon-small-dot-filled:before { content: '\e80c'; }
-
-// .icon-left-small:before { content: '\e807'; }
-// .icon-right-small:before { content: '\e808'; }
-// .icon-up-small:before { content: '\e809'; }
-// .icon-down-small:before { content: '\e80a'; }
-
-// .icon-cancel-circled:before { content: '\e806'; }
-// .icon-spinner:before { content: '\e800'; }

@@ -1,43 +1,50 @@
-.carousel * {
-	user-select: none !important;
-	cursor: grab !important;
-}
-
-.carousel.panning * {
-	cursor: grabbing !important;
-}
-
-.carousel-item {
-	display: block;
-	position: absolute;
-}
-
-.carousel-item.empty-item {
-	height: calc(100% - 3.5rem);
-	p {
-		@include heading-font($size: 28px, $weight: 300, $lead: 30px);
-		margin-bottom: 15px;
-		margin-top: 0;
-		&:first-child {
-			margin-top: -5px;
+.carousel {
+	.carousel-item {
+		display: block;
+		position: absolute;
+		cursor: pointer;
+		&, * {
+			user-select: none !important;
 		}
 	}
-	.content {
-		transition: opacity #{$duration} $ease;
-		opacity: 0.2;
+	.carousel-item.selected {
+		cursor: grab;
 	}
-	&.selected .content {
-		opacity: 1;
+	&.panning .carousel-item {
+		cursor: grabbing;
 	}
-	&.candidate .content {
-		opacity: 1;
-	}
-//	@at-root .panning .empty-item.candidate .content {
-//		opacity: 1;
-//	}
 }
 
-.image-item {
+//
+// animation
+//
+.carousel {
+	.carousel-item {
+		transform: translate3d(0%,0,0) scale3d(1,1,1);
+		-webkit-backface-visibility: hidden;
+		-webkit-transform-style: preserve-3d;
+	}
+	&.animate .carousel-item {
+		transition: transform .4s;
+	}
+}
+
+//
+// Renderer-specific rules
+//
+.carousel-item.default-carousel-item {
+	.sizing {
+		display: inline-block;
+		box-sizing: border-box;
+	}
+}
+
+.carousel-item.image-item {
+	.sizing {
+		position: relative;
+		box-sizing: border-box;
+		height: 100%;
+	}
 	img {
 		// *** "mutable" properties: must be in the first matching rule
 		border: 0 none;
@@ -45,36 +52,29 @@
 		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
 		position: absolute;
 		box-sizing: border-box;
-		top: 1.5rem;
 	}
-
 	img {
-		transition: opacity #{$duration * 2} $ease;
+		transition: opacity #{$duration} $ease;
 		opacity: 0;
 	}
 	&.idle img {
-			display: none;
+		visibility: hidden;
+		//display: none;
 	}
 	&.error img {
-			display: none;
+		visibility: hidden;
+		//display: none;
 	}
 	&.done.selected img {
-			opacity: 1;
+		opacity: 1;
 	}
-//	@at-root .panning .image-item.done.candidate img {
-//			opacity: 1;
-//	}
 	&.done.candidate img {
-			opacity: 1;
+		opacity: 1;
 	}
-
 	.placeholder {
 		// *** "mutable" properties: must be in the first matching rule
 		border: 1px solid transparent;
 		color: $background-color;
-		position: relative;
-		box-sizing: border-box;
-		height: 100%;
 	}
 	.placeholder:after {
 		font-size: 5rem;
@@ -101,14 +101,77 @@
 	}
 }
 
-.default-carousel-item {
-	.placeholder {
-		color: $background-color;
-		background-color: $color;
-		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
-		box-sizing: border-box;
-		min-height: 100%;
-		padding: 1.5rem;
+//
+// carousel-specific rules
+//
+.carousel.image-carousel {
+	padding-top: 1.5rem;
+	padding-bottom: 1.5rem;
+	.empty-item {
+		height: calc(100% - 3rem);
+		p {
+			@include heading-font($size: 28px, $weight: 300, $lead: 30px);
+			margin-right: 20px;
+			margin-bottom: 15px;
+			margin-top: 0;
+			&:first-child {
+				margin-top: -5px;
+			}
+		}
+		.content {
+			transition: opacity #{$duration} $ease;
+			opacity: 0;
+		}
+		&.selected .content {
+			opacity: 1;
+		}
+		&.candidate .content {
+			opacity: 1;
+		}
+	}
+}
+
+.carousel.label-carousel {
+	padding-top: 0;
+	padding-bottom: 0;
+	.carousel-item {
+		.content {
+			@include heading-font($size: 20px, $weight: 300, $lead: 24px);
+		}
+		.content {
+			transition: opacity #{$duration} $ease;
+			opacity: 0.2;
+		}
+		&.selected .content {
+			opacity: 1;
+		}
+		&.candidate .content {
+			opacity: 1;
+		}
+	}
+	.empty-item {
+		height: 100%;
+	}
+}
+
+.carousel.bundle-carousel {
+	padding-top: 0;
+	padding-bottom: 0;
+	height: 6rem;
+	.carousel-item {
+		top: 1.5rem;
+		padding-top: 0.5rem;
+		padding-bottom: 0.5rem;
+		.content {
+			transition: opacity #{$duration} $ease;
+			opacity: 0;
+		}
+		&.selected .content {
+			opacity: 1;
+		}
+		&.candidate .content {
+			opacity: 0.5;
+		}
 	}
 }
 

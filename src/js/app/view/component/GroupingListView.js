@@ -15,21 +15,19 @@ var FilterableListView = require("./FilterableListView");
  * @constructor
  * @type {module:app/view/component/GroupingListView}
  */
-module.exports = FilterableListView.extend({
+var GroupingListView = FilterableListView.extend({
 
 	/** @override */
 	tagName: "dl",
 	/** @override */
-	className: "list selectable filterable grouped",
+	className: "grouped",
 	/** @private */
 	groupings: {},
-//	/** @type {Backbone.ChildViewContainer} */
-//	groupingViews: new Backbone.ChildViewContainer(),
 
 	/** @override */
 	initialize: function (options) {
 		FilterableListView.prototype.initialize.apply(this, arguments);
-		options.renderer && (this.renderer = options.renderer);
+//		options.renderer && (this.renderer = options.renderer);
 		if (options.groupings) {
 			this.groupings = options.groupings;
 			//this.groupings = _.defaults(options.groupings, this.groupings);
@@ -65,38 +63,39 @@ module.exports = FilterableListView.extend({
 		}
 	},
 
-	/*
-	 * Create children views
-	 */
-	/** @private */
+	/** @private Create children views */
 	assignGroupingView: function (item) {
-		var view = new GroupingRenderer({
+		var view = new GroupingListView.GroupingRenderer({
 			model: item,
 			el: item.selector()
 		});
 		this.groupingViews.add(view, item.id);
+		return view;
 	},
+
+}, {
+	/**
+	 * @constructor
+	 * @type {module:app/view/component/GroupingRenderer}
+	 */
+	GroupingRenderer: Backbone.View.extend({
+		/** @override */
+		tagName: "dt",
+		/** @override */
+		className: "list-group",
+
+		// initialize: function(options) {
+		// 	this.listenTo(this.model, "change:excluded", this.onExcludedChange);
+		// },
+
+		// onExcludedChange: function(model, value) {
+		// 	if (value) {
+		// 		this.$el.addClass("excluded");
+		// 	} else {
+		// 		this.$el.removeClass("excluded");
+		// 	}
+		// },
+	})
 });
 
-/**
- * @constructor
- * @type {module:app/view/component/GroupingRenderer}
- */
-var GroupingRenderer = Backbone.View.extend({
-	/** @override */
-	tagName: "dt",
-	/** @override */
-	className: "list-group",
-
-	// initialize: function(options) {
-	// 	this.listenTo(this.model, "change:excluded", this.onExcludedChange);
-	// },
-
-	// onExcludedChange: function(model, value) {
-	// 	if (value) {
-	// 		this.$el.addClass("excluded");
-	// 	} else {
-	// 		this.$el.removeClass("excluded");
-	// 	}
-	// },
-});
+module.exports = GroupingListView;
