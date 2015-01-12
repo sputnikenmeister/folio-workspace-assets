@@ -25,6 +25,10 @@
 	text-overflow: ellipsis;
 }
 
+%skip-transitions {
+	transition: none !important;
+}
+
 // ------------------------------------
 // Media Queries
 // ------------------------------------

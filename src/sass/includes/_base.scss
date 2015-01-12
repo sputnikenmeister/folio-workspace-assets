@@ -1,9 +1,43 @@
 // ------------------------------------
-// Base
+// Global units
 // ------------------------------------
 
+// Size base units
+$hu: 20px;
+$vu: 12px;
+
+// Time base units (transitions/animations)
+$duration: 			0.350s;
+$delay-interval: 	0.033s;
+
+$delay: $duration + $delay-interval;
+$ease: ease-in-out;
+
 // ------------------------------------
-// private (do not use directly)
+// Layout
+// ------------------------------------
+
+$breakpoint-large: 			1024px;
+$gutter: 					2 * $hu;
+$page-margin-left: 			1 * $hu;
+$page-margin-right: 		3 * $hu;
+
+$page-width: 				35 * $hu;//700px;
+$page-width-large: 			47 * $hu;//940px;
+$aside-width:				11 * $hu;
+$aside-width-large: 		13 * $hu;
+$main-width:				$page-width - $aside-width;
+$main-width-large:			$page-width-large - $aside-width-large;
+
+$page-inner-width:			$page-width - $page-margin-left - $page-margin-right;
+$page-inner-width-large:	$page-width-large - $page-margin-left - $page-margin-right;
+$aside-inner-width:			$aside-width - $page-margin-right - $gutter/2;
+$aside-inner-width-large:	$aside-width-large - $page-margin-right - $gutter/2;
+$main-inner-width:			$main-width - $page-margin-left - $gutter/2;
+$main-inner-width-large:	$main-width-large - $page-margin-left - $gutter/2;
+
+// ------------------------------------
+// Color/Typefaces: private (do not use directly)
 // ------------------------------------
 $light-fgcolor: 	hsl(47, 5%, 15%);
 $light-bgcolor: 	hsl(47, 5%, 92%);
@@ -27,8 +61,11 @@ $font-webfont-sans: "Franklin Gothic FS", $humanist-fallback;
 //@import "fonts/_source-sans-pro";
 //$font-webfont-sans: "Source Sans Pro", $humanist-fallback;
 
+$royal-blue-color:	#204980;
+$royal-ivory-color:	#FEFCE7;
+
 // ------------------------------------
-// Public value definitions
+// Color/Typefaces: public
 // ------------------------------------
 
 // colors
@@ -41,36 +78,8 @@ $link-hover-color: scale_color($link-color, $lightness: 15%);//hsl(10, 95%, 60%)
 $link-down-color: scale_color($link-color, $lightness: -15%);//hsl(10, 95%, 30%);
 
 // selection-colors
-$selection-bgcolor: hsl(203, 100%, 90%);
 $selection-fgcolor: hsl(203, 100%, 50%);
-
-// Time base unit (transition/animation)
-$duration: 0.35s;
-$ease: ease;
-
-///* Size base units */
-$hu: 20px;
-$vu: 12px;
-
-// Layout
-$breakpoint-large: 			1024px;
-$gutter: 					2 * $hu;
-$page-margin-left: 			1 * $hu;
-$page-margin-right: 		3 * $hu;
-
-$page-width: 				35 * $hu;//700px;
-$page-width-large: 			47 * $hu;//940px;
-$aside-width:				11 * $hu;
-$aside-width-large: 		13 * $hu;
-$main-width:				$page-width - $aside-width;
-$main-width-large:			$page-width-large - $aside-width-large;
-
-$page-inner-width:			$page-width - $page-margin-left - $page-margin-right;
-$page-inner-width-large:	$page-width-large - $page-margin-left - $page-margin-right;
-$aside-inner-width:			$aside-width - $page-margin-right - $gutter/2;
-$aside-inner-width-large:	$aside-width-large - $page-margin-right - $gutter/2;
-$main-inner-width:			$main-width - $page-margin-left - $gutter/2;
-$main-inner-width-large:	$main-width-large - $page-margin-left - $gutter/2;
+$selection-bgcolor: hsl(203, 100%, 90%);
 
 // font-family
 $large-font-family: $font-webfont-sans;
@@ -124,6 +133,7 @@ body {
 	color: $color;
 	background-color: $background-color;
 	line-height: 1.5rem;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 p {

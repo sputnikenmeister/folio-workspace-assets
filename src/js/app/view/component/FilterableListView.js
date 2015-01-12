@@ -11,7 +11,6 @@ var Container = require("backbone.babysitter");
 /** @type {module:app/helper/DeferredRenderView} */
 var DeferredRenderView = require("../../helper/DeferredRenderView");
 
-//var ANIMATION_EVENTS = "animationend webkitanimationend transitionend";
 
 /**
  * @constructor
@@ -22,7 +21,7 @@ var FilterableListView = DeferredRenderView.extend({
 	/** @override */
 	tagName: "ul",
 	/** @override */
-	className: "list selectable filterable",
+	className: "list selectable filterable skip-transitions",
 	/** @public @type {Object} */
 	associations: {},
 
@@ -33,25 +32,43 @@ var FilterableListView = DeferredRenderView.extend({
 		this.children = new Container();
 		this.collection.each(this.assignChildView, this);
 
-		if (options.associations) {
-			this.associations = options.associations;
-			this.filterBy(this.associations.collection.selected);
-		}
+		var force = false;//true;
+		this.filterKey = options.filterKey;
+		this.filterBy(options.filterBy, force);
+		this.setSelection(this.collection.selected, force);
+		this.setCollapsed((_.isBoolean(options.collapsed)? options.collapsed : false), force);
+		this.skipTransitions = true;
 
-		this.setSelection(this.collection.selected);
-		this.setCollapsed(_.isBoolean(options.collapsed)? options.collapsed : false);
-		this.skipAnimation = true;
+		_.bindAll(this, "_onResize");
+		Backbone.$(window).on("orientationchange resize", this._onResize);
 
 		this.listenTo(this.collection, {
 			"select:one": this.setSelection,
 			"select:none": this.setSelection
 		});
+
+//		this.listenTo(this.collection, {
+//			"reset": this._onCollectionReset,
+//			"select:one": this._onSelectOne,
+//			"select:none": this._onSelectNone,
+//			"deselect:one": this._onDeselectOne,
+//		});
 		// this.listenTo(this.collection, "change:excluded", this.whenExcludedChange);
+	},
+
+	remove: function () {
+		Backbone.$(window).off("orientationchange resize", this._onResize);
+		DeferredRenderView.prototype.remove.apply(this);
 	},
 
 	/* --------------------------- *
 	 * Render
 	 * --------------------------- */
+
+	/** @param {Object} ev */
+	_onResize: function (ev) {
+		this._renderLayout();
+	},
 
 	render: function() {
 		return this;
@@ -59,24 +76,36 @@ var FilterableListView = DeferredRenderView.extend({
 
 	/** @override */
 	renderLater: function () {
-		if (this.skipAnimation) {
-			this.$el.removeClass("animate");
-			this.skipAnimation = false;
-		} else {
-			this.$el.addClass("animate");
+		if (this.skipTransitions) {
+			this.$el.addClass("skip-transitions");
 		}
-		// If changing to collapsed, do it first
-		if (this.getCollapsed()) {
-			this.validateRender("collapsed");
-		}
+		_.defer(_.bind(function() {
+			this.skipTransitions = false;
+			this.$el.removeClass("skip-transitions");
+		}, this));
+
+		this.validateRender("collapsed");
 		this.validateRender("selection");
 		this.validateRender("filterBy");
-		// If changing from collapsed, do it last
-		if (!this.getCollapsed()) {
-			this.validateRender("collapsed");
-		}
+		this._renderLayout();
 	},
 
+	_renderLayout: function() {
+		var pos, tx, childEl;
+
+		elt = this.el.firstElementChild;
+		pos = elt.clientTop;
+		do {
+			tx = "translate3d(" + elt.clientLeft + "px," + pos + "px,0)"
+			elt.style.position = "absolute";
+			elt.style.webkitTransform = tx;
+			elt.style.mozTransform = tx;
+			elt.style.transform = tx;
+			pos += elt.clientHeight;
+		} while (elt = elt.nextElementSibling);
+
+		this.el.style.minHeight = pos + "px";
+	},
 
 	/* --------------------------- *
 	 * Child views
@@ -113,12 +142,11 @@ var FilterableListView = DeferredRenderView.extend({
 	 * @param {Boolean}
 	 * @return {?Boolean}
 	 */
-	setCollapsed: function (collapsed) {
-		if (collapsed === this._collapsed) {
-			return;
+	setCollapsed: function (collapsed, force) {
+		if (force || collapsed !== this._collapsed) {
+			this._collapsed = collapsed;
+			this.requestRender("collapsed", _.bind(this.renderCollapsed, this, collapsed));
 		}
-		this._collapsed = collapsed;
-		this.requestRender("collapsed", _.bind(this.renderCollapsed, this, collapsed));
 	},
 	getCollapsed: function () {
 		return this._collapsed;
@@ -141,13 +169,12 @@ var FilterableListView = DeferredRenderView.extend({
 	_selectedItem: undefined,
 
 	/** @param {Backbone.Model|null} */
-	setSelection: function (item) {
-		if (item === this._selectedItem) {
-			return;
+	setSelection: function (item, force) {
+		if (force || item !== this._selectedItem) {
+			var oldVal = this._selectedItem;
+			this._selectedItem = item;
+			this.requestRender("selection", _.bind(this.renderSelection, this, item, oldVal));
 		}
-		var oldVal = this._selectedItem;
-		this._selectedItem = item;
-		this.requestRender("selection", _.bind(this.renderSelection, this, item, oldVal));
 	},
 
 	/** @private */
@@ -166,23 +193,22 @@ var FilterableListView = DeferredRenderView.extend({
 
 	_filter: undefined,
 
-	filterBy: function (filter) {
-		if (filter === this._filter) {
-			return;
+	filterBy: function (filter, force) {
+		if (force || filter !== this._filter) {
+			var oldVal = this._filter;
+			this._filter = filter;
+			this.requestRender("filterBy", _.bind(this.renderFilterBy, this, filter, oldVal));
 		}
-		var oldVal = this._filter;
-		this._filter = filter;
-		this.requestRender("filterBy", _.bind(this.renderFilterBy, this, filter, oldVal));
 	},
 
 	/** @private */
 	renderFilterBy: function (newVal, oldVal) {
 		var newIds, oldIds;
 		if (newVal) {
-			newIds = newVal.get(this.associations.key);
+			newIds = newVal.get(this.filterKey);
 		}
 		if (oldVal) {
-			oldIds = oldVal.get(this.associations.key);
+			oldIds = oldVal.get(this.filterKey);
 		}
 		this.renderFiltersById(newIds, oldIds);
 	},
@@ -212,10 +238,10 @@ var FilterableListView = DeferredRenderView.extend({
 		// return changedCount;
 	},
 
+	//var ANIMATION_EVENTS = "animationend webkitanimationend transitionend";
 	/** @private */
 	// lastExcludedCount: 0,
-	/** @private */
-	/*
+	/** @private *//*
 	renderFilters_1: function(newIds, oldIds) {
 		var newCount, oldCount, expectedCount;
 		var changedCount = 0, excludedCount = 0;

@@ -17,17 +17,13 @@ html, body {
 	height: 100%;
 	margin-bottom: -$footer-height;
 }
-#container #container-footer, #footer {
-	display: none;
-}
-#container #container-footer {
-	height: $footer-height;
-}
 #footer {
 	clear: both;
 	position: relative;
-	height: $footer-height;
 	overflow: hidden;
+}
+#container #container-footer, #footer {
+	height: $footer-height;
 }
 
 /* ---------------------- *
@@ -37,28 +33,34 @@ html, body {
 #container {
 	width: 100%;
 	display: block;
+	overflow: hidden;
 	min-width: $page-width;
 	@include media($desktop-small) {
 		min-width: $page-width-large;
 	}
-	overflow: hidden;
 }
-#container {
-	transition-property: opacity, visibility;
-	transition-timing-function: ease, step-start;
-	transition-duration: $duration;
-	transition-delay: $duration;
-}
-.app-ready #container {
+//#container {
+//	transition-property: opacity, visibility;
+//	transition-timing-function: $ease, step-start;
+//	transition-duration: $duration;
+//	transition-delay: $delay;
+//}
+body.app-ready #container {
+	transition:
+		visibility $duration $delay step-start,
+		opacity $duration $delay $ease;
 	visibility: visible;
 	opacity: 1;
 }
-.app-initial #container {
+body.app-initial #container {
 	visibility: hidden;
 	opacity: 0;
 }
-.app-initial #container * {
-	transition: none !important;
+body.app-initial #container * {
+	@extend %skip-transitions;
+}
+body.skip-transitions * {
+	@extend %skip-transitions;
 }
 
 /* ---------------------- *
@@ -84,6 +86,10 @@ html, body {
 	width: 100%;
 }
 
+/* ---------------------- *
+ * Header
+ * ---------------------- */
+
 #header {
 	height: 3rem;
 	padding-top: 1.25rem;
@@ -100,11 +106,6 @@ html, body {
 $navigation-height: 10rem;
 $nav-root-height: 4.5rem;
 
-#nav-root{
-	position: relative;
-	height: $nav-root-height;
-}
-
 #navigation {
 	position: relative;
 	padding-top: 0.75rem;
@@ -112,25 +113,32 @@ $nav-root-height: 4.5rem;
 	@include media($desktop-small) {
 		min-height: $navigation-height;
 	}
+	@include media($ipad-landscape) {
+		min-height: $navigation-height - 1.5rem;
+	}
 //	height: auto;
 //	&.bundle-list { height: auto; }
 //	&.bundle-item { height: $navigation-height + 3; }
 
 	@at-root #site-name, #bundle-list, #keyword-list {
-		transition-property: transform;
-		transition-duration: $duration;
-		transition-timing-function: $ease;
+		transition: transform $duration $ease;
 	}
 	@at-root .bundle-list {
-		#bundle-list  { transition-delay: $duration * 1; }
-		#keyword-list { transition-delay: $duration * 1; }
-		#site-name    { transition-delay: $duration * 2; }
+		#site-name    { transition-delay: $delay * 2; }
+		#bundle-list  { transition-delay: $delay * 1; }
+		#keyword-list { transition-delay: $delay * 1; }
 	}
 	@at-root .bundle-item {
-		#bundle-list  { transition-delay: $duration * 1; }
-		#keyword-list { transition-delay: $duration * 1; }
-		#site-name    { transition-delay: $duration * 0; }
+		#site-name    { transition-delay: $delay * 0; }
+		#bundle-list  { transition-delay: $delay * 1; }
+//		#keyword-list { transition-delay: $delay * 2; }
+		#keyword-list { transition-delay: $delay * 1; }
 	}
+}
+
+#nav-root{
+	position: relative;
+	height: $nav-root-height;
 }
 
 #bundle-list {
@@ -139,87 +147,97 @@ $nav-root-height: 4.5rem;
 	left: $page-margin-left;
 	width: calc(60% - #{$gutter + $page-margin-left});
 	.list-item {
-		transform: translateX(-1px);
 		width: 100%;
 		.completed {
 			display: none;
+		}
+		.name {
+			margin-left: -1px;
+//			transform: translateX(-1px);
 		}
 		a > em {
 			font-style: normal;
 			font-weight: 400;
 		}
 	}
-	@at-root .bundle-list #bundle-list { transform: translate3d(0, 0, 0.1px); }
-	@at-root .bundle-item #bundle-list { transform: translate3d(0, #{-$nav-root-height}, 0.1px); }
+	@at-root .bundle-list #bundle-list {
+		transform: translate3d(0, 0, 0.1px);
+	}
+	@at-root .bundle-item #bundle-list {
+		transform: translate3d(0, #{-$nav-root-height}, 0.1px);
+	}
 }
 
 #keyword-list {
 	@include paragraph-font();
 	position: absolute;
-//	left: $page-margin-left;
-//	right: $page-margin-right;
-	transform: translate3d($main-width, 0, 0.1px);
+
 	width: $aside-inner-width;
+	transform: translate3d($main-width, 0, 0.1px);
 
 	@at-root .bundle-list #keyword-list {
 		transform: translate3d($main-width, 0, 0.1px);
 		@include media($desktop-small) {
-			transform: translate3d($main-width-large, 0, 0.1px);
 			width: $aside-inner-width-large;
+			transform: translate3d($main-width-large, 0, 0.1px);
 		}
 		@include media($ipad-landscape) {
-			transform: translate3d($main-width-large, 0, 0.1px);
 			width: $aside-inner-width-large;
+			transform: translate3d($main-width-large, 0, 0.1px);
 		}
 	}
 
 	@at-root .bundle-item #keyword-list {
 		transform: translate3d($main-width, #{-$nav-root-height}, 0.1px);
 		@include media($desktop-small) {
-			transform: translate3d($main-width-large, #{-$nav-root-height}, 0.1px);
 			width: $aside-inner-width-large;
+			transform: translate3d($main-width-large, #{-$nav-root-height}, 0.1px);
 		}
 		@include media($ipad-landscape) {
-			transform: translate3d(0, #{$navigation-height - $nav-root-height - 0rem}, 0.1px);
 			width: $aside-inner-width-large;
-			.list-group {
-				position: static;
-				span {
-					display: inline-block;
-					padding-top: 0.5rem;
-				}
-			}
+			transform: translate3d(0, #{$navigation-height - $nav-root-height - 1.5rem}, 0.1px);
 		}
 	}
-//	width: calc(40% - #{$page-margin-right});
+
 	.list-item {
 		white-space: nowrap;
 		width: 100%;
-//		margin-left: auto;
-//		width: $aside-inner-width;
-//		margin-left: 100px;
-//		@include media($desktop-small) { width: $aside-inner-width-large; }
 		a {
 			font-size: 13px;
 		}
 	}
+
 	.list-group {
-		position: absolute;
-//		width: 40%;
-		left: -80%;
-//		width: calc(100% - #{$aside-inner-width + $gutter});
-//		width: 80%;
-//		@include media($desktop-small) { width: calc(100% - #{$aside-inner-width-large + $gutter}); }
+		display: block;
+//		position: relative;
+//		position: absolute;
+		height: 0;
+		width: calc(100% - #{$gutter});
 		span {
 			@include small-caps();
+			display: block;
+			height: 1.5rem;
+			width: 100%;
+			transform: translate3d(-100%, 0, 0.1px);
+			transition: transform $duration $ease;
+			transition-delay: $delay * 1;
 		}
 	}
-}
+	&.skip-animation .list-group span {
+		transition: none;
+	}
 
-#site-name, #bundle-list {
-	min-height: 2rem;
-	line-height: 2rem;
-	padding-top: 2px;
+	@at-root .bundle-item #keyword-list {
+		@include media($ipad-landscape) {
+			.list-group {
+				height: 2rem;
+				span {
+					transform: translate3d(-0.1px, 0.5rem, 0.1px);
+					transition-delay: $delay * 1;
+				}
+			}
+		}
+	}
 }
 
 #site-name {
@@ -229,38 +247,39 @@ $nav-root-height: 4.5rem;
 	display: inline-block;
 	padding-right: $hu;
 
-	@at-root .bundle-list #site-name { transform: translate3d(-1px, 0, 0.1px); }
-	@at-root .bundle-item #site-name { transform: translate3d(calc(-100% - #{$hu}), 0, 0.1px); }
-
-//	& a:after {
-//		@include fontello-icon-base();
-//		font-size: 16px;
-//		content: '\e807';
-//		display: inline-block;
-//		width: $hu;
-//		margin-right: -$hu;
-//		margin-left: 0;
-//		text-align: right;
-//		transform: translate3d(0, -1px, 0.1px);
-//		text-decoration: inherit;
-//	}
-//	& a:after {
-//		transition: opacity $duration $ease;
-//	}
-//	@at-root .bundle-list #site-name a:after {
-//		opacity: 0;
-//		transition-delay: $duration * 1;
-//	}
-//	@at-root .bundle-item #site-name a:after {
-//		opacity: 1;
-//		transition-delay: $duration * 1;
-//	}
+	@at-root .bundle-list #site-name {
+		transform: translate3d(-1px, 0, 0.1px);
+	}
+	@at-root .bundle-item #site-name {
+		transform: translate3d(calc(-100% - #{$hu}), 0, 0.1px);
+	}
 }
 
-#navigation .bundle-nav.pager {
+#site-name, #bundle-list {
+	min-height: 2rem;
+	line-height: 2rem;
+	padding-top: 2px;
+}
+
+#bundle-pager {
 	position: absolute;
     display: inline-block;
+	width: 100%;
     top: -1.5rem;
+	.button {
+		position: absolute;
+		margin-left: 0 !important;
+		min-width: $aside-inner-width;
+	}
+	.following-button {
+		left: $main-width;
+		@include media($desktop-small) {
+			left: $main-width-large;
+		}
+		@include media($ipad-landscape) {
+			left: $aside-width-large - $gutter/2;
+		}
+	}
 }
 
 /* ---------------------- *
@@ -292,11 +311,10 @@ $nav-root-height: 4.5rem;
 	.empty-item {
 		box-sizing: border-box;
 		padding-left: $page-margin-left;
-//		padding-right: $gutter/2;
+		padding-right: $gutter/2;
 		width: $main-width - 5px;
 	}
 }
-
 
 @include media($desktop-small) {
 	.carousel {
@@ -308,29 +326,19 @@ $nav-root-height: 4.5rem;
 			width: $page-width-large;
 		}
 		.empty-item {
-//			padding-right: $gutter/2;
+			padding-right: $gutter/2;
 			width: $main-width-large - 5px;
 		}
 	}
 }
 @include media($ipad-landscape) {
-//	.carousel {
-//		min-width: $page-width-large;
-//		.carousel-item {
-//			left: calc(50% - #{$page-width-large/2});
-//			width: $page-width-large;
-//		}
-//		.empty-item {
-//			width: $main-width-large - 5px;
-//		}
-//	}
 	.carousel {
 		.empty-item {
 			width: $page-width-large;
-//			width: $main-width-large + $hu*3;
+			padding-right: $page-margin-left;
 		}
 	}
-	.carousel.image-carousel {
+	.carousel {
 		.carousel-item {
 			padding-left: $aside-width-large;
 			padding-right: $page-margin-left;
@@ -340,7 +348,7 @@ $nav-root-height: 4.5rem;
 
 .label-carousel {
 	position: absolute;
-    bottom: 100%;
+	top: -1.5rem;//bottom: 100%;
 }
 
 /* ---------------------- *
@@ -363,7 +371,7 @@ $nav-root-height: 4.5rem;
 	display: block;
 	transform: translateX(-1px);
 
-	top: -($navigation-height + 1.25rem);
+	top: 1.25rem - $navigation-height;
 	width: calc(60% - #{$gutter + $page-margin-left});
 
 	@include media($desktop-small) {
@@ -372,12 +380,12 @@ $nav-root-height: 4.5rem;
 		width: $aside-inner-width-large;
 	}
 	p {
+		margin-top: 0;
+		margin-bottom: 1rem;
 		@include heading-font($weight: 300, $lead: 28px);
 		@include media($desktop-small) {
 			@include heading-font($size: 20px, $weight: 300, $lead: 24px);
 		}
-		margin-top: 0;
-		margin-bottom: 1rem;
 	}
 }
 

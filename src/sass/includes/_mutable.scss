@@ -8,22 +8,22 @@
 	border-color: lighten($color, 60%);
 }
 
-.mutable-color {
-	color: inherit;
-}
+//.mutable-color {
+//	color: inherit;
+//}
+//
+//.mutable-border {
+//}
+//
+//.mutable {
+//	color: inherit;
+//	background-color: inherit;
+//}
 
-.mutable-border {
-}
-
-.mutable {
-	color: inherit;
-	background-color: inherit;
-}
-
-body {
+.mutable-faded, body {
 	// Color values specified in "_base.scss"
-	transition-timing-function: steps(4), $ease;
 	transition-property: color, background-color;
-	transition-duration: #{$duration * 2};
-//	transition-delay: $duration;
+	transition-timing-function: steps(4), $ease;
+	transition-duration: $duration * 0.75;
+	transition-delay: $delay*3;
 }

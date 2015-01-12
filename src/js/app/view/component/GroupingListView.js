@@ -27,7 +27,7 @@ var GroupingListView = FilterableListView.extend({
 	/** @override */
 	initialize: function (options) {
 		FilterableListView.prototype.initialize.apply(this, arguments);
-//		options.renderer && (this.renderer = options.renderer);
+		//options.renderer && (this.renderer = options.renderer);
 		if (options.groupings) {
 			this.groupings = options.groupings;
 			//this.groupings = _.defaults(options.groupings, this.groupings);

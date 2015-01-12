@@ -217,6 +217,7 @@ var Controller = Backbone.Router.extend({
 		var fgColor, bgColor, bgLum, fgLum;
 		var bgDefault, fgDefault;
 		var attrs, className;
+		var styles;
 
 		bgDefault = Styles.getCSSProperty("body", "background-color");// || "hsl(47, 5%, 95%)");
 		fgDefault = Styles.getCSSProperty("body", "color");// || "hsl(47, 5%, 15%)");
@@ -231,23 +232,24 @@ var Controller = Backbone.Router.extend({
 			bgLum = bgColor.lightness();
 			fgLum = fgColor.lightness();
 
-			Styles.createCSSRule("body." + className, _.extend({
-					"-webkit-font-smoothing": (bgLum < fgLum? "antialiased" : "auto"),
-					"-moz-osx-font-smoothing": (bgLum < fgLum? "grayscale" : "auto"),
-				}, _.pick(attrs, ["background-color", "background", "color"])));
+			styles = _.pick(attrs, ["background-color", "background", "color"]);
+			styles["-webkit-font-smoothing"] = (bgLum < fgLum? "antialiased" : "auto");
+			// 'body { -moz-osx-font-smoothing: grayscale; }' works ok in all situations: hardcoded in _base.scss
+			//styles["-moz-osx-font-smoothing"] = (bgLum < fgLum? "grayscale" : "auto");
+			Styles.createCSSRule("body." + className, styles);
 
-			Styles.createCSSRule("." + className + " .mutable-faded", {
-				"border-color": fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString(),
-				"color": fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString(),
-			});
-
-			Styles.createCSSRule("." + className + " > .image-item img",
-				_.pick(attrs, ["box-shadow", "border", "border-radius", "background-color"]));
+			styles = _.pick(attrs, ["box-shadow", "border", "border-radius", "background-color"])
+			Styles.createCSSRule("." + className + " > .image-item img", styles);
 
 			Styles.createCSSRule("." + className + " > .image-item .placeholder", {
 				"background-color": bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
 				"border-color": bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString(),
 				"color": bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString(),
+			});
+
+			Styles.createCSSRule("." + className + " .mutable-faded", {
+				"border-color": fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString(),
+				"color": fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString(),
 			});
 		});
 

@@ -36,6 +36,12 @@ var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
 var imageDescTemplate = require("./template/CollectionStack.Image.tpl");
 
+/** @type {module:app/control/Controller} */
+var HORIZONTAL_STEP = require("../control/Globals").HORIZONTAL_STEP;
+
+/** @type {module:app/control/Globals} */
+var Globals = require("../control/Globals");
+
 /**
  * @constructor
  * @type {module:app/view/ContentView}
@@ -81,6 +87,8 @@ var ContentView = View.extend({
 
 		if (bundles.selected) {
 			this.createChildren(bundles.selected, true);
+		} else {
+//			this.$el.css("display", "none");
 		}
 	},
 
@@ -96,6 +104,7 @@ var ContentView = View.extend({
 	/* -------------------------------
 	 * Remove children
 	 * ------------------------------- */
+
 	removeChildren: function (bundle, skipAnimation) {
 		var images = bundle.get("images");
 
@@ -105,7 +114,8 @@ var ContentView = View.extend({
 			if (skipAnimation) {
 				child.remove();
 			} else {
-				child.$el.css({position: "absolute"}).transit({opacity: 0}, 300)
+				child.$el.css({position: "absolute"})
+					.transit({opacity: 0}, Globals.TRANSITION_DURATION)
 					.queue(function(next) {
 						child.remove();
 						next();
@@ -115,9 +125,37 @@ var ContentView = View.extend({
 		this.children.length = 0;
 	},
 
+//	removeChildren: function (bundle, skipAnimation) {
+//		var images = bundle.get("images");
+//		var childEls = [];
+//
+//		this.stopListening(images);
+//		_.each(this.children, function(child) {
+//			controller.stopListening(child);
+//			childEls.push(child.el);
+//		});
+//
+//		if (skipAnimation) {
+//			this._removeChildren();
+//		} else {
+//			Backbone.$(childEls).css({position: "absolute"})
+//				.transit({opacity: 0}, Globals.TRANSITION_DURATION)
+//				.promise().done(_.bind(this._removeChildren, this));
+//		}
+//	},
+//
+//	_removeChildren: function() {
+//		_.each(this.children, function(child) {
+//			child.remove();
+//		});
+//		this.$el.css("display", "none");
+//		this.children.length = 0;
+//	},
+
 	/* -------------------------------
 	 * Create children on bundle select
 	 * ------------------------------- */
+
 	createChildren: function (bundle, skipAnimation) {
 		var view, images = bundle.get("images");
 
@@ -125,6 +163,7 @@ var ContentView = View.extend({
 		view = new Carousel({
 			className: "label-carousel",
 			collection: images,
+			gap: Globals.HORIZONTAL_STEP,
 //			renderer: ImageRenderer,
 //			emptyRenderer: CarouselEmptyRenderer.extend({
 //				model: bundle,
@@ -155,8 +194,19 @@ var ContentView = View.extend({
 		});
 		this.children[this.children.length] = view;
 
-		// Create pager
-//		view = new SelectableListView({
+//		this.$el.css("display", "");
+		// Show views
+		if (!skipAnimation) {
+			_.each(this.children, function(child) {
+				child.$el.css({opacity: 0})
+					.delay(Globals.TRANSITION_DELAY * 2.5)
+					.transit({opacity: 1}, Globals.TRANSITION_DURATION);
+			});
+		}
+	},
+
+//	createImagePager: function() {
+//		var view = new SelectableListView({
 //			collection: images,
 //			renderer: DotNavigationRenderer,
 //			className: "images-pager dots-fontello mutable-faded"
@@ -166,24 +216,18 @@ var ContentView = View.extend({
 //			"view:select:one": controller.selectImage,
 //			"view:select:none": controller.deselectImage
 //		});
-//		this.children[this.children.length] = view;
-//
-//		// Create detail
-//		view = new CollectionStack({
+//		return this.children[this.children.length] = view;
+//	},
+
+//	createImageDetail: function() {
+//		var view = new CollectionStack({
 //			collection: images,
 //			template: imageDescTemplate,
 //			className: "image-detail aside"
 //		});
 //		view.render().$el.appendTo(this.container);
-//		this.children[this.children.length] = view;
-
-		// Show views
-		if (!skipAnimation) {
-			_.each(this.children, function(child) {
-				child.$el.css({opacity: 0}).delay(700).transit({opacity: 1}, 300);
-			});
-		}
-	},
+//		return this.children[this.children.length] = view;
+//	},
 
 });
 

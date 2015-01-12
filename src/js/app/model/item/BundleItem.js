@@ -73,8 +73,12 @@ module.exports = Backbone.Model.extend({
 		return resp;
 	},
 
-	selector: function () {
-		return "#b" + this.id;
+	selector: function() {
+		return "#" + this.domId();
+	},
+
+	domId: function() {
+		return "b" + this.id;
 	},
 
 	/** @override */

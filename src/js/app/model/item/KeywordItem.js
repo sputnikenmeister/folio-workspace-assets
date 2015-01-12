@@ -22,7 +22,11 @@ module.exports = Backbone.Model.extend({
 	},
 
 	selector: function() {
-		return "#k" + this.id;
+		return "#" + this.domId();
+	},
+
+	domId: function() {
+		return "k" + this.id;
 	},
 
 	/** @override */

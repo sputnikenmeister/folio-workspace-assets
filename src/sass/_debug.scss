@@ -22,7 +22,7 @@ $darkolivegreen:	darkolivegreen;
 .debug-grid {
 	background-image: image-url("debug-background.svg");
 	background-repeat: no-repeat;
-	background-attachment: local;
+//	background-attachment: local;
 	background-position: calc(50% + 130px) 1rem;
 //	background-position: calc(50% + #{($page-width-large - $page-width)/2 + ($page-margin-left - $page-margin-right)}) 1rem;
 	@media only screen and (min-width: $breakpoint-large) {
@@ -37,19 +37,30 @@ $darkolivegreen:	darkolivegreen;
 		// background-color: transparentize($deepskyblue, 0.8);
 		outline: 1px dashed $darkseagreen;
 	}
+	#header, #footer {
+		background-color: transparentize($darkseagreen, 0.8);
+	}
+
 	#navigation {
 		background-color: transparentize($salmon, 0.8);
 		outline: 1px dashed $salmon;
-//		#keyword-list, #bundle-list {
-//			outline: 1px dashed $lightcoral;
-//		}
 	}
+
+	#bundle-pager > .button {
+		outline: 1px dashed $darkseagreen;
+		background-color: transparentize($darkseagreen, 0.7);
+	}
+
 	#nav-root, .selectable {
 		outline: 1px dashed $lightcoral;
 		background-color: transparentize($lightcoral, 0.8);
 	}
 	#site-name, .list-item, .list-group {
-		background-color: transparentize($lightcoral, 0.7);
+		background-color: transparentize($lightcoral, 0.8);
+		& > * {
+			outline: 1px dashed $lightcoral;
+			background-color: transparentize($lightcoral, 0.8);
+		}
 	}
 
 	#content {
@@ -113,6 +124,7 @@ $darkolivegreen:	darkolivegreen;
 }
 
 #debug-toolbar {
+	z-index: 999;
 	color: hsl(245, 2%, 40%);
 	background-color: hsl(60, 4%, 5%);
 	&, * { user-select: none !important; }

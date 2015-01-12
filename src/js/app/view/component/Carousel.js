@@ -32,7 +32,7 @@ var Carousel = DeferredRenderView.extend({
 	/** @override */
 	tagName: "div",
 	/** @override */
-	className: "carousel",
+	className: "carousel skip-transitions",
 	/** @type {int} In pixels */
 	selectThreshold: 30,
 	/** @type {int} In pixels */
@@ -48,6 +48,7 @@ var Carousel = DeferredRenderView.extend({
 	initialize: function (options) {
 		this.children = new Container();
 
+		_.isNumber(options.gap) && (this.gap = options.gap);
 		options.renderer && (this.renderer = options.renderer);
 		options.emptyRenderer && (this.emptyRenderer = options.emptyRenderer);
 
@@ -65,12 +66,11 @@ var Carousel = DeferredRenderView.extend({
 			}));
 		}
 
-
-		this.hammer = new Hammer.Manager(this.el);
-		this.hammer.add(new Hammer.Pan({
-			direction: this.direction,
-			threshold: this.panThreshold,
-		}));
+//		this.hammer = new Hammer.Manager(this.el);
+//		this.hammer.add(new Hammer.Pan({
+//			direction: this.direction,
+//			threshold: this.panThreshold,
+//		}));
 
 		_.bindAll(this, "_onPan");
 		this.hammer.on("panstart panmove panend pancancel", this._onPan);
@@ -221,14 +221,13 @@ var Carousel = DeferredRenderView.extend({
 	 * Model listeners
 	 * --------------------------- */
 
-	/* Model event handlers */
+	/** @private */
 	_onCollectionReset: function () {
 		this._resetPending = true;
 		this.render();
 	},
 
-
-	/* Model event handlers */
+	/** @private */
 	_onDeselectOne: function (model) {
 		var child = this.children.findByModel(model);
 		if (child)
@@ -272,7 +271,7 @@ var Carousel = DeferredRenderView.extend({
 	renderLater: function () {
 		this.validateRender("createChildren");
 		this.validateRender("scrollBy");
-		this.skipAnimation = false;
+		this.skipTransitions = false;
 	},
 
 	/* --------------------------- *
@@ -353,7 +352,7 @@ var Carousel = DeferredRenderView.extend({
 			}, this);
 			this.$el.append(buffer);
 		}
-		this.updateSize();
+		this.measure();
 	},
 	createChildrenNow: function () {
 		this._createChildren();
@@ -375,16 +374,16 @@ var Carousel = DeferredRenderView.extend({
 
 	/** @param {Object} ev */
 	_onResize: function (ev) {
-		this.updateSize();
+		this.measure();
 		this.scrollByNow(0, IMMEDIATE);
 	},
 
-	updateSize: function() {
+	measure: function() {
 		var size, pos = 0, maxAcross = 0;
 		var measure = function(child) {
 			size = this.measureChild(child.render());
 			size.pos = pos;
-			pos += size.outer + Math.min(size.before, size.after);
+			pos += size.outer + (this.gap || Math.min(size.before, size.after));
 			maxAcross = Math.max(maxAcross, size.across);
 		};
 
@@ -422,22 +421,22 @@ var Carousel = DeferredRenderView.extend({
 	 * Scroll/layout
 	 * --------------------------- */
 
-	scrollByLater: function (delta, skipAnimation) {
-		_.isBoolean(skipAnimation) && (this.skipAnimation = this.skipAnimation || skipAnimation);
+	scrollByLater: function (delta, skipTransitions) {
+		_.isBoolean(skipTransitions) && (this.skipTransitions = this.skipTransitions || skipTransitions);
 		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta));
 	},
 
-	scrollByNow: function (delta, skipAnimation) {
-		this._scrollBy(delta, _.isBoolean(skipAnimation)? skipAnimation : this.skipAnimation);
+	scrollByNow: function (delta, skipTransitions) {
+		this._scrollBy(delta, _.isBoolean(skipTransitions)? skipTransitions : this.skipTransitions);
 	},
 
-	_scrollBy: function (delta, skipAnimation) {
+	_scrollBy: function (delta, skipTransitions) {
 		var sChild, sSizes, child, sizes, pos;
 
-		if (skipAnimation) {
-			this.$el.removeClass("animate");
+		if (skipTransitions) {
+			this.$el.addClass("skip-transitions");
 		} else {
-			this.$el.addClass("animate");
+			this.$el.removeClass("skip-transitions");
 		}
 
 		sChild = this.collection.selected? this.children.findByModel(this.collection.selected): this.emptyChild;
@@ -448,7 +447,7 @@ var Carousel = DeferredRenderView.extend({
 			pos = this._getScrollOffset(sizes, sSizes, delta);
 
 //			child.$el.stop();
-//			if (skipAnimation) {
+//			if (skipTransitions) {
 //				child.$el.css({ transform: this._getTransformValue(pos) });
 //			} else {
 //				var duration = 400;
@@ -493,12 +492,12 @@ var Carousel = DeferredRenderView.extend({
 		return pos + offset;
 	},
 
-//	_scrollChildTo: function (view, pos, skipAnimation) {
+//	_scrollChildTo: function (view, pos, skipTransitions) {
 //		var duration = 400;
 //		var translate = this.dirProp("translate3d(" + pos + "px,0,0)", "translate3d(0," + pos + "px,0)");
 //
 //		view.$el.stop();
-//		if (skipAnimation) {
+//		if (skipTransitions) {
 //			view.$el.css({ transform: translate });
 //		} else {
 //			view.$el.transit({ transform: translate }, duration);

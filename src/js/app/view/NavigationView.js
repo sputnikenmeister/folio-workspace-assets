@@ -46,37 +46,10 @@ module.exports = View.extend({
 //		this.$sitename = this.$("#site-name a");
 //		this.$sitename.on("click", _.bind(this.onSitenameClick, this));
 
-		// collapsed is set later by showBundleItem/showBundleList
-		this.bundlesView = new FilterableListView({
-			el: "#bundle-list",
-			collection: bundles,
-			associations: {
-				collection: keywords,
-				key: "bIds"
-			},
-		});
-		controller.listenTo(this.bundlesView, {
-			"view:select:one": controller.selectBundle,
-			"view:select:none": controller.deselectBundle
-		});
-
-		this.keywordsView = new GroupingListView({
-			el: "#keyword-list",
-			collapsed: true,
-			collection: keywords,
-			associations: {
-				collection: bundles,
-				key: "kIds"
-			},
-			groupings: {
-				collection: types,
-				key: "tIds"
-			},
-		});
-
 		// Component: bundle pager
 		this.bundlePager = new CollectionPager({
-			className: "bundle-nav folio mutable-faded",
+			id: "bundle-pager",
+			className: "folio mutable-faded",
 			collection: bundles,
 			template: bundlePagerTemplate,
 			labelAttribute: "name",
@@ -87,32 +60,67 @@ module.exports = View.extend({
 			"view:select:none": controller.deselectBundle
 		});
 
+		// collapsed is set later by showBundleItem/showBundleList
+		this.bundlesView = new FilterableListView({
+			el: "#bundle-list",
+			collection: bundles,
+			filterBy: keywords.selected,
+			filterKey: "bIds",
+//			collapsed: bundles.selected,
+		});
+		controller.listenTo(this.bundlesView, {
+			"view:select:one": controller.selectBundle,
+			"view:select:none": controller.deselectBundle
+		});
+
+		this.keywordsView = new GroupingListView({
+			el: "#keyword-list",
+			collection: keywords,
+			filterBy: bundles.selected,
+			filterKey: "kIds",
+			groupings: {
+				collection: types,
+				key: "tIds"
+			},
+			collapsed: true,
+		});
+
 		this.listenTo(bundles, {
 			"select:one": this.onSelectOne,
 			"select:none": this.onSelectNone
 		});
+	},
+
+	render: function () {
 		if (bundles.selected) {
 			this.onSelectOne();
 		} else {
 			this.onSelectNone();
 		}
+//		this.keywordsView.renderNow();
+//		this.bundlesView.renderNow();
+		return this;
 	},
 
-//	remove: function () {
-//		this.$sitename.off("click");
-//		View.prototype.remove.apply(this, arguments);
-//	},
-
-	onSelectNone: function() {
-		this.$el.removeClass("bundle-item").addClass("bundle-list");
-		this.keywordsView.filterBy(null);
-		this.bundlesView.setCollapsed(false);
+	remove: function () {
+		//this.$sitename.off("click");
+		View.prototype.remove.apply(this, arguments);
 	},
+
+	/* --------------------------- *
+	 * Event handlers
+	 * --------------------------- */
 
 	onSelectOne: function() {
 		this.$el.removeClass("bundle-list").addClass("bundle-item");
 		this.keywordsView.filterBy(bundles.selected);
 		this.bundlesView.setCollapsed(true);
+	},
+
+	onSelectNone: function() {
+		this.$el.removeClass("bundle-item").addClass("bundle-list");
+		this.keywordsView.filterBy(null);
+		this.bundlesView.setCollapsed(false);
 	},
 
 	onSitenameClick: function (ev) {

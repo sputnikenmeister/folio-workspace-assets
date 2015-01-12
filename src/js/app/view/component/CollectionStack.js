@@ -34,7 +34,7 @@ module.exports = View.extend({
 		this.listenTo(this.collection, "deselect:one", this.unsetModel);
 		this.listenTo(this.collection, "select:one", this.setModel);
 
-		this.skipAnimation = true;
+		this.skipTransitions = true;
 		this._model = this.collection.selected;
 		if (this._model) {
 			this._model = this.collection.selected;
@@ -43,7 +43,7 @@ module.exports = View.extend({
 	},
 
 	onCollectionReset: function() {
-		this.skipAnimation = true;
+		this.skipTransitions = true;
 	},
 
 	unsetModel: function (model) {
@@ -76,7 +76,7 @@ module.exports = View.extend({
 	},
 
 	render: function () {
-		if (this.skipAnimation) {
+		if (this.skipTransitions) {
 			if (this.$content) {
 				this.$el.removeAttr("style");
 				this.$content.clearQueue().remove();
@@ -85,7 +85,7 @@ module.exports = View.extend({
 				this.$content = this.$createContentElement(this._model);
 				this.$content.appendTo(this.$el);
 			}
-			this.skipAnimation = false;
+			this.skipTransitions = false;
 		} else {
 			if (this.$content) {
 				// Get content's size while still in the flow
@@ -123,8 +123,8 @@ module.exports = View.extend({
 					.transit({opacity: 1}, 300);
 			}
 		}
-		if (this.skipAnimation) {
-			this.skipAnimation = false;
+		if (this.skipTransitions) {
+			this.skipTransitions = false;
 		}
 		return this;
 	},

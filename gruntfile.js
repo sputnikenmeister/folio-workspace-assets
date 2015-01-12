@@ -14,6 +14,7 @@ module.exports = function (grunt) {
 		fontsDir: "fonts",
 		javascriptsDir: "js",
 		httpPath: "/workspace/assets",
+		require: "./build/compass-encode.rb",
 	});
 	grunt.config("compass.client.options", {
 		specify: "src/sass/folio.scss",
@@ -249,4 +250,16 @@ module.exports = function (grunt) {
 
 	grunt.registerTask("dist", ["compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
 
+
+	/* --------------------------------
+	 * Custom tasks/ CLI executions
+	 * -------------------------------- */
+
+	grunt.registerTask('fontello', 'Open fontello configuration in browser', function() {
+		var child = grunt.util.spawn({
+			cmd: "fontello-cli",
+			args: ["open", "--config", "build/fontello.json"],
+			opts: {stdio: "inherit"}
+		}, this.async());
+	});
 };

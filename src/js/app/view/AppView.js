@@ -6,8 +6,6 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {module:cookies-js} */
-var Cookies = require("cookies-js");
 
 /** @type {module:app/view/NavigationView} */
 var NavigationView = require("./NavigationView");
@@ -55,47 +53,54 @@ var AppView = Backbone.View.extend({
 			hashChange: true
 		});
 
+		this.navigationView.render();
+
+		var $body = this.$el;
+		// BODY.skip-transitions clears CSS transitions for a frame
+		// Apply on window size events
+		var onViewportResize = function() {
+			$body.addClass("skip-transitions");
+			_.defer(function() {
+				$body.removeClass("skip-transitions");
+			});
+		};
+		Backbone.$(window).on("orientationchange resize", onViewportResize);
+
 		// Change to .app-ready on next frame:
 		// CSS animations do not trigger while on .app-initial,
 		// so everything will be rendered in it's final state
-		_.defer(_.bind(function() {
-			this.$el.removeClass("app-initial").addClass("app-ready");
-		}, this));
+		var afterInitialize = function() {
+			$body.removeClass("app-initial").addClass("app-ready");
+		};
+		_.defer(afterInitialize);
 	},
-
 });
+
 module.exports = AppView;
+
+/** @type {module:cookies-js} */
+var Cookies = require("cookies-js");
 
 var DebugToolbar = Backbone.View.extend({
 	initialize: function (options) {
 		var backendEl = this.$("#edit-backend");
 		this.listenTo(bundles, {
 			"select:one": function(bundle) {
+				backendEl.text("Edit Bundle");
 				backendEl.attr("href", approot + "symphony/publish/bundles/edit/" + bundle.id);
 			},
 			"select:none": function() {
+				backendEl.text("Edit List");
 				backendEl.attr("href", approot + "symphony/publish/bundles/");
 			}
 		});
 
 		var container = Backbone.$("#container");
-		this.initDebugToggle("debug-grid", this.$("#show-grid"), container);
-		this.initDebugToggle("debug-blocks", this.$("#show-blocks"), container);
-//		if (Cookies.get("debug-grid")) {
-//			this.$container.addClass("debug-grid");
-//		}
-//		if (Cookies.get("debug-blocks")) {
-//			this.$container.addClass("debug-blocks");
-//		}
-//		this.$container = container;
+		this.initializeToggle("debug-grid", this.$("#show-grid"), container);
+		this.initializeToggle("debug-blocks", this.$("#show-blocks"), container);
 	},
 
-//	events: {
-//		"click #show-grid": "toggleGrid",
-//		"click #show-blocks": "toggleBlocks"
-//	},
-
-	initDebugToggle: function (name, toggleEl, targetEl) {
+	initializeToggle: function (name, toggleEl, targetEl) {
 		toggleEl.on("click", function (ev) {
 			targetEl.toggleClass(name);
 			Cookies.set(name, targetEl.hasClass(name)? "true": "");
@@ -104,14 +109,4 @@ var DebugToolbar = Backbone.View.extend({
 			targetEl.addClass(name);
 		}
 	}
-
-//	toggleGrid: function() {
-//		this.$container.toggleClass("debug-grid");
-//		Cookies.set("debug-grid", this.$container.hasClass("debug-grid")? "true": "");
-//	},
-//
-//	toggleBlocks: function() {
-//		this.$container.toggleClass("debug-blocks");
-//		Cookies.set("debug-blocks", this.$container.hasClass("debug-blocks")? "true": "");
-//	}
 });
