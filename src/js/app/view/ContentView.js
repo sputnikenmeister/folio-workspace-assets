@@ -9,6 +9,8 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {module:hammerjs} */
+var Hammer = require("hammerjs");
 
 /** @type {module:app/control/Controller} */
 var controller = require("../control/Controller");
@@ -55,6 +57,15 @@ var ContentView = View.extend({
 		this.container = document.createElement("div");
 		this.container.id = "content-detail";
 		this.$el.append(this.container);
+
+//		this.hammer = new Hammer.Manager(this.container);
+//		this.hammer.add(new Hammer.Pan({
+//			direction: { direction: Hammer.DIRECTION_HORIZONTAL },
+//			threshold: 30,
+//		}));
+//		this.hammer.on("panstart panmove panend pancancel", function(ev) {
+//			console.log(ev.type, ev);
+//		});
 
 //		// Create carousel2
 //		var view = new Carousel({
@@ -169,6 +180,7 @@ var ContentView = View.extend({
 //				model: bundle,
 //				template: bundleDescTemplate,
 //			}),
+//			hammer: this.hammer,
 		});
 		view.render().$el.appendTo(this.el);
 		controller.listenTo(view, {
@@ -186,6 +198,7 @@ var ContentView = View.extend({
 				model: bundle,
 				template: bundleDescTemplate,
 			}),
+//			hammer: this.hammer,
 		});
 		view.render().$el.appendTo(this.el);
 		controller.listenTo(view, {

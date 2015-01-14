@@ -5,9 +5,10 @@
 @import "compass/reset";
 
 @import "includes/_definitions";
+@import "includes/_media-queries";
 @import "includes/_base";
 @import "includes/_icons";
-@import "includes/_mutable";
+@import "includes/_transitions";
 @import "components/_filterable";
 @import "components/_selectable.dots-fontello.scss";
 @import "components/_selectable.image-symbol.scss";

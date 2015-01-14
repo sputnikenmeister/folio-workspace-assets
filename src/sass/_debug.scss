@@ -68,7 +68,8 @@ $darkolivegreen:	darkolivegreen;
 		#content-detail {
 			background-color: transparentize($lightblue, 0.8);
 //			background-color: transparentize($darkseagreen, 0.7);
-//			outline: 1px dashed $darkseagreen;
+			outline: 0.5rem dashed $deepskyblue;;
+			outline-offset: -0.5rem;
 		}
 		.carousel {
 			.image-item {

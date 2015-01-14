@@ -39,29 +39,6 @@ html, body {
 		min-width: $page-width-large;
 	}
 }
-//#container {
-//	transition-property: opacity, visibility;
-//	transition-timing-function: $ease, step-start;
-//	transition-duration: $duration;
-//	transition-delay: $delay;
-//}
-body.app-ready #container {
-	transition:
-		visibility $duration $delay step-start,
-		opacity $duration $delay $ease;
-	visibility: visible;
-	opacity: 1;
-}
-body.app-initial #container {
-	visibility: hidden;
-	opacity: 0;
-}
-body.app-initial #container * {
-	@extend %skip-transitions;
-}
-body.skip-transitions * {
-	@extend %skip-transitions;
-}
 
 /* ---------------------- *
  * Top-level horizontal flow
@@ -84,6 +61,10 @@ body.skip-transitions * {
 
 #content {
 	width: 100%;
+	z-index: 1;
+}
+#navigation {
+	z-index: 2;
 }
 
 /* ---------------------- *
@@ -359,6 +340,8 @@ $nav-root-height: 4.5rem;
 	position: absolute;
 	left: 0; right: 0;
 	top: 1.5rem; bottom: 1.5rem;
+//	background-color: hsla(60, 100%, 50%, 0.5);
+//	z-index: 999;
 }
 
 .images-pager {

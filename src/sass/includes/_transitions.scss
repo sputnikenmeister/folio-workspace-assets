@@ -1,0 +1,62 @@
+// ------------------------------------
+// Body init
+// ------------------------------------
+
+//#container {
+//	transition-property: opacity, visibility;
+//	transition-timing-function: $ease, step-start;
+//	transition-duration: $duration;
+//	transition-delay: $delay;
+//}
+body.app-ready #container {
+	transition:
+		visibility $duration $delay step-start,
+		opacity $duration $delay $ease;
+	visibility: visible;
+	opacity: 1;
+}
+
+body.app-initial #container {
+	visibility: hidden;
+	opacity: 0;
+}
+
+body.app-initial #container * {
+	@extend %skip-transitions;
+}
+
+body.skip-transitions * {
+	@extend %skip-transitions;
+}
+
+// ------------------------------------
+// Dynamic color
+// ------------------------------------
+
+.mutable-faded {
+	color: lighten($color, 40%);
+	border-color: lighten($color, 60%);
+}
+body {
+	// Color values specified in "_base.scss"
+	&.bundle-item,
+	&.bundle-list,
+	.mutable-faded {
+		transition-property: color, background-color;
+		transition-timing-function: steps(4), $ease;
+//		transition-timing-function: $ease;
+		transition-duration: $duration * 0.75;
+//		transition: color ($duration * 0.75) steps(4),
+//				background-color ($duration * 0.75) $ease;
+	}
+
+	&.bundle-item .mutable-faded,
+	&.bundle-item {
+		transition-delay: $delay * 3;
+	}
+	&.bundle-list .mutable-faded,
+	&.bundle-list {
+		transition-delay: $delay * 1;
+	}
+}
+

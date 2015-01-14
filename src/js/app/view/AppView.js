@@ -83,6 +83,9 @@ var Cookies = require("cookies-js");
 
 var DebugToolbar = Backbone.View.extend({
 	initialize: function (options) {
+		Cookies.defaults = {
+			domain: String(window.location).match(/^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1]
+		};
 		var backendEl = this.$("#edit-backend");
 		this.listenTo(bundles, {
 			"select:one": function(bundle) {

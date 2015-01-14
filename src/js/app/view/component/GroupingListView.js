@@ -21,18 +21,17 @@ var GroupingListView = FilterableListView.extend({
 	tagName: "dl",
 	/** @override */
 	className: "grouped",
-	/** @private */
-	groupings: {},
 
 	/** @override */
 	initialize: function (options) {
 		FilterableListView.prototype.initialize.apply(this, arguments);
-		//options.renderer && (this.renderer = options.renderer);
 		if (options.groupings) {
-			this.groupings = options.groupings;
-			//this.groupings = _.defaults(options.groupings, this.groupings);
-			this.groupingViews = new Container();
-			this.groupings.collection.each(this.assignGroupingView, this);
+			this.groupingKey = options.groupings.key;
+			this.groupingCollection = options.groupings.collection;
+
+			this.groupingChildren = new Container();
+			this.groupingRenderer = options.groupings.renderer || GroupingListView.GroupingRenderer;
+			this.groupingCollection.each(this.assignGroupingView, this);
 		}
 	},
 
@@ -41,7 +40,7 @@ var GroupingListView = FilterableListView.extend({
 		FilterableListView.prototype.renderFilterBy.apply(this, arguments);
 		var groupIds;
 		if (newAssoc) {
-			groupIds = newAssoc.get(this.groupings.key);
+			groupIds = newAssoc.get(this.groupingKey);
 		}
 		this.renderChildrenGroups(groupIds);
 	},
@@ -49,15 +48,15 @@ var GroupingListView = FilterableListView.extend({
 	/** @private */
 	renderChildrenGroups: function (modelIds) {
 		if (modelIds) {
-			this.groupings.collection.each(function (model, index, arr) {
+			this.groupingCollection.each(function (model, index, arr) {
 				if (_.contains(modelIds, model.id)) {
-					this.groupingViews.findByModel(model).$el.removeClass("excluded");
+					this.groupingChildren.findByModel(model).$el.removeClass("excluded");
 				} else {
-					this.groupingViews.findByModel(model).$el.addClass("excluded");
+					this.groupingChildren.findByModel(model).$el.addClass("excluded");
 				}
 			}, this);
 		} else {
-			this.groupingViews.each(function (view) {
+			this.groupingChildren.each(function (view) {
 				view.$el.removeClass("excluded");
 			});
 		}
@@ -65,11 +64,11 @@ var GroupingListView = FilterableListView.extend({
 
 	/** @private Create children views */
 	assignGroupingView: function (item) {
-		var view = new GroupingListView.GroupingRenderer({
+		var view = new this.groupingRenderer({
 			model: item,
 			el: item.selector()
 		});
-		this.groupingViews.add(view, item.id);
+		this.groupingChildren.add(view, item.id);
 		return view;
 	},
 
@@ -83,18 +82,6 @@ var GroupingListView = FilterableListView.extend({
 		tagName: "dt",
 		/** @override */
 		className: "list-group",
-
-		// initialize: function(options) {
-		// 	this.listenTo(this.model, "change:excluded", this.onExcludedChange);
-		// },
-
-		// onExcludedChange: function(model, value) {
-		// 	if (value) {
-		// 		this.$el.addClass("excluded");
-		// 	} else {
-		// 		this.$el.removeClass("excluded");
-		// 	}
-		// },
 	})
 });
 

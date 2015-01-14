@@ -57,6 +57,7 @@ var Carousel = DeferredRenderView.extend({
 		}
 
 		if (options.hammer) {
+			console.log(this.cid, "using external hammer");
 			this.hammer = options.hammer;
 		} else {
 			this.hammer = new Hammer.Manager(this.el);
@@ -64,6 +65,7 @@ var Carousel = DeferredRenderView.extend({
 				direction: this.direction,
 				threshold: this.panThreshold,
 			}));
+			this._hammerIsLocal = true;
 		}
 
 //		this.hammer = new Hammer.Manager(this.el);
@@ -88,8 +90,10 @@ var Carousel = DeferredRenderView.extend({
 
 	remove: function () {
 		Backbone.$(window).off("orientationchange resize", this._onResize);
-		this.hammer.off("panstart panmove panend pancancel");
-		this.hammer.destroy();
+		this.hammer.off("panstart panmove panend pancancel", this._onPan);
+		if (this._hammerIsLocal) {
+			this.hammer.destroy();
+		}
 		this.removeChildren();
 		DeferredRenderView.prototype.remove.apply(this);
 	},

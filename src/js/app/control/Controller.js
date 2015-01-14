@@ -253,15 +253,44 @@ var Controller = Backbone.Router.extend({
 			});
 		});
 
-
 		var $body = Backbone.$("body");
+		var onSelectOne, onSelectNone;
+
+//		onSelectOne = function() {
+//			$body.removeClass("bundle-list").addClass("bundle-item");
+//			this.listenToOnce(bundles, "select:none", onSelectNone);
+//		};
+//		onSelectNone = function () {
+//			$body.removeClass("bundle-item").addClass("bundle-list");
+//			this.listenToOnce(bundles, "select:one", onSelectOne);
+//		};
+//		(bundles.selected? onSelectOne : onSelectNone).call(this);
+//
+//		this.listenTo(bundles, {
+//			"deselect:one": function (bundle) {
+//				$body.removeClass(bundle.get("handle"));
+//			},
+//			"select:one": function (bundle) {
+//				$body.addClass(bundle.get("handle"));
+//			},
+//		});
+
+		if (bundles.selected) {
+			$body.addClass("bundle-item");
+		} else {
+			$body.addClass("bundle-list");
+		}
 
 		this.listenTo(bundles, {
 			"deselect:one": function (bundle) {
 				$body.removeClass(bundle.get("handle"));
 			},
 			"select:one": function (bundle) {
+				$body.removeClass("bundle-list").addClass("bundle-item");
 				$body.addClass(bundle.get("handle"));
+			},
+			"select:none": function () {
+				$body.removeClass("bundle-item").addClass("bundle-list");
 			},
 		});
 	},

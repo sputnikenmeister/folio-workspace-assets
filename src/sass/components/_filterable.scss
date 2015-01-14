@@ -11,6 +11,16 @@ $collapse-ease: $ease;
 	}
 }
 
+//#bundle-list, #keyword-list {
+//	height: auto;
+//	transition-property: min-height, height;
+//	transition-duration: ($delay * 2 + $duration);
+//	transition-timing-function: step-end;
+//	&.collapsed {
+//		transition-timing-function: step-start;
+//	}
+//}
+
 #bundle-list {
 	.list-item {
 		max-height: 1.5em;
@@ -45,16 +55,17 @@ $collapse-ease: $ease;
 		.list-item:not(.selected) {
 			// fadeout, collapse, wait
 			transition-timing-function: step-end, $collapse-ease, $collapse-ease;
-//			transition-delay: 0s, 0s, 0.35s;
 			transition-delay: 0s, 0s, $delay * 1;
 		}
 		// .list-item.selected {
-		// 	transition-timing-function: $collapse-ease, step-start, $collapse-ease;
-		// 	transition-delay: 0.35s, 0s, 0.35s;// fadeout, collapse, wait
+		//	// fadeout, collapse, wait
+		// 	transition-timing-function: step-start, $collapse-ease, $collapse-ease;
+		// 	transition-delay: 0s, 0.35s, 0.35s;
 		// }
 		// .list-item:not(.selected) {
-		// 	transition-timing-function: $collapse-ease, step-end, $collapse-ease;
-		// 	transition-delay: 0.35s, 0s, 0.35s;// fadeout, collapse, wait
+		//	// fadeout, collapse, wait
+		// 	transition-timing-function: step-end, $collapse-ease, $collapse-ease;
+		// 	transition-delay: 0s, 0.35s, 0.35s;
 		// }
 	}
 }
@@ -92,26 +103,11 @@ $collapse-ease: $ease;
 		}
 	}
 }
-#keyword-list.grouped2  {
-	.list-item {
-		transition-property: visibility, opacity, transform;
-	}
-	.list-group {
-		transition-property: visibility, opacity, transform;
-	}
-}
 
 #keyword-list  {
-	.list-item {
-		transition-property: visibility, opacity, transform;//max-height;
-//		transition-property: visibility, opacity, max-height, transform;
-	}
-	.list-group {
-		transition-property: visibility, opacity, transform;//height;
-//		transition-property: visibility, opacity, height, transform;
-	}
 	.list-group, .list-item {
 		// wait, expand, fadein
+		transition-property: visibility, opacity, transform;
 		transition-timing-function: step-start, $collapse-ease, $collapse-ease;
 		transition-duration: $delay * 2 + $duration, $duration, $duration;
 		transition-delay: 0s, $delay * 2, $delay * 1;

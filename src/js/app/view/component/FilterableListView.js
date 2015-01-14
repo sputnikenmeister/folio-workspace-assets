@@ -22,22 +22,20 @@ var FilterableListView = DeferredRenderView.extend({
 	tagName: "ul",
 	/** @override */
 	className: "list selectable filterable skip-transitions",
-	/** @public @type {Object} */
-	associations: {},
 
 	/** @override */
 	initialize: function (options) {
-		this.itemIds = this.collection.pluck("id");
-		// Create children
 		this.children = new Container();
-		this.collection.each(this.assignChildView, this);
+		this.renderer = options.renderer || FilterableListView.FilterableRenderer;
 
-		var force = false;//true;
+		this.itemIds = this.collection.pluck("id");
 		this.filterKey = options.filterKey;
-		this.filterBy(options.filterBy, force);
-		this.setSelection(this.collection.selected, force);
-		this.setCollapsed((_.isBoolean(options.collapsed)? options.collapsed : false), force);
+		this.filterBy(options.filterBy);
+		this.setSelection(this.collection.selected);
+		this.setCollapsed((_.isBoolean(options.collapsed)? options.collapsed : false));
 		this.skipTransitions = true;
+
+		this.collection.each(this.assignChildView, this);
 
 		_.bindAll(this, "_onResize");
 		Backbone.$(window).on("orientationchange resize", this._onResize);
@@ -92,7 +90,6 @@ var FilterableListView = DeferredRenderView.extend({
 
 	_renderLayout: function() {
 		var pos, tx, childEl;
-
 		elt = this.el.firstElementChild;
 		pos = elt.clientTop;
 		do {
@@ -103,7 +100,6 @@ var FilterableListView = DeferredRenderView.extend({
 			elt.style.transform = tx;
 			pos += elt.clientHeight;
 		} while (elt = elt.nextElementSibling);
-
 		this.el.style.minHeight = pos + "px";
 	},
 
@@ -113,7 +109,7 @@ var FilterableListView = DeferredRenderView.extend({
 
 	/** @private */
 	assignChildView: function (item, index) {
-		var view = new FilterableListView.FilterableRenderer({
+		var view = new this.renderer({
 			model: item,
 			el: item.selector()
 		});
@@ -215,77 +211,19 @@ var FilterableListView = DeferredRenderView.extend({
 
 	renderFiltersById: function (newIds, oldIds) {
 		var newIncludes, newExcludes;
-		var changedCount = 0;
-		// this.itemIds = this.itemIds || this.collection.pluck("id");
-
 		if (newIds) {
 			newExcludes = _.difference(oldIds || this.itemIds, newIds);
 			_.each(newExcludes, function (id) {
 				this.children.findByCustom(id).$el.addClass("excluded");
 			}, this);
-			// changedCount += newExcludes.length;
-			// if (!oldIds) this.$el.removeClass("has-filter");
 		}
 		if (oldIds) {
 			newIncludes = _.difference(newIds || this.itemIds, oldIds);
 			_.each(newIncludes, function (id) {
 				this.children.findByCustom(id).$el.removeClass("excluded");
 			}, this);
-			// changedCount += newIncludes.length;
-			// if (!newIds) this.$el.removeClass("has-filter");
 		}
-
-		// return changedCount;
 	},
-
-	//var ANIMATION_EVENTS = "animationend webkitanimationend transitionend";
-	/** @private */
-	// lastExcludedCount: 0,
-	/** @private *//*
-	renderFilters_1: function(newIds, oldIds) {
-		var newCount, oldCount, expectedCount;
-		var changedCount = 0, excludedCount = 0;
-
-		if (newIds && newIds.length) {
-			this.collection.each(function(model, index, arr) {
-				var isExcluded = !_.contains(newIds, model.id);
-				model.set("excluded", isExcluded);
-				if (isExcluded) {
-					this.children.findByModel(model).$el
-						.addClass("excluded");
-					excludedCount++;
-				} else {
-					this.children.findByModel(model).$el
-						.removeClass("excluded");
-				}
-				if (model.changed.excluded !== undefined) {
-					changedCount++;
-				}
-			}, this);
-		} else {
-			this.collection.each(function(model, index, arr) {
-				model.unset("excluded");
-				this.children.findByModel(model).$el
-					.removeClass("excluded");
-			}, this);
-		}
-
-		oldCount = this.lastExcludedCount;
-		newCount = excludedCount;
-		if (newCount == 0) {
-			expectedCount = oldCount;
-		} else if (oldCount == 0) {
-			expectedCount = newCount;
-		} else {
-			expectedCount = changedCount;
-		}
-		this.lastExcludedCount = excludedCount;
-
-		// console.log("[Models] expected count: " + expectedCount);
-		// _.delay(_.bind(this.trigger, this, "view:stateTransitionEnd"), 1000);
-		// return expectedCount;
-	},
-	*/
 
 }, {
 	/**
@@ -300,18 +238,6 @@ var FilterableListView = DeferredRenderView.extend({
 				this.trigger("renderer:click", this.model);
 			}
 		},
-
-		// initialize: function(options) {
-		// 	this.listenTo(this.model, "change:excluded", this.onExcludedChange);
-		// },
-
-		// onExcludedChange: function(model, value) {
-		// 	if (value) {
-		// 		this.$el.addClass("excluded");
-		// 	} else {
-		// 		this.$el.removeClass("excluded");
-		// 	}
-		// },
 	})
 });
 

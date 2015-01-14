@@ -136,7 +136,11 @@
 			opacity: 1;
 		}
 	}
+	&.panning .empty-item .content {
+		opacity: 0.2;
+	}
 }
+
 
 .carousel.label-carousel {
 	padding-top: 0;
