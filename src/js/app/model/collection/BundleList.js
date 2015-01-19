@@ -15,16 +15,25 @@ var BundleItem = require( "../item/BundleItem" );
  */
 var BundleList = SelectableList.extend({
 
-//	comparator: "completed",
-
 	/** @type {Backbone.Model} */
 	model: BundleItem,
+
+	/** @type {Function} */
+	comparator: function(oa, ob) {
+		var a = oa.get("completed");
+		var b = ob.get("completed");
+		if (a > b) {
+			return -1;
+		} else if (a < b) {
+			return 1;
+		} else {
+			return 0;
+		}
+	},
 
 	/** @type {String} */
 	url: "/json/bundles/",
 
 });
 
-module.exports = new BundleList(void 0, {
-	comparator: "completed"
-});
+module.exports = new BundleList();

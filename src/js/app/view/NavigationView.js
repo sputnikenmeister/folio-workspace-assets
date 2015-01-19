@@ -112,13 +112,13 @@ module.exports = View.extend({
 	 * --------------------------- */
 
 	onSelectOne: function() {
-//		this.$el.removeClass("bundle-list").addClass("bundle-item");
+//		this.$el.removeClass("without-bundle").addClass("with-bundle");
 		this.keywordsView.filterBy(bundles.selected);
 		this.bundlesView.setCollapsed(true);
 	},
 
 	onSelectNone: function() {
-//		this.$el.removeClass("bundle-item").addClass("bundle-list");
+//		this.$el.removeClass("with-bundle").addClass("without-bundle");
 		this.keywordsView.filterBy(null);
 		this.bundlesView.setCollapsed(false);
 	},

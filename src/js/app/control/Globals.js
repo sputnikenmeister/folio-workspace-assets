@@ -3,7 +3,7 @@
  */
 
 // to match css values in _base.scss, units are seconds
-var txDuration = 		0.350;
+var txDuration = 		0.300;
 var txDelayInterval = 	0.033;
 
 module.exports = {

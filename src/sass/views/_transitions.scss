@@ -32,31 +32,23 @@ body.skip-transitions * {
 // ------------------------------------
 // Dynamic color
 // ------------------------------------
+// body default color values specified in "_base.scss"
 
 .mutable-faded {
 	color: lighten($color, 40%);
 	border-color: lighten($color, 60%);
 }
-body {
-	// Color values specified in "_base.scss"
-	&.bundle-item,
-	&.bundle-list,
-	.mutable-faded {
-		transition-property: color, background-color;
-		transition-timing-function: steps(4), $ease;
-//		transition-timing-function: $ease;
-		transition-duration: $duration * 0.75;
-//		transition: color ($duration * 0.75) steps(4),
-//				background-color ($duration * 0.75) $ease;
-	}
 
-	&.bundle-item .mutable-faded,
-	&.bundle-item {
-		transition-delay: $delay * 3;
-	}
-	&.bundle-list .mutable-faded,
-	&.bundle-list {
-		transition-delay: $delay * 1;
-	}
+body, .mutable-faded {
+	transition-timing-function: $ease;
+	transition-property: color, border-color, background-color;
+	transition-duration: $duration;//0.75;
+	transition-delay: $delay * 2 + $duration;
 }
 
+//.bundle-list .mutable-faded, body.bundle-list {
+//	transition-delay: 0s, 0s, 0s;
+//}
+//.bundle-item .mutable-faded, body.bundle-item {
+//	transition-delay: $delay * 3 !important;
+//}

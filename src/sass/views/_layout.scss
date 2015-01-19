@@ -61,11 +61,21 @@ html, body {
 
 #content {
 	width: 100%;
-	z-index: 1;
 }
-#navigation {
-	z-index: 2;
-}
+
+//#container {
+//	z-index: 0;
+//	#keyword-list 		{ z-index: 1; }
+//	#bundle-list 		{ z-index: 1; }
+//	.label-carousel 	{ z-index: 3; }
+//	.image-carousel 	{ z-index: 2; }
+//	#content-detail		{ z-index: 4; }
+//}
+//.carousel-item {
+//		z-index: 1;
+//		&.candidate { z-index: 2; }
+//		&.selected { z-index: 3; }
+//}
 
 /* ---------------------- *
  * Header
@@ -87,6 +97,14 @@ html, body {
 $navigation-height: 10rem;
 $nav-root-height: 4.5rem;
 
+@mixin transform-transition($delay: $delay) {
+	transition: transform $duration $delay $ease;
+//	transition-property: transform;
+//	transition-duration: $duration;
+//	transition-timing-function: $ease;
+//	transition-delay: $delay;
+}
+
 #navigation {
 	position: relative;
 	padding-top: 0.75rem;
@@ -98,22 +116,19 @@ $nav-root-height: 4.5rem;
 		min-height: $navigation-height - 1.5rem;
 	}
 //	height: auto;
-//	&.bundle-list { height: auto; }
-//	&.bundle-item { height: $navigation-height + 3; }
-
-	@at-root #site-name, #bundle-list, #keyword-list {
-		transition: transform $duration $ease;
-	}
-	@at-root .bundle-list {
-		#site-name    { transition-delay: $delay * 2; }
-		#bundle-list  { transition-delay: $delay * 1; }
-		#keyword-list { transition-delay: $delay * 1; }
-	}
-	@at-root .bundle-item {
-		#site-name    { transition-delay: $delay * 0; }
-		#bundle-list  { transition-delay: $delay * 1; }
-//		#keyword-list { transition-delay: $delay * 2; }
-		#keyword-list { transition-delay: $delay * 1; }
+//	&.without-bundle { height: auto; }
+//	&.with-bundle { height: $navigation-height + 3; }
+	@at-root {
+		.without-bundle {
+			#site-name		{ @include transform-transition($delay: $delay * 2); }
+			#bundle-list	{ @include transform-transition($delay: $delay * 1); }
+			#keyword-list	{ @include transform-transition($delay: $delay * 1); }
+		}
+		.with-bundle {
+			#site-name		{ @include transform-transition($delay: $delay * 0); }
+			#bundle-list	{ @include transform-transition($delay: $delay * 1); }
+			#keyword-list	{ @include transform-transition($delay: $delay * 1); }
+		}
 	}
 }
 
@@ -132,20 +147,21 @@ $nav-root-height: 4.5rem;
 		.completed {
 			display: none;
 		}
-		.name {
-			margin-left: -1px;
+//		.name {
+//			margin-left: -1px;
 //			transform: translateX(-1px);
-		}
+//		}
 		a > em {
 			font-style: normal;
 			font-weight: 400;
 		}
 	}
-	@at-root .bundle-list #bundle-list {
-		transform: translate3d(0, 0, 0.1px);
+	transform: translate3d(-1px, 0, 0);
+	@at-root .without-bundle #bundle-list {
+		transform: translate3d(-1px, 0, 0);
 	}
-	@at-root .bundle-item #bundle-list {
-		transform: translate3d(0, #{-$nav-root-height}, 0.1px);
+	@at-root .with-bundle #bundle-list {
+		transform: translate3d(-1px, #{-$nav-root-height}, 0);
 	}
 }
 
@@ -156,7 +172,7 @@ $nav-root-height: 4.5rem;
 	width: $aside-inner-width;
 	transform: translate3d($main-width, 0, 0.1px);
 
-	@at-root .bundle-list #keyword-list {
+	@at-root .without-bundle #keyword-list {
 		transform: translate3d($main-width, 0, 0.1px);
 		@include media($desktop-small) {
 			width: $aside-inner-width-large;
@@ -168,7 +184,7 @@ $nav-root-height: 4.5rem;
 		}
 	}
 
-	@at-root .bundle-item #keyword-list {
+	@at-root .with-bundle #keyword-list {
 		transform: translate3d($main-width, #{-$nav-root-height}, 0.1px);
 		@include media($desktop-small) {
 			width: $aside-inner-width-large;
@@ -176,10 +192,16 @@ $nav-root-height: 4.5rem;
 		}
 		@include media($ipad-landscape) {
 			width: $aside-inner-width-large;
-			transform: translate3d(0, #{$navigation-height - $nav-root-height - 1.5rem}, 0.1px);
+			transform: translate3d($main-width-large, #{$navigation-height - $nav-root-height - 1.5rem}, 0.1px);
 		}
 	}
-
+	@at-root .with-bundle.with-image #keyword-list {
+		@include media($ipad-landscape) {
+			width: $aside-inner-width-large;
+			transform: translate3d(0, #{$navigation-height - $nav-root-height - 1.5rem}, 0.1px);
+			@include transform-transition($delay: $delay * 2);
+		}
+	}
 	.list-item {
 		white-space: nowrap;
 		width: 100%;
@@ -187,11 +209,8 @@ $nav-root-height: 4.5rem;
 			font-size: 13px;
 		}
 	}
-
 	.list-group {
 		display: block;
-//		position: relative;
-//		position: absolute;
 		height: 0;
 		width: calc(100% - #{$gutter});
 		span {
@@ -200,22 +219,18 @@ $nav-root-height: 4.5rem;
 			height: 1.5rem;
 			width: 100%;
 			transform: translate3d(-100%, 0, 0.1px);
-			transition: transform $duration $ease;
-			transition-delay: $delay * 1;
+			@include transform-transition($delay: $delay * 1);
 		}
 	}
-	&.skip-animation .list-group span {
-		transition: none;
+	&.skip-transitions .list-group span {
+		@extend %skip-transitions;
 	}
 
-	@at-root .bundle-item #keyword-list {
-		@include media($ipad-landscape) {
-			.list-group {
-				height: 2rem;
-				span {
-					transform: translate3d(-0.1px, 0.5rem, 0.1px);
-					transition-delay: $delay * 1;
-				}
+	@include media($ipad-landscape) {
+		@at-root .with-bundle #keyword-list .list-group {
+			height: 2rem;
+			span {
+				transform: translate3d(-0.1px, 0.5rem, 0.1px);
 			}
 		}
 	}
@@ -228,10 +243,10 @@ $nav-root-height: 4.5rem;
 	display: inline-block;
 	padding-right: $hu;
 
-	@at-root .bundle-list #site-name {
+	@at-root .without-bundle #site-name {
 		transform: translate3d(-1px, 0, 0.1px);
 	}
-	@at-root .bundle-item #site-name {
+	@at-root .with-bundle #site-name {
 		transform: translate3d(calc(-100% - #{$hu}), 0, 0.1px);
 	}
 }
@@ -280,8 +295,15 @@ $nav-root-height: 4.5rem;
 	overflow: hidden;
 	position: relative;
 	box-sizing: content-box;
-	width: 100%;
+	width: 100%; top: 0;
 	min-width: $page-width;
+	.pan-area {
+		position: absolute;
+//		left: calc(50% - #{$page-width/2});
+//		width: $page-width;
+		width: 100%;
+		top: 0; bottom: 0;
+	}
 	.carousel-item {
 		box-sizing: border-box;
 		padding-left: $page-margin-left;
@@ -300,6 +322,10 @@ $nav-root-height: 4.5rem;
 @include media($desktop-small) {
 	.carousel {
 		min-width: $page-width-large;
+//		.pan-area {
+//			left: calc(50% - #{$page-width-large/2});
+//			width: $page-width-large;
+//		}
 		.carousel-item {
 			left: calc(50% - #{$page-width-large/2});
 			padding-left: $page-margin-left;
@@ -314,22 +340,25 @@ $nav-root-height: 4.5rem;
 }
 @include media($ipad-landscape) {
 	.carousel {
-		.empty-item {
-			width: $page-width-large;
-			padding-right: $page-margin-left;
-		}
-	}
-	.carousel {
 		.carousel-item {
 			padding-left: $aside-width-large;
 			padding-right: $page-margin-left;
+		}
+		.empty-item {
+			width: $page-width-large;
+//			padding-right: $page-margin-left;
+			padding-left: $page-margin-left;
+			padding-right: $aside-width-large;
+			p {
+				margin-right: $page-margin-right;
+			}
 		}
 	}
 }
 
 .label-carousel {
 	position: absolute;
-	top: -1.5rem;//bottom: 100%;
+	top: -1.5rem;
 }
 
 /* ---------------------- *
@@ -340,8 +369,6 @@ $nav-root-height: 4.5rem;
 	position: absolute;
 	left: 0; right: 0;
 	top: 1.5rem; bottom: 1.5rem;
-//	background-color: hsla(60, 100%, 50%, 0.5);
-//	z-index: 999;
 }
 
 .images-pager {
@@ -352,22 +379,28 @@ $nav-root-height: 4.5rem;
 .image-detail {
 	position: absolute;
 	display: block;
-	transform: translateX(-1px);
-
-	top: 1.25rem - $navigation-height;
-	width: calc(60% - #{$gutter + $page-margin-left});
-
+	transform: translate3d(-1px, 0, 0);
+    top: -3rem;// height: 1.5rem;
+	width: $main-inner-width;
+	p {
+		@include heading-font($size: 20px, $weight: 300, $lead: 24px);
+		margin-bottom: 0.75rem;
+		margin-top: 0;
+	}
 	@include media($desktop-small) {
 		top: 0;
-		right: $page-margin-right;
 		width: $aside-inner-width-large;
+		left: auto; right: $page-margin-right;
+		p {
+			font-size: 20px;
+		}
 	}
-	p {
-		margin-top: 0;
-		margin-bottom: 1rem;
-		@include heading-font($weight: 300, $lead: 28px);
-		@include media($desktop-small) {
-			@include heading-font($size: 20px, $weight: 300, $lead: 24px);
+	@include media($ipad-landscape) {
+		top: calc(11px - #{$navigation-height});
+		width: $main-inner-width-large;
+		left: $aside-width-large; right: auto;
+		p {
+			font-size: 24px;
 		}
 	}
 }

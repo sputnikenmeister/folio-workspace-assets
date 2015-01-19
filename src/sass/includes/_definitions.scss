@@ -7,11 +7,13 @@ $hu: 20px;
 $vu: 12px;
 
 // Time base units (transitions/animations)
-$duration: 			0.350s;
+$duration: 			0.300s;
 $delay-interval: 	0.033s;
 
 $delay: $duration + $delay-interval;
-$ease: ease;//linear;//ease-in-out;
+$ease: ease;
+//$ease: ease-out;
+//$ease: linear;
 
 // ------------------------------------
 // Layout
@@ -149,5 +151,12 @@ $base-font: 12px/1 $font-webfont-sans;
 // ------------------------------------
 
 %skip-transitions {
-	transition: none !important;
+	transition: none 0s 0s !important;
+}
+
+%skip-transitions-long {
+	transition-property: none !important;
+	transition-timing-function: none !important;
+	transition-duration: 0s !important;
+	transition-delay: 0s !important;
 }

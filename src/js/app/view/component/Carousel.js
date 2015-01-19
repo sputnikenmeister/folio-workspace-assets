@@ -46,39 +46,23 @@ var Carousel = DeferredRenderView.extend({
 
 	/** @override */
 	initialize: function (options) {
-		this.children = new Container();
-
 		_.isNumber(options.gap) && (this.gap = options.gap);
 		options.renderer && (this.renderer = options.renderer);
 		options.emptyRenderer && (this.emptyRenderer = options.emptyRenderer);
-
 		if (options.direction === Hammer.DIRECTION_VERTICAL) {
 			this.direction = Hammer.DIRECTION_VERTICAL;
 		}
+		this.children = new Container();
+		this.skipTransitions = true;
 
-		if (options.hammer) {
-			console.log(this.cid, "using external hammer");
-			this.hammer = options.hammer;
-		} else {
-			this.hammer = new Hammer.Manager(this.el);
-			this.hammer.add(new Hammer.Pan({
-				direction: this.direction,
-				threshold: this.panThreshold,
-			}));
-			this._hammerIsLocal = true;
-		}
+		_.bindAll(this, "_onTouch", "_onResize");
 
-//		this.hammer = new Hammer.Manager(this.el);
-//		this.hammer.add(new Hammer.Pan({
-//			direction: this.direction,
-//			threshold: this.panThreshold,
-//		}));
-
-		_.bindAll(this, "_onPan");
-		this.hammer.on("panstart panmove panend pancancel", this._onPan);
-
-		_.bindAll(this, "_onResize");
+		this.hammer = (options.hammer)? options.hammer : this.createHammer();
+		this.hammer.on("panstart panmove panend pancancel tap", this._onTouch);
 		Backbone.$(window).on("orientationchange resize", this._onResize);
+
+//		_.bindAll(this, "_onTransitionEnd");
+//		this.$el.on("webkittransitionend transitionend", this._onTransitionEnd);
 
 		this.listenTo(this.collection, {
 			"reset": this._onCollectionReset,
@@ -90,7 +74,8 @@ var Carousel = DeferredRenderView.extend({
 
 	remove: function () {
 		Backbone.$(window).off("orientationchange resize", this._onResize);
-		this.hammer.off("panstart panmove panend pancancel", this._onPan);
+//		this.$el.off("webkittransitionend transitionend", this._onTransitionEnd);
+		this.hammer.off("panstart panmove panend pancancel tap", this._onTouch);
 		if (this._hammerIsLocal) {
 			this.hammer.destroy();
 		}
@@ -98,38 +83,93 @@ var Carousel = DeferredRenderView.extend({
 		DeferredRenderView.prototype.remove.apply(this);
 	},
 
+//	_onTransitionEnd: function(ev) {
+//		ev = ev.originalEvent;
+//		if (ev.propertyName === "transform" || ev.propertyName === "-webkit-transform") {
+//			console.log(ev.target, ev);
+//		}
+//	},
+
 	/* --------------------------- *
 	 * Hammer events
 	 * --------------------------- */
 
-	_onPan: function (ev) {
-		ev.preventDefault();
+	createHammer: function() {
+		var hammer, hammerPan, hammerTap;
+		var hammerEl = Backbone.$(document.createElement("div"))
+			.addClass("pan-area").appendTo(this.el)[0];
+		hammer = new Hammer.Manager(hammerEl);
+//		hammer = new Hammer.Manager(this.el);
+
+		hammerPan = new Hammer.Pan({
+			direction: this.direction,
+			threshold: this.panThreshold,
+		});
+		hammerTap = new Hammer.Tap({
+			threshold: this.panThreshold / 2,
+			interval: 250,
+			time: 200
+		});
+		hammerTap.requireFailure(hammerPan);
+		hammer.add([hammerPan, hammerTap]);
+
+		this._hammerIsLocal = true;
+		return hammer;
+	},
+
+	_onTouch: function (ev) {
+//		ev.defaultPrevented || ev.preventDefault();
 		switch (ev.type) {
-			case "panstart": return this._onPanStart(ev); //break;
-			case "panmove": return this._onPanMove(ev); //break;
-			case "panend": return this._onPanEnd(ev); //break;
-			case "pancancel": return this._onPanCancel(ev); //break;
+			case "panstart":	return this._onPanStart(ev);
+			case "panmove":		return this._onPanMove(ev);
+			case "panend":		return this._onPanEnd(ev);
+			case "pancancel": 	return this._onPanCancel(ev);
+			case "tap": 		return this._onTap(ev);
 		}
+	},
+
+	_onTap: function (ev) {
+		var pos = ev.center[this.dirProp("x", "y")];
+		var item;
+		if (pos > this.containerSize * 0.8) {
+			if (this.collection.selectedIndex == -1) {
+				item = this.collection.first();
+			} else {
+				item = this.collection.following();
+			}
+		}
+		else if (pos < this.containerSize * 0.2) {
+			if (this.collection.selectedIndex == 0) {
+				this.trigger("view:select:none");
+			} else {
+				item = this.collection.preceding();
+			}
+		}
+		if (item) {
+			this.trigger("view:select:one", item);
+		}
+		// else if { /* out of bounds */ }
 	},
 
 	/** @param {Object} ev */
 	_onPanStart: function (ev) {
 		this.$el.addClass("panning");
 		this.panning = true;
+
+		this.candidateChild = this.candidateModel = this.indexDelta = void 0;
 		this.thresholdOffset = (this.getEventDelta(ev) < 0)? this.panThreshold : -this.panThreshold;
-//		this._onPanMove(ev);
 	},
 
 	/** @param {Object} ev */
 	_onPanMove: function (ev) {
 		var delta = this.getEventDelta(ev) + this.thresholdOffset;
-		var indexDelta = (delta < 0)? 1: -1;
-		var dirChanged = (this.indexDelta != indexDelta)
+		var indexDelta = (delta < 0)? 1 : -1;
+		var dirChanged = (this.indexDelta != indexDelta);
 		if (dirChanged) {
 			this.indexDelta = indexDelta;
 			if (this.candidateChild) {
 				this.candidateChild.$el.removeClass("candidate");
-				delete this.candidateChild;
+				this.candidateChild = void 0;
 			}
 		}
 		// when at first or last index, add feedback to gesture
@@ -141,37 +181,43 @@ var Carousel = DeferredRenderView.extend({
 			this.candidateChild.$el.addClass("candidate");
 		}
 		this.scrollByNow(delta, IMMEDIATE);
-
-	},
-
-	/** @param {Object} ev */
-	_onPanCancel: function (ev) {
-		this.scrollByLater(0, ANIMATED);
-		this.cleanupAfterPan();
 	},
 
 	/** @param {Object} ev */
 	_onPanEnd: function (ev) {
 		var delta = this.getEventDelta(ev) + this.thresholdOffset;
-
 		// If beyond select threshold, trigger selection
 		if (Math.abs(delta) > this.selectThreshold && !this.isOutOfBounds(delta)) {
-			var item = this.candidateModel;
-//			var item = this.collection.at(this.collection.selectedIndex + (delta < 0? 1: -1));
-			if (this.candidateModel) {
-				this.trigger("view:select:one", this.candidateModel);
+//			var item = this.candidateModel;
+			var item = this.collection.at(this.collection.selectedIndex + (delta < 0? 1: -1));
+			if (item) {
+				this.trigger("view:select:one", item);
 			} else {
 				this.trigger("view:select:none");
 			}
 		} else {
 			this.scrollByLater(0, ANIMATED);
 		}
-		this.cleanupAfterPan();
+		this._afterPan();
+	},
+
+	/** @param {Object} ev */
+	_onPanCancel: function (ev) {
+		this.scrollByLater(0, ANIMATED);
+		this._afterPan();
 	},
 
 	/* --------------------------- *
 	 * event helper functions
 	 * --------------------------- */
+
+	_afterPan: function() {
+		if (this.candidateChild) {
+			this.candidateChild.$el.removeClass("candidate");
+		}
+		this.$el.removeClass("panning");
+		this.panning = false;
+	},
 
 	getEventDelta: function (ev) {
 		var delta = (this.direction & Hammer.DIRECTION_HORIZONTAL)? ev.deltaX : ev.deltaY;
@@ -202,19 +248,6 @@ var Carousel = DeferredRenderView.extend({
 //		}
 //		return item;
 //	},
-
-	cleanupAfterPan: function() {
-		if (this.candidateChild) {
-			this.candidateChild.$el.removeClass("candidate");
-		}
-		this.$el.removeClass("panning");
-		this.panning = false;
-
-		delete this.candidateChild;
-		delete this.candidateModel;
-		delete this.indexDelta;
-		delete this.thresholdOffset;
-	},
 
 	isOutOfBounds: function (delta) {
 		return (this.collection.selectedIndex == -1 && delta > 0) ||
@@ -294,15 +327,13 @@ var Carousel = DeferredRenderView.extend({
 	 * --------------------------- */
 
 	createEmptyChildView: function () {
-		child = new this.emptyRenderer({
-//			collection: this.collection
-		});
+		var child = new this.emptyRenderer({});
 		this.emptyChild = child;
-		child.$el.on("mouseup", _.bind(function (ev) {
-			if (!ev.isDefaultPrevented() && !this.panning && this.collection.selectedIndex != -1) {
-				this.trigger("view:select:none");
-			}
-		}, this));
+//		child.$el.on("mouseup", _.bind(function (ev) {
+//			if (!ev.isDefaultPrevented() && !this.panning && this.collection.selectedIndex != -1) {
+//				this.trigger("view:select:none");
+//			}
+//		}, this));
 		if (this.collection.selectedIndex == -1) {
 			this.selectEmptyChildView();
 		}
@@ -311,7 +342,7 @@ var Carousel = DeferredRenderView.extend({
 
 	removeEmptyChildView: function () {
 		if (this.emptyChild) {
-			this.emptyChild.$el.off("mouseup");
+//			this.emptyChild.$el.off("mouseup");
 			this.emptyChild.remove();
 			delete this.emptyChild;
 		} else {
@@ -324,11 +355,11 @@ var Carousel = DeferredRenderView.extend({
 			model: item
 		});
 		this.children.add(child);
-		child.$el.on("mouseup", _.bind(function (ev) {
-			if (!ev.isDefaultPrevented() && !this.panning && this.collection.selected !== item) {
-				this.trigger("view:select:one", item);
-			}
-		}, this));
+//		child.$el.on("mouseup", _.bind(function (ev) {
+//			if (!ev.isDefaultPrevented() && !this.panning && this.collection.selected !== item) {
+//				this.trigger("view:select:one", item);
+//			}
+//		}, this));
 		if (item.selected) {
 			child.$el.addClass("selected");
 		}
@@ -337,7 +368,7 @@ var Carousel = DeferredRenderView.extend({
 
 	removeChildView: function (view) {
 		this.children.remove(view);
-		view.$el.off("mouseup");
+//		view.$el.off("mouseup");
 		view.remove();
 		return view;
 	},
@@ -354,7 +385,8 @@ var Carousel = DeferredRenderView.extend({
 			this.collection.each(function (item, index) {
 				buffer.appendChild(this.createChildView(item, index).el);
 			}, this);
-			this.$el.append(buffer);
+			this.$el.prepend(buffer);
+//			this.$el.append(buffer);
 		}
 		this.measure();
 	},
@@ -383,21 +415,23 @@ var Carousel = DeferredRenderView.extend({
 	},
 
 	measure: function() {
-		var size, pos = 0, maxAcross = 0;
+		var size, pos = 0, maxAcross = 0, maxSize = 0;
 		var measure = function(child) {
 			size = this.measureChild(child.render());
 			size.pos = pos;
 			pos += size.outer + (this.gap || Math.min(size.before, size.after));
 			maxAcross = Math.max(maxAcross, size.across);
+			maxSize = Math.max(maxSize, size.outer);
 		};
 
 		measure.call(this, this.emptyChild);
-		maxAcross = 0; // Reset maxAcross to ignore emptyChild's across size
+		maxAcross = maxSize = 0; // Reset maxAcross to ignore emptyChild's across size
 		this.children.each(measure, this);
 
 		this.containerSize = this.el[this.dirProp("offsetWidth", "offsetHeight")];
 		this.selectThreshold = Math.min(this.selectThreshold, this.containerSize * 0.1);
 
+//		this.$(this.hammer.element).css(this.dirProp({width: maxSize, height: maxAcross }, {width: maxAcross, height: maxSize}));
 		this.$el.css(this.dirProp("minHeight", "minWidth"), (maxAcross > 0)? maxAcross: "");
 	},
 
@@ -405,6 +439,7 @@ var Carousel = DeferredRenderView.extend({
 		var sizes = {};
 		var childEl = child.el;
 		var contentEl = childEl.firstChild;
+//		var contentEl = child.$(".sizing")[0];
 
 		sizes.outer = childEl[this.dirProp("offsetWidth", "offsetHeight")];
 		sizes.across = childEl[this.dirProp("offsetHeight", "offsetWidth")];
@@ -426,8 +461,9 @@ var Carousel = DeferredRenderView.extend({
 	 * --------------------------- */
 
 	scrollByLater: function (delta, skipTransitions) {
-		_.isBoolean(skipTransitions) && (this.skipTransitions = this.skipTransitions || skipTransitions);
-		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta));
+//		_.isBoolean(skipTransitions) && (this.skipTransitions = this.skipTransitions || skipTransitions);
+//		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta));
+		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta, _.isBoolean(skipTransitions)? skipTransitions : this.skipTransitions));
 	},
 
 	scrollByNow: function (delta, skipTransitions) {
@@ -469,6 +505,14 @@ var Carousel = DeferredRenderView.extend({
 //		this.collection.each(function (model, index) {
 //			scroll(this.children.findByModel(model));
 //		}, this);
+
+//		if (this.skipTransitions || skipTransitions) {
+//			this.$el.addClass("skip-transitions");
+//			_.defer(function(context) {
+//				context.$el.removeClass("skip-transitions");
+//				context.skipTransitions = false;
+//			}, this);
+//		}
 	},
 
 	_getTransformValue: function(pos) {

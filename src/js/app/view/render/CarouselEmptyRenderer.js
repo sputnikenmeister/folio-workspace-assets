@@ -26,4 +26,4 @@ module.exports = View.extend({
 		this.$el.html(this.template(this.model.attributes));
 		return this;
 	}
-})
+});

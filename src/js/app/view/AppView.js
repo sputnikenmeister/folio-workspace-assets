@@ -7,6 +7,8 @@ var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 
+/** @type {module:app/control/Globals} */
+var Globals = require("../control/Globals");
 /** @type {module:app/view/NavigationView} */
 var NavigationView = require("./NavigationView");
 /** @type {module:app/view/ContentView} */
@@ -90,11 +92,11 @@ var DebugToolbar = Backbone.View.extend({
 		this.listenTo(bundles, {
 			"select:one": function(bundle) {
 				backendEl.text("Edit Bundle");
-				backendEl.attr("href", approot + "symphony/publish/bundles/edit/" + bundle.id);
+				backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/edit/" + bundle.id);
 			},
 			"select:none": function() {
 				backendEl.text("Edit List");
-				backendEl.attr("href", approot + "symphony/publish/bundles/");
+				backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/");
 			}
 		});
 

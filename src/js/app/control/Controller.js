@@ -53,13 +53,7 @@ var Controller = Backbone.Router.extend({
 
 	/** @override */
 	initialize: function (options) {
-		this.listenToOnce(bundles, "all", this.initializeBundleStyles);
-
-		this.listenTo(bundles, {
-//			"deselect:one": this._onBundleDeselectOne,
-			"select:one": this._onBundleSelectOne,
-			"select:none": this._onBundleSelectNone
-		});
+		this.listenToOnce(bundles, "all", this.routeInitialized);
 
 		if (DEBUG) {
 			// error trace
@@ -152,19 +146,251 @@ var Controller = Backbone.Router.extend({
 
 	/* Select Bundle/image */
 	_changeSelection: function (bundle, image) {
+//		var lastBundle = bundles.selected;
 		if (_.isUndefined(bundle)) {
 			bundles.deselect();
+//			if (lastBundle) {
+//				lastBundle.get("images").deselect();
+//			}
 		}
 		else {
+			bundles.select(bundle);
 			if (_.isUndefined(image)) {
-				//bundle.get("images").selectAt(0);
 				bundle.get("images").deselect();
 			} else {
 				bundle.get("images").select(image);
 			}
-			bundles.select(bundle);
 		}
 	},
+
+	/* --------------------------- *
+	 * Initialization
+	 * --------------------------- */
+
+	routeInitialized: function() {
+		this.initializeBrowserTitle();
+		this.initializeBundleStyles();
+		this.inilializeHandlers();
+	},
+
+	inilializeHandlers: function() {
+		var toClassName = function (prefix, val) {
+			return (val? "with-":"without-") + prefix;
+		};
+
+		var $body = Backbone.$("body");
+		var withBundle, withoutBundle, withImage, withoutImage;
+		var images = null;
+
+		withImage = function() {
+			$body.removeClass(toClassName("image", false)).addClass(toClassName("image", true));
+			this.listenToOnce(images, "select:none", withoutImage);
+		};
+		withoutImage = function () {
+			$body.removeClass(toClassName("image", true)).addClass(toClassName("image", false));
+			this.listenToOnce(images, "select:one", withImage);
+		};
+		withBundle = function() {
+			$body.removeClass(toClassName("bundle", false)).addClass(toClassName("bundle", true));
+			this.listenToOnce(bundles, "select:none", withoutBundle);
+		};
+		withoutBundle = function () {
+			$body.removeClass(toClassName("bundle", true)).addClass(toClassName("bundle", false));
+			this.listenToOnce(bundles, "select:one", withBundle);
+		};
+
+		var bundleHandlers = {
+			"select:one": function (bundle) {
+				images = bundle.get("images");
+				(images.selected? withImage : withoutImage).call(this);
+			},
+			"deselect:one": function (bundle) {
+				images = bundle.get("images");
+				$body.removeClass(toClassName("image", true)).removeClass(toClassName("image", false));
+				this.stopListening(images, { "select:none": withoutImage, "select:one": withImage });
+//				this.stopListening(images, "select:none", withoutImage);
+//				this.stopListening(images, "select:one", withImage);
+				images = null;
+			},
+		};
+		this.listenTo(bundles, bundleHandlers);
+
+//		if (bundles.selected) {
+//			withBundle.call(this);
+//			images = bundles.selected.get("images");
+//			if (images.selected) {
+//				withImage.call(this);
+//			} else {
+//				withoutImage.call(this);
+//			}
+//		} else {
+//			withoutBundle.call(this);
+//		}
+		(bundles.selected? withBundle : withoutBundle).call(this);
+	},
+
+	/* --------------------------- *
+	 * browser title
+	 * --------------------------- */
+
+	initializeBrowserTitle: function() {
+		var handlers = {
+			"select:one": function (bundle) {
+				document.title = "Portfolio – " + stripTags(bundle.get("name"));
+			},
+			"select:none": function () {
+				document.title = "Portfolio";
+			},
+		};
+		this.listenTo(bundles, handlers);
+		if (bundles.selected) {
+			handlers["select:one"].call(this, bundles.selected);
+		} else {
+			handlers["select:none"].call(this);
+		}
+	},
+
+	/* --------------------------- *
+	 * pre-bundle styles
+	 * --------------------------- */
+
+	initializeBundleStyles: function() {
+		var fgColor, bgColor, bgLum, fgLum;
+		var bgDefault, fgDefault;
+		var attrs, styles, bodySelector, carouselSelector;
+
+		var toBodyClass = function (bundle) {
+			return "bundle-" + bundle.id;
+		};
+
+		bgDefault = Styles.getCSSProperty("body", "background-color");// || "hsl(47, 5%, 95%)");
+		fgDefault = Styles.getCSSProperty("body", "color");// || "hsl(47, 5%, 15%)");
+
+		bundles.each(function (bundle) {
+			attrs = bundle.get("attrs");
+			bodySelector = "body." + toBodyClass(bundle);
+			carouselSelector = ".carousel." + bundle.get("handle");
+			bgColor = new Color(attrs["background-color"] || bgDefault);
+			fgColor = new Color(attrs["color"] || fgDefault);
+			bgLum = bgColor.lightness();
+			fgLum = fgColor.lightness();
+
+			styles = _.pick(attrs, ["background-color", "background", "color"]);
+			styles["-webkit-font-smoothing"] = (bgLum < fgLum? "antialiased" : "auto");
+			/* 'body { -moz-osx-font-smoothing: grayscale; }' works ok in all situations: hardcoded in _base.scss */
+			//styles["-moz-osx-font-smoothing"] = (bgLum < fgLum? "grayscale" : "auto");
+			Styles.createCSSRule(bodySelector, styles);
+
+			styles = {
+				"border-color": 	fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString(),
+				"color":			fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString(),
+			};
+			Styles.createCSSRule(bodySelector + " .mutable-faded", styles);
+
+			styles = _.pick(attrs, ["box-shadow", "border", "border-radius", "background-color"]);
+			Styles.createCSSRule(carouselSelector + " > .image-item img", styles);
+
+			styles = {
+				"background-color": bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
+				"border-color": 	bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString(),
+				"color": 			bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString(),
+			};
+			Styles.createCSSRule(carouselSelector + " > .image-item .placeholder", styles);
+
+		});
+
+		var $body = Backbone.$("body");
+		var handlers = {
+			"deselect:one": function (bundle) {
+				$body.removeClass(toBodyClass(bundle));
+			},
+			"select:one": function (bundle) {
+				$body.addClass(toBodyClass(bundle));
+			},
+		};
+		this.listenTo(bundles, handlers);
+		if (bundles.selected) {
+			handlers["select:one"].call(this, bundles.selected);
+		}
+	},
+
+	/*
+	inilializeHandlers1: function() {
+		var $body = Backbone.$("body");
+		var handlers = {
+			"select:one": function (bundle) {
+				$body.removeClass("bundle-list").addClass("bundle-item");
+			},
+			"select:none": function () {
+				$body.removeClass("bundle-item").addClass("bundle-list");
+			},
+		};
+		this.listenTo(bundles, handlers);
+
+		if (bundles.selected) {
+			handlers["select:one"].call(this, bundles.selected);
+		} else {
+			handlers["select:none"].call(this);
+		}
+	},
+
+	inilializeHandlers2: function() {
+		var $body = Backbone.$("body");
+		var lastBundle = null, lastImage = null;
+		var handlers = {};
+
+		handlers.image = {
+//			"deselect:one": function (image) {},
+			"select:one": function (image) {
+				if (lastImage === null) {
+					$body.removeClass("image-list");
+					$body.addClass("image-item");
+				}
+				lastImage = image;
+			},
+			"select:none": function () {
+				if (lastImage) {
+					$body.removeClass("image-item");
+				}
+				$body.addClass("image-list");
+				lastImage = null;
+			},
+		};
+
+		handlers.bundle = {
+//			"deselect:one": function (bundle) {},
+			"select:one": function (bundle) {
+				var images = bundle.get("images");
+				if (lastBundle) {
+					this.stopListening(lastBundle.get("images"), handlers.image);
+				} else {
+					$body.removeClass("bundle-list").addClass("bundle-item");
+				}
+				this.listenTo(images, handlers.image);
+				if (images.selected) {
+					handlers.image["select:one"].call(this, images.selected);
+				} else {
+					handlers.image["select:none"].call(this);
+				}
+				lastBundle = bundle;
+			},
+			"select:none": function () {
+				if (lastBundle) {
+					this.stopListening(lastBundle.get("images"), handlers.image);
+				}
+				$body.removeClass("bundle-item").addClass("bundle-list");
+				lastBundle = null;
+			},
+		};
+
+		this.listenTo(bundles, handlers.bundle);
+		if (bundles.selected) {
+			handlers.bundle["select:one"].call(this, bundles.selected);
+		} else {
+			handlers.bundle["select:none"].call(this);
+		}
+	},
+	*/
 
 	/* --------------------------- *
 	 * Model listeners
@@ -178,19 +404,17 @@ var Controller = Backbone.Router.extend({
 //		this.clearBundleStyles(bundle);
 //	},
 
-	_onBundleSelectOne: function (bundle) {
+//	_onBundleSelectOne: function (bundle) {
 //		this.listenTo(bundle.get("images"),{
 //			"select:one": this._onImageSelectOne,
 //			"select:none": this._onImageSelectNone
 //		});
+//		document.title = "Portfolio – " + stripTags(bundle.get("name"));
+//	},
 
-		document.title = "Portfolio – " + stripTags(bundle.get("name"));
-//		this.applyBundleStyles(bundle);
-	},
-
-	_onBundleSelectNone: function () {
-		document.title = "Portfolio";
-	},
+//	_onBundleSelectNone: function () {
+//		document.title = "Portfolio";
+//	},
 
 //	_onImageSelectOne: function (image) {
 //		this.applyImageStyles(image);
@@ -202,98 +426,6 @@ var Controller = Backbone.Router.extend({
 
 //	_onImageSelectNone: function () {
 //	},
-
-	/* --------------------------- *
-	 * Helpers
-	 * --------------------------- */
-
-//	clearImageStyles: function (image) {
-//	},
-
-//	applyImageStyles: function (image) {
-//	},
-
-	initializeBundleStyles: function() {
-		var fgColor, bgColor, bgLum, fgLum;
-		var bgDefault, fgDefault;
-		var attrs, className;
-		var styles;
-
-		bgDefault = Styles.getCSSProperty("body", "background-color");// || "hsl(47, 5%, 95%)");
-		fgDefault = Styles.getCSSProperty("body", "color");// || "hsl(47, 5%, 15%)");
-
-		bundles.each(function (bundle) {
-			attrs = bundle.get("attrs");
-			className = bundle.get("handle");
-
-			bgColor = new Color(attrs["background-color"] || bgDefault);
-			fgColor = new Color(attrs["color"] || fgDefault);
-
-			bgLum = bgColor.lightness();
-			fgLum = fgColor.lightness();
-
-			styles = _.pick(attrs, ["background-color", "background", "color"]);
-			styles["-webkit-font-smoothing"] = (bgLum < fgLum? "antialiased" : "auto");
-			// 'body { -moz-osx-font-smoothing: grayscale; }' works ok in all situations: hardcoded in _base.scss
-			//styles["-moz-osx-font-smoothing"] = (bgLum < fgLum? "grayscale" : "auto");
-			Styles.createCSSRule("body." + className, styles);
-
-			styles = _.pick(attrs, ["box-shadow", "border", "border-radius", "background-color"])
-			Styles.createCSSRule("." + className + " > .image-item img", styles);
-
-			Styles.createCSSRule("." + className + " > .image-item .placeholder", {
-				"background-color": bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
-				"border-color": bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString(),
-				"color": bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString(),
-			});
-
-			Styles.createCSSRule("." + className + " .mutable-faded", {
-				"border-color": fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString(),
-				"color": fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString(),
-			});
-		});
-
-		var $body = Backbone.$("body");
-		var onSelectOne, onSelectNone;
-
-//		onSelectOne = function() {
-//			$body.removeClass("bundle-list").addClass("bundle-item");
-//			this.listenToOnce(bundles, "select:none", onSelectNone);
-//		};
-//		onSelectNone = function () {
-//			$body.removeClass("bundle-item").addClass("bundle-list");
-//			this.listenToOnce(bundles, "select:one", onSelectOne);
-//		};
-//		(bundles.selected? onSelectOne : onSelectNone).call(this);
-//
-//		this.listenTo(bundles, {
-//			"deselect:one": function (bundle) {
-//				$body.removeClass(bundle.get("handle"));
-//			},
-//			"select:one": function (bundle) {
-//				$body.addClass(bundle.get("handle"));
-//			},
-//		});
-
-		if (bundles.selected) {
-			$body.addClass("bundle-item");
-		} else {
-			$body.addClass("bundle-list");
-		}
-
-		this.listenTo(bundles, {
-			"deselect:one": function (bundle) {
-				$body.removeClass(bundle.get("handle"));
-			},
-			"select:one": function (bundle) {
-				$body.removeClass("bundle-list").addClass("bundle-item");
-				$body.addClass(bundle.get("handle"));
-			},
-			"select:none": function () {
-				$body.removeClass("bundle-item").addClass("bundle-list");
-			},
-		});
-	},
 });
 
 module.exports = new Controller();

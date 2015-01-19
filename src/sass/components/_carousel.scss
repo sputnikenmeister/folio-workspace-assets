@@ -5,18 +5,12 @@
 		&, * {
 			user-select: none !important;
 		}
-		z-index: 1;
-		&.candidate { z-index: 2; }
-		&.selected { z-index: 3; }
 	}
-	.carousel-item .content {
-		cursor: pointer;
-	}
-	.carousel-item.selected .content {
-		cursor: grab;
-	}
-	&.panning .carousel-item .content {
-		cursor: grabbing;
+
+	&.panning { cursor: grabbing; }
+	&:not(.panning) .carousel-item {
+		.content { cursor: pointer; }
+ 		&.selected .content { cursor: grab; }
 	}
 }
 
@@ -28,7 +22,7 @@
 		transform: translate3d(0%,0,0) scale3d(1,1,1);
 		-webkit-backface-visibility: hidden;
 		-webkit-transform-style: preserve-3d;
-		transition: transform $duration;
+		transition: transform $duration $ease;
 	}
 	&.skip-transitions .carousel-item {
 //		transition: none !important;
@@ -118,7 +112,6 @@
 		height: calc(100% - 3rem);
 		p {
 			@include heading-font($size: 28px, $weight: 300, $lead: 30px);
-			margin-right: 20px;
 			margin-bottom: 15px;
 			margin-top: 0;
 			&:first-child {

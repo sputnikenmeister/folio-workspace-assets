@@ -17,8 +17,11 @@ module.exports = function (grunt) {
 		require: "./build/compass-encode.rb",
 	});
 	grunt.config("compass.client.options", {
-		specify: "src/sass/folio.scss",
+//		specify: "src/sass/folio.scss",
 		sourcemap: true,
+	});
+	grunt.config("compass.clean.options", {
+		clean: true
 	});
 
 	/* CSS prefixes */
@@ -54,12 +57,12 @@ module.exports = function (grunt) {
 		src: [],
 		options: {
 			browserifyOptions: {
+				fullPaths: false,
 				debug: true
 			},
 			require: [
 				"backbone.babysitter", "backbone", "Backbone.Mutators",
-				"jquery.transit", "jquery-hammerjs", "hammerjs", "jquery",
-				"underscore"
+				"jquery.transit", "hammerjs", "jquery", "underscore"
 			],
 			alias: [
 				"./bower_components/jquery-color/jquery.color.js:jquery-color"
@@ -157,11 +160,15 @@ module.exports = function (grunt) {
 				spawn: true
 			},
 			files: ["gruntfile.js"],
-			tasks: ["clean", "compass:client", "autoprefixer:client", "browserify:vendor", "browserify:client"],
+			tasks: ["clean", "compass:clean", "compass:client", "autoprefixer:client", "browserify:vendor", "browserify:client"],
 		},
 		"build-styles": {
 			tasks: ["compass:client", "autoprefixer:client"],
 			files: ["src/sass/**/*.scss"],
+		},
+		"build-styles-svg": {
+			tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
+			files: ["images/**/*.svg"],
 		},
 		//"process-sources": {
 		//	tasks: ["jshint"],
@@ -179,16 +186,17 @@ module.exports = function (grunt) {
 
 	// DEBUG: check config result
 	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
-
-	grunt.registerTask("buildStyles", ["compass:client", "autoprefixer:client"]);
-	grunt.registerTask("buildVendor", ["browserify:vendor", "exorcise:vendor", "uglify:vendor"]);
-	grunt.registerTask("buildClient", ["browserify:client", "exorcise:client", "uglify:client"]);
-	grunt.registerTask("buildScripts", ["buildVendor", "buildClient"]); //"jshint",
+	var _tasks = {};
+	_tasks.buildStyles 		= ["compass:client", "autoprefixer:client"];
+	_tasks.buildVendor 		= ["browserify:vendor", "exorcise:vendor", "uglify:vendor"];
+	_tasks.buildClient 		= ["browserify:client", "exorcise:client", "uglify:client"];
+	_tasks.buildScripts 	= _tasks.buildVendor.concat(_tasks.buildClient);
+	_tasks.buildAll 		= _tasks.buildStyles.concat(_tasks.buildScripts)
 
 	// Task Groups
-	grunt.registerTask("watchAll", ["browserify:watchable", "watch"]);
-	grunt.registerTask("buildAll", ["buildStyles", "buildScripts"]);
-	grunt.registerTask("buildAndWatch", ["buildAll", "watchAll"]);
+	grunt.registerTask("build-all", _tasks.buildAll);
+	grunt.registerTask("watch-all", ["browserify:watchable", "watch"]);
+	grunt.registerTask("watch-clean", ["clean", "compass:clean", "buildAll", "watchAll"]);
 
 	// Default task
 	grunt.registerTask("default", ["buildAll"]);
@@ -248,7 +256,7 @@ module.exports = function (grunt) {
 		}
 	});
 
-	grunt.registerTask("dist", ["compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
+	grunt.registerTask("dist", ["compass:clean", "compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
 
 
 	/* --------------------------------

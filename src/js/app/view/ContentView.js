@@ -7,16 +7,18 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
+/** @type {module:backbone} */
+var Backbone = require("backbone");
 
 /** @type {module:app/control/Controller} */
 var controller = require("../control/Controller");
 /** @type {module:app/model/collection/BundleList} */
 var bundles = require("../model/collection/BundleList");
 
+/** @type {module:app/control/Globals} */
+var Globals = require("../control/Globals");
 /** @type {module:app/helper/View} */
 var View = require("../helper/View");
 /** @type {module:app/view/component/Carousel} */
@@ -38,12 +40,6 @@ var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
 var imageDescTemplate = require("./template/CollectionStack.Image.tpl");
 
-/** @type {module:app/control/Controller} */
-var HORIZONTAL_STEP = require("../control/Globals").HORIZONTAL_STEP;
-
-/** @type {module:app/control/Globals} */
-var Globals = require("../control/Globals");
-
 /**
  * @constructor
  * @type {module:app/view/ContentView}
@@ -51,40 +47,11 @@ var Globals = require("../control/Globals");
 var ContentView = View.extend({
 
 	initialize: function (options) {
+		_.bindAll(this, "_onPan");
+
 		this.children = [];
-
-		// Element: content-detail (layout container)
-		this.container = document.createElement("div");
-		this.container.id = "content-detail";
-		this.$el.append(this.container);
-
-//		this.hammer = new Hammer.Manager(this.container);
-//		this.hammer.add(new Hammer.Pan({
-//			direction: { direction: Hammer.DIRECTION_HORIZONTAL },
-//			threshold: 30,
-//		}));
-//		this.hammer.on("panstart panmove panend pancancel", function(ev) {
-//			console.log(ev.type, ev);
-//		});
-
-//		// Create carousel2
-//		var view = new Carousel({
-//			className: "bundle-carousel",
-//			direction: Carousel.DIRECTION_VERTICAL,
-//			collection: bundles,
-////			renderer: ImageRenderer,
-////			emptyRenderer: CarouselEmptyRenderer.extend({
-////				model: bundle,
-////				template: bundleDescTemplate,
-////			}),
-//		});
-//		view.$el.appendTo(this.el);
-//		view.render();
-//		controller.listenTo(view, {
-//			"view:select:one": controller.selectBundle,
-//			"view:select:none": controller.deselectBundle
-//		});
-//		this.bundleCarousel = view;
+		this.container = this.createContainer();
+		this.hammer = this.createHammer(this.el);
 
 		// Model listeners
 		this.listenTo(bundles, {
@@ -108,8 +75,34 @@ var ContentView = View.extend({
 		if (bundles.selected) {
 			this.removeChildren(bundles.selected, true);
 		}
+		this.hammer.destroy();
 		this.$el.remove(this.container);
 		View.prototype.remove.apply(this, arguments);
+	},
+
+	/* -------------------------------
+	 * Create children on bundle select
+	 * ------------------------------- */
+
+	createChildren: function (bundle, skipAnimation) {
+		var images = bundle.get("images");
+
+		this.createImageDetail(images);
+//		this.createLabelCarousel(images);
+		var carousel = this.createImageCarousel(images, bundle);
+//		this.$el.css("display", "");
+		// Show views
+		if (!skipAnimation) {
+			_.each(this.children, function(child) {
+				child.$el.css({opacity: 0})
+					.delay(Globals.TRANSITION_DELAY * 3)
+					.transit({opacity: 1}, Globals.TRANSITION_DURATION);
+			});
+		}
+	},
+
+	_onPan: function(ev) {
+		console.log(ev.type, ev.target);
 	},
 
 	/* -------------------------------
@@ -139,13 +132,11 @@ var ContentView = View.extend({
 //	removeChildren: function (bundle, skipAnimation) {
 //		var images = bundle.get("images");
 //		var childEls = [];
-//
 //		this.stopListening(images);
 //		_.each(this.children, function(child) {
 //			controller.stopListening(child);
 //			childEls.push(child.el);
 //		});
-//
 //		if (skipAnimation) {
 //			this._removeChildren();
 //		} else {
@@ -163,84 +154,136 @@ var ContentView = View.extend({
 //		this.children.length = 0;
 //	},
 
+//	registerHammer: function(hammer) {
+//		this.hammer.off on("panstart panmove panend pancancel",
+//		var keywordList = Backbone.$("#keyword-list");
+//		if (keywordList) {
+//		hammer.on("panstart panmove panend pancancel", function(ev) {
+//				switch (ev.type) {
+//					case "panstart":
+//						break;
+//					case "panmove":
+//						break;
+//					case "panend":
+//						break;
+//					case "pancancel":
+//						break;
+//
+//				}
+//			});
+//		}
+//	},
+
 	/* -------------------------------
-	 * Create children on bundle select
+	 * Components
 	 * ------------------------------- */
 
-	createChildren: function (bundle, skipAnimation) {
-		var view, images = bundle.get("images");
-
-		// Create carousel2
-		view = new Carousel({
-			className: "label-carousel",
-			collection: images,
-			gap: Globals.HORIZONTAL_STEP,
-//			renderer: ImageRenderer,
-//			emptyRenderer: CarouselEmptyRenderer.extend({
-//				model: bundle,
-//				template: bundleDescTemplate,
-//			}),
-//			hammer: this.hammer,
+	createHammer: function(touchEl) {
+		var hammer, hammerPan, hammerTap;
+		hammer = new Hammer.Manager(touchEl);
+		hammerPan = new Hammer.Pan({
+			direction: Hammer.DIRECTION_HORIZONTAL,
+			threshold: 15,
 		});
-		view.render().$el.appendTo(this.el);
-		controller.listenTo(view, {
-			"view:select:one": controller.selectImage,
-			"view:select:none": controller.deselectImage
+		hammerTap = new Hammer.Tap({
+			threshold: 10,
+			interval: 250,
+			time: 200
 		});
-		this.children[this.children.length] = view;
+		hammerTap.requireFailure(hammerPan);
+		hammer.add([hammerPan, hammerTap]);
+		return hammer;
+	},
 
+	createContainer: function(){
+		var container = document.createElement("div");
+		container.id = "content-detail";
+		this.$el.append(container);
+		return container;
+	},
+
+	createImageCarousel: function(images, bundle) {
 		// Create carousel
 		view = new Carousel({
-			className: bundle.get("handle") + " image-carousel",
+			className: "image-carousel " + bundle.get("handle"),
 			collection: images,
 			renderer: ImageRenderer,
 			emptyRenderer: CarouselEmptyRenderer.extend({
 				model: bundle,
 				template: bundleDescTemplate,
 			}),
-//			hammer: this.hammer,
+			hammer: (this.hammer || void 0),
 		});
 		view.render().$el.appendTo(this.el);
+//		view.render().$el.prependTo(this.el);
 		controller.listenTo(view, {
 			"view:select:one": controller.selectImage,
 			"view:select:none": controller.deselectImage
 		});
-		this.children[this.children.length] = view;
-
-//		this.$el.css("display", "");
-		// Show views
-		if (!skipAnimation) {
-			_.each(this.children, function(child) {
-				child.$el.css({opacity: 0})
-					.delay(Globals.TRANSITION_DELAY * 2.5)
-					.transit({opacity: 1}, Globals.TRANSITION_DURATION);
-			});
-		}
+		return this.children[this.children.length] = view;
 	},
 
-//	createImagePager: function() {
-//		var view = new SelectableListView({
-//			collection: images,
-//			renderer: DotNavigationRenderer,
-//			className: "images-pager dots-fontello mutable-faded"
-//		});
-//		view.render().$el.appendTo(this.container);
+	createLabelCarousel: function(images) {
+		// Create label-carousel
+		view = new Carousel({
+			className: "label-carousel",
+			collection: images,
+			gap: Globals.HORIZONTAL_STEP,
+//			hammer: this.hammer,
+		});
+		view.render().$el.appendTo(this.el);
+//		view.render().$el.prependTo(this.el);
 //		controller.listenTo(view, {
 //			"view:select:one": controller.selectImage,
 //			"view:select:none": controller.deselectImage
 //		});
-//		return this.children[this.children.length] = view;
-//	},
+		return this.children[this.children.length] = view;
+	},
 
-//	createImageDetail: function() {
-//		var view = new CollectionStack({
-//			collection: images,
-//			template: imageDescTemplate,
-//			className: "image-detail aside"
-//		});
+	createImageDetail: function(images) {
+		var view = new CollectionStack({
+			collection: images,
+			template: imageDescTemplate,
+			className: "image-detail"
+		});
+		view.render().$el.appendTo(this.container);
+		return this.children[this.children.length] = view;
+	},
+
+	createBundleCarousel: function(images) {
+		var view = new Carousel({
+			className: "bundle-carousel",
+			direction: Carousel.DIRECTION_VERTICAL,
+			collection: bundles,
+//			renderer: ImageRenderer,
+//			emptyRenderer: CarouselEmptyRenderer.extend({
+//				model: bundle,
+//				template: bundleDescTemplate,
+//			}),
+		});
 //		view.render().$el.appendTo(this.container);
-//		return this.children[this.children.length] = view;
-//	},
+		view.$el.appendTo(this.el);
+		view.render();
+		controller.listenTo(view, {
+			"view:select:one": controller.selectBundle,
+			"view:select:none": controller.deselectBundle
+		});
+		return this.children[this.children.length] = view;
+	},
+
+	createImagePager: function(images) {
+		var view = new SelectableListView({
+			collection: images,
+			renderer: DotNavigationRenderer,
+			className: "images-pager dots-fontello mutable-faded"
+		});
+		view.render().$el.appendTo(this.container);
+		controller.listenTo(view, {
+			"view:select:one": controller.selectImage,
+			"view:select:none": controller.deselectImage
+		});
+		return this.children[this.children.length] = view;
+	},
 
 });
 

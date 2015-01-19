@@ -8,13 +8,14 @@
 @import "includes/_media-queries";
 @import "includes/_base";
 @import "includes/_icons";
-@import "includes/_transitions";
+
 @import "components/_filterable";
 @import "components/_selectable.dots-fontello.scss";
-@import "components/_selectable.image-symbol.scss";
 @import "components/_pager.folio";
 @import "components/_carousel";
+
 @import "views/_layout";
+@import "views/_transitions";
 @import "views/_navigation";
 @import "views/_content";
 @import "views/_footer";

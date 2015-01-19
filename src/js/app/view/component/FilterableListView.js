@@ -89,11 +89,9 @@ var FilterableListView = DeferredRenderView.extend({
 	},
 
 	_renderLayout: function() {
-		var pos, tx, childEl;
-		elt = this.el.firstElementChild;
-		pos = elt.clientTop;
+		var tx, elt = this.el.firstElementChild, pos = elt.clientTop;
 		do {
-			tx = "translate3d(" + elt.clientLeft + "px," + pos + "px,0)"
+			tx = "translate3d(" + elt.clientLeft + "px," + pos + "px,0)";
 			elt.style.position = "absolute";
 			elt.style.webkitTransform = tx;
 			elt.style.mozTransform = tx;

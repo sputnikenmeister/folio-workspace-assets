@@ -2,11 +2,15 @@
  * @module app/view/render/ImageRenderer
  */
 
+/*global Event */
+
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 
+/** @type {module:app/control/Globals} */
+var Globals = require("../../control/Globals");
 /** @type {module:app/model/item/ImageItem} */
 var ImageItem = require("../../model/item/ImageItem");
 
@@ -38,13 +42,6 @@ module.exports = Backbone.View.extend({
 	template: viewTemplate,
 
 	/** @override */
-	events: {
-		"dragstart img": function (ev) {
-			ev.preventDefault();
-		} /* prevent conflict with hammer.js */
-	},
-
-	/** @override */
 	initialize: function (opts) {
 		this._loadImage = _.once(_.bind(this._loadImage, this));
 		this.createChildren();
@@ -53,11 +50,19 @@ module.exports = Backbone.View.extend({
 
 	createChildren: function() {
 		this.$el.html(this.template(this.model.toJSON()));
-
 		this.$placeholder = this.$(".placeholder");
 		this.placeholder = this.$placeholder[0];
 		this.$image = this.$("img");
 		this.image = this.$image[0];
+//		this.$image.on("dragstart", function (ev) {
+//			ev.isDefaultPrevented() || ev.preventDefault();
+//		});
+	},
+
+	remove: function() {
+		this.image.src = "";
+		this.image.onload = this.image.onerror = this.image.onabort = void 0;
+		return Backbone.View.prototype.remove.apply(this, arguments);
 	},
 
 	/** @return {this} */
@@ -67,7 +72,6 @@ module.exports = Backbone.View.extend({
 
 		this.$image.attr({width: w, height: h}).css(this.$placeholder.position());
 		this.$el.css("height", h);
-
 		return this;
 	},
 
@@ -85,23 +89,36 @@ module.exports = Backbone.View.extend({
 			this.listenTo(owner, "select:one select:none", function(model) {
 				if (check(owner.selectedIndex)) {
 					this.stopListening(owner);
-					this._loadImage();
+					this.$el.on("webkittransitionend transitionend", this._loadImage);
+					_.delay(this._loadImage, Globals.TRANSITION_DELAY * 3);
 				}
 			});
 		}
 	},
 
 	_loadImage: function() {
-		this.$el.removeClass("idle").addClass("pending");
-		loadImage(this.$image[0], this.model.getImageUrl(), this).then(
+		console.log("ImageRenderer._loadImage: " + ((arguments[0])? arguments[0].type : "delayend"), this.cid);
+		this.$el.off("webkittransitionend transitionend");
+
+		loadImage(this.image, this.model.getImageUrl(), this).then(
 			function (url, source, ev) {
+				this.model.trigger("load:done");
 				this.$el.removeClass("pending").addClass("done");
 				console.info("ImageRenderer.onLoad: " + this.model.get("f"), ev);
 			},
 			function (err, source, ev) {
+				this.model.trigger("load:error");
 				this.$el.removeClass("pending").addClass("error");
 				console.error("ImageRenderer.onError: " + err.message, arguments);
-			}//, function (progress, source, ev) {}
+			},
+			function (progress, source, ev) {
+				if (progress == "start") {
+					this.model.trigger("load:start");
+					this.$el.removeClass("idle").addClass("pending");
+				} else {
+					this.model.trigger("load:progress", progress);
+				}
+			}
 		);
 	},
 

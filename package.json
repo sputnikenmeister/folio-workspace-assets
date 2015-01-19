@@ -24,7 +24,6 @@
     "cookies-js": "^1.1.0",
     "hammerjs": "^2.0.4",
     "jquery": "^2.1.1",
-    "jquery-hammerjs": "^2.0.0",
     "jquery.transit": "^0.9.12",
     "underscore": "1.6.0"
   }

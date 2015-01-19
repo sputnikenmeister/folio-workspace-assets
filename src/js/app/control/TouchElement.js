@@ -11,7 +11,7 @@ var Backbone = require("backbone");
 
 var hammerInstance = null;
 
-modules.exports {
+module.exports = {
 	init: function(el) {
 		if (!hammerInstance) {
 			hammerInstance = new Hammer.Manager(el);

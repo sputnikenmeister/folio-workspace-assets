@@ -27,6 +27,7 @@ module.exports = function (image, url, context) {
 	});
 	_.defer(function () {
 		image.src = url;
+		deferred.notifyWith(context, ["start", image]);
 		deferred.notifyWith(context, [0, image]);
 	});
 	return deferred.promise();

@@ -79,7 +79,7 @@ module.exports = View.extend({
 		if (this.skipTransitions) {
 			if (this.$content) {
 				this.$el.removeAttr("style");
-				this.$content.clearQueue().remove();
+				this.$content.stop();//clearQueue().remove();
 			}
 			if (this._model) {
 				this.$content = this.$createContentElement(this._model);
@@ -119,7 +119,7 @@ module.exports = View.extend({
 				this.$content
 					.css({opacity: 0})
 					.delay(700)
-					.appendTo(this.$el)
+					.appendTo(this.el)
 					.transit({opacity: 1}, 300);
 			}
 		}
