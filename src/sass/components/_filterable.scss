@@ -48,25 +48,15 @@ $collapse-ease: $ease;
 		// wait, expand, fadein
 		transition-property: visibility, opacity, transform;//max-height;
 		transition-timing-function: step-start, $collapse-ease, $collapse-ease;
-		transition-duration: $delay * 2 + $duration, $duration, $duration;
-		transition-delay: 0s, $delay * 2, $delay * 1;
+		transition-duration: $delay * 2 + $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
+		transition-delay: 0s + 0.001s, $delay * 2 + 0.001s, $delay * 1 + 0.001s;
 	}
 	&.collapsed {
 		.list-item:not(.selected) {
 			// fadeout, collapse, wait
 			transition-timing-function: step-end, $collapse-ease, $collapse-ease;
-			transition-delay: 0s, 0s, $delay * 1;
+			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
 		}
-		// .list-item.selected {
-		//	// fadeout, collapse, wait
-		// 	transition-timing-function: step-start, $collapse-ease, $collapse-ease;
-		// 	transition-delay: 0s, 0.35s, 0.35s;
-		// }
-		// .list-item:not(.selected) {
-		//	// fadeout, collapse, wait
-		// 	transition-timing-function: step-end, $collapse-ease, $collapse-ease;
-		// 	transition-delay: 0s, 0.35s, 0.35s;
-		// }
 	}
 }
 
@@ -83,24 +73,26 @@ $collapse-ease: $ease;
 	.list-item, .list-group {
 		visibility: visible;
 		opacity: 1;
+		max-height: none;
 	}
-	.list-item {
-		max-height: 1.5em;
-	}
-	.list-group {
-		height: 2em;
-	}
+//	.list-item {
+//		max-height: 1.5em;
+//	}
+//	.list-group {
+//		height: 2em;
+//	}
 	&.collapsed {
 		.list-item.excluded, .list-group.excluded {
 			visibility: hidden;
 			opacity: 0;
-		}
-		.list-item.excluded {
 			max-height: 0;
 		}
-		.list-group.excluded {
-			height: 0;
-		}
+//		.list-item.excluded {
+//			max-height: 0;
+//		}
+//		.list-group.excluded {
+//			height: 0;
+//		}
 	}
 }
 
@@ -109,14 +101,22 @@ $collapse-ease: $ease;
 		// wait, expand, fadein
 		transition-property: visibility, opacity, transform;
 		transition-timing-function: step-start, $collapse-ease, $collapse-ease;
-		transition-duration: $delay * 2 + $duration, $duration, $duration;
-		transition-delay: 0s, $delay * 2, $delay * 1;
+		transition-duration: $delay * 2 + $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
+		transition-delay: 0s + 0.001s, $delay * 2 + 0.001s, $delay * 1 + 0.001s;
+//		transition:
+//			visibility ($delay*2 + $duration) ($delay*0) step-start,
+//			opacity $duration ($delay*2) $collapse-ease,
+//			transform $duration ($delay*1) $collapse-ease;
 	}
 	&.collapsed {
 		.list-group.excluded, .list-item.excluded {
 			// fadeout, collapse, wait
 			transition-timing-function: step-end, $collapse-ease, $collapse-ease;
-			transition-delay: 0s, 0s, $delay * 1;
+			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
+//			transition:
+//				visibility ($delay*2 + $duration) ($delay*0) step-end,
+//				opacity $duration ($delay*0) $collapse-ease,
+//				transform $duration ($delay*1) $collapse-ease;
 		}
 	}
 }

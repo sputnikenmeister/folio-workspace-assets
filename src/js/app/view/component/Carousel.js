@@ -73,12 +73,10 @@ var Carousel = DeferredRenderView.extend({
 	},
 
 	remove: function () {
-		Backbone.$(window).off("orientationchange resize", this._onResize);
 //		this.$el.off("webkittransitionend transitionend", this._onTransitionEnd);
+		Backbone.$(window).off("orientationchange resize", this._onResize);
 		this.hammer.off("panstart panmove panend pancancel tap", this._onTouch);
-		if (this._hammerIsLocal) {
-			this.hammer.destroy();
-		}
+		if (this._hammerIsLocal) this.hammer.destroy();
 		this.removeChildren();
 		DeferredRenderView.prototype.remove.apply(this);
 	},
@@ -131,18 +129,18 @@ var Carousel = DeferredRenderView.extend({
 	_onTap: function (ev) {
 		var pos = ev.center[this.dirProp("x", "y")];
 		var item;
-		if (pos > this.containerSize * 0.8) {
-			if (this.collection.selectedIndex == -1) {
-				item = this.collection.first();
-			} else {
-				item = this.collection.following();
-			}
-		}
-		else if (pos < this.containerSize * 0.2) {
+		if (pos < this.contentBefore) {
 			if (this.collection.selectedIndex == 0) {
 				this.trigger("view:select:none");
 			} else {
 				item = this.collection.preceding();
+			}
+		} else
+		if (pos > this.contentAfter) {
+			if (this.collection.selectedIndex == -1) {
+				item = this.collection.first();
+			} else {
+				item = this.collection.following();
 			}
 		}
 		if (item) {
@@ -188,8 +186,8 @@ var Carousel = DeferredRenderView.extend({
 		var delta = this.getEventDelta(ev) + this.thresholdOffset;
 		// If beyond select threshold, trigger selection
 		if (Math.abs(delta) > this.selectThreshold && !this.isOutOfBounds(delta)) {
-//			var item = this.candidateModel;
-			var item = this.collection.at(this.collection.selectedIndex + (delta < 0? 1: -1));
+			var item = this.candidateModel;
+//			var item = this.collection.at(this.collection.selectedIndex + (delta < 0? 1: -1));
 			if (item) {
 				this.trigger("view:select:one", item);
 			} else {
@@ -329,37 +327,27 @@ var Carousel = DeferredRenderView.extend({
 	createEmptyChildView: function () {
 		var child = new this.emptyRenderer({});
 		this.emptyChild = child;
-//		child.$el.on("mouseup", _.bind(function (ev) {
-//			if (!ev.isDefaultPrevented() && !this.panning && this.collection.selectedIndex != -1) {
-//				this.trigger("view:select:none");
-//			}
-//		}, this));
+		this.children.add(child);
 		if (this.collection.selectedIndex == -1) {
 			this.selectEmptyChildView();
 		}
 		return child;
 	},
 
-	removeEmptyChildView: function () {
-		if (this.emptyChild) {
-//			this.emptyChild.$el.off("mouseup");
-			this.emptyChild.remove();
-			delete this.emptyChild;
-		} else {
-			console.warn("Carousel.removeEmptyChildView called while emptyChild is undefined");
-		}
-	},
+//	removeEmptyChildView: function () {
+//		if (this.emptyChild) {
+//			this.emptyChild.remove();
+//			delete this.emptyChild;
+//		} else {
+//			console.warn("Carousel.removeEmptyChildView called while emptyChild is undefined");
+//		}
+//	},
 
 	createChildView: function (item) {
 		var child = new this.renderer({
 			model: item
 		});
 		this.children.add(child);
-//		child.$el.on("mouseup", _.bind(function (ev) {
-//			if (!ev.isDefaultPrevented() && !this.panning && this.collection.selected !== item) {
-//				this.trigger("view:select:one", item);
-//			}
-//		}, this));
 		if (item.selected) {
 			child.$el.addClass("selected");
 		}
@@ -398,7 +386,7 @@ var Carousel = DeferredRenderView.extend({
 	},
 
 	removeChildren: function () {
-		this.removeEmptyChildView();
+//		this.removeEmptyChildView();
 		this.children.each(this.removeChildView, this);
 	},
 
@@ -420,14 +408,18 @@ var Carousel = DeferredRenderView.extend({
 			size = this.measureChild(child.render());
 			size.pos = pos;
 			pos += size.outer + (this.gap || Math.min(size.before, size.after));
-			maxAcross = Math.max(maxAcross, size.across);
-			maxSize = Math.max(maxSize, size.outer);
+			if (child !== this.emptyChild) {
+				maxAcross = Math.max(maxAcross, size.across);
+				maxSize = Math.max(maxSize, size.outer);
+			}
 		};
 
-		measure.call(this, this.emptyChild);
-		maxAcross = maxSize = 0; // Reset maxAcross to ignore emptyChild's across size
+//		measure.call(this, this.emptyChild);
+		//maxAcross = maxSize = 0; // Reset maxAcross to ignore emptyChild's across size
 		this.children.each(measure, this);
 
+		this.contentBefore = this.emptyChild.el[this.dirProp("offsetLeft", "offsetTop")];
+		this.contentAfter = this.contentBefore + this.emptyChild.el[this.dirProp("offsetWidth", "offsetHeight")];
 		this.containerSize = this.el[this.dirProp("offsetWidth", "offsetHeight")];
 		this.selectThreshold = Math.min(this.selectThreshold, this.containerSize * 0.1);
 
@@ -500,7 +492,7 @@ var Carousel = DeferredRenderView.extend({
 			child.el.style.transform = val;
 		};
 
-		scroll.call(this, this.emptyChild);
+//		scroll.call(this, this.emptyChild);
 		this.children.each(scroll, this);
 //		this.collection.each(function (model, index) {
 //			scroll(this.children.findByModel(model));

@@ -82,24 +82,28 @@ var Controller = Backbone.Router.extend({
 
 	selectImage: function (image) {
 		var bundle = image.get("bundle");
-		this._changeSelection(bundle, image);
-		this._updateLocation();
+		this._goToLocation(bundle, image);
+//		this._changeSelection(bundle, image);
+//		this._updateLocation();
 	},
 
 	deselectImage: function () {
 		var bundle = bundles.selected;
-		this._changeSelection(bundle);
-		this._updateLocation();
+		this._goToLocation(bundle);
+//		this._changeSelection(bundle);
+//		this._updateLocation();
 	},
 
 	selectBundle: function (bundle) {
-		this._changeSelection(bundle);
-		this._updateLocation();
+		this._goToLocation(bundle);
+//		this._changeSelection(bundle);
+//		this._updateLocation();
 	},
 
 	deselectBundle: function () {
-		this._changeSelection();
-		this._updateLocation();
+		this._goToLocation();
+//		this._changeSelection();
+//		this._updateLocation();
 	},
 
 	/** Update location when navigation happens internally */
@@ -114,7 +118,21 @@ var Controller = Backbone.Router.extend({
 				location += "/" + imageIndex;
 			}
 		}
-		this.navigate(location, {trigger: false});
+		_.defer(_.bind(this.navigate, this), location, {trigger: false});
+//		this.navigate(location, {trigger: false});
+	},
+
+	_goToLocation: function(bundle, image) {
+		var imageIndex, location;
+		location = "bundles";
+		if (bundle) {
+			location += "/" + bundle.get("handle");
+			imageIndex = bundle.get("images").indexOf(image);
+			if (imageIndex >= 0) {
+				location += "/" + imageIndex;
+			}
+		}
+		this.navigate(location, {trigger: true});
 	},
 
 	/* --------------------------- *
@@ -154,12 +172,12 @@ var Controller = Backbone.Router.extend({
 //			}
 		}
 		else {
-			bundles.select(bundle);
 			if (_.isUndefined(image)) {
 				bundle.get("images").deselect();
 			} else {
 				bundle.get("images").select(image);
 			}
+			bundles.select(bundle);
 		}
 	},
 
@@ -168,9 +186,9 @@ var Controller = Backbone.Router.extend({
 	 * --------------------------- */
 
 	routeInitialized: function() {
-		this.initializeBrowserTitle();
-		this.initializeBundleStyles();
 		this.inilializeHandlers();
+		this.initializeBundleStyles();
+		this.initializeBrowserTitle();
 	},
 
 	inilializeHandlers: function() {

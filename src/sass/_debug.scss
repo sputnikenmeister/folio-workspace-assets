@@ -23,17 +23,14 @@ $darkolivegreen:	darkolivegreen;
 	background-color: transparent;
 	background-image: image-url("debug-background.svg");
 	background-repeat: no-repeat;
-//	background-attachment: local;
-	background-position: calc(50% + 130px) 0rem;
+	background-position: calc(50% + 130px) 1rem;
 //	background-position: calc(50% + #{($page-width-large - $page-width)/2 + ($page-margin-left - $page-margin-right)}) 1rem;
 	@include media($desktop-small) {
-		background-position: calc(50% + 10px) 0rem;
+		background-position: calc(50% + 10px) 1rem;
 //		background-position: calc(50% + #{$page-margin-left - $page-margin-right}) 1rem;
 	}
 }
 .debug-blocks {
-//	outline: 1px dashed $darkseagreen;
-//	outline-offset: -1px;
 	* { outline-offset: -1px; }
 	#header, #footer,
 	#container-footer {
@@ -63,7 +60,6 @@ $darkolivegreen:	darkolivegreen;
 		outline: 1px dashed $darkseagreen;
 		#content-detail {
 			background-color: transparentize($lightblue, 0.8);
-//			border: 0.5rem solid transparentize($lightblue, 0.7);
 		}
 		.carousel {
 			.pan-area {
@@ -87,12 +83,6 @@ $darkolivegreen:	darkolivegreen;
 			}
 		}
 	}
-//	.dots-fontello.list-item {
-//		background-color: blue;
-//		a { background-color: blue; }
-//		.label { background-color: cyan; }
-//		& a:before { background-color: yellow; }
-//	}
 }
 
 .toolbar {
@@ -110,16 +100,16 @@ $darkolivegreen:	darkolivegreen;
 		margin: auto 0;
 		padding: 0 0.75em;
 		border-color: inherit;
-		border-left-style: solid;
-		border-left-width: thin;
+		border-right-style: solid;
+		border-right-width: thin;
 	}
 	& > *:first-child {
-//		padding-left: 0;
-		border-left: 0 none;
+		padding-right: 0;
+		border-right: 0 none;
 	}
-//	& > *:last-child {
-//		padding-right: 0;
-//	}
+	& > *:last-child {
+		border-right: 0 none;
+	}
 }
 
 #debug-toolbar {
@@ -135,9 +125,14 @@ $darkolivegreen:	darkolivegreen;
 	padding: 0.5em 0;
 	dt, dd {
 		@include small-caps;
-		@include font-smoothing;
 		line-height: 1em;
 		height: 1em;
+	}
+	dt {
+		font-weight: 300;
+	}
+	dd {
+		@include font-smoothing;
 	}
 }
 

@@ -3,13 +3,13 @@
  */
 
 // to match css values in _base.scss, units are seconds
-var txDuration = 		0.300;
-var txDelayInterval = 	0.033;
+var txDuration		=	0.350 * 1000;
+var txDelayInterval	=	0.050 * 1000;
 
 module.exports = {
-	TRANSITION_DURATION:			txDuration * 1000,
-	TRANSITION_DELAY_INTERVAL:		txDelayInterval * 1000,
-	TRANSITION_DELAY: 				(txDuration + txDelayInterval) * 1000,
-	HORIZONTAL_STEP: 				20,
-	APP_ROOT: 						window.approot,
+	TRANSITION_DURATION			:	txDuration,
+	TRANSITION_DELAY_INTERVAL	:	txDelayInterval,
+	TRANSITION_DELAY			:	(txDuration + txDelayInterval),
+	HORIZONTAL_STEP				:	20,
+	APP_ROOT					:	window.approot,
 };

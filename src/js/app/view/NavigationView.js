@@ -84,6 +84,7 @@ module.exports = View.extend({
 			},
 			collapsed: true,
 		});
+		this.keywordsView.$el.wrap("<div id=\"keyword-list-wrapper\"></div>");
 
 		this.listenTo(bundles, {
 			"select:one": this.onSelectOne,
@@ -113,14 +114,16 @@ module.exports = View.extend({
 
 	onSelectOne: function() {
 //		this.$el.removeClass("without-bundle").addClass("with-bundle");
-		this.keywordsView.filterBy(bundles.selected);
 		this.bundlesView.setCollapsed(true);
+		this.keywordsView.filterBy(bundles.selected);
+//		this.keywordsView.renderNow();
 	},
 
 	onSelectNone: function() {
 //		this.$el.removeClass("with-bundle").addClass("without-bundle");
-		this.keywordsView.filterBy(null);
 		this.bundlesView.setCollapsed(false);
+		this.keywordsView.filterBy(null);
+//		this.keywordsView.renderNow();
 	},
 
 	onSitenameClick: function (ev) {

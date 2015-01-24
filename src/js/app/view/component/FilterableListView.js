@@ -33,9 +33,11 @@ var FilterableListView = DeferredRenderView.extend({
 		this.filterBy(options.filterBy);
 		this.setSelection(this.collection.selected);
 		this.setCollapsed((_.isBoolean(options.collapsed)? options.collapsed : false));
-		this.skipTransitions = true;
 
+		this.skipTransitions = false;
+		this.$el.addClass("skip-transitions");
 		this.collection.each(this.assignChildView, this);
+//		this._renderLayout();
 
 		_.bindAll(this, "_onResize");
 		Backbone.$(window).on("orientationchange resize", this._onResize);
@@ -89,14 +91,19 @@ var FilterableListView = DeferredRenderView.extend({
 	},
 
 	_renderLayout: function() {
-		var tx, elt = this.el.firstElementChild, pos = elt.clientTop;
+		var tx, elt = this.el.firstElementChild, pos = elt.offsetTop;
+//		var tx, elt = this.el.firstElementChild, pos = elt.clientTop;
 		do {
-			tx = "translate3d(" + elt.clientLeft + "px," + pos + "px,0)";
+//			tx = "translate3d(" + elt.clientLeft + "px," + pos + "px, 0)";
+			tx = "translate3d(0," + pos + "px, 0)";
 			elt.style.position = "absolute";
 			elt.style.webkitTransform = tx;
 			elt.style.mozTransform = tx;
 			elt.style.transform = tx;
-			pos += elt.clientHeight;
+			if (elt.className.indexOf("excluded") === -1) {
+				pos += elt.offsetHeight;
+//				pos += elt.clientHeight;
+			}
 		} while (elt = elt.nextElementSibling);
 		this.el.style.minHeight = pos + "px";
 	},
@@ -111,7 +118,7 @@ var FilterableListView = DeferredRenderView.extend({
 			model: item,
 			el: item.selector()
 		});
-		this.children.add(view, item.id);
+		this.children.add(view);//, item.id);
 		this.listenTo(view, "renderer:click", this.onChildClick);
 		return view;
 	},
@@ -197,14 +204,18 @@ var FilterableListView = DeferredRenderView.extend({
 
 	/** @private */
 	renderFilterBy: function (newVal, oldVal) {
-		var newIds, oldIds;
-		if (newVal) {
-			newIds = newVal.get(this.filterKey);
-		}
-		if (oldVal) {
-			oldIds = oldVal.get(this.filterKey);
-		}
-		this.renderFiltersById(newIds, oldIds);
+//		var newIds, oldIds;
+//		if (newVal) {
+//			newIds = newVal.get(this.filterKey);
+//		}
+//		if (oldVal) {
+//			oldIds = oldVal.get(this.filterKey);
+//		}
+//		this.renderFiltersById(newIds, oldIds);
+		this.renderFiltersById(
+			newVal && newVal.get(this.filterKey),
+			oldVal && oldVal.get(this.filterKey)
+		);
 	},
 
 	renderFiltersById: function (newIds, oldIds) {
@@ -212,13 +223,15 @@ var FilterableListView = DeferredRenderView.extend({
 		if (newIds) {
 			newExcludes = _.difference(oldIds || this.itemIds, newIds);
 			_.each(newExcludes, function (id) {
-				this.children.findByCustom(id).$el.addClass("excluded");
+//				this.children.findByCustom(id).$el.addClass("excluded");
+				this.children.findByModel(this.collection.get(id)).$el.addClass("excluded");
 			}, this);
 		}
 		if (oldIds) {
 			newIncludes = _.difference(newIds || this.itemIds, oldIds);
 			_.each(newIncludes, function (id) {
-				this.children.findByCustom(id).$el.removeClass("excluded");
+//				this.children.findByCustom(id).$el.removeClass("excluded");
+				this.children.findByModel(this.collection.get(id)).$el.removeClass("excluded");
 			}, this);
 		}
 	},

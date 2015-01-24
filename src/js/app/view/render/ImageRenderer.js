@@ -89,34 +89,37 @@ module.exports = Backbone.View.extend({
 			this.listenTo(owner, "select:one select:none", function(model) {
 				if (check(owner.selectedIndex)) {
 					this.stopListening(owner);
-					this.$el.on("webkittransitionend transitionend", this._loadImage);
 					_.delay(this._loadImage, Globals.TRANSITION_DELAY * 3);
+					this.$el.on("webkittransitionend transitionend", this._loadImage);
 				}
 			});
 		}
 	},
 
-	_loadImage: function() {
-		console.log("ImageRenderer._loadImage: " + ((arguments[0])? arguments[0].type : "delayend"), this.cid);
-		this.$el.off("webkittransitionend transitionend");
-
+	_loadImage: function(ev) {
+		if (arguments[0] instanceof Event) {
+			if (ev.propertyName != "transform") {
+				return;
+			}
+			this.$el.off("webkittransitionend transitionend");
+		}
 		loadImage(this.image, this.model.getImageUrl(), this).then(
 			function (url, source, ev) {
-				this.model.trigger("load:done");
+//				this.model.trigger("load:done");
 				this.$el.removeClass("pending").addClass("done");
-				console.info("ImageRenderer.onLoad: " + this.model.get("f"), ev);
+//				console.info("ImageRenderer.onLoad: " + this.model.get("f"), ev);
 			},
 			function (err, source, ev) {
-				this.model.trigger("load:error");
+//				this.model.trigger("load:error");
 				this.$el.removeClass("pending").addClass("error");
-				console.error("ImageRenderer.onError: " + err.message, arguments);
+//				console.error("ImageRenderer.onError: " + err.message, arguments);
 			},
 			function (progress, source, ev) {
 				if (progress == "start") {
-					this.model.trigger("load:start");
+//					this.model.trigger("load:start");
 					this.$el.removeClass("idle").addClass("pending");
 				} else {
-					this.model.trigger("load:progress", progress);
+//					this.model.trigger("load:progress", progress);
 				}
 			}
 		);

@@ -7,11 +7,16 @@ $hu: 20px;
 $vu: 12px;
 
 // Time base units (transitions/animations)
-$duration: 			0.300s;
-$delay-interval: 	0.033s;
-
+$duration: 			0.350s;
+$delay-interval: 	0.050s;
 $delay: $duration + $delay-interval;
-$ease: ease;
+
+$ease-time-factor: 0.2;
+$ease-prop-factor: 0.005;
+//$ease: ease;
+$ease:		cubic-bezier($ease-time-factor, $ease-prop-factor, #{1 - $ease-time-factor}, #{1 - $ease-prop-factor});
+$ease-in:	cubic-bezier($ease-time-factor, $ease-prop-factor, 0.5, 0.5);
+$ease-out:	cubic-bezier(0.5, 0.5, #{1 - $ease-time-factor}, #{1 - $ease-prop-factor});
 //$ease: ease-out;
 //$ease: linear;
 
@@ -42,7 +47,7 @@ $main-inner-width-large:	$main-width-large - $page-margin-left - $gutter/2;
 // Color/Typefaces: private (do not use directly)
 // ------------------------------------
 $light-fgcolor: 	hsl(47, 5%, 15%);
-$light-bgcolor: 	hsl(47, 5%, 92%);
+$light-bgcolor: 	hsl(47, 5%, 95%);
 
 $dark-fgcolor: 		hsl(47, 5%, 95%);
 $dark-bgcolor: 		hsl(47, 5%, 25%);

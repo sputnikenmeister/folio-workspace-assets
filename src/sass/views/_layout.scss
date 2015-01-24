@@ -1,6 +1,6 @@
-/* ---------------------- *
- * Vertical flow
- * ---------------------- */
+// ----------------------
+// Vertical flow
+// ----------------------
 // from: folio.scss @import "compass/layout";
 // @include sticky-footer( 6em, "#container", "#container-footer", "#footer" );
 // compass-core-1.0.1/stylesheets/compass/layout/_sticky-footer.scss
@@ -26,9 +26,9 @@ html, body {
 	height: $footer-height;
 }
 
-/* ---------------------- *
- * Wrapper
- * ---------------------- */
+// ----------------------
+// Wrapper
+// ----------------------
 
 #container {
 	width: 100%;
@@ -40,9 +40,9 @@ html, body {
 	}
 }
 
-/* ---------------------- *
- * Top-level horizontal flow
- * ---------------------- */
+// ----------------------
+// Top-level horizontal flow
+// ----------------------
 
 #header,
 #navigation,
@@ -63,23 +63,9 @@ html, body {
 	width: 100%;
 }
 
-//#container {
-//	z-index: 0;
-//	#keyword-list 		{ z-index: 1; }
-//	#bundle-list 		{ z-index: 1; }
-//	.label-carousel 	{ z-index: 3; }
-//	.image-carousel 	{ z-index: 2; }
-//	#content-detail		{ z-index: 4; }
-//}
-//.carousel-item {
-//		z-index: 1;
-//		&.candidate { z-index: 2; }
-//		&.selected { z-index: 3; }
-//}
-
-/* ---------------------- *
- * Header
- * ---------------------- */
+// ----------------------
+// Header
+// ----------------------
 
 #header {
 	height: 3rem;
@@ -90,19 +76,19 @@ html, body {
 	}
 }
 
-/* ---------------------- *
- * Navigation
- * ---------------------- */
+// ----------------------
+// Navigation
+// ----------------------
 
 $navigation-height: 10rem;
 $nav-root-height: 4.5rem;
 
 @mixin transform-transition($delay: $delay) {
-	transition: transform $duration $delay $ease;
-//	transition-property: transform;
-//	transition-duration: $duration;
-//	transition-timing-function: $ease;
-//	transition-delay: $delay;
+	transition-property: transform;
+	transition-timing-function: $ease;
+	transition-duration: $duration + 0.001s;
+	transition-delay: $delay + 0.001s;
+//	transition: transform $duration $delay $ease;
 }
 
 #navigation {
@@ -115,33 +101,30 @@ $nav-root-height: 4.5rem;
 	@include media($ipad-landscape) {
 		min-height: $navigation-height - 1.5rem;
 	}
-//	height: auto;
-//	&.without-bundle { height: auto; }
-//	&.with-bundle { height: $navigation-height + 3; }
-	@at-root {
-		.without-bundle {
-			#site-name		{ @include transform-transition($delay: $delay * 2); }
-			#bundle-list	{ @include transform-transition($delay: $delay * 1); }
-			#keyword-list	{ @include transform-transition($delay: $delay * 1); }
-		}
-		.with-bundle {
-			#site-name		{ @include transform-transition($delay: $delay * 0); }
-			#bundle-list	{ @include transform-transition($delay: $delay * 1); }
-			#keyword-list	{ @include transform-transition($delay: $delay * 1); }
-		}
-	}
 }
 
-#nav-root{
-	position: relative;
-	height: $nav-root-height;
-}
+//#site-name, #bundle-list, #keyword-list {
+//	@include transform-transition($delay: $delay * 1);
+//}
 
 #bundle-list {
-	@include heading-font();
 	position: absolute;
 	left: $page-margin-left;
-	width: calc(60% - #{$gutter + $page-margin-left});
+	width: $main-inner-width - $aside-inner-width;
+//	width: calc(60% - #{$gutter + $page-margin-left});
+	transform: translate3d(-1px, 0, 0);
+	@include transform-transition($delay: $delay * 1);
+//	@at-root .without-bundle #bundle-list {
+//		transform: translate3d(-1px, 0, 0);
+//	}
+	@at-root .with-bundle #bundle-list {
+		transform: translate3d(-1px, #{-$nav-root-height}, 0);
+	}
+	@include media($desktop-small) {
+		width: $main-inner-width-large - $aside-inner-width-large;
+	}
+
+	@include heading-font();
 	.list-item {
 		width: 100%;
 		.completed {
@@ -156,84 +139,114 @@ $nav-root-height: 4.5rem;
 			font-weight: 400;
 		}
 	}
-	transform: translate3d(-1px, 0, 0);
-	@at-root .without-bundle #bundle-list {
-		transform: translate3d(-1px, 0, 0);
-	}
-	@at-root .with-bundle #bundle-list {
-		transform: translate3d(-1px, #{-$nav-root-height}, 0);
-	}
 }
 
 #keyword-list {
-	@include paragraph-font();
 	position: absolute;
-
 	width: $aside-inner-width;
 	transform: translate3d($main-width, 0, 0.1px);
-
-	@at-root .without-bundle #keyword-list {
-		transform: translate3d($main-width, 0, 0.1px);
-		@include media($desktop-small) {
-			width: $aside-inner-width-large;
-			transform: translate3d($main-width-large, 0, 0.1px);
-		}
-		@include media($ipad-landscape) {
-			width: $aside-inner-width-large;
-			transform: translate3d($main-width-large, 0, 0.1px);
-		}
-	}
-
+	@include transform-transition($delay: $delay * 1);
+//	@at-root #keyword-list, .without-bundle #keyword-list {
+//	@at-root #keyword-list {
+//		transform: translate3d($main-width, 0, 0.1px);
+//	}
 	@at-root .with-bundle #keyword-list {
 		transform: translate3d($main-width, #{-$nav-root-height}, 0.1px);
-		@include media($desktop-small) {
-			width: $aside-inner-width-large;
+	}
+
+	@include media($desktop-small) {
+		width: $aside-inner-width-large;
+//		@at-root #keyword-list, .without-bundle #keyword-list {
+		@at-root #keyword-list {
+			transform: translate3d($main-width-large, 0, 0.1px);
+		}
+		@at-root .with-bundle #keyword-list {
 			transform: translate3d($main-width-large, #{-$nav-root-height}, 0.1px);
 		}
-		@include media($ipad-landscape) {
-			width: $aside-inner-width-large;
+	}
+	@include media($ipad-landscape) {
+		width: $aside-inner-width-large;
+//		@at-root #keyword-list, .without-bundle #keyword-list {
+		@at-root #keyword-list {
+			transform: translate3d($main-width-large, 0, 0.1px);
+		}
+		@at-root .with-bundle #keyword-list {
 			transform: translate3d($main-width-large, #{$navigation-height - $nav-root-height - 1.5rem}, 0.1px);
 		}
-	}
-	@at-root .with-bundle.with-image #keyword-list {
-		@include media($ipad-landscape) {
-			width: $aside-inner-width-large;
-			transform: translate3d(0, #{$navigation-height - $nav-root-height - 1.5rem}, 0.1px);
-			@include transform-transition($delay: $delay * 2);
+		@at-root #keyword-list-wrapper {
+			transform: translate3d(0, 0, 0);
+			@include transform-transition($delay: $delay * 0);
 		}
+		@at-root .with-image #keyword-list-wrapper {
+			transform: translate3d(#{-$main-width-large}, 0, 0);
+//			@include transform-transition($delay: $delay * 0);
+		}
+//		@at-root .with-bundle #keyword-list {
+//			@include transform-transition($delay: $delay * 0);
+//		}
 	}
+
+	@include paragraph-font();
 	.list-item {
+//		display: block;
 		white-space: nowrap;
-		width: 100%;
+		max-height: 1.5rem;
 		a {
 			font-size: 13px;
+			line-height: 1.5rem;
+		}
+//		width: 100%;
+		width: $aside-inner-width;
+		@include media($desktop-small) {
+			width: $aside-inner-width-large;
 		}
 	}
 	.list-group {
-		display: block;
+//		display: block;
 		height: 0;
-		width: calc(100% - #{$gutter});
+//		width: calc(100% - #{$gutter});
+		width: $aside-inner-width - $gutter;
+		@include media($desktop-small) {
+			width: $aside-inner-width-large - $gutter;
+		}
 		span {
 			@include small-caps();
 			display: block;
-			height: 1.5rem;
-			width: 100%;
-			transform: translate3d(-100%, 0, 0.1px);
+			padding-top: 0.5rem;
+//			height: 1.5rem;
+//			width: 100%;
+			transform: translate3d(-100%, -0.5rem, 0.1px);
 			@include transform-transition($delay: $delay * 1);
 		}
 	}
-	&.skip-transitions .list-group span {
-		@extend %skip-transitions;
-	}
-
 	@include media($ipad-landscape) {
-		@at-root .with-bundle #keyword-list .list-group {
-			height: 2rem;
-			span {
-				transform: translate3d(-0.1px, 0.5rem, 0.1px);
+		@at-root {
+			.with-bundle #keyword-list .list-group {
+				height: 2rem !important;
+			}
+//			#keyword-list .list-group span {
+//				transform: translate3d(-100%, 0.5rem, 0.1px);
+//				@include transform-transition($delay: $delay * 1);
+//			}
+			.with-bundle #keyword-list .list-group span {
+				transform: translate3d(-0.1px, 0, 0.1px);
+				@include transform-transition($delay: $delay * 1);
+			}
+			.with-image #keyword-list .list-group span {
+				transform: translate3d(-0.1px, 0, 0.1px);
+				@include transform-transition($delay: $delay * 0);
 			}
 		}
 	}
+
+	@at-root .skip-transitions #keyword-list .list-group span {
+		@extend %skip-transitions;
+	}
+}
+
+#nav-root {
+	position: relative;
+	height: $nav-root-height;
 }
 
 #site-name {
@@ -243,11 +256,12 @@ $nav-root-height: 4.5rem;
 	display: inline-block;
 	padding-right: $hu;
 
-	@at-root .without-bundle #site-name {
-		transform: translate3d(-1px, 0, 0.1px);
-	}
+	transform: translate3d(-1px, 0, 0.1px);
+	@include transform-transition($delay: $delay * 2);
+
 	@at-root .with-bundle #site-name {
 		transform: translate3d(calc(-100% - #{$hu}), 0, 0.1px);
+		@include transform-transition($delay: $delay * 0);
 	}
 }
 
@@ -278,19 +292,18 @@ $nav-root-height: 4.5rem;
 	}
 }
 
-/* ---------------------- *
- * Content
- * ---------------------- */
+// ----------------------
+// Content
+// ----------------------
 
 #content {
 	position: relative;
 }
 
-/* ---------------------- *
- * Carousel
- * ---------------------- */
+// ----------------------
+// Carousel
+// ----------------------
 
-/* carousel layout */
 .carousel {
 	overflow: hidden;
 	position: relative;
@@ -361,9 +374,9 @@ $nav-root-height: 4.5rem;
 	top: -1.5rem;
 }
 
-/* ---------------------- *
- * Other content views
- * ---------------------- */
+// ----------------------
+// Other content views
+// ----------------------
 
 #content-detail {
 	position: absolute;

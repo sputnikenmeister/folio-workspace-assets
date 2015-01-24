@@ -55,7 +55,7 @@ var AppView = Backbone.View.extend({
 			hashChange: true
 		});
 
-		this.navigationView.render();
+//		this.navigationView.render();
 
 		var $body = this.$el;
 		// BODY.skip-transitions clears CSS transitions for a frame

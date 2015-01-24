@@ -89,7 +89,7 @@ var ContentView = View.extend({
 
 		this.createImageDetail(images);
 //		this.createLabelCarousel(images);
-		var carousel = this.createImageCarousel(images, bundle);
+		this.createImageCarousel(images, bundle);
 //		this.$el.css("display", "");
 		// Show views
 		if (!skipAnimation) {
@@ -99,10 +99,6 @@ var ContentView = View.extend({
 					.transit({opacity: 1}, Globals.TRANSITION_DURATION);
 			});
 		}
-	},
-
-	_onPan: function(ev) {
-		console.log(ev.type, ev.target);
 	},
 
 	/* -------------------------------
@@ -154,25 +150,26 @@ var ContentView = View.extend({
 //		this.children.length = 0;
 //	},
 
-//	registerHammer: function(hammer) {
-//		this.hammer.off on("panstart panmove panend pancancel",
-//		var keywordList = Backbone.$("#keyword-list");
-//		if (keywordList) {
-//		hammer.on("panstart panmove panend pancancel", function(ev) {
-//				switch (ev.type) {
-//					case "panstart":
-//						break;
-//					case "panmove":
-//						break;
-//					case "panend":
-//						break;
-//					case "pancancel":
-//						break;
-//
-//				}
-//			});
-//		}
-//	},
+	registerHammer: function() {
+		var keywordList = Backbone.$("#keyword-list");
+		if (keywordList) {
+			this.hammer.on("panstart panmove panend pancancel", this._onPan);
+		}
+	},
+
+	_onPan: function(ev) {
+		switch (ev.type) {
+			case "panstart":
+				break;
+			case "panmove":
+				break;
+			case "panend":
+				break;
+			case "pancancel":
+				break;
+
+		}
+	},
 
 	/* -------------------------------
 	 * Components
@@ -187,8 +184,8 @@ var ContentView = View.extend({
 		});
 		hammerTap = new Hammer.Tap({
 			threshold: 10,
-			interval: 250,
-			time: 200
+			interval: 50,
+//			time: 200
 		});
 		hammerTap.requireFailure(hammerPan);
 		hammer.add([hammerPan, hammerTap]);

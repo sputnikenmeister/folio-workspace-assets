@@ -29,20 +29,21 @@ var GroupingListView = FilterableListView.extend({
 			this.groupingKey = options.groupings.key;
 			this.groupingCollection = options.groupings.collection;
 
-			this.groupingChildren = new Container();
+			this.groupingChildren = this.children;//new Container();
 			this.groupingRenderer = options.groupings.renderer || GroupingListView.GroupingRenderer;
 			this.groupingCollection.each(this.assignGroupingView, this);
 		}
 	},
 
 	/** @private */
-	renderFilterBy: function (newAssoc) {
+	renderFilterBy: function (newVal, oldVal) {
+//		var newIds;
+//		if (newVal) {
+//			newIds = newVal.get(this.groupingKey);
+//		}
+//		this.renderChildrenGroups(newIds);
+		this.renderChildrenGroups(newVal && newVal.get(this.groupingKey));
 		FilterableListView.prototype.renderFilterBy.apply(this, arguments);
-		var groupIds;
-		if (newAssoc) {
-			groupIds = newAssoc.get(this.groupingKey);
-		}
-		this.renderChildrenGroups(groupIds);
 	},
 
 	/** @private */
@@ -68,7 +69,7 @@ var GroupingListView = FilterableListView.extend({
 			model: item,
 			el: item.selector()
 		});
-		this.groupingChildren.add(view, item.id);
+		this.groupingChildren.add(view);//, item.id);
 		return view;
 	},
 

@@ -1,5 +1,3 @@
-
-
 // ------------------------------------
 // Elements
 // ------------------------------------
@@ -7,52 +5,45 @@
 html {
 	font: $base-font;
 }
-
 body {
 	color: $color;
 	background-color: $background-color;
-	line-height: 1.5rem;
+	line-height: 1.5em;
 	-moz-osx-font-smoothing: grayscale;
 }
-
 p {
 	@include paragraph-font();
 }
-
 h1 {
 	@include heading-font();
 }
-
 h2 {
 	@include heading-font($size: 28px, $weight: 300, $lead: 30px);
 }
-
 h3 {
 	@include heading-font($size: 20px, $weight: 300, $lead: 24px);
 }
-
 em {
 	font-style: italic;
 }
-
 strong {
 	font-weight: bold;
 }
-
 a {
 	text-decoration: none;
 	color: inherit;
 	&:focus {
-		outline: 0 none;
+		outline: inherit;//0 none;
 	}
 }
-
-*::selection {
-	color: $selection-fgcolor;
-	background-color: $selection-bgcolor;
+//*::selection {
+//	color: $selection-fgcolor;
+//	background-color: $selection-bgcolor;
+//}
+@import "compass/css3/selection";
+* {
+	@include selection($selection-bgcolor, $selection-fgcolor);
 }
-//@import "compass/css3/selection";
-//* { @include selection($selection-bgcolor, $selection-fgcolor); }
 
 // ------------------------------------
 // Definitions helper classes
@@ -62,7 +53,6 @@ a {
 //	@include font-smoothing();
 	@include small-caps();
 }
-
 div {
 	-webkit-tap-highlight-color: transparent;
 }

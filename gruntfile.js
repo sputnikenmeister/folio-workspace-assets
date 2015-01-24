@@ -14,7 +14,7 @@ module.exports = function (grunt) {
 		fontsDir: "fonts",
 		javascriptsDir: "js",
 		httpPath: "/workspace/assets",
-		require: "./build/compass-encode.rb",
+//		require: "./build/compass-encode.rb",
 	});
 	grunt.config("compass.client.options", {
 //		specify: "src/sass/folio.scss",
@@ -166,14 +166,14 @@ module.exports = function (grunt) {
 			tasks: ["compass:client", "autoprefixer:client"],
 			files: ["src/sass/**/*.scss"],
 		},
-		"build-styles-svg": {
-			tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
-			files: ["images/**/*.svg"],
-		},
-		//"process-sources": {
-		//	tasks: ["jshint"],
-		//	files: ["src/js/**/*.js"],
-		//},
+//		"build-styles-svg": {
+//			tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
+//			files: ["images/**/*.svg"],
+//		},
+//		"process-sources": {
+//			tasks: ["jshint"],
+//			files: ["src/js/**/*.js"],
+//		},
 		"process-vendor": {
 			tasks: ["exorcise:vendor", "uglify:vendor"],
 			files: ["js/folio-vendor.js"],
@@ -191,15 +191,15 @@ module.exports = function (grunt) {
 	_tasks.buildVendor 		= ["browserify:vendor", "exorcise:vendor", "uglify:vendor"];
 	_tasks.buildClient 		= ["browserify:client", "exorcise:client", "uglify:client"];
 	_tasks.buildScripts 	= _tasks.buildVendor.concat(_tasks.buildClient);
-	_tasks.buildAll 		= _tasks.buildStyles.concat(_tasks.buildScripts)
+	_tasks.buildAll 		= _tasks.buildStyles.concat(_tasks.buildScripts);
 
 	// Task Groups
-	grunt.registerTask("build-all", _tasks.buildAll);
-	grunt.registerTask("watch-all", ["browserify:watchable", "watch"]);
-	grunt.registerTask("watch-clean", ["clean", "compass:clean", "buildAll", "watchAll"]);
+	grunt.registerTask("build-debug", _tasks.buildAll);
+	grunt.registerTask("watch-debug", ["browserify:watchable", "watch"]);
+	grunt.registerTask("watch-clean", ["clean", "compass:clean", "build-debug", "watch-debug"]);
 
 	// Default task
-	grunt.registerTask("default", ["buildAll"]);
+	grunt.registerTask("default", ["build-debug"]);
 
 	/* --------------------------------
 	 * dist
@@ -256,14 +256,14 @@ module.exports = function (grunt) {
 		}
 	});
 
-	grunt.registerTask("dist", ["compass:clean", "compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
+	grunt.registerTask("build-dist", ["compass:clean", "compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
 
 
 	/* --------------------------------
 	 * Custom tasks/ CLI executions
 	 * -------------------------------- */
 
-	grunt.registerTask('fontello', 'Open fontello configuration in browser', function() {
+	grunt.registerTask("fontello", "Open fontello configuration in browser", function() {
 		var child = grunt.util.spawn({
 			cmd: "fontello-cli",
 			args: ["open", "--config", "build/fontello.json"],
