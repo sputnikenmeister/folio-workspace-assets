@@ -38,7 +38,7 @@ var CarouselEmptyRenderer = require("./render/CarouselEmptyRenderer");
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
-var imageDescTemplate = require("./template/CollectionStack.Image.tpl");
+var imageDescStackTemplate = require("./template/CollectionStack.Image.tpl");
 
 /**
  * @constructor
@@ -87,7 +87,7 @@ var ContentView = View.extend({
 	createChildren: function (bundle, skipAnimation) {
 		var images = bundle.get("images");
 
-		this.createImageDetail(images);
+		this.createImageDescStack(images);
 //		this.createLabelCarousel(images);
 		this.createImageCarousel(images, bundle);
 //		this.$el.css("display", "");
@@ -194,7 +194,7 @@ var ContentView = View.extend({
 
 	createContainer: function(){
 		var container = document.createElement("div");
-		container.id = "content-detail";
+		container.id = "content-wrapper";
 		this.$el.append(container);
 		return container;
 	},
@@ -237,13 +237,14 @@ var ContentView = View.extend({
 		return this.children[this.children.length] = view;
 	},
 
-	createImageDetail: function(images) {
+	createImageDescStack: function(images) {
 		var view = new CollectionStack({
 			collection: images,
-			template: imageDescTemplate,
-			className: "image-detail"
+			template: imageDescStackTemplate,
+			className: "image-desc-stack"
 		});
 		view.render().$el.appendTo(this.container);
+//		view.render().$el.appendTo(this.el);
 		return this.children[this.children.length] = view;
 	},
 

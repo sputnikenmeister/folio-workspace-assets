@@ -14,25 +14,6 @@
 	}
 }
 
-//
-// animation
-//
-.carousel {
-	.carousel-item {
-		transform: translate3d(0%,0,0) scale3d(1,1,1);
-		-webkit-backface-visibility: hidden;
-		-webkit-transform-style: preserve-3d;
-		transition: transform $duration $ease;
-	}
-	&.skip-transitions .carousel-item {
-//		transition: none !important;
-		@extend %skip-transitions;
-	}
-}
-
-//
-// Renderer-specific rules
-//
 .carousel-item.default-carousel-item {
 	.sizing {
 		display: inline-block;
@@ -40,6 +21,25 @@
 	}
 }
 
+//
+// Animation
+//
+$pan-ease: $ease;
+.carousel {
+	.carousel-item {
+		transform: translate3d(0%,0,0) scale3d(1,1,1);
+		backface-visibility: hidden;
+		transform-style: preserve-3d;
+		transition: transform $duration $pan-ease;
+	}
+	&.skip-transitions .carousel-item {
+		@extend %skip-transitions;
+	}
+}
+
+//
+// .image-carousel
+//
 .carousel-item.image-item {
 	.sizing {
 		position: relative;
@@ -102,12 +102,11 @@
 	}
 }
 
-//
-// carousel-specific rules
-//
 .carousel.image-carousel {
 	padding-top: 1.5rem;
 	padding-bottom: 1.5rem;
+//	margin-top: -1.5rem;
+//	margin-bottom: -1.5rem;
 	.empty-item {
 		height: calc(100% - 3rem);
 		p {
@@ -135,6 +134,9 @@
 }
 
 
+//
+// .label-carousel
+//
 .carousel.label-carousel {
 	padding-top: 0;
 	padding-bottom: 0;

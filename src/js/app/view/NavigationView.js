@@ -43,8 +43,9 @@ module.exports = View.extend({
 
 	/** @override */
 	initialize: function (options) {
-//		this.$sitename = this.$("#site-name a");
+		this.$sitename = this.$("#site-name");
 //		this.$sitename.on("click", _.bind(this.onSitenameClick, this));
+		this.$sitename.wrap("<div id=\"site-name-wrapper\" class=\"transform-box\"></div>");
 
 		// Component: bundle pager
 		this.bundlePager = new CollectionPager({
@@ -72,6 +73,7 @@ module.exports = View.extend({
 			"view:select:one": controller.selectBundle,
 			"view:select:none": controller.deselectBundle
 		});
+		this.bundlesView.$el.wrap("<div id=\"bundle-list-wrapper\" class=\"transform-box\"></div>");
 
 		this.keywordsView = new GroupingListView({
 			el: "#keyword-list",
@@ -84,7 +86,7 @@ module.exports = View.extend({
 			},
 			collapsed: true,
 		});
-		this.keywordsView.$el.wrap("<div id=\"keyword-list-wrapper\"></div>");
+		this.keywordsView.$el.wrap("<div id=\"keyword-list-wrapper\" class=\"transform-box\"></div>");
 
 		this.listenTo(bundles, {
 			"select:one": this.onSelectOne,

@@ -37,11 +37,6 @@ var GroupingListView = FilterableListView.extend({
 
 	/** @private */
 	renderFilterBy: function (newVal, oldVal) {
-//		var newIds;
-//		if (newVal) {
-//			newIds = newVal.get(this.groupingKey);
-//		}
-//		this.renderChildrenGroups(newIds);
 		this.renderChildrenGroups(newVal && newVal.get(this.groupingKey));
 		FilterableListView.prototype.renderFilterBy.apply(this, arguments);
 	},

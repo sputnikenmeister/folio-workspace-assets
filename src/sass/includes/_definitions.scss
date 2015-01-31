@@ -11,14 +11,17 @@ $duration: 			0.350s;
 $delay-interval: 	0.050s;
 $delay: $duration + $delay-interval;
 
-$ease-time-factor: 0.2;
-$ease-prop-factor: 0.005;
-//$ease: ease;
-$ease:		cubic-bezier($ease-time-factor, $ease-prop-factor, #{1 - $ease-time-factor}, #{1 - $ease-prop-factor});
-$ease-in:	cubic-bezier($ease-time-factor, $ease-prop-factor, 0.5, 0.5);
-$ease-out:	cubic-bezier(0.5, 0.5, #{1 - $ease-time-factor}, #{1 - $ease-prop-factor});
-//$ease: ease-out;
+$ease: ease;
 //$ease: linear;
+//$ease: ease-in-out;
+
+//$ease-time:	0.200;
+//$ease-prop:	0.005;
+//$ease:		cubic-bezier($ease-time, $ease-prop, #{1 - $ease-time}, #{1 - $ease-prop});
+//$ease-in:		cubic-bezier($ease-time, $ease-prop, 0.5, 0.5);
+//$ease-out:	cubic-bezier(0.5, 0.5, #{1 - $ease-time}, #{1 - $ease-prop});
+//$ease-in:		cubic-bezier(0.400, 0.000, 0.600, 0.400);
+//$ease-out:	cubic-bezier(0.400, 0.600, 0.600, 1.000);
 
 // ------------------------------------
 // Layout
@@ -29,10 +32,10 @@ $gutter: 					2 * $hu;
 $page-margin-left: 			1 * $hu;
 $page-margin-right: 		3 * $hu;
 
-$page-width: 				35 * $hu;//700px;
-$page-width-large: 			47 * $hu;//940px;
-$aside-width:				11 * $hu;
-$aside-width-large: 		13 * $hu;
+$page-width: 				34 * $hu;//700px;
+$page-width-large: 			46 * $hu;//940px;
+$aside-width:				12 * $hu;
+$aside-width-large: 		12 * $hu;
 $main-width:				$page-width - $aside-width;
 $main-width-large:			$page-width-large - $aside-width-large;
 
@@ -58,11 +61,12 @@ $inverse-background-color: $dark-bgcolor;
 // Font fallback lists
 $mono-fallback: Consolas, Menlo, "Andale Mono", monospace;
 $humanist-fallback: "Lucida Grande","Lucida Sans", Calibri, Tahoma, Verdana, Kalimati, sans-serif;
+$grotesque-fallback: "Helvetica", sans-serif;
 $modern-fallback: "georgia", sans-serif;
 
 // Webfonts included at compile-time
-@import "fonts/_franklin-gothic-fs";
-$font-webfont-sans: "Franklin Gothic FS", $humanist-fallback;
+//@import "fonts/_franklin-gothic-fs";
+$font-webfont-sans: "Franklin Gothic FS", $grotesque-fallback;
 //@import "fonts/_old-standard-tt";
 //$font-webfont-serif: "Old Standard TT", $modern-fallback;
 //@import "fonts/_source-sans-pro";
@@ -93,8 +97,7 @@ $large-font-family: $font-webfont-sans;
 $small-font-family: $humanist-fallback;
 $mono-font-family: $mono-fallback;
 
-// font shorthands
-$base-font: 12px/1 $font-webfont-sans;
+$base-font: $font-webfont-sans;
 
 // ------------------------------------
 // Typography mixins

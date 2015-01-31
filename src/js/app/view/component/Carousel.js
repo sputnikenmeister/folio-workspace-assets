@@ -52,6 +52,7 @@ var Carousel = DeferredRenderView.extend({
 		if (options.direction === Hammer.DIRECTION_VERTICAL) {
 			this.direction = Hammer.DIRECTION_VERTICAL;
 		}
+		this.childSizes = {};
 		this.children = new Container();
 		this.skipTransitions = true;
 
@@ -394,8 +395,6 @@ var Carousel = DeferredRenderView.extend({
 	 * resize
 	 * --------------------------- */
 
-	_childSizes: {},
-
 	/** @param {Object} ev */
 	_onResize: function (ev) {
 		this.measure();
@@ -420,6 +419,8 @@ var Carousel = DeferredRenderView.extend({
 
 		this.contentBefore = this.emptyChild.el[this.dirProp("offsetLeft", "offsetTop")];
 		this.contentAfter = this.contentBefore + this.emptyChild.el[this.dirProp("offsetWidth", "offsetHeight")];
+		this.contentBefore += 100;
+		this.contentAfter -= 100;
 		this.containerSize = this.el[this.dirProp("offsetWidth", "offsetHeight")];
 		this.selectThreshold = Math.min(this.selectThreshold, this.containerSize * 0.1);
 
@@ -445,7 +446,7 @@ var Carousel = DeferredRenderView.extend({
 			sizes.before = 0;
 			sizes.after = 0;
 		}
-		return this._childSizes[child.cid] = sizes;
+		return this.childSizes[child.cid] = sizes;
 	},
 
 	/* --------------------------- *
@@ -463,7 +464,7 @@ var Carousel = DeferredRenderView.extend({
 	},
 
 	_scrollBy: function (delta, skipTransitions) {
-		var sChild, sSizes, child, sizes, pos;
+		var sChild, sSizes, child, sizes, pos, txVal;
 
 		if (skipTransitions) {
 			this.$el.addClass("skip-transitions");
@@ -472,39 +473,18 @@ var Carousel = DeferredRenderView.extend({
 		}
 
 		sChild = this.collection.selected? this.children.findByModel(this.collection.selected): this.emptyChild;
-		sSizes = this._childSizes[sChild.cid];
+		sSizes = this.childSizes[sChild.cid];
 
 		var scroll = function (child) {
-			sizes = this._childSizes[child.cid];
+			sizes = this.childSizes[child.cid];
 			pos = this._getScrollOffset(sizes, sSizes, delta);
 
-//			child.$el.stop();
-//			if (skipTransitions) {
-//				child.$el.css({ transform: this._getTransformValue(pos) });
-//			} else {
-//				var duration = 400;
-//				child.$el.transit({ transform: this._getTransformValue(pos) }, duration);
-//			}
-
-			var val = this._getTransformValue(pos);
-			child.el.style.webkitTransform = val;
-			child.el.style.mozTransform = val;
-			child.el.style.transform = val;
+			txVal = this._getTransformValue(pos);
+			child.el.style.webkitTransform = txVal;
+			child.el.style.mozTransform = txVal;
+			child.el.style.transform = txVal;
 		};
-
-//		scroll.call(this, this.emptyChild);
 		this.children.each(scroll, this);
-//		this.collection.each(function (model, index) {
-//			scroll(this.children.findByModel(model));
-//		}, this);
-
-//		if (this.skipTransitions || skipTransitions) {
-//			this.$el.addClass("skip-transitions");
-//			_.defer(function(context) {
-//				context.$el.removeClass("skip-transitions");
-//				context.skipTransitions = false;
-//			}, this);
-//		}
 	},
 
 	_getTransformValue: function(pos) {

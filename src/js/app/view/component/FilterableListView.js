@@ -37,7 +37,6 @@ var FilterableListView = DeferredRenderView.extend({
 		this.skipTransitions = false;
 		this.$el.addClass("skip-transitions");
 		this.collection.each(this.assignChildView, this);
-//		this._renderLayout();
 
 		_.bindAll(this, "_onResize");
 		Backbone.$(window).on("orientationchange resize", this._onResize);
@@ -67,7 +66,8 @@ var FilterableListView = DeferredRenderView.extend({
 
 	/** @param {Object} ev */
 	_onResize: function (ev) {
-		this._renderLayout();
+		this.eltSizes = void 0;
+		this.renderLayout();
 	},
 
 	render: function() {
@@ -87,26 +87,54 @@ var FilterableListView = DeferredRenderView.extend({
 		this.validateRender("collapsed");
 		this.validateRender("selection");
 		this.validateRender("filterBy");
-		this._renderLayout();
+		this.renderLayout();
 	},
 
-	_renderLayout: function() {
-		var tx, elt = this.el.firstElementChild, pos = elt.offsetTop;
-//		var tx, elt = this.el.firstElementChild, pos = elt.clientTop;
+	renderLayout: function() {
+		var tx, elt, posX, posY;
+
+		elt = this.el.firstElementChild;
+		posY = elt.clientTop;
+		posX = elt.clientLeft;
 		do {
-//			tx = "translate3d(" + elt.clientLeft + "px," + pos + "px, 0)";
-			tx = "translate3d(0," + pos + "px, 0)";
+			tx = "translate3d(" + posX + "px," + posY + "px, 0.1px)";
+			if (elt.className.indexOf("excluded") === -1) {
+				posY += elt.clientHeight;
+			}
 			elt.style.position = "absolute";
 			elt.style.webkitTransform = tx;
 			elt.style.mozTransform = tx;
 			elt.style.transform = tx;
-			if (elt.className.indexOf("excluded") === -1) {
-				pos += elt.offsetHeight;
-//				pos += elt.clientHeight;
-			}
 		} while (elt = elt.nextElementSibling);
-		this.el.style.minHeight = pos + "px";
+
+		this.el.style.height = posY + "px";
 	},
+
+//	measure: function(force) {
+//		if (_.isUndefined(this.childSizes) || force) {
+//			this.childSizes = {};
+//			this.children.each(this.measureChild, this);
+//		}
+//	},
+
+//	measureElements: function() {
+//		if (_.isUndefined(this.childSizes)) {
+//			this.childSizes = {};
+//			elt = this.el.firstElementChild;
+//			do {
+//				this.childSizes[elt] = elt.clientHeight;
+//				elt.style.position = "absolute";
+//			} while (elt = elt.nextElementSibling);
+//		}
+//	},
+
+//	measureChild: function(child) {
+//		var sizes = {}, elt = child.el;
+//		sizes.height = elt.clientHeight;
+//		sizes.left = elt.clientLeft;
+//		this.childSizes[child.cid] = sizes;
+//		return sizes;
+//	},
 
 	/* --------------------------- *
 	 * Child views
@@ -204,14 +232,6 @@ var FilterableListView = DeferredRenderView.extend({
 
 	/** @private */
 	renderFilterBy: function (newVal, oldVal) {
-//		var newIds, oldIds;
-//		if (newVal) {
-//			newIds = newVal.get(this.filterKey);
-//		}
-//		if (oldVal) {
-//			oldIds = oldVal.get(this.filterKey);
-//		}
-//		this.renderFiltersById(newIds, oldIds);
 		this.renderFiltersById(
 			newVal && newVal.get(this.filterKey),
 			oldVal && oldVal.get(this.filterKey)

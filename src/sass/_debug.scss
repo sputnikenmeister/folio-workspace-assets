@@ -21,13 +21,12 @@ $darkolivegreen:	darkolivegreen;
 
 .debug-grid {
 	background-color: transparent;
-	background-image: image-url("debug-background.svg");
+	background-image: image-url("debug-background-720.svg");
 	background-repeat: no-repeat;
-	background-position: calc(50% + 130px) 1rem;
-//	background-position: calc(50% + #{($page-width-large - $page-width)/2 + ($page-margin-left - $page-margin-right)}) 1rem;
+	background-position: calc(50% + 1px) calc(1rem + 1px);
 	@include media($desktop-small) {
-		background-position: calc(50% + 10px) 1rem;
-//		background-position: calc(50% + #{$page-margin-left - $page-margin-right}) 1rem;
+		background-image: image-url("debug-background-960.svg");
+		background-position: calc(50% + 1px) calc(1rem + 1px);
 	}
 }
 .debug-blocks {
@@ -39,7 +38,8 @@ $darkolivegreen:	darkolivegreen;
 	}
 	#navigation {
 		background-color: transparentize($salmon, 0.8);
-		outline: 1px dashed $salmon;
+		outline: 2px solid $salmon;
+		outline-offset: -2px;
 	}
 	#bundle-pager > .button {
 		outline: 1px dashed $darkseagreen;
@@ -58,7 +58,7 @@ $darkolivegreen:	darkolivegreen;
 	}
 	#content {
 		outline: 1px dashed $darkseagreen;
-		#content-detail {
+		#content-wrapper {
 			background-color: transparentize($lightblue, 0.8);
 		}
 		.carousel {
@@ -76,7 +76,7 @@ $darkolivegreen:	darkolivegreen;
 				}
 			}
 		}
-		.item-detail {
+		.stack {
 			outline: 1px dashed $deepskyblue;
 			.content {
 				background-color: transparentize($lightblue, 0.7);
@@ -85,7 +85,31 @@ $darkolivegreen:	darkolivegreen;
 	}
 }
 
-.toolbar {
+#debug-toolbar {
+	color: hsl(245, 2%, 40%);
+	border-color: hsl(245, 2%, 20%);
+	background-color: hsl(60, 4%, 5%);
+	&, * {
+		user-select: none !important;
+	}
+	z-index: 999;
+	position: fixed;
+	bottom: 0;
+	width: 100%;
+	padding: 1rem 0;
+	dt, dd {
+		@include small-caps($lead: 1rem);
+		margin: -0.25em 0;
+	}
+	dt {
+		font-weight: 300;
+	}
+	dd {
+		@include font-smoothing;
+	}
+}
+
+#debug-toolbar.toolbar {
 	display: flex;
 	flex-direction: row;
 	& > * {
@@ -102,37 +126,13 @@ $darkolivegreen:	darkolivegreen;
 		border-color: inherit;
 		border-right-style: solid;
 		border-right-width: thin;
-	}
-	& > *:first-child {
-		padding-right: 0;
-		border-right: 0 none;
-	}
-	& > *:last-child {
-		border-right: 0 none;
-	}
-}
-
-#debug-toolbar {
-	z-index: 999;
-	color: hsl(245, 2%, 40%);
-	background-color: hsl(60, 4%, 5%);
-	&, * { user-select: none !important; }
-
-	position: fixed;
-	bottom: 0;
-	width: 100%;
-	height: 1.5rem;
-	padding: 0.5em 0;
-	dt, dd {
-		@include small-caps;
-		line-height: 1em;
-		height: 1em;
-	}
-	dt {
-		font-weight: 300;
-	}
-	dd {
-		@include font-smoothing;
+		&:first-child {
+			padding-right: 0;
+			border-right: 0 none;
+		}
+		&:last-child {
+			border-right: 0 none;
+		}
 	}
 }
 

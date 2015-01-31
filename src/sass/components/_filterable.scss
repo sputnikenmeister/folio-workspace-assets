@@ -1,4 +1,5 @@
 $collapse-ease: $ease;
+//$collapse-ease: ease-out;
 
 //
 // Filterable
@@ -73,7 +74,7 @@ $collapse-ease: $ease;
 	.list-item, .list-group {
 		visibility: visible;
 		opacity: 1;
-		max-height: none;
+//		max-height: none;
 	}
 //	.list-item {
 //		max-height: 1.5em;
@@ -85,7 +86,7 @@ $collapse-ease: $ease;
 		.list-item.excluded, .list-group.excluded {
 			visibility: hidden;
 			opacity: 0;
-			max-height: 0;
+//			max-height: 0;
 		}
 //		.list-item.excluded {
 //			max-height: 0;

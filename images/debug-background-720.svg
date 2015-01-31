@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="debug-background" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 xml:space="preserve" enable-background="new 1 1 720 1600" width="720" height="1600" viewBox="1 1 720 1600" >
+<!--
+<svg version="1.1" id="debug-background" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 xml:space="preserve" enable-background="new 1 1 960 1600" x="0px" y="0px" width="960px" height="1600px" viewBox="1 1 960 1600" >
+-->
+
+<defs>
+	<rect id="hruler" x="0" y="0" width="100%" height="1" fill="hsl(6,93%,71%)"/>
+	<rect id="vruler" x="0" y="0" width="1" height="100%" fill="hsl(6,93%,71%)"/>
+	<rect id="cruler" x="0" y="0" width="1" height="100%" fill="hsl(241,93%,71%)"/>
+
+	<pattern id="Baseline" x="0" y="0" width="20" height="9" patternUnits="userSpaceOnUse">
+		<rect x="0" y="0" width="1" height="100%" fill="hsl(336,93%,50%)" opacity="0.25" />
+		<rect x="0" y="0" width="100%" height="1" fill="hsl(276,93%,50%)" opacity="0.50" />
+	</pattern>
+	<pattern id="Grid6" x="0" y="0" width=".333333" height="1">
+		<line x1="0.5" x2="0.5" y1="0" y2="100%" stroke="hsl(236,50%,40%)" stroke-width="1" opacity="1"/>
+	</pattern>
+	<pattern id="Grid9" x="0" y="0" width=".125" height="1">
+		<line x1="0.5" x2="0.5" y1="0" y2="100%" stroke="hsl(216,50%,40%)" stroke-width="1" opacity="1"/>
+	</pattern>
+	<pattern id="Grid12" x="0" y="0" width=".083333" height="1">
+		<line x1="0.5" x2="0.5" y1="0" y2="100%" stroke="hsl(136,50%,40%)" stroke-width="1" opacity="1"/>
+	</pattern>
+
+	<g id="symmetry-element">
+		<use xlink:href="#cruler" transform="translate(20,0)" opacity=".8"/>
+<!--		<use xlink:href="#cruler" transform="translate(220,0)" opacity=".4"/>-->
+<!--		<use xlink:href="#cruler" transform="translate(260,0)" opacity=".4"/>-->
+<!--		<use xlink:href="#cruler" transform="translate(460,0)" opacity=".4"/>-->
+	</g>
+	<g id="symmetry">
+		<use xlink:href="#symmetry-element"/>
+		<use xlink:href="#symmetry-element" transform="matrix(-1, 0, 0, 1, 721, 0)"/>
+	</g>
+	<filter id="grayscale">
+		<feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0 0 0 1 0" />
+	</filter>
+</defs>
+
+<!--<g filter="url(#grayscale)">-->
+<g>
+	<!-- <rect x="0" y="0" width="100%" height="100%" style="fill: hsla(6,93%,71%,0.1)"/> -->
+<!--
+	<g>
+		<rect  x="20" y="0" width="200" height="100%" fill="hsl(336,93%,50%)" opacity=".05"/>
+		<rect x="260" y="0" width="200" height="100%" fill="hsl(336,93%,50%)" opacity=".05"/>
+		<rect x="500" y="0" width="200" height="100%" fill="hsl(336,93%,50%)" opacity=".05"/>
+		<rect x="220" y="0" width="41" height="100%" fill="hsl(336,93%,50%)" opacity=".1"/>
+		<rect x="460" y="0" width="41" height="100%" fill="hsl(336,93%,50%)" opacity=".1"/>
+	</g>
+-->
+
+	<rect fill="url(#Baseline)" x="0" y="0" width="100%" height="100%" opacity=".3" />
+	<rect fill="url(#Grid6)" x="0" y="0" width="100%" height="100%" opacity=".3" />
+<!--	<rect fill="url(#Grid9)" x="0" y="0" width="100%" height="100%" opacity=".3" />-->
+	<rect fill="url(#Grid12)" x="0" y="0" width="100%" height="100%" opacity=".15" />
+<!--	<use xlink:href="#symmetry" transform="translate(0,0)"/>-->
+
+	<use xlink:href="#cruler" transform="translate(20,0)" opacity=".8" />
+	<use xlink:href="#cruler" transform="translate(700,0)" opacity=".8" />
+
+<!--	<use xlink:href="#hruler" transform="translate(0,18)"/>-->
+<!--	<use xlink:href="#hruler" transform="translate(0,162)"/>-->
+</g>
+</svg>

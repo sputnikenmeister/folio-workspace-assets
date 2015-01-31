@@ -10,12 +10,14 @@ var _ = require("underscore");
 var stripTags = require("../../utils/strings/stripTags");
 /** @type {module:app/utils/strings/parseTaglist} */
 var parseSymAttrs = require("../../utils/strings/parseSymAttrs");
+/** @type {module:app/control/Globals} */
+var Globals = require("../../control/Globals");
 
 /** @type {Object} */
 var imageUrlTemplates = {
-	"original" : _.template(window.approot + "workspace/uploads/<%= f %>"),
-	"constrain-width" : _.template(window.approot + "image/1/<%= width %>/0/uploads/<%= f %>"),
-	"constrain-height" : _.template(window.approot + "image/1/0/<%= height %>/uploads/<%= f %>")
+	"original" : _.template(Globals.APP_ROOT + Globals.MEDIA_DIR + "/<%= f %>"),
+	"constrain-width" : _.template(Globals.APP_ROOT + "image/1/<%= width %>/0/uploads/<%= f %>"),
+	"constrain-height" : _.template(Globals.APP_ROOT + "image/1/0/<%= height %>/uploads/<%= f %>")
 };
 /** @type {Function} */
 var longdescTemplate = _.template("i<%= id %>-caption");

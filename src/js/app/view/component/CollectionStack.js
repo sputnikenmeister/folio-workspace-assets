@@ -21,7 +21,7 @@ module.exports = View.extend({
 	/** @override */
 	tagName: "div",
 	/** @override */
-	className: "item-detail",
+	className: "stack",
 	/** @override */
 	template: viewTemplate,
 
