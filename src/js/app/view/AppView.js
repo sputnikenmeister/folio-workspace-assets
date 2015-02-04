@@ -42,9 +42,8 @@ var AppView = Backbone.View.extend({
 		this.footerView = new FooterView({
 			el: "#footer"
 		});
-
 		if (DEBUG) {
-			this.debugToolbar = new DebugToolbar({el: "#debug-toolbar"});
+			this.debugToolbar = new DebugToolbar({ el: "#debug-toolbar", collection: bundles });
 		} else {
 			this.$("#debug-toolbar").remove();
 		}
@@ -54,9 +53,7 @@ var AppView = Backbone.View.extend({
 			pushState: false,
 			hashChange: true
 		});
-
-//		this.navigationView.render();
-
+		//this.navigationView.render();
 		var $body = this.$el;
 		// BODY.skip-transitions clears CSS transitions for a frame
 		// Apply on window size events
@@ -67,14 +64,14 @@ var AppView = Backbone.View.extend({
 			});
 		};
 		Backbone.$(window).on("orientationchange resize", onViewportResize);
-
 		// Change to .app-ready on next frame:
 		// CSS animations do not trigger while on .app-initial,
 		// so everything will be rendered in it's final state
-		var afterInitialize = function() {
-			$body.removeClass("app-initial").addClass("app-ready");
-		};
-		_.defer(afterInitialize);
+		_.defer(function() {
+			//$body.removeClass("app-initial").addClass("app-ready");
+			Backbone.$(document.documentElement)
+				.removeClass("app-initial").addClass("app-ready");
+		});
 	},
 });
 
@@ -83,35 +80,36 @@ module.exports = AppView;
 /** @type {module:cookies-js} */
 var Cookies = require("cookies-js");
 
+//var DebugToolbar = require("./DebugToolbar");
 var DebugToolbar = Backbone.View.extend({
 	initialize: function (options) {
+		var $backendEl = this.$("#edit-backend");
+		var $container = Backbone.$("#container");
+
 		Cookies.defaults = {
 			domain: String(window.location).match(/^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1]
 		};
-		var backendEl = this.$("#edit-backend");
-		this.listenTo(bundles, {
-			"select:one": function(bundle) {
-				backendEl.text("Edit Bundle");
-				backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/edit/" + bundle.id);
+
+		$backendEl.text("Edit");
+		this.listenTo(this.collection, {
+			"select:one": function(model) {
+				$backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/edit/" + model.id);
 			},
 			"select:none": function() {
-				backendEl.text("Edit List");
-				backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/");
+				$backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/");
 			}
 		});
-
-		var container = Backbone.$("#container");
-		this.initializeToggle("debug-grid", this.$("#show-grid"), container);
-		this.initializeToggle("debug-blocks", this.$("#show-blocks"), container);
+		this.initializeToggle("debug-grid", this.$("#show-grid"), $container);
+		this.initializeToggle("debug-blocks", this.$("#show-blocks"), $container);
 	},
 
-	initializeToggle: function (name, toggleEl, targetEl) {
+	initializeToggle: function (className, toggleEl, targetEl) {
 		toggleEl.on("click", function (ev) {
-			targetEl.toggleClass(name);
-			Cookies.set(name, targetEl.hasClass(name)? "true": "");
+			targetEl.toggleClass(className);
+			Cookies.set(className, targetEl.hasClass(className)? "true": "");
 		});
-		if (Cookies.get(name)) {
-			targetEl.addClass(name);
+		if (Cookies.get(className)) {
+			targetEl.addClass(className);
 		}
 	}
 });

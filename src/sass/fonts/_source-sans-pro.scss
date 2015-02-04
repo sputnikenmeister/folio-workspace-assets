@@ -1,16 +1,13 @@
-
-//@import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:200,200italic,300,300italic,400,400italic,600,600italic,700,700italic,900,900italic");
-//@import url("http://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,400italic");
-
+$font_subdir: "source-sans-pro";
 @font-face {
 	font-family: "Source Sans Pro";
 	font-weight: 200;
 	font-style: normal;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-ExtraLight.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-ExtraLight.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-ExtraLight.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-ExtraLight.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-ExtraLight.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-ExtraLight.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-ExtraLight.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-ExtraLight.ttf") format("truetype");
 }
 
 @font-face {
@@ -18,10 +15,10 @@
 	font-weight: 200;
 	font-style: italic;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-ExtraLightIt.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-ExtraLightIt.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-ExtraLightIt.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-ExtraLightIt.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-ExtraLightIt.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-ExtraLightIt.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-ExtraLightIt.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-ExtraLightIt.ttf") format("truetype");
 }
 
 @font-face {
@@ -29,10 +26,10 @@
 	font-weight: 300;
 	font-style: normal;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-Light.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-Light.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-Light.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-Light.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-Light.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-Light.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-Light.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-Light.ttf") format("truetype");
 }
 
 @font-face {
@@ -40,10 +37,10 @@
 	font-weight: 300;
 	font-style: italic;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-LightIt.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-LightIt.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-LightIt.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-LightIt.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-LightIt.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-LightIt.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-LightIt.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-LightIt.ttf") format("truetype");
 }
 
 @font-face {
@@ -51,10 +48,10 @@
 	font-weight: 400;
 	font-style: normal;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-Regular.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-Regular.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-Regular.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-Regular.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-Regular.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-Regular.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-Regular.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-Regular.ttf") format("truetype");
 }
 
 @font-face {
@@ -62,10 +59,10 @@
 	font-weight: 400;
 	font-style: italic;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-It.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-It.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-It.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-It.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-It.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-It.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-It.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-It.ttf") format("truetype");
 }
 
 @font-face {
@@ -73,10 +70,10 @@
 	font-weight: 600;
 	font-style: normal;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-Semibold.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-Semibold.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-Semibold.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-Semibold.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-Semibold.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-Semibold.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-Semibold.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-Semibold.ttf") format("truetype");
 }
 
 @font-face {
@@ -84,10 +81,10 @@
 	font-weight: 600;
 	font-style: italic;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-SemiboldIt.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-SemiboldIt.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-SemiboldIt.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-SemiboldIt.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-SemiboldIt.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-SemiboldIt.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-SemiboldIt.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-SemiboldIt.ttf") format("truetype");
 }
 
 @font-face {
@@ -95,10 +92,10 @@
 	font-weight: 700;
 	font-style: normal;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-Bold.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-Bold.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-Bold.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-Bold.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-Bold.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-Bold.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-Bold.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-Bold.ttf") format("truetype");
 }
 
 @font-face {
@@ -106,10 +103,10 @@
 	font-weight: 700;
 	font-style: italic;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-BoldIt.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-BoldIt.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-BoldIt.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-BoldIt.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-BoldIt.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-BoldIt.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-BoldIt.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-BoldIt.ttf") format("truetype");
 }
 
 @font-face {
@@ -117,10 +114,10 @@
 	font-weight: 900;
 	font-style: normal;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-Black.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-Black.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-Black.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-Black.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-Black.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-Black.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-Black.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-Black.ttf") format("truetype");
 }
 
 @font-face {
@@ -128,8 +125,8 @@
 	font-weight: 900;
 	font-style: italic;
 	font-stretch: normal;
-	src: font-url("source-sans-pro/EOT/SourceSansPro-BlackIt.eot") format("embedded-opentype"),
-		 font-url("source-sans-pro/WOFF/OTF/SourceSansPro-BlackIt.otf.woff") format("woff"),
-		 font-url("source-sans-pro/OTF/SourceSansPro-BlackIt.otf") format("opentype"),
-		 font-url("source-sans-pro/TTF/SourceSansPro-BlackIt.ttf") format("truetype");
+	src: font-url("#{$font_subdir}/EOT/SourceSansPro-BlackIt.eot") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/WOFF/OTF/SourceSansPro-BlackIt.otf.woff") format("woff"),
+		 font-url("#{$font_subdir}/OTF/SourceSansPro-BlackIt.otf") format("opentype"),
+		 font-url("#{$font_subdir}/TTF/SourceSansPro-BlackIt.ttf") format("truetype");
 }

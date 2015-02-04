@@ -30,9 +30,9 @@
 		background-color: hsl(10, 0%, 80%);
 	}
 	.button:hover {
-		background-color: $link-color;
+		background-color: $link_color;
 	}
 	.button:active {
-		background-color: $link-down-color;
+		background-color: $link_down_color;
 	}
 }

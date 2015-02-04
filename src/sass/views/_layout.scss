@@ -1,25 +1,28 @@
 // ----------------------
-// Vertical flow
+// Layout
 // ----------------------
-// from: folio.scss @import "compass/layout";
-// @include sticky-footer( 6em, "#container", "#container-footer", "#footer" );
-// compass-core-1.0.1/stylesheets/compass/layout/_sticky-footer.scss
 
-$footer-height: 6rem;
-%page-region {
-	margin: 0 auto;
-	box-sizing: border-box;
-	padding-left: $page-margin-left;
-	padding-right: $page-margin-right;
-	width: $page-width;
-	@include media($desktop-small) {
-		width: $page-width-large;
-	}
-}
+@import "../includes/_media-queries";
 
 // ----------------------
 // Container, Header, Footer
 // ----------------------
+
+%page_region {
+	margin: 0 auto;
+	box-sizing: border-box;
+	padding-left: $page_margin_left;
+	padding-right: $page_margin_right;
+	width: $page_width;
+	@include media($desktop_small) {
+		width: $page_width_large;
+	}
+}
+
+// Footer rules from: folio.scss @import "compass/layout";
+// @include sticky_footer( 6em, "#container", "#container-footer", "#footer" );
+// compass-core-1.0.1/stylesheets/compass/layout/_sticky-footer.scss
+$footer_height: 6rem;
 
 html, body {
 	height: 100%;
@@ -28,16 +31,14 @@ html, body {
 	width: 100%;
 	display: block;
 	overflow: hidden;
-	min-width: $page-width;
-	@include media($desktop-small) {
-		min-width: $page-width-large;
+	min-width: $page_width;
+	@include media($desktop_small) {
+		min-width: $page_width_large;
 	}
 }
 #header {
-	@extend %page-region;
-	height: 3rem;
-	padding-top: 1.25rem;
-	padding-bottom: 0.25rem;
+	@extend %page_region;
+	height: 2.25rem;
 	h3 {
 		display: none;
 	}
@@ -47,236 +48,230 @@ html, body {
 	min-height: 100%;
 	height: auto !important;
 	height: 100%;
-	margin-bottom: -$footer-height;
+	margin-bottom: -$footer_height;
 }
 #footer {
 	clear: both;
 	position: relative;
 	overflow: hidden;
+	.copyright {
+		display: none;
+	}
 }
 #container #container-footer, #footer {
-	@extend %page-region;
-	height: $footer-height;
+	@extend %page_region;
+	height: $footer_height;
+}
+
+#navigation {
+	@extend %page_region;
+	position: relative;
 }
 
 // ----------------------
 // Navigation
 // ----------------------
 
-$nav_height: 10rem;
 $nav_ease: $ease;
-$nav_txZ: 0.1px;
-$sitename_height: 4.5rem;
+$nav_txZ: 0;
 
-@mixin transform-transition($delay: $delay) {
-//	transform-style: preserve-3d;
+@mixin transform_transition($delay: $delay) {
 	transition-property: transform;
 	transition-timing-function: $nav_ease;
 	transition-duration: $duration - 0.001s;
 	transition-delay: $delay + 0.001s;
-//	transition: transform $duration $delay $ease;
-}
-%nav-heading-block {
-	min-height: 2rem;
-	line-height: 2rem;
-	padding-top: 2px;
 }
 
-#navigation {
-	@extend %page-region;
-	position: relative;
-	padding-top: 0.75rem;
-	min-height: $nav_height + 1.5rem;
-//	min-height: $nav_height + 3rem;
-	@include media($desktop-small) {
-		min-height: $nav_height;
+$NavHeight_landscape: 9rem;
+$NavHeight_portrait: 12rem;
+
+%nav_heading_block {
+	@include heading_font($lead: 0.990);
+	min-height: 1em;
+	top: 1.5rem;
+}
+
+.transform-box {
+	transform-style: preserve-3d;
+//	transform: translate3d(0,0,0) scale3d(1,1,1);
+}
+
+%nav_list {
+	@include transform_transition($delay: $delay * 1);
+	transform: translate3d(-1px, #{$NavHeight_portrait - 1.5rem}, $nav_txZ);	/* keyword list horizontal level */
+	@at-root .with-bundle %nav_list {
+		transform: translate3d(-1px, 0, $nav_txZ);
 	}
-	@include media($ipad-landscape) {
-		min-height: $nav_height - 1.5rem;
+	@include media($desktop_small) {
+		transform: translate3d(-1px, #{$NavHeight_landscape - 1.5rem}, $nav_txZ); 	/* bundle list horizontal level */
+		@at-root .with-bundle %nav_list {
+			transform: translate3d(-1px, 0, $nav_txZ);
+		}
 	}
 }
+
+// site-name + wrapper
+// - - - - - - - - - - - - - - - - - -
 
 #site-name-wrapper {
 	position: relative;
-	height: $sitename_height;
+	top: 0; height: $NavHeight_portrait;
+	@include media($desktop_small) {
+		height: $NavHeight_landscape;
+	}
 }
 
 #site-name {
 	position: relative;
 	display: inline-block;
+//	top: 0;
 	transform: translate3d(-1px, 0, $nav_txZ);
-//	transform: translate3d(-$page-margin-left, 0, 0);
-	@include transform-transition($delay: $delay * 2);
+//	transform: translate3d(-$page_margin_left, 0, 0);
+	@include transform_transition($delay: $delay * 2);
 	@at-root .with-bundle #site-name {
-		transform: translate3d(calc(-100% - #{$page-margin-left}), 0, $nav_txZ);
-		@include transform-transition($delay: $delay * 0);
+		transform: translate3d(calc(-100% - #{$page_margin_left}), 0, $nav_txZ);
+		@include transform_transition($delay: $delay * 0);
 	}
-	@include heading-font($weight: 600);
-	@extend %nav-heading-block;
-	color: $link-color;
+	@extend %nav_heading_block;
+	color: $link_color;
 	padding-right: $hu;
 }
+
+// bundle-list + wrapper
+// - - - - - - - - - - - - - - - - - -
 
 #bundle-list-wrapper {
 	position: absolute;
 	display: inline-block;
-//	transform: translate3d(-$page-margin-left, 0, 0);
-//	@include transform-transition($delay: $delay * 2);
-//	@at-root .with-bundle #bundle-list-wrapper {
-//		transform: translate3d(0, 0, 0);
-//		@include transform-transition($delay: $delay * 0);
-//	}
-}
-
-#keyword-list-wrapper {
-	position: absolute;
-	display: inline-block;
-	@include media($ipad-landscape) {
-		transform: translate3d(0, 0, 0);
-		@include transform-transition($delay: $delay * 0);
-		@at-root .with-image #keyword-list-wrapper {
-			transform: translate3d(#{-$main-width-large}, 0, 0);
-//			@include transform-transition($delay: $delay * 0);
-		}
-	}
+	top: 0;
 }
 
 #bundle-list {
+	@extend %nav_list;
 	position: absolute;
-//	left: $page-margin-left;
-	width: $main-inner-width - $aside-inner-width;
-	transform: translate3d(-1px, 0, $nav_txZ);
-	@include transform-transition($delay: $delay * 1);
-	@at-root .with-bundle #bundle-list {
-		transform: translate3d(-1px, #{-$sitename_height}, $nav_txZ);
-	}
-	@include media($desktop-small) {
-		width: $main-inner-width-large - $aside-inner-width-large;
-	}
-	@include media($ipad-landscape) {
-		width: $main-inner-width-large - $aside-inner-width-large;
+	width: $main_inner_width - $aside_inner_width + $gutter;
+//	transform: translate3d(-1px, #{$NavHeight_portrait - 1.5rem}, $nav_txZ);	/* keyword list horizontal level */
+//	@include transform_transition($delay: $delay * 1);
+//	@at-root .with-bundle #bundle-list {
+//		transform: translate3d(-1px, 0, $nav_txZ);
+//	}
+	@include media($desktop_small) {
+		width: $main_inner_width_large - $aside_inner_width_large;
+//		transform: translate3d(-1px, #{$NavHeight_landscape - 1.5rem}, $nav_txZ); 	/* bundle list horizontal level */
 		@at-root .with-bundle #bundle-list {
-			width: $aside-inner-width-large;
-//			width: $aside-width-large - $page-margin-left - $gutter/2;
+			width: $aside_width_large - $page_margin_left - $gutter/2;
+//			transform: translate3d(-1px, 0, $nav_txZ);
 		}
 	}
-	@include heading-font();
-	@extend %nav-heading-block;
+	@extend %nav_heading_block;
 	.list-item {
+		height: 2rem;
 		width: 100%;
 		white-space: nowrap;
-		.completed {
-			display: none;
-		}
-//		.name {
-//			margin-left: -1px;
-//			transform: translateX(-1px);
-//		}
-		a > em {
+		.completed { display: none; }
+		.name {}
+		em {
 			font-style: normal;
 			font-weight: 400;
 		}
 	}
 }
 
-#keyword-list {
+// keyword-list + wrapper
+// - - - - - - - - - - - - - - - - - -
+
+#keyword-list-wrapper {
 	position: absolute;
-	width: $aside-inner-width;
-	transform: translate3d($main-width, 0, $nav_txZ);
-	@include transform-transition($delay: $delay * 1);
-	@at-root .with-bundle #keyword-list {
-		transform: translate3d($main-width, #{-$sitename_height}, $nav_txZ);
-	}
-	@include media($desktop-small) {
-		width: $aside-inner-width-large;
-		@at-root #keyword-list {
-			transform: translate3d($main-width-large, 0, $nav_txZ);
+	display: inline-block;
+	top: 0;
+	transform: translate3d($main_width,0,0);
+	@include media($desktop_small) {
+		transform: translate3d($main_width_large,0,0);
+		@include transform_transition($delay: $delay * 0);
+		@at-root {
+			.with-bundle.with-image #keyword-list-wrapper {
+				transform: translate3d(0,0,0);
+//				@include transform_transition($delay: $delay * 0);
+			}
 		}
+	}
+}
+
+#keyword-list {
+	@extend %nav_list;
+	top: 1.25rem;
+	position: absolute;
+	width: $aside_inner_width;
+//	transform: translate3d(0, #{$NavHeight_portrait - 1.5rem}, $nav_txZ);	/* keyword list horizontal level */
+//	@include transform_transition($delay: $delay * 1);
+//	@at-root .with-bundle #keyword-list {
+//		transform: translate3d(0, 0, $nav_txZ);
+//	}
+	@include media($desktop_small) {
+		width: $aside_inner_width_large;
+//		@at-root #keyword-list {
+//			transform: translate3d(0, #{$NavHeight_landscape - 1.5rem}, $nav_txZ); 	/* keyword list horizontal level */
+//		}
 		@at-root .with-bundle #keyword-list {
-			transform: translate3d($main-width-large, #{-$sitename_height}, $nav_txZ);
+			transform: translate3d(0, #{$NavHeight_landscape - 0.5rem}, $nav_txZ); /* override %nav_list */
 		}
 	}
-	@include media($ipad-landscape) {
-		width: $aside-inner-width-large;
-		@at-root #keyword-list {
-			transform: translate3d($main-width-large, 0, $nav_txZ);
-		}
-		@at-root .with-bundle #keyword-list {
-			transform: translate3d($main-width-large, #{$nav_height - $sitename_height - 1.5rem}, $nav_txZ);
-		}
-	}
-	@include paragraph-font($size: 13px);
 	.list-item {
 		white-space: nowrap;
-		max-height: 1.5rem;
-//		a {
-//			font-size: 13px;
-//			line-height: 1.5rem;
-//		}
-//		width: 100%;
-		width: $aside-inner-width;
-		@include media($desktop-small) {
-			width: $aside-inner-width-large;
+		width: 100%;
+		height: 1.5rem;
+		a {
+			font-size: 13px;
+			display: inline-block;
+			width: 100%;
 		}
 	}
 	.list-group {
-		@include small-caps();
 		height: 0;
-//		width: calc(100% - #{$gutter});
-//		transform-origin: 0.5rem 0;
-		width: $aside-inner-width - $gutter;
-		@include media($desktop-small) {
-			width: $aside-inner-width-large - $gutter;
-		}
+		width: calc(100% - #{$gutter});
 		span {
-			display: block;
-			margin-top: 0.5rem;
-//			height: 1.5rem;
-//			width: 100%;
-			transform: translate3d(-100%, -0.5rem, $nav_txZ);
-			@include transform-transition($delay: $delay * 1);
+			@include small_caps($lead: 1.5rem);
+			display: inline-block;
+			width: 100%;
+			transform: translate3d(-100%, 0, $nav_txZ);
+			@include transform_transition($delay: $delay * 1);
 		}
 	}
-	@include media($ipad-landscape) {
+	@include media($desktop_small) {
 		@at-root {
-			.with-bundle #keyword-list .list-group {
-				height: 2rem !important;
+			#keyword-list .list-group {
+				width: 100%;
 			}
-//			#keyword-list .list-group span {
-//				transform: translate3d(-100%, 0.5rem, $nav_txZ);
-//				@include transform-transition($delay: $delay * 1);
-//			}
+			.with-bundle #keyword-list .list-group {
+				height: 2rem;
+			}
 			.with-bundle #keyword-list .list-group span {
-				transform: translate3d(-0.1px, 0, $nav_txZ);
-				@include transform-transition($delay: $delay * 1);
+				transform: translate3d(-0.1px, 0.5rem, $nav_txZ);
+				@include transform_transition($delay: $delay * 1);
 			}
 			.with-image #keyword-list .list-group span {
-				@include transform-transition($delay: $delay * 0);
+				@include transform_transition($delay: $delay * 0);
 			}
 		}
 	}
 	@at-root .skip-transitions #keyword-list .list-group span {
-		@extend %skip-transitions;
+		@extend %skip_transitions;
 	}
 }
 
 #bundle-pager {
 	position: absolute;
     display: inline-block;
-//	width: 100%;
-    top: -1.5rem;
+    top: -1rem;
 	.button {
 		position: absolute;
 		margin-left: 0 !important;
-		min-width: $aside-inner-width;
+		min-width: $aside_inner_width;
 	}
 	.following-button {
-		left: $main-width;
-		@include media($desktop-small) {
-			left: $main-width-large;
-		}
-		@include media($ipad-landscape) {
-			left: $aside-width-large - $gutter/2;
+		left: $main_width;
+		@include media($desktop_small) {
+			left: $aside_width_large - $gutter/2;
 		}
 	}
 }
@@ -286,8 +281,12 @@ $sitename_height: 4.5rem;
 // ----------------------
 
 #content {
-	position: relative;
+//	position: relative;
 	width: 100%;
+//	margin-top: $NavHeight_portrait;
+//	@include media($desktop_small) {
+//		margin-top: $NavHeight_landscape;
+//	}
 }
 
 #content .image-carousel {
@@ -295,87 +294,60 @@ $sitename_height: 4.5rem;
 	overflow: hidden;
 	top: 0;	width: 100%;
 	box-sizing: content-box;
-
-	min-width: $page-width;
-	@include media($desktop-small) {
-		min-width: $page-width-large;
+	min-width: $page_width;
+	@include media($desktop_small) {
+		min-width: $page_width_large;
 	}
 }
 
 #content .label-carousel {
 	position: absolute;
-	top: -1.5rem;
+//	top: -1.5rem;
 	width: 100%;
-	min-width: $page-width;
-}
-
-#content-wrapper {
-	@extend %page-region;
-	position: absolute;
-	left: 0; right: 0;
-//	top: 0; bottom: 0;
-	top: 1.5rem; bottom: 1.5rem;
+	min-width: $page_width;
+	top: $NavHeight_portrait;
+	@include media($desktop_small) {
+		min-width: $page_width_large;
+		top: $NavHeight_landscape;
+	}
 }
 
 // ----------------------
 // Other content views
 // ----------------------
 
-#content-detail {
+#content-wrapper {
+	@extend %page_region;
 	position: absolute;
-	left: 0; right: 0;
-	top: 1.5rem; bottom: 1.5rem;
+	top: 2.25rem;
+	left: 0; right: 0;// bottom: 0;
+//	top: $NavHeight_portrait;
+//	@include media($desktop_small) {
+//		top: $NavHeight_landscape;
+//	}
+//	top: 1.5rem; bottom: 1.5rem;
 }
-//
-//.image-desc-stack {
-//	position: absolute;
-//	display: block;
-//	transform: translate3d(-1px, -1px, 0);
-//	top: calc(2rem - #{$nav_height});
-////	top: 6rem;
-//	width: $main-inner-width - $aside-inner-width + $gutter;
-//	p { @include heading-font($size: 22px, $weight: 300, $lead: 2rem); }
-//	@include media($desktop-small) {
-//		top: 0;
-////		top: 13rem;
-//		width: $aside-inner-width-large;
-//		left: auto;
-//		right: $page-margin-right;
-//		p { font-size: 20px; }
-////		p { @include heading-font($size: 20px, $weight: 300, $lead: 2rem); }
-//	}
-//	@include media($ipad-landscape) {
-//		top: calc(2.5rem - #{$nav_height});
-////		top: calc(4rem - 1px);
-//		width: $main-inner-width-large;
-//		left: $aside-width-large;
-//		right: auto;
-//		p { font-size: 24px; }
-////		p { @include heading-font($size: 24px, $weight: 300, $lead: 2rem); }
-//	}
-//}
+
 .image-desc-stack {
 	position: absolute;
 	display: block;
-	transform: translate3d(-1px, 0, 0);
-    top: -3rem;// height: 1.5rem;
-	width: $main-inner-width;
+	top: 1.5rem;
+	height: 2rem;
+	width: $page_inner_width;
+	left: $page_margin-left;
+	transform: translate3d(-1px, $NavHeight_landscape, 0);
 	p {
-		@include heading-font($size: 20px, $weight: 300, $lead: 24px);
+		@include heading_font($size: 20px, $weight: 300, $lead: 26px);
+		font-size: 20px;
 		margin-bottom: 0.75rem;
-		margin-top: 0;
 	}
-	@include media($desktop-small) {
-		top: 0;
-		width: $aside-inner-width-large;
-		left: auto; right: $page-margin-right;
-		p { font-size: 20px; }
-	}
-	@include media($ipad-landscape) {
-		top: calc(11px - #{$nav_height});
-		width: $main-inner-width-large;
-		left: $aside-width-large; right: auto;
-		p { font-size: 24px; }
+	@include media($desktop_small) {
+		width: $main_width_large - $page_margin_right;
+		left: $aside_width_large;
+		transform: translate3d(-1px, 0, 0);
+		p {
+			@include heading_font($size: 2rem, $weight: 300, $lead: 0.990);
+		}
 	}
 }
 
@@ -389,60 +361,58 @@ $sitename_height: 4.5rem;
 // Carousel
 // ----------------------
 
-.label-carousel,
-.image-carousel {
+.label-carousel, .image-carousel {
 	.pan-area {
 		position: absolute;
-//		left: calc(50% - #{$page-width/2});
-//		width: $page-width;
+//		left: calc(50% - #{$page_width/2});
+//		width: $page_width;
 		width: 100%;
 		top: 0; bottom: 0;
 	}
 	.carousel-item {
 		box-sizing: border-box;
-		padding-left: $page-margin-left;
-		padding-right: $page-margin-right;
-		width: $page-width;
-		left: calc(50% - #{$page-width/2});
+		padding-left: $page_margin_left;
+		padding-right: $page_margin_right;
+		width: $page_width;
+		left: calc(50% - #{$page_width/2});
 	}
 	.empty-item {
 		box-sizing: border-box;
-		padding-left: $page-margin-left;
+		padding-left: $page_margin_left;
 		padding-right: $gutter/2;
-		width: $main-width - 5px;
+		width: $main_width - 5px;
 	}
-}
-@include media($desktop-small) {
-	.carousel {
-//		.pan-area {
-//			left: calc(50% - #{$page-width-large/2});
-//			width: $page-width-large;
+//	@include media($desktop_small) {
+////		.pan-area {
+////			left: calc(50% - #{$page_width_large/2});
+////			width: $page_width_large;
+////		}
+//		.carousel-item {
+//			left: calc(50% - #{$page_width_large/2});
+//			padding-left: $page_margin_left;
+//			padding-right: $aside_width_large + $gutter/2;
+//			width: $page_width_large;
 //		}
+//		.empty-item {
+//			padding-right: $gutter/2;
+//			width: $main_width_large - 5px;
+//		}
+//	}
+	@include media($desktop_small) {
+//	@include media($ipad_landscape) {
 		.carousel-item {
-			left: calc(50% - #{$page-width-large/2});
-			padding-left: $page-margin-left;
-			padding-right: $aside-width-large + $gutter/2;
-			width: $page-width-large;
+			left: calc(50% - #{$page_width_large/2});
+			padding-left: $aside_width_large;
+			padding-right: $page_margin_left;
+			width: $page_width_large;
 		}
 		.empty-item {
-			padding-right: $gutter/2;
-			width: $main-width-large - 5px;
-		}
-	}
-}
-@include media($ipad-landscape) {
-	.carousel {
-		.carousel-item {
-			padding-left: $aside-width-large;
-			padding-right: $page-margin-left;
-		}
-		.empty-item {
-			width: $page-width-large;
-//			padding-right: $page-margin-left;
-			padding-left: $page-margin-left;
-			padding-right: $aside-width-large;
+			width: $page_width_large;
+//			padding-right: $page_margin_left;
+			padding-left: $page_margin_left;
+			padding-right: $aside_width_large;
 			p {
-				margin-right: $page-margin-right;
+				margin-right: $page_margin_right;
 			}
 		}
 	}

@@ -1,8 +1,8 @@
 .pager.folio {
 	display: inline-block;
 	.button {
-		@include small-caps();
-		@include font-smoothing();
+		@include small_caps();
+		@include font_smoothing();
 		display: inline-block;
 		box-sizing: border-box;
 		white-space: nowrap;
@@ -18,10 +18,10 @@
 	}
 	.preceding-button:before {
 		content: '\e807';
-		@include fontello-icon-before();
+		@include fontello_icon_before();
 	}
 	.following-button:after {
 		content: '\e808';
-		@include fontello-icon-after();
+		@include fontello_icon_after();
 	}
 }

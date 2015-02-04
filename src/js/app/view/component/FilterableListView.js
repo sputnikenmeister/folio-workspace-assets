@@ -94,20 +94,24 @@ var FilterableListView = DeferredRenderView.extend({
 		var tx, elt, posX, posY;
 
 		elt = this.el.firstElementChild;
+//		posY = this.el.getBoundingClientRect()["top"] - elt.getBoundingClientRect()["top"];
 		posY = elt.clientTop;
-		posX = elt.clientLeft;
+//		posY = elt.offsetTop;
+//		posY = 0;
+		posX = 0;
 		do {
-			tx = "translate3d(" + posX + "px," + posY + "px, 0.1px)";
-			if (elt.className.indexOf("excluded") === -1) {
-				posY += elt.clientHeight;
-			}
+			tx = "translate3d(" + posX + "px," + posY + "px, 0px)";
 			elt.style.position = "absolute";
 			elt.style.webkitTransform = tx;
 			elt.style.mozTransform = tx;
 			elt.style.transform = tx;
+			if (elt.className.indexOf("excluded") === -1) {
+//				posY += elt.getBoundingClientRect()["height"];
+				posY += elt.clientHeight;
+			}
 		} while (elt = elt.nextElementSibling);
 
-		this.el.style.height = posY + "px";
+		this.el.style.minHeight = (posY > 0)? posY + "px" : "";
 	},
 
 //	measure: function(force) {

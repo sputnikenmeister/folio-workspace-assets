@@ -39,27 +39,27 @@
 	.button:visited {
 		// color: $color;
 		color: lighten($color, 35%);
-		background-color: $background-color;
+		background-color: $background_color;
 		border-color: scale_color($color, $lightness: 35%, $alpha: -70%);
 		border-width: 1px;
 		border-style: solid;
 	}
 	.button:hover {
 		color: white;
-		background-color: $link-hover-color;
-		// border-color: scale_color($link-hover-color, $lightness: -30%);
-		border-color: darken($link-hover-color, 8%);
+		background-color: $link_hover_color;
+		// border-color: scale_color($link_hover_color, $lightness: -30%);
+		border-color: darken($link_hover_color, 8%);
 	}
 	.button:active {
 		color: white;
-		background-color: $link-down-color;
-		// border-color: scale_color($link-down-color, $lightness: -30%);
-		border-color: darken($link-down-color, 8%);
+		background-color: $link_down_color;
+		// border-color: scale_color($link_down_color, $lightness: -30%);
+		border-color: darken($link_down_color, 8%);
 	}
 	// big icons
 	.button:before {
 		font-size: 90%;
-		@include fontello-icon-before();
+		@include fontello_icon_before();
 	}
 	.preceding-button:before {
 		content: '\e807';

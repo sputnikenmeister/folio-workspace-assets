@@ -114,7 +114,7 @@ var ContentView = View.extend({
 			if (skipAnimation) {
 				child.remove();
 			} else {
-				child.$el.css({position: "absolute"})
+				child.$el.css({position: "absolute", top: child.el.offsetTop, left: child.el.offsetLeft})
 					.transit({opacity: 0}, Globals.TRANSITION_DURATION)
 					.queue(function(next) {
 						child.remove();

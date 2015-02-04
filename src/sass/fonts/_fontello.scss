@@ -1,11 +1,11 @@
-$font-path: "fontello-f5b0052f/font";
+$font_subdir: "fontello-f5b0052f/font";
 @font-face {
 	font-family: "fontello";
-	src: font-url("#{$font-path}/fontello.eot");
-	src: font-url("#{$font-path}/fontello.eot#iefix") format("embedded-opentype"),
-		 font-url("#{$font-path}/fontello.woff") format("woff"),
-		 font-url("#{$font-path}/fontello.ttf") format("truetype"),
-		 font-url("#{$font-path}/fontello.svg#fontello") format("svg");
+	src: font-url("#{$font_subdir}/fontello.eot");
+	src: font-url("#{$font_subdir}/fontello.eot#iefix") format("embedded-opentype"),
+		 font-url("#{$font_subdir}/fontello.woff") format("woff"),
+		 font-url("#{$font_subdir}/fontello.ttf") format("truetype"),
+		 font-url("#{$font_subdir}/fontello.svg#fontello") format("svg");
 	font-weight: normal;
 	font-style: normal;
 }

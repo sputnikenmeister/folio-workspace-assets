@@ -8,25 +8,28 @@
 //	transition-duration: $duration;
 //	transition-delay: $delay;
 //}
-body.app-ready #container {
-	transition:
-		visibility $duration $delay step-start,
-		opacity $duration $delay $ease;
+
+.app-ready #container {
+//	transition-timing-function: step-start, $ease;
+//	transition-property: visibility, opacity;
+//	transition-duration: $duration;
+//	transition-delay: $delay;
+	transition: visibility $duration $delay step-start, opacity $duration $delay $ease;
 	visibility: visible;
 	opacity: 1;
 }
 
-body.app-initial #container {
+.app-initial #container {
 	visibility: hidden;
 	opacity: 0;
 }
 
-body.app-initial #container * {
-	@extend %skip-transitions;
+.app-initial  * {
+	@extend %skip_transitions;
 }
 
 body.skip-transitions * {
-	@extend %skip-transitions;
+	@extend %skip_transitions;
 }
 
 // ------------------------------------

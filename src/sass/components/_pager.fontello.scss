@@ -11,15 +11,15 @@
 		color: $color;
 	}
 	.button:hover {
-		color: $link-hover-color;
+		color: $link_hover_color;
 	}
 	.button:active {
-		color: $link-down-color;
+		color: $link_down_color;
 	}
 	// circled icons
 	.button:before {
 		font-size: 95%;
-		@include fontello-icon-before();
+		@include fontello_icon_before();
 	}
 	.preceding-button:before {
 		content: '\e807';

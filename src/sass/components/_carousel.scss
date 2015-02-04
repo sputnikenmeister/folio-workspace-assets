@@ -24,16 +24,16 @@
 //
 // Animation
 //
-$pan-ease: $ease;
+$pan_ease: $ease;
 .carousel {
 	.carousel-item {
 		transform: translate3d(0%,0,0) scale3d(1,1,1);
 		backface-visibility: hidden;
 		transform-style: preserve-3d;
-		transition: transform $duration $pan-ease;
+		transition: transform $duration $pan_ease;
 	}
 	&.skip-transitions .carousel-item {
-		@extend %skip-transitions;
+		@extend %skip_transitions;
 	}
 }
 
@@ -49,7 +49,7 @@ $pan-ease: $ease;
 	img {
 		// *** "mutable" properties: must be in the first matching rule
 		border: 0 none;
-		background-color: $background-color;
+		background-color: $background_color;
 		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
 		position: absolute;
 		box-sizing: border-box;
@@ -75,7 +75,7 @@ $pan-ease: $ease;
 	.placeholder {
 		// *** "mutable" properties: must be in the first matching rule
 		border: 1px solid transparent;
-		color: $background-color;
+		color: $background_color;
 	}
 	.placeholder:after {
 		font-size: 5rem;
@@ -105,12 +105,10 @@ $pan-ease: $ease;
 .carousel.image-carousel {
 	padding-top: 1.5rem;
 	padding-bottom: 1.5rem;
-//	margin-top: -1.5rem;
-//	margin-bottom: -1.5rem;
 	.empty-item {
 		height: calc(100% - 3rem);
 		p {
-			@include heading-font($size: 28px, $weight: 300, $lead: 30px);
+			@include heading_font($size: 28px, $weight: 300, $lead: 30px);
 			margin-bottom: 15px;
 			margin-top: 0;
 			&:first-child {
@@ -142,7 +140,7 @@ $pan-ease: $ease;
 	padding-bottom: 0;
 	.carousel-item {
 		.content {
-			@include heading-font($size: 20px, $weight: 300, $lead: 24px);
+			@include heading_font($size: 20px, $weight: 300, $lead: 24px);
 			margin-left: -1px;//translateX(-2px);
 			margin-right: -1px;
 		}

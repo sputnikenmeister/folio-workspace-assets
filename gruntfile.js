@@ -156,23 +156,24 @@ module.exports = function (grunt) {
 		},
 	});
 
+	/* --------------------------------
+	 * clean
+	 * -------------------------------- */
+
 	grunt.loadNpmTasks("grunt-contrib-clean");
 	grunt.config("clean", {
-		src: ["./js/", "./css/"]
+		src: ["./js/*", "./css/*"]
 	});
 
-	/* Watch tasks */
+
+	/* --------------------------------
+	 * watch
+	 * -------------------------------- */
+
 	grunt.loadNpmTasks("grunt-contrib-watch");
 	grunt.config("watch", {
 		options: {
 			spawn: false
-		},
-		"reload-config": {
-			options: {
-				spawn: true
-			},
-			files: ["gruntfile.js"],
-			tasks: ["clean", "compass:clean", "compass:debug", "autoprefixer:debug", "browserify:vendor", "browserify:client"],
 		},
 		"build-styles": {
 			tasks: ["compass:debug", "autoprefixer:debug"],
@@ -194,6 +195,13 @@ module.exports = function (grunt) {
 			tasks: ["exorcise:client", "uglify:client"],
 			files: ["js/<%= DEBUG_CLIENT_JS %>.js"],
 		},
+		"reload-config": {
+			options: {
+				spawn: true
+			},
+			files: ["gruntfile.js"],
+			tasks: ["clean-all", "compass:debug", "autoprefixer:debug", "browserify:vendor", "browserify:client"],
+		},
 	});
 
 	// DEBUG: check config result
@@ -204,11 +212,8 @@ module.exports = function (grunt) {
 	_tasks.buildClient 		= ["browserify:client", "exorcise:client", "uglify:client"];
 	_tasks.buildScripts 	= _tasks.buildVendor.concat(_tasks.buildClient);
 	_tasks.buildAll 		= _tasks.buildStyles.concat(_tasks.buildScripts);
-
-	// Task Groups
 	grunt.registerTask("build-debug", _tasks.buildAll);
-	grunt.registerTask("clean-all", ["clean", "compass:clean"]);
-	grunt.registerTask("watch-debug", ["build-debug", "browserify:watchable", "watch"]);
+
 
 	/* --------------------------------
 	 * dist
@@ -266,12 +271,16 @@ module.exports = function (grunt) {
 	});
 
 	grunt.registerTask("build-dist", ["compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
-	// Default task
-	grunt.registerTask("default", ["clean-all", "build-debug", "build-dist"]);
 
 	/* --------------------------------
-	 * Custom tasks/ CLI executions
+	 * Custom tasks/CLI executions
 	 * -------------------------------- */
+
+	grunt.config("compass.fonts.options", {
+		specify: "src/sass/fonts.scss",
+		sourcemap: false,
+		outputStyle: "compressed"
+	});
 
 	grunt.registerTask("fontello", "Open fontello configuration in browser", function() {
 		var child = grunt.util.spawn({
@@ -280,4 +289,14 @@ module.exports = function (grunt) {
 			opts: {stdio: "inherit"}
 		}, this.async());
 	});
+
+	/* --------------------------------
+	 * Main Targets
+	 * -------------------------------- */
+
+	// Default task
+	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
+	grunt.registerTask("watch-debug", ["build-debug", "browserify:watchable", "watch"]);
+	grunt.registerTask("build-all", ["clean-all", "build-debug", "build-dist"]);
+	grunt.registerTask("default", ["build-all"]);
 };

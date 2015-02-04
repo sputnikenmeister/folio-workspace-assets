@@ -8,113 +8,113 @@ $vu: 12px;
 
 // Time base units (transitions/animations)
 $duration: 			0.350s;
-$delay-interval: 	0.050s;
-$delay: $duration + $delay-interval;
+$delay_interval: 	0.050s;
+$delay: $duration + $delay_interval;
 
 $ease: ease;
 //$ease: linear;
 //$ease: ease-in-out;
 
-//$ease-time:	0.200;
-//$ease-prop:	0.005;
-//$ease:		cubic-bezier($ease-time, $ease-prop, #{1 - $ease-time}, #{1 - $ease-prop});
-//$ease-in:		cubic-bezier($ease-time, $ease-prop, 0.5, 0.5);
-//$ease-out:	cubic-bezier(0.5, 0.5, #{1 - $ease-time}, #{1 - $ease-prop});
-//$ease-in:		cubic-bezier(0.400, 0.000, 0.600, 0.400);
-//$ease-out:	cubic-bezier(0.400, 0.600, 0.600, 1.000);
+//$ease_time:	0.200;
+//$ease_prop:	0.005;
+//$ease:		cubic-bezier($ease_time, $ease_prop, #{1 - $ease_time}, #{1 - $ease_prop});
+//$ease_in:		cubic-bezier($ease_time, $ease_prop, 0.5, 0.5);
+//$ease_out:	cubic-bezier(0.5, 0.5, #{1 - $ease_time}, #{1 - $ease_prop});
+//$ease_in:		cubic-bezier(0.400, 0.000, 0.600, 0.400);
+//$ease_out:	cubic-bezier(0.400, 0.600, 0.600, 1.000);
 
 // ------------------------------------
 // Layout
 // ------------------------------------
 
-$breakpoint-large: 			1024px;
+$breakpoint_large: 			1024px;
 $gutter: 					2 * $hu;
-$page-margin-left: 			1 * $hu;
-$page-margin-right: 		3 * $hu;
+$page_margin_left: 			1 * $hu;
+$page_margin_right: 		3 * $hu;
 
-$page-width: 				34 * $hu;//700px;
-$page-width-large: 			46 * $hu;//940px;
-$aside-width:				12 * $hu;
-$aside-width-large: 		12 * $hu;
-$main-width:				$page-width - $aside-width;
-$main-width-large:			$page-width-large - $aside-width-large;
+$page_width: 				34 * $hu;//700px;
+$page_width_large: 			46 * $hu;//940px;
+$aside_width:				12 * $hu;
+$aside_width_large: 		12 * $hu;
+$main_width:				$page_width - $aside_width;
+$main_width_large:			$page_width_large - $aside_width_large;
 
-$page-inner-width:			$page-width - $page-margin-left - $page-margin-right;
-$page-inner-width-large:	$page-width-large - $page-margin-left - $page-margin-right;
-$aside-inner-width:			$aside-width - $page-margin-right - $gutter/2;
-$aside-inner-width-large:	$aside-width-large - $page-margin-right - $gutter/2;
-$main-inner-width:			$main-width - $page-margin-left - $gutter/2;
-$main-inner-width-large:	$main-width-large - $page-margin-left - $gutter/2;
+$page_inner_width:			$page_width - $page_margin_left - $page_margin_right;
+$page_inner_width_large:	$page_width_large - $page_margin_left - $page_margin_right;
+$aside_inner_width:			$aside_width - $page_margin_right - $gutter/2;
+$aside_inner_width_large:	$aside_width_large - $page_margin_right - $gutter/2;
+$main_inner_width:			$main_width - $page_margin_left - $gutter/2;
+$main_inner_width_large:	$main_width_large - $page_margin_left - $gutter/2;
 
 // ------------------------------------
 // Color/Typefaces: private (do not use directly)
 // ------------------------------------
-$light-fgcolor: 	hsl(47, 5%, 15%);
-$light-bgcolor: 	hsl(47, 5%, 95%);
+$light_fgcolor: 	hsl(47, 5%, 15%);
+$light_bgcolor: 	hsl(47, 5%, 95%);
 
-$dark-fgcolor: 		hsl(47, 5%, 95%);
-$dark-bgcolor: 		hsl(47, 5%, 25%);
+$dark_fgcolor: 		hsl(47, 5%, 95%);
+$dark_bgcolor: 		hsl(47, 5%, 25%);
 
-$inverse-color: $dark-fgcolor;
-$inverse-background-color: $dark-bgcolor;
+$inverse_color: $dark_fgcolor;
+$inverse_background_color: $dark_bgcolor;
 
 // Font fallback lists
-$mono-fallback: Consolas, Menlo, "Andale Mono", monospace;
-$humanist-fallback: "Lucida Grande","Lucida Sans", Calibri, Tahoma, Verdana, Kalimati, sans-serif;
-$grotesque-fallback: "Helvetica", sans-serif;
-$modern-fallback: "georgia", sans-serif;
+$mono_fallback: Consolas, Menlo, "Andale Mono", monospace;
+$humanist_fallback: "Lucida Grande","Lucida Sans", Calibri, Tahoma, Verdana, Kalimati, sans-serif;
+$grotesque_fallback: "Helvetica", sans-serif;
+$modern_fallback: "georgia", sans-serif;
 
 // Webfonts included at compile-time
 //@import "fonts/_franklin-gothic-fs";
-$font-webfont-sans: "Franklin Gothic FS", $grotesque-fallback;
+$font_webfont_sans: "Franklin Gothic FS", $grotesque_fallback;
 //@import "fonts/_old-standard-tt";
-//$font-webfont-serif: "Old Standard TT", $modern-fallback;
+//$font_webfont_serif: "Old Standard TT", $modern_fallback;
 //@import "fonts/_source-sans-pro";
-//$font-webfont-sans: "Source Sans Pro", $humanist-fallback;
+//$font_webfont_sans: "Source Sans Pro", $humanist_fallback;
 
-$royal-blue-color:	#204980;
-$royal-ivory-color:	#FEFCE7;
+$royal_blue_color:	#204980;
+$royal_ivory_color:	#FEFCE7;
 
 // ------------------------------------
 // Color/Typefaces: public
 // ------------------------------------
 
 // colors
-$color: $light-fgcolor;
-$background-color: $light-bgcolor;
+$color: $light_fgcolor;
+$background_color: $light_bgcolor;
 
 // link-colors
-$link-color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
-$link-hover-color: scale_color($link-color, $lightness: 15%);//hsl(10, 95%, 60%);
-$link-down-color: scale_color($link-color, $lightness: -15%);//hsl(10, 95%, 30%);
+$link_color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
+$link_hover_color: scale_color($link_color, $lightness: 15%);//hsl(10, 95%, 60%);
+$link_down_color: scale_color($link_color, $lightness: -15%);//hsl(10, 95%, 30%);
 
 // selection-colors
-$selection-fgcolor: hsl(203, 100%, 50%);
-$selection-bgcolor: hsl(203, 100%, 90%);
+$selection_fgcolor: hsl(203, 100%, 50%);
+$selection_bgcolor: hsl(203, 100%, 90%);
 
 // font-family
-$large-font-family: $font-webfont-sans;
-$small-font-family: $humanist-fallback;
-$mono-font-family: $mono-fallback;
+$large_font_family: $font_webfont_sans;
+$small_font_family: $humanist_fallback;
+$mono_font_family: $mono_fallback;
 
-$base-font: $font-webfont-sans;
+$base_font: $font_webfont_sans;
 
 // ------------------------------------
 // Typography mixins
 // ------------------------------------
 
 // helpers
-@mixin text-rendering-legibility {
+@mixin text_rendering_legibility {
 	-webkit-text-rendering: optimizelegibility;
 	text-rendering: optimizelegibility;
 }
 
-@mixin text-rendering-speed {
+@mixin text_rendering_speed {
 	-webkit-text-rendering: optimizespeed;
 	text-rendering: optimizespeed;
 }
 
-@mixin font-smoothing {
+@mixin font_smoothing {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
@@ -128,24 +128,25 @@ $base-font: $font-webfont-sans;
 
 // h1 font-size: 3.42857rem; letter-spacing: -2px;
 // h2 font-size: 2.14286rem; letter-spacing: -1px;
-@mixin heading-font($size: 2rem, $weight: 600, $lead: 2rem) {
-	font-family: $large-font-family;
+@mixin heading_font($size: 2rem, $weight: 600, $lead: 2rem) {
+	font-family: $large_font_family;
 	font-size: $size;
 	font-weight: $weight;
 	font-kerning: normal;
 	line-height: $lead;
 	letter-spacing: -1px;
-	@include text-rendering-legibility;
-	@include font-smoothing;
+	@include text_rendering_legibility();
+	@include font_smoothing();
 }
 
-@mixin paragraph-font($size: 1rem, $weight: 400, $lead: 1.5rem) {
+@mixin paragraph_font($size: 1rem, $weight: 400, $lead: 1.5rem) {
 	font-size: $size;
 	font-weight: $weight;
 	line-height: $lead;
 }
-
-@mixin small-caps($size: 0.85rem, $weight: 600, $lead: 1.5rem) {
+// 85% / 1.76470
+// 0.85rem / 1.5rem;
+@mixin small_caps($size: 85%, $weight: 600, $lead: 1.76470){
 	font-size: $size;
 	font-weight: $weight;
 	line-height: $lead;
@@ -158,11 +159,11 @@ $base-font: $font-webfont-sans;
 // Other
 // ------------------------------------
 
-%skip-transitions {
+%skip_transitions {
 	transition: none 0s 0s !important;
 }
 
-%skip-transitions-long {
+%skip_transitions_long {
 	transition-property: none !important;
 	transition-timing-function: none !important;
 	transition-duration: 0s !important;

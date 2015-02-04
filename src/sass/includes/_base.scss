@@ -2,31 +2,33 @@
 // Elements
 // ------------------------------------
 
+* {
+	border-color: inherit;
+}
+#{elements-of-type(block)} {
+//	box-sizing: border-box;
+	-webkit-tap-highlight-color: transparent;
+}
 html {
-	font: 12px/12px $base-font;
+	font: 12px/12px $base_font;
 }
 body {
 	color: $color;
-	background-color: $background-color;
+	background-color: $background_color;
 	line-height: 18px;
 	-moz-osx-font-smoothing: grayscale;
 }
-//div {
-#{elements-of-type(block)} {
-	box-sizing: border-box;
-	-webkit-tap-highlight-color: transparent;
-}
 p {
-	@include paragraph-font();
+	@include paragraph_font();
 }
 h1 {
-	@include heading-font();
+	@include heading_font();
 }
 h2 {
-	@include heading-font($size: 28px, $weight: 300, $lead: 30px);
+	@include heading_font($size: 28px, $weight: 300, $lead: 30px);
 }
 h3 {
-	@include heading-font($size: 20px, $weight: 300, $lead: 24px);
+	@include heading_font($size: 20px, $weight: 300, $lead: 24px);
 }
 em {
 	font-style: italic;
@@ -48,10 +50,10 @@ a {
 // ------------------------------------
 
 //*::selection {
-//	color: $selection-fgcolor;
-//	background-color: $selection-bgcolor;
+//	color: $selection_fgcolor;
+//	background-color: $selection_bgcolor;
 //}
 @import "compass/css3/selection";
 * {
-	@include selection($selection-bgcolor, $selection-fgcolor);
+	@include selection($selection_bgcolor, $selection_fgcolor);
 }

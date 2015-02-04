@@ -21,12 +21,11 @@ $darkolivegreen:	darkolivegreen;
 
 .debug-grid {
 	background-color: transparent;
-	background-image: image-url("debug-background-720.svg");
 	background-repeat: no-repeat;
-	background-position: calc(50% + 1px) calc(1rem + 1px);
-	@include media($desktop-small) {
+	background-position: calc(50% + 1px) 1px;
+	background-image: image-url("debug-background-720.svg");
+	@include media($desktop_small) {
 		background-image: image-url("debug-background-960.svg");
-		background-position: calc(50% + 1px) calc(1rem + 1px);
 	}
 }
 .debug-blocks {
@@ -45,12 +44,12 @@ $darkolivegreen:	darkolivegreen;
 		outline: 1px dashed $darkseagreen;
 		background-color: transparentize($darkseagreen, 0.7);
 	}
-	#nav-root, .selectable {
+	#site-name-wrapper, .list {
 		outline: 1px dashed $lightcoral;
 		background-color: transparentize($lightcoral, 0.8);
 	}
 	#site-name, .list-item, .list-group {
-		background-color: transparentize($lightcoral, 0.8);
+//		background-color: transparentize($lightcoral, 0.8);
 		& > * {
 			outline: 1px dashed $lightcoral;
 			background-color: transparentize($lightcoral, 0.8);
@@ -98,14 +97,14 @@ $darkolivegreen:	darkolivegreen;
 	width: 100%;
 	padding: 1rem 0;
 	dt, dd {
-		@include small-caps($lead: 1rem);
+		@include small_caps($lead: 1rem);
 		margin: -0.25em 0;
 	}
 	dt {
 		font-weight: 300;
 	}
 	dd {
-		@include font-smoothing;
+		@include font_smoothing();
 	}
 }
 

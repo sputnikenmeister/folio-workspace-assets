@@ -1,6 +1,6 @@
 .dots-fontello.list-item,
 .dots-fontello .list-item {
-	@include font-smoothing();
+	@include font_smoothing();
 	display: inline-block;
 	font-size: 0.85rem;
 	line-height: 1.5rem;
@@ -14,7 +14,7 @@
 		width: 0; margin: 0; padding: 0;
 	}
 	& a:before {
-		@include fontello-icon-base;
+		@include fontello_icon_base();
 		width: 1em;
 		display: inline-block;
 		text-align: center;
@@ -28,7 +28,7 @@
 		position: absolute;
 		left: 100%; //width: 0;
 //		transform: translateZ(0.1px);
-		-webkit-transform: translate3d(0,0,0.1px);
+		transform: translate3d(0,0,0.1px);
 
 		transition: visibility $duration, opacity $duration;
 		visibility: hidden;

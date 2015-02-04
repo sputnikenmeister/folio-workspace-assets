@@ -1,6 +1,6 @@
 
 // Spinner
-@mixin spinner-icon {
+@mixin spinner_icon {
 	content: '\e800';
 	font-family: "fontello";
 	font-style: normal;
@@ -10,9 +10,9 @@
 	speak: none;
 }
 .spinner:after {
-//	@include font-smoothing;
-	@include text-rendering-speed;
-	@include spinner-icon;
+//	@include font_smoothing();
+	@include text_rendering_speed();
+	@include spinner_icon();
 	text-align: center;
 	display: inline-block;
 	text-decoration: none;
