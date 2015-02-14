@@ -11,6 +11,28 @@ module.exports = function (grunt) {
 	grunt.config("DIST_JS", "folio");
 	grunt.config("DIST_STYLES", "folio");
 
+	/* --------------------------------
+	 * Resources: Fonts
+	 * -------------------------------- */
+
+	/* Fonts SASS stylesheet
+	 * - - - - - - - - - - - - - - - - - */
+	grunt.config("compass.fonts.options", {
+		specify: "src/sass/fonts.scss",
+		sourcemap: false,
+		outputStyle: "compressed"
+	});
+
+	/* Custom CLI task
+	 * - - - - - - - - - - - - - - - - - */
+	grunt.registerTask("fontello", "Open fontello configuration in browser", function() {
+		var child = grunt.util.spawn({
+			cmd: "fontello-cli",
+			args: ["open", "--config", "build/fontello.json"],
+			opts: {stdio: "inherit"}
+		}, this.async());
+	});
+
 	/* ---------------------------------
 	 * Style Sheets
 	 * --------------------------------- */
@@ -24,7 +46,8 @@ module.exports = function (grunt) {
 		imagesDir: "images",
 		fontsDir: "fonts",
 		javascriptsDir: "js",
-		httpPath: "/workspace/assets",
+		relativeAssets: true,
+		//httpPath: "/workspace/assets",
 		//require: "./build/compass-encode.rb",
 	});
 	grunt.loadNpmTasks("grunt-autoprefixer"); /* CSS prefixes */
@@ -45,7 +68,6 @@ module.exports = function (grunt) {
 	grunt.config("autoprefixer.debug.files", {
 		"css/<%= DEBUG_STYLES %>.css": "css/<%= DEBUG_STYLES %>.css"
 	});
-	// grunt.config("autoprefixer.flash.files", { "css/flash.css": "css/flash.css"});
 
 	/* --------------------------------
 	 * Javascript
@@ -107,7 +129,8 @@ module.exports = function (grunt) {
 	grunt.config("exorcise", {
 		options: {
 			strict: false,
-			root: "../"
+			root: "../",
+//			root: "/workspace/assets/"
 		},
 		vendor: {
 			files: {
@@ -179,20 +202,12 @@ module.exports = function (grunt) {
 			tasks: ["compass:debug", "autoprefixer:debug"],
 			files: ["src/sass/**/*.scss"],
 		},
-//		"build-styles-svg": {
-//			tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
-//			files: ["images/**/*.svg"],
-//		},
-//		"process-sources": {
-//			tasks: ["jshint"],
-//			files: ["src/js/**/*.js"],
-//		},
 		"process-vendor": {
-			tasks: ["exorcise:vendor", "uglify:vendor"],
+			tasks: ["exorcise:vendor","uglify:vendor"],
 			files: ["js/<%= DEBUG_VENDOR_JS %>.js"],
 		},
 		"process-client": {
-			tasks: ["exorcise:client", "uglify:client"],
+			tasks: ["exorcise:client"],//"uglify:client"
 			files: ["js/<%= DEBUG_CLIENT_JS %>.js"],
 		},
 		"reload-config": {
@@ -200,16 +215,18 @@ module.exports = function (grunt) {
 				spawn: true
 			},
 			files: ["gruntfile.js"],
-			tasks: ["clean-all", "compass:debug", "autoprefixer:debug", "browserify:vendor", "browserify:client"],
+			tasks: ["clean-all", "compass:debug", "autoprefixer:debug", "browserify:vendor", "browserify:client", "build-dist"],
 		},
+		//"build-styles-svg": { tasks: ["compass:clean", "compass:client", "autoprefixer:client"], files: ["images/**/*.svg"], },
+		//"process-sources": { tasks: ["jshint"], files: ["src/js/**/*.js"], },
 	});
 
 	// DEBUG: check config result
 	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
 	var _tasks = {};
 	_tasks.buildStyles 		= ["compass:debug", "autoprefixer:debug"];
-	_tasks.buildVendor 		= ["browserify:vendor", "exorcise:vendor", "uglify:vendor"];
-	_tasks.buildClient 		= ["browserify:client", "exorcise:client", "uglify:client"];
+	_tasks.buildVendor 		= ["browserify:vendor", "exorcise:vendor"];//, "uglify:vendor"];
+	_tasks.buildClient 		= ["browserify:client", "exorcise:client"];//, "uglify:client"];
 	_tasks.buildScripts 	= _tasks.buildVendor.concat(_tasks.buildClient);
 	_tasks.buildAll 		= _tasks.buildStyles.concat(_tasks.buildScripts);
 	grunt.registerTask("build-debug", _tasks.buildAll);
@@ -273,30 +290,12 @@ module.exports = function (grunt) {
 	grunt.registerTask("build-dist", ["compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
 
 	/* --------------------------------
-	 * Custom tasks/CLI executions
-	 * -------------------------------- */
-
-	grunt.config("compass.fonts.options", {
-		specify: "src/sass/fonts.scss",
-		sourcemap: false,
-		outputStyle: "compressed"
-	});
-
-	grunt.registerTask("fontello", "Open fontello configuration in browser", function() {
-		var child = grunt.util.spawn({
-			cmd: "fontello-cli",
-			args: ["open", "--config", "build/fontello.json"],
-			opts: {stdio: "inherit"}
-		}, this.async());
-	});
-
-	/* --------------------------------
 	 * Main Targets
 	 * -------------------------------- */
 
 	// Default task
-	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
 	grunt.registerTask("watch-debug", ["build-debug", "browserify:watchable", "watch"]);
+	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
 	grunt.registerTask("build-all", ["clean-all", "build-debug", "build-dist"]);
 	grunt.registerTask("default", ["build-all"]);
 };

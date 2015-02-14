@@ -28,8 +28,7 @@ var GroupingListView = FilterableListView.extend({
 		if (options.groupings) {
 			this.groupingKey = options.groupings.key;
 			this.groupingCollection = options.groupings.collection;
-
-			this.groupingChildren = this.children;//new Container();
+			//this.groupingChildren = this.children;//new Container();
 			this.groupingRenderer = options.groupings.renderer || GroupingListView.GroupingRenderer;
 			this.groupingCollection.each(this.assignGroupingView, this);
 		}
@@ -46,13 +45,13 @@ var GroupingListView = FilterableListView.extend({
 		if (modelIds) {
 			this.groupingCollection.each(function (model, index, arr) {
 				if (_.contains(modelIds, model.id)) {
-					this.groupingChildren.findByModel(model).$el.removeClass("excluded");
+					this.children.findByModel(model).$el.removeClass("excluded");
 				} else {
-					this.groupingChildren.findByModel(model).$el.addClass("excluded");
+					this.children.findByModel(model).$el.addClass("excluded");
 				}
 			}, this);
 		} else {
-			this.groupingChildren.each(function (view) {
+			this.children.each(function (view) {
 				view.$el.removeClass("excluded");
 			});
 		}
@@ -62,9 +61,9 @@ var GroupingListView = FilterableListView.extend({
 	assignGroupingView: function (item) {
 		var view = new this.groupingRenderer({
 			model: item,
-			el: item.selector()
+			el: this.$(".list-group[data-id=" + item.id + "]")
 		});
-		this.groupingChildren.add(view);//, item.id);
+		this.children.add(view);//, item.id);
 		return view;
 	},
 

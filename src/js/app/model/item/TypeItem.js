@@ -20,13 +20,13 @@ module.exports = Backbone.Model.extend({
 		excluded: false,
 	},
 
-	selector: function() {
-		return "#" + this.domId();
-	},
-
-	domId: function() {
-		return "t" + this.id;
-	},
+//	selector: function() {
+//		return "#" + this.domId();
+//	},
+//
+//	domId: function() {
+//		return "t" + this.id;
+//	},
 
 	/** @override */
 	toString: function() {

@@ -46,7 +46,8 @@ body, .mutable-faded {
 	transition-timing-function: $ease;
 	transition-property: color, border-color, background-color;
 	transition-duration: $duration;//0.75;
-	transition-delay: $delay * 2 + $duration;
+	transition-delay: $delay * 2;
+//	transition-delay: $delay * 2 + $duration;
 }
 
 //.bundle-list .mutable-faded, body.bundle-list {

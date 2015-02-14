@@ -15,7 +15,8 @@ var Globals = require("../../control/Globals");
 
 /** @type {Object} */
 var imageUrlTemplates = {
-	"original" : _.template(Globals.APP_ROOT + Globals.MEDIA_DIR + "/<%= f %>"),
+	"original" : _.template(Globals.MEDIA_DIR + "/<%= f %>"),
+//	"original" : _.template(Globals.APP_ROOT + Globals.MEDIA_DIR + "/<%= f %>"),
 	"constrain-width" : _.template(Globals.APP_ROOT + "image/1/<%= width %>/0/uploads/<%= f %>"),
 	"constrain-height" : _.template(Globals.APP_ROOT + "image/1/0/<%= height %>/uploads/<%= f %>")
 };
@@ -69,22 +70,29 @@ module.exports = Backbone.Model.extend({
 		}
 	},
 
-	initialize: function() {
-		_.once(_.bind(this.getImageUrl, this));
-		_.once(_.bind(this.selector, this));
+//	initialize: function() {
+//		_.once(_.bind(this.getImageUrl, this));
+//		_.once(_.bind(this.selector, this));
+//	},
+
+	setImageUrl: function(url) {
+		this._imageUrl = url;
 	},
 
 	getImageUrl: function() {
-		return imageUrlTemplates.original(this.attributes);
+		if (_.isUndefined(this._imageUrl)) {
+			this._imageUrl = imageUrlTemplates.original(this.attributes);
+		}
+		return this._imageUrl;
 	},
 
-	selector: function() {
-		return "#" + this.domId();
-	},
-
-	domId: function() {
-		return "i" + this.id;
-	},
+//	selector: function() {
+//		return "#" + this.domId();
+//	},
+//
+//	domId: function() {
+//		return "i" + this.id;
+//	},
 
 	/** @override */
 	toString: function() {

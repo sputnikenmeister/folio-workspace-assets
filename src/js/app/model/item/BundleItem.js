@@ -67,19 +67,19 @@ module.exports = Backbone.Model.extend({
 		}
 	},
 
-	initialize: function (attrs, options) {},
-
-	parse: function (resp, options) {
-		return resp;
-	},
-
-	selector: function() {
-		return "#" + this.domId();
-	},
-
-	domId: function() {
-		return "b" + this.id;
-	},
+//	initialize: function (attrs, options) {},
+//
+//	parse: function (resp, options) {
+//		return resp;
+//	},
+//
+//	selector: function() {
+//		return "#" + this.domId();
+//	},
+//
+//	domId: function() {
+//		return "b" + this.id;
+//	},
 
 	/** @override */
 	toString: function () {

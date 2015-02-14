@@ -95,10 +95,10 @@ var Carousel = DeferredRenderView.extend({
 
 	createHammer: function() {
 		var hammer, hammerPan, hammerTap;
-		var hammerEl = Backbone.$(document.createElement("div"))
-			.addClass("pan-area").appendTo(this.el)[0];
-		hammer = new Hammer.Manager(hammerEl);
-//		hammer = new Hammer.Manager(this.el);
+//		var hammerEl = Backbone.$(document.createElement("div"))
+//			.addClass("pan-area").appendTo(this.el)[0];
+//		hammer = new Hammer.Manager(hammerEl);
+		hammer = new Hammer.Manager(this.el);
 
 		hammerPan = new Hammer.Pan({
 			direction: this.direction,
@@ -106,8 +106,7 @@ var Carousel = DeferredRenderView.extend({
 		});
 		hammerTap = new Hammer.Tap({
 			threshold: this.panThreshold / 2,
-			interval: 250,
-			time: 200
+			interval: 250, time: 200
 		});
 		hammerTap.requireFailure(hammerPan);
 		hammer.add([hammerPan, hammerTap]);
@@ -117,7 +116,7 @@ var Carousel = DeferredRenderView.extend({
 	},
 
 	_onTouch: function (ev) {
-//		ev.defaultPrevented || ev.preventDefault();
+		ev.defaultPrevented || ev.preventDefault();
 		switch (ev.type) {
 			case "panstart":	return this._onPanStart(ev);
 			case "panmove":		return this._onPanMove(ev);
@@ -153,7 +152,7 @@ var Carousel = DeferredRenderView.extend({
 	/** @param {Object} ev */
 	_onPanStart: function (ev) {
 		this.$el.addClass("panning");
-		this.panning = true;
+//		this.panning = true;
 
 		this.candidateChild = this.candidateModel = this.indexDelta = void 0;
 		this.thresholdOffset = (this.getEventDelta(ev) < 0)? this.panThreshold : -this.panThreshold;
@@ -215,7 +214,7 @@ var Carousel = DeferredRenderView.extend({
 			this.candidateChild.$el.removeClass("candidate");
 		}
 		this.$el.removeClass("panning");
-		this.panning = false;
+//		this.panning = false;
 	},
 
 	getEventDelta: function (ev) {
@@ -417,10 +416,12 @@ var Carousel = DeferredRenderView.extend({
 		//maxAcross = maxSize = 0; // Reset maxAcross to ignore emptyChild's across size
 		this.children.each(measure, this);
 
+		//tap area
 		this.contentBefore = this.emptyChild.el[this.dirProp("offsetLeft", "offsetTop")];
 		this.contentAfter = this.contentBefore + this.emptyChild.el[this.dirProp("offsetWidth", "offsetHeight")];
 		this.contentBefore += 100;
 		this.contentAfter -= 100;
+
 		this.containerSize = this.el[this.dirProp("offsetWidth", "offsetHeight")];
 		this.selectThreshold = Math.min(this.selectThreshold, this.containerSize * 0.1);
 
@@ -454,26 +455,47 @@ var Carousel = DeferredRenderView.extend({
 	 * --------------------------- */
 
 	scrollByLater: function (delta, skipTransitions) {
-//		_.isBoolean(skipTransitions) && (this.skipTransitions = this.skipTransitions || skipTransitions);
-//		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta));
-		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta, _.isBoolean(skipTransitions)? skipTransitions : this.skipTransitions));
+		_.isBoolean(skipTransitions) || (skipTransitions = this.skipTransitions);
+		if (!skipTransitions) {
+			this.$el.addClass("scrolling");
+		}
+		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta, skipTransitions));
 	},
 
 	scrollByNow: function (delta, skipTransitions) {
-		this._scrollBy(delta, _.isBoolean(skipTransitions)? skipTransitions : this.skipTransitions);
+		_.isBoolean(skipTransitions) || (skipTransitions = this.skipTransitions);
+		if (!skipTransitions) {
+			this.$el.addClass("scrolling");
+		}
+		this._scrollBy(delta, skipTransitions);
 	},
 
 	_scrollBy: function (delta, skipTransitions) {
 		var sChild, sSizes, child, sizes, pos, txVal;
 
+		sChild = this.collection.selected? this.children.findByModel(this.collection.selected): this.emptyChild;
+		sSizes = this.childSizes[sChild.cid];
+
 		if (skipTransitions) {
 			this.$el.addClass("skip-transitions");
 		} else {
 			this.$el.removeClass("skip-transitions");
-		}
 
-		sChild = this.collection.selected? this.children.findByModel(this.collection.selected): this.emptyChild;
-		sSizes = this.childSizes[sChild.cid];
+			var handler, action;
+			handler = function(ev) {
+//				console.log("carousel", ev.originalEvent.type, ev.originalEvent.propertyName);
+				if (ev.originalEvent.propertyName == "transform") {
+					action();
+				}
+			};
+			action = _.bind(function() {
+				sChild.$el.off("webkittransitionend transitionend", handler);
+				this.$el.removeClass("scrolling");
+			}, this);
+
+			sChild.$el.on("webkittransitionend transitionend", handler);
+			_.delay(action, 1000);
+		}
 
 		var scroll = function (child) {
 			sizes = this.childSizes[child.cid];
@@ -510,6 +532,9 @@ var Carousel = DeferredRenderView.extend({
 			}
 		}
 		return pos + offset;
+	},
+
+	_onScrollTransitionEnd: function (ev) {
 	},
 
 //	_scrollChildTo: function (view, pos, skipTransitions) {

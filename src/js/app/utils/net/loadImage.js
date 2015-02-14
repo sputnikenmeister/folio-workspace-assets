@@ -13,22 +13,22 @@ module.exports = function (image, url, context) {
 	var deferred = new Deferred();
 	context || (context = image);
 	image.onload = function (ev) {
-		deferred.notifyWith(context, [1, image]);
-		deferred.resolveWith(context, [url, image, ev]);
+		deferred.notifyWith(context, [image, 1]);
+		deferred.resolveWith(context, [image, url, ev]);
 	};
 	image.onerror = function (ev) {
-		deferred.rejectWith(context, [Error("Error ocurred while loading image from " + url), image, ev]);
+		deferred.rejectWith(context, [image, Error("Error ocurred while loading image from " + url), ev]);
 	};
 	image.onabort = function (ev) {
-		deferred.rejectWith(context, ["Aborted loading image from " + url, image, ev]);
+		deferred.rejectWith(context, [image, "Aborted loading image from " + url, ev]);
 	};
 	deferred.always(function () {
 		image.onload = image.onerror = image.onabort = void 0;
 	});
 	_.defer(function () {
 		image.src = url;
-		deferred.notifyWith(context, ["start", image]);
-		deferred.notifyWith(context, [0, image]);
+		deferred.notifyWith(context, [image, "start"]);
+		deferred.notifyWith(context, [image, 0]);
 	});
 	return deferred.promise();
 };

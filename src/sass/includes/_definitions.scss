@@ -7,8 +7,8 @@ $hu: 20px;
 $vu: 12px;
 
 // Time base units (transitions/animations)
-$duration: 			0.350s;
-$delay_interval: 	0.050s;
+$duration: 			0.475s;
+$delay_interval: 	0.025s;
 $delay: $duration + $delay_interval;
 
 $ease: ease;
@@ -33,18 +33,18 @@ $page_margin_left: 			1 * $hu;
 $page_margin_right: 		3 * $hu;
 
 $page_width: 				34 * $hu;//700px;
-$page_width_large: 			46 * $hu;//940px;
-$aside_width:				12 * $hu;
+$page_width_large: 			48 * $hu;//940px;
+$aside_width:				11 * $hu;
 $aside_width_large: 		12 * $hu;
 $main_width:				$page_width - $aside_width;
 $main_width_large:			$page_width_large - $aside_width_large;
 
-$page_inner_width:			$page_width - $page_margin_left - $page_margin_right;
-$page_inner_width_large:	$page_width_large - $page_margin_left - $page_margin_right;
-$aside_inner_width:			$aside_width - $page_margin_right - $gutter/2;
-$aside_inner_width_large:	$aside_width_large - $page_margin_right - $gutter/2;
-$main_inner_width:			$main_width - $page_margin_left - $gutter/2;
-$main_inner_width_large:	$main_width_large - $page_margin_left - $gutter/2;
+//$page_inner_width:			$page_width - $page_margin_left - $page_margin_right;
+//$page_inner_width_large:	$page_width_large - $page_margin_left - $page_margin_right;
+//$aside_inner_width:			$aside_width - $page_margin_right - $gutter/2;
+//$aside_inner_width_large:	$aside_width_large - $page_margin_right - $gutter/2;
+//$main_inner_width:			$main_width - $page_margin_left - $gutter/2;
+//$main_inner_width_large:	$main_width_large - $page_margin_left - $gutter/2;
 
 // ------------------------------------
 // Color/Typefaces: private (do not use directly)
@@ -106,12 +106,12 @@ $base_font: $font_webfont_sans;
 // helpers
 @mixin text_rendering_legibility {
 	-webkit-text-rendering: optimizelegibility;
-	text-rendering: optimizelegibility;
+	        text-rendering: optimizelegibility;
 }
 
 @mixin text_rendering_speed {
 	-webkit-text-rendering: optimizespeed;
-	text-rendering: optimizespeed;
+	        text-rendering: optimizespeed;
 }
 
 @mixin font_smoothing {
@@ -126,20 +126,32 @@ $base_font: $font_webfont_sans;
 	text-overflow: ellipsis;
 }
 
-// h1 font-size: 3.42857rem; letter-spacing: -2px;
-// h2 font-size: 2.14286rem; letter-spacing: -1px;
-@mixin heading_font($size: 2rem, $weight: 600, $lead: 2rem) {
-	font-family: $large_font_family;
-	font-size: $size;
-	font-weight: $weight;
-	font-kerning: normal;
-	line-height: $lead;
+%heading_base {
+//	font-family: $large_font_family;
 	letter-spacing: -1px;
+	font-kerning: normal;
 	@include text_rendering_legibility();
 	@include font_smoothing();
 }
 
-@mixin paragraph_font($size: 1rem, $weight: 400, $lead: 1.5rem) {
+// h1 font-size: 3.42857rem; letter-spacing: -2px;
+// h2 font-size: 2.14286rem; letter-spacing: -1px;
+
+//@mixin heading_font($size: 24px, $weight: 600, $lead: 24px) {
+@mixin heading_font($size: 1.99rem, $weight: 600, $lead: 1) {
+	font-size: $size;
+	font-weight: $weight;
+	line-height: $lead;
+//	font: $weight #{$size + "/" + $lead} $large_font_family;
+//	font: $weight $size/$lead $large_font_family;
+	letter-spacing: -1px;
+	font-kerning: normal;
+	@include text_rendering_legibility();
+	@include font_smoothing();
+}
+
+@mixin paragraph_font($size: 1rem, $weight: 400, $lead: 1.5) {
+//	font: $weight #{$size + "/" + $lead} inherit;
 	font-size: $size;
 	font-weight: $weight;
 	line-height: $lead;
@@ -153,6 +165,16 @@ $base_font: $font_webfont_sans;
 	letter-spacing: 1px;
 	vertical-align: baseline;
 	text-transform: uppercase;
+}
+
+%large_text p {
+	@include heading_font($size: 28px, $weight: 300, $lead: 30px);
+//	@include heading_font($size: 2.5rem, $weight: 300, $lead: 0.960em);
+	margin-bottom: 0.5em;
+	margin-top: 0;
+	&:first-child {
+		margin-top: -0.15em;
+	}
 }
 
 // ------------------------------------

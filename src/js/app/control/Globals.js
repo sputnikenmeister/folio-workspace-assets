@@ -4,8 +4,8 @@
 
 module.exports = (function () {
 	// to match css values in _base.scss, units are seconds
-	var txDuration		=	0.350 * 1000;
-	var txDelayInterval	=	0.050 * 1000;
+	var txDuration		=	0.475 * 1000;
+	var txDelayInterval	=	0.025 * 1000;
 	var retval = {
 		TRANSITION_DURATION			:	txDuration,
 		TRANSITION_DELAY_INTERVAL	:	txDelayInterval,

@@ -5,6 +5,9 @@
 		&, * {
 			user-select: none !important;
 		}
+		.sizing {
+			box-sizing: border-box;
+		}
 	}
 
 	&.panning { cursor: grabbing; }
@@ -17,7 +20,6 @@
 .carousel-item.default-carousel-item {
 	.sizing {
 		display: inline-block;
-		box-sizing: border-box;
 	}
 }
 
@@ -27,7 +29,7 @@
 $pan_ease: $ease;
 .carousel {
 	.carousel-item {
-		transform: translate3d(0%,0,0) scale3d(1,1,1);
+		transform: translate3d(0,0,0) scale3d(1,1,1);
 		backface-visibility: hidden;
 		transform-style: preserve-3d;
 		transition: transform $duration $pan_ease;
@@ -43,7 +45,6 @@ $pan_ease: $ease;
 .carousel-item.image-item {
 	.sizing {
 		position: relative;
-		box-sizing: border-box;
 		height: 100%;
 	}
 	img {
@@ -77,7 +78,8 @@ $pan_ease: $ease;
 		border: 1px solid transparent;
 		color: $background_color;
 	}
-	.placeholder:after {
+	.placeholder .progress {
+//	.placeholder:before {
 		font-size: 5rem;
 		font-weight: 600;
 		font-style: italic;
@@ -94,12 +96,26 @@ $pan_ease: $ease;
 		overflow: hidden;
 		white-space: nowrap;
 	}
-	&.pending.selected .placeholder:after {
-		content: "Loading";
+	.placeholder .progress.num {
+		font-style: normal;
 	}
-	&.error .placeholder:after {
-		content: "Error";
-	}
+//	&.pending.selected .placeholder:before {
+//		content: "Loading";
+//	}
+//	&.error .placeholder:before {
+//		content: "Error";
+//	}
+//	.placeholder .progress {
+//		color: red;
+//		font-size: 5rem;
+//		font-weight: 600;
+//		text-transform: uppercase;
+//		letter-spacing: -0.05em;
+//		line-height: 1;
+//		position: absolute;
+//		top: 3rem;
+//		left: $gutter;
+//	}
 }
 
 .carousel.image-carousel {
@@ -107,15 +123,11 @@ $pan_ease: $ease;
 	padding-bottom: 1.5rem;
 	.empty-item {
 		height: calc(100% - 3rem);
-		p {
-			@include heading_font($size: 28px, $weight: 300, $lead: 30px);
-			margin-bottom: 15px;
-			margin-top: 0;
-			&:first-child {
-				margin-top: -5px;
-			}
-		}
 		.content {
+			@extend %large_text;
+			p {
+				margin-left: -2px;
+			}
 			transition: opacity #{$duration} $ease;
 			opacity: 0;
 		}

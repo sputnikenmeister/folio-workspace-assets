@@ -1,8 +1,7 @@
 /**
  * @module app/view/render/ImageRenderer
  */
-
-/*global Event */
+/*global Event, XMLHttpRequest, Blob */
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -54,14 +53,16 @@ module.exports = Backbone.View.extend({
 		this.placeholder = this.$placeholder[0];
 		this.$image = this.$("img");
 		this.image = this.$image[0];
-//		this.$image.on("dragstart", function (ev) {
-//			ev.isDefaultPrevented() || ev.preventDefault();
-//		});
+		this.$image.on("dragstart", function (ev) {
+			ev.isDefaultPrevented() || ev.preventDefault();
+		});
 	},
 
 	remove: function() {
+		window.URL.revokeObjectURL(this.image.src);
 		this.image.src = "";
 		this.image.onload = this.image.onerror = this.image.onabort = void 0;
+		this.$image.off("dragstart");
 		return Backbone.View.prototype.remove.apply(this, arguments);
 	},
 
@@ -103,41 +104,53 @@ module.exports = Backbone.View.extend({
 			}
 			this.$el.off("webkittransitionend transitionend");
 		}
-		loadImage(this.image, this.model.getImageUrl(), this).then(
-			function (url, source, ev) {
-//				this.model.trigger("load:done");
-				this.$el.removeClass("pending").addClass("done");
-//				console.info("ImageRenderer.onLoad: " + this.model.get("f"), ev);
-			},
-			function (err, source, ev) {
-//				this.model.trigger("load:error");
-				this.$el.removeClass("pending").addClass("error");
-//				console.error("ImageRenderer.onError: " + err.message, arguments);
-			},
-			function (progress, source, ev) {
-				if (progress == "start") {
-//					this.model.trigger("load:start");
-					this.$el.removeClass("idle").addClass("pending");
-				} else {
-//					this.model.trigger("load:progress", progress);
-				}
-			}
-		);
+		if (window.Blob) {
+			loadImageXHR(this.model.getImageUrl(), this)
+				.then(this.onLoad_xhr, this.onError, this.onProgress);
+		} else {
+			loadImage(this.image, this.model.getImageUrl(), this)
+				.then(this.onLoad, this.onError, this.onProgress);
+		}
 	},
 
-	//loadImage: function () {
-	//	this.$el.removeClass("idle").addClass("pending");
-	//	loadImage(this.$image[0], this.model.getImageUrl(), this).then(this.onLoad, this.onError);//, this.onProgress);
-	//	//loadImageXHR(this.model.getImageUrl(), this).then(this.onLoad_xhr, this.onError, this.onProgress);
-	//},
-	//
-	//onProgress: function (progress, source, ev) {
-	//	console.info("ImageRenderer.onProgress: " + this.model.get("f"), (progress).toFixed(3));
-	//},
-	//
-	//onLoad_xhr: function (url, request, ev) {
-	//	this.$image[0].src = url;
-	//	this.$el.removeClass("pending").addClass("done");
-	//	console.info("ImageRenderer.onLoad_xhr: " + this.model.get("f"), request.response);
-	//},
+	onLoad: function (source, url, ev) {
+		console.info("ImageRenderer.onLoad: " + this.model.get("f"), ev);
+		//this.model.trigger("load:done");
+		this.$el.removeClass("pending").addClass("done");
+	},
+
+	onLoad_xhr: function (source, url, ev) {
+		console.info("ImageRenderer.onLoad_xhr: " + this.model.get("f"), url);
+		//this.model.trigger("load:done");
+//		this.image.src = window.URL.createObjectURL(response);
+		this.image.src = url;
+//		this.$el.delay(1).removeClass("pending").addClass("done");
+		_.defer(_.bind(function() {
+//			this.$image.attr("src", window.URL.createObjectURL(response));
+			this.$el.removeClass("pending").addClass("done");
+			this.$placeholder.empty();
+		}, this));
+	},
+
+	onError: function (source, err, ev) {
+		console.error("ImageRenderer.onError: " + err.message, arguments);
+		//this.model.trigger("load:error");
+		this.$el.removeClass("pending").addClass("error");
+		this.$placeholder.html("<span class=\"progress\">Error</span>");
+	},
+
+	onProgress: function (source, progress, ev) {
+//		console.log("ImageRenderer.onProgress: " + this.model.get("f"), arguments);
+//		this.$el.removeClass("idle").addClass("pending");
+		if (progress == "start" || ev.type == "loadstart") {
+			console.info("ImageRenderer.onProgress: " + this.model.get("f") + " Start");
+			//this.model.trigger("load:start");
+			this.$el.removeClass("idle").addClass("pending");
+			this.$placeholder.html("<span class=\"progress\">Loading</span>");
+		} else {
+			console.info("ImageRenderer.onProgress: " + this.model.get("f"), (progress).toFixed(3));
+			this.$placeholder.html("<span class=\"progress num\">" + (progress * 100).toFixed(0) + "%</span>");
+			//this.model.trigger("load:progress", progress);
+		}
+	}
 });

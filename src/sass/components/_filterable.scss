@@ -7,7 +7,7 @@ $collapse_ease: $ease;
 .list {
 	position: relative;
 	.list-item, .list-group {
-		position: relative;
+		position: static; top: 0; left: 0;
 		display: block;
 		transform-style: preserve-3d;
 		transform: translate3d(0,0,0);

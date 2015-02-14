@@ -8,6 +8,8 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 /** @type {module:app/helper/View} */
 var View = require("../../helper/View");
+/** @type {module:app/control/Globals} */
+var Globals = require("../../control/Globals");
 
 /** @type {string} */
 var viewTemplate = require("../template/CollectionStack.tpl");
@@ -89,25 +91,32 @@ module.exports = View.extend({
 		} else {
 			if (this.$content) {
 				// Get content's size while still in the flow
-				var contentRect = _.extend({
-					width: this.$el.innerWidth(),
-					minHeight: this.$el.innerHeight(),
+//				var contentRect = _.extend({
+//					position: "absolute",
+//					display: "block",
+//				}, this.$content[0].getBoundingClientRect());
+				var content = this.$content[0];
+				var contentRect = {//_.extend({
+					top: content.offsetTop,
+					left: content.offsetLeft,
+					width: content.offsetWidth,
+					minHeight: content.offsetHeight,
 					position: "absolute",
 					display: "block",
-				}, this.$content.position());
+				};//, this.$content.position());
 
 				// Have the parent keep it's size
 				this.$el.css({
-					minWidth: this.$el.outerWidth,
-					minHeight: this.$el.outerHeight,
+					minWidth: this.el.offsetWidth,
+					minHeight: this.el.offsetHeight,
 				});
 
 				// Fade it out
 				this.$content
 					.clearQueue()
 					.css(contentRect)
-//					.delay(350)
-					.transit({opacity: 0}, 300)
+					.delay(Globals.TRANSITION_DELAY)
+					.transit({opacity: 0}, Globals.TRANSITION_DURATION)
 					.promise().always(function($this) {
 						$this.parent().removeAttr("style");
 						$this.remove();
@@ -118,9 +127,9 @@ module.exports = View.extend({
 				this.$content = this.$createContentElement(this._model);
 				this.$content
 					.css({opacity: 0})
-					.delay(700)
+					.delay(Globals.TRANSITION_DELAY * 2)
 					.appendTo(this.el)
-					.transit({opacity: 1}, 300);
+					.transit({opacity: 1}, Globals.TRANSITION_DURATION);
 			}
 		}
 		if (this.skipTransitions) {

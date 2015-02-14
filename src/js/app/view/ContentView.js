@@ -38,7 +38,7 @@ var CarouselEmptyRenderer = require("./render/CarouselEmptyRenderer");
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
-var imageDescStackTemplate = require("./template/CollectionStack.Image.tpl");
+var imageCaptionTemplate = require("./template/CollectionStack.Image.tpl");
 
 /**
  * @constructor
@@ -47,10 +47,9 @@ var imageDescStackTemplate = require("./template/CollectionStack.Image.tpl");
 var ContentView = View.extend({
 
 	initialize: function (options) {
-		_.bindAll(this, "_onPan");
+//		_.bindAll(this, "_onPan");
 
 		this.children = [];
-		this.container = this.createContainer();
 		this.hammer = this.createHammer(this.el);
 
 		// Model listeners
@@ -87,16 +86,16 @@ var ContentView = View.extend({
 	createChildren: function (bundle, skipAnimation) {
 		var images = bundle.get("images");
 
-		this.createImageDescStack(images);
-//		this.createLabelCarousel(images);
+		this.createImageCaptionStack(images);
+//		this.createImageCaptionCarousel(images);
 		this.createImageCarousel(images, bundle);
 //		this.$el.css("display", "");
 		// Show views
 		if (!skipAnimation) {
 			_.each(this.children, function(child) {
 				child.$el.css({opacity: 0})
-					.delay(Globals.TRANSITION_DELAY * 3)
-					.transit({opacity: 1}, Globals.TRANSITION_DURATION);
+//					.delay(Globals.TRANSITION_DELAY * 2)
+					.transit({opacity: 1, delay: Globals.TRANSITION_DELAY * 2}, Globals.TRANSITION_DURATION);
 			});
 		}
 	},
@@ -115,7 +114,7 @@ var ContentView = View.extend({
 				child.remove();
 			} else {
 				child.$el.css({position: "absolute", top: child.el.offsetTop, left: child.el.offsetLeft})
-					.transit({opacity: 0}, Globals.TRANSITION_DURATION)
+					.transit({opacity: 0, delay: 1}, Globals.TRANSITION_DURATION) // delay 0.001s - helps tx sync on webkit
 					.queue(function(next) {
 						child.remove();
 						next();
@@ -150,26 +149,26 @@ var ContentView = View.extend({
 //		this.children.length = 0;
 //	},
 
-	registerHammer: function() {
-		var keywordList = Backbone.$("#keyword-list");
-		if (keywordList) {
-			this.hammer.on("panstart panmove panend pancancel", this._onPan);
-		}
-	},
-
-	_onPan: function(ev) {
-		switch (ev.type) {
-			case "panstart":
-				break;
-			case "panmove":
-				break;
-			case "panend":
-				break;
-			case "pancancel":
-				break;
-
-		}
-	},
+//	registerHammer: function() {
+//		var keywordList = Backbone.$("#keyword-list");
+//		if (keywordList) {
+//			this.hammer.on("panstart panmove panend pancancel", this._onPan);
+//		}
+//	},
+//
+//	_onPan: function(ev) {
+//		switch (ev.type) {
+//			case "panstart":
+//				break;
+//			case "panmove":
+//				break;
+//			case "panend":
+//				break;
+//			case "pancancel":
+//				break;
+//
+//		}
+//	},
 
 	/* -------------------------------
 	 * Components
@@ -212,7 +211,6 @@ var ContentView = View.extend({
 			hammer: (this.hammer || void 0),
 		});
 		view.render().$el.appendTo(this.el);
-//		view.render().$el.prependTo(this.el);
 		controller.listenTo(view, {
 			"view:select:one": controller.selectImage,
 			"view:select:none": controller.deselectImage
@@ -220,7 +218,7 @@ var ContentView = View.extend({
 		return this.children[this.children.length] = view;
 	},
 
-	createLabelCarousel: function(images) {
+	createImageCaptionCarousel: function(images) {
 		// Create label-carousel
 		view = new Carousel({
 			className: "label-carousel",
@@ -237,14 +235,13 @@ var ContentView = View.extend({
 		return this.children[this.children.length] = view;
 	},
 
-	createImageDescStack: function(images) {
+	createImageCaptionStack: function(images) {
 		var view = new CollectionStack({
 			collection: images,
-			template: imageDescStackTemplate,
-			className: "image-desc-stack"
+			template: imageCaptionTemplate,
+			className: "image-caption-stack"
 		});
-		view.render().$el.appendTo(this.container);
-//		view.render().$el.appendTo(this.el);
+		view.render().$el.appendTo(this.el);
 		return this.children[this.children.length] = view;
 	},
 

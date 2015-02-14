@@ -148,7 +148,7 @@ var FilterableListView = DeferredRenderView.extend({
 	assignChildView: function (item, index) {
 		var view = new this.renderer({
 			model: item,
-			el: item.selector()
+			el: this.$(".list-item[data-id=" + item.id + "]")
 		});
 		this.children.add(view);//, item.id);
 		this.listenTo(view, "renderer:click", this.onChildClick);
