@@ -5,3 +5,4 @@ _~*.scss
 /node_modules
 /bower_components
 /flash
+/html
