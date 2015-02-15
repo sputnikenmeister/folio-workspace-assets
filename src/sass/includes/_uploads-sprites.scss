@@ -1,0 +1,33 @@
+@import "_uploads-sprites-generated";
+
+@mixin sprite($sprite) {
+	$sprite_w: nth($sprite, 5);
+	$sprite_h: nth($sprite, 6);
+	$sprite_dx: nth($sprite, 3);
+	$sprite_dy: nth($sprite, 4);
+
+//	$sprite_sw: nth($sprite, 7) / nth($sprite, 5);
+//	$sprite_sh: nth($sprite, 8) / nth($sprite, 6);
+//	background-position: #{(nth($sprite, 1) / nth($sprite, 7) * 100) + "%"}  #{(nth($sprite, 2) / nth($sprite, 8) * 100) + "%"};
+//	background-size: #{($sprite_sw*100) + "%"} #{($sprite_sw*100) + "%"};
+//	background-repeat: no-repeat;
+
+	background-position: $sprite_dx $sprite_dy;
+	width: $sprite_w;
+	height: $sprite_h;
+	display: block;
+	content: ' ';
+	transform: scale(10,10);
+	transform-origin: 0 0;
+}
+@mixin sprites($sprites) {
+	@each $sprite in $sprites {
+		$sprite_name: nth($sprite, 10);
+		.image-item.#{$sprite_name} .placeholder:before {
+			background-image: image-url("previews.png");
+			@include sprite($sprite);
+		}
+	}
+}
+
+@include sprites($spritesheet-sprites);

@@ -6,3 +6,4 @@ _~*.scss
 /bower_components
 /flash
 /html
+/build/uploads-sprites

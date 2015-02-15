@@ -19,8 +19,11 @@ var Styles = require("../../utils/Styles");
 var stripTags = require("../../utils/strings/stripTags");
 /** @type {module:app/utils/net/loadImage} */
 var loadImage = require("../../utils/net/loadImage");
+
+/** @type {module:app/utils/net/loadImageDOM} */
+//var loadImageDOM = require("../../utils/net/loadImageDOM");
 /** @type {module:app/utils/net/loadImageXHR} */
-var loadImageXHR = require("../../utils/net/loadImageXHR");
+//var loadImageXHR = require("../../utils/net/loadImageXHR");
 
 /** @type {Function} */
  var viewTemplate = require( "../template/ImageRenderer.tpl" );
@@ -48,18 +51,21 @@ module.exports = Backbone.View.extend({
 	},
 
 	createChildren: function() {
+		this.$el.addClass(this.model.get("f").replace(/\.\w+$/, ""));
 		this.$el.html(this.template(this.model.toJSON()));
 		this.$placeholder = this.$(".placeholder");
-		this.placeholder = this.$placeholder[0];
+//		this.$progress = this.$(".progress");
 		this.$image = this.$("img");
-		this.image = this.$image[0];
 		this.$image.on("dragstart", function (ev) {
 			ev.isDefaultPrevented() || ev.preventDefault();
 		});
+
+		this.image = this.$image[0];
+		this.placeholder = this.$placeholder[0];
 	},
 
 	remove: function() {
-		window.URL.revokeObjectURL(this.image.src);
+//		window.URL.revokeObjectURL(this.image.src);
 		this.image.src = "";
 		this.image.onload = this.image.onerror = this.image.onabort = void 0;
 		this.$image.off("dragstart");
@@ -68,11 +74,21 @@ module.exports = Backbone.View.extend({
 
 	/** @return {this} */
 	render: function () {
-		var w = this.$placeholder.outerWidth();
-		var h = Math.round((w / this.model.get("w")) * this.model.get("h"));
+		var pW, pH, pA, cA, w, h;
+		pW = this.placeholder.offsetWidth;
+		pH = this.placeholder.offsetHeight;
+//		pA = pW/pH;
+//		cA = this.model.get("w") / this.model.get("h");
 
-		this.$image.attr({width: w, height: h}).css(this.$placeholder.position());
+//		if (pA > cA) {
+			w = pW;
+			h = Math.round((w / this.model.get("w")) * this.model.get("h"));
+//		} else {
+//			h = pH;
+//			w = Math.round((h / this.model.get("h")) * this.model.get("w"));
+//		}
 		this.$el.css("height", h);
+		this.$image.attr({width: w, height: h}).css(this.$placeholder.position());
 		return this;
 	},
 
@@ -104,53 +120,63 @@ module.exports = Backbone.View.extend({
 			}
 			this.$el.off("webkittransitionend transitionend");
 		}
-		if (window.Blob) {
-			loadImageXHR(this.model.getImageUrl(), this)
-				.then(this.onLoad_xhr, this.onError, this.onProgress);
+		loadImage(this.model.getImageUrl(), this.image, this).then(this.onLoad, this.onError, this.onProgress);
+//		if (window.Blob) {
+//			loadImageXHR(this.model.getImageUrl(), this.image, this)
+//				.then(this.onLoad_xhr, this.onError, this.onProgress);
+//		} else {
+//			loadImageDOM(this.model.getImageUrl(), this.image, this)
+//				.then(this.onLoad, this.onError, this.onProgress);
+//		}
+	},
+
+	onProgress: function (progress, source, ev) {
+//		console.log("ImageRenderer.onProgress: " + this.model.get("f"), arguments);
+//		this.$el.removeClass("idle").addClass("pending");
+		if (progress == "loadstart") {// || ev.type == "loadstart") {
+			console.debug("ImageRenderer.onProgress: " + this.model.get("f") + " loadstart");
+			//this.model.trigger("load:start");
+			this.$el.removeClass("idle").addClass("pending");
+//			this.$placeholder.html("<span class=\"progress\">Loading</span>");
 		} else {
-			loadImage(this.image, this.model.getImageUrl(), this)
-				.then(this.onLoad, this.onError, this.onProgress);
+			var percent = (progress * 100).toFixed(0);
+			console.debug("ImageRenderer.onProgress: " + this.model.get("f") + " " + ev.type, (progress).toFixed(3));
+//			this.$progress.addClass("num").text(percent + "%");
+			this.$placeholder.attr("data-progress", percent);
+			//this.model.trigger("load:progress", progress);
 		}
 	},
 
-	onLoad: function (source, url, ev) {
-		console.info("ImageRenderer.onLoad: " + this.model.get("f"), ev);
-		//this.model.trigger("load:done");
-		this.$el.removeClass("pending").addClass("done");
-	},
-
-	onLoad_xhr: function (source, url, ev) {
-		console.info("ImageRenderer.onLoad_xhr: " + this.model.get("f"), url);
-		//this.model.trigger("load:done");
-//		this.image.src = window.URL.createObjectURL(response);
-		this.image.src = url;
-//		this.$el.delay(1).removeClass("pending").addClass("done");
-		_.defer(_.bind(function() {
-//			this.$image.attr("src", window.URL.createObjectURL(response));
-			this.$el.removeClass("pending").addClass("done");
-			this.$placeholder.empty();
-		}, this));
-	},
-
-	onError: function (source, err, ev) {
+	onError: function (err, source, ev) {
 		console.error("ImageRenderer.onError: " + err.message, arguments);
 		//this.model.trigger("load:error");
 		this.$el.removeClass("pending").addClass("error");
-		this.$placeholder.html("<span class=\"progress\">Error</span>");
+		this.$placeholder.removeAttr("data-progress");
+//		this.$placeholder.attr("data-progress", "100");
+//		this.$progress.removeClass("num").text("Error");
+//		this.$placeholder.html("<span class=\"progress\">Error</span>");
 	},
 
-	onProgress: function (source, progress, ev) {
-//		console.log("ImageRenderer.onProgress: " + this.model.get("f"), arguments);
-//		this.$el.removeClass("idle").addClass("pending");
-		if (progress == "start" || ev.type == "loadstart") {
-			console.info("ImageRenderer.onProgress: " + this.model.get("f") + " Start");
-			//this.model.trigger("load:start");
-			this.$el.removeClass("idle").addClass("pending");
-			this.$placeholder.html("<span class=\"progress\">Loading</span>");
-		} else {
-			console.info("ImageRenderer.onProgress: " + this.model.get("f"), (progress).toFixed(3));
-			this.$placeholder.html("<span class=\"progress num\">" + (progress * 100).toFixed(0) + "%</span>");
-			//this.model.trigger("load:progress", progress);
-		}
-	}
+	onLoad: function (url, source, ev) {
+		console.info("ImageRenderer.onLoad: " + this.model.get("f"), ev);
+		//this.model.trigger("load:done");
+		this.$el.removeClass("pending").addClass("done");
+		this.$placeholder.removeAttr("data-progress");
+	},
+
+//	onLoad_xhr: function (url, source, ev) {
+//		console.info("ImageRenderer.onLoad_xhr: " + this.model.get("f"), url);
+//		//this.model.trigger("load:done");
+////		this.image.src = window.URL.createObjectURL(response);
+//		this.image.src = url;
+////		this.$el.delay(1).removeClass("pending").addClass("done");
+////		_.defer(_.bind(function() {
+////			this.$image.attr("src", window.URL.createObjectURL(response));
+//			this.$el.removeClass("pending").addClass("done");
+//			this.$placeholder.removeAttr("data-progress");
+////			this.$placeholder.attr("data-progress", "100");
+////			this.$progress.removeClass("num").text("Done");
+////			this.$placeholder.empty();
+////		}, this));
+//	},
 });

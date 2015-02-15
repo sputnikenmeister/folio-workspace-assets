@@ -299,10 +299,12 @@ $navHeight_portrait: 12rem;
 
 #content {
 	width: 100%;
-//	position: relative;
-//	margin-top: -$navHeight_portrait;
+//	position: absolute;
+//	top: $navHeight_portrait;
+//	height: calc(100% - #{$navHeight_portrait});
 //	@include media($desktop_small) {
-//		margin-top: -$navHeight_landscape;
+//		top: $navHeight_landscape;
+//		height: calc(100% - #{$navHeight_landscape});
 //	}
 }
 
@@ -310,6 +312,7 @@ $navHeight_portrait: 12rem;
 	position: relative;
 	overflow: hidden;
 	top: 0;	width: 100%;
+//	bottom: 0;//height: 100%;
 	box-sizing: content-box;
 	min-width: $page_width;
 	@include media($desktop_small) {
@@ -429,6 +432,9 @@ $navHeight_portrait: 12rem;
 	}
 }
 #container {
+	z-index: 1;
+}
+#bundle-list-wrapper {
 	z-index: 1;
 }
 #keyword-list-wrapper {

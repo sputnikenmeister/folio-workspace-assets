@@ -472,6 +472,7 @@ var Carousel = DeferredRenderView.extend({
 
 	_scrollBy: function (delta, skipTransitions) {
 		var sChild, sSizes, child, sizes, pos, txVal;
+		var applyScroll, scrollEndHandler, scrollEndAction;
 
 		sChild = this.collection.selected? this.children.findByModel(this.collection.selected): this.emptyChild;
 		sSizes = this.childSizes[sChild.cid];
@@ -480,24 +481,21 @@ var Carousel = DeferredRenderView.extend({
 			this.$el.addClass("skip-transitions");
 		} else {
 			this.$el.removeClass("skip-transitions");
-
-			var handler, action;
-			handler = function(ev) {
-//				console.log("carousel", ev.originalEvent.type, ev.originalEvent.propertyName);
+			scrollEndHandler = function(ev) {
 				if (ev.originalEvent.propertyName == "transform") {
-					action();
+					scrollEndAction();
 				}
 			};
-			action = _.bind(function() {
-				sChild.$el.off("webkittransitionend transitionend", handler);
+			scrollEndAction = function() {
+				sChild.$el.off("webkittransitionend transitionend", scrollEndHandler);
 				this.$el.removeClass("scrolling");
-			}, this);
-
-			sChild.$el.on("webkittransitionend transitionend", handler);
-			_.delay(action, 1000);
+			};
+			scrollEndAction = _.once(_.bind(scrollEndAction, this));
+			sChild.$el.on("webkittransitionend transitionend", scrollEndHandler);
+			_.delay(scrollEndAction, 1000);
 		}
 
-		var scroll = function (child) {
+		applyScroll = function (child) {
 			sizes = this.childSizes[child.cid];
 			pos = this._getScrollOffset(sizes, sSizes, delta);
 
@@ -506,7 +504,7 @@ var Carousel = DeferredRenderView.extend({
 			child.el.style.mozTransform = txVal;
 			child.el.style.transform = txVal;
 		};
-		this.children.each(scroll, this);
+		this.children.each(applyScroll, this);
 	},
 
 	_getTransformValue: function(pos) {
@@ -532,9 +530,6 @@ var Carousel = DeferredRenderView.extend({
 			}
 		}
 		return pos + offset;
-	},
-
-	_onScrollTransitionEnd: function (ev) {
 	},
 
 //	_scrollChildTo: function (view, pos, skipTransitions) {

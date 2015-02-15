@@ -56,7 +56,7 @@ $pan_ease: $ease;
 		box-sizing: border-box;
 	}
 	img {
-		transition: opacity #{$duration} $ease;
+		transition: opacity #{$duration} 0.001s $ease;
 		opacity: 0;
 	}
 	&.idle img {
@@ -78,11 +78,10 @@ $pan_ease: $ease;
 		border: 1px solid transparent;
 		color: $background_color;
 	}
-	.placeholder .progress {
-//	.placeholder:before {
+//	.placeholder .progress {
+	.placeholder:before {
 		font-size: 5rem;
 		font-weight: 600;
-		font-style: italic;
 		text-transform: uppercase;
 		letter-spacing: -0.05em;
 		// Centering
@@ -96,25 +95,40 @@ $pan_ease: $ease;
 		overflow: hidden;
 		white-space: nowrap;
 	}
-	.placeholder .progress.num {
-		font-style: normal;
+	.placeholder:before {
+		visibility: hidden;
 	}
-//	&.pending.selected .placeholder:before {
-//		content: "Loading";
-//	}
-//	&.error .placeholder:before {
-//		content: "Error";
-//	}
+	&.selected, &.candidate {
+		.placeholder:before {
+			visibility: visible;
+		}
+		&.pending .placeholder:before {
+			content: "Loading";
+			font-style: italic;
+		}
+		&.pending .placeholder[data-progress]:before {
+			content: attr(data-progress) "%";
+			font-style: normal;
+		}
+		&.done .placeholder:before {
+			content: "Done";
+			font-style: italic;
+		}
+		&.error .placeholder:before {
+			content: "Error";
+			font-style: italic;
+		}
+	}
 //	.placeholder .progress {
-//		color: red;
-//		font-size: 5rem;
-//		font-weight: 600;
-//		text-transform: uppercase;
-//		letter-spacing: -0.05em;
-//		line-height: 1;
-//		position: absolute;
-//		top: 3rem;
-//		left: $gutter;
+//		display: none;
+//		&.num {
+//			font-style: normal;
+//		}
+//	}
+//	&.error, &.pending.selected {
+//		.placeholder .progress {
+//			display: inline-block;
+//		}
 //	}
 }
 
@@ -142,7 +156,6 @@ $pan_ease: $ease;
 		opacity: 0.2;
 	}
 }
-
 
 //
 // .label-carousel

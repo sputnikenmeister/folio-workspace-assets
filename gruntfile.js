@@ -12,8 +12,37 @@ module.exports = function (grunt) {
 	grunt.config("DIST_STYLES", "folio");
 
 	/* --------------------------------
-	 * Resources: Fonts
+	 * Resources: Fonts/Sprites
 	 * -------------------------------- */
+
+	var previewSize = "10%";
+	grunt.loadNpmTasks("grunt-responsive-images");
+	grunt.config("responsive_images.uploads-sprites", {
+		options: {
+			sizes: [{
+				width: previewSize,
+			}]
+		},
+		files: [{
+			expand: true,
+			src: ["../uploads/*.{jpg,gif,png}"],
+			custom_dest: "build/uploads-sprites/{%= width %}/"
+		}]
+	});
+	grunt.loadNpmTasks("grunt-spritesmith");
+	grunt.config("sprite.uploads-sprites", {
+		algorithm: "binary-tree",
+		engine: "gmsmith",
+		imgOpts: {quality: 50},
+		src: "build/uploads-sprites/"+previewSize+"/*.{jpg,gif,png}",
+		dest: "images/uploads-sprites.png",
+		destCss: "src/sass/includes/_uploads-sprites-generated.scss"
+	});
+//	grunt.config("compass.uploads-sprites.options", {
+//		specify: "src/sass/includes/_uploads-sprites.scss",
+//		sourcemap: false,
+//	});
+	grunt.registerTask("build-sprites", ["responsive_images:uploads-sprites", "sprite:uploads-sprites"]);
 
 	/* Fonts SASS stylesheet
 	 * - - - - - - - - - - - - - - - - - */
@@ -129,8 +158,8 @@ module.exports = function (grunt) {
 	grunt.config("exorcise", {
 		options: {
 			strict: false,
-			root: "../",
-//			root: "/workspace/assets/"
+//			root: "../",
+			root: "/workspace/assets/"
 		},
 		vendor: {
 			files: {
