@@ -34,6 +34,8 @@ var Carousel = DeferredRenderView.extend({
 	/** @override */
 	className: "carousel skip-transitions",
 	/** @type {int} In pixels */
+	tapAreaGrow: 100,
+	/** @type {int} In pixels */
 	selectThreshold: 30,
 	/** @type {int} In pixels */
 	panThreshold: 15,
@@ -57,13 +59,9 @@ var Carousel = DeferredRenderView.extend({
 		this.skipTransitions = true;
 
 		_.bindAll(this, "_onTouch", "_onResize");
-
 		this.hammer = (options.hammer)? options.hammer : this.createHammer();
 		this.hammer.on("panstart panmove panend pancancel tap", this._onTouch);
 		Backbone.$(window).on("orientationchange resize", this._onResize);
-
-//		_.bindAll(this, "_onTransitionEnd");
-//		this.$el.on("webkittransitionend transitionend", this._onTransitionEnd);
 
 		this.listenTo(this.collection, {
 			"reset": this._onCollectionReset,
@@ -74,7 +72,6 @@ var Carousel = DeferredRenderView.extend({
 	},
 
 	remove: function () {
-//		this.$el.off("webkittransitionend transitionend", this._onTransitionEnd);
 		Backbone.$(window).off("orientationchange resize", this._onResize);
 		this.hammer.off("panstart panmove panend pancancel tap", this._onTouch);
 		if (this._hammerIsLocal) this.hammer.destroy();
@@ -82,24 +79,14 @@ var Carousel = DeferredRenderView.extend({
 		DeferredRenderView.prototype.remove.apply(this);
 	},
 
-//	_onTransitionEnd: function(ev) {
-//		ev = ev.originalEvent;
-//		if (ev.propertyName === "transform" || ev.propertyName === "-webkit-transform") {
-//			console.log(ev.target, ev);
-//		}
-//	},
-
 	/* --------------------------- *
 	 * Hammer events
 	 * --------------------------- */
 
 	createHammer: function() {
 		var hammer, hammerPan, hammerTap;
-//		var hammerEl = Backbone.$(document.createElement("div"))
-//			.addClass("pan-area").appendTo(this.el)[0];
-//		hammer = new Hammer.Manager(hammerEl);
-		hammer = new Hammer.Manager(this.el);
 
+		hammer = new Hammer.Manager(this.el);
 		hammerPan = new Hammer.Pan({
 			direction: this.direction,
 			threshold: this.panThreshold,
@@ -116,7 +103,8 @@ var Carousel = DeferredRenderView.extend({
 	},
 
 	_onTouch: function (ev) {
-		ev.defaultPrevented || ev.preventDefault();
+//		ev.defaultPrevented ||
+		ev.preventDefault();
 		switch (ev.type) {
 			case "panstart":	return this._onPanStart(ev);
 			case "panmove":		return this._onPanMove(ev);
@@ -129,14 +117,14 @@ var Carousel = DeferredRenderView.extend({
 	_onTap: function (ev) {
 		var pos = ev.center[this.dirProp("x", "y")];
 		var item;
-		if (pos < this.contentBefore) {
+		if (pos < this.tapAreaBefore) {
 			if (this.collection.selectedIndex == 0) {
 				this.trigger("view:select:none");
 			} else {
 				item = this.collection.preceding();
 			}
 		} else
-		if (pos > this.contentAfter) {
+		if (pos > this.tapAreaAfter) {
 			if (this.collection.selectedIndex == -1) {
 				item = this.collection.first();
 			} else {
@@ -152,8 +140,6 @@ var Carousel = DeferredRenderView.extend({
 	/** @param {Object} ev */
 	_onPanStart: function (ev) {
 		this.$el.addClass("panning");
-//		this.panning = true;
-
 		this.candidateChild = this.candidateModel = this.indexDelta = void 0;
 		this.thresholdOffset = (this.getEventDelta(ev) < 0)? this.panThreshold : -this.panThreshold;
 	},
@@ -219,33 +205,8 @@ var Carousel = DeferredRenderView.extend({
 
 	getEventDelta: function (ev) {
 		var delta = (this.direction & Hammer.DIRECTION_HORIZONTAL)? ev.deltaX : ev.deltaY;
-//		if (ev.type == "panstart") {
-//			this.thresholdOffset = (delta < 0)? this.panThreshold : -this.panThreshold;
-//		}
-//		delta += this.thresholdOffset;
-//		if (ev.type == "panend" || ev.type = "pancancel") {
-//			delete this.thresholdOffset;
-//		}
 		return delta;
 	},
-
-//	getCandidateItem: function (delta) {
-//		var item;
-//		if (delta < 0) {
-//			if (this.collection.selectedIndex == -1) {
-//				item = this.collection.first();
-//			} else {
-//				item = this.collection.following();
-//			}
-//		} else {
-//			if (this.collection.selectedIndex == 0) {
-//				item = null;
-//			} else {
-//				item = this.collection.preceding();
-//			}
-//		}
-//		return item;
-//	},
 
 	isOutOfBounds: function (delta) {
 		return (this.collection.selectedIndex == -1 && delta > 0) ||
@@ -265,9 +226,9 @@ var Carousel = DeferredRenderView.extend({
 	/** @private */
 	_onDeselectOne: function (model) {
 		var child = this.children.findByModel(model);
-		if (child)
+		if (child) {
 			child.$el.removeClass("selected");
-			// else if children have not been created yet, selection will be applied then
+		} // else if children have not been created yet, selection will be applied then
 	},
 
 	/** @private */
@@ -334,15 +295,6 @@ var Carousel = DeferredRenderView.extend({
 		return child;
 	},
 
-//	removeEmptyChildView: function () {
-//		if (this.emptyChild) {
-//			this.emptyChild.remove();
-//			delete this.emptyChild;
-//		} else {
-//			console.warn("Carousel.removeEmptyChildView called while emptyChild is undefined");
-//		}
-//	},
-
 	createChildView: function (item) {
 		var child = new this.renderer({
 			model: item
@@ -356,7 +308,6 @@ var Carousel = DeferredRenderView.extend({
 
 	removeChildView: function (view) {
 		this.children.remove(view);
-//		view.$el.off("mouseup");
 		view.remove();
 		return view;
 	},
@@ -386,7 +337,6 @@ var Carousel = DeferredRenderView.extend({
 	},
 
 	removeChildren: function () {
-//		this.removeEmptyChildView();
 		this.children.each(this.removeChildView, this);
 	},
 
@@ -405,34 +355,32 @@ var Carousel = DeferredRenderView.extend({
 		var measure = function(child) {
 			size = this.measureChild(child.render());
 			size.pos = pos;
-			pos += size.outer + (this.gap || Math.min(size.before, size.after));
+			pos += size.outer + 20;// + (this.gap || Math.min(size.before, size.after));
 			if (child !== this.emptyChild) {
 				maxAcross = Math.max(maxAcross, size.across);
 				maxSize = Math.max(maxSize, size.outer);
 			}
 		};
-
-//		measure.call(this, this.emptyChild);
-		//maxAcross = maxSize = 0; // Reset maxAcross to ignore emptyChild's across size
 		this.children.each(measure, this);
 
 		//tap area
-		this.contentBefore = this.emptyChild.el[this.dirProp("offsetLeft", "offsetTop")];
-		this.contentAfter = this.contentBefore + this.emptyChild.el[this.dirProp("offsetWidth", "offsetHeight")];
-		this.contentBefore += 100;
-		this.contentAfter -= 100;
+		this.tapAreaBefore = this.emptyChild.el[this.dirProp("offsetLeft", "offsetTop")];
+		this.tapAreaAfter = this.tapAreaBefore + this.emptyChild.el[this.dirProp("offsetWidth", "offsetHeight")];
+		this.tapAreaBefore += this.tapAreaGrow;
+		this.tapAreaAfter -= this.tapAreaGrow;
 
 		this.containerSize = this.el[this.dirProp("offsetWidth", "offsetHeight")];
 		this.selectThreshold = Math.min(this.selectThreshold, this.containerSize * 0.1);
 
 //		this.$(this.hammer.element).css(this.dirProp({width: maxSize, height: maxAcross }, {width: maxAcross, height: maxSize}));
-		this.$el.css(this.dirProp("minHeight", "minWidth"), (maxAcross > 0)? maxAcross: "");
+//		this.$el.css(this.dirProp("minHeight", "minWidth"), (maxAcross > 0)? maxAcross: "");
 	},
 
 	measureChild: function (child) {
 		var sizes = {};
 		var childEl = child.el;
-		var contentEl = childEl.firstChild;
+		var contentEl = childEl.querySelector(".sizing");
+//		var contentEl = childEl.firstChild;
 //		var contentEl = child.$(".sizing")[0];
 
 		sizes.outer = childEl[this.dirProp("offsetWidth", "offsetHeight")];
@@ -515,7 +463,7 @@ var Carousel = DeferredRenderView.extend({
 		var pos = s.pos - ss.pos + delta;
 		var offset = 0;
 
-		if (0 > pos) {
+		if (pos < 0) {
 			if (Math.abs(pos) < s.outer) {
 				offset += (-s.after) / s.outer * pos;
 			} else {

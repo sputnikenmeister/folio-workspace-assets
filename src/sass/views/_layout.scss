@@ -10,9 +10,6 @@
 
 %page_region_static,
 %page_region_abs {
-//	box-sizing: border-box;
-//	padding-left: $page_margin_left;
-//	padding-right: $page_margin_right;
 	width: $page_width;
 	@include media($desktop_small) {
 		width: $page_width_large;
@@ -29,17 +26,20 @@
 	margin: 0 auto;
 }
 
-
 // Footer rules from: folio.scss @import "compass/layout";
 // @include sticky_footer( 6em, "#container", "#container-footer", "#footer" );
 // compass-core-1.0.1/stylesheets/compass/layout/_sticky-footer.scss
-$footer_height: 6rem;
+$header_height: 2.25rem;
+$footer_height: 4rem;
+$nav_height_landscape: 9rem;
+$nav_height_portrait: 12rem;
 
 html, body {
 	height: 100%;
 }
 #container {
 	width: 100%;
+	height: 100%;
 	display: block;
 	overflow: hidden;
 	min-width: $page_width;
@@ -47,36 +47,73 @@ html, body {
 		min-width: $page_width_large;
 	}
 }
-#header {
-	@extend %page_region_static;
-	height: 2.25rem;
-	h3 {
-		display: none;
-	}
-}
-#container {
-	clear: both;
-	min-height: 100%;
-	height: auto !important;
-	height: 100%;
-	margin-bottom: -$footer_height;
-}
-#footer {
-	clear: both;
-	position: relative;
-	overflow: hidden;
-	.copyright {
-		display: none;
-	}
-}
-#container #container-footer, #footer {
-	@extend %page_region_static;
-	height: $footer_height;
-}
+//#header {
+//	@extend %page_region_static;
+//	height: 2.25rem;
+//	h3 {
+//		display: none;
+//	}
+//}
+//#container {
+//	clear: both;
+//	min-height: 100%;
+//	height: auto !important;
+//	height: 100%;
+//	margin-bottom: -$footer_height;
+//}
+//#footer {
+//	clear: both;
+//	position: relative;
+//	overflow: hidden;
+//	.copyright {
+//		display: none;
+//	}
+//}
+//#container #container-footer, #footer {
+//	@extend %page_region_static;
+//	height: $footer_height;
+//}
 
 #navigation {
 	@extend %page_region_static;
 	position: relative;
+	top: $header_height;
+//	position: absolute;
+}
+
+#content {
+	box-sizing: border-box;
+	position: absolute;
+//	position: relative;
+//	overflow: hidden;
+	width: 100%;
+	top: 0;
+//	height: 100%;
+	height: calc(100% - #{$footer_height});
+//	padding-bottom: $footer_height;
+	padding-top: $nav_height_portrait + $header_height;
+//	height: calc(100% - #{$nav_height_portrait + $header_height + $footer_height});
+	@include media($desktop_small) {
+		padding-top: $nav_height_landscape + $header_height;
+//		height: calc(100% - #{$nav_height_landscape + $header_height + $footer_height});
+	}
+}
+
+//#container {
+//	position: relative;
+//	height: calc(100% - #{$footer_height});
+//}
+//#content {
+//	position: absolute;
+//	top: 11.25rem;
+//	bottom: 0rem;
+//}
+.image-carousel {
+	height: calc(100% - 3rem);
+//	height: 100%;
+}
+.image-item {
+	height: calc(100% - 3rem);
 }
 
 // ----------------------
@@ -86,15 +123,8 @@ html, body {
 // nav list vertical movement
 // - - - - - - - - - - - - - - - - - -
 
-$navHeight_landscape: 9rem;
-$navHeight_portrait: 12rem;
-
 @mixin nav_transition($delay: $delay) {
 	transition: transform #{$duration - 0.001s} #{$delay + 0.001s} $ease;
-//	transition-property: transform;
-//	transition-timing-function: $nav_ease;
-//	transition-duration: $duration - 0.001s;
-//	transition-delay: $delay + 0.001s;
 }
 @mixin nav_translate($x, $y) {
 	transform: translate3d($x, $y, 0);
@@ -104,12 +134,12 @@ $navHeight_portrait: 12rem;
 	position: absolute;
 	display: inline-block;
 	@include nav_transition($delay: $delay * 1);
-	@include nav_translate(0, #{$navHeight_portrait - 4.5rem});
+	@include nav_translate(0, #{$nav_height_portrait - 4.5rem});
 	@at-root .with-bundle %nav_list {
 		@include nav_translate(0, 0);
 	}
 	@include media($desktop_small) {
-		@include nav_translate(0, #{$navHeight_landscape - 1.5rem});
+		@include nav_translate(0, #{$nav_height_landscape - 1.5rem});
 		@at-root .with-bundle %nav_list {
 			@include nav_translate(0, 0);
 		}
@@ -127,9 +157,9 @@ $navHeight_portrait: 12rem;
 #site-name-wrapper {
 	position: relative;
 	top: 0;
-	height: $navHeight_portrait;
+	height: $nav_height_portrait;
 	@include media($desktop_small) {
-		height: $navHeight_landscape;
+		height: $nav_height_landscape;
 	}
 }
 
@@ -239,7 +269,7 @@ $navHeight_portrait: 12rem;
 		@at-root {
 			.with-bundle #keyword-list {
 				/* override %nav_list */
-				@include nav_translate(0, #{$navHeight_landscape - 0.5rem});
+				@include nav_translate(0, #{$nav_height_landscape - 0.5rem});
 			}
 			.with-bundle #keyword-list .list-group {
 				height: 2rem;
@@ -248,7 +278,7 @@ $navHeight_portrait: 12rem;
 				@include nav_translate(-0.1px, 0.5rem);
 				@include nav_transition($delay: $delay * 1);
 			}
-			.with-image #keyword-list .list-group span {
+			.with-bundle.with-image #keyword-list .list-group span {
 				@include nav_transition($delay: $delay * 0);
 			}
 		}
@@ -257,6 +287,9 @@ $navHeight_portrait: 12rem;
 		@extend %skip_transitions;
 	}
 }
+
+// bundle-pager
+// - - - - - - - - - - - - - - - - - -
 
 #bundle-pager {
 	position: absolute;
@@ -278,41 +311,29 @@ $navHeight_portrait: 12rem;
 // ----------------------
 // Content
 // ----------------------
-
+%content-padding {
+	box-sizing: border-box;
+	padding-left: $hu;
+	padding-right: $hu;
+}
 .stack .content,
 #bundle-pager .button,
 #site-name,
 .list-item,
 .list-group {
-	box-sizing: border-box;
-	padding-left: $hu;
-	padding-right: $hu;
+	@extend %content-padding;
 }
+//.carousel-item .sizing,
+//.carousel-item .content {
+//	//see below
+//}
 
-.carousel-item .sizing,
-.carousel-item .content {
-	box-sizing: border-box;
-	margin-left: $hu;
-	margin-right: $hu;
-}
-
-
-#content {
-	width: 100%;
-//	position: absolute;
-//	top: $navHeight_portrait;
-//	height: calc(100% - #{$navHeight_portrait});
-//	@include media($desktop_small) {
-//		top: $navHeight_landscape;
-//		height: calc(100% - #{$navHeight_landscape});
-//	}
-}
 
 #content .image-carousel {
 	position: relative;
 	overflow: hidden;
 	top: 0;	width: 100%;
-//	bottom: 0;//height: 100%;
+	bottom: 0;//height: 100%;
 	box-sizing: content-box;
 	min-width: $page_width;
 	@include media($desktop_small) {
@@ -325,10 +346,10 @@ $navHeight_portrait: 12rem;
 //	top: -1.5rem;
 	width: 100%;
 	min-width: $page_width;
-	top: $navHeight_portrait;
+	top: $nav_height_portrait;
 	@include media($desktop_small) {
 		min-width: $page_width_large;
-		top: $navHeight_landscape;
+		top: $nav_height_landscape;
 	}
 }
 
@@ -340,7 +361,7 @@ $navHeight_portrait: 12rem;
 	@extend %page_region_abs;
 	top: 2.25rem;
 //	left: 0; right: 0;
-	@include nav_translate(-1px, #{$navHeight_landscape - 0.75rem});
+	@include nav_translate(-1px, #{$nav_height_landscape - 0.75rem});
 	.content {
 		top: 1.5rem;
 		position: absolute;
@@ -374,45 +395,45 @@ $navHeight_portrait: 12rem;
 // Carousel
 // ----------------------
 
-.label-carousel, .image-carousel {
+.carousel-item.empty-item .content p {
+	@extend %content-padding;
+}
+//.carousel-item .sizing {
+//	@extend %content-padding;
+//	box-sizing: border-box;
+//	padding-left: $hu;
+//	padding-left: $hu;
+//}
+.carousel-item.image-item {
+	.sizing {
+//		box-sizing: border-box;
+		margin-left: $hu;
+		margin-right: $hu;
+	}
+}
+
+.label-carousel,
+.image-carousel {
 	.pan-area {
 		position: absolute;
-//		left: calc(50% - #{$page_width/2});
-//		width: $page_width;
 		width: 100%;
 		top: 0; bottom: 0;
 	}
 	.carousel-item {
 		box-sizing: border-box;
-//		padding-left: $page_margin_left;
-//		padding-right: $page_margin_right;
-		width: $page_width;
 		left: calc(50% - #{$page_width/2});
+		width: $page_width;
 	}
 	.empty-item {
-		box-sizing: border-box;
-//		padding-left: $page_margin_left;
-//		padding-right: $gutter/2;
-		width: $main_width - 6px;
+		box-sizing: content-box;
+		width: auto;
+//		width: $main_width;
+//		width: $main_width - 6px;
+		.content {
+			width: $main_width;
+		}
 	}
-//	@include media($desktop_small) {
-////		.pan-area {
-////			left: calc(50% - #{$page_width_large/2});
-////			width: $page_width_large;
-////		}
-//		.carousel-item {
-//			left: calc(50% - #{$page_width_large/2});
-//			padding-left: $page_margin_left;
-//			padding-right: $aside_width_large + $gutter/2;
-//			width: $page_width_large;
-//		}
-//		.empty-item {
-//			padding-right: $gutter/2;
-//			width: $main_width_large - 5px;
-//		}
-//	}
 	@include media($desktop_small) {
-//	@include media($ipad_landscape) {
 		.carousel-item {
 			left: calc(50% - #{$page_width_large/2});
 			padding-left: $aside_width_large;
@@ -420,24 +441,62 @@ $navHeight_portrait: 12rem;
 			width: $page_width_large;
 		}
 		.empty-item {
-			width: $page_width_large;
 //			padding-right: $page_margin_left;
 			padding-left: 0;//$page_margin_left;
 			padding-right: $aside_width_large;
-//			p {
-//				margin-left: $page_margin_left;
-//				margin-right: $page_margin_right;
-//			}
+//			width: $page_width_large;
+			.content {
+				width: $main_width_large;
+			}
 		}
 	}
 }
+
+.image-carousel {
+	padding-top: 1.5rem;
+	padding-bottom: 1.5rem;
+	.empty-item {
+//		padding-top: 1.5rem;
+//		padding-bottom: 1.5rem;
+		max-height: calc(100% - 3rem);
+		box-sizing: border-box;
+		.content {
+			@extend %large_text;
+			overflow: hidden;
+			box-sizing: border-box;
+			height: 100%;
+			p {
+				transform: translateX(-2px);
+//				margin-left: -2px;
+//				margin-right: 2px;
+			}
+		}
+	}
+}
+.label-carousel {
+	padding-top: 0;
+	padding-bottom: 0;
+	.carousel-item {
+		.content {
+			@include heading_font($size: 20px, $weight: 300, $lead: 24px);
+//			margin-left: -1px;
+//			margin-right: -1px;
+			transform: translateX(-1px);
+		}
+	}
+	.empty-item {
+		height: 100%;
+	}
+}
+
+
 #container {
 	z-index: 1;
 }
-#bundle-list-wrapper {
-	z-index: 1;
-}
-#keyword-list-wrapper {
+#site-name-wrapper,
+#bundle-list-wrapper,
+#keyword-list-wrapper,
+#bundle-pager {
 	z-index: 1;
 }
 .image-carousel {

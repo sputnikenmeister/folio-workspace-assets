@@ -179,7 +179,7 @@ var ContentView = View.extend({
 		hammer = new Hammer.Manager(touchEl);
 		hammerPan = new Hammer.Pan({
 			direction: Hammer.DIRECTION_HORIZONTAL,
-			threshold: 15,
+			threshold: 25,
 		});
 		hammerTap = new Hammer.Tap({
 			threshold: 10,

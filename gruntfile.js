@@ -12,37 +12,8 @@ module.exports = function (grunt) {
 	grunt.config("DIST_STYLES", "folio");
 
 	/* --------------------------------
-	 * Resources: Fonts/Sprites
+	 * Resources: Fonts
 	 * -------------------------------- */
-
-	var previewSize = "10%";
-	grunt.loadNpmTasks("grunt-responsive-images");
-	grunt.config("responsive_images.uploads-sprites", {
-		options: {
-			sizes: [{
-				width: previewSize,
-			}]
-		},
-		files: [{
-			expand: true,
-			src: ["../uploads/*.{jpg,gif,png}"],
-			custom_dest: "build/uploads-sprites/{%= width %}/"
-		}]
-	});
-	grunt.loadNpmTasks("grunt-spritesmith");
-	grunt.config("sprite.uploads-sprites", {
-		algorithm: "binary-tree",
-		engine: "gmsmith",
-		imgOpts: {quality: 50},
-		src: "build/uploads-sprites/"+previewSize+"/*.{jpg,gif,png}",
-		dest: "images/uploads-sprites.png",
-		destCss: "src/sass/includes/_uploads-sprites-generated.scss"
-	});
-//	grunt.config("compass.uploads-sprites.options", {
-//		specify: "src/sass/includes/_uploads-sprites.scss",
-//		sourcemap: false,
-//	});
-	grunt.registerTask("build-sprites", ["responsive_images:uploads-sprites", "sprite:uploads-sprites"]);
 
 	/* Fonts SASS stylesheet
 	 * - - - - - - - - - - - - - - - - - */
@@ -50,16 +21,6 @@ module.exports = function (grunt) {
 		specify: "src/sass/fonts.scss",
 		sourcemap: false,
 		outputStyle: "compressed"
-	});
-
-	/* Custom CLI task
-	 * - - - - - - - - - - - - - - - - - */
-	grunt.registerTask("fontello", "Open fontello configuration in browser", function() {
-		var child = grunt.util.spawn({
-			cmd: "fontello-cli",
-			args: ["open", "--config", "build/fontello.json"],
-			opts: {stdio: "inherit"}
-		}, this.async());
 	});
 
 	/* ---------------------------------
@@ -158,8 +119,8 @@ module.exports = function (grunt) {
 	grunt.config("exorcise", {
 		options: {
 			strict: false,
-//			root: "../",
-			root: "/workspace/assets/"
+			root: "../",
+//			root: "/workspace/assets/"
 		},
 		vendor: {
 			files: {
@@ -232,7 +193,7 @@ module.exports = function (grunt) {
 			files: ["src/sass/**/*.scss"],
 		},
 		"process-vendor": {
-			tasks: ["exorcise:vendor","uglify:vendor"],
+			tasks: ["exorcise:vendor"],//"uglify:vendor"],
 			files: ["js/<%= DEBUG_VENDOR_JS %>.js"],
 		},
 		"process-client": {
@@ -244,7 +205,8 @@ module.exports = function (grunt) {
 				spawn: true
 			},
 			files: ["gruntfile.js"],
-			tasks: ["clean-all", "compass:debug", "autoprefixer:debug", "browserify:vendor", "browserify:client", "build-dist"],
+			//tasks: ["clean-all", "compass:debug", "autoprefixer:debug", "browserify:vendor", "browserify:client", "build-dist"],
+			tasks: ["compass:debug", "autoprefixer:debug", "browserify:vendor", "browserify:client"],
 		},
 		//"build-styles-svg": { tasks: ["compass:clean", "compass:client", "autoprefixer:client"], files: ["images/**/*.svg"], },
 		//"process-sources": { tasks: ["jshint"], files: ["src/js/**/*.js"], },
@@ -327,4 +289,53 @@ module.exports = function (grunt) {
 	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
 	grunt.registerTask("build-all", ["clean-all", "build-debug", "build-dist"]);
 	grunt.registerTask("default", ["build-all"]);
+
+	/* --------------------------------
+	 * Resources: Sprites
+	 * -------------------------------- */
+
+	var previewSize = "10%";
+	grunt.loadNpmTasks("grunt-responsive-images");
+	grunt.config("responsive_images.uploads-sprites", {
+		options: {
+			sizes: [{
+				width: previewSize,
+			}]
+		},
+		files: [{
+			expand: true,
+			src: ["../uploads/*.{jpg,gif,png}"],
+			custom_dest: "build/uploads-sprites/{%= width %}/"
+		}]
+	});
+
+	grunt.loadNpmTasks("grunt-spritesmith");
+	grunt.config("sprite.uploads-sprites", {
+		algorithm: "binary-tree",
+		engine: "gmsmith",
+		imgOpts: {quality: 50},
+		src: "build/uploads-sprites/"+previewSize+"/*.{jpg,gif,png}",
+		dest: "images/uploads-sprites.png",
+		destCss: "src/sass/includes/_uploads-sprites-generated.scss"
+	});
+
+	// grunt.config("compass.uploads-sprites.options", {
+	// 	specify: "src/sass/includes/_uploads-sprites.scss",
+	// 	sourcemap: false,
+	// });
+	grunt.registerTask("build-sprites", ["responsive_images:uploads-sprites", "sprite:uploads-sprites"]);
+
+	/* --------------------------------
+	 * Resources: Fontello
+	 * -------------------------------- */
+
+	/* Custom CLI task
+	 * - - - - - - - - - - - - - - - - - */
+	grunt.registerTask("fontello", "Open fontello configuration in browser", function() {
+		var child = grunt.util.spawn({
+			cmd: "fontello-cli",
+			args: ["open", "--config", "build/fontello.json"],
+			opts: {stdio: "inherit"}
+		}, this.async());
+	});
 };

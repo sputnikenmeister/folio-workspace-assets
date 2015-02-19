@@ -309,8 +309,8 @@ var Controller = Backbone.Router.extend({
 			Styles.createCSSRule(carouselSelector + " > .image-item img", styles);
 
 			styles = {
-				"background-color": bgColor.lightness(fgLum * 0.025 + bgLum * 0.975).toHexString(),
-				"border-color": 	bgColor.lightness(fgLum * 0.100 + bgLum * 0.900).toHexString(),
+				"background-color": bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString(),
+				"border-color": 	bgColor.lightness(fgLum * 0.150 + bgLum * 0.850).toHexString(),
 				"color": 			bgColor.lightness(fgLum * 0.150 + bgLum * 0.850).toHexString(),
 			};
 			Styles.createCSSRule(carouselSelector + " > .image-item .placeholder", styles);

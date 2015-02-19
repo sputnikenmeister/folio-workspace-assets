@@ -2,18 +2,7 @@
 // Body init
 // ------------------------------------
 
-//#container {
-//	transition-property: opacity, visibility;
-//	transition-timing-function: $ease, step-start;
-//	transition-duration: $duration;
-//	transition-delay: $delay;
-//}
-
 .app-ready #container {
-//	transition-timing-function: step-start, $ease;
-//	transition-property: visibility, opacity;
-//	transition-duration: $duration;
-//	transition-delay: $delay;
 	transition: visibility $duration $delay step-start, opacity $duration $delay $ease;
 	visibility: visible;
 	opacity: 1;
@@ -45,14 +34,6 @@ body.skip-transitions * {
 body, .mutable-faded {
 	transition-timing-function: $ease;
 	transition-property: color, border-color, background-color;
-	transition-duration: $duration;//0.75;
+	transition-duration: $duration;
 	transition-delay: $delay * 2;
-//	transition-delay: $delay * 2 + $duration;
 }
-
-//.bundle-list .mutable-faded, body.bundle-list {
-//	transition-delay: 0s, 0s, 0s;
-//}
-//.bundle-item .mutable-faded, body.bundle-item {
-//	transition-delay: $delay * 3 !important;
-//}

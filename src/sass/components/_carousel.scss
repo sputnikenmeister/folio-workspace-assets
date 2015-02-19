@@ -17,12 +17,6 @@
 	}
 }
 
-.carousel-item.default-carousel-item {
-	.sizing {
-		display: inline-block;
-	}
-}
-
 //
 // Animation
 //
@@ -39,13 +33,24 @@ $pan_ease: $ease;
 	}
 }
 
+
 //
-// .image-carousel
+// .default-carousel-item
+//
+.carousel-item.default-carousel-item {
+	.sizing {
+		display: inline-block;
+	}
+}
+
+//
+// .image-item
 //
 .carousel-item.image-item {
 	.sizing {
 		position: relative;
 		height: 100%;
+//		bottom: 0;
 	}
 	img {
 		// *** "mutable" properties: must be in the first matching rule
@@ -56,30 +61,35 @@ $pan_ease: $ease;
 		box-sizing: border-box;
 	}
 	img {
-		transition: opacity #{$duration} 0.001s $ease;
+		transition: opacity $duration $delay + 0.001s $ease;
 		opacity: 0;
 	}
-	&.idle img {
-		visibility: hidden;
-		//display: none;
-	}
+	&.idle img,
 	&.error img {
 		visibility: hidden;
-		//display: none;
 	}
-	&.done.selected img {
-		opacity: 1;
-	}
+	&.done.selected img,
 	&.done.candidate img {
 		opacity: 1;
 	}
+
 	.placeholder {
 		// *** "mutable" properties: must be in the first matching rule
 		border: 1px solid transparent;
 		color: $background_color;
 	}
-//	.placeholder .progress {
-	.placeholder:before {
+	.placeholder:before
+	{	// Top-left corner
+		position: absolute;
+		top: 0; left: 0;
+		line-height: 1;
+		font-weight: 600;
+		font-size: 2rem;
+		margin: 1em 1em;
+		text-transform: uppercase;
+		letter-spacing: -0.05em;
+	}
+	/*{	// Centered
 		font-size: 5rem;
 		font-weight: 600;
 		text-transform: uppercase;
@@ -94,94 +104,75 @@ $pan_ease: $ease;
 		// just in case
 		overflow: hidden;
 		white-space: nowrap;
-	}
+	}*/
 	.placeholder:before {
-		visibility: hidden;
+		transition: opacity $duration $delay + 0.001s $ease;
+		opacity: 0;
+		font-style: italic;
 	}
-	&.selected, &.candidate {
-		.placeholder:before {
-			visibility: visible;
-		}
-		&.pending .placeholder:before {
-			content: "Loading";
-			font-style: italic;
-		}
+	&.idle .placeholder:before {
+		visibility: hidden;
+		content: "Loading";
+	}
+	&.pending .placeholder:before {
+		content: "Loading";
+	}
+	&.error .placeholder:before {
+		content: "Error";
+	}
+	&.done .placeholder:before {
+		content: "Done";
+	}
+	&.candidate, &.selected {
 		&.pending .placeholder[data-progress]:before {
 			content: attr(data-progress) "%";
 			font-style: normal;
 		}
-		&.done .placeholder:before {
-			content: "Done";
-			font-style: italic;
+		&.pending .placeholder:before {
+			opacity: 1;
 		}
 		&.error .placeholder:before {
-			content: "Error";
-			font-style: italic;
+			opacity: 1;
 		}
 	}
-//	.placeholder .progress {
-//		display: none;
-//		&.num {
-//			font-style: normal;
-//		}
-//	}
-//	&.error, &.pending.selected {
-//		.placeholder .progress {
-//			display: inline-block;
-//		}
-//	}
 }
 
+
 .carousel.image-carousel {
-	padding-top: 1.5rem;
-	padding-bottom: 1.5rem;
 	.empty-item {
-		height: calc(100% - 3rem);
 		.content {
-			@extend %large_text;
-			p {
-				margin-left: -2px;
-			}
 			transition: opacity #{$duration} $ease;
-			opacity: 0;
+			opacity: 0.2;
 		}
-		&.selected .content {
-			opacity: 1;
-		}
-		&.candidate .content {
-			opacity: 1;
+		&.selected,	&.candidate {
+			.content {
+				opacity: 1;
+			}
 		}
 	}
-	&.panning .empty-item .content {
-		opacity: 0.2;
+	&.panning .empty-item {
+		&.selected,	&.candidate {
+			.content {
+				opacity: 0.3;
+			}
+		}
 	}
 }
 
 //
 // .label-carousel
 //
-.carousel.label-carousel {
-	padding-top: 0;
-	padding-bottom: 0;
+.label-carousel {
 	.carousel-item {
-		.content {
-			@include heading_font($size: 20px, $weight: 300, $lead: 24px);
-			margin-left: -1px;//translateX(-2px);
-			margin-right: -1px;
-		}
 		.content {
 			transition: opacity #{$duration} $ease;
 			opacity: 0.2;
 		}
-		&.selected .content {
-			opacity: 1;
+		&.selected, &.candidate {
+			.content {
+				opacity: 1;
+			}
 		}
-		&.candidate .content {
-			opacity: 1;
-		}
-	}
-	.empty-item {
-		height: 100%;
 	}
 }
 

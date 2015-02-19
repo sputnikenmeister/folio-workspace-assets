@@ -83,6 +83,7 @@ $darkolivegreen:	darkolivegreen;
 		}
 	}
 	#content {
+		background-color: transparentize($lightblue, 0.9);
 		@include debug_outline_thick($color: $deepskyblue);
 		.carousel {
 			.pan-area {
@@ -115,7 +116,7 @@ $darkolivegreen:	darkolivegreen;
 #debug-toolbar {
 	color: hsl(245, 2%, 40%);
 	border-color: hsl(245, 2%, 20%);
-	background-color: hsl(60, 4%, 5%);
+	background-color: hsla(60, 4%, 5%, 0.9);
 	&, * {
 		user-select: none !important;
 	}
@@ -123,7 +124,7 @@ $darkolivegreen:	darkolivegreen;
 	position: fixed;
 	bottom: 0;
 	width: 100%;
-	padding: 1rem 0;
+	padding: 0.5rem;
 	dt, dd {
 		@include small_caps($lead: 1rem);
 		margin: -0.25em 0;

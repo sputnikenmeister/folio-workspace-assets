@@ -7,7 +7,7 @@ $hu: 20px;
 $vu: 12px;
 
 // Time base units (transitions/animations)
-$duration: 			0.475s;
+$duration: 			0.375s;
 $delay_interval: 	0.025s;
 $delay: $duration + $delay_interval;
 
@@ -39,13 +39,6 @@ $aside_width_large: 		12 * $hu;
 $main_width:				$page_width - $aside_width;
 $main_width_large:			$page_width_large - $aside_width_large;
 
-//$page_inner_width:			$page_width - $page_margin_left - $page_margin_right;
-//$page_inner_width_large:	$page_width_large - $page_margin_left - $page_margin_right;
-//$aside_inner_width:			$aside_width - $page_margin_right - $gutter/2;
-//$aside_inner_width_large:	$aside_width_large - $page_margin_right - $gutter/2;
-//$main_inner_width:			$main_width - $page_margin_left - $gutter/2;
-//$main_inner_width_large:	$main_width_large - $page_margin_left - $gutter/2;
-
 // ------------------------------------
 // Color/Typefaces: private (do not use directly)
 // ------------------------------------
@@ -69,8 +62,6 @@ $modern_fallback: "georgia", sans-serif;
 $font_webfont_sans: "Franklin Gothic FS", $grotesque_fallback;
 //@import "fonts/_old-standard-tt";
 //$font_webfont_serif: "Old Standard TT", $modern_fallback;
-//@import "fonts/_source-sans-pro";
-//$font_webfont_sans: "Source Sans Pro", $humanist_fallback;
 
 $royal_blue_color:	#204980;
 $royal_ivory_color:	#FEFCE7;
@@ -185,9 +176,9 @@ $base_font: $font_webfont_sans;
 	transition: none 0s 0s !important;
 }
 
-%skip_transitions_long {
-	transition-property: none !important;
-	transition-timing-function: none !important;
-	transition-duration: 0s !important;
-	transition-delay: 0s !important;
-}
+//%skip_transitions_long {
+//	transition-property: none !important;
+//	transition-timing-function: none !important;
+//	transition-duration: 0s !important;
+//	transition-delay: 0s !important;
+//}
