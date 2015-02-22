@@ -1,3 +1,170 @@
-// ----------------------
+// -----------------------------------
 // Content
-// ----------------------
+// -----------------------------------
+
+// - - - - - - - - - - - - - - - - - -
+// image-pager
+// - - - - - - - - - - - - - - - - - -
+
+.image-pager {
+	position: absolute;
+//	top: -1.5rem; height: 1.5rem;
+    top: -3rem; height: 1.5rem;
+}
+
+// - - - - - - - - - - - - - - - - - -
+// image-caption-stack
+// - - - - - - - - - - - - - - - - - -
+
+.image-caption-stack {
+	@extend %page_region_abs;
+	top: 2.25rem;
+//	left: 0; right: 0;
+	@include nav_translate(-1px, #{$nav_height_portrait - 3.75rem});
+	.content {
+		top: 1.5rem;
+		position: absolute;
+		display: block;
+		width: $page_width;
+		p {
+			@include heading_font($size: 20px, $weight: 300, $lead: 26px);
+//			@include heading_font($size: 1.666rem, $weight: 300, $lead: 2rem);
+//			@include heading_font($size: 1.67rem, $weight: 300, $lead: 2rem);
+//			@include small_caps();
+		}
+	}
+	@include media($desktop_small) {
+		@include nav_translate(-1px, 0);
+		.content {
+			left: $aside_width_large;
+			width: $main_width_large;
+			p {
+				@include heading_font($weight: 300);//, $lead: 0.990);
+			}
+		}
+	}
+}
+
+// -----------------------------------
+// Carousel classes
+// -----------------------------------
+
+// - - - - - - - - - - - - - - - - - -
+// image-carousel, label-carousel
+//  - horizontal layout
+// - - - - - - - - - - - - - - - - - -
+
+.label-carousel,
+.image-carousel {
+	width: 100%;
+	min-width: $page_width;
+	.carousel-item {
+		left: calc(50% - #{$page_width/2});
+		width: $page_width;
+	}
+	.empty-item {
+		width: $main_width - 6px;
+//		width: auto;
+//		.content {
+//			width: $main_width - 6px;
+//		}
+	}
+	@include media($desktop_small) {
+		min-width: $page_width_large;
+		.carousel-item {
+			left: calc(50% - #{$page_width_large/2});
+			padding-left: $aside_width_large;
+			padding-right: 0;
+			width: $page_width_large;
+		}
+		.empty-item {
+			padding-left: 0;
+			padding-right: $aside_width_large - $hu*1;
+			width: $page_width_large - $hu*2 - 6px;
+//			width: auto;
+//			.content {
+//				width: $page_width_large - $hu*2 - 6px;
+//			}
+		}
+	}
+}
+
+// - - - - - - - - - - - - - - - - - -
+// image-carousel
+//  - vertical layout
+//  - children
+// - - - - - - - - - - - - - - - - - -
+
+//#content .image-carousel {
+.image-carousel {
+	position: relative;
+	overflow: hidden;
+//	box-sizing: content-box;
+	top: 0;
+	bottom: 0;
+//	height: 100%;
+	height: calc(100% - 3rem);
+	padding-top: 1.5rem;
+	padding-bottom: 1.5rem;
+	.carousel-item {
+//		padding-top: 1.5rem;
+//		padding-bottom: 1.5rem;
+		height: calc(100% - 3rem);
+	}
+	.empty-item {
+		.content {
+			height: 100%;
+			overflow: hidden;
+			@extend %large_text;
+//			margin-left: -2px;
+//			margin-right: 2px;
+			transform: translateX(-2px);
+		}
+	}
+}
+
+// - - - - - - - - - - - - - - - - - -
+// label-carousel
+//  - vertical layout
+//  - children
+// - - - - - - - - - - - - - - - - - -
+
+//#content .label-carousel {
+.label-carousel {
+	position: absolute;
+	padding-top: 0;
+	padding-bottom: 0;
+//	top: -1.5rem;
+	top: $nav_height_portrait;
+	@include media($desktop_small) {
+		top: $nav_height_landscape;
+	}
+	.carousel-item {
+		.content {
+			@include heading_font($size: 20px, $weight: 300, $lead: 24px);
+//			margin-left: -1px;
+//			margin-right: -1px;
+			transform: translateX(-1px);
+		}
+	}
+	.empty-item {
+		height: 100%;
+	}
+}
+
+// -----------------------------------
+// leaf elements
+// -----------------------------------
+
+.carousel-item.empty-item .content p,
+.stack .content {
+	@extend %leaf-content;
+}
+
+.carousel-item.image-item {
+	.sizing {
+//		box-sizing: border-box;
+		margin-left: $hu;
+		margin-right: $hu;
+	}
+}

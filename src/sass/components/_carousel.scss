@@ -17,9 +17,9 @@
 	}
 }
 
-//
+// - - - - - - - - - - - - - - - - - -
 // Animation
-//
+// - - - - - - - - - - - - - - - - - -
 $pan_ease: $ease;
 .carousel {
 	.carousel-item {
@@ -33,32 +33,30 @@ $pan_ease: $ease;
 	}
 }
 
-
-//
+// - - - - - - - - - - - - - - - - - -
 // .default-carousel-item
-//
+// - - - - - - - - - - - - - - - - - -
 .carousel-item.default-carousel-item {
 	.sizing {
 		display: inline-block;
 	}
 }
 
-//
+// - - - - - - - - - - - - - - - - - -
 // .image-item
-//
+// - - - - - - - - - - - - - - - - - -
 .carousel-item.image-item {
 	.sizing {
 		position: relative;
 		height: 100%;
-//		bottom: 0;
 	}
 	img {
 		// *** "mutable" properties: must be in the first matching rule
 		border: 0 none;
 		background-color: $background_color;
-		box-shadow: 0 1rem 1rem -0.5rem hsla(0, 0%, 0%, 0.5);
+		box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
 		position: absolute;
-		box-sizing: border-box;
+//		box-sizing: border-box;
 	}
 	img {
 		transition: opacity $duration $delay + 0.001s $ease;
@@ -68,9 +66,18 @@ $pan_ease: $ease;
 	&.error img {
 		visibility: hidden;
 	}
-	&.done.selected img,
-	&.done.candidate img {
-		opacity: 1;
+	&.candidate, &.selected,
+	.empty-item.selected + & {
+		&.done img {
+			opacity: 1;
+		}
+	}
+	@at-root {
+		.panning, .scrolling {
+			.carousel-item.image-item img {
+				transition: opacity $duration 0.001s $ease;
+			}
+		}
 	}
 
 	.placeholder {
@@ -123,7 +130,9 @@ $pan_ease: $ease;
 	&.done .placeholder:before {
 		content: "Done";
 	}
-	&.candidate, &.selected {
+	&.candidate, &.selected,
+	.empty-item.selected + &
+	{
 		&.pending .placeholder[data-progress]:before {
 			content: attr(data-progress) "%";
 			font-style: normal;
@@ -137,6 +146,38 @@ $pan_ease: $ease;
 	}
 }
 
+$mock_browser_height: 3rem;
+.browser .carousel-item.image-item {
+	padding-top: $mock_browser_height;
+	margin-top: -$mock_browser_height;
+	.sizing {
+		padding-top: $mock_browser_height;
+	}
+	img {
+		border-top-left-radius: 0.35rem;
+		border-top-right-radius: 0.35rem;
+		padding-top: $mock_browser_height;
+		margin-top: -$mock_browser_height;
+		transform: translateY($mock_browser_height);
+		background-color: hsl(0,0%,65%) !important;
+		box-shadow:
+//			inset 0rem 4.5rem 4rem -3rem hsl(0,0%,100%),
+			inset 0 71px 0 -3rem hsl(0,0%,85%),
+			0px 0px 0px 1px hsla(0,0%,0%,0.15),
+			0px 1rem 1.5rem -0.5rem hsla(0,0%,0%,0.5) !important;
+//		box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+//		border: 1px solid rgba(0,0,0,0.15) !important;
+//		border: 0 none transparent !important;
+	}
+//	img:after {
+//		content: 'ooo';
+//		position: absolute;
+//		display: block;
+//		top: $mock_browser_height;
+//		left: 1rem;
+//		margin: 0.25rem;
+//	}
+}
 
 .carousel.image-carousel {
 	.empty-item {
@@ -159,9 +200,9 @@ $pan_ease: $ease;
 	}
 }
 
-//
+// - - - - - - - - - - - - - - - - - -
 // .label-carousel
-//
+// - - - - - - - - - - - - - - - - - -
 .label-carousel {
 	.carousel-item {
 		.content {

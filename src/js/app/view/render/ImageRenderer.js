@@ -46,10 +46,11 @@ module.exports = Backbone.View.extend({
 	},
 
 	createChildren: function() {
-		this.$el.addClass(this.model.get("f").replace(/\.\w+$/, ""));
-		this.$el.html(this.template(this.model.toJSON()));
+		this.$el
+			.addClass(this.model.get("f").replace(/\.\w+$/, ""))
+			.html(this.template(this.model.toJSON()));
+
 		this.$placeholder = this.$(".placeholder");
-//		this.$progress = this.$(".progress");
 		this.$image = this.$("img");
 		this.$image.on("dragstart", function (ev) {
 			ev.isDefaultPrevented() || ev.preventDefault();

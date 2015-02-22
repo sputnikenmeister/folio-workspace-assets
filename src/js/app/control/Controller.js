@@ -300,20 +300,24 @@ var Controller = Backbone.Router.extend({
 			Styles.createCSSRule(bodySelector, styles);
 
 			styles = {
-				"border-color": 	fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString(),
 				"color":			fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString(),
+				"border-color": 	fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString(),
 			};
 			Styles.createCSSRule(bodySelector + " .mutable-faded", styles);
 
 			styles = _.pick(attrs, ["box-shadow", "border", "border-radius", "background-color"]);
-			Styles.createCSSRule(carouselSelector + " > .image-item img", styles);
+			Styles.createCSSRule(carouselSelector + " .image-item img", styles);
 
 			styles = {
-				"background-color": bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString(),
-				"border-color": 	bgColor.lightness(fgLum * 0.150 + bgLum * 0.850).toHexString(),
-				"color": 			bgColor.lightness(fgLum * 0.150 + bgLum * 0.850).toHexString(),
+//				"color": 			bgColor.toHexString(),
+				"color": 			bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString(),
+//				"color": 			bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString(),
+//				"border-color": 	bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
+				"background-color": bgColor.lightness(fgLum * 0.100 + bgLum * 0.900).toHexString(),
+				"box-shadow":		"inset 0 0 3px -2px " + bgColor.lightness(fgLum * 0.5 + bgLum * 0.5).toHexString(),
+				"border": 			"0 none transparent",
 			};
-			Styles.createCSSRule(carouselSelector + " > .image-item .placeholder", styles);
+			Styles.createCSSRule(carouselSelector + " .image-item .placeholder", styles);
 
 		});
 

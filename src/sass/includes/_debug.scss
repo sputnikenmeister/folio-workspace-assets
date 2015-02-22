@@ -61,30 +61,35 @@ $darkolivegreen:	darkolivegreen;
 	}
 
 	#navigation {
-		@include debug_outline($color: $lightcoral);
+//		@include debug_outline($color: $lightcoral);
 //		@include debug_outline_thick($color: $lightcoral);
-		.transform-wrapper > * {
-			@include debug_outline_thick($color: $lightcoral);
+//		.transform-wrapper > * {
+//			@include debug_outline_thick($color: $lightcoral);
 //			@include debug_outline($width: 1px, $style: solid, $color: $lightcoral);
-		}
+//		}
 		#site-name-wrapper, .list {
 			background-color: transparentize($lightcoral, 0.8);
 //			@include debug_outline($color: $lightcoral);
+			@include debug_outline_thick($color: $lightcoral);
 		}
 //		#keyword-list {
 //			background-color: rgba(255,255,255,0.5);
 //		}
-		#site-name, .list-item, .list-group {
+		#site-name,
+		.list-group,
+		.list-item {
 			@include debug_outline($color: $lightcoral);
-			& > * {
-				background-color: transparentize($lightcoral, 0.8);
-				@include debug_outline($color: $lightcoral);
-			}
+		}
+		#site-name a, .list .name {
+			background-color: transparentize($lightcoral, 0.6);
+			@include debug_outline($color: $lightcoral);
 		}
 	}
 	#content {
-		background-color: transparentize($lightblue, 0.9);
-		@include debug_outline_thick($color: $deepskyblue);
+//		background-color: transparentize($lightblue, 0.9);
+		.image-carousel {
+			@include debug_outline_thick($color: $deepskyblue);
+		}
 		.carousel {
 			.pan-area {
 				@include debug_outline($width: 0.25rem, $color: $deepskyblue);
@@ -116,7 +121,7 @@ $darkolivegreen:	darkolivegreen;
 #debug-toolbar {
 	color: hsl(245, 2%, 40%);
 	border-color: hsl(245, 2%, 20%);
-	background-color: hsla(60, 4%, 5%, 0.9);
+	background-color: hsla(60, 4%, 5%, 1);
 	&, * {
 		user-select: none !important;
 	}
@@ -124,7 +129,7 @@ $darkolivegreen:	darkolivegreen;
 	position: fixed;
 	bottom: 0;
 	width: 100%;
-	padding: 0.5rem;
+	padding: 1rem 0.5rem;
 	dt, dd {
 		@include small_caps($lead: 1rem);
 		margin: -0.25em 0;

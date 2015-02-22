@@ -86,16 +86,22 @@ var ContentView = View.extend({
 	createChildren: function (bundle, skipAnimation) {
 		var images = bundle.get("images");
 
-		this.createImageCaptionStack(images);
-//		this.createImageCaptionCarousel(images);
-		this.createImageCarousel(images, bundle);
+		this.createImageCaptionStack(bundle, images);
+//		this.createImageCaptionCarousel(bundle, images);
+		this.createImageCarousel(bundle, images);
 //		this.$el.css("display", "");
 		// Show views
 		if (!skipAnimation) {
 			_.each(this.children, function(child) {
-				child.$el.css({opacity: 0})
-//					.delay(Globals.TRANSITION_DELAY * 2)
-					.transit({opacity: 1, delay: Globals.TRANSITION_DELAY * 2}, Globals.TRANSITION_DURATION);
+				child.$el.css({
+					opacity: 0
+				})
+//				.delay(Globals.TRANSITION_DELAY * 2)
+				.transit({
+//					delay: 1,
+					delay: Globals.TRANSITION_DELAY * 2,
+					opacity: 1
+				}, Globals.TRANSITION_DURATION);
 			});
 		}
 	},
@@ -113,14 +119,22 @@ var ContentView = View.extend({
 			if (skipAnimation) {
 				child.remove();
 			} else {
-				child.$el.css({position: "absolute", top: child.el.offsetTop, left: child.el.offsetLeft})
-					.transit({opacity: 0, delay: 1}, Globals.TRANSITION_DURATION) // delay 0.001s - helps tx sync on webkit
-					.queue(function(next) {
-						child.remove();
-						next();
-					});
+				child.$el.css({
+					position: "absolute",
+					top: child.el.offsetTop,
+					left: child.el.offsetLeft
+				})
+				.transit({
+					opacity: 0,
+					delay: 1 // delay 0.001s - helps tx sync on webkit
+				}, Globals.TRANSITION_DURATION)
+				.queue(function(next) {
+					child.remove();
+					next();
+				});
 			}
 		});
+		// clear child references
 		this.children.length = 0;
 	},
 
@@ -191,23 +205,30 @@ var ContentView = View.extend({
 		return hammer;
 	},
 
-	createContainer: function(){
-		var container = document.createElement("div");
-		container.id = "content-wrapper";
-		this.$el.append(container);
-		return container;
-	},
+//	createContainer: function(){
+//		var container = document.createElement("div");
+//		container.id = "content-wrapper";
+//		this.$el.append(container);
+//		return container;
+//	},
 
-	createImageCarousel: function(images, bundle) {
+	createImageCarousel: function(bundle, images) {
+		var attrs = bundle.get("attrs");
+		var classname =  "image-carousel " + bundle.get("handle");
+		if (attrs && attrs.hasOwnProperty("@classname")) {
+			classname += " " + attrs["@classname"];
+		}
+		var emptyRenderer = CarouselEmptyRenderer.extend({
+			model: bundle,
+			template: bundleDescTemplate,
+		});
+
 		// Create carousel
-		view = new Carousel({
-			className: "image-carousel " + bundle.get("handle"),
+		var view = new Carousel({
+			className: classname,
 			collection: images,
 			renderer: ImageRenderer,
-			emptyRenderer: CarouselEmptyRenderer.extend({
-				model: bundle,
-				template: bundleDescTemplate,
-			}),
+			emptyRenderer: emptyRenderer,
 			hammer: (this.hammer || void 0),
 		});
 		view.render().$el.appendTo(this.el);
@@ -218,9 +239,9 @@ var ContentView = View.extend({
 		return this.children[this.children.length] = view;
 	},
 
-	createImageCaptionCarousel: function(images) {
+	createImageCaptionCarousel: function(bundle, images) {
 		// Create label-carousel
-		view = new Carousel({
+		var view = new Carousel({
 			className: "label-carousel",
 			collection: images,
 			gap: Globals.HORIZONTAL_STEP,
@@ -235,7 +256,7 @@ var ContentView = View.extend({
 		return this.children[this.children.length] = view;
 	},
 
-	createImageCaptionStack: function(images) {
+	createImageCaptionStack: function(bundle, images) {
 		var view = new CollectionStack({
 			collection: images,
 			template: imageCaptionTemplate,
@@ -245,7 +266,21 @@ var ContentView = View.extend({
 		return this.children[this.children.length] = view;
 	},
 
-	createBundleCarousel: function(images) {
+	createImagePager: function(bundle, images) {
+		var view = new SelectableListView({
+			collection: images,
+			renderer: DotNavigationRenderer,
+			className: "image-pager dots-fontello mutable-faded"
+		});
+		view.render().$el.appendTo(this.el);
+		controller.listenTo(view, {
+			"view:select:one": controller.selectImage,
+			"view:select:none": controller.deselectImage
+		});
+		return this.children[this.children.length] = view;
+	},
+
+	createBundleCarousel: function(bundles) {
 		var view = new Carousel({
 			className: "bundle-carousel",
 			direction: Carousel.DIRECTION_VERTICAL,
@@ -262,20 +297,6 @@ var ContentView = View.extend({
 		controller.listenTo(view, {
 			"view:select:one": controller.selectBundle,
 			"view:select:none": controller.deselectBundle
-		});
-		return this.children[this.children.length] = view;
-	},
-
-	createImagePager: function(images) {
-		var view = new SelectableListView({
-			collection: images,
-			renderer: DotNavigationRenderer,
-			className: "images-pager dots-fontello mutable-faded"
-		});
-		view.render().$el.appendTo(this.container);
-		controller.listenTo(view, {
-			"view:select:one": controller.selectImage,
-			"view:select:none": controller.deselectImage
 		});
 		return this.children[this.children.length] = view;
 	},

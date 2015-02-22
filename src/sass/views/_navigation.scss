@@ -1,3 +1,199 @@
-// ----------------------
+// -----------------------------------
 // Navigation
-// ----------------------
+// -----------------------------------
+
+//#bundle-list, #keyword-list {
+//	height: auto;
+//	transition-property: min-height, height;
+//	transition-duration: ($delay * 2 + $duration);
+//	transition-timing-function: step-end;
+//	&.collapsed {
+//		transition-timing-function: step-start;
+//	}
+//}
+
+// - - - - - - - - - - - - - - - - - -
+// site-name + wrapper
+// - - - - - - - - - - - - - - - - - -
+
+#site-name-wrapper {
+	position: relative;
+	top: 0;
+	height: $nav_height_portrait;
+	@include media($desktop_small) {
+		height: $nav_height_landscape;
+	}
+}
+
+#site-name {
+	position: relative;
+	display: inline-block;
+	min-height: 2rem;
+	top: 1.5rem;
+	@include nav_translate(-1px, 0);
+	@include nav_transition($delay: $delay * 1);
+	@at-root .with-bundle #site-name {
+		@include nav_translate(-100%, 0);
+		@include nav_transition($delay: $delay * 0);
+	}
+	@include heading_font();
+	color: $link_color;
+}
+
+// - - - - - - - - - - - - - - - - - -
+// bundle-list + wrapper
+// - - - - - - - - - - - - - - - - - -
+
+#bundle-list-wrapper {
+	position: absolute;
+	display: inline-block;
+	top: 0; left: 0;
+}
+
+#bundle-list {
+	@extend %nav_list;
+	min-height: 2rem;
+	top: 1.5rem;
+	width: $main_width - $aside_width;
+	@include media($desktop_small) {
+		width: $main_width_large - $aside_width_large;
+		@at-root .with-bundle #bundle-list {
+			width: $aside_width_large;
+		}
+	}
+	@include heading_font();
+	.list-item {
+		height: 2rem;
+		width: 100%;
+		white-space: nowrap;
+		a {
+			display: inline-block;
+			margin-left: -1px;
+		}
+		.completed {
+			display: none;
+		}
+		em {
+			font-style: normal;
+			font-weight: 400;
+		}
+	}
+}
+
+// - - - - - - - - - - - - - - - - - -
+// keyword-list + wrapper
+// - - - - - - - - - - - - - - - - - -
+
+#keyword-list-wrapper {
+	position: absolute;
+	display: inline-block;
+	top: 0;
+	@include nav_translate($main_width,0);
+	@include media($desktop_small) {
+		@include nav_translate($main_width_large,0);
+		@include nav_transition($delay: $delay * 0);
+		@at-root {
+			.with-bundle.with-image #keyword-list-wrapper {
+				@include nav_translate(0,0);
+			}
+		}
+	}
+}
+
+#keyword-list {
+	@extend %nav_list;
+	top: 1.25rem;
+	width: $aside_width;
+	.list-item {
+		white-space: nowrap;
+		width: 100%;
+		height: 1.5rem;
+		a {
+			font-size: 13px;
+			display: inline-block;
+			margin-left: -1px;
+		}
+	}
+	.list-group {
+		height: 0;
+		width: calc(100% - #{$gutter});
+		span {
+			display: inline-block;
+			width: 100%;
+			@include small_caps($lead: 1.5rem);
+			@include nav_translate(-100%, 0.0rem);
+			@include nav_transition($delay: $delay * 1);
+		}
+	}
+//	@at-root {
+//		.with-bundle.with-image #keyword-list {
+//			opacity: 0.25;
+//		}
+//	}
+	@include media($desktop_small) {
+		width: $aside_width_large;
+		.list-group {
+			width: 100%;
+		}
+		@at-root {
+			.with-bundle #keyword-list {
+				/* override %nav_list */
+				@include nav_translate(0, #{$nav_height_landscape - 0.5rem});
+			}
+			.with-bundle #keyword-list .list-group {
+				height: 2rem;
+			}
+			.with-bundle #keyword-list .list-group span {
+				@include nav_translate(-0.1px, 0.5rem);
+				@include nav_transition($delay: $delay * 1);
+			}
+//			.with-bundle.with-image #keyword-list {
+//				opacity: 1;
+//			}
+			.with-bundle.with-image #keyword-list .list-group span {
+				@include nav_transition($delay: $delay * 0);
+			}
+		}
+	}
+	@at-root .skip-transitions #keyword-list .list-group span {
+		@extend %skip_transitions;
+	}
+}
+
+// - - - - - - - - - - - - - - - - - -
+// bundle-pager
+// - - - - - - - - - - - - - - - - - -
+
+#bundle-pager {
+	position: absolute;
+    display: inline-block;
+    top: -1rem;
+	.button {
+		opacity: 0;
+		position: absolute;
+		margin-left: 0 !important;
+		.label {
+//			display: none;
+			min-width: $aside_width;
+		}
+	}
+	.following-button {
+		left: $main_width;
+		@include media($desktop_small) {
+			left: $aside_width_large;
+		}
+		&:after {
+			margin-left: 0 !important;
+		}
+	}
+}
+
+// -----------------------------------
+// leaf elements
+// -----------------------------------
+
+#site-name,
+.list-item, .list-group,
+#bundle-pager .button {
+	@extend %leaf-content;
+}

@@ -1,9 +1,9 @@
 $collapse_ease: $ease;
 //$collapse_ease: ease-out;
 
-//
+// - - - - - - - - - - - - - - - - - -
 // Filterable
-//
+// - - - - - - - - - - - - - - - - - -
 .list {
 	position: relative;
 	.list-item, .list-group {
@@ -13,26 +13,6 @@ $collapse_ease: $ease;
 		transform: translate3d(0,0,0);
 	}
 }
-//.list.filterable {
-//	position: relative;
-//	.list-item {
-//		display: block;
-//	}
-//}
-//.list.grouped {
-//	.list-group {
-//		display: block;
-//	}
-//}
-//#bundle-list, #keyword-list {
-//	height: auto;
-//	transition-property: min-height, height;
-//	transition-duration: ($delay * 2 + $duration);
-//	transition-timing-function: step-end;
-//	&.collapsed {
-//		transition-timing-function: step-start;
-//	}
-//}
 
 #bundle-list {
 	.list-item {
@@ -73,9 +53,9 @@ $collapse_ease: $ease;
 	}
 }
 
-//
+// - - - - - - - - - - - - - - - - - -
 // Grouped
-//
+// - - - - - - - - - - - - - - - - - -
 #keyword-list {
 	.list-item, .list-group {
 		visibility: visible;

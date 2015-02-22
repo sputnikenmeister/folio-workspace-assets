@@ -158,7 +158,7 @@ var Carousel = DeferredRenderView.extend({
 		}
 		// when at first or last index, add feedback to gesture
 		if (this.isOutOfBounds(delta)) {
-			delta *= 0.2;
+			delta *= 0.4;
 		} else if (dirChanged) {
 			this.candidateModel = this.collection.at(this.collection.selectedIndex + indexDelta);
 			this.candidateChild = this.candidateModel? this.children.findByModel(this.candidateModel): this.emptyChild;
