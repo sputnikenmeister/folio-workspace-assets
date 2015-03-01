@@ -3,7 +3,8 @@
 // ------------------------------------
 
 .app-ready #container {
-	transition: visibility $duration $delay step-start, opacity $duration $delay $ease;
+	transition: visibility $duration $delay step-start,
+		opacity $duration $delay $ease;
 	visibility: visible;
 	opacity: 1;
 }

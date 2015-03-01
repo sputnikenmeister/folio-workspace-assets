@@ -12,7 +12,7 @@
 }
 
 html {
-	font: 12px/1 $base_font;
+	font: #{$vu}/1 $base_font;
 }
 body {
 	color: $color;

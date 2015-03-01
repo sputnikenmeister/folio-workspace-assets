@@ -12,26 +12,29 @@ var Hammer = require("hammerjs");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 
+/** @type {module:app/control/Globals} */
+var Globals = require("../control/Globals");
 /** @type {module:app/control/Controller} */
 var controller = require("../control/Controller");
 /** @type {module:app/model/collection/BundleList} */
 var bundles = require("../model/collection/BundleList");
 
-/** @type {module:app/control/Globals} */
-var Globals = require("../control/Globals");
 /** @type {module:app/helper/View} */
 var View = require("../helper/View");
-/** @type {module:app/view/component/Carousel} */
-var Carousel = require("./component/Carousel");
-/** @type {module:app/view/component/SelectableListView} */
-var SelectableListView = require("./component/SelectableListView");
 /** @type {module:app/view/component/CollectionStack} */
 var CollectionStack = require("./component/CollectionStack");
 
-/** @type {module:app/view/render/ImageRenderer} */
-var ImageRenderer = require("./render/ImageRenderer");
+/** @type {module:app/view/component/SelectableListView} */
+var SelectableListView = require("./component/SelectableListView");
 /** @type {module:app/view/render/DotNavigationRenderer} */
 var DotNavigationRenderer = require("./render/DotNavigationRenderer");
+
+/** @type {module:app/view/component/Carousel} */
+var Carousel = require("./component/Carousel");
+/** @type {module:app/view/BundleCarousel} */
+var BundleCarousel = require("./BundleCarousel");
+/** @type {module:app/view/render/ImageRenderer} */
+var ImageRenderer = require("./render/ImageRenderer");
 /** @type {module:app/view/render/CarouselEmptyRenderer} */
 var CarouselEmptyRenderer = require("./render/CarouselEmptyRenderer");
 
@@ -47,37 +50,35 @@ var imageCaptionTemplate = require("./template/CollectionStack.Image.tpl");
 var ContentView = View.extend({
 
 	initialize: function (options) {
-//		_.bindAll(this, "_onPan");
-
+		_.bindAll(this, "_onPan", "_onResize");
 		this.children = [];
 		this.hammer = this.createHammer(this.el);
+		Backbone.$(window).on("orientationchange resize", this._onResize);
 
+		this.carousel = this.createBundleCarousel(bundles);
 		// Model listeners
-		this.listenTo(bundles, {
-			"select:one": function (bundle) {
-				this.createChildren(bundle, false);
-			},
-			"deselect:one": function (bundle) {
-				this.removeChildren(bundle, false);
-			}
-		});
-
-		if (bundles.selected) {
-			this.createChildren(bundles.selected, true);
-		} else {
-//			this.$el.css("display", "none");
-		}
+//		this.listenTo(bundles, {
+//			"select:one": function (bundle) {
+//				this.createChildren(bundle, false);
+//			},
+//			"deselect:one": function (bundle) {
+//				this.removeChildren(bundle, false);
+//			}
+//		});
+//
+//		if (bundles.selected) {
+//			this.createChildren(bundles.selected, true);
+//		}
 	},
 
 	/** @override */
-	remove: function () {
-		if (bundles.selected) {
-			this.removeChildren(bundles.selected, true);
-		}
-		this.hammer.destroy();
-		this.$el.remove(this.container);
-		View.prototype.remove.apply(this, arguments);
-	},
+//	remove: function () {
+//		if (bundles.selected) {
+//			this.removeChildren(bundles.selected, true);
+//		}
+//		this.hammer.destroy();
+//		View.prototype.remove.apply(this, arguments);
+//	},
 
 	/* -------------------------------
 	 * Create children on bundle select
@@ -86,20 +87,19 @@ var ContentView = View.extend({
 	createChildren: function (bundle, skipAnimation) {
 		var images = bundle.get("images");
 
-		this.createImageCaptionStack(bundle, images);
 //		this.createImageCaptionCarousel(bundle, images);
-		this.createImageCarousel(bundle, images);
-//		this.$el.css("display", "");
+		this.createImageCaptionStack(bundle, images);
+		this.carousel = this.createImageCarousel(bundle, images);
 		// Show views
 		if (!skipAnimation) {
 			_.each(this.children, function(child) {
 				child.$el.css({
 					opacity: 0
 				})
-//				.delay(Globals.TRANSITION_DELAY * 2)
+				.delay(Globals.TRANSITION_DELAY * 2)
 				.transit({
-//					delay: 1,
-					delay: Globals.TRANSITION_DELAY * 2,
+					delay: 1,
+//					delay: Globals.TRANSITION_DELAY * 2,
 					opacity: 1
 				}, Globals.TRANSITION_DURATION);
 			});
@@ -170,19 +170,24 @@ var ContentView = View.extend({
 //		}
 //	},
 //
-//	_onPan: function(ev) {
-//		switch (ev.type) {
-//			case "panstart":
-//				break;
-//			case "panmove":
-//				break;
-//			case "panend":
-//				break;
-//			case "pancancel":
-//				break;
-//
-//		}
-//	},
+	_onPan: function(ev) {
+		switch (ev.type) {
+			case "panstart":
+				break;
+			case "panmove":
+				break;
+			case "panend":
+				break;
+			case "pancancel":
+				break;
+
+		}
+	},
+
+	/** @param {Object} ev */
+	_onResize: function (ev) {
+		this.carousel.render();
+	},
 
 	/* -------------------------------
 	 * Components
@@ -205,13 +210,6 @@ var ContentView = View.extend({
 		return hammer;
 	},
 
-//	createContainer: function(){
-//		var container = document.createElement("div");
-//		container.id = "content-wrapper";
-//		this.$el.append(container);
-//		return container;
-//	},
-
 	createImageCarousel: function(bundle, images) {
 		var attrs = bundle.get("attrs");
 		var classname =  "image-carousel " + bundle.get("handle");
@@ -222,7 +220,6 @@ var ContentView = View.extend({
 			model: bundle,
 			template: bundleDescTemplate,
 		});
-
 		// Create carousel
 		var view = new Carousel({
 			className: classname,
@@ -281,8 +278,8 @@ var ContentView = View.extend({
 	},
 
 	createBundleCarousel: function(bundles) {
-		var view = new Carousel({
-			className: "bundle-carousel",
+		var view = new BundleCarousel({
+//			direction: Carousel.DIRECTION_HORIZONTAL,
 			direction: Carousel.DIRECTION_VERTICAL,
 			collection: bundles,
 //			renderer: ImageRenderer,
@@ -291,14 +288,15 @@ var ContentView = View.extend({
 //				template: bundleDescTemplate,
 //			}),
 		});
-//		view.render().$el.appendTo(this.container);
-		view.$el.appendTo(this.el);
-		view.render();
-		controller.listenTo(view, {
-			"view:select:one": controller.selectBundle,
-			"view:select:none": controller.deselectBundle
-		});
-		return this.children[this.children.length] = view;
+		view.render().$el.appendTo(this.el);
+//		view.$el.appendTo(this.el);
+//		view.render();
+
+//		controller.listenTo(view, {
+//			"view:select:one": controller.selectBundle,
+//			"view:select:none": controller.deselectBundle
+//		});
+		return view;
 	},
 
 });

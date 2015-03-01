@@ -14,6 +14,8 @@ var Color = $.Color;
 /** @type {Function} */
 var Deferred = $.Deferred;
 
+/** @type {module:app/control/Globals} */
+var Globals = require("./Globals");
 /** @type {module:app/utils/Styles} */
 var Styles = require("../utils/Styles");
 /** @type {module:app/utils/debug/traceArgs} */
@@ -123,11 +125,11 @@ var Controller = Backbone.Router.extend({
 	},
 
 	_goToLocation: function(bundle, image) {
-		var imageIndex, location;
+		var images, imageIndex, location;
 		location = "bundles";
 		if (bundle) {
 			location += "/" + bundle.get("handle");
-			imageIndex = bundle.get("images").indexOf(image);
+			imageIndex = image? bundle.get("images").indexOf(image) : -1;//bundle.get("images").selectedIndex;
 			if (imageIndex >= 0) {
 				location += "/" + imageIndex;
 			}
@@ -225,7 +227,7 @@ var Controller = Backbone.Router.extend({
 			"deselect:one": function (bundle) {
 				images = bundle.get("images");
 				$body.removeClass(toClassName("image", true)).removeClass(toClassName("image", false));
-				this.stopListening(images, { "select:none": withoutImage, "select:one": withImage });
+				this.stopListening(images, {"select:none": withoutImage, "select:one": withImage });
 //				this.stopListening(images, "select:none", withoutImage);
 //				this.stopListening(images, "select:one", withImage);
 				images = null;
@@ -281,19 +283,21 @@ var Controller = Backbone.Router.extend({
 			return "bundle-" + bundle.id;
 		};
 
-		bgDefault = Styles.getCSSProperty("body", "background-color");// || "hsl(47, 5%, 95%)");
-		fgDefault = Styles.getCSSProperty("body", "color");// || "hsl(47, 5%, 15%)");
+		bgDefault = new Color(Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
+		fgDefault = new Color(Styles.getCSSProperty("body", "color") || "hsl(47, 5%, 15%)");
 
 		bundles.each(function (bundle) {
+
 			attrs = bundle.get("attrs");
-			bodySelector = "body." + toBodyClass(bundle);
-			carouselSelector = ".carousel." + bundle.get("handle");
-			bgColor = new Color(attrs["background-color"] || bgDefault);
-			fgColor = new Color(attrs["color"] || fgDefault);
+//			bgColor = attrs["background-color"]? new Color(attrs["background-color"]) : bgDefault;
+//			fgColor = attrs["color"]? new Color(attrs["color"]) : fgDefault;
+			bgColor = bgDefault;
+			fgColor = fgDefault;
 			bgLum = bgColor.lightness();
 			fgLum = fgColor.lightness();
 
-			styles = _.pick(attrs, ["background-color", "background", "color"]);
+			bodySelector = "body." + toBodyClass(bundle);
+			styles = {};//_.pick(attrs, ["background-color", "background", "color"]);
 			styles["-webkit-font-smoothing"] = (bgLum < fgLum? "antialiased" : "auto");
 			/* 'body { -moz-osx-font-smoothing: grayscale; }' works ok in all situations: hardcoded in _base.scss */
 			//styles["-moz-osx-font-smoothing"] = (bgLum < fgLum? "grayscale" : "auto");
@@ -305,7 +309,8 @@ var Controller = Backbone.Router.extend({
 			};
 			Styles.createCSSRule(bodySelector + " .mutable-faded", styles);
 
-			styles = _.pick(attrs, ["box-shadow", "border", "border-radius", "background-color"]);
+			carouselSelector = ".carousel." + bundle.get("handle");
+			styles = _.pick(attrs, ["box-shadow", "border", "border-radius"]);//, "background-color"]);
 			Styles.createCSSRule(carouselSelector + " .image-item img", styles);
 
 			styles = {

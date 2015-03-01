@@ -1,27 +1,9 @@
 // ------------------------------------
-// Global units
+// Globals:
+// manually synced values js<-->sass
 // ------------------------------------
 
-// Size base units
-$hu: 20px;
-$vu: 12px;
-
-// Time base units (transitions/animations)
-$duration: 			0.375s;
-$delay_interval: 	0.025s;
-$delay: $duration + $delay_interval;
-
-$ease: ease;
-//$ease: linear;
-//$ease: ease-in-out;
-
-//$ease_time:	0.200;
-//$ease_prop:	0.005;
-//$ease:		cubic-bezier($ease_time, $ease_prop, #{1 - $ease_time}, #{1 - $ease_prop});
-//$ease_in:		cubic-bezier($ease_time, $ease_prop, 0.5, 0.5);
-//$ease_out:	cubic-bezier(0.5, 0.5, #{1 - $ease_time}, #{1 - $ease_prop});
-//$ease_in:		cubic-bezier(0.400, 0.000, 0.600, 0.400);
-//$ease_out:	cubic-bezier(0.400, 0.600, 0.600, 1.000);
+@import "_globals";
 
 // ------------------------------------
 // Layout
@@ -40,8 +22,9 @@ $main_width:				$page_width - $aside_width;
 $main_width_large:			$page_width_large - $aside_width_large;
 
 // ------------------------------------
-// Color/Typefaces: private (do not use directly)
+// Colors: private (not to be used directly)
 // ------------------------------------
+
 $light_fgcolor: 	hsl(47, 5%, 15%);
 $light_bgcolor: 	hsl(47, 5%, 95%);
 
@@ -50,6 +33,30 @@ $dark_bgcolor: 		hsl(47, 5%, 25%);
 
 $inverse_color: $dark_fgcolor;
 $inverse_background_color: $dark_bgcolor;
+
+// - - - - - - - - - - - - - - - - - -
+// Colors: public
+// - - - - - - - - - - - - - - - - - -
+
+// main colors
+$color: $light_fgcolor;
+$background_color: $light_bgcolor;
+
+// link-colors
+$link_color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
+$link_hover_color: scale_color($link_color, $lightness: 15%);//hsl(10, 95%, 60%);
+$link_down_color: scale_color($link_color, $lightness: -15%);//hsl(10, 95%, 30%);
+
+// selection-colors
+$selection_fgcolor: hsl(203, 100%, 50%);
+$selection_bgcolor: hsl(203, 100%, 90%);
+
+$royal_blue_color:	#204980;
+$royal_ivory_color:	#FEFCE7;
+
+// ------------------------------------
+// Typefaces: private (not to be used directly)
+// ------------------------------------
 
 // Font fallback lists
 $mono_fallback: Consolas, Menlo, "Andale Mono", monospace;
@@ -63,25 +70,9 @@ $font_webfont_sans: "Franklin Gothic FS", $grotesque_fallback;
 //@import "fonts/_old-standard-tt";
 //$font_webfont_serif: "Old Standard TT", $modern_fallback;
 
-$royal_blue_color:	#204980;
-$royal_ivory_color:	#FEFCE7;
-
-// ------------------------------------
-// Color/Typefaces: public
-// ------------------------------------
-
-// colors
-$color: $light_fgcolor;
-$background_color: $light_bgcolor;
-
-// link-colors
-$link_color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
-$link_hover_color: scale_color($link_color, $lightness: 15%);//hsl(10, 95%, 60%);
-$link_down_color: scale_color($link_color, $lightness: -15%);//hsl(10, 95%, 30%);
-
-// selection-colors
-$selection_fgcolor: hsl(203, 100%, 50%);
-$selection_bgcolor: hsl(203, 100%, 90%);
+// - - - - - - - - - - - - - - - - - -
+// Typefaces: public
+// - - - - - - - - - - - - - - - - - -
 
 // font-family
 $large_font_family: $font_webfont_sans;
@@ -159,8 +150,12 @@ $base_font: $font_webfont_sans;
 }
 
 %large_text p {
-	@include heading_font($size: 28px, $weight: 300, $lead: 30px);
 //	@include heading_font($size: 2.5rem, $weight: 300, $lead: 0.960em);
+	@include heading_font($size: 28px, $weight: 300, $lead: 30px);
+//	transform: translate3d(-2px,0,0);
+	transform: translateX(-2px);
+//	margin-left: -2px;
+//	margin-right: 2px;
 	margin-top: 0;
 	margin-bottom: 0.5em;
 	&:first-child {

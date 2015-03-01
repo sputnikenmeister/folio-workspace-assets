@@ -12,7 +12,7 @@ var View = require("../../helper/View");
 var Globals = require("../../control/Globals");
 
 /** @type {string} */
-var viewTemplate = require("../template/CollectionStack.tpl");
+var viewTemplate = require("./CollectionStack.tpl");
 
 /**
  * @constructor

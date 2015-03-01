@@ -14,14 +14,15 @@ var Globals = require("../../control/Globals");
 var ImageItem = require("../../model/item/ImageItem");
 
 /** @type {module:app/utils/Styles} */
-var Styles = require("../../utils/Styles");
+//var Styles = require("../../utils/Styles");
 /** @type {module:app/utils/strings/stripTags} */
-var stripTags = require("../../utils/strings/stripTags");
+//var stripTags = require("../../utils/strings/stripTags");
 /** @type {module:app/utils/net/loadImage} */
-var loadImage = require("../../utils/net/loadImage");
+//var loadImage = require("../../utils/net/loadImage");
+var loadImage = require("../../utils/net/loadImageDOM");
 
 /** @type {Function} */
- var viewTemplate = require( "../template/ImageRenderer.tpl" );
+// var viewTemplate = require( "./ImageRenderer.tpl" );
 
 /**
  * @constructor
@@ -34,9 +35,11 @@ module.exports = Backbone.View.extend({
 	/** @type {string} */
 	className: "carousel-item image-item idle",
 	/** @type {module:app/model/ImageItem} */
-	model: ImageItem,
+	model: require("../../model/item/ImageItem"),
+//	model: ImageItem,
 	/** @type {Function} */
-	template: viewTemplate,
+	template: require( "./ImageRenderer.tpl" ),
+//	template: viewTemplate,
 
 	/** @override */
 	initialize: function (opts) {
@@ -52,12 +55,13 @@ module.exports = Backbone.View.extend({
 
 		this.$placeholder = this.$(".placeholder");
 		this.$image = this.$("img");
+
+		this.placeholder = this.$placeholder[0];
+		this.image = this.$image[0];
+
 		this.$image.on("dragstart", function (ev) {
 			ev.isDefaultPrevented() || ev.preventDefault();
 		});
-
-		this.image = this.$image[0];
-		this.placeholder = this.$placeholder[0];
 	},
 
 	remove: function() {
@@ -70,29 +74,58 @@ module.exports = Backbone.View.extend({
 
 	/** @return {this} */
 	render: function () {
-		var pX, pY, pW, pH, pA, cA, cW, cH;
-		this.$placeholder.css({ maxWidth: "", maxHeight: "" });
+		// source dimensions
+		var sW, sH;
+		// measured values from .placeholder
+		var poX, poY, poW, poH;
+		var pcX, pcY, pcW, pcH;
+		// computed values
+		var cX, cY, cW, cH;
+		var pA, sA;
 
-		pX = this.placeholder.offsetLeft;
-		pY = this.placeholder.offsetTop;
-		pW = this.placeholder.offsetWidth;
-		pH = this.placeholder.offsetHeight;
-//		pW = this.placeholder.clientWidth;
-//		pH = this.placeholder.clientHeight;
+		// clear placeholder
+		this.$placeholder.css({maxWidth: "", maxHeight: ""});
 
-		pA = pW/pH;
-		cA = this.model.get("w") / this.model.get("h");
-		if (pA < cA) {
-			cW = pW;
-			cH = Math.round((cW / this.model.get("w")) * this.model.get("h"));
+		var p = this.placeholder;
+//		var ps = window.getComputedStyle(p);
+
+		poX = p.offsetLeft;
+		poY = p.offsetTop;
+		pcX = p.clientLeft;
+		pcY = p.clientTop;
+
+		poW = p.offsetWidth;
+		poH = p.offsetHeight;
+		pcW = p.clientWidth;
+		pcH = p.clientHeight;
+
+		// get source values
+		sW = this.model.get("w");
+		sH = this.model.get("h");
+
+		// aspect ratios
+		sA = sW/sH;
+		pA = poW/pcH;
+
+		if (pA < sA) {
+			cW = pcW;
+//			cH = Math.round(pcW * sA);
+			cH = Math.round((cW / sW) * sH);
 		} else {
-			cH = pH;
-			cW = Math.round((cH / this.model.get("h")) * this.model.get("w"));
+			cH = pcH;
+//			cW = Math.round(pcH * (-1/sA));
+			cW = Math.round((cH / sH) * sW);
 		}
-		this.$placeholder.css({ maxWidth: cW, maxHeight: cH });
-//		this.$el.css("maxHeight", cH);
-//		this.$image.attr({width: cW, height: cH}).css(this.$placeholder.position());
-		this.$image.attr({width: cW, height: cH}).css({left: pX, top: pY});
+
+//		this.$placeholder.css({maxWidth: cW + (poW - pcW), maxHeight: cH + (poH - pcH)});
+		this.$placeholder.css({maxWidth: cW, maxHeight: cH});
+		this.$image.attr({width: cW, height: cH});
+
+		cX = poX + pcX;
+		cY = poY + pcY;
+
+		this.$image.css({left: cX, top: cY});
+
 		return this;
 	},
 
@@ -110,8 +143,8 @@ module.exports = Backbone.View.extend({
 			this.listenTo(owner, "select:one select:none", function(model) {
 				if (check(owner.selectedIndex)) {
 					this.stopListening(owner);
-					_.delay(this._loadImage, Globals.TRANSITION_DELAY * 3);
 					this.$el.on("webkittransitionend transitionend", this._loadImage);
+					_.delay(this._loadImage, Globals.TRANSITION_DELAY * 3);
 				}
 			});
 		}
@@ -119,68 +152,38 @@ module.exports = Backbone.View.extend({
 
 	_loadImage: function(ev) {
 		if (arguments[0] instanceof Event) {
-			if (ev.propertyName != "transform") {
+			if (ev.propertyName !== "transform") {
 				return;
 			}
 			this.$el.off("webkittransitionend transitionend");
 		}
-		loadImage(this.model.getImageUrl(), this.image, this).then(this.onLoad, this.onError, this.onProgress);
-//		if (window.Blob) {
-//			loadImageXHR(this.model.getImageUrl(), this.image, this)
-//				.then(this.onLoad_xhr, this.onError, this.onProgress);
-//		} else {
-//			loadImageDOM(this.model.getImageUrl(), this.image, this)
-//				.then(this.onLoad, this.onError, this.onProgress);
-//		}
+		loadImage(this.model.getImageUrl(), this.image, this)
+			.then(this.onLoad, this.onError, this.onProgress);
 	},
 
 	onProgress: function (progress, source, ev) {
-//		console.log("ImageRenderer.onProgress: " + this.model.get("f"), arguments);
-//		this.$el.removeClass("idle").addClass("pending");
 		if (progress == "loadstart") {// || ev.type == "loadstart") {
-//			console.debug("ImageRenderer.onProgress: " + this.model.get("f") + " loadstart");
+			//console.debug("ImageRenderer.onProgress: " + this.model.get("f") + " loadstart");
 			//this.model.trigger("load:start");
 			this.$el.removeClass("idle").addClass("pending");
-//			this.$placeholder.html("<span class=\"progress\">Loading</span>");
 		} else {
 			var percent = (progress * 100).toFixed(0);
-//			console.debug("ImageRenderer.onProgress: " + this.model.get("f") + " " + ev.type, (progress).toFixed(3));
-//			this.$progress.addClass("num").text(percent + "%");
 			this.$placeholder.attr("data-progress", percent);
 			//this.model.trigger("load:progress", progress);
 		}
 	},
 
 	onError: function (err, source, ev) {
-		console.error("ImageRenderer.onError: " + err.message, arguments);
+		//console.error("ImageRenderer.onError: " + err.message, arguments);
 		//this.model.trigger("load:error");
 		this.$el.removeClass("pending").addClass("error");
 		this.$placeholder.removeAttr("data-progress");
-//		this.$placeholder.attr("data-progress", "100");
-//		this.$progress.removeClass("num").text("Error");
-//		this.$placeholder.html("<span class=\"progress\">Error</span>");
 	},
 
 	onLoad: function (url, source, ev) {
-		console.info("ImageRenderer.onLoad: " + this.model.get("f"), ev);
+		//console.info("ImageRenderer.onLoad: " + this.model.get("f"), ev);
 		//this.model.trigger("load:done");
 		this.$el.removeClass("pending").addClass("done");
 		this.$placeholder.removeAttr("data-progress");
 	},
-
-//	onLoad_xhr: function (url, source, ev) {
-//		console.info("ImageRenderer.onLoad_xhr: " + this.model.get("f"), url);
-//		//this.model.trigger("load:done");
-////		this.image.src = window.URL.createObjectURL(response);
-//		this.image.src = url;
-////		this.$el.delay(1).removeClass("pending").addClass("done");
-////		_.defer(_.bind(function() {
-////			this.$image.attr("src", window.URL.createObjectURL(response));
-//			this.$el.removeClass("pending").addClass("done");
-//			this.$placeholder.removeAttr("data-progress");
-////			this.$placeholder.attr("data-progress", "100");
-////			this.$progress.removeClass("num").text("Done");
-////			this.$placeholder.empty();
-////		}, this));
-//	},
 });

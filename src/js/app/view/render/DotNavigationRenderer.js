@@ -7,7 +7,7 @@ var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 /** @type {string} */
-var viewTemplate = require("../template/DotNavigationRenderer.tpl");
+var viewTemplate = require("./DotNavigationRenderer.tpl");
 
 /**
  * @constructor

@@ -61,6 +61,8 @@ var SelectableList = Backbone.Collection.extend({
 				oldModel.trigger("deselected");
 			}
 			if (triggerEvents) this.trigger("deselect:one", oldModel);
+		} else {
+			if (triggerEvents) this.trigger("deselect:none", oldModel);
 		}
 
 		this.selected = newModel;

@@ -91,9 +91,9 @@ $collapse_ease: $ease;
 		transition-duration: $delay * 2 + $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
 		transition-delay: 0s + 0.001s, $delay * 2 + 0.001s, $delay * 1 + 0.001s;
 //		transition:
-//			visibility ($delay*2 + $duration) ($delay*0) step-start,
-//			opacity $duration ($delay*2) $collapse_ease,
-//			transform $duration ($delay*1) $collapse_ease;
+//			visibility ($delay*2 + $duration - 0.001s ($delay*0 + 0.001s) step-start,
+//			opacity ($duration*1 - 0.001s) ($delay*2 + 0.001s) $collapse_ease,
+//			transform ($duration*1 - 0.001s) ($delay*1 + 0.001s) $collapse_ease;
 	}
 	&.collapsed {
 		.list-group.excluded, .list-item.excluded {
@@ -101,9 +101,9 @@ $collapse_ease: $ease;
 			transition-timing-function: step-end, $collapse_ease, $collapse_ease;
 			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
 //			transition:
-//				visibility ($delay*2 + $duration) ($delay*0) step-end,
-//				opacity $duration ($delay*0) $collapse_ease,
-//				transform $duration ($delay*1) $collapse_ease;
+//				visibility ($delay*2 + $duration) ($delay*0 + 0.001s) step-end,
+//				opacity ($duration*1 - 0.001s) ($delay*0 + 0.001s) $collapse_ease,
+//				transform ($duration*1 - 0.001s) ($delay*1 + 0.001s) $collapse_ease;
 		}
 	}
 }

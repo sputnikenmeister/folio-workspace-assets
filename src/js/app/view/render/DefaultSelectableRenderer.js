@@ -7,7 +7,7 @@ var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 /** @type {string} */
-var viewTemplate = require("../template/DefaultSelectableRenderer.tpl");
+var viewTemplate = require("./DefaultSelectableRenderer.tpl");
 
 /**
  * @constructor

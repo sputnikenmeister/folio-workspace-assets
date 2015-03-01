@@ -9,7 +9,7 @@
 @import "../includes/_media-queries";
 
 $header_height: 2.25rem;
-$footer_height: 4rem;
+$footer_height: 3rem;
 $nav_height_landscape: 9rem;
 $nav_height_portrait: 14.25rem;
 
@@ -182,13 +182,26 @@ html, body {
 #bundle-pager {
 	z-index: 1;
 }
+
 .image-carousel {
 	z-index: 0;
 	.carousel-item.selected {
 		z-index: 1;
 	}
+	&.panning, &.scrolling {
+		z-index: 2;
+	}
 }
-.image-carousel.scrolling,
-.image-carousel.panning {
-	z-index: 2;
+
+.bundle-carousel {
+	z-index: 0;
+	.nested-carousel-item {
+//		z-index: 0;
+		.carousel-item.selected {
+			z-index: 1;
+		}
+		&.panning, &.scrolling {
+			z-index: 2;
+		}
+	}
 }

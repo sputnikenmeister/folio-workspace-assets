@@ -10,7 +10,8 @@ var Backbone = require("backbone");
 var View = require("../../helper/View");
 
 /** @type {Function} */
-var viewTemplate = require("../template/CollectionPager.tpl");
+var viewTemplate = require("./CollectionPager.tpl");
+//var viewTemplate = require("./CollectionPager.withClose.tpl");
 
 /**
  * @constructor
@@ -36,10 +37,10 @@ module.exports = View.extend({
 			ev.isDefaultPrevented() || ev.preventDefault();
 			this.trigger("view:select:one", this.collection.followingOrFirst());
 		},
-		"click .close-button": function (ev) {
-			ev.isDefaultPrevented() || ev.preventDefault();
-			this.trigger("view:select:none");
-		}
+//		"click .close-button": function (ev) {
+//			ev.isDefaultPrevented() || ev.preventDefault();
+//			this.trigger("view:select:none");
+//		}
 	},
 
 	/** @override */
@@ -60,8 +61,9 @@ module.exports = View.extend({
 				"preceding_href": preceding.get("handle"),
 				"following_label": this.getLabel(following),
 				"following_href": following.get("handle"),
-				"close_label": "Close",
-				"close_href": "close",
+//				"close_label": "Close",
+//				"close_href": "#close",
+
 			}));
 		} else {
 			this.$el.empty();
@@ -71,8 +73,6 @@ module.exports = View.extend({
 
 	/** @param {Object} model */
 	getLabel: function (model) {
-		if (model.has(this.labelAttribute))
-			return model.get(this.labelAttribute);
-		return model.toString();
+		return model.has(this.labelAttribute)? model.get(this.labelAttribute) : model.toString();
 	},
 });

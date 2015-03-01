@@ -42,7 +42,7 @@ var View = Backbone.View.extend({
 		} else {
 			Backbone.View.prototype.setElement.apply(this, arguments);
 		}
-//		this.$el.attr("data-cid", this.cid);
+		this.$el.attr("data-cid", this.cid);
 		return this;
 	},
 },{

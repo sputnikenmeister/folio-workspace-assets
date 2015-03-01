@@ -45,7 +45,7 @@ var AppView = Backbone.View.extend({
 		if (DEBUG) {
 			this.debugToolbar = new DebugToolbar({ el: "#debug-toolbar", collection: bundles });
 		} else {
-			this.$("#debug-toolbar").remove();
+			this.$("#debug-toolbar").css("visibility", "hidden");
 		}
 
 		// start router, which will request appropiate state

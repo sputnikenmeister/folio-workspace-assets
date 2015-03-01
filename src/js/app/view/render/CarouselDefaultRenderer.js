@@ -9,7 +9,7 @@ var Backbone = require("backbone");
 /** @type {module:app/helper/View} */
 var View = require("../../helper/View");
 /** @type {module:app/utils/Styles} */
-var Styles = require("../../utils/Styles");
+//var Styles = require("../../utils/Styles");
 
 /**
  * @constructor
@@ -22,18 +22,19 @@ module.exports = View.extend({
 	/** @override */
 	className: "carousel-item default-carousel-item",
 	/** @override */
-	template: _.template("<div class=\"placeholder content sizing\"><%= name %></div>"),
+	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
 
-	/** @override */
-	events: {
-		"dragstart img": function (ev) {
-			ev.preventDefault();
-		} /* prevent conflict with hammer.js */
-	},
+//	/** @override */
+//	events: {
+//		"dragstart img": function (ev) {
+//			ev.preventDefault();
+//		} /* prevent conflict with hammer.js */
+//	},
 
 	/** @override */
 	initialize: function (options) {
 //		this.listenTo(this.model, "selected deselected", this._onSelectionChange);
+//		this.$el.html(this.template(this.model.attributes));
 		this.$el.html(this.template(this.model.toJSON()));
 //		this.$sizing = this.$(".sizing");
 	},

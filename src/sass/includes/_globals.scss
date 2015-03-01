@@ -1,0 +1,28 @@
+// ------------------------------------
+// Global units
+// ------------------------------------
+
+// Size base units
+$hu: 20px;
+$vu: 12px;
+
+// Time base units (transitions/animations)
+$duration: 			0.375s;
+$delay_interval: 	0.025s;
+$delay: $duration + $delay_interval;
+
+// transition/animation timing function
+$ease: ease;
+//$ease: linear;
+//$ease: ease-in-out;
+
+//$ease_time:	0.200;
+//$ease_prop:	0.005;
+//$ease:		cubic-bezier($ease_time, $ease_prop, #{1 - $ease_time}, #{1 - $ease_prop});
+//$ease_in:		cubic-bezier($ease_time, $ease_prop, 0.5, 0.5);
+//$ease_out:	cubic-bezier(0.5, 0.5, #{1 - $ease_time}, #{1 - $ease_prop});
+//$ease_in:		cubic-bezier(0.400, 0.000, 0.600, 0.400);
+//$ease_out:	cubic-bezier(0.400, 0.600, 0.600, 1.000);
+
+//$area_color_weight: 10%;
+//$line_color_weight: 30%;

@@ -59,15 +59,12 @@
 	width: 100%;
 	min-width: $page_width;
 	.carousel-item {
+//		padding: 1.5rem $hu;
 		left: calc(50% - #{$page_width/2});
 		width: $page_width;
 	}
 	.empty-item {
 		width: $main_width - 6px;
-//		width: auto;
-//		.content {
-//			width: $main_width - 6px;
-//		}
 	}
 	@include media($desktop_small) {
 		min-width: $page_width_large;
@@ -81,10 +78,6 @@
 			padding-left: 0;
 			padding-right: $aside_width_large - $hu*1;
 			width: $page_width_large - $hu*2 - 6px;
-//			width: auto;
-//			.content {
-//				width: $page_width_large - $hu*2 - 6px;
-//			}
 		}
 	}
 }
@@ -97,15 +90,20 @@
 
 //#content .image-carousel {
 .image-carousel {
-	position: relative;
+	position: absolute;
 	overflow: hidden;
 //	box-sizing: content-box;
-	top: 0;
+//	top: 0;
 	bottom: 0;
 //	height: 100%;
-	height: calc(100% - 3rem);
+//	height: calc(100% - 3rem);
 	padding-top: 1.5rem;
 	padding-bottom: 1.5rem;
+
+	top: $nav_height_portrait + $header_height;
+	@include media($desktop_small) {
+		top: $nav_height_landscape + $header_height;
+	}
 	.carousel-item {
 //		padding-top: 1.5rem;
 //		padding-bottom: 1.5rem;
@@ -116,9 +114,6 @@
 			height: 100%;
 			overflow: hidden;
 			@extend %large_text;
-//			margin-left: -2px;
-//			margin-right: 2px;
-			transform: translateX(-2px);
 		}
 	}
 }
@@ -135,10 +130,6 @@
 	padding-top: 0;
 	padding-bottom: 0;
 //	top: -1.5rem;
-	top: $nav_height_portrait;
-	@include media($desktop_small) {
-		top: $nav_height_landscape;
-	}
 	.carousel-item {
 		.content {
 			@include heading_font($size: 20px, $weight: 300, $lead: 24px);
@@ -166,5 +157,134 @@
 //		box-sizing: border-box;
 		margin-left: $hu;
 		margin-right: $hu;
+	}
+}
+
+// -----------------------------------
+// bundle-carousel
+// -----------------------------------
+
+%leaf_carousel_item {
+	width: $page_width;
+	padding-left: $aside_width;
+	left: calc(50% - #{$page_width/2});
+	@include media($desktop_small) {
+		width: $page_width_large;
+		padding-left: $aside_width_large;
+		left: calc(50% - #{$page_width_large/2});
+	}
+}
+%carousel_item_h {
+//	width: 100%;
+	.content {
+//		height: 100%;
+//		bottom: 1.5rem;
+//		margin-bottom: 1.5rem;
+		top: $nav_height_portrait;
+//		margin-top: $nav_height_portrait;
+		height: calc(50% - #{$nav_height_portrait + 1.5rem});
+		@include media($desktop_small) {
+			top: $nav_height_landscape;
+//			margin-top: $nav_height_landscape;
+			height: calc(50% - #{$nav_height_landscape + 1.5rem});
+		}
+	}
+}
+
+.bundle-carousel {
+	position: absolute;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	bottom: 0;
+	min-width: $page_width;
+
+	.nested-carousel-item {
+		position: absolute;
+		overflow: hidden;
+		width: 100%;
+		height: 100%;
+	}
+	.leaf-carousel-item {
+		padding: 1.5rem 0;
+//		padding-left: $aside_width;
+	}
+	.leaf-empty-item {
+		padding: 1.5rem 0;
+//		padding-right: $aside_width;
+	}
+	.leaf-carousel-item, .leaf-empty-item {
+//		padding-top: 1.5rem;
+//		padding-bottom: 1.5rem;
+
+		position: absolute;
+		top: 0;
+		height: 100%;
+//		top: $header_height + $nav_height_portrait;
+		padding-top: $header_height + $nav_height_portrait;
+		width: $page_width;
+		left: calc(50% - #{$page_width/2});
+		.content {
+		margin-top: 1.5rem;
+		margin-bottom: 1.5rem;
+			position: relative;
+			display: block;
+			min-width: 300px; min-height: 24rem;
+			height: calc(100% - #{$header_height + $nav_height_portrait + 3rem});
+		}
+	}
+	@include media($desktop_small) {
+		.leaf-carousel-item {
+			padding-left: $aside_width_large;
+		}
+		.leaf-empty-item {
+			padding-right: $aside_width_large;
+		}
+		.leaf-carousel-item, .leaf-empty-item {
+//			top: $header_height + $nav_height_landscape;
+			padding-top: $header_height + $nav_height_landscape;
+			width: $page_width_large;
+			left: calc(50% - #{$page_width_large/2});
+			.content {
+				height: calc(100% - #{$header_height + $nav_height_landscape + 3rem});
+			}
+		}
+	}
+}
+.nested-carousel-item {
+	visibility: hidden;
+}
+.carousel.panning > .nested-carousel-item,
+.carousel.scrolling > .nested-carousel-item,
+.nested-carousel-item.selected {
+	visibility: visible;
+}
+
+.leaf-empty-item {
+	overflow: hidden;
+	& > .content {
+		@extend %large_text;
+//		@extend %leaf-content;
+//		padding-top: 1.5rem;
+//		padding-bottom: 1.5rem;
+//		margin-right: $hu;
+	}
+}
+
+.leaf-carousel-item {
+	& > .content {
+		@include small_caps();
+		@extend %leaf-content;
+		padding-top: 1rem;
+		padding-bottom: 1rem;
+		margin-left: $hu;
+		margin-right: $hu;
+
+		background-color: hsl(0,0%,50%);
+		em {
+			font-style: normal;
+			font-weight: 400;
+		}
 	}
 }

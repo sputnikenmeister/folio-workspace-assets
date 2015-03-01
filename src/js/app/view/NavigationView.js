@@ -25,9 +25,6 @@ var CollectionPager = require("./component/CollectionPager");
 /** @type {module:app/view/component/Carousel} */
 var Carousel = require("./component/Carousel");
 
-/** @type {Function} */
-var bundlePagerTemplate = require("./template/CollectionPager.Bundle.tpl");
-
 /**
  * @constructor
  * @type {module:app/view/NavigationView}
@@ -44,30 +41,23 @@ module.exports = View.extend({
 	/** @override */
 	initialize: function (options) {
 		this.$sitename = this.$("#site-name");
-//		this.$sitename.on("click", _.bind(this.onSitenameClick, this));
+		//this.$sitename.on("click", _.bind(this.onSitenameClick, this));
 		this.$sitename.wrap("<div id=\"site-name-wrapper\" class=\"transform-wrapper\"></div>");
 
-		// Component: bundle pager
-		this.bundlePager = new CollectionPager({
-			id: "bundle-pager",
-			className: "folio mutable-faded",
-			collection: bundles,
-			template: bundlePagerTemplate,
-			labelAttribute: "name",
-		});
-		this.bundlePager.render().$el.appendTo(this.el);
-		controller.listenTo(this.bundlePager, {
-			"view:select:one": controller.selectBundle,
-			"view:select:none": controller.deselectBundle
-		});
+		// bundle-pager
+//		this.bundlePager = this.createBundlePager(bundles, this.el);
 
-		// collapsed is set later by showBundleItem/showBundleList
+		// bundle-list
 		this.bundlesView = new FilterableListView({
 			el: "#bundle-list",
 			collection: bundles,
+			// collapsed is set later by showBundleItem/showBundleList
+			//collapsed: bundles.selected,
 			filterBy: keywords.selected,
 			filterKey: "bIds",
-//			collapsed: bundles.selected,
+//			filterFn: function () {
+//				return keywords.selected? keywords.selected.get("bIds"): null;
+//			},
 		});
 		controller.listenTo(this.bundlesView, {
 			"view:select:one": controller.selectBundle,
@@ -75,16 +65,23 @@ module.exports = View.extend({
 		});
 		this.bundlesView.$el.wrap("<div id=\"bundle-list-wrapper\" class=\"transform-wrapper\"></div>");
 
+		// keyword-list
 		this.keywordsView = new GroupingListView({
 			el: "#keyword-list",
 			collection: keywords,
+			collapsed: true,
 			filterBy: bundles.selected,
 			filterKey: "kIds",
 			groupings: {
 				collection: types,
 				key: "tIds"
 			},
-			collapsed: true,
+//			filterFn: function () {
+//				return bundles.selected? bundles.selected.get("kIds"): null;
+//			},
+//			groupingFn: function (item) {
+//				return item.get("tIds");
+//			},
 		});
 		this.keywordsView.$el.wrap("<div id=\"keyword-list-wrapper\" class=\"transform-wrapper\"></div>");
 
@@ -93,6 +90,31 @@ module.exports = View.extend({
 			"select:none": this.onSelectNone
 		});
 	},
+
+	createBundlePager: function(bundles, parent) {
+		// Component: bundle pager
+		var view = new CollectionPager({
+			id: "bundle-pager",
+			className: "folio mutable-faded",
+			collection: bundles,
+			labelAttribute: "name",
+		});
+		view.render().$el.appendTo(parent);
+		controller.listenTo(view, {
+			"view:select:one": controller.selectBundle,
+			"view:select:none": controller.deselectBundle
+		});
+		return view;
+	},
+
+//	remove: function () {
+//		//this.$sitename.off("click");
+//		View.prototype.remove.apply(this, arguments);
+//	},
+
+	/* --------------------------- *
+	 * Render
+	 * --------------------------- */
 
 	render: function () {
 		if (bundles.selected) {
@@ -103,11 +125,6 @@ module.exports = View.extend({
 //		this.keywordsView.renderNow();
 //		this.bundlesView.renderNow();
 		return this;
-	},
-
-	remove: function () {
-		//this.$sitename.off("click");
-		View.prototype.remove.apply(this, arguments);
 	},
 
 	/* --------------------------- *

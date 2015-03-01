@@ -20,9 +20,6 @@ var CarouselDefaultRenderer = require("../render/CarouselDefaultRenderer");
 /** @type {module:app/view/render/CarouselEmptyRenderer} */
 var CarouselEmptyRenderer = require("../render/CarouselEmptyRenderer");
 
-var ANIMATED = false;
-var IMMEDIATE = true;
-
 /**
  * @constructor
  * @type {module:app/view/component/Carousel}
@@ -68,7 +65,14 @@ var Carousel = DeferredRenderView.extend({
 			"select:one": this._onSelectOne,
 			"select:none": this._onSelectNone,
 			"deselect:one": this._onDeselectOne,
+			"deselect:none": this._onDeselectNone,
 		});
+
+		if (this.el.parentElement) {
+			this.createChildrenNow();
+		} else {
+			this.createChildrenLater();
+		}
 	},
 
 	remove: function () {
@@ -77,6 +81,297 @@ var Carousel = DeferredRenderView.extend({
 		if (this._hammerIsLocal) this.hammer.destroy();
 		this.removeChildren();
 		DeferredRenderView.prototype.remove.apply(this);
+	},
+
+	/* --------------------------- *
+	 * Create children
+	 * --------------------------- */
+
+	createChildrenNow: function () {
+		this._createChildren();
+	},
+
+	createChildrenLater: function () {
+		this.requestRender("createChildren", _.bind(this._createChildren, this));
+	},
+
+	_createChildren: function () {
+		var buffer;
+		if (this._resetPending) {
+			this.removeChildren();
+			this._resetPending = false;
+		}
+		if (this.collection.length) {
+			buffer = document.createDocumentFragment();
+			buffer.appendChild(this.createEmptyChildView().el);
+			this.collection.each(function (item, index) {
+				buffer.appendChild(this.createChildView(item, index).el);
+			}, this);
+//			this.$el.prepend(buffer);
+			this.$el.append(buffer);
+		}
+	},
+
+	removeChildren: function () {
+		this.children.each(this.removeChildView, this);
+	},
+
+	createEmptyChildView: function () {
+//		var view = new this.emptyRenderer({});
+		var view = new this.emptyRenderer(
+			_.pick(this, Carousel.EMPTY_VIEW_OPTS)
+		);
+		this.children.add(view);
+		if (this.collection.selectedIndex == -1) {
+			view.$el.addClass("selected");
+		}
+		return this.emptyChild = view;
+	},
+
+	createChildView: function (item) {
+		var view = new this.renderer({
+			model: item
+		});
+		this.children.add(view);
+		if (item.selected) {
+			view.$el.addClass("selected");
+		}
+		return view;
+	},
+
+	removeChildView: function (view) {
+		this.children.remove(view);
+		view.remove();
+		return view;
+	},
+
+	/* --------------------------- *
+	 * resize
+	 * --------------------------- */
+
+	/** @param {Object} ev */
+	_onResize: function (ev) {
+		this.measureNow();
+		this.scrollByNow(0, Carousel.IMMEDIATE);
+	},
+
+	measureNow: function () {
+		this._measure();
+	},
+	measureLater: function () {
+		this.requestRender("measure", _.bind(this._measure, this));
+	},
+	_measure: function() {
+		var size, pos = 0, maxAcross = 0, maxSize = 0;
+		var measure = function(view) {
+			size = this.measureChild(view.render());
+			size.pos = pos;
+			pos += size.outer + (this.dirProp(20, 18));
+//			if (view !== this.emptyChild) {
+//				maxAcross = Math.max(maxAcross, size.across);
+//				maxSize = Math.max(maxSize, size.outer);
+//			}
+		};
+		this.children.each(measure, this);
+
+		//tap area
+		this.tapAreaBefore = this.emptyChild.el[this.dirProp("offsetLeft", "offsetTop")];
+		this.tapAreaAfter = this.tapAreaBefore + this.emptyChild.el[this.dirProp("offsetWidth", "offsetHeight")];
+		this.tapAreaBefore += this.tapAreaGrow;
+		this.tapAreaAfter -= this.tapAreaGrow;
+
+		this.containerSize = this.el[this.dirProp("offsetWidth", "offsetHeight")];
+		this.selectThreshold = Math.min(this.selectThreshold, this.containerSize * 0.1);
+
+//		this.$(this.hammer.element).css(this.dirProp({width: maxSize, height: maxAcross }, {width: maxAcross, height: maxSize}));
+//		this.$el.css(this.dirProp("minHeight", "minWidth"), (maxAcross > 0)? maxAcross: "");
+	},
+
+	measureChild: function (child) {
+		var sizes = {};
+		var childEl = child.el;
+		var contentEl = childEl.querySelector(".sizing");
+//		var contentEl = childEl.firstChild;
+//		var contentEl = child.$(".sizing")[0];
+
+		sizes.outer = childEl[this.dirProp("offsetWidth", "offsetHeight")];
+		sizes.across = childEl[this.dirProp("offsetHeight", "offsetWidth")];
+
+		if (contentEl) {
+			sizes.inner = contentEl[this.dirProp("offsetWidth", "offsetHeight")];
+			sizes.before = contentEl[this.dirProp("offsetLeft", "offsetTop")];
+			sizes.after = sizes.outer - (sizes.inner + sizes.before);
+		} else {
+			sizes.inner = sizes.outer;
+			sizes.before = 0;
+			sizes.after = 0;
+		}
+		return this.childSizes[child.cid] = sizes;
+	},
+
+	/* --------------------------- *
+	 * Scroll/layout
+	 * --------------------------- */
+
+	scrollByLater: function (delta, skipTransitions) {
+		_.isBoolean(skipTransitions) || (skipTransitions = this.skipTransitions);
+		if (!skipTransitions) {
+			this.$el.addClass("scrolling");
+		}
+		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta, skipTransitions));
+	},
+	scrollByNow: function (delta, skipTransitions) {
+		_.isBoolean(skipTransitions) || (skipTransitions = this.skipTransitions);
+		if (!skipTransitions) {
+			this.$el.addClass("scrolling");
+		}
+		this._scrollBy(delta, skipTransitions);
+	},
+	_scrollBy: function (delta, skipTransitions) {
+		var sChild, sSizes, child, sizes, pos, txVal;
+		var applyScroll, scrollEndHandler, scrollEndAction;
+
+		sChild = this.collection.selected?
+			this.children.findByModel(this.collection.selected) : this.emptyChild;
+		sSizes = this.childSizes[sChild.cid];
+
+		if (skipTransitions) {
+			this.$el.addClass("skip-transitions");
+		} else {
+			this.$el.removeClass("skip-transitions");
+			scrollEndHandler = function(ev) {
+				if (ev.originalEvent.propertyName == "transform") {
+					scrollEndAction();
+				}
+			};
+			scrollEndAction = function() {
+				sChild.$el.off("webkittransitionend transitionend", scrollEndHandler);
+				this.$el.removeClass("scrolling");
+			};
+			scrollEndAction = _.once(_.bind(scrollEndAction, this));
+			sChild.$el.on("webkittransitionend transitionend", scrollEndHandler);
+			_.delay(scrollEndAction, 1000);
+		}
+
+		applyScroll = function (child) {
+			sizes = this.childSizes[child.cid];
+			pos = this._getScrollOffset(sizes, sSizes, delta);
+
+			txVal = this._getTransformValue(pos);
+			child.el.style.webkitTransform = txVal;
+			child.el.style.mozTransform = txVal;
+			child.el.style.transform = txVal;
+
+		};
+		/*applyScroll = function (child) {
+			child.$el.stop();
+			if (skipTransitions) {
+				child.$el.css({ transform: txVal });
+			} else {
+				child.$el.transit({ transform: txVal }, 400);
+			}
+		};*/
+		this.children.each(applyScroll, this);
+	},
+
+	_getTransformValue: function(pos) {
+		return this.dirProp("translate(" + pos + "px,0)", "translate(0," + pos + "px)");
+//		return this.dirProp("translate3d(" + pos + "px,0,0)", "translate3d(0," + pos + "px,0)");
+	},
+
+	_getScrollOffset: function (s, ss, delta) {
+		var pos = s.pos - ss.pos + delta;
+		var offset = 0;
+
+		if (pos < 0) {
+			if (Math.abs(pos) < s.outer) {
+				offset += (-s.after) / s.outer * pos;
+			} else {
+				offset += s.after;
+			}
+		} else
+		if (0 <= pos) {
+			if (Math.abs(pos) < s.outer) {
+				offset -= s.before / s.outer * pos;
+			} else {
+				offset -= s.before;
+			}
+		}
+		return pos + offset;
+	},
+
+	_onScrollTransitionEnd: function () {
+	},
+
+	/* --------------------------- *
+	 * Render
+	 * --------------------------- */
+
+	render: function () {
+		this.measureLater();
+		this.scrollByLater(0, Carousel.IMMEDIATE);
+		if (this.el.parentElement) {
+			this.renderNow();
+		}
+		return this;
+	},
+
+	/** @override */
+	renderLater: function () {
+		this.validateRender("createChildren");
+		this.validateRender("measure");
+		this.validateRender("scrollBy");
+		this.skipTransitions = false;
+	},
+
+	/* --------------------------- *
+	 * helper functions
+	 * --------------------------- */
+
+	dirProp: function (hProp, vProp) {
+		return (this.direction & Carousel.DIRECTION_HORIZONTAL) ? hProp : vProp;
+	},
+
+	/* --------------------------- *
+	 * Model listeners
+	 * --------------------------- */
+
+	/** @private */
+	_onCollectionReset: function () {
+		throw new Error("not implemented");
+//		this._resetPending = true;
+//		this.render();
+	},
+
+	/** @private */
+	_onDeselectOne: function (model) {
+		var child = this.children.findByModel(model);
+		if (child) {
+			child.$el.removeClass("selected");
+		} // else if children have not been created yet, selection will be applied then
+	},
+
+	/** @private */
+	_onSelectOne: function (model) {
+		var child = this.children.findByModel(model);
+		if (child) {
+			child.$el.addClass("selected");
+			this.scrollByNow(0, Carousel.ANIMATED);
+		} // else idem
+	},
+
+	/** @private */
+	_onSelectNone: function () {
+		if (this.emptyChild) {
+			this.emptyChild.$el.addClass("selected");
+			this.scrollByNow(0, Carousel.ANIMATED);
+		} // else idem
+	},
+
+	_onDeselectNone: function () {
+		if (this.emptyChild) {
+			this.emptyChild.$el.removeClass("selected");
+		}
 	},
 
 	/* --------------------------- *
@@ -103,7 +398,7 @@ var Carousel = DeferredRenderView.extend({
 	},
 
 	_onTouch: function (ev) {
-//		ev.defaultPrevented ||
+//		ev.defaultPrevented || ev.preventDefault();
 		ev.preventDefault();
 		switch (ev.type) {
 			case "panstart":	return this._onPanStart(ev);
@@ -164,7 +459,7 @@ var Carousel = DeferredRenderView.extend({
 			this.candidateChild = this.candidateModel? this.children.findByModel(this.candidateModel): this.emptyChild;
 			this.candidateChild.$el.addClass("candidate");
 		}
-		this.scrollByNow(delta, IMMEDIATE);
+		this.scrollByNow(delta, Carousel.IMMEDIATE);
 	},
 
 	/** @param {Object} ev */
@@ -180,14 +475,14 @@ var Carousel = DeferredRenderView.extend({
 				this.trigger("view:select:none");
 			}
 		} else {
-			this.scrollByLater(0, ANIMATED);
+			this.scrollByLater(0, Carousel.ANIMATED);
 		}
 		this._afterPan();
 	},
 
 	/** @param {Object} ev */
 	_onPanCancel: function (ev) {
-		this.scrollByLater(0, ANIMATED);
+		this.scrollByLater(0, Carousel.ANIMATED);
 		this._afterPan();
 	},
 
@@ -213,295 +508,18 @@ var Carousel = DeferredRenderView.extend({
 			(this.collection.selectedIndex == this.collection.length - 1 && delta < 0);
 	},
 
-	/* --------------------------- *
-	 * Model listeners
-	 * --------------------------- */
-
-	/** @private */
-	_onCollectionReset: function () {
-		this._resetPending = true;
-		this.render();
-	},
-
-	/** @private */
-	_onDeselectOne: function (model) {
-		var child = this.children.findByModel(model);
-		if (child) {
-			child.$el.removeClass("selected");
-		} // else if children have not been created yet, selection will be applied then
-	},
-
-	/** @private */
-	_onSelectOne: function (model) {
-		var child = this.children.findByModel(model);
-		if (child) {
-			child.$el.addClass("selected");
-			this.scrollByNow(0, ANIMATED);
-		} // else idem
-	},
-
-	/** @private */
-	_onSelectNone: function () {
-		if (this.emptyChild) {
-			this.selectEmptyChildView();
-			this.scrollByNow(0, ANIMATED);
-		} // else idem
-	},
-
-	/* --------------------------- *
-	 * Render
-	 * --------------------------- */
-
-	render: function () {
-		if (this.el.parentElement) {
-			this.createChildrenNow();
-			this.scrollByNow(0, IMMEDIATE);
-		} else {
-			this.createChildrenLater();
-			this.scrollByLater(0, IMMEDIATE);
-		}
-		return this;
-	},
-
-	/** @override */
-	renderLater: function () {
-		this.validateRender("createChildren");
-		this.validateRender("scrollBy");
-		this.skipTransitions = false;
-	},
-
-	/* --------------------------- *
-	 * render selection
-	 * --------------------------- */
-
-	selectEmptyChildView: function () {
-		this.emptyChild.$el.addClass("selected");
-		this.listenToOnce(this.collection, "select:one", function(model) {
-			this.emptyChild.$el.removeClass("selected");
-		});
-	},
-
-	/* --------------------------- *
-	 * Create children
-	 * --------------------------- */
-
-	createEmptyChildView: function () {
-		var child = new this.emptyRenderer({});
-		this.emptyChild = child;
-		this.children.add(child);
-		if (this.collection.selectedIndex == -1) {
-			this.selectEmptyChildView();
-		}
-		return child;
-	},
-
-	createChildView: function (item) {
-		var child = new this.renderer({
-			model: item
-		});
-		this.children.add(child);
-		if (item.selected) {
-			child.$el.addClass("selected");
-		}
-		return child;
-	},
-
-	removeChildView: function (view) {
-		this.children.remove(view);
-		view.remove();
-		return view;
-	},
-
-	_createChildren: function () {
-		var buffer;
-		if (this._resetPending) {
-			this.removeChildren();
-			this._resetPending = false;
-		}
-		if (this.collection.length) {
-			buffer = document.createDocumentFragment();
-			buffer.appendChild(this.createEmptyChildView().el);
-			this.collection.each(function (item, index) {
-				buffer.appendChild(this.createChildView(item, index).el);
-			}, this);
-			this.$el.prepend(buffer);
-//			this.$el.append(buffer);
-		}
-		this.measure();
-	},
-	createChildrenNow: function () {
-		this._createChildren();
-	},
-	createChildrenLater: function () {
-		this.requestRender("createChildren", _.bind(this._createChildren, this));
-	},
-
-	removeChildren: function () {
-		this.children.each(this.removeChildView, this);
-	},
-
-	/* --------------------------- *
-	 * resize
-	 * --------------------------- */
-
-	/** @param {Object} ev */
-	_onResize: function (ev) {
-		this.measure();
-		this.scrollByNow(0, IMMEDIATE);
-	},
-
-	measure: function() {
-		var size, pos = 0, maxAcross = 0, maxSize = 0;
-		var measure = function(child) {
-			size = this.measureChild(child.render());
-			size.pos = pos;
-			pos += size.outer + 20;// + (this.gap || Math.min(size.before, size.after));
-			if (child !== this.emptyChild) {
-				maxAcross = Math.max(maxAcross, size.across);
-				maxSize = Math.max(maxSize, size.outer);
-			}
-		};
-		this.children.each(measure, this);
-
-		//tap area
-		this.tapAreaBefore = this.emptyChild.el[this.dirProp("offsetLeft", "offsetTop")];
-		this.tapAreaAfter = this.tapAreaBefore + this.emptyChild.el[this.dirProp("offsetWidth", "offsetHeight")];
-		this.tapAreaBefore += this.tapAreaGrow;
-		this.tapAreaAfter -= this.tapAreaGrow;
-
-		this.containerSize = this.el[this.dirProp("offsetWidth", "offsetHeight")];
-		this.selectThreshold = Math.min(this.selectThreshold, this.containerSize * 0.1);
-
-//		this.$(this.hammer.element).css(this.dirProp({width: maxSize, height: maxAcross }, {width: maxAcross, height: maxSize}));
-//		this.$el.css(this.dirProp("minHeight", "minWidth"), (maxAcross > 0)? maxAcross: "");
-	},
-
-	measureChild: function (child) {
-		var sizes = {};
-		var childEl = child.el;
-		var contentEl = childEl.querySelector(".sizing");
-//		var contentEl = childEl.firstChild;
-//		var contentEl = child.$(".sizing")[0];
-
-		sizes.outer = childEl[this.dirProp("offsetWidth", "offsetHeight")];
-		sizes.across = childEl[this.dirProp("offsetHeight", "offsetWidth")];
-
-		if (contentEl) {
-			sizes.inner = contentEl[this.dirProp("offsetWidth", "offsetHeight")];
-			sizes.before = contentEl[this.dirProp("offsetLeft", "offsetTop")];
-			sizes.after = sizes.outer - (sizes.inner + sizes.before);
-		} else {
-			sizes.inner = sizes.outer;
-			sizes.before = 0;
-			sizes.after = 0;
-		}
-		return this.childSizes[child.cid] = sizes;
-	},
-
-	/* --------------------------- *
-	 * Scroll/layout
-	 * --------------------------- */
-
-	scrollByLater: function (delta, skipTransitions) {
-		_.isBoolean(skipTransitions) || (skipTransitions = this.skipTransitions);
-		if (!skipTransitions) {
-			this.$el.addClass("scrolling");
-		}
-		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta, skipTransitions));
-	},
-
-	scrollByNow: function (delta, skipTransitions) {
-		_.isBoolean(skipTransitions) || (skipTransitions = this.skipTransitions);
-		if (!skipTransitions) {
-			this.$el.addClass("scrolling");
-		}
-		this._scrollBy(delta, skipTransitions);
-	},
-
-	_scrollBy: function (delta, skipTransitions) {
-		var sChild, sSizes, child, sizes, pos, txVal;
-		var applyScroll, scrollEndHandler, scrollEndAction;
-
-		sChild = this.collection.selected? this.children.findByModel(this.collection.selected): this.emptyChild;
-		sSizes = this.childSizes[sChild.cid];
-
-		if (skipTransitions) {
-			this.$el.addClass("skip-transitions");
-		} else {
-			this.$el.removeClass("skip-transitions");
-			scrollEndHandler = function(ev) {
-				if (ev.originalEvent.propertyName == "transform") {
-					scrollEndAction();
-				}
-			};
-			scrollEndAction = function() {
-				sChild.$el.off("webkittransitionend transitionend", scrollEndHandler);
-				this.$el.removeClass("scrolling");
-			};
-			scrollEndAction = _.once(_.bind(scrollEndAction, this));
-			sChild.$el.on("webkittransitionend transitionend", scrollEndHandler);
-			_.delay(scrollEndAction, 1000);
-		}
-
-		applyScroll = function (child) {
-			sizes = this.childSizes[child.cid];
-			pos = this._getScrollOffset(sizes, sSizes, delta);
-
-			txVal = this._getTransformValue(pos);
-			child.el.style.webkitTransform = txVal;
-			child.el.style.mozTransform = txVal;
-			child.el.style.transform = txVal;
-		};
-		this.children.each(applyScroll, this);
-	},
-
-	_getTransformValue: function(pos) {
-		return this.dirProp("translate3d(" + pos + "px,0,0)", "translate3d(0," + pos + "px,0)");
-	},
-
-	_getScrollOffset: function (s, ss, delta) {
-		var pos = s.pos - ss.pos + delta;
-		var offset = 0;
-
-		if (pos < 0) {
-			if (Math.abs(pos) < s.outer) {
-				offset += (-s.after) / s.outer * pos;
-			} else {
-				offset += s.after;
-			}
-		} else
-		if (0 <= pos) {
-			if (Math.abs(pos) < s.outer) {
-				offset -= s.before / s.outer * pos;
-			} else {
-				offset -= s.before;
-			}
-		}
-		return pos + offset;
-	},
-
-//	_scrollChildTo: function (view, pos, skipTransitions) {
-//		var duration = 400;
-//		var translate = this.dirProp("translate3d(" + pos + "px,0,0)", "translate3d(0," + pos + "px,0)");
-//
-//		view.$el.stop();
-//		if (skipTransitions) {
-//			view.$el.css({ transform: translate });
-//		} else {
-//			view.$el.transit({ transform: translate }, duration);
-//		}
-//	},
-
-	/* --------------------------- *
-	 * helper functions
-	 * --------------------------- */
-
-	dirProp: function (hProp, vProp) {
-		return (this.direction & Hammer.DIRECTION_HORIZONTAL) ? hProp : vProp;
-	},
-}, {
+},{
+	/** const arg in scrollByNow, scrollByLater */
+	ANIMATED: false,
+	/** const arg in scrollByNow, scrollByLater */
+	IMMEDIATE: true,
+	/** copy of Hammer.DIRECTION_VERTICAL */
 	DIRECTION_VERTICAL: Hammer.DIRECTION_VERTICAL,
+	/** copy of Hammer.DIRECTION_HORIZONTAL */
 	DIRECTION_HORIZONTAL: Hammer.DIRECTION_HORIZONTAL,
+	/** used in crateEmptyChildView */
+	EMPTY_VIEW_OPTS: ["model", "collection"],
+
 });
 
 module.exports = Carousel;

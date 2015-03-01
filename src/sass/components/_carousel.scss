@@ -2,18 +2,29 @@
 	.carousel-item {
 		display: block;
 		position: absolute;
-		&, * {
+		.content, .sizing {
 			user-select: none !important;
 		}
 		.sizing {
-			box-sizing: border-box;
+//			box-sizing: border-box;
 		}
 	}
-
-	&.panning { cursor: grabbing; }
-	&:not(.panning) .carousel-item {
-		.content { cursor: pointer; }
- 		&.selected .content { cursor: grab; }
+	&.panning {
+		cursor: grabbing;
+	}
+//	&.scrolling {
+//		cursor: grab;
+//	}
+	&:not(.panning) {
+//		cursor: pointer;
+		.carousel-item {
+			.content {
+				cursor: pointer;
+			}
+			&.selected .content {
+				cursor: grab;
+			}
+		}
 	}
 }
 
@@ -23,9 +34,9 @@
 $pan_ease: $ease;
 .carousel {
 	.carousel-item {
-		transform: translate3d(0,0,0) scale3d(1,1,1);
-		backface-visibility: hidden;
-		transform-style: preserve-3d;
+//		transform: translate3d(0,0,0);
+//		backface-visibility: hidden;
+//		transform-style: preserve-3d;
 		transition: transform $duration $pan_ease;
 	}
 	&.skip-transitions .carousel-item {
@@ -36,7 +47,7 @@ $pan_ease: $ease;
 // - - - - - - - - - - - - - - - - - -
 // .default-carousel-item
 // - - - - - - - - - - - - - - - - - -
-.carousel-item.default-carousel-item {
+.default-carousel-item {
 	.sizing {
 		display: inline-block;
 	}
@@ -50,6 +61,12 @@ $pan_ease: $ease;
 		position: relative;
 		height: 100%;
 	}
+	.placeholder {
+		// *** "mutable" properties: must be in the first matching rule
+		border: 1px solid transparent;
+		color: $background_color;
+		background-color: mix($color, $background_color, 10%);
+	}
 	img {
 		// *** "mutable" properties: must be in the first matching rule
 		border: 0 none;
@@ -58,33 +75,37 @@ $pan_ease: $ease;
 		position: absolute;
 //		box-sizing: border-box;
 	}
+
+
 	img {
 		transition: opacity $duration $delay + 0.001s $ease;
 		opacity: 0;
 	}
-	&.idle img,
-	&.error img {
+	&.idle img,	&.error img {
 		visibility: hidden;
 	}
-	&.candidate, &.selected,
-	.empty-item.selected + & {
+	&.candidate, &.selected, .empty-item.selected + & {
 		&.done img {
 			opacity: 1;
+		}
+		&.done .placeholder {
+			transition: visibility $duration $delay + 0.001s step-end;
+			visibility: hidden;
 		}
 	}
 	@at-root {
 		.panning, .scrolling {
-			.carousel-item.image-item img {
-				transition: opacity $duration 0.001s $ease;
+			.carousel-item.image-item {
+				img {
+					transition-delay: 0.001s;
+				}
+				&.done .placeholder {
+					transition-delay: 0.001s;
+				}
 			}
 		}
 	}
 
-	.placeholder {
-		// *** "mutable" properties: must be in the first matching rule
-		border: 1px solid transparent;
-		color: $background_color;
-	}
 	.placeholder:before
 	{	// Top-left corner
 		position: absolute;
@@ -130,8 +151,7 @@ $pan_ease: $ease;
 	&.done .placeholder:before {
 		content: "Done";
 	}
-	&.candidate, &.selected,
-	.empty-item.selected + &
+	&.candidate, &.selected, .empty-item.selected + &
 	{
 		&.pending .placeholder[data-progress]:before {
 			content: attr(data-progress) "%";
@@ -146,11 +166,12 @@ $pan_ease: $ease;
 	}
 }
 
-$mock_browser_height: 3rem;
+$mock_browser_height: 2rem;
 .browser .carousel-item.image-item {
 	padding-top: $mock_browser_height;
 	margin-top: -$mock_browser_height;
 	.sizing {
+//		box-sizing: content-box;
 		padding-top: $mock_browser_height;
 	}
 	img {
@@ -159,12 +180,12 @@ $mock_browser_height: 3rem;
 		padding-top: $mock_browser_height;
 		margin-top: -$mock_browser_height;
 		transform: translateY($mock_browser_height);
-		background-color: hsl(0,0%,65%) !important;
+//		background-color: hsl(0,0%,65%) !important;
 		box-shadow:
 //			inset 0rem 4.5rem 4rem -3rem hsl(0,0%,100%),
-			inset 0 71px 0 -3rem hsl(0,0%,85%),
+//			inset 0 71px 0 -3rem hsl(0,0%,85%),
 			0px 0px 0px 1px hsla(0,0%,0%,0.15),
-			0px 1rem 1.5rem -0.5rem hsla(0,0%,0%,0.5) !important;
+			0px 1rem 1rem -0.5rem hsla(0,0%,0%,0.5) !important;
 //		box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
 //		border: 1px solid rgba(0,0,0,0.15) !important;
 //		border: 0 none transparent !important;
