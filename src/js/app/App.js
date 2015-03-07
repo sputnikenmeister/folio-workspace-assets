@@ -18,7 +18,8 @@ require("jquery-color");
 require("backbone.babysitter");
 require("Backbone.Mutators");
 
-$(document).ready(function() {
+$(window).load(function() {
+//$(document).ready(function() {
 	"use strict";
 
 	/** @type {module:app/view/AppView} */

@@ -1,7 +1,6 @@
 /**
  * @module app/view/render/ImageRenderer
  */
-/*global Event, XMLHttpRequest, Blob */
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -10,47 +9,43 @@ var Backbone = require("backbone");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
+/** @type {module:app/helper/View} */
+var View = require("../../helper/View");
 /** @type {module:app/model/item/ImageItem} */
 var ImageItem = require("../../model/item/ImageItem");
-
-/** @type {module:app/utils/Styles} */
-//var Styles = require("../../utils/Styles");
-/** @type {module:app/utils/strings/stripTags} */
-//var stripTags = require("../../utils/strings/stripTags");
 /** @type {module:app/utils/net/loadImage} */
 //var loadImage = require("../../utils/net/loadImage");
 var loadImage = require("../../utils/net/loadImageDOM");
 
 /** @type {Function} */
-// var viewTemplate = require( "./ImageRenderer.tpl" );
+var viewTemplate = require( "./ImageRenderer.tpl" );
 
 /**
  * @constructor
  * @type {module:app/view/render/ImageRenderer}
  */
-module.exports = Backbone.View.extend({
+module.exports = View.extend({
 
 	/** @type {string} */
 	tagName: "div",
 	/** @type {string} */
 	className: "carousel-item image-item idle",
 	/** @type {module:app/model/ImageItem} */
-	model: require("../../model/item/ImageItem"),
-//	model: ImageItem,
+	model: ImageItem,
 	/** @type {Function} */
-	template: require( "./ImageRenderer.tpl" ),
-//	template: viewTemplate,
+	template: viewTemplate,
 
 	/** @override */
 	initialize: function (opts) {
-		this._loadImage = _.once(_.bind(this._loadImage, this));
+		this.fetchImage = _.bind(_.once(this.fetchImage), this);
+//		this.onProgress = _.throttle(this.onProgress, 100, {leading: true, trailing: false});
 		this.createChildren();
 		this.addSiblingListeners();
 	},
 
 	createChildren: function() {
 		this.$el
-			.addClass(this.model.get("f").replace(/\.\w+$/, ""))
+//			.addClass(this.model.get("f").replace(/\.\w+$/, ""))
 			.html(this.template(this.model.toJSON()));
 
 		this.$placeholder = this.$(".placeholder");
@@ -94,8 +89,8 @@ module.exports = Backbone.View.extend({
 		pcX = p.clientLeft;
 		pcY = p.clientTop;
 
-		poW = p.offsetWidth;
-		poH = p.offsetHeight;
+//		poW = p.offsetWidth;
+//		poH = p.offsetHeight;
 		pcW = p.clientWidth;
 		pcH = p.clientHeight;
 
@@ -105,7 +100,7 @@ module.exports = Backbone.View.extend({
 
 		// aspect ratios
 		sA = sW/sH;
-		pA = poW/pcH;
+		pA = pcW/pcH;
 
 		if (pA < sA) {
 			cW = pcW;
@@ -138,24 +133,24 @@ module.exports = Backbone.View.extend({
 		};
 
 		if (check(owner.selectedIndex)) {
-			this._loadImage();
+			this.fetchImage();
 		} else {
 			this.listenTo(owner, "select:one select:none", function(model) {
 				if (check(owner.selectedIndex)) {
 					this.stopListening(owner);
-					this.$el.on("webkittransitionend transitionend", this._loadImage);
-					_.delay(this._loadImage, Globals.TRANSITION_DELAY * 3);
+					this.$el.on("webkittransitionend transitionend", this.fetchImage);
+					_.delay(this.fetchImage, Globals.TRANSITION_DELAY * 3);
 				}
 			});
 		}
 	},
 
-	_loadImage: function(ev) {
-		if (arguments[0] instanceof Event) {
-			if (ev.propertyName !== "transform") {
+	fetchImage: function(ev) {
+		if (arguments[0] instanceof window.Event) {
+			if ((ev.originalEvent || ev).propertyName !== "transform") {
 				return;
 			}
-			this.$el.off("webkittransitionend transitionend");
+			this.$el.off("webkittransitionend transitionend", this.fetchImage);
 		}
 		loadImage(this.model.getImageUrl(), this.image, this)
 			.then(this.onLoad, this.onError, this.onProgress);

@@ -5,16 +5,13 @@
 		.content, .sizing {
 			user-select: none !important;
 		}
-		.sizing {
+//		.sizing {
 //			box-sizing: border-box;
-		}
+//		}
 	}
 	&.panning {
 		cursor: grabbing;
 	}
-//	&.scrolling {
-//		cursor: grab;
-//	}
 	&:not(.panning) {
 //		cursor: pointer;
 		.carousel-item {
@@ -34,9 +31,9 @@
 $pan_ease: $ease;
 .carousel {
 	.carousel-item {
-//		transform: translate3d(0,0,0);
-//		backface-visibility: hidden;
-//		transform-style: preserve-3d;
+		transform: translate3d(0,0,0);
+		backface-visibility: hidden;
+		transform-style: preserve-3d;
 		transition: transform $duration $pan_ease;
 	}
 	&.skip-transitions .carousel-item {
@@ -61,12 +58,6 @@ $pan_ease: $ease;
 		position: relative;
 		height: 100%;
 	}
-	.placeholder {
-		// *** "mutable" properties: must be in the first matching rule
-		border: 1px solid transparent;
-		color: $background_color;
-		background-color: mix($color, $background_color, 10%);
-	}
 	img {
 		// *** "mutable" properties: must be in the first matching rule
 		border: 0 none;
@@ -75,35 +66,11 @@ $pan_ease: $ease;
 		position: absolute;
 //		box-sizing: border-box;
 	}
-
-
-	img {
-		transition: opacity $duration $delay + 0.001s $ease;
-		opacity: 0;
-	}
-	&.idle img,	&.error img {
-		visibility: hidden;
-	}
-	&.candidate, &.selected, .empty-item.selected + & {
-		&.done img {
-			opacity: 1;
-		}
-		&.done .placeholder {
-			transition: visibility $duration $delay + 0.001s step-end;
-			visibility: hidden;
-		}
-	}
-	@at-root {
-		.panning, .scrolling {
-			.carousel-item.image-item {
-				img {
-					transition-delay: 0.001s;
-				}
-				&.done .placeholder {
-					transition-delay: 0.001s;
-				}
-			}
-		}
+	.placeholder {
+		// *** "mutable" properties: must be in the first matching rule
+		color: $background_color;
+		background-color: mix($color, $background_color, 10%);
+//		border: 1px solid transparent;
 	}
 
 	.placeholder:before
@@ -116,6 +83,7 @@ $pan_ease: $ease;
 		margin: 1em 1em;
 		text-transform: uppercase;
 		letter-spacing: -0.05em;
+		font-style: italic;
 	}
 	/*{	// Centered
 		font-size: 5rem;
@@ -133,14 +101,51 @@ $pan_ease: $ease;
 		overflow: hidden;
 		white-space: nowrap;
 	}*/
-	.placeholder:before {
-		transition: opacity $duration $delay + 0.001s $ease;
+
+	img {
+//		transition: opacity $duration $delay + 0.001s $ease;
+		transition: opacity $duration 0.001s $ease;
 		opacity: 0;
-		font-style: italic;
+	}
+	&.idle img,	&.error img {
+		visibility: hidden;
+	}
+	&.candidate, &.selected, .empty-item.selected + & {
+		&.done img {
+			opacity: 1;
+		}
+		&.done .placeholder {
+//			transition: visibility $duration $delay + 0.001s step-end;
+			transition: visibility $duration 0.001s step-end;
+			visibility: hidden;
+		}
+	}
+//	&.candidate.done img {
+//		transition: none;
+//	}
+//	@at-root {
+//		.panning {
+//			.carousel-item.image-item {
+//				&.candidate.done img {
+//					transition: none 0;
+//				}
+//			}
+//		}
+//		.scrolling, .panning {
+//			.carousel-item.image-item.done {
+//				img, .placeholder {
+//					transition-delay: 0.001s;
+//				}
+//			}
+//		}
+//	}
+	.placeholder:before {
+//		transition: opacity $duration $delay + 0.001s $ease;
+		transition: opacity $duration 0.001s $ease;
+		opacity: 0;
 	}
 	&.idle .placeholder:before {
 		visibility: hidden;
-		content: "Loading";
 	}
 	&.pending .placeholder:before {
 		content: "Loading";
@@ -151,8 +156,7 @@ $pan_ease: $ease;
 	&.done .placeholder:before {
 		content: "Done";
 	}
-	&.candidate, &.selected, .empty-item.selected + &
-	{
+	&.candidate, &.selected, .empty-item.selected + & {
 		&.pending .placeholder[data-progress]:before {
 			content: attr(data-progress) "%";
 			font-style: normal;
@@ -165,6 +169,10 @@ $pan_ease: $ease;
 		}
 	}
 }
+//.panning .image-item.preceding, .panning .image-item.following,
+//.scrolling .image-item.preceding, .scrolling .image-item.following,
+//.image-item.selected, .empty-item.selected + .image-item {
+//}
 
 $mock_browser_height: 2rem;
 .browser .carousel-item.image-item {

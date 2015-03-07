@@ -6,10 +6,13 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {module:app/helper/View} */
-var View = require("../../helper/View");
+
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
+/** @type {module:app/helper/View} */
+var View = require("../../helper/View");
+/** @type {module:app/helper/DeferredRenderView} */
+var DeferredRenderView = require("../../helper/DeferredRenderView");
 
 /** @type {string} */
 var viewTemplate = require("./CollectionStack.tpl");
@@ -19,6 +22,7 @@ var viewTemplate = require("./CollectionStack.tpl");
  * @type {module:app/component/CollectionStack}
  */
 module.exports = View.extend({
+//module.exports = DeferredRenderView.extend({
 
 	/** @override */
 	tagName: "div",
@@ -28,73 +32,62 @@ module.exports = View.extend({
 	template: viewTemplate,
 
 	initialize: function (options) {
-		_.bindAll(this, "deferredRender");
+		_.bindAll(this, "renderLater");
 		// options
 		options.template && (this.template = options.template);
 		// listeners
-		this.listenTo(this.collection, "reset", this.onCollectionReset);
-		this.listenTo(this.collection, "deselect:one", this.unsetModel);
-		this.listenTo(this.collection, "select:one", this.setModel);
+		this.listenTo(this.collection, {
+			"reset": this._onCollectionReset,
+			"select:one": this._onSelectOne,
+			"deselect:one": this._onDeselectOne,
+//			"select:none": this._onSelectNone,
+//			"deselect:none": this._onDeselectNone,
+		});
 
 		this.skipTransitions = true;
-		this._model = this.collection.selected;
-		if (this._model) {
-			this._model = this.collection.selected;
-			this.listenTo(this._model, "change", this.requestRender);
+		this._selectedItem = this.collection.selected;
+		if (this._selectedItem) {
+			this.listenTo(this._selectedItem, "change", this.requestRender);
 		}
 	},
 
-	onCollectionReset: function() {
-		this.skipTransitions = true;
+	/* --------------------------- *
+	 * create children
+	 * --------------------------- */
+
+	$createContentElement: function(item) {
+		return Backbone.$(this._createContentElement(item));
 	},
 
-	unsetModel: function (model) {
-		// clear only if a different model hasn't been set
-		if (this._model && this._model === model) {
-			this._model = null;
-			this.stopListening(model);
-			this.requestRender();
-		}
+	_createContentElement: function(item) {
+		var elt = document.createElement("div");
+		elt.innerHTML = this.template(item.toJSON());
+		return (elt.childElementCount == 1)? elt.children[0]: elt;
 	},
 
-	setModel: function(model) {
-		if (model && model !== this._model) {
-			this._model = model;
-			this.listenTo(model, "change", this.requestRender);
-			this.requestRender();
-		}
-	},
-
-	requestRender: function() {
-		if (!this.renderPending) {
-			this.renderPending = true;
-			_.defer(this.deferredRender);
-		}
-	},
-
-	deferredRender: function () {
-		this.render();
-		this.renderPending = false;
-	},
+	/* --------------------------- *
+	 * render
+	 * --------------------------- */
 
 	render: function () {
 		if (this.skipTransitions) {
+			// remove
 			if (this.$content) {
 				this.$el.removeAttr("style");
-				this.$content.stop();//clearQueue().remove();
+				this.$content
+					.stop()
+					.clearQueue()
+					.remove();
+				delete this.$content;
 			}
-			if (this._model) {
-				this.$content = this.$createContentElement(this._model);
-				this.$content.appendTo(this.$el);
+			if (this._selectedItem) {
+				this.$content = this.$createContentElement(this._selectedItem);
+				this.$content.prependTo(this.$el);
 			}
 			this.skipTransitions = false;
 		} else {
 			if (this.$content) {
 				// Get content's size while still in the flow
-//				var contentRect = _.extend({
-//					position: "absolute",
-//					display: "block",
-//				}, this.$content[0].getBoundingClientRect());
 				var content = this.$content[0];
 				var contentRect = {//_.extend({
 					top: content.offsetTop,
@@ -103,9 +96,10 @@ module.exports = View.extend({
 					minHeight: content.offsetHeight,
 					position: "absolute",
 					display: "block",
-				};//, this.$content.position());
+				};
+				//var contentRect = _.extend(contentRect, this.$content[0].getBoundingClientRect(), this.$content.position());
 
-				// Have the parent keep it's size
+				// Have the parent keep it's previous size
 				this.$el.css({
 					minWidth: this.el.offsetWidth,
 					minHeight: this.el.offsetHeight,
@@ -117,34 +111,67 @@ module.exports = View.extend({
 					.css(contentRect)
 					.delay(Globals.TRANSITION_DELAY)
 					.transit({opacity: 0}, Globals.TRANSITION_DURATION)
-					.promise().always(function($this) {
-						$this.parent().removeAttr("style");
-						$this.remove();
+					.promise().always(function($content) {
+						$content.parent().removeAttr("style");
+						$content.remove();
 					});
 				delete this.$content;
 			}
-			if (this._model) {
-				this.$content = this.$createContentElement(this._model);
+			if (this._selectedItem) {
+				this.$content = this.$createContentElement(this._selectedItem);
 				this.$content
 					.css({opacity: 0})
 					.delay(Globals.TRANSITION_DELAY * 2)
-					.appendTo(this.el)
+					.prependTo(this.el)
 					.transit({opacity: 1}, Globals.TRANSITION_DURATION);
 			}
-		}
-		if (this.skipTransitions) {
-			this.skipTransitions = false;
 		}
 		return this;
 	},
 
-	$createContentElement: function(item) {
-		return Backbone.$(this._createContentElement(item));
+	/* --------------------------- *
+	 * render once per frame
+	 * --------------------------- */
+
+	requestRender: function() {
+		if (!this.renderPending) {
+			this.renderPending = true;
+			_.defer(this.renderLater);
+		}
 	},
 
-	_createContentElement: function(item) {
-		var elt = document.createElement("div");
-		elt.innerHTML = this.template(item.attributes);
-		return (elt.childElementCount == 1)? elt.children[0]: elt;
+	renderLater: function () {
+		this.render();
+		this.renderPending = false;
 	},
+
+	/* --------------------------- *
+	 * collection event handlers
+	 * --------------------------- */
+
+	_onCollectionReset: function() {
+		this.skipTransitions = true;
+	},
+
+	_onDeselectOne: function (model) {
+		// clear only if a different model hasn't been set
+		if (this._selectedItem && this._selectedItem === model) {
+			this._selectedItem = null;
+			this.stopListening(model);
+			this.requestRender();
+		}
+	},
+
+	_onSelectOne: function(model) {
+		if (model && model !== this._selectedItem) {
+			this._selectedItem = model;
+			this.listenTo(model, "change", this.requestRender);
+			this.requestRender();
+		}
+	},
+
+//	_onDeselectNone: function() {},
+
+//	_onSelectNone: function() {},
+
 });

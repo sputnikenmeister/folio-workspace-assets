@@ -52,43 +52,30 @@ var ContentView = View.extend({
 	initialize: function (options) {
 		_.bindAll(this, "_onPan", "_onResize");
 		this.children = [];
-		this.hammer = this.createHammer(this.el);
 		Backbone.$(window).on("orientationchange resize", this._onResize);
 
-		this.carousel = this.createBundleCarousel(bundles);
+//		this.carousel = this.createBundleCarousel(bundles);
 		// Model listeners
-//		this.listenTo(bundles, {
-//			"select:one": function (bundle) {
-//				this.createChildren(bundle, false);
-//			},
-//			"deselect:one": function (bundle) {
-//				this.removeChildren(bundle, false);
-//			}
-//		});
-//
-//		if (bundles.selected) {
-//			this.createChildren(bundles.selected, true);
-//		}
+		this.listenTo(bundles, {
+			"select:one": function (bundle) {
+				this.createChildren(bundle, false);
+			},
+			"deselect:one": function (bundle) {
+				this.removeChildren(bundle, false);
+			}
+		});
+
+		if (bundles.selected) {
+			this.createChildren(bundles.selected, true);
+		}
 	},
 
-	/** @override */
-//	remove: function () {
-//		if (bundles.selected) {
-//			this.removeChildren(bundles.selected, true);
-//		}
-//		this.hammer.destroy();
-//		View.prototype.remove.apply(this, arguments);
-//	},
-
-	/* -------------------------------
-	 * Create children on bundle select
-	 * ------------------------------- */
-
+	/** Create children on bundle select */
 	createChildren: function (bundle, skipAnimation) {
 		var images = bundle.get("images");
 
 //		this.createImageCaptionCarousel(bundle, images);
-		this.createImageCaptionStack(bundle, images);
+//		this.createImageCaptionStack(bundle, images);
 		this.carousel = this.createImageCarousel(bundle, images);
 		// Show views
 		if (!skipAnimation) {
@@ -107,8 +94,17 @@ var ContentView = View.extend({
 	},
 
 	/* -------------------------------
-	 * Remove children
+	 * Remove
 	 * ------------------------------- */
+
+	/** @override */
+//	remove: function () {
+//		if (bundles.selected) {
+//			this.removeChildren(bundles.selected, true);
+//		}
+//		this.hammer.destroy();
+//		View.prototype.remove.apply(this, arguments);
+//	},
 
 	removeChildren: function (bundle, skipAnimation) {
 		var images = bundle.get("images");
@@ -193,20 +189,26 @@ var ContentView = View.extend({
 	 * Components
 	 * ------------------------------- */
 
-	createHammer: function(touchEl) {
+	getHammered: function() {
+		if (!this._hammer) {
+			this._hammer = this.createHammer();
+		}
+		return this._hammer;
+//		return void 0;
+	},
+
+	createHammer: function() {
 		var hammer, hammerPan, hammerTap;
-		hammer = new Hammer.Manager(touchEl);
+		hammer = new Hammer.Manager(this.el);
 		hammerPan = new Hammer.Pan({
-			direction: Hammer.DIRECTION_HORIZONTAL,
-			threshold: 25,
+			threshold: 15, direction: Hammer.DIRECTION_HORIZONTAL,
 		});
 		hammerTap = new Hammer.Tap({
-			threshold: 10,
-			interval: 50,
-//			time: 200
+			threshold: 10, interval: 50//, time: 200
 		});
 		hammerTap.requireFailure(hammerPan);
 		hammer.add([hammerPan, hammerTap]);
+		this.on("view:remove", hammer.destroy, hammer);
 		return hammer;
 	},
 
@@ -226,7 +228,8 @@ var ContentView = View.extend({
 			collection: images,
 			renderer: ImageRenderer,
 			emptyRenderer: emptyRenderer,
-			hammer: (this.hammer || void 0),
+			direction: Carousel.DIRECTION_HORIZONTAL,
+			hammer: this.getHammered(),
 		});
 		view.render().$el.appendTo(this.el);
 		controller.listenTo(view, {
@@ -242,7 +245,7 @@ var ContentView = View.extend({
 			className: "label-carousel",
 			collection: images,
 			gap: Globals.HORIZONTAL_STEP,
-//			hammer: this.hammer,
+			hammer: this.getHammered(),
 		});
 		view.render().$el.appendTo(this.el);
 //		view.render().$el.prependTo(this.el);

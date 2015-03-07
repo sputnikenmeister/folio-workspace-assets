@@ -4,6 +4,8 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
+/** @type {module:hammerjs} */
+var Hammer = require("hammerjs");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 
@@ -64,6 +66,12 @@ var NestedCarouselRenderer = Carousel.extend({
 //			"view:select:none": controller.deselectImage
 //		});
 		this.hammer.set({enable: false});
+		// remove listener added in Carousel.prototype.initialize
+		Backbone.$(window).off("orientationchange resize", this._onResize);
+	},
+
+	_getCSSTransformValue: function(pos) {
+		return this.dirProp("translate(" + pos + "px,0)", "translate(0," + pos + "px)");
 	},
 
 	remove: function () {
@@ -105,7 +113,8 @@ var BundleCarousel = Carousel.extend({
 	createChildView: function (model) {
 		var view = new this.renderer({
 			collection: model.get("images"),
-			model: model
+			model: model,
+//			hammer: this.createChildHammer(),
 		});
 		this.children.add(view);
 		if (model.selected) {
@@ -119,9 +128,14 @@ var BundleCarousel = Carousel.extend({
 			this.deselectView(view);
 		}
 		this.children.remove(view);
+//		view.hammer.destroy();
 		view.remove();
 		return view;
 	},
+
+//	_getCSSTransformValue: function(pos) {
+//		return this.dirProp("translate(" + pos + "px,0)", "translate(0," + pos + "px)");
+//	},
 
 	/* --------------------------- *
 	 * selection handlers
@@ -163,7 +177,42 @@ var BundleCarousel = Carousel.extend({
 		this.hammer.get("pan").dropRequireFailure(view.hammer.get("pan"));
 		this.hammer.get("tap").dropRequireFailure(view.hammer.get("tap"));
 		view.$el.removeClass("selected");
-	}
+	},
+
+	/* --------------------------- *
+	 * touch
+	 * --------------------------- */
+
+//	createChildHammer: function() {
+//		var childHammer = new Hammer.Manager(this.el);
+//		var childHammerPan = new Hammer.Pan({
+//			direction: this.dirProp(Carousel.DIRECTION_VERTICAL, Carousel.DIRECTION_HORIZONTAL),
+//			threshold: this.panThreshold,
+//		});
+////		this.hammerPan.requireFailure(childHammerPan);
+//		childHammer.add([childHammerPan, this.hammer.get("tap")]);
+//		childHammer.set({enable: false});
+//		return childHammer;
+//	},
+//
+//	createHammer: function() {
+//		var hammer, hammerPan, hammerTap;
+//
+//		hammer = new Hammer.Manager(this.el);
+//		hammerTap = new Hammer.Tap({
+//			threshold: this.panThreshold / 2,
+//			interval: 250, time: 200
+//		});
+//		hammerPan = new Hammer.Pan({
+//			direction: this.direction,
+//			threshold: this.panThreshold,
+//		});
+//		hammerTap.requireFailure(hammerPan);
+//		hammer.add([hammerPan, hammerTap]);
+//
+//		this._hammerIsLocal = true;
+//		return hammer;
+//	},
 });
 
 module.exports = BundleCarousel;

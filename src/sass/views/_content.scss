@@ -110,9 +110,12 @@
 		height: calc(100% - 3rem);
 	}
 	.empty-item {
+		overflow: hidden;
+		height: auto;
+		max-height: calc(100% - 3rem);
 		.content {
-			height: 100%;
-			overflow: hidden;
+//			height: 100%;
+//			overflow: hidden;
 			@extend %large_text;
 		}
 	}
@@ -262,8 +265,8 @@
 }
 
 .leaf-empty-item {
-	overflow: hidden;
 	& > .content {
+		overflow: hidden;
 		@extend %large_text;
 //		@extend %leaf-content;
 //		padding-top: 1.5rem;

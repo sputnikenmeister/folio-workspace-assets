@@ -45,7 +45,7 @@ module.exports = View.extend({
 		this.$sitename.wrap("<div id=\"site-name-wrapper\" class=\"transform-wrapper\"></div>");
 
 		// bundle-pager
-//		this.bundlePager = this.createBundlePager(bundles, this.el);
+		this.bundlePager = this.createBundlePager(bundles, this.el);
 
 		// bundle-list
 		this.bundlesView = new FilterableListView({
@@ -132,17 +132,14 @@ module.exports = View.extend({
 	 * --------------------------- */
 
 	onSelectOne: function() {
-//		this.$el.removeClass("without-bundle").addClass("with-bundle");
 		this.bundlesView.setCollapsed(true);
 		this.keywordsView.filterBy(bundles.selected);
-//		this.keywordsView.renderNow();
 	},
 
 	onSelectNone: function() {
 //		this.$el.removeClass("with-bundle").addClass("without-bundle");
 		this.bundlesView.setCollapsed(false);
 		this.keywordsView.filterBy(null);
-//		this.keywordsView.renderNow();
 	},
 
 	onSitenameClick: function (ev) {

@@ -84,57 +84,73 @@ var Controller = Backbone.Router.extend({
 
 	selectImage: function (image) {
 		var bundle = image.get("bundle");
-		this._goToLocation(bundle, image);
-//		this._changeSelection(bundle, image);
-//		this._updateLocation();
+//		this._goToLocation(bundle, image);
+		this._changeSelection(bundle, image);
+		this._updateLocation();
 	},
 
 	deselectImage: function () {
 		var bundle = bundles.selected;
-		this._goToLocation(bundle);
-//		this._changeSelection(bundle);
-//		this._updateLocation();
+//		this._goToLocation(bundle);
+		this._changeSelection(bundle);
+		this._updateLocation();
 	},
 
 	selectBundle: function (bundle) {
-		this._goToLocation(bundle);
-//		this._changeSelection(bundle);
-//		this._updateLocation();
+		var image = bundle.get("images").selected;
+//		this._goToLocation(bundle, image);
+		this._changeSelection(bundle, image);
+		this._updateLocation();
 	},
 
 	deselectBundle: function () {
-		this._goToLocation();
-//		this._changeSelection();
-//		this._updateLocation();
+//		this._goToLocation();
+		this._changeSelection();
+		this._updateLocation();
 	},
 
 	/** Update location when navigation happens internally */
+//	_updateLocation: function() {
+//		var bundle, imageIndex, location;
+//		location = "bundles";
+//		bundle = bundles.selected;
+//		if (bundle) {
+//			location += "/" + bundle.get("handle");
+//			imageIndex = bundle.get("images").selectedIndex;
+//			if (imageIndex >= 0) {
+//				location += "/" + imageIndex;
+//			}
+//		}
+//		_.defer(_.bind(this.navigate, this), location, {trigger: false});
+////		this.navigate(location, {trigger: false});
+//	},
 	_updateLocation: function() {
-		var bundle, imageIndex, location;
-		location = "bundles";
+		var bundle, image;
 		bundle = bundles.selected;
 		if (bundle) {
-			location += "/" + bundle.get("handle");
-			imageIndex = bundle.get("images").selectedIndex;
-			if (imageIndex >= 0) {
-				location += "/" + imageIndex;
-			}
+			image = bundle.get("images").selected;
 		}
-		_.defer(_.bind(this.navigate, this), location, {trigger: false});
-//		this.navigate(location, {trigger: false});
+		_.defer(_.bind(this.navigate, this), this._getLocation(bundle, image), {trigger: false});
+//		this.navigate(this._getLocation(bundle, image), {trigger: false});
 	},
 
-	_goToLocation: function(bundle, image) {
+	_getLocation: function(bundle, image) {
 		var images, imageIndex, location;
 		location = "bundles";
 		if (bundle) {
 			location += "/" + bundle.get("handle");
-			imageIndex = image? bundle.get("images").indexOf(image) : -1;//bundle.get("images").selectedIndex;
-			if (imageIndex >= 0) {
-				location += "/" + imageIndex;
+			if (image) {
+				imageIndex = bundle.get("images").indexOf(image);
+				if (imageIndex >= 0) {
+					location += "/" + imageIndex;
+				}
 			}
 		}
-		this.navigate(location, {trigger: true});
+		return location;
+	},
+
+	_goToLocation: function(bundle, image) {
+		this.navigate(this._getLocation(bundle, image), {trigger: true});
 	},
 
 	/* --------------------------- *
@@ -172,8 +188,7 @@ var Controller = Backbone.Router.extend({
 //			if (lastBundle) {
 //				lastBundle.get("images").deselect();
 //			}
-		}
-		else {
+		} else {
 			if (_.isUndefined(image)) {
 				bundle.get("images").deselect();
 			} else {
@@ -193,7 +208,42 @@ var Controller = Backbone.Router.extend({
 		this.initializeBrowserTitle();
 	},
 
-	inilializeHandlers: function() {
+	inilializeHandlers: function()
+	{
+		var $body = Backbone.$("body");
+		var imageHandlers = {
+			"select:none": function () {
+				$body.removeClass("with-image").addClass("without-image");
+			},
+			"deselect:none": function () {
+				$body.removeClass("without-image").addClass("with-image");
+			},
+		};
+		var bundleHandlers = {
+			"select:one": function (bundle) {
+				var images = bundle.get("images");
+				this.listenTo(images, imageHandlers);
+				$body.addClass((images.selected? "with-image" : "without-image"));
+			},
+			"deselect:one": function (bundle) {
+				var images = bundle.get("images");
+				this.stopListening(images, imageHandlers);
+				$body.removeClass((images.selected? "with-image" : "without-image"));
+			},
+			"select:none": function () {
+				$body.removeClass("with-bundle").addClass("without-bundle");
+			},
+			"deselect:none": function () {
+				$body.removeClass("without-bundle").addClass("with-bundle");
+			},
+		};
+		this.listenTo(bundles, bundleHandlers);
+		$body.addClass((bundles.selected? "with-bundle" : "without-bundle"));
+		if (bundles.selected) {
+			bundleHandlers["select:one"].call(this, bundles.selected);
+		}
+	},
+	/*{
 		var toClassName = function (prefix, val) {
 			return (val? "with-":"without-") + prefix;
 		};
@@ -201,7 +251,7 @@ var Controller = Backbone.Router.extend({
 		var $body = Backbone.$("body");
 		var withBundle, withoutBundle, withImage, withoutImage;
 		var images = null;
-
+		//toClassName\(\"(image|bundle)\", (true|false)\)
 		withImage = function() {
 			$body.removeClass(toClassName("image", false)).addClass(toClassName("image", true));
 			this.listenToOnce(images, "select:none", withoutImage);
@@ -247,7 +297,7 @@ var Controller = Backbone.Router.extend({
 //			withoutBundle.call(this);
 //		}
 		(bundles.selected? withBundle : withoutBundle).call(this);
-	},
+	},*/
 
 	/* --------------------------- *
 	 * browser title
@@ -314,13 +364,15 @@ var Controller = Backbone.Router.extend({
 			Styles.createCSSRule(carouselSelector + " .image-item img", styles);
 
 			styles = {
+				// text color luminosity is inverse from body, apply oposite rendering mode
+				"-webkit-font-smoothing": (bgLum < fgLum? "auto" : "antialiased"),
 //				"color": 			bgColor.toHexString(),
 				"color": 			bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString(),
 //				"color": 			bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString(),
 //				"border-color": 	bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
 				"background-color": bgColor.lightness(fgLum * 0.100 + bgLum * 0.900).toHexString(),
-				"box-shadow":		"inset 0 0 3px -2px " + bgColor.lightness(fgLum * 0.5 + bgLum * 0.5).toHexString(),
-				"border": 			"0 none transparent",
+//				"box-shadow":		"inset 0 0 3px -2px " + bgColor.lightness(fgLum * 0.5 + bgLum * 0.5).toHexString(),
+//				"border": 			"0 none transparent",
 			};
 			Styles.createCSSRule(carouselSelector + " .image-item .placeholder", styles);
 
