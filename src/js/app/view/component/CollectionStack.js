@@ -109,8 +109,8 @@ module.exports = View.extend({
 				this.$content
 					.clearQueue()
 					.css(contentRect)
-					.delay(Globals.TRANSITION_DELAY)
-					.transit({opacity: 0}, Globals.TRANSITION_DURATION)
+//					.delay(Globals.TRANSITION_DELAY * 0).transit({opacity: 0, delay: 1}, Globals.TRANSITION_DURATION)
+					.transit({opacity: 0, delay: Globals.TRANSITION_DELAY * 0 + 1}, Globals.TRANSITION_DURATION)
 					.promise().always(function($content) {
 						$content.parent().removeAttr("style");
 						$content.remove();
@@ -121,9 +121,10 @@ module.exports = View.extend({
 				this.$content = this.$createContentElement(this._selectedItem);
 				this.$content
 					.css({opacity: 0})
-					.delay(Globals.TRANSITION_DELAY * 2)
+//					.delay(Globals.TRANSITION_DELAY * 1)
 					.prependTo(this.el)
-					.transit({opacity: 1}, Globals.TRANSITION_DURATION);
+//					.transit({opacity: 1, delay: 1}, Globals.TRANSITION_DURATION);
+					.transit({opacity: 1, delay: Globals.TRANSITION_DELAY * 1 + 1}, Globals.TRANSITION_DURATION);
 			}
 		}
 		return this;

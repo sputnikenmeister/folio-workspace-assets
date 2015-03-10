@@ -12,20 +12,43 @@ var Deferred = require("jquery").Deferred;
  */
 module.exports = function (url, image, context) {
 	// @see https://github.com/mdn/promises-test/blob/gh-pages/index.html
+	var timeoutId;
 	var deferred = new Deferred();
 	var request = new XMLHttpRequest();
+	var clearCallbacks = function () {
+		request.onabort = request.ontimeout = request.onerror = request.onloadstart = request.onloadend = request.onprogress = void 0;
+	};
+	var mixin = {
+		request: function () {
+			timeoutId = window.setTimeout(function () {
+				timeoutId = void 0;
+				request.send.call(request);
+			}, 1);
+		},
+		abort: function () {
+			if (timeoutId) {
+				window.clearTimeout(timeoutId);
+			}
+			if (request.readyState !== XMLHttpRequest.DONE) {
+				request.abort();
+			}
+		},
+		destroy: function () {
+			//URL.revokeObjectURL(this.image.src);
+			clearCallbacks();
+			this.abort();
+		},
+	};
 
-	context || (context = image || request);
 	request.open("GET", url, true);
 //	request.overrideMimeType("text\/plain; charset=x-user-defined");
-//	request.responseType = "arraybuffer";
 	request.responseType = "blob";
 
+	context || (context = image || request);
 	// When the request loads, check whether it was successful
 	request.onload = function (ev) {
 		if (request.status == 200) {
 			// If successful, resolve the promise by passing back a reference url
-//			var objUrl = URL.createObjectURL(new Blob([request.response]);
 			var objUrl = URL.createObjectURL(request.response);
 			if (image) {
 				image.src = objUrl;
@@ -53,13 +76,12 @@ module.exports = function (url, image, context) {
 		// Notify progress
 		deferred.notifyWith(context, ["loadstart", request, ev]);
 	};
-	deferred.always(function () {
-		request.onabort = request.ontimeout = request.onerror = request.onloadstart = request.onloadend = request.onprogress = void 0;
-	});
 	request.onloadstart = request.onloadend = request.onprogress;
-//	request.onabort = request.ontimeout = request.onerror;
+	//request.onabort = request.ontimeout = request.onerror;
 	request.ontimeout = request.onerror;
 
-	_.defer(_.bind(request.send, request));
-	return deferred.promise();
+	deferred.always(clearCallbacks);
+	deferred.promise(mixin);
+
+	return mixin;
 };

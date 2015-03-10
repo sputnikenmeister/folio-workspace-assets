@@ -55,6 +55,13 @@ var Controller = Backbone.Router.extend({
 
 	/** @override */
 	initialize: function (options) {
+//		var DEBOUNCE = 500;
+//		this.selectBundle = _.debounce(this.selectBundle, DEBOUNCE);
+//		this.deselectBundle = _.debounce(this.deselectBundle, DEBOUNCE);
+//		this.selectImage = _.debounce(this.selectImage, DEBOUNCE);
+//		this.deselectImage = _.debounce(this.deselectImage, DEBOUNCE);
+//		this.listenToOnce(bundles, "all", this.routeInitialized);
+
 		this.listenToOnce(bundles, "all", this.routeInitialized);
 
 		if (DEBUG) {
@@ -337,17 +344,16 @@ var Controller = Backbone.Router.extend({
 		fgDefault = new Color(Styles.getCSSProperty("body", "color") || "hsl(47, 5%, 15%)");
 
 		bundles.each(function (bundle) {
-
 			attrs = bundle.get("attrs");
-//			bgColor = attrs["background-color"]? new Color(attrs["background-color"]) : bgDefault;
-//			fgColor = attrs["color"]? new Color(attrs["color"]) : fgDefault;
-			bgColor = bgDefault;
-			fgColor = fgDefault;
+			fgColor = attrs["color"]? new Color(attrs["color"]) : fgDefault;
+			bgColor = attrs["background-color"]? new Color(attrs["background-color"]) : bgDefault;
+			//bgColor = bgDefault; fgColor = fgDefault;
 			bgLum = bgColor.lightness();
 			fgLum = fgColor.lightness();
 
 			bodySelector = "body." + toBodyClass(bundle);
-			styles = {};//_.pick(attrs, ["background-color", "background", "color"]);
+			//styles = {};
+			styles = _.pick(attrs, ["background-color", "background", "color"]);
 			styles["-webkit-font-smoothing"] = (bgLum < fgLum? "antialiased" : "auto");
 			/* 'body { -moz-osx-font-smoothing: grayscale; }' works ok in all situations: hardcoded in _base.scss */
 			//styles["-moz-osx-font-smoothing"] = (bgLum < fgLum? "grayscale" : "auto");
@@ -375,7 +381,6 @@ var Controller = Backbone.Router.extend({
 //				"border": 			"0 none transparent",
 			};
 			Styles.createCSSRule(carouselSelector + " .image-item .placeholder", styles);
-
 		});
 
 		var $body = Backbone.$("body");

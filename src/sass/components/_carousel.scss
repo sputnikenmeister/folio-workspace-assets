@@ -120,9 +120,9 @@ $pan_ease: $ease;
 			visibility: hidden;
 		}
 	}
-//	&.candidate.done img {
-//		transition: none;
-//	}
+	&.candidate.done img {
+		transition-duration: $duration * 0.75;
+	}
 //	@at-root {
 //		.panning {
 //			.carousel-item.image-item {
@@ -157,15 +157,17 @@ $pan_ease: $ease;
 		content: "Done";
 	}
 	&.candidate, &.selected, .empty-item.selected + & {
-		&.pending .placeholder[data-progress]:before {
-			content: attr(data-progress) "%";
-			font-style: normal;
-		}
 		&.pending .placeholder:before {
 			opacity: 1;
 		}
 		&.error .placeholder:before {
 			opacity: 1;
+		}
+	}
+	&.selected, .empty-item.selected + & {
+		&.pending .placeholder[data-progress]:before {
+			content: attr(data-progress) "%";
+			font-style: normal;
 		}
 	}
 }

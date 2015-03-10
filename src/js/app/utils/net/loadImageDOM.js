@@ -10,11 +10,31 @@ var Deferred = require("jquery").Deferred;
  * @returns
  */
 module.exports = function (url, image, context) {
+	var timeoutId;
 	var deferred = new Deferred();
-	context || (context = image);
-	deferred.always(function () {
+	var clearCallbacks = function () {
 		image.onload = image.onerror = image.onabort = void 0;
-	});
+	};
+	var mixin = {
+		request: function () {
+			timeoutId = window.setTimeout(function () {
+				timeoutId = void 0;
+				image.src = url;
+				deferred.notifyWith(context, ["loadstart", image]);
+			}, 1);
+		},
+		abort: function () {
+			if (timeoutId) {
+				window.clearTimeout(timeoutId);
+			}
+		},
+		destroy: function () {
+			clearCallbacks();
+			this.abort();
+		},
+	};
+
+	context || (context = image);
 	image.onerror = function (ev) {
 		deferred.rejectWith(context, [Error("Error ocurred while loading image from " + url), image, ev]);
 	};
@@ -25,10 +45,9 @@ module.exports = function (url, image, context) {
 //		deferred.notifyWith(context, [1, image]);
 		deferred.resolveWith(context, [url, image, ev]);
 	};
-	_.defer(function () {
-		image.src = url;
-		deferred.notifyWith(context, ["loadstart", image]);
-//		deferred.notifyWith(context, [0, image]);
-	});
-	return deferred.promise();
+
+	deferred.always(clearCallbacks);
+	deferred.promise(mixin);
+
+	return mixin;
 };

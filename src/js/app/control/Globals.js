@@ -6,6 +6,8 @@ module.exports = (function () {
 	// to match css values in _globals.scss, units are seconds
 	var txDuration					=	0.375 * 1000;
 	var txDelayInterval				=	0.025 * 1000;
+//	var txDuration					=	0.50 * 1000;
+//	var txDelayInterval				=	0.05 * 1000;
 
 	var globals = {
 		TRANSITION_DURATION			:	txDuration,

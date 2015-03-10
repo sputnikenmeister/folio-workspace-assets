@@ -147,9 +147,6 @@
 				@include nav_translate(-0.1px, 0.5rem);
 				@include nav_transition($delay: $delay * 1);
 			}
-//			.with-bundle.with-image #keyword-list {
-//				opacity: 1;
-//			}
 			.with-bundle.with-image #keyword-list .list-group span {
 				@include nav_transition($delay: $delay * 0);
 			}

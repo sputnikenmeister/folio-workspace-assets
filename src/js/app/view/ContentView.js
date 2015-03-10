@@ -75,7 +75,7 @@ var ContentView = View.extend({
 		var images = bundle.get("images");
 
 //		this.createImageCaptionCarousel(bundle, images);
-//		this.createImageCaptionStack(bundle, images);
+		this.createImageCaptionStack(bundle, images);
 		this.carousel = this.createImageCarousel(bundle, images);
 		// Show views
 		if (!skipAnimation) {
@@ -206,8 +206,14 @@ var ContentView = View.extend({
 		hammerTap = new Hammer.Tap({
 			threshold: 10, interval: 50//, time: 200
 		});
-		hammerTap.requireFailure(hammerPan);
+//		hammerTap.requireFailure(hammerPan);
+
+//		hammerPan.recognizeWith(hammerTap);
+//		hammer.add([hammerTap, hammerPan]);
+
+		hammerTap.recognizeWith(hammerPan);
 		hammer.add([hammerPan, hammerTap]);
+
 		this.on("view:remove", hammer.destroy, hammer);
 		return hammer;
 	},
