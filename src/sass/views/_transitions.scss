@@ -14,11 +14,11 @@
 	opacity: 0;
 }
 
-.app-initial  * {
+.app-initial *, body.skip-transitions * {
 	@extend %skip_transitions;
 }
 
-body.skip-transitions * {
+.skip-own-transitions {
 	@extend %skip_transitions;
 }
 

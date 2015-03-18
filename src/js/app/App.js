@@ -4,10 +4,8 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-
 /** @type {module:jquery} */
 var $ = require("jquery");
-
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 

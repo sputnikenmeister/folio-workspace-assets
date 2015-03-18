@@ -19,9 +19,9 @@ $nav_height_portrait: 14.25rem;
 
 %page_region_static,
 %page_region_abs {
-	width: $page_width;
+	max-width: $page_width;
 	@include media($desktop_small) {
-		width: $page_width_large;
+		max-width: $page_width_large;
 	}
 }
 %page_region_abs {

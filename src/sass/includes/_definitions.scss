@@ -16,7 +16,7 @@ $page_margin_right: 		3 * $hu;
 
 $page_width: 				34 * $hu;//700px;
 $page_width_large: 			48 * $hu;//940px;
-$aside_width:				11 * $hu;
+$aside_width:				10 * $hu;
 $aside_width_large: 		12 * $hu;
 $main_width:				$page_width - $aside_width;
 $main_width_large:			$page_width_large - $aside_width_large;
@@ -169,11 +169,8 @@ $base_font: $font_webfont_sans;
 
 %skip_transitions {
 	transition: none 0s 0s !important;
-}
-
-//%skip_transitions_long {
 //	transition-property: none !important;
 //	transition-timing-function: none !important;
 //	transition-duration: 0s !important;
 //	transition-delay: 0s !important;
-//}
+}

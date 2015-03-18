@@ -20,6 +20,8 @@ var FooterView = require("./FooterView");
 var bundles = require("../model/collection/BundleList");
 /** @type {module:app/control/Controller} */
 var controller = require("../control/Controller");
+/** @type {module:app/control/TouchManager} */
+var TouchManager = require("../control/TouchManager");
 
 /**
  * @constructor
@@ -32,6 +34,9 @@ var AppView = Backbone.View.extend({
 
 	/** @override */
 	initialize: function (options) {
+		/* create single hammerjs manager */
+		this.touch = TouchManager.init(document.querySelector("#container"));
+
 		/* initialize views */
 		this.navigationView = new NavigationView({
 			el: "#navigation"
@@ -43,9 +48,10 @@ var AppView = Backbone.View.extend({
 			el: "#footer"
 		});
 		if (DEBUG) {
-			this.debugToolbar = new DebugToolbar({ el: "#debug-toolbar", collection: bundles });
+			this.debugToolbar = new DebugToolbar({el: "#debug-toolbar", collection: bundles});
 		} else {
-			this.$("#debug-toolbar").css("visibility", "hidden");
+			document.querySelector("#debug-toolbar").style.visibility = "hidden";
+//			this.$("#debug-toolbar").css("visibility", "hidden");
 		}
 
 		// start router, which will request appropiate state
@@ -76,6 +82,17 @@ var AppView = Backbone.View.extend({
 });
 
 module.exports = AppView;
+/*
+<dl id="debug-toolbar" class="toolbar">
+	<dt>Debug</dt>
+	<xsl:if test="$is-logged-in = 'true'">
+	<dd><a id="edit-backend" href="{$root}/symphony/" target="_blank">Edit Backend</a></dd>
+	<dd><a id="source" href="?debug=xml" target="_blank">Source</a></dd>
+	</xsl:if>
+	<dd><a id="show-grid" href="javascript:(void 0)">Grid</a></dd>
+	<dd><a id="show-blocks" href="javascript:(void 0)">Blocks</a></dd>
+</dl>
+*/
 
 /** @type {module:cookies-js} */
 var Cookies = require("cookies-js");
@@ -103,13 +120,13 @@ var DebugToolbar = Backbone.View.extend({
 		this.initializeToggle("debug-blocks", this.$("#show-blocks"), $container);
 	},
 
-	initializeToggle: function (className, toggleEl, targetEl) {
-		toggleEl.on("click", function (ev) {
-			targetEl.toggleClass(className);
-			Cookies.set(className, targetEl.hasClass(className)? "true": "");
+	initializeToggle: function (className, $toggleEl, $targetEl) {
+		$toggleEl.on("click", function (ev) {
+			$targetEl.toggleClass(className);
+			Cookies.set(className, $targetEl.hasClass(className)? "true": "");
 		});
 		if (Cookies.get(className)) {
-			targetEl.addClass(className);
+			$targetEl.addClass(className);
 		}
 	}
 });

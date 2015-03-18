@@ -60,9 +60,6 @@ var Controller = Backbone.Router.extend({
 //		this.deselectBundle = _.debounce(this.deselectBundle, DEBOUNCE);
 //		this.selectImage = _.debounce(this.selectImage, DEBOUNCE);
 //		this.deselectImage = _.debounce(this.deselectImage, DEBOUNCE);
-//		this.listenToOnce(bundles, "all", this.routeInitialized);
-
-		this.listenToOnce(bundles, "all", this.routeInitialized);
 
 		if (DEBUG) {
 			// error trace
@@ -83,6 +80,8 @@ var Controller = Backbone.Router.extend({
 				}
 			});
 		}
+
+		this.listenToOnce(bundles, "all", this.routeInitialized);
 	},
 
 	/* ---------------------------
@@ -96,22 +95,20 @@ var Controller = Backbone.Router.extend({
 		this._updateLocation();
 	},
 
-	deselectImage: function () {
-		var bundle = bundles.selected;
-//		this._goToLocation(bundle);
-		this._changeSelection(bundle);
-		this._updateLocation();
-	},
-
 	selectBundle: function (bundle) {
-		var image = bundle.get("images").selected;
-//		this._goToLocation(bundle, image);
+//		var image = bundle.get("images").selected;
+		var image = void 0;
 		this._changeSelection(bundle, image);
 		this._updateLocation();
 	},
 
+	deselectImage: function () {
+		var bundle = bundles.selected;
+		this._changeSelection(bundle);
+		this._updateLocation();
+	},
+
 	deselectBundle: function () {
-//		this._goToLocation();
 		this._changeSelection();
 		this._updateLocation();
 	},
@@ -131,14 +128,15 @@ var Controller = Backbone.Router.extend({
 //		_.defer(_.bind(this.navigate, this), location, {trigger: false});
 ////		this.navigate(location, {trigger: false});
 //	},
+
 	_updateLocation: function() {
 		var bundle, image;
 		bundle = bundles.selected;
 		if (bundle) {
 			image = bundle.get("images").selected;
 		}
-		_.defer(_.bind(this.navigate, this), this._getLocation(bundle, image), {trigger: false});
-//		this.navigate(this._getLocation(bundle, image), {trigger: false});
+//		_.defer(_.bind(this.navigate, this), this._getLocation(bundle, image), {trigger: false});
+		this.navigate(this._getLocation(bundle, image), {trigger: false});
 	},
 
 	_getLocation: function(bundle, image) {
@@ -161,7 +159,7 @@ var Controller = Backbone.Router.extend({
 	},
 
 	/* --------------------------- *
-	 * External redirects
+	 * Router handlers (browser address changes)
 	 * --------------------------- */
 
 	toBundleItem: function (bundleHandle, imageIndex) {
@@ -210,7 +208,8 @@ var Controller = Backbone.Router.extend({
 	 * --------------------------- */
 
 	routeInitialized: function() {
-		this.inilializeHandlers();
+		this.inilializeHandlers2();
+		this.initializeEnteringHandlers();
 		this.initializeBundleStyles();
 		this.initializeBrowserTitle();
 	},
@@ -250,29 +249,26 @@ var Controller = Backbone.Router.extend({
 			bundleHandlers["select:one"].call(this, bundles.selected);
 		}
 	},
-	/*{
-		var toClassName = function (prefix, val) {
-			return (val? "with-":"without-") + prefix;
-		};
 
+	inilializeHandlers2: function() {
 		var $body = Backbone.$("body");
-		var withBundle, withoutBundle, withImage, withoutImage;
 		var images = null;
-		//toClassName\(\"(image|bundle)\", (true|false)\)
+		var withBundle, withoutBundle, withImage, withoutImage;
+
 		withImage = function() {
-			$body.removeClass(toClassName("image", false)).addClass(toClassName("image", true));
+			$body.removeClass("without-image").addClass("with-image");
 			this.listenToOnce(images, "select:none", withoutImage);
 		};
 		withoutImage = function () {
-			$body.removeClass(toClassName("image", true)).addClass(toClassName("image", false));
+			$body.removeClass("with-image").addClass("without-image");
 			this.listenToOnce(images, "select:one", withImage);
 		};
 		withBundle = function() {
-			$body.removeClass(toClassName("bundle", false)).addClass(toClassName("bundle", true));
+			$body.removeClass("without-bundle").addClass("with-bundle");
 			this.listenToOnce(bundles, "select:none", withoutBundle);
 		};
 		withoutBundle = function () {
-			$body.removeClass(toClassName("bundle", true)).addClass(toClassName("bundle", false));
+			$body.removeClass("with-bundle").addClass("without-bundle");
 			this.listenToOnce(bundles, "select:one", withBundle);
 		};
 
@@ -282,12 +278,9 @@ var Controller = Backbone.Router.extend({
 				(images.selected? withImage : withoutImage).call(this);
 			},
 			"deselect:one": function (bundle) {
-				images = bundle.get("images");
-				$body.removeClass(toClassName("image", true)).removeClass(toClassName("image", false));
-				this.stopListening(images, {"select:none": withoutImage, "select:one": withImage });
-//				this.stopListening(images, "select:none", withoutImage);
-//				this.stopListening(images, "select:one", withImage);
 				images = null;
+				$body.removeClass("with-image without-image");
+				this.stopListening(bundle.get("images"), {"select:none": withoutImage, "select:one": withImage });
 			},
 		};
 		this.listenTo(bundles, bundleHandlers);
@@ -304,7 +297,25 @@ var Controller = Backbone.Router.extend({
 //			withoutBundle.call(this);
 //		}
 		(bundles.selected? withBundle : withoutBundle).call(this);
-	},*/
+	},
+
+	initializeEnteringHandlers: function () {
+		var $body = Backbone.$("body");
+		var enteringBundle = function () {
+			$body.removeClass("entering-bundle");
+		};
+		var bundleEnteringHandlers = {
+			"select:one": function (bundle) {
+				$body.addClass("entering-bundle");
+				this.listenToOnce(bundle.get("images"), "select:one select:none", enteringBundle);
+			},
+			"deselect:one": function (bundle) {
+				$body.removeClass("entering-bundle");
+				this.stopListening(bundle.get("images"), "select:one select:none", enteringBundle);
+			},
+		};
+		this.listenTo(bundles, bundleEnteringHandlers);
+	},
 
 	/* --------------------------- *
 	 * browser title

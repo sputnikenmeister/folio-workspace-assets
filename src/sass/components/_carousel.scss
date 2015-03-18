@@ -120,9 +120,9 @@ $pan_ease: $ease;
 			visibility: hidden;
 		}
 	}
-	&.candidate.done img {
-		transition-duration: $duration * 0.75;
-	}
+//	&.candidate.done img {
+//		transition-duration: $duration * 0.75;
+//	}
 //	@at-root {
 //		.panning {
 //			.carousel-item.image-item {

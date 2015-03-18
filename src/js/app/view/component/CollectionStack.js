@@ -44,6 +44,7 @@ module.exports = View.extend({
 //			"deselect:none": this._onDeselectNone,
 		});
 
+		this.renderPending = true;
 		this.skipTransitions = true;
 		this._selectedItem = this.collection.selected;
 		if (this._selectedItem) {
@@ -70,62 +71,58 @@ module.exports = View.extend({
 	 * --------------------------- */
 
 	render: function () {
-		if (this.skipTransitions) {
-			// remove
+		if (this.renderPending) {
 			if (this.$content) {
-				this.$el.removeAttr("style");
-				this.$content
-					.stop()
-					.clearQueue()
-					.remove();
-				delete this.$content;
-			}
-			if (this._selectedItem) {
-				this.$content = this.$createContentElement(this._selectedItem);
-				this.$content.prependTo(this.$el);
-			}
-			this.skipTransitions = false;
-		} else {
-			if (this.$content) {
-				// Get content's size while still in the flow
-				var content = this.$content[0];
-				var contentRect = {//_.extend({
-					top: content.offsetTop,
-					left: content.offsetLeft,
-					width: content.offsetWidth,
-					minHeight: content.offsetHeight,
-					position: "absolute",
-					display: "block",
-				};
-				//var contentRect = _.extend(contentRect, this.$content[0].getBoundingClientRect(), this.$content.position());
-
-				// Have the parent keep it's previous size
-				this.$el.css({
-					minWidth: this.el.offsetWidth,
-					minHeight: this.el.offsetHeight,
-				});
-
-				// Fade it out
-				this.$content
-					.clearQueue()
-					.css(contentRect)
-//					.delay(Globals.TRANSITION_DELAY * 0).transit({opacity: 0, delay: 1}, Globals.TRANSITION_DURATION)
-					.transit({opacity: 0, delay: Globals.TRANSITION_DELAY * 0 + 1}, Globals.TRANSITION_DURATION)
-					.promise().always(function($content) {
-						$content.parent().removeAttr("style");
-						$content.remove();
+				if (this.skipTransitions) {
+					this.$el.removeAttr("style");
+					this.$content
+						.stop()
+						.clearQueue()
+						.remove();
+				} else {
+					var content = this.$content[0];		// Get content's size while still in the flow
+					var contentRect = {//_.extend({
+						top: content.offsetTop,
+						left: content.offsetLeft,
+						width: content.offsetWidth,
+						minHeight: content.offsetHeight,
+						position: "absolute",
+						display: "block",
+					};
+					//var contentRect = _.extend(contentRect, this.$content[0].getBoundingClientRect(), this.$content.position());
+					this.$el.css({						// Have the parent keep it's previous size
+						minWidth: this.el.offsetWidth,
+						minHeight: this.el.offsetHeight,
 					});
+					this.$content						// Fade it out
+						.clearQueue()
+						.css(contentRect)
+						//.delay(Globals.TRANSITION_DELAY * 0).transit({opacity: 0, delay: 1}, Globals.TRANSITION_DURATION)
+						.transit({opacity: 0, delay: Globals.TRANSITION_DELAY * 0 + 1}, Globals.TRANSITION_DURATION)
+						.promise().always(function($content) {
+							$content.parent().removeAttr("style");
+							$content.remove();
+						});
+				}
 				delete this.$content;
 			}
 			if (this._selectedItem) {
 				this.$content = this.$createContentElement(this._selectedItem);
-				this.$content
-					.css({opacity: 0})
-//					.delay(Globals.TRANSITION_DELAY * 1)
-					.prependTo(this.el)
-//					.transit({opacity: 1, delay: 1}, Globals.TRANSITION_DURATION);
-					.transit({opacity: 1, delay: Globals.TRANSITION_DELAY * 1 + 1}, Globals.TRANSITION_DURATION);
+				if (this.skipTransitions) {
+					this.$content
+						.prependTo(this.$el);
+				} else {
+					this.$content
+						.css({opacity: 0})
+						//.delay(Globals.TRANSITION_DELAY * 1)
+						.prependTo(this.el)
+						//.transit({opacity: 1, delay: 1}, Globals.TRANSITION_DURATION);
+						.transit({opacity: 1, delay: Globals.TRANSITION_DELAY * 1 + 1}, Globals.TRANSITION_DURATION);
+				}
 			}
+
+			this.skipTransitions = false;
+			this.renderPending = false;
 		}
 		return this;
 	},
@@ -143,7 +140,6 @@ module.exports = View.extend({
 
 	renderLater: function () {
 		this.render();
-		this.renderPending = false;
 	},
 
 	/* --------------------------- *

@@ -127,9 +127,10 @@ $darkolivegreen:	darkolivegreen;
 }
 
 #debug-toolbar {
-	color: hsl(245, 2%, 40%);
-	border-color: hsl(245, 2%, 20%);
-	background-color: hsla(60, 4%, 5%, 1);
+	opacity: 0.5;
+	color: hsl(245, 2%, 50%);
+	border-color: hsl(245, 2%, 50%);
+//	background-color: hsla(60, 4%, 5%, 1);
 	&, * {
 		user-select: none !important;
 	}
