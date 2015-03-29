@@ -50,7 +50,7 @@ $nav_height_portrait: 14.25rem;
 // - - - - - - - - - - - - - - - - - -
 
 @mixin nav_transition($delay: $delay) {
-	transition: transform #{$duration - 0.001s} #{$delay + 0.001s} $ease;
+	transition: transform #{$duration - 0.001s} $ease #{$delay + 0.001s};
 }
 @mixin nav_translate($x, $y) {
 	transform: translate3d($x, $y, 0);
@@ -192,16 +192,3 @@ html, body {
 		z-index: 2;
 	}
 }
-
-//.bundle-carousel {
-//	z-index: 0;
-//	.nested-carousel-item {
-////		z-index: 0;
-//		.carousel-item.selected {
-//			z-index: 1;
-//		}
-//		&.panning, &.scrolling {
-//			z-index: 2;
-//		}
-//	}
-//}

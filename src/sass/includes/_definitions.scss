@@ -127,7 +127,7 @@ $base_font: $font_webfont_sans;
 //	font: $weight #{$size + "/" + $lead} $large_font_family;
 //	font: $weight $size/$lead $large_font_family;
 	letter-spacing: -1px;
-	font-kerning: normal;
+//	font-kerning: normal;
 	@include text_rendering_legibility();
 	@include font_smoothing();
 }
@@ -153,9 +153,9 @@ $base_font: $font_webfont_sans;
 //	@include heading_font($size: 2.5rem, $weight: 300, $lead: 0.960em);
 	@include heading_font($size: 28px, $weight: 300, $lead: 30px);
 //	transform: translate3d(-2px,0,0);
-	transform: translateX(-2px);
-//	margin-left: -2px;
-//	margin-right: 2px;
+//	transform: translateX(-2px);
+	margin-left: -2px;
+	margin-right: 2px;
 	margin-top: 0;
 	margin-bottom: 0.5em;
 	&:first-child {
@@ -164,13 +164,17 @@ $base_font: $font_webfont_sans;
 }
 
 // ------------------------------------
-// Other
+// transitions
 // ------------------------------------
 
-%skip_transitions {
+@mixin skip_transitions {
 	transition: none 0s 0s !important;
 //	transition-property: none !important;
-//	transition-timing-function: none !important;
 //	transition-duration: 0s !important;
 //	transition-delay: 0s !important;
+//	transition-timing-function: none !important;
+}
+
+%skip_transitions {
+	@include skip_transitions;
 }

@@ -9,6 +9,13 @@ var Backbone = require("backbone");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../control/Globals");
+/** @type {module:app/control/TouchManager} */
+var TouchManager = require("../control/TouchManager");
+/** @type {module:app/control/Controller} */
+var controller = require("../control/Controller");
+/** @type {module:app/model/collection/BundleList} */
+var bundles = require("../model/collection/BundleList");
+
 /** @type {module:app/view/NavigationView} */
 var NavigationView = require("./NavigationView");
 /** @type {module:app/view/ContentView} */
@@ -16,12 +23,12 @@ var ContentView = require("./ContentView");
 /** @type {module:app/view/FooterView} */
 var FooterView = require("./FooterView");
 
-/** @type {module:app/model/collection/BundleList} */
-var bundles = require("../model/collection/BundleList");
-/** @type {module:app/control/Controller} */
-var controller = require("../control/Controller");
-/** @type {module:app/control/TouchManager} */
-var TouchManager = require("../control/TouchManager");
+require("../../shims/requestAnimationFrame");
+
+if (DEBUG) {
+	/** @type {module:app/view/DebugToolbar} */
+	var DebugToolbar = require("./DebugToolbar");
+}
 
 /**
  * @constructor
@@ -37,6 +44,9 @@ var AppView = Backbone.View.extend({
 		/* create single hammerjs manager */
 		this.touch = TouchManager.init(document.querySelector("#container"));
 
+		if (DEBUG) {
+			this.$el.append((new DebugToolbar({id: "debug-toolbar", collection: bundles})).render().el);
+		}
 		/* initialize views */
 		this.navigationView = new NavigationView({
 			el: "#navigation"
@@ -47,86 +57,135 @@ var AppView = Backbone.View.extend({
 		this.footerView = new FooterView({
 			el: "#footer"
 		});
-		if (DEBUG) {
-			this.debugToolbar = new DebugToolbar({el: "#debug-toolbar", collection: bundles});
-		} else {
-			document.querySelector("#debug-toolbar").style.visibility = "hidden";
-//			this.$("#debug-toolbar").css("visibility", "hidden");
-		}
 
 		// start router, which will request appropiate state
 		Backbone.history.start({
 			pushState: false,
 			hashChange: true
 		});
-		//this.navigationView.render();
-		var $body = this.$el;
-		// BODY.skip-transitions clears CSS transitions for a frame
-		// Apply on window size events
-		var onViewportResize = function() {
-			$body.addClass("skip-transitions");
-			_.defer(function() {
-				$body.removeClass("skip-transitions");
-			});
-		};
-		Backbone.$(window).on("orientationchange resize", onViewportResize);
+
+		// .skip-transitions on resize (many versions, none ok)
+//		this.initializeResizeHandlers();
+//		this.initializeResizeHandlers_raf();
+		this.initializeResizeHandlers_debounce();
+
 		// Change to .app-ready on next frame:
 		// CSS animations do not trigger while on .app-initial,
 		// so everything will be rendered in it's final state
-		_.defer(function() {
-			//$body.removeClass("app-initial").addClass("app-ready");
-			Backbone.$(document.documentElement)
-				.removeClass("app-initial").addClass("app-ready");
-		});
+		_.delay(function(view) {
+			view.$el.removeClass("app-initial").addClass("app-ready");
+//			Backbone.$(document.documentElement).removeClass("app-initial").addClass("app-ready");
+			view.render();
+		}, 10, this);
 	},
+
+	render: function () {
+		this.navigationView.render();
+		this.contentView.render();
+		return this;
+	},
+
+	/* -------------------------------
+	 * Resize (defer)
+	 * ------------------------------- */
+
+	initializeResizeHandlers: function() {
+		var view = this;
+		var deferFn = function() {
+			view.$el.removeClass("skip-transitions");
+		};
+		var eventFn = function() {
+			view.$el.addClass("skip-transitions");
+			view.render();
+			_.defer(deferFn);
+		};
+		Backbone.$(window).on("orientationchange resize", eventFn);
+	},
+
+	/* -------------------------------
+	 * Resize (debounce)
+	 * ------------------------------- */
+
+	initializeResizeHandlers_debounce: function() {
+		var delay = 1000/50;
+		var delayId = 0, view = this;
+		var delayFn = function () {
+			console.log("AppView onResize delayFn", "exec " + delayId);
+			delayId = 0;
+			//view.render();
+			view.$el.removeClass("skip-transitions");
+		};
+		var eventFn = function (ev) {
+			console.log("AppView onResize eventFn", "pending " + (delayId != 0? delayId : "none"), (ev && ev.type));
+			if (delayId == 0) {
+				view.$el.addClass("skip-transitions");
+			} else {
+				window.clearTimeout(delayId);
+			}
+			view.render();
+			delayId = _.delay(delayFn, delay * 0.1);
+		};
+		eventFn = _.throttle(eventFn, delay, {leading: false});
+//		eventFn = _.debounce(eventFn, delay);
+		Backbone.$(window).on("orientationchange resize", eventFn);
+	},
+
+	/* -------------------------------
+	 * Resize (requestAnimationFrame)
+	 * ------------------------------- */
+
+	initializeResizeHandlers_raf: function() {
+		var rafId = 0;
+		var view = this;
+		var onFrame = function() {
+			console.log("AppView._raf exec", rafId);
+			rafId = 0;
+//			view.render();
+			view.$el.removeClass("skip-transitions");
+			console.log("AppView.removeClass skip-transitions");
+		};
+		var onEvent = function (ev) {
+			if (rafId == 0) {
+				view.$el.addClass("skip-transitions");
+				console.log("AppView.addClass skip-transitions");
+			} else {
+				window.cancelAnimationFrame(rafId);
+			}
+			rafId = window.requestAnimationFrame(onFrame);
+			console.log("AppView._raf request", rafId);
+			view.render();
+		};
+//		Backbone.$(window).on("resize", onEvent);
+		Backbone.$(window).on("orientationchange resize", onEvent);
+	},
+
+	/* -------------------------------
+	 * Resize (requestAnimationFrame stacked)
+	 * ------------------------------- */
+
+	initializeResizeHandlers_rafArr: function() {
+		var rafIds = [];
+		var view = this;
+		var onResize = function (ev) {
+			if (rafIds.length == 0) {
+				view.$el.addClass("skip-transitions");
+			} else {
+				do {
+					window.cancelAnimationFrame(rafIds.shift());
+				} while (rafIds.length > 0);
+			}
+			var id = window.requestAnimationFrame(function() {
+				//console.log("AppView._raf exec", id, arguments);
+				rafIds.splice(rafIds.indexOf(id), 1);
+				view.render();
+				view.$el.removeClass("skip-transitions");
+			});
+			rafIds.push(id);
+			//console.log("AppView._raf request", id);
+		};
+		Backbone.$(window).on("orientationchange resize", onResize);
+	},
+
 });
 
 module.exports = AppView;
-/*
-<dl id="debug-toolbar" class="toolbar">
-	<dt>Debug</dt>
-	<xsl:if test="$is-logged-in = 'true'">
-	<dd><a id="edit-backend" href="{$root}/symphony/" target="_blank">Edit Backend</a></dd>
-	<dd><a id="source" href="?debug=xml" target="_blank">Source</a></dd>
-	</xsl:if>
-	<dd><a id="show-grid" href="javascript:(void 0)">Grid</a></dd>
-	<dd><a id="show-blocks" href="javascript:(void 0)">Blocks</a></dd>
-</dl>
-*/
-
-/** @type {module:cookies-js} */
-var Cookies = require("cookies-js");
-
-//var DebugToolbar = require("./DebugToolbar");
-var DebugToolbar = Backbone.View.extend({
-	initialize: function (options) {
-		var $backendEl = this.$("#edit-backend");
-		var $container = Backbone.$("#container");
-
-		Cookies.defaults = {
-			domain: String(window.location).match(/^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1]
-		};
-
-		$backendEl.text("Edit");
-		this.listenTo(this.collection, {
-			"select:one": function(model) {
-				$backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/edit/" + model.id);
-			},
-			"select:none": function() {
-				$backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/");
-			}
-		});
-		this.initializeToggle("debug-grid", this.$("#show-grid"), $container);
-		this.initializeToggle("debug-blocks", this.$("#show-blocks"), $container);
-	},
-
-	initializeToggle: function (className, $toggleEl, $targetEl) {
-		$toggleEl.on("click", function (ev) {
-			$targetEl.toggleClass(className);
-			Cookies.set(className, $targetEl.hasClass(className)? "true": "");
-		});
-		if (Cookies.get(className)) {
-			$targetEl.addClass(className);
-		}
-	}
-});

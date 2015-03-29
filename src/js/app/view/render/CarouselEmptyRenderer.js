@@ -18,7 +18,7 @@ module.exports = View.extend({
 	/** @override */
 	className: "carousel-item empty-item",
 	/** @override */
-	model: Backbone.Model,
+//	model: Backbone.Model,
 	/** @override */
 	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
 	/** @override */

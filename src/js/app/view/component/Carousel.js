@@ -78,10 +78,14 @@ var Carousel = DeferredRenderView.extend({
 //			"deselect:one": this._onDeselect,
 //			"deselect:none": this._onDeselect,
 		});
+
+//		this.hammer.on("tap", this._onTap);
+		this.hammer.on("panstart panmove panend pancancel", this._onPan);
 	},
 
 	remove: function () {
-		this.hammer.off("tap", this._onTap);
+		this._scrollPendingAction && this._scrollPendingAction("scroll:cancel");
+//		this.hammer.off("tap", this._onTap);
 		this.hammer.off("panstart panmove panend pancancel", this._onPan);
 		this.removeChildren();
 		DeferredRenderView.prototype.remove.apply(this);
@@ -117,11 +121,7 @@ var Carousel = DeferredRenderView.extend({
 			hammer.add([pan, tap]);
 			this.on("view:remove", hammer.destroy, hammer);
 		}
-
-		hammer.on("panstart panmove panend pancancel", this._onPan);
-		hammer.on("tap", this._onTap);
 		this.hammer = hammer;
-		this.tapRecognizer = tap;
 	},
 
 	/* --------------------------- *
@@ -312,9 +312,8 @@ var Carousel = DeferredRenderView.extend({
 			this._setCSSTransformValue(view, this._getScrollOffset(delta, this.metrics[view.cid], sMetrics, cMetrics));
 		}, this);
 
-		if (this._scrollPendingAction) {
-			this._scrollPendingAction("scroll:cancel");
-		}
+		// transition management
+		this._scrollPendingAction && this._scrollPendingAction("scroll:cancel");
 
 		if (skipTransitions) {
 			this.skipTransitions = false;
@@ -322,39 +321,36 @@ var Carousel = DeferredRenderView.extend({
 			this.commitScrollSelection();
 		} else {
 			this.$el.removeClass("skip-transitions");
-//			if (this._scrollCandidateView) {
-//				this._selectedView.$el.removeClass("selected");
-//			}
+
+			// do immediately
+//			this._scrollCandidateView ** this._selectedView.$el.removeClass("selected");
 			this.commitScrollSelection();
 
-			var targetView = this._selectedView;
-			// Timeout
-			scrollTimeoutId = window.setTimeout(function() {
-				scrollEndCommand("scroll:end:timeout");
-			}, 1000);
-			// Event handler
-			scrollEventHandler = function(ev) {
-				if (ev.originalEvent.propertyName == "transform") {
-					scrollEndCommand("scroll:end:event");
-				}
-			};
-			targetView.$el.on("webkittransitionend transitionend", scrollEventHandler);
-			// Command
+			// do after transitionend/timeout
 			scrollEndCommand = function(view, handler, timeoutId, label) {
 //				console.log(timeoutId, label);
 				view.$el.off("webkittransitionend transitionend", handler);
 				window.clearTimeout(timeoutId);
 				this._scrollPendingAction = void 0;
-
 				if (label !== "scroll:cancel") {
 					this.$el.removeClass("scrolling");
+//					this.commitScrollSelection();
 				}
 			};
-			// Bind argument values into command, except 4th
-			scrollEndCommand = _.once(_.bind(scrollEndCommand, this, targetView, scrollEventHandler, scrollTimeoutId));
-			this._scrollPendingAction = scrollEndCommand;
-//			console.log(scrollTimeoutId, "scroll:start");
 
+			var targetView = this._selectedView;
+			// Command: execute on timeout
+			scrollTimeoutId = window.setTimeout(function() {
+				scrollEndCommand("scroll:end:timeout");
+			}, 1000);
+			// Command: execute on event
+			scrollEventHandler = function(ev) {
+				ev.originalEvent.propertyName == "transform" && scrollEndCommand("scroll:end:event");
+			};
+			// Command: bind argument values, except 4th
+			scrollEndCommand = _.once(_.bind(scrollEndCommand, this, targetView, scrollEventHandler, scrollTimeoutId));
+			targetView.$el.on("webkittransitionend transitionend", scrollEventHandler);
+			this._scrollPendingAction = scrollEndCommand;
 		}
 	},
 
@@ -431,10 +427,11 @@ var Carousel = DeferredRenderView.extend({
 	_onTap: function (ev) {
 		this.commitScrollSelection();
 
-		var pos = ev.center[this.dirProp("x", "y")];
-		if (pos < this.tapAreaBefore) {
+		var posX = this.dirProp(ev.center.x, ev.center.y);
+		var posY = this.dirProp(ev.center.y, ev.center.x);
+		if (posX < this.tapAreaBefore) {
 			this._scrollCandidateView = this._precedingView;
-		} else if (pos > this.tapAreaAfter) {
+		} else if (posX > this.tapAreaAfter) {
 			this._scrollCandidateView = this._followingView;
 		} else {
 			this._scrollCandidateView = void 0;
@@ -443,10 +440,8 @@ var Carousel = DeferredRenderView.extend({
 		if (this._scrollCandidateView) {
 			this._scrollCandidateView.$el.addClass("candidate");
 			this.$el.addClass("scrolling");
-			this.scrollByLater(0, Carousel.ANIMATED);
-
-//			this.hammer.stop(true);
-//			this.hammer.get("tap").state = Hammer.STATE_CANCELLED;
+			this.scrollByNow(0, Carousel.ANIMATED);
+//			this.scrollByLater(0, Carousel.ANIMATED);
 		}
 	},
 
@@ -454,13 +449,14 @@ var Carousel = DeferredRenderView.extend({
 	 * touch event: pan
 	 * --------------------------- */
 
-	getEventDelta: function (ev) {
-//		if (ev.type == "panstart") {
-//			this._panStartOffset = ev.offsetDirection & this._precedingDir? -this.panThreshold : this.panThreshold;
-//		}
-//		return (this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX : ev.deltaY) + (this._panStartOffset || 0)
-		return this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX : ev.deltaY;
-	},
+//	getEventDelta: function (ev) {
+////		if (ev.type == "panstart") {
+////			this._panStartOffset = ev.offsetDirection & this._precedingDir? -this.panThreshold : this.panThreshold;
+////		}
+////		return (this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX : ev.deltaY) + (this._panStartOffset || 0)
+//		return this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX : ev.deltaY;
+////		return this.direction & Hammer.DIRECTION_HORIZONTAL? ev.thresholdOffsetX : ev.thresholdOffsetY;
+//	},
 
 	_onPan: function (ev) {
 //		ev.preventDefault();
@@ -484,6 +480,9 @@ var Carousel = DeferredRenderView.extend({
 	_onPanStart: function (ev) {
 		this.commitScrollSelection();
 //		var delta = this.getEventDelta(ev);
+//		delta += this.dirProp(ev.thresholdOffsetX, ev.thresholdOffsetX);
+		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX + ev.thresholdOffsetX : ev.deltaY + ev.thresholdOffsetY;
+
 //		if ((ev.offsetDirection & this._precedingDir) && _.isUndefined(this._precedingView)) {
 ////			this.hammer.get("pan").state = Hammer.STATE_CANCELLED;
 ////			ev.preventDefault();
@@ -493,12 +492,16 @@ var Carousel = DeferredRenderView.extend({
 		this.$el.addClass("panning scrolling");
 //		this._precedingView && this._precedingView.$el.addClass("candidate");
 //		this._followingView && this._followingView.$el.addClass("candidate");
-//		this.scrollByNow(delta, Carousel.IMMEDIATE);
+		this.scrollByNow(delta, Carousel.IMMEDIATE);
+//		this.scrollByLater(delta, Carousel.IMMEDIATE);
 	},
 
 	/** @param {Object} ev */
 	_onPanMove: function (ev) {
-		var delta = this.getEventDelta(ev);
+//		var delta = this.getEventDelta(ev);
+//		delta += this.dirProp(ev.thresholdOffsetX, ev.thresholdOffsetX);
+		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX + ev.thresholdOffsetX : ev.deltaY + ev.thresholdOffsetY;
+
 		var view = (ev.offsetDirection & this._precedingDir)? this._precedingView : this._followingView;
 		if (view !== this._panCandidateView) {
 			this._panCandidateView && this._panCandidateView.$el.removeClass("candidate");
@@ -509,11 +512,13 @@ var Carousel = DeferredRenderView.extend({
 			delta *= 0.4;
 		}
 		this.scrollByNow(delta, Carousel.IMMEDIATE);
+//		this.scrollByLater(delta, Carousel.IMMEDIATE);
 	},
 
 	/** @param {Object} ev */
 	_onPanFinish: function (ev) {
-		var delta = this.getEventDelta(ev);
+//		var delta = this.getEventDelta(ev);
+		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX : ev.deltaY;
 		if ((ev.type == "panend") &&
 				((ev.direction ^ ev.offsetDirection) & this.direction) &&	// pan direction (last event) and offsetDirection (whole gesture) must match
 				(Math.abs(delta) > this.selectThreshold)) {					// gesture must overshoot selectThreshold
@@ -529,7 +534,8 @@ var Carousel = DeferredRenderView.extend({
 		this.$el.removeClass("panning");
 		this._panStartOffset = void 0;
 		this._panCandidateView = void 0;
-		this.scrollByLater(0, Carousel.ANIMATED);
+//		this.scrollByLater(0, Carousel.ANIMATED);
+		this.scrollByNow(0, Carousel.ANIMATED);
 	},
 
 	/* --------------------------- *
@@ -553,7 +559,8 @@ var Carousel = DeferredRenderView.extend({
 		this.updateSelection();
 		this._selectedView.$el.addClass("selected");
 		this.$el.addClass("scrolling");
-		this.scrollByLater(0, Carousel.ANIMATED);
+//		this.scrollByLater(0, Carousel.ANIMATED);
+		this.scrollByNow(0, Carousel.ANIMATED);
 	},
 
 

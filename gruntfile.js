@@ -338,4 +338,24 @@ module.exports = function (grunt) {
 			opts: {stdio: "inherit"}
 		}, this.async());
 	});
+
+	/* --------------------------------
+	 * Resources: Favicon
+	 * -------------------------------- */
+	grunt.loadNpmTasks("grunt-favicons");
+	grunt.config("favicons", {
+		options: {
+			trueColor: true,
+			appleTouchBackgroundColor: "#FEFCE7",
+			tileColor: "#FEFCE7",
+			tileBlackWhite: false,
+			html: "html/static.xhtml",
+			HTMLPrefix: "/workspace/assets/images/favicon/"
+		},
+		icons: {
+			src: "src/resources/favicon.png",
+			dest: "images/favicon"
+		}
+	});
+	grunt.registerTask("build-favicons", ["favicons"]);
 };

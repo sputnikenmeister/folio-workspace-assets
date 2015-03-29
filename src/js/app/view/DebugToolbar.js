@@ -11,14 +11,27 @@ var Globals = require("../control/Globals");
 /** @type {module:cookies-js} */
 var Cookies = require("cookies-js");
 
-var DebugToolbar = Backbone.View.extend({
-	initialize: function (options) {
-		var $backendEl = this.$("#edit-backend");
-		var $container = Backbone.$("#container");
+/** @type {string} */
+var viewTemplate = require("./template/DebugToolbar.tpl");
 
-		Cookies.defaults = {
-			domain: String(window.location).match(/^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1]
-		};
+var DebugToolbar = Backbone.View.extend({
+
+	/** @override */
+	tagName: "ul",
+	/** @override */
+	className: "toolbar",
+	/** @override */
+	template: viewTemplate,
+
+	initialize: function (options) {
+		var $container, $backendEl, $viewSourceEl, $showGridEl, $showBlocksEl;
+
+		this.$el.html(this.template({approot: Globals.APP_ROOT}));
+
+		$backendEl = this.$("#edit-backend");
+		$showBlocksEl = this.$("#show-blocks");
+		$showGridEl = this.$("#show-grid");
+		$viewSourceEl = this.$("#source");
 
 		$backendEl.text("Edit");
 		this.listenTo(this.collection, {
@@ -29,8 +42,14 @@ var DebugToolbar = Backbone.View.extend({
 				$backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/");
 			}
 		});
-		this.initializeToggle("debug-grid", this.$("#show-grid"), $container);
-		this.initializeToggle("debug-blocks", this.$("#show-blocks"), $container);
+
+		Cookies.defaults = {
+			domain: String(window.location).match(/^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1]
+		};
+
+		$container = Backbone.$("#container");
+		this.initializeToggle("debug-grid", $showGridEl, $container);
+		this.initializeToggle("debug-blocks", $showBlocksEl, $container);
 	},
 
 	initializeToggle: function (className, toggleEl, targetEl) {

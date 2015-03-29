@@ -9,6 +9,8 @@ var Backbone = require("backbone");
 /** @type {module:app/helper/View} */
 var View = require("./View");
 
+require("../../shims/requestAnimationFrame");
+
 /**
  * @constructor
  * @type {module:app/helper/DeferredRenderView}
@@ -26,8 +28,7 @@ var DeferredRenderView = View.extend({
 	 */
 	requestRender: function (key, value) {
 		if (_.isUndefined(this._renderRequestId)) {
-//			this._renderRequestId = window.setTimeout(this.getRenderCallback(), 1);
-			this._renderRequestId = window.requestAnimationFrame(this.applyRender);
+			this._renderRequestId = window.requestAnimationFrame(this.applyRender, this.el);
 			this._renderJobs = {};
 		}
 		if (key) {
@@ -38,7 +39,6 @@ var DeferredRenderView = View.extend({
 	renderNow: function () {
 		if (_.isNumber(this._renderRequestId)) {
 			window.cancelAnimationFrame(this._renderRequestId);
-//			window.clearTimeout(this._renderRequestId);
 		}
 		this.applyRender();
 	},

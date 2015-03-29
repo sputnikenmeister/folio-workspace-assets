@@ -187,6 +187,7 @@ var Controller = Backbone.Router.extend({
 
 	/* Select Bundle/image */
 	_changeSelection: function (bundle, image) {
+		console.log("Controller._changeSelection [before] bundle:" + (bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
 //		var lastBundle = bundles.selected;
 		if (_.isUndefined(bundle)) {
 			bundles.deselect();
@@ -201,6 +202,7 @@ var Controller = Backbone.Router.extend({
 			}
 			bundles.select(bundle);
 		}
+		console.log("Controller._changeSelection [after]  bundle:" + (bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
 	},
 
 	/* --------------------------- *
@@ -208,15 +210,30 @@ var Controller = Backbone.Router.extend({
 	 * --------------------------- */
 
 	routeInitialized: function() {
-		this.inilializeHandlers2();
+		console.log("Controller.routeInitialized");
+		var $body = Backbone.$("body");
+		this.addClass = function () {
+			var retval = $body.addClass.apply($body, arguments);
+			console.log("Controller $body.addClass", arguments[0]);
+			return retval;
+		};
+		this.removeClass = function () {
+			var retval = $body.removeClass.apply($body, arguments);
+			console.log("Controller $body.removeClass", arguments[0]);
+			return retval;
+		};
+//		this.addClass = _.bind($body.addClass, $body);
+//		this.removeClass = _.bind($body.removeClass, $body);
+
+		this.inilializeHandlers();
 		this.initializeEnteringHandlers();
 		this.initializeBundleStyles();
 		this.initializeBrowserTitle();
 	},
 
-	inilializeHandlers: function()
-	{
-		var $body = Backbone.$("body");
+	inilializeHandlers: function() {
+//		var $body = Backbone.$("body");
+		var $body = this;
 		var imageHandlers = {
 			"select:none": function () {
 				$body.removeClass("with-image").addClass("without-image");
@@ -250,7 +267,7 @@ var Controller = Backbone.Router.extend({
 		}
 	},
 
-	inilializeHandlers2: function() {
+	/*inilializeHandlers2: function() {
 		var $body = Backbone.$("body");
 		var images = null;
 		var withBundle, withoutBundle, withImage, withoutImage;
@@ -297,10 +314,11 @@ var Controller = Backbone.Router.extend({
 //			withoutBundle.call(this);
 //		}
 		(bundles.selected? withBundle : withoutBundle).call(this);
-	},
+	},*/
 
 	initializeEnteringHandlers: function () {
-		var $body = Backbone.$("body");
+//		var $body = Backbone.$("body");
+		var $body = this;
 		var enteringBundle = function () {
 			$body.removeClass("entering-bundle");
 		};
@@ -394,7 +412,9 @@ var Controller = Backbone.Router.extend({
 			Styles.createCSSRule(carouselSelector + " .image-item .placeholder", styles);
 		});
 
-		var $body = Backbone.$("body");
+//		var $body = Backbone.$("body");
+		var $body = this;
+
 		var handlers = {
 			"deselect:one": function (bundle) {
 				$body.removeClass(toBodyClass(bundle));
