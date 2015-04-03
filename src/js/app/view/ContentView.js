@@ -181,7 +181,7 @@ var ContentView = View.extend({
 			if (ev.type === "vpanstart") {
 				var delta = this.getVPanDelta(ev);
 				_.each(this.children, function(view) {
-					this.disableTransitions(view.el);
+					this.disableTransitions(view);
 					this.transforms.capture(view.el);
 					this.transforms.move(view.el, void 0, delta);
 				}, this);
@@ -198,7 +198,7 @@ var ContentView = View.extend({
 			}, this);
 		} else if (ev.type === "vpanend" || ev.type === "vpancancel") {
 			_.each(this.children, function(view) {
-				this.enableTransitions(view.el);
+				this.enableTransitions(view);
 				this.transforms.clear(view.el);
 			}, this);
 			this.touch.off("vpanmove vpanend vpancancel", this._onVPanMove);
@@ -209,21 +209,19 @@ var ContentView = View.extend({
 	 * transitions
 	 * ------------------------------- */
 
-	enableTransitions: function(el) {
+	enableTransitions: function(view) {
 //		this.$el.removeClass("skip-transitions");
-		var $target = this.transforms._getTransform(el).$el;
-		$target.clearQueue().transit({transform: ""});
+		view.$el.clearQueue().transit({transform: ""});
 
-//		$target.css({"transition": "transform 0.5s", "-webkit-transition": "-webkit-transform 0.5s"});
+//		view.$el.css({"transition": "transform 0.5s", "-webkit-transition": "-webkit-transform 0.5s"});
 //		addTransitionCallback("transform", function() {
-//			$target.css({"transition": "", "-webkit-transition": ""});
+//			view.$el.css({"transition": "", "-webkit-transition": ""});
 //		}, el, this);
 	},
 
-	disableTransitions: function(el) {
-		var $target = this.transforms._getTransform(el).$el;
-		$target.clearQueue().css({"transition": "", "transform": "",});
-//		$target.clearQueue().css({"transition": "", "-webkit-transition": "", "transform": "", "-webkit-transform": ""});
+	disableTransitions: function(view) {
+		view.$el.clearQueue().css({"transition": "", "transform": "",});
+//		view.$el.clearQueue().css({"transition": "", "-webkit-transition": "", "transform": "", "-webkit-transform": ""});
 
 //		this.$el.addClass("skip-transitions");
 //		this.transforms._getTransform(el).$el.css({transition: "none 0s 0s"});

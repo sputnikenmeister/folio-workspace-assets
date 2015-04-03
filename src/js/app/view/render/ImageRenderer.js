@@ -130,7 +130,7 @@ module.exports = View.extend({
 
 		onProgress = function (progress, source, ev) {
 			if (progress == "loadstart") {
-				console.debug("ImageRenderer.onProgress: (loadstart) " + this.model.get("f"));
+				console.debug("ImageRenderer.onProgress_loadstart: " + this.model.get("f"));
 				this.$el.removeClass("idle").addClass("pending");
 				//this.model.trigger("load:start");
 			} else {
@@ -146,7 +146,7 @@ module.exports = View.extend({
 			//this.model.trigger("load:error");
 		};
 		onLoad = function (url, source, ev) {
-			console.debug("ImageRenderer.onLoad: " + this.model.get("f"), ev);
+			console.debug("ImageRenderer.onLoad: " + this.model.get("f"));
 			this.model.set({"prefetched": url});
 			this.$el.removeClass("pending").addClass("done");
 			this.$placeholder.removeAttr("data-progress");
@@ -169,36 +169,29 @@ module.exports = View.extend({
 			// Check indices for contiguity
 			return (m === n) || (m + 1 === n) || (m - 1 === n);
 		};
-//		var fetchImage = _.bind(_.once(this.fetchImage), this);
-		var onSelect = function(model) {
+		var transitionCallback, transitionProp, transitionCancellable;
+		var handleRemove, handleSelect;
+
+		transitionProp = this.getPrefixedJS("transform");
+		transitionCallback = function(exec) {
+			this.off("view:remove", handleRemove);
+			exec && this.createImagePromise().request();
+		};
+		handleRemove = function() {
+			transitionCancellable(false);
+		};
+		handleSelect = function(model) {
 			if (check(owner.selectedIndex)) {
-				this.stopListening(owner, "select:one select:none", onSelect);
-
-				var cancellable = addTransitionCallback("transform", function() {
-					this.off("view:remove", cancellable);
-					this.createImagePromise().request();
-				}, this.el, this, Globals.TRANSITION_DELAY * 1);
-				this.on("view:remove", cancellable);
-
-//				this.$el.on("webkittransitionend transitionend", fetchImage);
-//				_.delay(fetchImage, Globals.TRANSITION_DELAY * 3);
+				this.stopListening(owner, "select:one select:none", handleSelect);
+				this.on("view:remove", handleRemove);
+				transitionCancellable = addTransitionCallback(transitionProp, transitionCallback,
+						this.el, this, Globals.TRANSITION_DELAY * 2);
 			}
 		};
 		if (check(owner.selectedIndex)) {
-//			fetchImage();
 			this.createImagePromise().request();
 		} else {
-			this.listenTo(owner, "select:one select:none", onSelect);
+			this.listenTo(owner, "select:one select:none", handleSelect);
 		}
 	},
-
-//	fetchImage: function(ev) {
-//		if (ev instanceof window.Event) {
-//			if ((ev.originalEvent || ev).propertyName !== "transform") {
-//				return;
-//			}
-//		}
-//		this.$el.off("webkittransitionend transitionend", this.fetchImage);
-//		this.promise.request();
-//	},
 });

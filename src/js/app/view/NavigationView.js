@@ -62,6 +62,9 @@ module.exports = View.extend({
 
 	/** @override */
 	initialize: function (options) {
+		_.bindAll(this, "_onPanStart", "_onPanMove", "_onPanFinal", "_onVPanEnd");
+		this.touch = TouchManager.getInstance();
+
 		this.$sitename = this.$("#site-name");
 		//this.$sitename.on("click", _.bind(this._onSitenameClick, this));
 		this.$sitename.wrap("<div id=\"site-name-wrapper\" class=\"transform-wrapper\"></div>");
@@ -72,27 +75,19 @@ module.exports = View.extend({
 
 		this.transforms = new TransformHelper();
 
-		var cancellable, $body = Backbone.$("body");
+		var cancellable, $body = Backbone.$("body"), eventProp = this.getPrefixedJS("transform");
 		this.listenTo(bundles, "deselect:one deselect:none", function() {
-			if (cancellable) {
-				cancellable();
-				cancellable = void 0;
-				$body.removeClass("entering-bundle");
-			}
+			cancellable && cancellable(true);
 			if (this.transforms.hasTransition(this.keywordList.wrapper)) {
 //				this.keywordList.$wrapper.css({"transition-delay": "2s"});
 				$body.addClass("entering-bundle");
-				cancellable = addTransitionCallback("transform", function() {
+				cancellable = addTransitionCallback(eventProp, function(exec) {
 					cancellable = void 0;
 //					this.keywordList.$wrapper.css({"transition-delay": ""});
 					$body.removeClass("entering-bundle");
 				}, this.keywordList.wrapper, this);
-			} else {
 			}
 		});
-
-		_.bindAll(this, "_onPanStart", "_onPanMove", "_onPanFinal", "_onVPanEnd");
-		this.touch = TouchManager.getInstance();
 
 		this.listenTo(bundles, {
 			"deselect:none": this._onDeselectNone,
@@ -108,85 +103,6 @@ module.exports = View.extend({
 		//this.touch.off("vpanstart", this._onVPanEnd);
 		//this.touch.off("panstart", this._onPanStart);
 		View.prototype.remove.apply(this, arguments);
-	},
-
-	/* -------------------------------
-	 * Components
-	 * ------------------------------- */
-
-	/**
-	 * bundle-list
-	 */
-	createBundleList: function() {
-		var view = new FilterableListView({
-			el: "#bundle-list",
-			collection: bundles,
-			// collapsed is set later by showBundleItem/showBundleList
-			//collapsed: bundles.selected,
-			collapsed: false,
-			filterBy: keywords.selected,
-			filterKey: "bIds",
-//			filterFn: function () {
-//				return keywords.selected? keywords.selected.get("bIds"): null;
-//			},
-		});
-		controller.listenTo(view, {
-			"view:select:one": controller.selectBundle,
-			"view:select:none": controller.deselectBundle
-		});
-//		view.wrapper = this.el.querySelector("#bundle-list-wrapper") ||
-//				view.$el.wrap("<div id=\"bundle-list-wrapper\" class=\"transform-wrapper\"></div>")[0].parentElement;
-		view.wrapper = view.el.parentElement;
-		view.$wrapper = view.$el.parent();
-		return view;
-	},
-
-	/**
-	 * keyword-list
-	 */
-	createKeywordList: function() {
-		var view = new GroupingListView({
-			el: "#keyword-list",
-			collection: keywords,
-			collapsed: false,
-			filterBy: bundles.selected,
-			filterKey: "kIds",
-			groupings: {
-				collection: types,
-				key: "tIds"
-			},
-//			filterFn: function () {
-//				return bundles.selected? bundles.selected.get("kIds"): null;
-//			},
-//			groupingFn: function (item) {
-//				return item.get("tIds");
-//			},
-		});
-
-//		view.wrapper = this.el.querySelector("#keyword-list-wrapper") ||
-//				view.$el.wrap("<div id=\"keyword-list-wrapper\" class=\"transform-wrapper\"></div>")[0].parentElement;
-		view.wrapper = view.el.parentElement;
-		view.$wrapper = view.$el.parent();
-		return view;
-	},
-
-	/**
-	 * bundle-pager
-	 */
-	createBundlePager: function() {
-		// Component: bundle pager
-		var view = new CollectionPager({
-			id: "bundle-pager",
-			className: "folio mutable-faded",
-			collection: bundles,
-			labelAttribute: "name",
-		});
-		controller.listenTo(view, {
-			"view:select:one": controller.selectBundle,
-			"view:select:none": controller.deselectBundle
-		});
-		view.render().$el.appendTo(this.el);
-		return view;
 	},
 
 	/* --------------------------- *
@@ -330,6 +246,85 @@ module.exports = View.extend({
 	disableTransitions: function(el) {
 		this.$el.addClass("skip-transitions");
 		//this.transforms._getTransform(el).$el.css({"transition": "none 0s 0s", "-webkit-transition": "none 0s 0s"});
+	},
+
+	/* -------------------------------
+	 * Components
+	 * ------------------------------- */
+
+	/**
+	 * bundle-list
+	 */
+	createBundleList: function() {
+		var view = new FilterableListView({
+			el: "#bundle-list",
+			collection: bundles,
+			// collapsed is set later by showBundleItem/showBundleList
+			//collapsed: bundles.selected,
+			collapsed: false,
+			filterBy: keywords.selected,
+			filterKey: "bIds",
+//			filterFn: function () {
+//				return keywords.selected? keywords.selected.get("bIds"): null;
+//			},
+		});
+		controller.listenTo(view, {
+			"view:select:one": controller.selectBundle,
+			"view:select:none": controller.deselectBundle
+		});
+		//view.wrapper = this.el.querySelector("#bundle-list-wrapper") ||
+		//		view.$el.wrap("<div id=\"bundle-list-wrapper\" class=\"transform-wrapper\"></div>")[0].parentElement;
+		view.wrapper = view.el.parentElement;
+		view.$wrapper = view.$el.parent();
+		return view;
+	},
+
+	/**
+	 * keyword-list
+	 */
+	createKeywordList: function() {
+		var view = new GroupingListView({
+			el: "#keyword-list",
+			collection: keywords,
+			collapsed: false,
+			filterBy: bundles.selected,
+			filterKey: "kIds",
+			groupings: {
+				collection: types,
+				key: "tIds"
+			},
+//			filterFn: function () {
+//				return bundles.selected? bundles.selected.get("kIds"): null;
+//			},
+//			groupingFn: function (item) {
+//				return item.get("tIds");
+//			},
+		});
+
+		//view.wrapper = this.el.querySelector("#keyword-list-wrapper") ||
+		//		view.$el.wrap("<div id=\"keyword-list-wrapper\" class=\"transform-wrapper\"></div>")[0].parentElement;
+		view.wrapper = view.el.parentElement;
+		view.$wrapper = view.$el.parent();
+		return view;
+	},
+
+	/**
+	 * bundle-pager
+	 */
+	createBundlePager: function() {
+		// Component: bundle pager
+		var view = new CollectionPager({
+			id: "bundle-pager",
+			className: "folio mutable-faded",
+			collection: bundles,
+			labelAttribute: "name",
+		});
+		controller.listenTo(view, {
+			"view:select:one": controller.selectBundle,
+			"view:select:none": controller.deselectBundle
+		});
+		view.render().$el.appendTo(this.el);
+		return view;
 	},
 
 });

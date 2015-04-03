@@ -104,7 +104,7 @@ $pan_ease: $ease;
 
 	img {
 //		transition: opacity $duration $delay + 0.001s $ease;
-		transition: opacity $duration 0.001s $ease;
+		transition: opacity $duration $ease 0.001s;
 		opacity: 0;
 	}
 	&.idle img,	&.error img {
@@ -116,7 +116,7 @@ $pan_ease: $ease;
 		}
 		&.done .placeholder {
 //			transition: visibility $duration $delay + 0.001s step-end;
-			transition: visibility $duration 0.001s step-end;
+			transition: visibility $duration $ease 0.001s;
 			visibility: hidden;
 		}
 	}
@@ -141,7 +141,7 @@ $pan_ease: $ease;
 //	}
 	.placeholder:before {
 //		transition: opacity $duration $delay + 0.001s $ease;
-		transition: opacity $duration 0.001s $ease;
+		transition: opacity $duration $ease 0.001s;
 		opacity: 0;
 	}
 	&.idle .placeholder:before {
@@ -213,7 +213,7 @@ $mock_browser_height: 2rem;
 .carousel.image-carousel {
 	.empty-item {
 		.content {
-			transition: opacity #{$duration} $ease;
+			transition: opacity $duration $ease 0.001s;
 			opacity: 0.2;
 		}
 		&.selected,	&.candidate {
@@ -237,7 +237,7 @@ $mock_browser_height: 2rem;
 .label-carousel {
 	.carousel-item {
 		.content {
-			transition: opacity #{$duration} $ease;
+			transition: opacity $duration $ease 0.001s;
 			opacity: 0.2;
 		}
 		&.selected, &.candidate {
@@ -247,25 +247,4 @@ $mock_browser_height: 2rem;
 		}
 	}
 }
-
-//.carousel.bundle-carousel {
-//	padding-top: 0;
-//	padding-bottom: 0;
-//	height: 6rem;
-//	.carousel-item {
-//		top: 1.5rem;
-//		padding-top: 0.5rem;
-//		padding-bottom: 0.5rem;
-//		.content {
-//			transition: opacity #{$duration} $ease;
-//			opacity: 0;
-//		}
-//		&.selected .content {
-//			opacity: 1;
-//		}
-//		&.candidate .content {
-//			opacity: 0.5;
-//		}
-//	}
-//}
 

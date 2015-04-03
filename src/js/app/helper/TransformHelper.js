@@ -61,10 +61,30 @@ TransformHelper.prototype = {
 				ret.y = 0;
 			}
 			ret.css = css;
-			console.log("TransformHelper._parseTransformValues", o.id, ret);
+//			console.log("TransformHelper._parseTransformValues", o.id, ret.x, ret.y, ret.css);
 		} else {
 			ret = o.captured;
-			console.log("TransformHelper._parseTransformValues", o.id, ret, "(cached)");
+//			console.log("TransformHelper._parseTransformValues", o.id, ret.x, ret.y, ret.css, "(cached)");
+		}
+		return ret;
+	},
+
+	_parseTransitionValues: function(o) {
+		var ret = {};
+		var css, values, idx, d = 0;
+		css = o.$el.css(["transition-property", "transition-duration", "transition-delay"]);
+		values = css["transition-property"].split(",");
+		idx = values.length;
+		do { --idx; } while (idx != -1 && values[idx].indexOf("transform") == -1);
+		//while (idx && values[--idx].indexOf("transform")) {}
+		if (idx != -1) {
+			values = css["transition-duration"].split(",");
+			ret.duration = parseFloat((idx < values.length)? values[idx] : values[values.length - 1]);
+			values = css["transition-delay"].split(",");
+			ret.delay = parseFloat((idx < values.length)? values[idx] : values[values.length - 1]);
+		} else {
+			ret.duration = 0;
+			ret.delay = 0;
 		}
 		return ret;
 	},
@@ -101,24 +121,12 @@ TransformHelper.prototype = {
   	hasTransition: function(el) {
 		var o = this._getTransform(el), ret = false;
 		if (o.transition === void 0) {
-			var css, values, idx, d = 0;
-			css = o.$el.css(["transition-property", "transition-duration", "transition-delay"]);
-			values = css["transition-property"].split(",");
-			idx = values.length;
-			do { --idx; } while (idx != -1 && values[idx].indexOf("transform") == -1);
-			//while (idx && values[--idx].indexOf("transform")) {}
-			if (idx != -1) {
-				values = css["transition-duration"].split(",");
-				d += parseFloat((idx < values.length)? values[idx] : values[values.length - 1]);
-				values = css["transition-delay"].split(",");
-				d += parseFloat((idx < values.length)? values[idx] : values[values.length - 1]);
-				ret = d > 0;
-			}
-			o.transition = ret;
-			console.log("TransformHelper.hasTransition", o.id, ret, d, css);
+			o.transition = this._parseTransitionValues(o);
+			ret = o.transition.delay + o.transition.duration > 0;
+			console.log("TransformHelper.hasTransition", o.id, ret, o.transition.delay, o.transition.duration);
 		} else {
-			ret = o.transition;
-			console.log("TransformHelper.hasTransition", o.id, ret, "(cached)");
+			ret = o.transition.delay + o.transition.duration > 0;
+			console.log("TransformHelper.hasTransition", o.id, ret, o.transition.delay, o.transition.duration, "(cached)");
 		}
 		return ret;
 	},
@@ -138,7 +146,7 @@ TransformHelper.prototype = {
 	release: function(el) {
 		var o = this._getTransform(el);
 		o.transition = o.offset = o.captured = void 0;
-		console.log("TransformHelper.release", o.id);
+//		console.log("TransformHelper.release", o.id);
 	},
 
 	/* -------------------------------
@@ -150,7 +158,7 @@ TransformHelper.prototype = {
 		if (o.offset) {
 			this._clearElementTransform(o);
 			o.offset = void 0;
-			console.log("TransformHelper.clear", o.id);
+//			console.log("TransformHelper.clear", o.id);
 		} else {
 			console.warn("TransformHelper.clear", o.id, "nothing to clear");
 		}

@@ -306,23 +306,22 @@ var Carousel = DeferredView.extend({
 	},
 
 	_scrollBy: function (delta, skipTransitions) {
-		var sView, sMetrics, cView, cMetrics;
-		var scrollEndCommand, scrollEventHandler, scrollTimeoutId;
+		var sView, sMetrics, cView, cMetrics, pos, txProp, txStyle;
 
 		sView = this._scrollCandidateView || this._selectedView;
 		cView = this._panCandidateView || this._selectedView;
 		sMetrics = this.metrics[sView.cid];
 		cMetrics = this.metrics[cView.cid];
+		txProp = this.getPrefixedJS("transform");
 
 		this.children.each(function (view) {
-			this._setCSSTransformValue(view, this._getScrollOffset(delta, this.metrics[view.cid], sMetrics, cMetrics));
+			pos = Math.floor(this._getScrollOffset(delta, this.metrics[view.cid], sMetrics, cMetrics));
+			view.el.style[txProp] = (this.direction & Hammer.DIRECTION_HORIZONTAL)?
+					"translate3d(" + pos + "px,0,0)" : "translate3d(0," + pos + "px,0)";
 		}, this);
 
 		// transition management
-		if (this._scrollEndCancellable) {
-			this._scrollEndCancellable();
-			this._scrollEndCancellable = void 0;
-		}
+		this._scrollEndCancellable && this._scrollEndCancellable(false);
 
 		if (skipTransitions) {
 			this.skipTransitions = false;
@@ -331,24 +330,11 @@ var Carousel = DeferredView.extend({
 		} else {
 			this.$el.removeClass("skip-transitions");
 			this.commitScrollSelection();
-			this._scrollEndCancellable = addTransitionCallback("transform", function() {
+			this._scrollEndCancellable = addTransitionCallback(this.getPrefixedCSS("transform"), function(exec) {
 				this._scrollEndCancellable = void 0;
-				this.$el.removeClass("scrolling");
+				exec && this.$el.removeClass("scrolling");
 			}, this._selectedView.el, this, Globals.TRANSITION_DURATION * 2);
 		}
-	},
-
-	_getCSSTransformValue: function(pos) {
-		pos = Math.floor(pos);
-		return this.dirProp("translate3d(" + pos + "px,0,0)", "translate3d(0," + pos + "px,0)");
-	},
-
-	_setCSSTransformValue: function(view, pos) {
-		var cssVal = this._getCSSTransformValue(pos);
-		view.el.style.webkitTransform = cssVal;
-		view.el.style.mozTransform = cssVal;
-		view.el.style.transform = cssVal;
-		return view;
 	},
 
 	_getScrollOffset2: function (delta, s, ss, sc) {

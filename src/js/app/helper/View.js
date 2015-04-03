@@ -7,40 +7,43 @@ var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {Object} */
-var _viewsByCid = {};
+var prefixed = require("../utils/strings/prefixed");
+var dashedToCamel = require("../utils/strings/dashedToCamel");
+var camelToDashed = require("../utils/strings/camelToDashed");
+
+///** @type {Object} */
+//var _viewsByCid = {};
+///**
+// * @param element
+// * @return {module:app/helper/View}
+// */
+//function findByElement (element) {
+//	for (var cid in _viewsByCid) {
+//		if (_viewsByCid[cid].el === element) {
+//			return _viewsByCid[cid];
+//		}
+//	}
+//	return void 0;
+//}
+
+var _jsPrefixed = {};
+var _cssPrefixed = {};
 
 var _views = [];
 var _elements = [];
 var _count = 0;
 
-//var viewToString = function (view) {
-//	return (view.model && view.model.get("name")) || view.cid;
-//};
-
-var registerView = function(view) {
+function registerView(view) {
 	_views[_count] = view;
 	_elements[_count] = view.el;
 	_count++;
-//	console.log("Registered ("+_count+") '"+viewToString(view)+"'");
-};
-var unregisterView = function(view) {
+}
+function unregisterView(view) {
 	var idx = _views.indexOf(view);
 	_views.splice(idx, 1);
 	_elements.splice(idx, 1);
 	_count--;
-//	console.log("Unregistered ("+_count+") "+idx+":'"+viewToString(view)+"'");
-};
-
-//window.setInterval(function() {
-//	var s = "";
-//	_.each(_views, function (view, i) {
-//		s += " " + i + ":'" + viewToString(view) + "'";
-//	});
-//	s = "Views registered ("+_count+") [" + s + "]";
-////	console.log(s);
-//	console.log(_views.length, _.keys(_viewsByCid).join(" "));
-//}, 5000);
+}
 
 /**
  * @constructor
@@ -53,13 +56,12 @@ var View = Backbone.View.extend({
 			options.className += " " + _.result(this, "className");
 		}
 		Backbone.View.apply(this, arguments);
-		_viewsByCid[this.cid] = this;
 	},
 
 	remove: function() {
 		this.trigger("view:remove", this);
 		unregisterView(this);
-		delete _viewsByCid[this.cid];
+		//delete _viewsByCid[this.cid];
 		return Backbone.View.prototype.remove.apply(this, arguments);
 	},
 
@@ -74,22 +76,29 @@ var View = Backbone.View.extend({
 		}
 		this.$el.attr("data-cid", this.cid);
 		registerView(this);
+		//_viewsByCid[this.cid] = this;
 		return this;
 	},
-},{
-	findByElement: function(element) {
-		console.error("View.findByElement !!!!");
-		return _views[_elements.indexOf(element)];
+
+	getPrefixedJS: function(prop) {
+		return _jsPrefixed[prop] || (_jsPrefixed[prop] = prefixed(this.el.style, prop));
 	},
 
-	_deprecated_findByElement: function(element) {
-		for (var cid in _viewsByCid) {
-			if (_viewsByCid[cid].el === element) {
-				return _viewsByCid[cid];
-			}
+	getPrefixedCSS: function(prop) {
+		var p, pp;
+		if (_cssPrefixed[prop] === void 0) {
+			p = dashedToCamel(prop);
+			pp = this.getPrefixedJS(p);
+			_cssPrefixed[prop] = (p === pp? "" : "-") + camelToDashed(pp);
 		}
-		return void 0;
+		return _cssPrefixed[prop];
 	}
+
+},{
+
+	findByElement: function(element) {
+		return _views[_elements.indexOf(element)];
+	},
 });
 
 module.exports = View;
