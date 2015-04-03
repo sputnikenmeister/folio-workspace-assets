@@ -9,7 +9,38 @@ var _ = require("underscore");
 
 /** @type {Object} */
 var _viewsByCid = {};
-//var _views = [];
+
+var _views = [];
+var _elements = [];
+var _count = 0;
+
+//var viewToString = function (view) {
+//	return (view.model && view.model.get("name")) || view.cid;
+//};
+
+var registerView = function(view) {
+	_views[_count] = view;
+	_elements[_count] = view.el;
+	_count++;
+//	console.log("Registered ("+_count+") '"+viewToString(view)+"'");
+};
+var unregisterView = function(view) {
+	var idx = _views.indexOf(view);
+	_views.splice(idx, 1);
+	_elements.splice(idx, 1);
+	_count--;
+//	console.log("Unregistered ("+_count+") "+idx+":'"+viewToString(view)+"'");
+};
+
+//window.setInterval(function() {
+//	var s = "";
+//	_.each(_views, function (view, i) {
+//		s += " " + i + ":'" + viewToString(view) + "'";
+//	});
+//	s = "Views registered ("+_count+") [" + s + "]";
+////	console.log(s);
+//	console.log(_views.length, _.keys(_viewsByCid).join(" "));
+//}, 5000);
 
 /**
  * @constructor
@@ -22,13 +53,12 @@ var View = Backbone.View.extend({
 			options.className += " " + _.result(this, "className");
 		}
 		Backbone.View.apply(this, arguments);
-//		_views[_views.length] = this;
 		_viewsByCid[this.cid] = this;
 	},
 
 	remove: function() {
 		this.trigger("view:remove", this);
-//		_views.splice(_views.indexOf(this), 1);
+		unregisterView(this);
 		delete _viewsByCid[this.cid];
 		return Backbone.View.prototype.remove.apply(this, arguments);
 	},
@@ -43,15 +73,16 @@ var View = Backbone.View.extend({
 			Backbone.View.prototype.setElement.apply(this, arguments);
 		}
 		this.$el.attr("data-cid", this.cid);
+		registerView(this);
 		return this;
 	},
 },{
 	findByElement: function(element) {
-//		for (var i = 0; i < _views.length; i++) {
-//			if (_views[i].el === element) {
-//				return _views[i];
-//			}
-//		}
+		console.error("View.findByElement !!!!");
+		return _views[_elements.indexOf(element)];
+	},
+
+	_deprecated_findByElement: function(element) {
 		for (var cid in _viewsByCid) {
 			if (_viewsByCid[cid].el === element) {
 				return _viewsByCid[cid];

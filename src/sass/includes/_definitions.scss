@@ -169,12 +169,11 @@ $base_font: $font_webfont_sans;
 
 @mixin skip_transitions {
 	transition: none 0s 0s !important;
-//	transition-property: none !important;
-//	transition-duration: 0s !important;
-//	transition-delay: 0s !important;
-//	transition-timing-function: none !important;
+	transition-property: none !important;
+	transition-duration: 0s !important;
+	transition-delay: 0s !important;
 }
 
-%skip_transitions {
-	@include skip_transitions;
-}
+//%skip_transitions {
+//	@include skip_transitions;
+//}

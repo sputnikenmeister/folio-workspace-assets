@@ -1,5 +1,5 @@
 /**
- * @module app/helper/DeferredRenderView
+ * @module app/helper/DeferredView
  */
 
 /** @type {module:underscore} */
@@ -13,9 +13,9 @@ require("../../shims/requestAnimationFrame");
 
 /**
  * @constructor
- * @type {module:app/helper/DeferredRenderView}
+ * @type {module:app/helper/DeferredView}
  */
-var DeferredRenderView = View.extend({
+var DeferredView = View.extend({
 
 	constructor: function(options) {
 		_.bindAll(this, "applyRender");
@@ -43,10 +43,16 @@ var DeferredRenderView = View.extend({
 		this.applyRender();
 	},
 
+	needsRender: function(key) {
+		return this._renderJobs.hasOwnProperty(key);
+	},
+
 	/** @private */
 	validateRender: function (key) {
-		if (_.isFunction(this._renderJobs[key])) {
-			this._renderJobs[key].call();
+		if (this.needsRender(key)) {
+			if (_.isFunction(this._renderJobs[key])) {
+				this._renderJobs[key].call();
+			}
 			delete this._renderJobs[key];
 		}
 	},
@@ -62,4 +68,4 @@ var DeferredRenderView = View.extend({
 
 });
 
-module.exports = DeferredRenderView;
+module.exports = DeferredView;

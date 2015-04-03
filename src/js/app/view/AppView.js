@@ -58,25 +58,29 @@ var AppView = Backbone.View.extend({
 			el: "#footer"
 		});
 
+		// .skip-transitions on resize
+//		this.initializeResizeHandlers_raf();
+		this.initializeResizeHandlers_debounce();
+
 		// start router, which will request appropiate state
 		Backbone.history.start({
 			pushState: false,
 			hashChange: true
 		});
 
-		// .skip-transitions on resize (many versions, none ok)
-//		this.initializeResizeHandlers();
-//		this.initializeResizeHandlers_raf();
-		this.initializeResizeHandlers_debounce();
-
 		// Change to .app-ready on next frame:
 		// CSS animations do not trigger while on .app-initial,
 		// so everything will be rendered in it's final state
-		_.delay(function(view) {
-			view.$el.removeClass("app-initial").addClass("app-ready");
+		this.render();
+		window.requestAnimationFrame(function() {
+			Backbone.$(document.documentElement).removeClass("app-initial").addClass("app-ready");
+		});
+//		_.delay(function(view) {
 //			Backbone.$(document.documentElement).removeClass("app-initial").addClass("app-ready");
-			view.render();
-		}, 10, this);
+//			view.render();
+////			Backbone.$(".app-initial").removeClass("app-initial").addClass("app-ready");
+////			view.$el.removeClass("app-initial").addClass("app-ready");
+//		}, 66, this);
 	},
 
 	render: function () {
@@ -86,105 +90,139 @@ var AppView = Backbone.View.extend({
 	},
 
 	/* -------------------------------
-	 * Resize (defer)
-	 * ------------------------------- */
-
-	initializeResizeHandlers: function() {
-		var view = this;
-		var deferFn = function() {
-			view.$el.removeClass("skip-transitions");
-		};
-		var eventFn = function() {
-			view.$el.addClass("skip-transitions");
-			view.render();
-			_.defer(deferFn);
-		};
-		Backbone.$(window).on("orientationchange resize", eventFn);
-	},
-
-	/* -------------------------------
 	 * Resize (debounce)
 	 * ------------------------------- */
 
 	initializeResizeHandlers_debounce: function() {
-		var delay = 1000/50;
-		var delayId = 0, view = this;
-		var delayFn = function () {
-			console.log("AppView onResize delayFn", "exec " + delayId);
-			delayId = 0;
-			//view.render();
+		var debouncedFn, debouncedMs, delayedFn, delayedMs, delayedId, view = this;
+//		debouncedMs = Math.ceil(1000/30);
+//		delayedMs = debouncedMs * 2;
+		debouncedMs = 100;
+		delayedMs = 150;
+		delayedFn = function () {
 			view.$el.removeClass("skip-transitions");
+			console.log("AppView.initializeResizeHandlers [delayed]   id:" + delayedId);
+			delayedId = null;
 		};
-		var eventFn = function (ev) {
-			console.log("AppView onResize eventFn", "pending " + (delayId != 0? delayId : "none"), (ev && ev.type));
-			if (delayId == 0) {
-				view.$el.addClass("skip-transitions");
+		debouncedFn = function (ev) {
+			if (delayedId) {
+				window.clearTimeout(delayedId);
 			} else {
-				window.clearTimeout(delayId);
+				view.$el.addClass("skip-transitions");
 			}
 			view.render();
-			delayId = _.delay(delayFn, delay * 0.1);
+			delayedId = _.delay(delayedFn, delayedMs);
+			console.log("AppView.initializeResizeHandlers [debounced] id:" + delayedId);
 		};
-		eventFn = _.throttle(eventFn, delay, {leading: false});
-//		eventFn = _.debounce(eventFn, delay);
-		Backbone.$(window).on("orientationchange resize", eventFn);
+		debouncedFn = _.debounce(debouncedFn, debouncedMs);
+		Backbone.$(window).on("resize", debouncedFn);
+		//Backbone.$(window).on("orientationchange resize", debouncedFn);
 	},
 
 	/* -------------------------------
 	 * Resize (requestAnimationFrame)
 	 * ------------------------------- */
 
+//	/*
 	initializeResizeHandlers_raf: function() {
-		var rafId = 0;
 		var view = this;
-		var onFrame = function() {
-			console.log("AppView._raf exec", rafId);
-			rafId = 0;
-//			view.render();
+		var afterFrameId = 0;
+		var onFrameId = 0;
+		var afterFrame = function() {
+			//console.log("AppView._raf afterFrame exec:"+afterFrameId);
+			afterFrameId = 0;
 			view.$el.removeClass("skip-transitions");
-			console.log("AppView.removeClass skip-transitions");
+			//console.log("AppView.removeClass skip-transitions");
 		};
-		var onEvent = function (ev) {
-			if (rafId == 0) {
-				view.$el.addClass("skip-transitions");
-				console.log("AppView.addClass skip-transitions");
-			} else {
-				window.cancelAnimationFrame(rafId);
+		var onFrame = function() {
+			//console.log("AppView._raf onFrame exec:"+onFrameId);
+			onFrameId = 0;
+			if (afterFrameId != 0) {
+				window.cancelAnimationFrame(afterFrameId);
+				//console.log("AppView._raf afterFrame cancel:"+afterFrameId);
 			}
-			rafId = window.requestAnimationFrame(onFrame);
-			console.log("AppView._raf request", rafId);
 			view.render();
+			afterFrameId = window.requestAnimationFrame(afterFrame);
+			//console.log("AppView._raf afterFrame req:"+afterFrameId);
 		};
-//		Backbone.$(window).on("resize", onEvent);
-		Backbone.$(window).on("orientationchange resize", onEvent);
+		var onResize = function (ev) {
+			//console.log("AppView._raf onEvent", ev && [ev.type, ev]);
+			if (onFrameId != 0) {
+				window.cancelAnimationFrame(onFrameId);
+				//console.log("AppView._raf onFrame cancel:"+onFrameId);
+			} else {
+				view.$el.addClass("skip-transitions");
+				//console.log("AppView.addClass skip-transitions");
+			}
+			onFrameId = window.requestAnimationFrame(onFrame);
+			//console.log("AppView._raf onFrame req:" + onFrameId);
+		};
+		Backbone.$(window).on("resize", onResize);
+		//Backbone.$(window).on("orientationchange resize", onResize);
 	},
+//	*/
 
 	/* -------------------------------
 	 * Resize (requestAnimationFrame stacked)
 	 * ------------------------------- */
 
+	/*
 	initializeResizeHandlers_rafArr: function() {
-		var rafIds = [];
 		var view = this;
-		var onResize = function (ev) {
-			if (rafIds.length == 0) {
+		var onFrameIds = [];
+		var afterFrameIds = [];
+		var eventFn = function (ev) {
+			//console.log("AppView [RESIZE ON_EVENT    ]");
+			if (onFrameIds.length == 0) {
+				//console.log("AppView [CLASS ADD   ] skip-transitions");
 				view.$el.addClass("skip-transitions");
 			} else {
 				do {
-					window.cancelAnimationFrame(rafIds.shift());
-				} while (rafIds.length > 0);
+					//console.log("AppView [RESIZE ON_EVENT    ] onFrame cancelling: " + onFrameIds[0], onFrameIds);
+					window.cancelAnimationFrame(onFrameIds.shift());
+				} while (onFrameIds.length > 0);
 			}
-			var id = window.requestAnimationFrame(function() {
-				//console.log("AppView._raf exec", id, arguments);
-				rafIds.splice(rafIds.indexOf(id), 1);
+			var onFrameId = window.requestAnimationFrame(function() {
+				onFrameIds.splice(onFrameIds.indexOf(onFrameId), 1);
+				//console.log("AppView [RESIZE ON_FRAME    ] onFrame executing: " + onFrameId, onFrameIds);
+				//console.log("AppView [RESIZE RENDER      ]");
 				view.render();
-				view.$el.removeClass("skip-transitions");
+				var afterFrameId = window.requestAnimationFrame(function() {
+					onFrameIds.splice(onFrameIds.indexOf(afterFrameId), 1);
+					//console.log("AppView [RESIZE AFTER_FRAME ] afterFrame executing: " + afterFrameId, onFrameIds);
+					//console.log("AppView [CLASS REMOVE] skip-transitions");
+					view.$el.removeClass("skip-transitions");
+				});
+				//console.log("AppView [RESIZE ON_FRAME    ] afterFrame requested: " + afterFrameId, onFrameIds);
+				onFrameIds.push(afterFrameId);
 			});
-			rafIds.push(id);
-			//console.log("AppView._raf request", id);
+			//console.log("AppView [RESIZE ON_EVENT    ] onFrame requested: " + onFrameId, onFrameIds);
+			onFrameIds.push(onFrameId);
 		};
-		Backbone.$(window).on("orientationchange resize", onResize);
+		Backbone.$(window).on("resize", eventFn);
+		//Backbone.$(window).on("orientationchange resize", eventFn);
 	},
+	*/
+
+	/* -------------------------------
+	 * Resize (defer)
+	 * ------------------------------- */
+
+	/*
+	initializeResizeHandlers_defer: function() {
+		var view = this;
+		var deferFn = function() {
+			view.$el.removeClass("skip-transitions");
+		};
+		var eventFn = function() {
+			view.render();
+			view.$el.addClass("skip-transitions");
+			_.defer(deferFn);
+		};
+		Backbone.$(window).on("resize", eventFn);
+		//Backbone.$(window).on("orientationchange resize", eventFn);
+	},
+	*/
 
 });
 

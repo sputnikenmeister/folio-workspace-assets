@@ -32,12 +32,12 @@ $pan_ease: $ease;
 .carousel {
 	.carousel-item {
 		transform: translate3d(0,0,0);
-		backface-visibility: hidden;
 		transform-style: preserve-3d;
+		backface-visibility: hidden;
 		transition: transform $duration $pan_ease;
 	}
 	&.skip-transitions .carousel-item {
-		@extend %skip_transitions;
+		@include skip_transitions;
 	}
 }
 

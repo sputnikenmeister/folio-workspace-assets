@@ -5,6 +5,8 @@ var _ = require("underscore");
 /** @type {{module:jquery}.Deferred} */
 var Deferred = require("jquery").Deferred;
 
+
+
 /**
  * @param
  * @param
@@ -40,8 +42,14 @@ module.exports = function (url, image, context) {
 		},
 	};
 
+//	var mime;
+//	try {
+//		var TYPES = { png: "image\/png", jpg: "image\/jpeg" };
+//		mime = TYPES[url.match(/\w+$/)[0].toLowerCase()];
+//	} catch (ex) {}
+//	mime && request.overrideMimeType(mime + "; charset=x-user-defined");
+
 	request.open("GET", url, true);
-//	request.overrideMimeType("text\/plain; charset=x-user-defined");
 	request.responseType = "blob";
 
 	context || (context = image || request);

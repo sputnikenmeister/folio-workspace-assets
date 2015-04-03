@@ -23,6 +23,10 @@ $(window).load(function() {
 //	console.log("App.ready()", arguments.length, arguments);
 	console.log("App.load()", arguments.length, arguments);
 
+	/** @type {module:app/control/Globals} */
+	var Globals = require("./control/Globals");
+	$.fx.speeds._default = Globals.TRANSITION_DURATION;
+
 	/** @type {module:app/model/collection/TypeList} */
 	var typeList = require("./model/collection/TypeList");
 	/** @type {module:app/model/collection/KeywordList} */

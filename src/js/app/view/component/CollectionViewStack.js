@@ -13,8 +13,8 @@ var Container = require("backbone.babysitter");
 
 /** @type {module:app/helper/View} */
 var View = require("../../helper/View");
-/** @type {module:app/helper/DeferredRenderView} */
-var DeferredRenderView = require("../../helper/DeferredRenderView");
+/** @type {module:app/helper/DeferredView} */
+var DeferredView = require("../../helper/DeferredView");
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
 
@@ -22,7 +22,7 @@ var Globals = require("../../control/Globals");
  * @constructor
  * @type {module:app/component/CollectionViewStack}
  */
-module.exports = DeferredRenderView.extend({
+module.exports = DeferredView.extend({
 
 	/** @override */
 	tagName: "div",
@@ -68,7 +68,7 @@ module.exports = DeferredRenderView.extend({
 		this.hammer.off("panstart panmove panend pancancel tap", this._onTouch);
 		if (this._hammerIsLocal) this.hammer.destroy();
 		this.removeChildren();
-		DeferredRenderView.prototype.remove.apply(this);
+		DeferredView.prototype.remove.apply(this);
 	},
 
 	/* --------------------------- *
@@ -135,7 +135,7 @@ module.exports = DeferredRenderView.extend({
 					.clearQueue()
 					.css(contentRect)
 					.delay(Globals.TRANSITION_DELAY)
-					.transit({opacity: 0}, Globals.TRANSITION_DURATION)
+					.transit({opacity: 0})
 					.promise().always(function($content) {
 						$content.parent().removeAttr("style");
 						$content.remove();
@@ -148,7 +148,7 @@ module.exports = DeferredRenderView.extend({
 					.css({opacity: 0})
 					.delay(Globals.TRANSITION_DELAY * 2)
 					.prependTo(this.el)
-					.transit({opacity: 1}, Globals.TRANSITION_DURATION);
+					.transit({opacity: 1});
 			}
 		}
 		return this;

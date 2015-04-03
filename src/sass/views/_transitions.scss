@@ -15,7 +15,7 @@
 }
 
 .app-initial *, body.skip-transitions * {
-	@extend %skip_transitions;
+	@include skip_transitions;
 }
 
 // ------------------------------------

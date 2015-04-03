@@ -5,7 +5,7 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:backbone} */
-var Backbone = require("backbone");
+//var Backbone = require("backbone");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
@@ -13,6 +13,9 @@ var Globals = require("../../control/Globals");
 var View = require("../../helper/View");
 /** @type {module:app/model/item/ImageItem} */
 var ImageItem = require("../../model/item/ImageItem");
+
+/** @type {module:app/utils/event/addTransitionEndCommand} */
+var addTransitionCallback = require("../../utils/event/addTransitionCallback");
 /** @type {module:app/utils/net/loadImage} */
 var loadImage = require("../../utils/net/loadImage");
 //var loadImage = require("../../utils/net/loadImageDOM");
@@ -37,16 +40,22 @@ module.exports = View.extend({
 
 	/** @override */
 	initialize: function (opts) {
-		this.fetchImage = _.bind(_.once(this.fetchImage), this);
 		this.createChildren();
-		this.initializePromise();
-		this.addSiblingListeners();
+
+		if (this.model.has("prefetched")) {
+			this.image.src = this.model.get("prefetched");
+			console.log(this.model.get("prefetched"));
+			this.$el.removeClass("idle").addClass("done");
+		} else {
+//			this.initializePromise();
+			this.addSiblingListeners();
+		}
 	},
 
 	remove: function() {
-		this.promise.destroy();
+//		this.promise.destroy();
 		this.$image.off("dragstart");
-		return Backbone.View.prototype.remove.apply(this, arguments);
+		return View.prototype.remove.apply(this, arguments);
 	},
 
 	/* --------------------------- *
@@ -116,23 +125,12 @@ module.exports = View.extend({
 	 * events/image loading
 	 * --------------------------- */
 
-	initializePromise: function() {
-		var onLoad, onError, onProgress, doAlways;
-		onLoad = function (url, source, ev) {
-			//console.info("ImageRenderer.onLoad: " + this.model.get("f"), ev);
-			this.$el.removeClass("pending").addClass("done");
-			this.$placeholder.removeAttr("data-progress");
-			//this.model.trigger("load:done");
-		};
-		onError = function (err, source, ev) {
-			//console.error("ImageRenderer.onError: " + err.message, arguments);
-			this.$el.removeClass("pending").addClass("error");
-			this.$placeholder.removeAttr("data-progress");
-			//this.model.trigger("load:error");
-		};
+	createImagePromise: function() {
+		var onLoad, onError, onProgress, doAlways, promise;
+
 		onProgress = function (progress, source, ev) {
 			if (progress == "loadstart") {
-				//console.debug("ImageRenderer.onProgress: " + this.model.get("f") + " loadstart");
+				console.debug("ImageRenderer.onProgress: (loadstart) " + this.model.get("f"));
 				this.$el.removeClass("idle").addClass("pending");
 				//this.model.trigger("load:start");
 			} else {
@@ -141,9 +139,27 @@ module.exports = View.extend({
 			}
 		};
 		onProgress = _.throttle(onProgress, 100, {leading: true, trailing: true});
+		onError = function (err, source, ev) {
+			console.error("ImageRenderer.onError: " + err.message, arguments);
+			this.$el.removeClass("pending").addClass("error");
+			this.$placeholder.removeAttr("data-progress");
+			//this.model.trigger("load:error");
+		};
+		onLoad = function (url, source, ev) {
+			console.debug("ImageRenderer.onLoad: " + this.model.get("f"), ev);
+			this.model.set({"prefetched": url});
+			this.$el.removeClass("pending").addClass("done");
+			this.$placeholder.removeAttr("data-progress");
 
-		this.promise = loadImage(this.model.getImageUrl(), this.image, this);
-		this.promise.then(onLoad, onError, onProgress);
+			this.off("view:remove", promise.destroy);
+			//this.model.trigger("load:done");
+		};
+
+		promise = loadImage(this.model.getImageUrl(), this.image, this);
+		promise.then(onLoad, onError, onProgress);
+		this.on("view:remove", promise.destroy);
+
+		return promise;
 	},
 
 	addSiblingListeners: function () {
@@ -153,28 +169,36 @@ module.exports = View.extend({
 			// Check indices for contiguity
 			return (m === n) || (m + 1 === n) || (m - 1 === n);
 		};
+//		var fetchImage = _.bind(_.once(this.fetchImage), this);
 		var onSelect = function(model) {
 			if (check(owner.selectedIndex)) {
 				this.stopListening(owner, "select:one select:none", onSelect);
-				this.$el.on("webkittransitionend transitionend", this.fetchImage);
-				_.delay(this.fetchImage, Globals.TRANSITION_DELAY * 3);
+
+				var cancellable = addTransitionCallback("transform", function() {
+					this.off("view:remove", cancellable);
+					this.createImagePromise().request();
+				}, this.el, this, Globals.TRANSITION_DELAY * 1);
+				this.on("view:remove", cancellable);
+
+//				this.$el.on("webkittransitionend transitionend", fetchImage);
+//				_.delay(fetchImage, Globals.TRANSITION_DELAY * 3);
 			}
 		};
-
 		if (check(owner.selectedIndex)) {
-			this.fetchImage();
+//			fetchImage();
+			this.createImagePromise().request();
 		} else {
 			this.listenTo(owner, "select:one select:none", onSelect);
 		}
 	},
 
-	fetchImage: function(ev) {
-		if (ev instanceof window.Event) {
-			if ((ev.originalEvent || ev).propertyName !== "transform") {
-				return;
-			}
-		}
-		this.$el.off("webkittransitionend transitionend", this.fetchImage);
-		this.promise.request();
-	},
+//	fetchImage: function(ev) {
+//		if (ev instanceof window.Event) {
+//			if ((ev.originalEvent || ev).propertyName !== "transform") {
+//				return;
+//			}
+//		}
+//		this.$el.off("webkittransitionend transitionend", this.fetchImage);
+//		this.promise.request();
+//	},
 });

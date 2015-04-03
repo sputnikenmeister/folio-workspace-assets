@@ -32,8 +32,10 @@ var GroupingListView = require("./component/GroupingListView");
 /** @type {module:app/view/component/CollectionPager} */
 var CollectionPager = require("./component/CollectionPager");
 
+/** @type {module:app/helper/TransformHelper} */
+var TransformHelper = require("../helper/TransformHelper");
 /** @type {module:app/utils/event/addTransitionEndCommand} */
-var addTransitionEndCommand = require("../utils/event/addTransitionEndCommand");
+var addTransitionCallback = require("../utils/event/addTransitionCallback");
 
 var getTransformProps = function(el) {
 	var o = {};
@@ -59,37 +61,41 @@ module.exports = View.extend({
 	className: "navigation",
 
 	/** @override */
-	events: {
-		"click #site-name a": "_onSitenameClick"
-	},
-
-	/** @override */
 	initialize: function (options) {
 		this.$sitename = this.$("#site-name");
 		//this.$sitename.on("click", _.bind(this._onSitenameClick, this));
 		this.$sitename.wrap("<div id=\"site-name-wrapper\" class=\"transform-wrapper\"></div>");
 
 		this.bundlePager = this.createBundlePager();
-		this.bundlesView = this.createBundleList();
-		this.keywordsView = this.createKeywordList();
+		this.bundleList = this.createBundleList();
+		this.keywordList = this.createKeywordList();
 
-		this.bundlesView.$el.wrap("<div id=\"bundle-list-wrapper\" class=\"transform-wrapper\"></div>");
-		this.keywordsView.$el.wrap("<div id=\"keyword-list-wrapper\" class=\"transform-wrapper\"></div>");
+		this.transforms = new TransformHelper();
 
-		this.metrics = {};
-		this._metrics = [];
-		this._wrappers = [];
+		var cancellable, $body = Backbone.$("body");
+		this.listenTo(bundles, "deselect:one deselect:none", function() {
+			if (cancellable) {
+				cancellable();
+				cancellable = void 0;
+				$body.removeClass("entering-bundle");
+			}
+			if (this.transforms.hasTransition(this.keywordList.wrapper)) {
+//				this.keywordList.$wrapper.css({"transition-delay": "2s"});
+				$body.addClass("entering-bundle");
+				cancellable = addTransitionCallback("transform", function() {
+					cancellable = void 0;
+//					this.keywordList.$wrapper.css({"transition-delay": ""});
+					$body.removeClass("entering-bundle");
+				}, this.keywordList.wrapper, this);
+			} else {
+			}
+		});
 
-		this._kWrap = this.keywordsView.el.parentElement;
-		this._initTransform(this._kWrap);
-//		this._$kWrap = this.keywordsView.$el.parent();
-
-		_.bindAll(this, "_onPanStart", "_onPanMove", "_onPanFinal", "_onVerticalPan");
+		_.bindAll(this, "_onPanStart", "_onPanMove", "_onPanFinal", "_onVPanEnd");
 		this.touch = TouchManager.getInstance();
-		this.touch.on("vpanend", this._onVerticalPan);
-		this.touch.on("panstart", this._onPanStart);
 
 		this.listenTo(bundles, {
+			"deselect:none": this._onDeselectNone,
 			"select:one": this._onSelectOne,
 			"select:none": this._onSelectNone
 		});
@@ -97,9 +103,10 @@ module.exports = View.extend({
 
 	/** @override */
 	remove: function () {
+		/** this view is, as of now, never removed, so this method is never called */
 		//this.$sitename.off("click");
-		this.touch.off("vpanend", this._onVerticalPan);
-		this.touch.off("panstart", this._onPanStart);
+		//this.touch.off("vpanstart", this._onVPanEnd);
+		//this.touch.off("panstart", this._onPanStart);
 		View.prototype.remove.apply(this, arguments);
 	},
 
@@ -116,6 +123,7 @@ module.exports = View.extend({
 			collection: bundles,
 			// collapsed is set later by showBundleItem/showBundleList
 			//collapsed: bundles.selected,
+			collapsed: false,
 			filterBy: keywords.selected,
 			filterKey: "bIds",
 //			filterFn: function () {
@@ -126,6 +134,10 @@ module.exports = View.extend({
 			"view:select:one": controller.selectBundle,
 			"view:select:none": controller.deselectBundle
 		});
+//		view.wrapper = this.el.querySelector("#bundle-list-wrapper") ||
+//				view.$el.wrap("<div id=\"bundle-list-wrapper\" class=\"transform-wrapper\"></div>")[0].parentElement;
+		view.wrapper = view.el.parentElement;
+		view.$wrapper = view.$el.parent();
 		return view;
 	},
 
@@ -136,7 +148,7 @@ module.exports = View.extend({
 		var view = new GroupingListView({
 			el: "#keyword-list",
 			collection: keywords,
-			collapsed: true,
+			collapsed: false,
 			filterBy: bundles.selected,
 			filterKey: "kIds",
 			groupings: {
@@ -150,6 +162,11 @@ module.exports = View.extend({
 //				return item.get("tIds");
 //			},
 		});
+
+//		view.wrapper = this.el.querySelector("#keyword-list-wrapper") ||
+//				view.$el.wrap("<div id=\"keyword-list-wrapper\" class=\"transform-wrapper\"></div>")[0].parentElement;
+		view.wrapper = view.el.parentElement;
+		view.$wrapper = view.$el.parent();
 		return view;
 	},
 
@@ -179,10 +196,13 @@ module.exports = View.extend({
 	/** @override */
 	render: function () {
 //		(bundles.selected)? this._onSelectOne(): this._onSelectNone();
-//		this.keywordsView.renderNow();
-//		this.bundlesView.renderNow();
 
-		this._releaseTransformValues(this._kWrap);
+		this.transforms.release(this.keywordList.el);
+		this.transforms.release(this.bundleList.el);
+		this.transforms.release(this.keywordList.wrapper);
+
+//		this.keywordList.renderNow();
+//		this.bundleList.renderNow();
 		return View.prototype.render.apply(this, arguments);
 	},
 
@@ -190,23 +210,69 @@ module.exports = View.extend({
 	 * Event handlers
 	 * --------------------------- */
 
+	/** @override */
+	events: {
+		"click #site-name a": function (ev) {
+			ev.isDefaultPrevented() || ev.preventDefault();
+			controller.deselectBundle();
+		}
+	},
+
 	_onSelectOne: function(bundle) {
-		this.bundlesView.setCollapsed(true);
-		this.keywordsView.filterBy(bundle);
+		this.keywordList.filterBy(bundle);
 	},
 
 	_onSelectNone: function() {
-		this.bundlesView.setCollapsed(false);
-		this.keywordsView.filterBy(null);
+		this.bundleList.setCollapsed(false);
+		this.keywordList.setCollapsed(false);
+		this.keywordList.filterBy(null);
+		this.touch.off("vpanend", this._onVPanEnd);
+		this.touch.off("panstart", this._onPanStart);
 	},
 
-	_onSitenameClick: function (ev) {
-		ev.isDefaultPrevented() || ev.preventDefault();
-		controller.deselectBundle();
+	_onDeselectNone: function() {
+		this.bundleList.setCollapsed(true);
+		this.keywordList.setCollapsed(true);
+		this.touch.on("vpanend", this._onVPanEnd);
+		this.touch.on("panstart", this._onPanStart);
 	},
 
-	_onVerticalPan: function (ev) {
-		if (bundles.selected && ev.type === "vpanend" && (Math.abs(ev.deltaY) > 100)) {
+	_onVPanEnd: function (ev) {
+		if (ev.deltaY > 200 && this.bundleList.getCollapsed()) {
+			this.bundleList.setCollapsed(false);
+			this.keywordList.setCollapsed(false);
+		}
+		else if (ev.deltaY < 200 && !this.bundleList.getCollapsed()) {
+			this.bundleList.setCollapsed(true);
+			this.keywordList.setCollapsed(true);
+		}
+	},
+
+	_onVPan: function (ev) {
+		if (bundles.selectedIndex >= 0) {
+			if (ev.type === "vpanmove" || ev.type === "vpanstart") {
+				if (ev.type === "vpanstart") {
+					this.touch.on("vpanmove vpanend vpancancel", this._onVPan);
+					this.disableTransitions(this.bundleList.el);
+					this.disableTransitions(this.keywordList.el);
+					this.transforms.capture(this.bundleList.el);
+					this.transforms.capture(this.keywordList.el);
+				}
+				var delta = (ev.deltaY + ev.thresholdOffsetY) * 0.25;
+				this.transforms.move(this.bundleList.el, void 0, delta);
+				this.transforms.move(this.keywordList.el, void 0, delta);
+			} else if (ev.type === "vpanend" || ev.type === "vpancancel") {
+				this.enableTransitions(this.bundleList.el);
+				this.enableTransitions(this.keywordList.el);
+				this.transforms.clear(this.bundleList.el);
+				this.transforms.clear(this.keywordList.el);
+				this.touch.off("vpanmove vpanend vpancancel", this._onVPan);
+			}
+		}
+	},
+
+	_onVPan_select: function (ev) {
+		if (Math.abs(ev.deltaY) > 100) {
 			if (bundles.selected.get("images").selected) {
 				controller.deselectImage();
 			} else if (ev.direction & Hammer.DIRECTION_DOWN && bundles.hasPreceding()) {
@@ -214,7 +280,7 @@ module.exports = View.extend({
 			} else if (ev.direction & Hammer.DIRECTION_UP && bundles.hasFollowing()) {
 				controller.selectBundle(bundles.following());
 			} else {
-//				controller.deselectBundle();
+				//controller.deselectBundle();
 			}
 		}
 	},
@@ -224,15 +290,11 @@ module.exports = View.extend({
 	 * ------------------------------- */
 
 	_onPanStart: function(ev) {
-		if ((bundles.selectedIndex >= 0) && (bundles.selected.get("images").selectedIndex <= 0) &&
-					(this._hasCSSTransition(this._kWrap))) {
-//					true) {
+		if (bundles.selected.get("images").selectedIndex <= 0 && this.transforms.hasTransition(this.keywordList.wrapper)) {
 			this.touch.on("panend pancancel", this._onPanFinal);
 			this.touch.on("panmove", this._onPanMove);
-
-			this._disableCSSTransition(this._kWrap);
-			this._captureTransformValues(this._kWrap);
-
+			this.disableTransitions(this.keywordList.wrapper);
+			this.transforms.capture(this.keywordList.wrapper);
 			this._onPanMove(ev);
 		}
 	},
@@ -240,184 +302,34 @@ module.exports = View.extend({
 	_onPanMove: function(ev) {
 		var delta = ev.deltaX + ev.thresholdOffsetX;
 		if (bundles.selected.get("images").selectedIndex == -1) {
-			delta *= (delta > 0)? 0.40: 0.75;//(ev.offsetDirection & Hammer.DIRECTION_LEFT)? 0.4 : 0.75;
+			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)? 0.4 : 0.75;
+			//delta *= (delta > 0)? 0.40: 0.75;
 		} else {//if (images.selectedIndex == 0) {
-			delta *= (delta > 0)? 0.75: 0.00;//(ev.offsetDirection & Hammer.DIRECTION_LEFT)? 0.75 : 0.0;
+			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)? 0.75 : 0.0;
+			//delta *= (delta > 0)? 0.75: 0.00;
 		}
-		this._setCSSTransform(this._kWrap, delta);
+		this.transforms.move(this.keywordList.wrapper, delta);
 	},
 
 	_onPanFinal: function(ev) {
-		this._enableCSSTransition(this._kWrap);
-		this._clearCSSTransform(this._kWrap);
-
+		this.enableTransitions(this.keywordList.wrapper);
+		this.transforms.clear(this.keywordList.wrapper);
 		this.touch.off("panmove", this._onPanMove);
 		this.touch.off("panend pancancel", this._onPanFinal);
-	},
-
-	/* -------------------------------
-	 * transitions/transforms
-	 * ------------------------------- */
-
-	_initTransform: function(el) {
-		var idx = this._wrappers.indexOf(el);
-		if (idx == -1) {
-			idx = this._wrappers.length;
-			this._wrappers[idx] = el;
-			this._metrics[idx] = {
-				el: el,
-				$el: Backbone.$(el)
-			};
-		}
-		return idx;
-	},
-
-	_destroyTransform: function(el) {
-		var idx = this._wrappers.indexOf(el);
-		this._wrappers.splice(idx, 1);
-		this._metrics.splice(idx, 1);
-	},
-
-	_getTransform: function(el) {
-		var idx = this._wrappers.indexOf(el);
-		if (idx == -1) {
-			idx = this._initTransform(el);
-		}
-		return this._metrics[idx];
-	},
-
-	/* -------------------------------
-	 * css property --> object
-	 * ------------------------------- */
-
-	_parseTransformValues: function(cssval) {
-		var m, mm, mv, o = { css: cssval };
-		mm = cssval.match(/(matrix|matrix3d)\(([^\)]+)\)/);
-		if (mm) {
-			m = mm[2].split(",");
-			if (mm[1] === "matrix") {
-				o.x = parseFloat(m[4]);
-				o.y = parseFloat(m[5]);
-			} else {
-				o.x = parseFloat(m[12]);
-				o.y = parseFloat(m[13]);
-			}
-		} else {
-			o.x = 0;
-			o.y = 0;
-		}
-		console.log("NavigationView._parseTransformValues", o.x, o.y, cssval);
-		return o;
-	},
-
-	_parseTransformValues_2: function(cssval) {
-		var o = { css: cssval };
-		var m = cssval.match(/(-?[\d\.]+)(?=[\)\,])/g);
-		if (m && m.length == 6) {
-			o.x = parseFloat(m[4]);
-			o.y = parseFloat(m[5]);
-		} else if (m && m.length == 16) {
-			o.x = parseFloat(m[12]);
-			o.y = parseFloat(m[13]);
-		} else {
-			o.x = 0;
-			o.y = 0;
-		}
-		console.log("NavigationView._parseTransformValues_2", o.x, o.y, cssval);
-		return o;
-	},
-
-	_captureTransformValues: function(el) {
-		var o = this._getTransform(el);
-		if (o.offset) {
-			console.warn("ContentView._captureTransformValues", "offser values still set: clearing before capture");
-			o.$el.css({transform: ""});
-		}
-		o.captured = this._parseTransformValues(o.$el.css("transform"));
-		if (o.offset) {
-			o.$el.css({transform: "translate3d(" +
-					   (o.offset.x + o.captured.x) + "px, " +
-					   (o.offset.y + o.captured.y) + "px, 0px)"
-			});
-		}
-	},
-
-	_releaseTransformValues: function(el) {
-		var o = this._getTransform(el);
-		o.offset = o.captured = void 0;
-		//o.$el.css({transform: ""});
-		console.log("NavigationView._resetCSSTransform");
-	},
-
-	/* -------------------------------
-	 * object --> css property
-	 * ------------------------------- */
-
-	_clearCSSTransform: function(el) {
-		var o = this._getTransform(el);
-		if (o.offset) {
-			o.$el.css({"transform": ""});
-			o.offset = void 0;
-			console.log("NavigationView._clearCSSTransform");
-		} else {
-			console.warn("NavigationView._clearCSSTransform", "nothing to clear");
-		}
-		o.captured = void 0;
-	},
-
-	_setCSSTransform: function(el, x, y) {
-		var o = this._getTransform(el);
-		o.offset = { x: x || 0, y: y || 0};
-		if (!o.captured) {
-			console.warn("ContentView._setCSSTransform", "captured values not set: capturing now");
-			o.captured = this._parseTransformValues(o.$el.css("transform"));
-		}
-		o.$el.css({transform: "translate3d(" +
-				   (o.offset.x + o.captured.x) + "px, " +
-				   (o.offset.y + o.captured.y) + "px, 0px)"
-		});
-	},
-
-	_updateCSSTransform: function(el) {
-		var o = this._getTransform(el);
-		if (o.offset) {
-			if (!o.captured) {
-				console.info("ContentView._updateCSSTransform", "captured values not set: capturing now");
-				o.captured = this._parseTransformValues(o.$el.css("transform"));
-			}
-			o.$el.css({transform: "translate3d(" +
-					   (o.offset.x + o.captured.x) + "px, " +
-					   (o.offset.y + o.captured.y) + "px, 0px)"
-			});
-		} else {
-			o.$el.css({"transform": ""});
-		}
 	},
 
 	/* -------------------------------
 	 * transitions
 	 * ------------------------------- */
 
-	_enableCSSTransition: function(el) {
+	enableTransitions: function(el) {
 		this.$el.removeClass("skip-transitions");
-//		this._getTransform(el).$el.css({transition: ""});
-//		this._getTransform(el).$el.removeClass("skip-own-transitions");
-		//el.classList.remove("skip-own-transitions");
+		//this.transforms._getTransform(el).$el.css({"transition": "", "-webkit-transition": ""});
 	},
 
-	_disableCSSTransition: function(el) {
+	disableTransitions: function(el) {
 		this.$el.addClass("skip-transitions");
-//		this._getTransform(el).$el.css({transition: "none 0s 0s !important"});
-//		this._getTransform(el).$el.addClass("skip-own-transitions");
-		//el.classList.add("skip-own-transitions");
-	},
-
-  	_hasCSSTransition: function(el) {
-		var s = window.getComputedStyle(el);
-		var v = s.webkitTransition || s.MozTransitionProperty || s.webkitTransitionProperty || s.MozTransition || s.transition;
-		var r = v && v.indexOf("transform") != -1;
-		console.log("NavigationView._hasCSSTransition", r);
-		return r;
+		//this.transforms._getTransform(el).$el.css({"transition": "none 0s 0s", "-webkit-transition": "none 0s 0s"});
 	},
 
 });

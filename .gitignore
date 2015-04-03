@@ -7,3 +7,7 @@ _~*.scss
 /flash
 /html
 /build/uploads-sprites
+/css
+/images/favicon
+/js
+/lib

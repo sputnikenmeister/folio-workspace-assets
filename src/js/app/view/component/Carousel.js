@@ -11,15 +11,21 @@ var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 
+/** @type {module:app/control/Globals} */
+var Globals = require("../../control/Globals");
+/** @type {module:app/utils/event/addTransitionEndCommand} */
+var addTransitionCallback = require("../../utils/event/addTransitionCallback");
+
 /** @type {module:app/helper/View} */
 var View = require("../../helper/View");
-/** @type {module:app/helper/DeferredRenderView} */
-var DeferredRenderView = require("../../helper/DeferredRenderView");
+/** @type {module:app/helper/DeferredView} */
+var DeferredView = require("../../helper/DeferredView");
 
 /** @type {module:app/view/render/CarouselDefaultRenderer} */
 var CarouselDefaultRenderer = require("../render/CarouselDefaultRenderer");
 /** @type {module:app/view/render/CarouselEmptyRenderer} */
 var CarouselEmptyRenderer = require("../render/CarouselEmptyRenderer");
+
 
 //var ORIENTED_PROPS = {
 //	x: ["x", "y"],
@@ -34,7 +40,7 @@ var CarouselEmptyRenderer = require("../render/CarouselEmptyRenderer");
  * @constructor
  * @type {module:app/view/component/Carousel}
  */
-var Carousel = DeferredRenderView.extend({
+var Carousel = DeferredView.extend({
 
 	/** @override */
 	tagName: "div",
@@ -88,7 +94,7 @@ var Carousel = DeferredRenderView.extend({
 //		this.hammer.off("tap", this._onTap);
 		this.hammer.off("panstart panmove panend pancancel", this._onPan);
 		this.removeChildren();
-		DeferredRenderView.prototype.remove.apply(this);
+		DeferredView.prototype.remove.apply(this);
 	},
 
 	initializeHammer: function(options) {
@@ -313,7 +319,10 @@ var Carousel = DeferredRenderView.extend({
 		}, this);
 
 		// transition management
-		this._scrollPendingAction && this._scrollPendingAction("scroll:cancel");
+		if (this._scrollEndCancellable) {
+			this._scrollEndCancellable();
+			this._scrollEndCancellable = void 0;
+		}
 
 		if (skipTransitions) {
 			this.skipTransitions = false;
@@ -321,36 +330,11 @@ var Carousel = DeferredRenderView.extend({
 			this.commitScrollSelection();
 		} else {
 			this.$el.removeClass("skip-transitions");
-
-			// do immediately
-//			this._scrollCandidateView ** this._selectedView.$el.removeClass("selected");
 			this.commitScrollSelection();
-
-			// do after transitionend/timeout
-			scrollEndCommand = function(view, handler, timeoutId, label) {
-//				console.log(timeoutId, label);
-				view.$el.off("webkittransitionend transitionend", handler);
-				window.clearTimeout(timeoutId);
-				this._scrollPendingAction = void 0;
-				if (label !== "scroll:cancel") {
-					this.$el.removeClass("scrolling");
-//					this.commitScrollSelection();
-				}
-			};
-
-			var targetView = this._selectedView;
-			// Command: execute on timeout
-			scrollTimeoutId = window.setTimeout(function() {
-				scrollEndCommand("scroll:end:timeout");
-			}, 1000);
-			// Command: execute on event
-			scrollEventHandler = function(ev) {
-				ev.originalEvent.propertyName == "transform" && scrollEndCommand("scroll:end:event");
-			};
-			// Command: bind argument values, except 4th
-			scrollEndCommand = _.once(_.bind(scrollEndCommand, this, targetView, scrollEventHandler, scrollTimeoutId));
-			targetView.$el.on("webkittransitionend transitionend", scrollEventHandler);
-			this._scrollPendingAction = scrollEndCommand;
+			this._scrollEndCancellable = addTransitionCallback("transform", function() {
+				this._scrollEndCancellable = void 0;
+				this.$el.removeClass("scrolling");
+			}, this._selectedView.el, this, Globals.TRANSITION_DURATION * 2);
 		}
 	},
 

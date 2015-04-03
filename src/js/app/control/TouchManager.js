@@ -174,7 +174,8 @@ module.exports = {
 
 	init: function(el) {
 		if (_.isNull(instance)) {
-			var vpan = new Hammer.Pan({
+//			var vpan = new Hammer.Pan({
+			var vpan = new SmoothPan({
 				event: "vpan",
 				threshold: THRESHOLD,
 				direction: Hammer.DIRECTION_VERTICAL,

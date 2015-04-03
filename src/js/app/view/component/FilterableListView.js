@@ -8,15 +8,15 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
-/** @type {module:app/helper/DeferredRenderView} */
-var DeferredRenderView = require("../../helper/DeferredRenderView");
+/** @type {module:app/helper/DeferredView} */
+var DeferredView = require("../../helper/DeferredView");
 
 
 /**
  * @constructor
  * @type {module:app/view/component/SelectableListView}
  */
-var FilterableListView = DeferredRenderView.extend({
+var FilterableListView = DeferredView.extend({
 
 	/** @override */
 	tagName: "ul",
@@ -57,7 +57,7 @@ var FilterableListView = DeferredRenderView.extend({
 
 	remove: function () {
 		Backbone.$(window).off("orientationchange resize", this._onResize);
-		DeferredRenderView.prototype.remove.apply(this);
+		DeferredView.prototype.remove.apply(this);
 	},
 
 	/* --------------------------- *
@@ -66,11 +66,11 @@ var FilterableListView = DeferredRenderView.extend({
 
 	/** @param {Object} ev */
 	_onResize: function (ev) {
-		this.eltSizes = void 0;
 		this.renderLayout();
 	},
 
 	render: function() {
+		this.renderNow();
 		return this;
 	},
 
@@ -84,7 +84,13 @@ var FilterableListView = DeferredRenderView.extend({
 			this.$el.removeClass("skip-transitions");
 		}, this));
 
-		this.validateRender("collapsed");
+		if (this.needsRender("collapsed")) {
+			this.validateRender("collapsed");
+			this.$el.addClass("entering");
+		} else {
+			this.$el.removeClass("entering");
+		}
+
 		this.validateRender("selection");
 		this.validateRender("filterBy");
 		this.renderLayout();
@@ -92,12 +98,9 @@ var FilterableListView = DeferredRenderView.extend({
 
 	renderLayout: function() {
 		var tx, elt, posX, posY;
-
 		elt = this.el.firstElementChild;
-//		posY = this.el.getBoundingClientRect()["top"] - elt.getBoundingClientRect()["top"];
 		posY = elt.clientTop;
-//		posY = elt.offsetTop;
-//		posY = 0;
+		//posY = elt.offsetTop;
 		posX = 0;
 		do {
 			tx = "translate3d(" + posX + "px," + posY + "px, 0px)";
@@ -105,9 +108,9 @@ var FilterableListView = DeferredRenderView.extend({
 			elt.style.webkitTransform = tx;
 			elt.style.mozTransform = tx;
 			elt.style.transform = tx;
-			if (elt.className.indexOf("excluded") === -1) {
-//				posY += elt.getBoundingClientRect()["height"];
+			if (!this._collapsed || elt.className.indexOf("excluded") === -1) {
 				posY += elt.clientHeight;
+				//posY += elt.offsetHeight;
 			}
 		} while (elt = elt.nextElementSibling);
 
@@ -178,6 +181,7 @@ var FilterableListView = DeferredRenderView.extend({
 	setCollapsed: function (collapsed, force) {
 		if (force || collapsed !== this._collapsed) {
 			this._collapsed = collapsed;
+//			this.requestRender("collapsed");
 			this.requestRender("collapsed", _.bind(this.renderCollapsed, this, collapsed));
 		}
 	},

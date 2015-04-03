@@ -7,10 +7,9 @@ $hu: 20px;
 $vu: 12px;
 
 // Time base units (transitions/animations)
-//$duration: 			0.375s;
-//$delay_interval: 	0.025s;
-$duration: 			0.6s;
-$delay_interval: 	0.1s;
+$delay_interval: 	0.025s;
+//$duration:  		0.375s;
+$duration:  		0.7s;
 
 $delay: $duration + $delay_interval;
 
@@ -26,6 +25,3 @@ $ease: ease;
 //$ease_out:	cubic-bezier(0.5, 0.5, #{1 - $ease_time}, #{1 - $ease_prop});
 //$ease_in:		cubic-bezier(0.400, 0.000, 0.600, 0.400);
 //$ease_out:	cubic-bezier(0.400, 0.600, 0.600, 1.000);
-
-//$area_color_weight: 10%;
-//$line_color_weight: 30%;

@@ -11,8 +11,8 @@ var Backbone = require("backbone");
 var Globals = require("../../control/Globals");
 /** @type {module:app/helper/View} */
 var View = require("../../helper/View");
-/** @type {module:app/helper/DeferredRenderView} */
-var DeferredRenderView = require("../../helper/DeferredRenderView");
+/** @type {module:app/helper/DeferredView} */
+var DeferredView = require("../../helper/DeferredView");
 
 /** @type {string} */
 var viewTemplate = require("./CollectionStack.tpl");
@@ -22,7 +22,7 @@ var viewTemplate = require("./CollectionStack.tpl");
  * @type {module:app/component/CollectionStack}
  */
 module.exports = View.extend({
-//module.exports = DeferredRenderView.extend({
+//module.exports = DeferredView.extend({
 
 	/** @override */
 	tagName: "div",
@@ -97,8 +97,8 @@ module.exports = View.extend({
 					this.$content						// Fade it out
 						.clearQueue()
 						.css(contentRect)
-						//.delay(Globals.TRANSITION_DELAY * 0).transit({opacity: 0, delay: 1}, Globals.TRANSITION_DURATION)
-						.transit({opacity: 0, delay: Globals.TRANSITION_DELAY * 0 + 1}, Globals.TRANSITION_DURATION)
+						//.delay(Globals.TRANSITION_DELAY * 0).transit({opacity: 0, delay: 1})
+						.transit({opacity: 0, delay: Globals.TRANSITION_DELAY * 0 + 1})
 						.promise().always(function($content) {
 							$content.parent().removeAttr("style");
 							$content.remove();
@@ -114,10 +114,8 @@ module.exports = View.extend({
 				} else {
 					this.$content
 						.css({opacity: 0})
-						//.delay(Globals.TRANSITION_DELAY * 1)
-						.prependTo(this.el)
-						//.transit({opacity: 1, delay: 1}, Globals.TRANSITION_DURATION);
-						.transit({opacity: 1, delay: Globals.TRANSITION_DELAY * 1 + 1}, Globals.TRANSITION_DURATION);
+						.prependTo(this.el).transit({opacity: 1, delay: Globals.TRANSITION_DELAY * 1 + 1});
+						//.delay(Globals.TRANSITION_DELAY * 1).prependTo(this.el).transit({opacity: 1, delay: 1});
 				}
 			}
 

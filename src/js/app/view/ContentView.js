@@ -36,6 +36,11 @@ var CollectionStack = require("./component/CollectionStack");
 /** @type {module:app/view/render/DotNavigationRenderer} */
 //var DotNavigationRenderer = require("./render/DotNavigationRenderer");
 
+/** @type {module:app/helper/TransformHelper} */
+var TransformHelper = require("../helper/TransformHelper");
+/** @type {module:app/utils/event/addTransitionEndCommand} */
+var addTransitionCallback = require("../utils/event/addTransitionCallback");
+
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
@@ -49,6 +54,9 @@ var ContentView = View.extend({
 
 	initialize: function (options) {
 		this.children = [];
+		this.touch = TouchManager.getInstance();
+		this.transforms = new TransformHelper();
+		_.bindAll(this, "_onVPanStart", "_onVPanMove");
 
 		// Model listeners
 		this.listenTo(bundles, {
@@ -88,30 +96,32 @@ var ContentView = View.extend({
 	createChildren: function (bundle, skipAnimation) {
 		var images = bundle.get("images");
 
+		this.touch.on("vpanstart", this._onVPanStart);
+
 //		this.children[this.children.length] = this.createImageCaptionCarousel(bundle, images);
 		this.children[this.children.length] = this.createImageCaptionStack(bundle, images);
 		this.children[this.children.length] = this.createImageCarousel(bundle, images);
+
 		// Show views
 		_.each(this.children, function(view) {
 			view.render().$el.appendTo(this.el);
 			if (!skipAnimation) {
-				view.$el.css({
-					opacity: 0
-				})
-//				.delay(Globals.TRANSITION_DELAY * 2)
-				.transit({
-//					delay: 1,
-					delay: Globals.TRANSITION_DELAY * 2 + 1,
-					opacity: 1
-				}, Globals.TRANSITION_DURATION);
+				view.$el.css({opacity: 0})
+//				.delay(Globals.TRANSITION_DELAY * 2).transit({delay: 1, opacity: 1})
+				.transit({delay: Globals.TRANSITION_DELAY * 2 + 1, opacity: 1});
 			}
 		}, this);
 	},
 
 	removeChildren: function (bundle, skipAnimation) {
 		var images = bundle.get("images");
+
+		this.touch.off("vpanstart", this._onVPanStart);
+
 		this.stopListening(images);
+
 		_.each(this.children, function(view) {
+			this.transforms.destroy(view.el);
 			controller.stopListening(view);
 			if (skipAnimation) {
 				view.remove();
@@ -121,10 +131,7 @@ var ContentView = View.extend({
 					top: view.el.offsetTop,
 					left: view.el.offsetLeft
 				})
-				.transit({
-					opacity: 0,
-					delay: 1 // delay 0.001s - helps tx sync on webkit
-				}, Globals.TRANSITION_DURATION)
+				.transit({opacity: 0, delay: 1})
 				.queue(function(next) {
 					view.remove();
 					next();
@@ -133,6 +140,9 @@ var ContentView = View.extend({
 		}, this);
 		// clear child references
 		this.children.length = 0;
+	},
+
+	removeChild: function(view) {
 	},
 
 //	removeChildren: function (bundle, skipAnimation) {
@@ -147,7 +157,7 @@ var ContentView = View.extend({
 //			this._removeChildren();
 //		} else {
 //			Backbone.$(childEls).css({position: "absolute"})
-//				.transit({opacity: 0}, Globals.TRANSITION_DURATION)
+//				.transit({opacity: 0})
 //				.promise().done(_.bind(this._removeChildren, this));
 //		}
 //	},
@@ -159,6 +169,65 @@ var ContentView = View.extend({
 //		this.$el.css("display", "none");
 //		this.children.length = 0;
 //	},
+
+	getVPanDelta: function(ev) {
+		var delta = ev.deltaY + ev.thresholdOffsetY;
+		delta *= (ev.offsetDirection & Hammer.DIRECTION_UP)? 0.5: 0.1;
+		return delta;
+	},
+
+	_onVPanStart: function (ev) {
+		if (bundles.selectedIndex >= 0) {
+			if (ev.type === "vpanstart") {
+				var delta = this.getVPanDelta(ev);
+				_.each(this.children, function(view) {
+					this.disableTransitions(view.el);
+					this.transforms.capture(view.el);
+					this.transforms.move(view.el, void 0, delta);
+				}, this);
+				this.touch.on("vpanmove vpanend vpancancel", this._onVPanMove);
+			}
+		}
+	},
+
+	_onVPanMove: function (ev) {
+		if (ev.type === "vpanmove" || ev.type === "vpanstart") {
+			var delta = this.getVPanDelta(ev);
+			_.each(this.children, function(view) {
+				this.transforms.move(view.el, void 0, delta);
+			}, this);
+		} else if (ev.type === "vpanend" || ev.type === "vpancancel") {
+			_.each(this.children, function(view) {
+				this.enableTransitions(view.el);
+				this.transforms.clear(view.el);
+			}, this);
+			this.touch.off("vpanmove vpanend vpancancel", this._onVPanMove);
+		}
+	},
+
+	/* -------------------------------
+	 * transitions
+	 * ------------------------------- */
+
+	enableTransitions: function(el) {
+//		this.$el.removeClass("skip-transitions");
+		var $target = this.transforms._getTransform(el).$el;
+		$target.clearQueue().transit({transform: ""});
+
+//		$target.css({"transition": "transform 0.5s", "-webkit-transition": "-webkit-transform 0.5s"});
+//		addTransitionCallback("transform", function() {
+//			$target.css({"transition": "", "-webkit-transition": ""});
+//		}, el, this);
+	},
+
+	disableTransitions: function(el) {
+		var $target = this.transforms._getTransform(el).$el;
+		$target.clearQueue().css({"transition": "", "transform": "",});
+//		$target.clearQueue().css({"transition": "", "-webkit-transition": "", "transform": "", "-webkit-transform": ""});
+
+//		this.$el.addClass("skip-transitions");
+//		this.transforms._getTransform(el).$el.css({transition: "none 0s 0s"});
+	},
 
 	/* -------------------------------
 	 * Components
@@ -184,7 +253,7 @@ var ContentView = View.extend({
 			renderer: ImageRenderer,
 			emptyRenderer: emptyRenderer,
 			direction: Carousel.DIRECTION_HORIZONTAL,
-			hammer: TouchManager.getInstance(),
+			hammer: this.touch,
 		});
 		controller.listenTo(view, {
 			"view:select:one": controller.selectImage,
@@ -225,20 +294,15 @@ var ContentView = View.extend({
 //	 * label-carousel
 //	 */
 //	createImageCaptionCarousel: function(bundle, images) {
-//		// Create label-carousel
 //		var view = new Carousel({
 //			className: "label-carousel",
 //			collection: images,
-//			gap: Globals.HORIZONTAL_STEP,
-//			hammer: this.getHammered(),
+//			hammer: this.touch,
 //		});
-////		//view.render().$el.prependTo(this.el);
 ////		controller.listenTo(view, {
 ////			"view:select:one": controller.selectImage,
 ////			"view:select:none": controller.deselectImage
 ////		});
-////		view.render().$el.appendTo(this.el);
-////		return this.children[this.children.length] = view;
 //		return view;
 //	},
 
