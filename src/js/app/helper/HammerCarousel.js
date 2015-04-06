@@ -6,12 +6,6 @@
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
 
-// var reqAnimationFrame = (function() {
-// 	return window[Hammer.prefixed(window, "requestAnimationFrame")] || function(callback) {
-// 		setTimeout(callback, 1000 / 60);
-// 	}
-// })();
-
 /** @private */
 function dirProp(direction, hProp, vProp) {
 	return (direction & Hammer.DIRECTION_HORIZONTAL) ? hProp : vProp;
@@ -26,9 +20,11 @@ function dirProp(direction, hProp, vProp) {
 function HammerCarousel(container, direction) {
 	this.container = container;
 	this.direction = direction;
+	this.transformProp = Hammer.prefixed(this.container, "transform");
 
 	this.panes = Array.prototype.slice.call(this.container.children, 0);
-	this.containerSize = this.container[dirProp(direction, "offsetWidth", "offsetHeight")];
+	this.containerSize = (this.direction & Hammer.DIRECTION_HORIZONTAL)?
+		this.container.offsetWidth : this.container.offsetHeight;
 
 	this.currentIndex = 0;
 
@@ -67,14 +63,8 @@ HammerCarousel.prototype = {
 		var paneIndex, pos, translate;
 		for (paneIndex = 0; paneIndex < this.panes.length; paneIndex++) {
 			pos = (this.containerSize / 100) * (((paneIndex - showIndex) * 100) + percent);
-			if (this.direction & Hammer.DIRECTION_HORIZONTAL) {
-				translate = "translate3d(" + pos + "px, 0, 0)";
-			} else {
-				translate = "translate3d(0, " + pos + "px, 0)";
-			}
-			this.panes[paneIndex].style.transform = translate;
-			this.panes[paneIndex].style.mozTransform = translate;
-			this.panes[paneIndex].style.webkitTransform = translate;
+			this.panes[paneIndex].style[this.transformProp] = (this.direction & Hammer.DIRECTION_HORIZONTAL)?
+				"translate3d(" + pos + "px, 0, 0)" : "translate3d(0, " + pos + "px, 0)";
 		}
 
 		this.currentIndex = showIndex;
@@ -85,7 +75,7 @@ HammerCarousel.prototype = {
 	 * @param {Object} ev
 	 */
 	onPan: function (ev) {
-		var delta = dirProp(this.direction, ev.deltaX, ev.deltaY);
+		var delta = (this.direction & Hammer.DIRECTION_HORIZONTAL)? ev.deltaX: ev.deltaY;
 		var percent = (100 / this.containerSize) * delta;
 		var animate = false;
 

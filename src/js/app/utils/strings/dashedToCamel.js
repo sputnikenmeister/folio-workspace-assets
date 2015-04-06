@@ -1,3 +1,5 @@
 module.exports = function (str) {
-	return str.replace(/-([a-z])/g, function($0, $1) { return $1.toUpperCase(); }).replace("-","");
+	return str.replace(/-([a-z])/g, function($0, $1) { 
+			return $1.toUpperCase();
+		}).replace("-","");
 };

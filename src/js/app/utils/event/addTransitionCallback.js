@@ -21,7 +21,8 @@ module.exports = function(prop, action, target, context, timeout) {
 	timeout || (timeout = 2000);
 
 	var d = { id: _logCmdCount++, level: "log", method: "[prepared]"};
-	(target.id && (d.target = target.id)) || (d.context = (context.cid || context));
+	d.target = target.getAttribute("data-cid") || target.id || target.classList[0];
+	d.context = (context.model && context.model.get("name")) || context.cid || context;
 
 	timeoutId = window.setTimeout(function() {
 		d = _.extend(d, {level: "warn", method: "[timeout]", timeoutId: timeoutId, elapsed: timeout, props: prop});
@@ -43,9 +44,10 @@ module.exports = function(prop, action, target, context, timeout) {
 		} else if (!exec) {
 			d.method = "[cancelled]"; d.level = "log";
 		} else {
+			if (d.method == "[prepared]") d.method = "[direct]";
 			console[d.level] || (d.level = "log");
 		}
-		_log(d);
+		_log(d);//,target);
 
 		if (pending) {
 			pending = false;

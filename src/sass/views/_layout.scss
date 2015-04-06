@@ -50,11 +50,11 @@ $nav_height_portrait: 14.25rem;
 // - - - - - - - - - - - - - - - - - -
 
 @mixin nav_transition($delay: $delay) {
-	transition: transform #{$duration - 0.001s} $ease #{$delay + 0.001s};
-//	transition-property: transform;
-//	transition-duration: #{$duration - 0.001s};
-//	transition-timing-function: $ease;
-//	transition-delay: #{$delay + 0.001s};
+//	transition: transform #{$duration - 0.001s} $ease #{$delay + 0.001s};
+	transition-property: transform;
+	transition-duration: #{$duration - 0.001s};
+	transition-timing-function: $ease;
+	transition-delay: #{$delay + 0.001s};
 }
 @mixin nav_translate($x, $y) {
 	transform: translate3d($x, $y, 0);
@@ -62,21 +62,29 @@ $nav_height_portrait: 14.25rem;
 %nav_list {
 	position: absolute;
 	display: inline-block;
-	@include nav_transition($delay: $delay * 1);
+//	@include nav_transition($delay: $delay * 1);
+	@include nav_transition($delay: $delay * 0);
 	@include nav_translate(0, #{$nav_height_portrait - 4.5rem});
-	@at-root .with-bundle %nav_list {
+}
+.entering-bundle %nav_list {
+	@include nav_transition($delay: $delay * 1);
+}
+.with-bundle %nav_list {
+	@include nav_translate(0, 0);
+}
+@include media($desktop_small) {
+	%nav_list {
+		@include nav_translate(0, #{$nav_height_landscape - 1.5rem});
+	}
+	.with-bundle %nav_list {
 		@include nav_translate(0, 0);
 	}
-	@include media($desktop_small) {
-		@include nav_translate(0, #{$nav_height_landscape - 1.5rem});
-		@at-root .with-bundle %nav_list {
-			@include nav_translate(0, 0);
-		}
-	}
 }
+
 .transform-wrapper {
 //	transform-style: preserve-3d;
-	transform: translate3d(0,0,0) scale3d(1,1,1);
+//	transform: translate3d(0,0,0) scale3d(1,1,1);
+	@include nav_translate(0, 0);
 }
 
 // -----------------------------------
@@ -155,44 +163,100 @@ html, body {
 // - - - - - - - - - - - - - - - - - -
 
 #content {
-	box-sizing: border-box;
+	overflow: hidden;
 	position: absolute;
 //	position: relative;
-//	overflow: hidden;
+//	box-sizing: content-box;
+	box-sizing: border-box;
 	width: 100%;
 	top: 0;
-//	height: 100%;
 	padding-top: $nav_height_portrait + $header_height;
 //	padding-bottom: $footer_height;
+//	height: 100%;
 	height: calc(100% - #{$footer_height});
 //	height: calc(100% - #{$nav_height_portrait + $header_height + $footer_height});
 	@include media($desktop_small) {
 		padding-top: $nav_height_landscape + $header_height;
+//		padding-bottom: $footer_height;
 //		height: calc(100% - #{$nav_height_landscape + $header_height + $footer_height});
 	}
 }
 @import "_content";
 
+// ------------------------------------
+// Body init
+// ------------------------------------
+
+.app-ready #container {
+	transition:
+		visibility $duration $delay step-start,
+		opacity $duration $delay $ease;
+	visibility: visible;
+	opacity: 1;
+}
+
+.app-initial #container {
+	visibility: hidden;
+	opacity: 0;
+}
+
+.app-initial *, body.skip-transitions * {
+	@include skip_transitions;
+}
+
+// ------------------------------------
+// Dynamic color
+// ------------------------------------
+// body default color values specified in "_base.scss"
+
+.mutable-faded {
+	color: lighten($color, 40%);
+	border-color: lighten($color, 60%);
+}
+
+body, .mutable-faded {
+	transition:
+//		border-color $duration $ease $delay*2,
+		background-color $duration $ease $delay*2,
+		color $duration $ease $delay*2;
+//	transition-timing-function: $ease;
+//	transition-property: color, border-color, background-color;
+//	transition-duration: $duration;
+//	transition-delay: $delay * 2;
+}
+
 // -----------------------------------
 // Layer ordering
 // -----------------------------------
+//		#site-name-wrapper, #bundle-list-wrapper, #keyword-list-wrapper
+//		#bundle-pager {}
 
 #container {
 	z-index: 1;
-}
-#site-name-wrapper,
-#bundle-list-wrapper,
-#keyword-list-wrapper,
-#bundle-pager {
-	z-index: 1;
-}
-
-.image-carousel {
-	z-index: 0;
-	.carousel-item.selected {
-		z-index: 1;
+	#navigation {
+//			z-index: 1;
+		.transform-wrapper {
+			z-index: 1;
+			.list {
+				z-index: 1;
+//				.list-item, .group-item {
+//					z-index: 2;
+//				}
+			}
+		}
 	}
-	&.scrolling, &.panning {
-		z-index: 2;
+	#content {
+//			z-index: 1;
+		.image-carousel {
+			z-index: 0;
+			&.scrolling, &.panning {
+				z-index: 2;
+			}
+//			.carousel-item {
+//				.placeholder, .content {
+//					z-index: 3;
+//				}
+//			}
+		}
 	}
 }

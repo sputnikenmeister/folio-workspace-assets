@@ -5,14 +5,14 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:backbone} */
-//var Backbone = require("backbone");
+var Backbone = require("backbone");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
-/** @type {module:app/helper/View} */
-var View = require("../../helper/View");
 /** @type {module:app/model/item/ImageItem} */
 var ImageItem = require("../../model/item/ImageItem");
+/** @type {module:app/view/base/View} */
+var View = require("../base/View");
 
 /** @type {module:app/utils/event/addTransitionEndCommand} */
 var addTransitionCallback = require("../../utils/event/addTransitionCallback");
@@ -43,8 +43,8 @@ module.exports = View.extend({
 		this.createChildren();
 
 		if (this.model.has("prefetched")) {
+			console.log("ImageRenderer.initialize: using prefetched " + this.model.get("prefetched"));
 			this.image.src = this.model.get("prefetched");
-			console.log(this.model.get("prefetched"));
 			this.$el.removeClass("idle").addClass("done");
 		} else {
 //			this.initializePromise();
@@ -130,7 +130,7 @@ module.exports = View.extend({
 
 		onProgress = function (progress, source, ev) {
 			if (progress == "loadstart") {
-				console.debug("ImageRenderer.onProgress_loadstart: " + this.model.get("f"));
+				//console.debug("ImageRenderer.onProgress_loadstart: " + this.model.get("f"));
 				this.$el.removeClass("idle").addClass("pending");
 				//this.model.trigger("load:start");
 			} else {
@@ -142,21 +142,21 @@ module.exports = View.extend({
 		onError = function (err, source, ev) {
 			console.error("ImageRenderer.onError: " + err.message, arguments);
 			this.$el.removeClass("pending").addClass("error");
-			this.$placeholder.removeAttr("data-progress");
 			//this.model.trigger("load:error");
 		};
 		onLoad = function (url, source, ev) {
-			console.debug("ImageRenderer.onLoad: " + this.model.get("f"));
+			//console.debug("ImageRenderer.onLoad: " + this.model.get("f"));
 			this.model.set({"prefetched": url});
 			this.$el.removeClass("pending").addClass("done");
-			this.$placeholder.removeAttr("data-progress");
-
-			this.off("view:remove", promise.destroy);
 			//this.model.trigger("load:done");
+		};
+		doAlways = function() {
+			this.$placeholder.removeAttr("data-progress");
+			this.off("view:remove", promise.destroy);
 		};
 
 		promise = loadImage(this.model.getImageUrl(), this.image, this);
-		promise.then(onLoad, onError, onProgress);
+		promise.then(onLoad, onError, onProgress).always(doAlways);
 		this.on("view:remove", promise.destroy);
 
 		return promise;
@@ -172,7 +172,7 @@ module.exports = View.extend({
 		var transitionCallback, transitionProp, transitionCancellable;
 		var handleRemove, handleSelect;
 
-		transitionProp = this.getPrefixedJS("transform");
+		transitionProp = this.getPrefixedCSS("transform");
 		transitionCallback = function(exec) {
 			this.off("view:remove", handleRemove);
 			exec && this.createImagePromise().request();

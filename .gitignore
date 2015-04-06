@@ -6,7 +6,7 @@ _~*.scss
 /bower_components
 /flash
 /html
-/build/uploads-sprites
+/build/bundle-sprites
 /css
 /images/favicon
 /js

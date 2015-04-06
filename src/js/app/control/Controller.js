@@ -16,8 +16,8 @@ var Deferred = $.Deferred;
 
 /** @type {module:app/control/Globals} */
 var Globals = require("./Globals");
-/** @type {module:app/utils/Styles} */
-var Styles = require("../utils/Styles");
+/** @type {module:app/helper/StyleHelper} */
+var Styles = require("../helper/StyleHelper");
 /** @type {module:app/utils/debug/traceArgs} */
 var traceArgs = require("../utils/debug/traceArgs");
 /** @type {module:app/utils/debug/traceArgs} */
@@ -33,8 +33,6 @@ var bundles = require("../model/collection/BundleList");
 /* --------------------------- *
  * Static private
  * --------------------------- */
-
-var bodyStyles = ["background", "background-color", "color", "-moz-osx-font-smoothing", "-webkit-font-smoothing"];
 
 /**
  * @constructor
@@ -245,6 +243,9 @@ var Controller = Backbone.Router.extend({
 		var fgColor, bgColor, bgLum, fgLum;
 		var bgDefault, fgDefault;
 		var attrs, styles, bodySelector, carouselSelector;
+		var bodyStyles = ["background", "background-color", "color"];
+		var fontSmoothingStyles = ["-moz-osx-font-smoothing", "-webkit-font-smoothing"];
+		var carouselImageStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
 
 		var toBodyClass = function (bundle) {
 			return "bundle-" + bundle.id;
@@ -263,7 +264,7 @@ var Controller = Backbone.Router.extend({
 
 			bodySelector = "body." + toBodyClass(bundle);
 			//styles = {};
-			styles = _.pick(attrs, ["background-color", "background", "color"]);
+			styles = _.pick(attrs, bodyStyles);
 			styles["-webkit-font-smoothing"] = (bgLum < fgLum? "antialiased" : "auto");
 			/* 'body { -moz-osx-font-smoothing: grayscale; }' works ok in all situations: hardcoded in _base.scss */
 			//styles["-moz-osx-font-smoothing"] = (bgLum < fgLum? "grayscale" : "auto");
@@ -276,19 +277,19 @@ var Controller = Backbone.Router.extend({
 			Styles.createCSSRule(bodySelector + " .mutable-faded", styles);
 
 			carouselSelector = ".carousel." + bundle.get("handle");
-			styles = _.pick(attrs, ["box-shadow", "border", "border-radius"]);//, "background-color"]);
+			styles = _.pick(attrs, carouselImageStyles);//, "background-color"]);
 			Styles.createCSSRule(carouselSelector + " .image-item img", styles);
 
 			styles = {
 				// text color luminosity is inverse from body, apply oposite rendering mode
 				"-webkit-font-smoothing": (bgLum < fgLum? "auto" : "antialiased"),
-//				"color": 			bgColor.toHexString(),
+			//	"color": 			bgColor.toHexString(),
 				"color": 			bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString(),
-//				"color": 			bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString(),
-//				"border-color": 	bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
-				"background-color": bgColor.lightness(fgLum * 0.100 + bgLum * 0.900).toHexString(),
-//				"box-shadow":		"inset 0 0 3px -2px " + bgColor.lightness(fgLum * 0.5 + bgLum * 0.5).toHexString(),
-//				"border": 			"0 none transparent",
+			//	"color": 			bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString(),
+			//	"border-color": 	bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
+			//	"background-color": bgColor.lightness(fgLum * 0.100 + bgLum * 0.900).toHexString(),
+				"background-color": bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
+			//	"border": 			"0 none transparent",
 			};
 			Styles.createCSSRule(carouselSelector + " .image-item .placeholder", styles);
 		});

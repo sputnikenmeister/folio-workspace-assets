@@ -3,8 +3,8 @@
 * @requires module:backbone
 */
 
-/** @type {module:app/helper/SelectableList} */
-var SelectableList = require( "../../helper/SelectableList" );
+/** @type {module:app/model/SelectableList} */
+var SelectableList = require( "../../model/SelectableList" );
 
 /** @type {module:app/model/item/BundleItem} */
 var BundleItem = require( "../item/BundleItem" );

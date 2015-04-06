@@ -1,4 +1,4 @@
-var VENDOR_PREFIXES = ["webkit", "moz", "MS", "ms", "o", ""];
+var VENDOR_PREFIXES = ["", "webkit", "moz", "MS", "ms", "o"];
 
 /**
  * get the prefixed property
@@ -10,15 +10,15 @@ module.exports = function(style, property) {
     var prefix, prop;
     var camelProp = property[0].toUpperCase() + property.slice(1);
 
-    var i = 0;
-    while (i < VENDOR_PREFIXES.length) {
+	for (var i = 0; i < VENDOR_PREFIXES.length; i++) {
         prefix = VENDOR_PREFIXES[i];
         prop = (prefix) ? prefix + camelProp : property;
 
         if (prop in style) {
+			console.log("Prefix: style name for '" + property + "' is '" + prop + "'");
             return prop;
         }
-        i++;
     }
-    return undefined;
+	console.log("Prefix: style name for '" + property + "' not found");
+    return void 0;
 };

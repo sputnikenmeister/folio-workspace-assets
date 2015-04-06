@@ -285,7 +285,7 @@ module.exports = function (grunt) {
 	 * -------------------------------- */
 
 	// Default task
-	grunt.registerTask("watch-debug", ["build-debug", "browserify:watchable", "watch"]);
+	grunt.registerTask("_watch-debug", ["build-debug", "browserify:watchable", "watch"]);
 	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
 	grunt.registerTask("build-all", ["clean-all", "build-debug", "build-dist"]);
 	grunt.registerTask("default", ["build-all"]);
@@ -296,7 +296,7 @@ module.exports = function (grunt) {
 
 	var previewSize = "10%";
 	grunt.loadNpmTasks("grunt-responsive-images");
-	grunt.config("responsive_images.uploads-sprites", {
+	grunt.config("responsive_images.bundle-sprites", {
 		options: {
 			sizes: [{
 				width: previewSize,
@@ -305,25 +305,25 @@ module.exports = function (grunt) {
 		files: [{
 			expand: true,
 			src: ["../uploads/*.{jpg,gif,png}"],
-			custom_dest: "build/uploads-sprites/{%= width %}/"
+			custom_dest: "build/bundle-sprites/{%= width %}/"
 		}]
 	});
 
 	grunt.loadNpmTasks("grunt-spritesmith");
-	grunt.config("sprite.uploads-sprites", {
+	grunt.config("sprite.bundle-sprites", {
 		algorithm: "binary-tree",
 		engine: "gmsmith",
 		imgOpts: {quality: 50},
-		src: "build/uploads-sprites/"+previewSize+"/*.{jpg,gif,png}",
-		dest: "images/uploads-sprites.png",
-		destCss: "src/sass/includes/_uploads-sprites-generated.scss"
+		src: "build/bundle-sprites/"+previewSize+"/*.{jpg,gif,png}",
+		dest: "images/bundle-sprites.png",
+		destCss: "src/sass/includes/_bundle-sprites-generated.scss"
 	});
 
-	// grunt.config("compass.uploads-sprites.options", {
-	// 	specify: "src/sass/includes/_uploads-sprites.scss",
+	// grunt.config("compass.bundle-sprites.options", {
+	// 	specify: "src/sass/includes/_bundle-sprites.scss",
 	// 	sourcemap: false,
 	// });
-	grunt.registerTask("build-sprites", ["responsive_images:uploads-sprites", "sprite:uploads-sprites"]);
+	grunt.registerTask("generate-sprites", ["responsive_images:bundle-sprites", "sprite:bundle-sprites"]);
 
 	/* --------------------------------
 	 * Resources: Fontello
@@ -331,7 +331,7 @@ module.exports = function (grunt) {
 
 	/* Custom CLI task
 	 * - - - - - - - - - - - - - - - - - */
-	grunt.registerTask("fontello", "Open fontello configuration in browser", function() {
+	grunt.registerTask("fontello-open", "Open fontello configuration in browser", function() {
 		var child = grunt.util.spawn({
 			cmd: "fontello-cli",
 			args: ["open", "--config", "build/fontello.json"],
@@ -357,5 +357,5 @@ module.exports = function (grunt) {
 			dest: "images/favicon"
 		}
 	});
-	grunt.registerTask("build-favicons", ["favicons"]);
+	grunt.registerTask("generate-favicons", ["favicons"]);
 };

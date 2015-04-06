@@ -8,8 +8,8 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
-/** @type {module:app/helper/View} */
-var View = require("../../helper/View");
+/** @type {module:app/view/base/View} */
+var View = require("../base/View");
 /** @type {module:app/view/component/DefaultSelectableRenderer} */
 var DefaultSelectableRenderer = require("../render/DefaultSelectableRenderer");
 

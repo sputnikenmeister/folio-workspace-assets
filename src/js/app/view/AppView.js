@@ -16,6 +16,8 @@ var controller = require("../control/Controller");
 /** @type {module:app/model/collection/BundleList} */
 var bundles = require("../model/collection/BundleList");
 
+/** @type {module:app/view/base/View} */
+var View = require("./base/View");
 /** @type {module:app/view/NavigationView} */
 var NavigationView = require("./NavigationView");
 /** @type {module:app/view/ContentView} */
@@ -34,7 +36,7 @@ if (DEBUG) {
  * @constructor
  * @type {module:app/view/AppView}
  */
-var AppView = Backbone.View.extend({
+var AppView = View.extend({
 
 	/** @override */
 	el: "body",
@@ -71,8 +73,11 @@ var AppView = Backbone.View.extend({
 		// Change to .app-ready on next frame:
 		// CSS animations do not trigger while on .app-initial,
 		// so everything will be rendered in it's final state
-		this.render();
-		window.requestAnimationFrame(function() {
+//		this.render();
+		this.navigationView.render();
+		this.contentView.render();
+//		window.requestAnimationFrame(function() {
+		this.callLater(function() {
 			Backbone.$(document.documentElement).removeClass("app-initial").addClass("app-ready");
 		});
 //		_.delay(function(view) {

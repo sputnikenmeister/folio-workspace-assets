@@ -5,7 +5,14 @@ var _ = require("underscore");
 /** @type {{module:jquery}.Deferred} */
 var Deferred = require("jquery").Deferred;
 
-
+function getMimeFromFilename(filename) {
+	try {
+		var MIME_TYPES = { png: "image\/png", jpg: "image\/jpeg" };
+		return MIME_TYPES[filename.match(/\w+$/)[0].toLowerCase()];
+	} catch (ex) {
+		return void 0;
+	}
+}
 
 /**
  * @param
@@ -14,13 +21,21 @@ var Deferred = require("jquery").Deferred;
  */
 module.exports = function (url, image, context) {
 	// @see https://github.com/mdn/promises-test/blob/gh-pages/index.html
-	var timeoutId;
-	var deferred = new Deferred();
-	var request = new XMLHttpRequest();
-	var clearCallbacks = function () {
-		request.onabort = request.ontimeout = request.onerror = request.onloadstart = request.onloadend = request.onprogress = void 0;
+	var timeoutId, cleanup, mixin;
+	var deferred = new Deferred(), request = new XMLHttpRequest();
+
+	//var mime = getMimeFromFilename(url);
+	//mime && request.overrideMimeType(mime + "; charset=x-user-defined");
+	request.open("GET", url, true);
+	request.responseType = "blob";
+	context || (context = image || request);
+
+	cleanup = function () {
+		request.onabort = request.ontimeout = request.onerror =
+			request.onloadstart = request.onloadend = request.onprogress = void 0;
 	};
-	var mixin = {
+
+	mixin = {
 		request: function () {
 			timeoutId = window.setTimeout(function () {
 				timeoutId = void 0;
@@ -31,30 +46,18 @@ module.exports = function (url, image, context) {
 			if (timeoutId) {
 				window.clearTimeout(timeoutId);
 			}
-			if (request.readyState !== XMLHttpRequest.DONE) {
+//			if (request.readyState !== XMLHttpRequest.DONE) {
 				request.abort();
-			}
+//			}
 		},
 		destroy: function () {
 			//URL.revokeObjectURL(this.image.src);
-			clearCallbacks();
+			cleanup();
 			this.abort();
 		},
 	};
-
-//	var mime;
-//	try {
-//		var TYPES = { png: "image\/png", jpg: "image\/jpeg" };
-//		mime = TYPES[url.match(/\w+$/)[0].toLowerCase()];
-//	} catch (ex) {}
-//	mime && request.overrideMimeType(mime + "; charset=x-user-defined");
-
-	request.open("GET", url, true);
-	request.responseType = "blob";
-
-	context || (context = image || request);
-	// When the request loads, check whether it was successful
 	request.onload = function (ev) {
+		// When the request loads, check whether it was successful
 		if (request.status == 200) {
 			// If successful, resolve the promise by passing back a reference url
 			var objUrl = URL.createObjectURL(request.response);
@@ -80,15 +83,18 @@ module.exports = function (url, image, context) {
 			deferred.notifyWith(context, [ev.loaded / ev.total, request, ev]);
 		}
 	};
-	request.onloadstart = function (ev) {
-		// Notify progress
-		deferred.notifyWith(context, ["loadstart", request, ev]);
+	request.onabort = function (ev) {
+		console.info("XHR Abort: " + url);
 	};
+//	request.onloadstart = function (ev) {
+//		// Notify progress
+//		deferred.notifyWith(context, ["loadstart", request, ev]);
+//	};
 	request.onloadstart = request.onloadend = request.onprogress;
 	//request.onabort = request.ontimeout = request.onerror;
 	request.ontimeout = request.onerror;
 
-	deferred.always(clearCallbacks);
+	deferred.always(cleanup);
 	deferred.promise(mixin);
 
 	return mixin;

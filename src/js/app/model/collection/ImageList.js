@@ -2,8 +2,8 @@
  * @module app/model/collection/ImageList
  */
 
-/** @type {module:app/helper/SelectableList} */
-var SelectableList = require( "../../helper/SelectableList" );
+/** @type {module:app/model/SelectableList} */
+var SelectableList = require( "../../model/SelectableList" );
 
 /** @type {module:app/model/item/ImageItem} */
 var ImageItem = require("../item/ImageItem");

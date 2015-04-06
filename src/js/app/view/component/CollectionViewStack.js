@@ -11,10 +11,10 @@ var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 
-/** @type {module:app/helper/View} */
-var View = require("../../helper/View");
-/** @type {module:app/helper/DeferredView} */
-var DeferredView = require("../../helper/DeferredView");
+/** @type {module:app/view/base/View} */
+var View = require("../base/View");
+/** @type {module:app/view/base/DeferredView} */
+var DeferredView = require("../base/DeferredView");
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
 

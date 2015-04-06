@@ -8,7 +8,7 @@ var _cached;
  */
 module.exports = function (el) {
 	return _cached || (_cached = (function(el) {
-		var p, pp = { "WebkitTransition" : "webkitTransitionEnd", "MozTransition" : "transitionend", "OTransition" : "oTransitionEnd", "transition" : "transitionend" };
+		var p, pp = { "transition" : "transitionend", "WebkitTransition" : "webkitTransitionEnd", "MozTransition" : "transitionend", "OTransition" : "oTransitionEnd" };
 		for (p in pp) {
 			if (p in el.style) {
 				return pp[p];

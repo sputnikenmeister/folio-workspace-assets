@@ -16,10 +16,10 @@ var Globals = require("../../control/Globals");
 /** @type {module:app/utils/event/addTransitionEndCommand} */
 var addTransitionCallback = require("../../utils/event/addTransitionCallback");
 
-/** @type {module:app/helper/View} */
-var View = require("../../helper/View");
-/** @type {module:app/helper/DeferredView} */
-var DeferredView = require("../../helper/DeferredView");
+/** @type {module:app/view/base/View} */
+var View = require("../base/View");
+/** @type {module:app/view/base/DeferredView} */
+var DeferredView = require("../base/DeferredView");
 
 /** @type {module:app/view/render/CarouselDefaultRenderer} */
 var CarouselDefaultRenderer = require("../render/CarouselDefaultRenderer");
@@ -79,10 +79,10 @@ var Carousel = DeferredView.extend({
 
 		this.listenTo(this.collection, {
 			"reset": this._onReset,
-			"select:one": this._onSelectOne,
-			"select:none": this._onSelectOne,
-//			"deselect:one": this._onDeselect,
-//			"deselect:none": this._onDeselect,
+			"select:one": this._onSelectAny,
+			"select:none": this._onSelectAny,
+			"deselect:one": this._onDeselectAny,
+			"deselect:none": this._onDeselectAny,
 		});
 
 //		this.hammer.on("tap", this._onTap);
@@ -90,7 +90,7 @@ var Carousel = DeferredView.extend({
 	},
 
 	remove: function () {
-		this._scrollPendingAction && this._scrollPendingAction("scroll:cancel");
+		this._scrollPendingAction && this._scrollPendingAction(true);
 //		this.hammer.off("tap", this._onTap);
 		this.hammer.off("panstart panmove panend pancancel", this._onPan);
 		this.removeChildren();
@@ -145,6 +145,7 @@ var Carousel = DeferredView.extend({
 	render: function () {
 		this.measureLater();
 		this.scrollByLater(0, Carousel.IMMEDIATE);
+
 		if (this.el.parentElement) {
 			this.renderNow();
 		}
@@ -326,33 +327,15 @@ var Carousel = DeferredView.extend({
 		if (skipTransitions) {
 			this.skipTransitions = false;
 			this.$el.addClass("skip-transitions");
-			this.commitScrollSelection();
 		} else {
 			this.$el.removeClass("skip-transitions");
-			this.commitScrollSelection();
 			this._scrollEndCancellable = addTransitionCallback(this.getPrefixedCSS("transform"), function(exec) {
 				this._scrollEndCancellable = void 0;
 				exec && this.$el.removeClass("scrolling");
 			}, this._selectedView.el, this, Globals.TRANSITION_DURATION * 2);
 		}
-	},
 
-	_getScrollOffset2: function (delta, s, ss, sc) {
-		var posInner = s.posInner - ss.posInner + delta;
-		var offset = 0;
-
-		if (posInner < -ss.inner) {
-			offset = -(s.before);
-		} else if (posInner > ss.inner) {
-			offset = (ss.after);
-		} else {
-			if (posInner < 0) {
-				offset = (s.before) / (s.inner) * posInner;
-			} else {
-				offset = (ss.after) / (ss.inner) * posInner;
-			}
-		}
-		return posInner + offset;
+		this.commitScrollSelection();
 	},
 
 	_getScrollOffset: function (delta, s, ss, sc) {
@@ -377,16 +360,18 @@ var Carousel = DeferredView.extend({
 	},
 
 	commitScrollSelection: function () {
-		if (this._scrollCandidateView) {
+		if (this._scrollCandidateView !== void 0) {
 			var view = this._scrollCandidateView;
-			this._scrollCandidateView.$el.removeClass("candidate");
 			this._scrollCandidateView = void 0;
+			view.$el.removeClass("candidate");
 
+			this._internalSelection = true;
 			if (view === this.emptyView) {
 				this.trigger("view:select:none");
 			} else {
 				this.trigger("view:select:one", view.model);
 			}
+			this._internalSelection = false;
 		}
 	},
 
@@ -410,6 +395,7 @@ var Carousel = DeferredView.extend({
 		if (this._scrollCandidateView) {
 			this._scrollCandidateView.$el.addClass("candidate");
 			this.$el.addClass("scrolling");
+
 			this.scrollByNow(0, Carousel.ANIMATED);
 //			this.scrollByLater(0, Carousel.ANIMATED);
 		}
@@ -419,17 +405,7 @@ var Carousel = DeferredView.extend({
 	 * touch event: pan
 	 * --------------------------- */
 
-//	getEventDelta: function (ev) {
-////		if (ev.type == "panstart") {
-////			this._panStartOffset = ev.offsetDirection & this._precedingDir? -this.panThreshold : this.panThreshold;
-////		}
-////		return (this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX : ev.deltaY) + (this._panStartOffset || 0)
-//		return this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX : ev.deltaY;
-////		return this.direction & Hammer.DIRECTION_HORIZONTAL? ev.thresholdOffsetX : ev.thresholdOffsetY;
-//	},
-
 	_onPan: function (ev) {
-//		ev.preventDefault();
 		switch (ev.type) {
 			case "panstart":
 				this._onPanStart(ev);
@@ -449,60 +425,47 @@ var Carousel = DeferredView.extend({
 	/** @param {Object} ev */
 	_onPanStart: function (ev) {
 		this.commitScrollSelection();
-//		var delta = this.getEventDelta(ev);
-//		delta += this.dirProp(ev.thresholdOffsetX, ev.thresholdOffsetX);
 		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX + ev.thresholdOffsetX : ev.deltaY + ev.thresholdOffsetY;
-
-//		if ((ev.offsetDirection & this._precedingDir) && _.isUndefined(this._precedingView)) {
-////			this.hammer.get("pan").state = Hammer.STATE_CANCELLED;
-////			ev.preventDefault();
-//			this.hammer.stop(true);
-//			return;
-//		}
 		this.$el.addClass("panning scrolling");
-//		this._precedingView && this._precedingView.$el.addClass("candidate");
-//		this._followingView && this._followingView.$el.addClass("candidate");
 		this.scrollByNow(delta, Carousel.IMMEDIATE);
-//		this.scrollByLater(delta, Carousel.IMMEDIATE);
 	},
 
 	/** @param {Object} ev */
 	_onPanMove: function (ev) {
-//		var delta = this.getEventDelta(ev);
-//		delta += this.dirProp(ev.thresholdOffsetX, ev.thresholdOffsetX);
 		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX + ev.thresholdOffsetX : ev.deltaY + ev.thresholdOffsetY;
-
 		var view = (ev.offsetDirection & this._precedingDir)? this._precedingView : this._followingView;
-		if (view !== this._panCandidateView) {
+
+		if (this._panCandidateView !== view) {
 			this._panCandidateView && this._panCandidateView.$el.removeClass("candidate");
 			this._panCandidateView = view;
 			this._panCandidateView && this._panCandidateView.$el.addClass("candidate");
 		}
-		if (_.isUndefined(this._panCandidateView)) {
+		if (this._panCandidateView === void 0) {
 			delta *= 0.4;
 		}
 		this.scrollByNow(delta, Carousel.IMMEDIATE);
-//		this.scrollByLater(delta, Carousel.IMMEDIATE);
+		//this.scrollByLater(delta, Carousel.IMMEDIATE);
 	},
 
 	/** @param {Object} ev */
 	_onPanFinish: function (ev) {
-//		var delta = this.getEventDelta(ev);
 		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX : ev.deltaY;
+		var view = (ev.offsetDirection & this._precedingDir)? this._precedingView : this._followingView;
 		if ((ev.type == "panend") &&
 				((ev.direction ^ ev.offsetDirection) & this.direction) &&	// pan direction (last event) and offsetDirection (whole gesture) must match
 				(Math.abs(delta) > this.selectThreshold)) {					// gesture must overshoot selectThreshold
-			this._scrollCandidateView = (ev.offsetDirection & this._precedingDir)? // choose next scroll target
-				this._precedingView : this._followingView;
+			this._scrollCandidateView = view;					// choose next scroll target
 		}
-		if (this._precedingView && (this._precedingView !== this._scrollCandidateView)) {
-			this._precedingView.$el.removeClass("candidate");
-		}
-		if (this._followingView && (this._followingView !== this._scrollCandidateView)) {
-			this._followingView.$el.removeClass("candidate");
+//		if (this._precedingView && (this._precedingView !== this._scrollCandidateView)) {
+//			this._precedingView.$el.removeClass("candidate");
+//		}
+//		if (this._followingView && (this._followingView !== this._scrollCandidateView)) {
+//			this._followingView.$el.removeClass("candidate");
+//		}
+		if (this._panCandidateView && (this._panCandidateView !== this._scrollCandidateView)) {
+			this._panCandidateView.$el.removeClass("candidate");
 		}
 		this.$el.removeClass("panning");
-		this._panStartOffset = void 0;
 		this._panCandidateView = void 0;
 //		this.scrollByLater(0, Carousel.ANIMATED);
 		this.scrollByNow(0, Carousel.ANIMATED);
@@ -519,20 +482,27 @@ var Carousel = DeferredView.extend({
 	},
 
 	/** @private */
-	_onSelectOne: function (model) {
+	_onSelectAny: function (model) {
 		if (DEBUG) {
 			if (this._selectedView === (model? this.children.findByModel(model) : (this.emptyView || this.children.first()))) {
-				console.error("Should not happen: _onSelectionChange _debugLastView === this._selectedView");
+				console.error("Carousel._onSelectAny: Select event triggered for model already selected");
 			}
 		}
 		this._selectedView.$el.removeClass("selected");
 		this.updateSelection();
 		this._selectedView.$el.addClass("selected");
+		if (this._internalSelection) {
+//			console.log("Internal selection");
+			return;
+		}
 		this.$el.addClass("scrolling");
 //		this.scrollByLater(0, Carousel.ANIMATED);
 		this.scrollByNow(0, Carousel.ANIMATED);
 	},
 
+	_onDeselectAny: function (model) {
+//		this._selectedView.$el.removeClass("selected");
+	},
 
 	/* --------------------------- *
 	 * Private
@@ -554,18 +524,25 @@ var Carousel = DeferredView.extend({
 	},
 
 	/*
+	__getScrollOffset: function (delta, s, ss, sc) {
+		var posInner = s.posInner - ss.posInner + delta;
+		var offset = 0;
 
-	_onSelectNone: function() {
+		if (posInner < -ss.inner) {
+			offset = -(s.before);
+		} else if (posInner > ss.inner) {
+			offset = (ss.after);
+		} else {
+			if (posInner < 0) {
+				offset = (s.before) / (s.inner) * posInner;
+			} else {
+				offset = (ss.after) / (ss.inner) * posInner;
+			}
+		}
+		return posInner + offset;
 	},
 
-	_onDeselectOne: function (model) {
-		this.children.findByModel(model).removeClass("selected");
-	},
-	_onDeselectNone: function () {
-		this.emptyView.$el.removeClass("selected");
-	},
-
-	updateSelection2: function () {
+	__updateSelection2: function () {
 		if (this.collection.selectedIndex == -1) {
 			this._selectedView = this.emptyView;
 		} else {
@@ -587,7 +564,7 @@ var Carousel = DeferredView.extend({
 		}
 	},
 
-	updateSelection3: function (index) {
+	__updateSelection3: function (index) {
 		if (index == -1) {
 			this._selectedView = this.emptyView;
 		} else {
@@ -609,7 +586,7 @@ var Carousel = DeferredView.extend({
 		}
 	},
 
-	dispatchSelectionEvent: function (view) {
+	__dispatchSelectionEvent: function (view) {
 		if (view) {
 			if (view === this.emptyView) {
 				this.trigger("view:select:none");
@@ -619,7 +596,7 @@ var Carousel = DeferredView.extend({
 		}
 	},
 
-	dispatchSelectionEvent: function(direction) {
+	__dispatchSelectionEvent: function(direction) {
 		var item;
 		direction &= this.direction;
 		if (direction & Carousel.DIRECTION_BEFORE) {
@@ -639,29 +616,9 @@ var Carousel = DeferredView.extend({
 			this.trigger("view:select:one", item);
 		}
 	},
-
-	_canEnablePan: function(rec, ev) {
-		var enabled = (_.isUndefined(ev)) || (ev.isFinal) || ((ev.offsetDirection == this._followingDir) || (this._precedingView !== void 0));
-		if (_.isUndefined(ev)) {
-			console.log("Carousel.pan", enabled, rec.id);
-		} else if (ev.isFinal) {
-			console.log("Carousel.pan", enabled, ev.timeStamp);
-		} else {
-			//console.log("Carousel.pan", enabled, ev.timeStamp, (ev.direction == this._precedingDir), (this._precedingView !== void 0));
-		}
-		return enabled;
-	},
-
-	_canEnableTap: function(rec, ev) {
-		return true;
-	},
 	*/
 
 },{
-//	/** const */
-//	DIRECTION_BEFORE: Hammer.DIRECTION_LEFT | Hammer.DIRECTION_UP,
-//	/** const */
-//	DIRECTION_AFTER: Hammer.DIRECTION_RIGHT | Hammer.DIRECTION_DOWN,
 	/** const */
 	MAX_SELECT_THRESHOLD: 50,
 	/** const arg in scrollByNow, scrollByLater */

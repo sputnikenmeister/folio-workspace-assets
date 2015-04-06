@@ -160,7 +160,7 @@ TransformHelper.prototype = {
 			o.offset = void 0;
 //			console.log("TransformHelper.clear", o.id);
 		} else {
-			console.warn("TransformHelper.clear", o.id, "nothing to clear");
+			console.warn("TransformHelper.clear", o.id, "nothing to clear", (o.el.id || o.el.classList[0] || o.el.getAttribute("data-cid")));
 		}
 	},
 
@@ -172,7 +172,7 @@ TransformHelper.prototype = {
 		o.offset.y = y || 0;
 
 		if (!o.captured) {
-			console.warn("TransformHelper.move", o.id, "captured values not set: capturing now");
+			console.warn("TransformHelper.move", o.id, "captured values not set: capturing now", (o.el.id || o.el.classList[0] || o.el.getAttribute("data-cid")));
 			o.captured = this._parseTransformValues(o);
 		}
 

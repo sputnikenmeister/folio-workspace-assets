@@ -2,7 +2,7 @@
 	.carousel-item {
 		display: block;
 		position: absolute;
-		.content, .sizing {
+		.content {
 			user-select: none !important;
 		}
 //		.sizing {
@@ -77,13 +77,12 @@ $pan_ease: $ease;
 	{	// Top-left corner
 		position: absolute;
 		top: 0; left: 0;
-		line-height: 1;
-		font-weight: 600;
 		font-size: 2rem;
+		line-height: 1.2;
+		font-weight: 600;
 		margin: 1em 1em;
 		text-transform: uppercase;
 		letter-spacing: -0.05em;
-		font-style: italic;
 	}
 	/*{	// Centered
 		font-size: 5rem;
@@ -107,16 +106,18 @@ $pan_ease: $ease;
 		transition: opacity $duration $ease 0.001s;
 		opacity: 0;
 	}
-	&.idle img,	&.error img {
-		visibility: hidden;
+	&.idle,	&.error {
+		img {
+			visibility: hidden;
+		}
 	}
 	&.candidate, &.selected, .empty-item.selected + & {
 		&.done img {
 			opacity: 1;
 		}
 		&.done .placeholder {
-//			transition: visibility $duration $delay + 0.001s step-end;
-			transition: visibility $duration $ease 0.001s;
+			transition: visibility $duration step-end $delay + 0.001s;
+//			transition: visibility $duration $ease 0.001s;
 			visibility: hidden;
 		}
 	}
@@ -139,26 +140,24 @@ $pan_ease: $ease;
 //			}
 //		}
 //	}
+
 	.placeholder:before {
-//		transition: opacity $duration $delay + 0.001s $ease;
-		transition: opacity $duration $ease 0.001s;
+		transition: opacity $duration $delay + 0.001s $ease;
+//		transition: opacity $duration $ease 0.001s;
+//		transition: opacity $duration $ease;
 		opacity: 0;
+		content: "";
+		font-style: italic;
 	}
-	&.idle .placeholder:before {
-		visibility: hidden;
-	}
-	&.pending .placeholder:before {
-		content: "Loading";
-	}
-	&.error .placeholder:before {
-		content: "Error";
-	}
-	&.done .placeholder:before {
-		content: "Done";
-	}
+	//&.idle .placeholder:before 		{ content: "Waiting"; }
+	&.pending .placeholder:before 	{ content: "Loading"; }
+	&.error .placeholder:before 	{ content: "Error";	}
+	&.done .placeholder:before 		{ content: "Done"; }
+
 	&.candidate, &.selected, .empty-item.selected + & {
 		&.pending .placeholder:before {
 			opacity: 1;
+			background-color: crimson;
 		}
 		&.error .placeholder:before {
 			opacity: 1;

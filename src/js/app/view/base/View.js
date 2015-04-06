@@ -1,5 +1,5 @@
 /**
- * @module app/helper/View
+ * @module app/view/base/View
  */
 
 /** @type {module:backbone} */
@@ -7,47 +7,40 @@ var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-var prefixed = require("../utils/strings/prefixed");
-var dashedToCamel = require("../utils/strings/dashedToCamel");
-var camelToDashed = require("../utils/strings/camelToDashed");
-
-///** @type {Object} */
-//var _viewsByCid = {};
-///**
-// * @param element
-// * @return {module:app/helper/View}
-// */
-//function findByElement (element) {
-//	for (var cid in _viewsByCid) {
-//		if (_viewsByCid[cid].el === element) {
-//			return _viewsByCid[cid];
-//		}
-//	}
-//	return void 0;
-//}
+/** @type {Function} */
+var prefixed = require("../../utils/strings/prefixed");
+/** @type {Function} */
+var dashedToCamel = require("../../utils/strings/dashedToCamel");
+/** @type {Function} */
+var camelToDashed = require("../../utils/strings/camelToDashed");
 
 var _jsPrefixed = {};
 var _cssPrefixed = {};
 
+//var _viewsByCid = {};
 var _views = [];
 var _elements = [];
 var _count = 0;
 
-function registerView(view) {
-	_views[_count] = view;
-	_elements[_count] = view.el;
-	_count++;
-}
-function unregisterView(view) {
-	var idx = _views.indexOf(view);
-	_views.splice(idx, 1);
-	_elements.splice(idx, 1);
-	_count--;
+var _callLaterQueue = [];
+var _callLaterQueueId = 0;
+
+function requestCallLater() {
+	if (_callLaterQueueId == 0) {
+		_callLaterQueueId = window.requestAnimationFrame(function() {
+			var num = _callLaterQueue.length;
+			do {
+				_callLaterQueue[--num].call();
+			}
+			while (num > 0);
+			_callLaterQueueId = 0;
+		});
+	}
 }
 
 /**
  * @constructor
- * @type {module:app/helper/View}
+ * @type {module:app/view/base/View}
  */
 var View = Backbone.View.extend({
 
@@ -60,8 +53,10 @@ var View = Backbone.View.extend({
 
 	remove: function() {
 		this.trigger("view:remove", this);
-		unregisterView(this);
-		//delete _viewsByCid[this.cid];
+		var idx = _views.indexOf(this);
+		_views.splice(idx, 1);
+		_elements.splice(idx, 1);
+		_count--;
 		return Backbone.View.prototype.remove.apply(this, arguments);
 	},
 
@@ -75,8 +70,9 @@ var View = Backbone.View.extend({
 			Backbone.View.prototype.setElement.apply(this, arguments);
 		}
 		this.$el.attr("data-cid", this.cid);
-		registerView(this);
-		//_viewsByCid[this.cid] = this;
+		_views[_count] = this;
+		_elements[_count] = this.el;
+		_count++;
 		return this;
 	},
 
@@ -92,13 +88,28 @@ var View = Backbone.View.extend({
 			_cssPrefixed[prop] = (p === pp? "" : "-") + camelToDashed(pp);
 		}
 		return _cssPrefixed[prop];
-	}
+	},
+
+	callLater: function(fn) {
+		return this.applyLater(fn, Array.prototype.slice.call(1, arguments));
+	},
+
+	applyLater: function(fn, args) {
+		var context = this;
+		var bound = function () {
+			_callLaterQueue.splice(_callLaterQueue.indexOf(bound), 1);
+			return fn.apply(context, args);
+		};
+		_callLaterQueue.push(bound);
+		requestCallLater();
+		return bound;
+	},
 
 },{
-
 	findByElement: function(element) {
 		return _views[_elements.indexOf(element)];
 	},
 });
 
 module.exports = View;
+

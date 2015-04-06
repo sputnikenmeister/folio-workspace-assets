@@ -1,9 +1,7 @@
 /**
  * Some static helper functions
- * @module app/utils/Styles
+ * @module app/helper/StyleHelper
  */
-
-console.log("app.utils.Styles");
 
 /** @type {module:jquery} */
 var jQuery = require("jquery");

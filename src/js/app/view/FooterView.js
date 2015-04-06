@@ -6,8 +6,8 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {module:app/helper/View} */
-var View = require("../helper/View");
+/** @type {module:app/view/base/View} */
+var View = require("./base/View");
 
 /**
  * @constructor

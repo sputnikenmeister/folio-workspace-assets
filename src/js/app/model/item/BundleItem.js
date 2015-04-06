@@ -12,8 +12,8 @@ var stripTags = require("../../utils/strings/stripTags");
 /** @type {module:app/utils/strings/parseTaglist} */
 var parseSymAttrs = require("../../utils/strings/parseSymAttrs");
 
-/** @type {module:app/helper/SelectableList} */
-var SelectableList = require("../../helper/SelectableList");
+/** @type {module:app/model/SelectableList} */
+var SelectableList = require("../../model/SelectableList");
 /** @type {module:app/model/item/ImageItem} */
 var ImageItem = require("../item/ImageItem");
 

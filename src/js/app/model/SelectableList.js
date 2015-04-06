@@ -1,5 +1,5 @@
 /**
- * @module app/helper/SelectableList
+ * @module app/model/SelectableList
  */
 
 /** @type {module:underscore} */
@@ -9,7 +9,7 @@ var Backbone = require("backbone");
 
 /**
  * @constructor
- * @type {module:app/helper/SelectableList}
+ * @type {module:app/model/SelectableList}
  */
 var SelectableList = Backbone.Collection.extend({
 
