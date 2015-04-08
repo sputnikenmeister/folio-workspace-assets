@@ -12,6 +12,8 @@
 		"process": false,
 		"setInterval": false,
 		"clearInterval": false,
+		"setTimeout": false,
+		"clearTimeout": false,
 		"module": true,
 		"$": true,
 		"_": true,

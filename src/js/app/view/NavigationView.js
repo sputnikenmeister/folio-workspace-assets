@@ -2,12 +2,14 @@
  * @module app/view/NavigationView
  */
 
+/** @type {module:backbone} */
+var Backbone = require("backbone");
+/** @type {module:jquery} */
+var $ = Backbone.$;
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../control/Globals");
@@ -37,6 +39,10 @@ var TransformHelper = require("../helper/TransformHelper");
 /** @type {module:app/utils/event/addTransitionEndCommand} */
 var addTransitionCallback = require("../utils/event/addTransitionCallback");
 
+var COLLAPSE_THRESHOLD = 100;
+var PAN_OVERSHOOT_FACTOR = 0.1;
+var PAN_MOVE_FACTOR = 0.15;
+
 /**
  * @constructor
  * @type {module:app/view/NavigationView}
@@ -57,6 +63,8 @@ module.exports = View.extend({
 //		this.bundlePager = this.createBundlePager();
 		this.bundleList = this.createBundleList();
 		this.keywordList = this.createKeywordList();
+//		this.bundleList.renderNow();
+//		this.keywordList.renderNow();
 
 		_.bindAll(this, "_onHPanStart", "_onHPanMove", "_onHPanFinal");
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal", "_onVPanEnd");
@@ -64,6 +72,8 @@ module.exports = View.extend({
 		this.children = [this.bundleList, this.keywordList];
 		this.touch = TouchManager.getInstance();
 		this.transforms = new TransformHelper();
+
+		this._collapsedOffsetY = 300;
 
 		var cancellable;
 		var $body = Backbone.$("body");
@@ -78,11 +88,13 @@ module.exports = View.extend({
 //				css[styleName] = Globals.TRANSITION_DELAY + "ms";
 //				$els.css(css);
 				$body.addClass("entering-bundle");
+				console.log("entering-bundle in", Date.now());
 				cancellable = addTransitionCallback(eventProp, function(exec) {
 					cancellable = void 0;
 //					css[styleName] = "";
 //					$els.css(css);
 					$body.removeClass("entering-bundle");
+					console.log("entering-bundle out", Date.now());
 				}, this.el, this);
 			}
 		});
@@ -100,6 +112,7 @@ module.exports = View.extend({
 
 //	_onResize: function(ev) {
 //		this.$el.addClass("skip-transitions");
+//		this.render();
 //		_.each(this.children, function(view) {
 //			this.disableTransitions(view);
 //			this.transforms.release(view.el);
@@ -134,8 +147,6 @@ module.exports = View.extend({
 			this.transforms.release(view.wrapper);
 		}, this);
 
-//		this.keywordList.renderNow();
-//		this.bundleList.renderNow();
 		return View.prototype.render.apply(this, arguments);
 	},
 
@@ -158,15 +169,15 @@ module.exports = View.extend({
 		this.setCollapsed(false);
 		this.keywordList.filterBy(null);
 		this.touch.off("panstart", this._onHPanStart);
-//		this.touch.off("vpanend", this._onVPanEnd);
 		this.touch.off("vpanstart", this._onVPanStart);
+//		this.touch.off("vpanend", this._onVPanEnd);
 	},
 
 	_onDeselectNone: function() {
 		this.setCollapsed(true);
 		this.touch.on("panstart", this._onHPanStart);
-//		this.touch.on("vpanend", this._onVPanEnd);
 		this.touch.on("vpanstart", this._onVPanStart);
+//		this.touch.on("vpanend", this._onVPanEnd);
 	},
 
 	/* -------------------------------
@@ -207,9 +218,6 @@ module.exports = View.extend({
 	 * Vertical touch/move (_onVPan*)
 	 * ------------------------------- */
 
-	_collapseThreshold: 100,
-	_collapsedOffsetY: 300,
-
 	_onVPanStart: function (ev) {
 		_.each(this.children, function(view) {
 			this.disableTransitions(view);
@@ -221,24 +229,24 @@ module.exports = View.extend({
 	},
 
 	_onVPanMove: function (ev) {
-		// remove sign
-		var delta = Math.abs(ev.deltaY + ev.thresholdOffsetY);
-		// check if direction is for/against for collapse/expand
-		if (ev.offsetDirection & (this.isCollapsed()? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN)) {
-			if (delta > this._collapsedOffsetY * 2) {
-				// overshooting, factor overshoot distance
-				delta = (delta - this._collapsedOffsetY) * 0.1 + this._collapsedOffsetY;
-			} else {
-				// no overshooting, apply delta in full
-				delta = delta / 2;
+		var delta = ev.deltaY + ev.thresholdOffsetY;
+		// check if direction is aligned with collapse/expand
+		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
+		var maxDelta = this._collapsedOffsetY;	// max delta
+		delta = Math.abs(delta);				// remove sign
+		if (isDirAllowed) {
+			if (delta > maxDelta) {				// overshooting
+				delta = (delta - maxDelta) * PAN_OVERSHOOT_FACTOR + maxDelta;
+			} else { 							// no overshooting
+				delta = delta;
 			}
 		} else {
-			// wrong direction, factor delta
-			delta = delta * -0.1;
+			delta = delta * -PAN_OVERSHOOT_FACTOR; // delta is opposite
 		}
 		// reapply sign
-		// on expanding, NavigationView has extra resistance
-		delta *= this.isCollapsed()? 0.5 : -0.5;
+		delta *= this.isCollapsed()? PAN_MOVE_FACTOR : PAN_MOVE_FACTOR - 1;
+
+		//this.transforms.move(this.el, void 0, delta);
 		_.each(this.children, function(view) {
 			this.transforms.move(view.el, void 0, delta);
 		}, this);
@@ -256,11 +264,11 @@ module.exports = View.extend({
 
 	_onVPanEnd: function (ev) {
 		if (this.isCollapsed()) {
-			if (ev.deltaY > this._collapseThreshold) {
+			if (ev.deltaY > COLLAPSE_THRESHOLD) {
 				this.setCollapsed(false);
 			}
 		} else {
-			if (ev.deltaY < -this._collapseThreshold) {
+			if (ev.deltaY < -COLLAPSE_THRESHOLD) {
 				this.setCollapsed(true);
 			}
 		}

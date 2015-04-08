@@ -3,7 +3,6 @@ var _ = require("underscore");
 /** @type {Function} */
 var transitionEventName = require("./transitionEventName");
 
-
 function _log(d) {
 	var args = Array.prototype.slice.call(arguments, 0);
 	var k, s = "", dd = _.omit(d, ["id", "level", "method"]);

@@ -6,7 +6,6 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-
 /** @type {module:jquery} */
 var $ = Backbone.$;
 /** @type {Function} */
@@ -53,7 +52,14 @@ var Controller = Backbone.Router.extend({
 
 	/** @override */
 	initialize: function (options) {
-		this.listenToOnce(bundles, "all", this.routeInitialized);
+		this._classProviders = [];
+
+		this.initializeBrowserTitle();
+		this.initializeBundleStyles();
+		this.inilializeStateHandlers();
+
+//		this.listenToOnce(bundles, "all", this.routeInitialized);
+
 //		if (DEBUG) {
 //			// error trace
 //			var bundleTracer =	traceArgs("Bundles \t", "info");
@@ -73,6 +79,32 @@ var Controller = Backbone.Router.extend({
 //				}
 //			});
 //		}
+	},
+
+//	listenTo: function() {
+//		console.log("Controller.listenTo", arguments);
+//		return Backbone.Router.prototype.listenTo.apply(this, arguments);
+//	},
+
+	stopListening: function() {
+		console.log("Controller.stopListening", arguments);
+		return Backbone.Router.prototype.stopListening.apply(this, arguments);
+	},
+
+	/* ---------------------------
+	 * Document body classes
+	 * --------------------------- */
+
+	_applyClassProviders: function(bundle, image) {
+		var classes = [];
+		_.each(this._classProviders, function(fn) {
+			fn(classes, bundle, image);
+		});
+		document.body.className = classes.join(" ");
+	},
+
+	addClassProvider: function(fn) {
+		this._classProviders.push(fn);
 	},
 
 	/* ---------------------------
@@ -163,56 +195,50 @@ var Controller = Backbone.Router.extend({
 
 	/* Select Bundle/image */
 	_changeSelection: function (bundle, image) {
+		console.log("Controller._changeSelection [before] bundle:" +
+					(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
+
 		this._applyClassProviders(bundle, image);
-//		console.log("Controller._changeSelection [before] bundle:" + (bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
-//		var lastBundle = bundles.selected;
+
+		//var lastBundle = bundles.selected;
 		if (_.isUndefined(bundle)) {
 			bundles.deselect();
-//			if (lastBundle) {
-//				lastBundle.get("images").deselect();
-//			}
+			//if (lastBundle) {
+			//	lastBundle.get("images").deselect();
+			//}
 		} else {
+			var opts = { silent: (bundle !== bundles.selected) }; // if bundle changed,
 			if (_.isUndefined(image)) {
-				bundle.get("images").deselect();
+				bundle.get("images").deselect(opts);
 			} else {
-				bundle.get("images").select(image);
+				bundle.get("images").select(image, opts);
 			}
 			bundles.select(bundle);
 		}
-//		console.log("Controller._changeSelection [after]  bundle:" + (bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
+		console.log("Controller._changeSelection [after]  bundle:" +
+					(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
 	},
 
 	/* --------------------------- *
 	 * Initialization
 	 * --------------------------- */
 
-	routeInitialized: function() {
-		console.log("Controller.routeInitialized");
+//	routeInitialized: function() {
+//		console.log("Controller.routeInitialized [before] bundle:" + (bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
+//
+//		this.initializeBrowserTitle();
+//		this.initializeBundleStyles();
+//		this.inilializeStateHandlers();
+//
+//		var bundle = bundles.selected;
+//		var image = bundles.selected && bundles.selected.get("images").selected;
+//
+//		console.log("Controller.routeInitialized [after]  bundle:" + (bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
+//
+//		// initialize body classes
+//		this._applyClassProviders(bundle, image);
+//	},
 
-		this.addClassProvider(function(classes, bundle, image) {
-			classes.push(bundle? "with-bundle":"without-bundle");
-			bundle && classes.push(image? "with-image":"without-image");
-		});
-
-		this.initializeBrowserTitle();
-		this.initializeBundleStyles();
-//		this.inilializeHandlers();
-//		this.initializeEnteringHandlers();
-	},
-
-	_applyClassProviders: function(bundle, image) {
-		var classes = [];
-		_.each(this._classProviders, function(fn){
-			fn(classes, bundle, image);
-		});
-//		console.log("Controller._changeSelection [classes]", classes.join(" "), document.querySelector("body").className);
-		document.querySelector("body").className = classes.join(" ");
-	},
-
-	addClassProvider: function(fn) {
-		this._classProviders || (this._classProviders = []);
-		this._classProviders.push(fn);
-	},
 
 	/* --------------------------- *
 	 * browser title
@@ -236,63 +262,69 @@ var Controller = Backbone.Router.extend({
 	},
 
 	/* --------------------------- *
-	 * pre-bundle styles
+	 * per-bundle styles
 	 * --------------------------- */
 
 	initializeBundleStyles: function() {
-		var fgColor, bgColor, bgLum, fgLum;
-		var bgDefault, fgDefault;
-		var attrs, styles, bodySelector, carouselSelector;
-		var bodyStyles = ["background", "background-color", "color"];
-		var fontSmoothingStyles = ["-moz-osx-font-smoothing", "-webkit-font-smoothing"];
-		var carouselImageStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
+		var classProvider, toBodyClass, createDerivedStyles;
 
-		var toBodyClass = function (bundle) {
+		toBodyClass = function (bundle) {
 			return "bundle-" + bundle.id;
 		};
+		classProvider = function(classes, bundle, image) {
+			bundle && classes.push(toBodyClass(bundle));
+		};
+		createDerivedStyles = function() {
+			var fgColor, bgColor, bgLum, fgLum;
+			var bgDefault, fgDefault;
+			var attrs, styles, bodySelector, carouselSelector;
+			var bodyStyles = ["background", "background-color", "color"];
+			var fontSmoothingStyles = ["-moz-osx-font-smoothing", "-webkit-font-smoothing"];
+			var carouselImageStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
 
-		bgDefault = new Color(Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
-		fgDefault = new Color(Styles.getCSSProperty("body", "color") || "hsl(47, 5%, 15%)");
+			bgDefault = new Color(Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
+			fgDefault = new Color(Styles.getCSSProperty("body", "color") || "hsl(47, 5%, 15%)");
 
-		bundles.each(function (bundle) {
-			attrs = bundle.get("attrs");
-			fgColor = attrs["color"]? new Color(attrs["color"]) : fgDefault;
-			bgColor = attrs["background-color"]? new Color(attrs["background-color"]) : bgDefault;
-			//bgColor = bgDefault; fgColor = fgDefault;
-			bgLum = bgColor.lightness();
-			fgLum = fgColor.lightness();
+			bundles.each(function (bundle) {
+				attrs = bundle.get("attrs");
+				fgColor = attrs["color"]? new Color(attrs["color"]) : fgDefault;
+				bgColor = attrs["background-color"]? new Color(attrs["background-color"]) : bgDefault;
+				//bgColor = bgDefault; fgColor = fgDefault;
+				bgLum = bgColor.lightness();
+				fgLum = fgColor.lightness();
 
-			bodySelector = "body." + toBodyClass(bundle);
-			//styles = {};
-			styles = _.pick(attrs, bodyStyles);
-			styles["-webkit-font-smoothing"] = (bgLum < fgLum? "antialiased" : "auto");
-			/* 'body { -moz-osx-font-smoothing: grayscale; }' works ok in all situations: hardcoded in _base.scss */
-			//styles["-moz-osx-font-smoothing"] = (bgLum < fgLum? "grayscale" : "auto");
-			Styles.createCSSRule(bodySelector, styles);
+				bodySelector = "body." + toBodyClass(bundle);
+				//styles = {};
+				styles = _.pick(attrs, bodyStyles);
+				styles["-webkit-font-smoothing"] = (bgLum < fgLum? "antialiased" : "auto");
+				/* 'body { -moz-osx-font-smoothing: grayscale; }' works ok in all situations: hardcoded in _base.scss */
+				//styles["-moz-osx-font-smoothing"] = (bgLum < fgLum? "grayscale" : "auto");
+				Styles.createCSSRule(bodySelector, styles);
 
-			styles = {
-				"color":			fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString(),
-				"border-color": 	fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString(),
-			};
-			Styles.createCSSRule(bodySelector + " .mutable-faded", styles);
+				styles = {
+					"color":			fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString(),
+					"border-color": 	fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString(),
+				};
+				Styles.createCSSRule(bodySelector + " .mutable-faded", styles);
 
-			carouselSelector = ".carousel." + bundle.get("handle");
-			styles = _.pick(attrs, carouselImageStyles);//, "background-color"]);
-			Styles.createCSSRule(carouselSelector + " .image-item img", styles);
+				carouselSelector = ".carousel." + bundle.get("handle");
+				styles = _.pick(attrs, carouselImageStyles);//, "background-color"]);
+				Styles.createCSSRule(carouselSelector + " .image-item img", styles);
 
-			styles = {
-				// text color luminosity is inverse from body, apply oposite rendering mode
-				"-webkit-font-smoothing": (bgLum < fgLum? "auto" : "antialiased"),
-			//	"color": 			bgColor.toHexString(),
-				"color": 			bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString(),
-			//	"color": 			bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString(),
-			//	"border-color": 	bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
-			//	"background-color": bgColor.lightness(fgLum * 0.100 + bgLum * 0.900).toHexString(),
-				"background-color": bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
-			//	"border": 			"0 none transparent",
-			};
-			Styles.createCSSRule(carouselSelector + " .image-item .placeholder", styles);
-		});
+				styles = {
+					// text color luminosity is inverse from body, apply oposite rendering mode
+					"-webkit-font-smoothing": (bgLum < fgLum? "auto" : "antialiased"),
+				//	"color": 			bgColor.toHexString(),
+					"color": 			bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString(),
+				//	"color": 			bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString(),
+				//	"border-color": 	bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
+				//	"background-color": bgColor.lightness(fgLum * 0.100 + bgLum * 0.900).toHexString(),
+					"background-color": bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
+				//	"border": 			"0 none transparent",
+				};
+				Styles.createCSSRule(carouselSelector + " .image-item .placeholder", styles);
+			});
+		};
 
 //		var $body = Backbone.$("body");
 //		var handlers = {
@@ -307,15 +339,28 @@ var Controller = Backbone.Router.extend({
 //		if (bundles.selected) {
 //			handlers["select:one"].call(this, bundles.selected);
 //		}
-		this.addClassProvider(function(classes, bundle, image) {
-			bundle && classes.push(toBodyClass(bundle));
-		});
+
+		if (document.readyState === "complete") {
+			createDerivedStyles();
+		} else {
+			$(window).load(createDerivedStyles);
+		}
+		this.addClassProvider(classProvider);
 	},
 
-
 	/* --------------------------- *
-	 * other handlers
+	 * state handlers
 	 * --------------------------- */
+
+	inilializeStateHandlers: function() {
+//		this.inilializeHandlers();
+//		this.initializeEnteringHandlers();
+
+		this.addClassProvider(function(classes, bundle, image) {
+			classes.push(bundle? "with-bundle":"without-bundle");
+			bundle && classes.push(image? "with-image":"without-image");
+		});
+	},
 
 	/*
 	inilializeHandlers: function() {

@@ -94,7 +94,7 @@ var Carousel = DeferredView.extend({
 //		this.hammer.off("tap", this._onTap);
 		this.hammer.off("panstart panmove panend pancancel", this._onPan);
 		this.removeChildren();
-		DeferredView.prototype.remove.apply(this);
+		return DeferredView.prototype.remove.apply(this);
 	},
 
 	initializeHammer: function(options) {
@@ -325,7 +325,6 @@ var Carousel = DeferredView.extend({
 		this._scrollEndCancellable && this._scrollEndCancellable(false);
 
 		if (skipTransitions) {
-			this.skipTransitions = false;
 			this.$el.addClass("skip-transitions");
 		} else {
 			this.$el.removeClass("skip-transitions");

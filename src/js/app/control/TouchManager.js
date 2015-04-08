@@ -147,13 +147,17 @@ Hammer.inherit(SmoothPan, Hammer.Pan, {
 
 		if (this.state == Hammer.STATE_BEGAN) {
 			this.thresholdOffsetX = (direction & Hammer.DIRECTION_HORIZONTAL)? ((direction & Hammer.DIRECTION_LEFT)? threshold: -threshold) : 0;
-			this.thresholdOffsetY = (direction & Hammer.DIRECTION_VERTICAL)? ((direction & Hammer.DIRECTION_TOP)? threshold: -threshold) : 0;
+			this.thresholdOffsetY = (direction & Hammer.DIRECTION_VERTICAL)? ((direction & Hammer.DIRECTION_UP)? threshold: -threshold) : 0;
 //			this.thresholdOffset = (direction & Hammer.DIRECTION_HORIZONTAL)? input.thresholdOffsetX : input.thresholdOffsetY;
 //			console.log("RECOGNIZER STATE", directionStr(direction), stateStr(this.state), this.thresholdOffsetX);
 		}
 		input.thresholdOffsetX = this.thresholdOffsetX;
 		input.thresholdOffsetY = this.thresholdOffsetY;
 //		input.thresholdOffset = this.thresholdOffset;
+//		input.thres = {
+//			deltaX: input.deltaX + this.thresholdOffsetX,
+//			deltaY: input.deltaY + this.thresholdOffsetY,
+//		};
 
         this.pX = input.deltaX;
         this.pY = input.deltaY;

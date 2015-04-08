@@ -1,7 +1,7 @@
 /**
  * @module app/App
  */
-console.log("App.js", "first-line");
+console.log("App.js first line");
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -9,7 +9,8 @@ var _ = require("underscore");
 var $ = require("jquery");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-window.jQuery = Backbone.$ = $;
+
+global.jQuery = Backbone.$ = $;
 
 require("hammerjs");
 require("jquery.transit");
@@ -17,16 +18,22 @@ require("jquery-color");
 require("backbone.babysitter");
 require("Backbone.Mutators");
 
-$(window).load(function() {
-//$(document).ready(function() {
+//global._ = _;
+//global.$ = $;
+
+//$(window).load(function(ev) {
+//	"use strict";
+//	console.log("window.load()", document.readyState, arguments.length, arguments);
+$(document).ready(function($) {
 	"use strict";
-//	console.log("App.ready()", arguments.length, arguments);
+	console.log("document.ready()", document.readyState, arguments.length, arguments);
+
 	if (window.bootstrap === void 0) {
 		console.error("bootstrap data missing");
-		$(document.body).empty().html("<h1>Oops... </h1>").removeClass("app-initial");
+		$(document.body).empty().html("<h1>Oops... </h1>");
+		$(document.documentElement).removeClass("app-initial").addClass("app-error");
 		return;
 	}
-	console.log("App.load");
 
 	/** @type {module:app/control/Globals} */
 	var Globals = require("./control/Globals");
@@ -38,8 +45,6 @@ $(window).load(function() {
 	var keywordList = require("./model/collection/KeywordList");
 	/** @type {module:app/model/collection/BundleList} */
 	var bundleList = require("./model/collection/BundleList");
-	/** @type {module:app/view/AppView} */
-	var AppView = require("./view/AppView");
 
 	var types = window.bootstrap["types-all"];
 	var keywords = window.bootstrap["keywords-all"];
@@ -73,6 +78,14 @@ $(window).load(function() {
 	/* jshint -W051 */
 	delete window.bootstrap;
 	/* jshint +W051 */
+});
+
+$(window).load(function() {
+	"use strict";
+	console.log("window.load()", document.readyState, arguments.length, arguments);
+
+	/** @type {module:app/view/AppView} */
+	var AppView = require("./view/AppView");
 
 	window.app = new AppView();
 });

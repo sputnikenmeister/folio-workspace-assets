@@ -6,13 +6,15 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {module:jquery} */
+var $ = Backbone.$;
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
 /** @type {module:app/view/base/DeferredView} */
-var DeferredView = require("../../view/base/DeferredView");
+//var DeferredView = require("../../view/base/DeferredView");
 
 /** @type {string} */
 var viewTemplate = require("./CollectionStack.tpl");

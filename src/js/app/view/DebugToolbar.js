@@ -6,6 +6,9 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {module:jquery} */
+var $ = Backbone.$;
+
 /** @type {module:app/control/Globals} */
 var Globals = require("../control/Globals");
 /** @type {module:cookies-js} */

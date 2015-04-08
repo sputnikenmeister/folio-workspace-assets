@@ -4,10 +4,12 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:hammerjs} */
-var Hammer = require("hammerjs");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {module:jquery} */
+var $ = Backbone.$;
+/** @type {module:hammerjs} */
+var Hammer = require("hammerjs");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 

@@ -59,18 +59,30 @@ $nav_height_portrait: 14.25rem;
 @mixin nav_translate($x, $y) {
 	transform: translate3d($x, $y, 0);
 }
+
+// - - - - - - - - - - - - - - - - - -
+// nav_list: vertical
+// - - - - - - - - - - - - - - - - - -
+
 %nav_list {
 	position: absolute;
 	display: inline-block;
-//	@include nav_transition($delay: $delay * 1);
-	@include nav_transition($delay: $delay * 0);
+	@include nav_transition($delay: $delay * 1);
+//	@include nav_transition($delay: $delay * 0);
 	@include nav_translate(0, #{$nav_height_portrait - 4.5rem});
 }
-.entering-bundle %nav_list {
-	@include nav_transition($delay: $delay * 1);
-}
+//.entering-bundle %nav_list {
+//	@include nav_transition($delay: $delay * 1);
+//}
 .with-bundle %nav_list {
 	@include nav_translate(0, 0);
+}
+.skip-transitions {
+	&, &.with-bundle {
+		%nav_list {
+			@include skip_transitions();
+		}
+	}
 }
 @include media($desktop_small) {
 	%nav_list {
@@ -81,11 +93,32 @@ $nav_height_portrait: 14.25rem;
 	}
 }
 
+// - - - - - - - - - - - - - - - - - -
+// transform-wrapper: horizontal
+// - - - - - - - - - - - - - - - - - -
+
 .transform-wrapper {
-//	transform-style: preserve-3d;
-//	transform: translate3d(0,0,0) scale3d(1,1,1);
 	@include nav_translate(0, 0);
 }
+@include media($desktop_small) {
+	.transform-wrapper {
+		transition: transform $duration $ease 0s;
+	}
+	.entering-bundle .transform-wrapper {
+		@include nav_transition($delay: $delay * 1);
+	}
+	.skip-transitions .transform-wrapper {
+		@include skip_transitions();
+	}
+}
+
+
+
+
+//.transform-wrapper, %nav_list {
+//	transform-style: preserve-3d;
+//	transform: translate3d(0,0,0) scale3d(1,1,1);
+//}
 
 // -----------------------------------
 // Container, Header, Footer

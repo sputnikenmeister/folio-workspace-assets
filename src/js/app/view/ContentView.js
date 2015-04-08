@@ -46,6 +46,10 @@ var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
 var imageCaptionTemplate = require("./template/CollectionStack.Image.tpl");
 
+var COLLAPSE_THRESHOLD = 100;
+var PAN_OVERSHOOT_FACTOR = 0.05;
+//var PAN_MOVE_FACTOR = 1;
+
 /**
  * @constructor
  * @type {module:app/view/ContentView}
@@ -57,6 +61,8 @@ var ContentView = View.extend({
 		this.children = [];
 		this.touch = TouchManager.getInstance();
 		this.transforms = new TransformHelper();
+
+		this._collapsedOffsetY = 300;
 
 		// Model listeners
 //		this.listenTo(bundles, {
@@ -83,8 +89,8 @@ var ContentView = View.extend({
 		}
 	},
 
+	// this view is, as of now, never removed, so this method is never called
 	/** @override */
-	/** this view is, as of now, never removed, so this method is never called */
 	/*remove: function () {
 		if (bundles.selected) {
 			this.removeChildren(bundles.selected, true);
@@ -131,12 +137,9 @@ var ContentView = View.extend({
 	 * Vertical touch/move (_onVPan*)
 	 * ------------------------------- */
 
-	_collapseThreshold: 100,
-	_collapsedOffsetY: 300,
-
 	_onVPanStart: function (ev) {
-//		this.disableTransitions(this);
-//		this.transforms.capture(this.el);
+		//this.disableTransitions(this);
+		//this.transforms.capture(this.el);
 		_.each(this.children, function(view) {
 			this.disableTransitions(view);
 			this.transforms.capture(view.el);
@@ -148,33 +151,33 @@ var ContentView = View.extend({
 	},
 
 	_onVPanMove: function (ev) {
-		// remove sign
-		var delta = Math.abs(ev.deltaY + ev.thresholdOffsetY);
-		// check if direction is for/against for collapse/expand
-		if (ev.offsetDirection & (this.isCollapsed()? Hammer.DIRECTION_UP : Hammer.DIRECTION_DOWN)) {
-			if (delta > this._collapsedOffsetY * 2) {
-				// overshooting, factor overshoot distance
-				delta = (delta - this._collapsedOffsetY) * 0.1 + this._collapsedOffsetY;
-			} else {
-				// no overshooting, apply delta in full
-				delta = delta / 2;
+		var delta = ev.deltaY + ev.thresholdOffsetY;
+		// check if direction is aligned with collapse/expand
+		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
+		var maxDelta = this._collapsedOffsetY;	// max delta
+		delta = Math.abs(delta);				// remove sign
+		if (isDirAllowed) {
+			if (delta > maxDelta) {				// overshooting
+				delta = (delta - maxDelta) * PAN_OVERSHOOT_FACTOR + maxDelta;
+			} else { 							// no overshooting
+				delta = delta;
 			}
 		} else {
-			// wrong direction, factor delta
-			delta = delta * -0.1;
+			delta = delta * -PAN_OVERSHOOT_FACTOR; // delta is opposite
 		}
 		// reapply sign
 		delta *= this.isCollapsed()? 1 : -1;
-//		this.transforms.move(this.el, void 0, delta);
+
+		//this.transforms.move(this.el, void 0, delta);
 		_.each(this.children, function(view) {
 			this.transforms.move(view.el, void 0, delta);
 		}, this);
 	},
 
 	_onVPanFinal: function(ev) {
-//		this.$el.removeClass("skip-transitions");
-//		this.enableTransitions(this);
-//		this.transforms.clear(this.el);
+		//this.$el.removeClass("skip-transitions");
+		//this.enableTransitions(this);
+		//this.transforms.clear(this.el);
 		_.each(this.children, function(view) {
 			this.enableTransitions(view);
 			this.transforms.clear(view.el);
@@ -187,11 +190,11 @@ var ContentView = View.extend({
 
 	_onVPanEnd: function (ev) {
 		if (this.isCollapsed()) {
-			if (ev.deltaY > this._collapseThreshold) {
+			if (ev.deltaY > COLLAPSE_THRESHOLD) {
 				this.setCollapsed(false);
 			}
 		} else {
-			if (ev.deltaY < -this._collapseThreshold) {
+			if (ev.deltaY < -COLLAPSE_THRESHOLD) {
 				this.setCollapsed(true);
 			}
 		}
@@ -283,20 +286,13 @@ var ContentView = View.extend({
 	},
 
 	removeChildren: function (bundle, skipAnimation) {
-		var images = bundle.get("images");
-
 		_.each(this.children, function(view) {
-			this.transforms.destroy(view.el);
-			controller.stopListening(view);
 			if (skipAnimation) {
 				view.remove();
 			} else {
-				view.$el.css({
-					position: "absolute",
-					top: view.el.offsetTop,
-					left: view.el.offsetLeft
-				})
-				.transit({opacity: 0, delay: 1})
+				view.$el
+//				.css({ position: "absolute", top: view.el.offsetTop, left: view.el.offsetLeft })
+				.transit({transform: view.$el.css(this.getPrefixedCSS("transform")), opacity: 0, delay: 1})
 				.queue(function(next) {
 					view.remove();
 					next();
@@ -306,34 +302,6 @@ var ContentView = View.extend({
 		// clear child references
 		this.children.length = 0;
 	},
-
-	removeChild: function(view) {
-	},
-
-//	removeChildren: function (bundle, skipAnimation) {
-//		var images = bundle.get("images");
-//		var childEls = [];
-//		this.stopListening(images);
-//		_.each(this.children, function(child) {
-//			controller.stopListening(child);
-//			childEls.push(child.el);
-//		});
-//		if (skipAnimation) {
-//			this._removeChildren();
-//		} else {
-//			Backbone.$(childEls).css({position: "absolute"})
-//				.transit({opacity: 0})
-//				.promise().done(_.bind(this._removeChildren, this));
-//		}
-//	},
-//
-//	_removeChildren: function() {
-//		_.each(this.children, function(child) {
-//			child.remove();
-//		});
-//		this.$el.css("display", "none");
-//		this.children.length = 0;
-//	},
 
 	/* -------------------------------
 	 * Components
@@ -363,8 +331,10 @@ var ContentView = View.extend({
 		});
 		controller.listenTo(view, {
 			"view:select:one": controller.selectImage,
-			"view:select:none": controller.deselectImage
+			"view:select:none": controller.deselectImage,
+			"view:remove": controller.stopListening
 		});
+		this.listenToOnce(view, "view:remove", this.onViewRemove);
 		return view;
 	},
 
@@ -377,8 +347,14 @@ var ContentView = View.extend({
 			template: imageCaptionTemplate,
 			className: "image-caption-stack"
 		});
+		this.listenToOnce(view, "view:remove", this.onViewRemove);
 		return view;
 	},
+
+	onViewRemove: function(view) {
+		this.transforms.destroy(view.el);
+	},
+
 
 //	/**
 //	 * image-pager

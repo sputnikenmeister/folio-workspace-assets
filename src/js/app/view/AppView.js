@@ -120,7 +120,7 @@ var AppView = View.extend({
 			console.log("AppView.initializeResizeHandlers [debounced] id:" + delayedId);
 		};
 		debouncedFn = _.debounce(debouncedFn, debouncedMs);
-		Backbone.$(window).on("resize", debouncedFn);
+		Backbone.$(window).on("resize orientationchange", debouncedFn);
 		//Backbone.$(window).on("orientationchange resize", debouncedFn);
 	},
 

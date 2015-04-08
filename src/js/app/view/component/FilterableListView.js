@@ -6,6 +6,9 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {module:jquery} */
+var $ = Backbone.$;
+
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 /** @type {module:app/view/base/DeferredView} */
