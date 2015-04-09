@@ -2,12 +2,15 @@
  * @module app/view/component/Carousel
  */
 
+/** @type {module:backbone} */
+var Backbone = require("backbone");
+/** @type {module:jquery} */
+var $ = Backbone.$;
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
+
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 
@@ -235,63 +238,65 @@ var Carousel = DeferredView.extend({
 	},
 
 	_measure: function() {
-		var s, pos = 0, posInner = 0;
+		var m, pos = 0, posInner = 0;
 		var maxAcross = 0, maxOuter = 0;
 		var maxView = this.emptyView || this.children.first();
 
 		// chidren metrics
 		this.children.each(function(view) {
-			s = this.measureChildView(view.render());
-			s.pos = pos;
-			pos += s.outer + this.childGap;
-			s.posInner = posInner;
-			posInner += s.inner + this.childGap;
+			m = this.measureChildView(view.render());
+			m.pos = pos;
+			pos += m.outer + this.childGap;
+			m.posInner = posInner;
+			posInner += m.inner + this.childGap;
 			if (view !== this.emptyView) {
-				if (s.across > maxAcross) {
-					maxAcross = s.across;
+				if (m.across > maxAcross) {
+					maxAcross = m.across;
 				}
-				if (s.outer > maxOuter) {
-					maxOuter = s.outer;
+				if (m.outer > maxOuter) {
+					maxOuter = m.outer;
 					maxView = view;
 				}
 			}
 		}, this);
 
 		// measure self
-		s = this.metrics[this.cid] || (this.metrics[this.cid] = {});
-		s.across = maxAcross;
-		s.outer = this.el[this.dirProp("offsetWidth", "offsetHeight")];
-		s.inner = maxView.el[this.dirProp("offsetWidth", "offsetHeight")];
-		s.before = maxView.el[this.dirProp("offsetLeft", "offsetTop")];
-		s.after = s.outer - (s.inner + s.before);
+		m = this.metrics[this.cid] || (this.metrics[this.cid] = {});
+		m.across = maxAcross;
+		m.outer = this.el[this.dirProp("offsetWidth", "offsetHeight")];
+		m.inner = maxView.el[this.dirProp("offsetWidth", "offsetHeight")];
+		m.before = maxView.el[this.dirProp("offsetLeft", "offsetTop")];
+		m.after = m.outer - (m.inner + m.before);
 
 		// tap area
-		this.tapAreaBefore = s.before + this.tapAreaGrow;
-		this.tapAreaAfter = s.before + s.inner - this.tapAreaGrow;
-		this.selectThreshold = Math.min(Carousel.MAX_SELECT_THRESHOLD, s.outer * 0.1);
+		this.tapAreaBefore = m.before + this.tapAreaGrow;
+		this.tapAreaAfter = m.before + m.inner - this.tapAreaGrow;
+		this.selectThreshold = Math.min(Carousel.MAX_SELECT_THRESHOLD, m.outer * 0.1);
 
 		//this.$(this.hammer.element).css(this.dirProp({width: maxSize, height: maxAcross }, {width: maxAcross, height: maxSize}));
 		//this.$el.css(this.dirProp("minHeight", "minWidth"), (maxAcross > 0)? maxAcross: "");
 	},
 
 	measureChildView: function (view) {
-		var s = this.metrics[view.cid] || (this.metrics[view.cid] = {});
-		var viewEl = view.el;
-		var contentEl = viewEl.querySelector(".sizing") || viewEl.firstChild;
+		var m, viewEl, sizeEl;
 
-		s.outer = viewEl[this.dirProp("offsetWidth", "offsetHeight")];
-		s.across = viewEl[this.dirProp("offsetHeight", "offsetWidth")];
+		viewEl = view.el;
+		sizeEl = viewEl.querySelector(".sizing") || viewEl.firstChild;
 
-		if (contentEl) {
-			s.inner = contentEl[this.dirProp("offsetWidth", "offsetHeight")];
-			s.before = contentEl[this.dirProp("offsetLeft", "offsetTop")];
-			s.after = s.outer - (s.inner + s.before);
+		m = this.metrics[view.cid] || (this.metrics[view.cid] = {});
+		m.outer = viewEl[this.dirProp("offsetWidth", "offsetHeight")];
+		m.across = viewEl[this.dirProp("offsetHeight", "offsetWidth")];
+
+		if (sizeEl) {
+			m.inner = sizeEl[this.dirProp("offsetWidth", "offsetHeight")];
+			m.before = sizeEl[this.dirProp("offsetLeft", "offsetTop")];
+			m.after = m.outer - (m.inner + m.before);
 		} else {
-			s.inner = s.outer;
-			s.before = 0;
-			s.after = 0;
+			m.inner = m.outer;
+			m.before = 0;
+			m.after = 0;
 		}
-		return s;
+		return m;
 	},
 
 	/* --------------------------- *
@@ -307,23 +312,40 @@ var Carousel = DeferredView.extend({
 	},
 
 	_scrollBy: function (delta, skipTransitions) {
-		var sView, sMetrics, cView, cMetrics, pos, txProp, txStyle;
+		var metrics, sView, sMetrics, cView, cMetrics, pos, txProp;
 
+		txProp = this.getPrefixedJS("transform");
 		sView = this._scrollCandidateView || this._selectedView;
 		cView = this._panCandidateView || this._selectedView;
 		sMetrics = this.metrics[sView.cid];
 		cMetrics = this.metrics[cView.cid];
-		txProp = this.getPrefixedJS("transform");
+
+
+//		var opacity, opacityProp;
+//		opacityProp = this.getPrefixedJS("opacity");
 
 		this.children.each(function (view) {
-			pos = Math.floor(this._getScrollOffset(delta, this.metrics[view.cid], sMetrics, cMetrics));
+			metrics = this.metrics[view.cid];
+			pos = Math.floor(this._getScrollOffset(delta, metrics, sMetrics, cMetrics));
 			view.el.style[txProp] = (this.direction & Hammer.DIRECTION_HORIZONTAL)?
 					"translate3d(" + pos + "px,0,0)" : "translate3d(0," + pos + "px,0)";
+
+//			if (skipTransitions) {
+//				if (view === this._panCandidateView) {
+//					opacity = Math.min(1, (1 - Math.abs(pos) / metrics.outer) * 4);
+//				} else if (view === this._selectedView) {
+//					opacity = 1;
+//				} else {
+//					opacity = 0;
+//				}
+//			} else {
+//				alphaVal = "";
+//			}
+//			metrics.content.style[opacityProp] = opacity;
 		}, this);
 
-		// transition management
+		// cancel callback
 		this._scrollEndCancellable && this._scrollEndCancellable(false);
-
 		if (skipTransitions) {
 			this.$el.addClass("skip-transitions");
 		} else {
@@ -337,22 +359,22 @@ var Carousel = DeferredView.extend({
 		this.commitScrollSelection();
 	},
 
-	_getScrollOffset: function (delta, s, ss, sc) {
-		var pos = s.pos - ss.pos + delta;
+	_getScrollOffset: function (delta, m, ms, mc) {
+		var pos = m.pos - ms.pos + delta;
 		var offset = 0;
 
 		if (pos < 0) {
-			if (Math.abs(pos) < s.outer) {
-				offset += (-s.after) / s.outer * pos;
+			if (Math.abs(pos) < m.outer) {
+				offset += (-m.after) / m.outer * pos;
 			} else {
-				offset += s.after;
+				offset += m.after;
 			}
 		} else
 		if (0 <= pos) {
-			if (Math.abs(pos) < s.outer) {
-				offset -= s.before / s.outer * pos;
+			if (Math.abs(pos) < m.outer) {
+				offset -= m.before / m.outer * pos;
 			} else {
-				offset -= s.before;
+				offset -= m.before;
 			}
 		}
 		return pos + offset;
@@ -406,18 +428,10 @@ var Carousel = DeferredView.extend({
 
 	_onPan: function (ev) {
 		switch (ev.type) {
-			case "panstart":
-				this._onPanStart(ev);
-				break;
-			case "panmove":
-				this._onPanMove(ev);
-				break;
-			case "panend":
-				this._onPanFinish(ev);
-				break;
-			case "pancancel":
-				this._onPanFinish(ev);
-				break;
+			case "panstart":	return this._onPanStart(ev);
+			case "panmove":		return this._onPanMove(ev);
+			case "panend":		return this._onPanFinish(ev);
+			case "pancancel":	return this._onPanFinish(ev);
 		}
 	},
 
@@ -524,18 +538,18 @@ var Carousel = DeferredView.extend({
 
 	/*
 	__getScrollOffset: function (delta, s, ss, sc) {
-		var posInner = s.posInner - ss.posInner + delta;
+		var posInner = m.posInner - ms.posInner + delta;
 		var offset = 0;
 
-		if (posInner < -ss.inner) {
-			offset = -(s.before);
-		} else if (posInner > ss.inner) {
-			offset = (ss.after);
+		if (posInner < -ms.inner) {
+			offset = -(m.before);
+		} else if (posInner > ms.inner) {
+			offset = (ms.after);
 		} else {
 			if (posInner < 0) {
-				offset = (s.before) / (s.inner) * posInner;
+				offset = (m.before) / (m.inner) * posInner;
 			} else {
-				offset = (ss.after) / (ss.inner) * posInner;
+				offset = (ms.after) / (ms.inner) * posInner;
 			}
 		}
 		return posInner + offset;

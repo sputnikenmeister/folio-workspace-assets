@@ -61,7 +61,6 @@ var AppView = View.extend({
 		});
 
 		// .skip-transitions on resize
-//		this.initializeResizeHandlers_raf();
 		this.initializeResizeHandlers_debounce();
 
 		// start router, which will request appropiate state
@@ -73,9 +72,9 @@ var AppView = View.extend({
 		// Change to .app-ready on next frame:
 		// CSS animations do not trigger while on .app-initial,
 		// so everything will be rendered in it's final state
-//		this.render();
-		this.navigationView.render();
-		this.contentView.render();
+		this.render();
+//		this.navigationView.render();
+//		this.contentView.render();
 //		window.requestAnimationFrame(function() {
 		this.callLater(function() {
 			Backbone.$(document.documentElement).removeClass("app-initial").addClass("app-ready");
@@ -92,6 +91,38 @@ var AppView = View.extend({
 		this.navigationView.render();
 		this.contentView.render();
 		return this;
+	},
+
+	/* -------------------------------
+	 * Resize (debounce)
+	 * ------------------------------- */
+
+	initializeResizeHandlers_timeout: function() {
+		var debouncedFn, debouncedMs, delayedFn, delayedMs, delayedId = 0, view = this;
+//		debouncedMs = Math.ceil(1000/30);
+//		delayedMs = debouncedMs * 2;
+		debouncedMs = 100;
+		delayedMs = 150;
+		delayedFn = function () {
+			console.log("AppView [RESIZE LAST] timeout:" + delayedId);
+			view.render();
+			view.$el.removeClass("skip-transitions");
+			delayedId = 0;
+		};
+		debouncedFn = function(ev) {
+			if (delayedId == 0) {
+				console.log("AppView [RESIZE FIRST]");
+				view.$el.addClass("skip-transitions");
+//				view.render();
+			} else {
+				console.log("AppView [RESIZE REPEAT] timeout:" + delayedId);
+				window.clearTimeout(delayedId);
+				view.render();
+			}
+			delayedId = window.setTimeout(delayedFn, delayedMs);
+		};
+		Backbone.$(window).on("resize orientationchange", debouncedFn);
+		//Backbone.$(window).on("orientationchange resize", debouncedFn);
 	},
 
 	/* -------------------------------

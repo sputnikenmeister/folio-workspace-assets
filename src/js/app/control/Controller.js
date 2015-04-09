@@ -199,7 +199,6 @@ var Controller = Backbone.Router.extend({
 					(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
 
 		this._applyClassProviders(bundle, image);
-
 		//var lastBundle = bundles.selected;
 		if (_.isUndefined(bundle)) {
 			bundles.deselect();

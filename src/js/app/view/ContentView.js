@@ -48,7 +48,9 @@ var imageCaptionTemplate = require("./template/CollectionStack.Image.tpl");
 
 var COLLAPSE_THRESHOLD = 100;
 var PAN_OVERSHOOT_FACTOR = 0.05;
-//var PAN_MOVE_FACTOR = 1;
+//var PAN_MOVE_FACTOR = 0.75;
+//// move factor is applied on top, so demultiply
+//PAN_OVERSHOOT_FACTOR /= PAN_MOVE_FACTOR;
 
 /**
  * @constructor
@@ -151,11 +153,29 @@ var ContentView = View.extend({
 	},
 
 	_onVPanMove: function (ev) {
-		var delta = ev.deltaY + ev.thresholdOffsetY;
+		var delta = ev.deltaY;
+		var maxDelta = this._collapsedOffsetY;
+
+		delta += ev.thresholdOffsetY;
+		maxDelta += Math.abs(ev.thresholdOffsetY);
+
 		// check if direction is aligned with collapse/expand
 		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-		var maxDelta = this._collapsedOffsetY;	// max delta
-		delta = Math.abs(delta);				// remove sign
+
+		delta = Math.abs(delta); // remove sign
+
+		if (isDirAllowed && delta > COLLAPSE_THRESHOLD) {
+			this.touch.off("vpanmove", this._onVPanMove);
+			this.touch.off("vpanend vpancancel", this._onVPanFinal);
+
+			_.each(this.children, function(view) {
+				this.enableTransitions(view);
+				this.transforms.clear(view.el);
+			}, this);
+			this.setCollapsed(!this.isCollapsed());
+			return;
+		}
+
 		if (isDirAllowed) {
 			if (delta > maxDelta) {				// overshooting
 				delta = (delta - maxDelta) * PAN_OVERSHOOT_FACTOR + maxDelta;
@@ -165,36 +185,32 @@ var ContentView = View.extend({
 		} else {
 			delta = delta * -PAN_OVERSHOOT_FACTOR; // delta is opposite
 		}
-		// reapply sign
-		delta *= this.isCollapsed()? 1 : -1;
+		delta *= this.isCollapsed()? 1 : -1; // reapply sign
 
-		//this.transforms.move(this.el, void 0, delta);
 		_.each(this.children, function(view) {
 			this.transforms.move(view.el, void 0, delta);
 		}, this);
 	},
 
 	_onVPanFinal: function(ev) {
-		//this.$el.removeClass("skip-transitions");
-		//this.enableTransitions(this);
-		//this.transforms.clear(this.el);
+		this.touch.off("vpanmove", this._onVPanMove);
+		this.touch.off("vpanend vpancancel", this._onVPanFinal);
+
 		_.each(this.children, function(view) {
 			this.enableTransitions(view);
 			this.transforms.clear(view.el);
 		}, this);
 		(ev.type === "vpanend") && this._onVPanEnd(ev);
-
-		this.touch.off("vpanmove", this._onVPanMove);
-		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 	},
 
 	_onVPanEnd: function (ev) {
+		var delta = ev.deltaY + ev.thresholdOffsetY;
 		if (this.isCollapsed()) {
-			if (ev.deltaY > COLLAPSE_THRESHOLD) {
+			if (delta > COLLAPSE_THRESHOLD) {
 				this.setCollapsed(false);
 			}
 		} else {
-			if (ev.deltaY < -COLLAPSE_THRESHOLD) {
+			if (delta < -COLLAPSE_THRESHOLD) {
 				this.setCollapsed(true);
 			}
 		}

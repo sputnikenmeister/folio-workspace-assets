@@ -116,7 +116,7 @@ $pan_ease: $ease;
 			opacity: 1;
 		}
 		&.done .placeholder {
-			transition: visibility $duration step-end $delay + 0.001s;
+			transition: visibility $duration*2 step-end 0.001s;
 //			transition: visibility $duration $ease 0.001s;
 			visibility: hidden;
 		}
@@ -125,6 +125,13 @@ $pan_ease: $ease;
 //		transition-duration: $duration * 0.75;
 //	}
 //	@at-root {
+//		.skip-transitions {
+//			.carousel-item.image-item {
+//				&.candidate.done img {
+//					transition: none 0s 0s;
+//				}
+//			}
+//		}
 //		.panning {
 //			.carousel-item.image-item {
 //				&.candidate.done img {
