@@ -7,33 +7,35 @@ var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {Function} */
+/** @type {module:app/utils/strings/prefixed} */
 var prefixed = require("../../utils/strings/prefixed");
-/** @type {Function} */
+/** @type {module:app/utils/strings/dashedToCamel} */
 var dashedToCamel = require("../../utils/strings/dashedToCamel");
-/** @type {Function} */
+/** @type {module:app/utils/strings/camelToDashed} */
 var camelToDashed = require("../../utils/strings/camelToDashed");
+/** @type {module:app/utils/event/addTransitionEndCommand} */
+var addTransitionCallback = require("../../utils/event/addTransitionCallback");
 
-var _jsPrefixed = {};
-var _cssPrefixed = {};
+var _prefixedProps = {};
+var _prefixedStyles = {};
 
 //var _viewsByCid = {};
 var _views = [];
 var _elements = [];
 var _count = 0;
 
-var _callLaterQueue = [];
-var _callLaterQueueId = 0;
+var _rafQueue = [];
+var _rafQueueId = 0;
 
 function requestCallLater() {
-	if (_callLaterQueueId == 0) {
-		_callLaterQueueId = window.requestAnimationFrame(function() {
-			var num = _callLaterQueue.length;
+	if (_rafQueueId == 0) {
+		_rafQueueId = window.requestAnimationFrame(function() {
+			var num = _rafQueue.length;
 			do {
-				_callLaterQueue[--num].call();
+				_rafQueue[--num].call();
 			}
 			while (num > 0);
-			_callLaterQueueId = 0;
+			_rafQueueId = 0;
 		});
 	}
 }
@@ -76,31 +78,40 @@ var View = Backbone.View.extend({
 		return this;
 	},
 
-	getPrefixedJS: function(prop) {
-		return _jsPrefixed[prop] || (_jsPrefixed[prop] = prefixed(this.el.style, prop));
+	getPrefixedProperty: function(prop) {
+		return _prefixedProps[prop] || (_prefixedProps[prop] = prefixed(this.el.style, prop));
 	},
 
-	getPrefixedCSS: function(prop) {
+	getPrefixedStyle: function(prop) {
 		var p, pp;
-		if (_cssPrefixed[prop] === void 0) {
+		if (_prefixedStyles[prop] === void 0) {
 			p = dashedToCamel(prop);
-			pp = this.getPrefixedJS(p);
-			_cssPrefixed[prop] = (p === pp? "" : "-") + camelToDashed(pp);
+			pp = this.getPrefixedProperty(p);
+			_prefixedStyles[prop] = (p === pp? "" : "-") + camelToDashed(pp);
 		}
-		return _cssPrefixed[prop];
+		return _prefixedStyles[prop];
 	},
 
-	callLater: function(fn) {
-		return this.applyLater(fn, Array.prototype.slice.call(1, arguments));
+	onTransitionEnd: function(target, props, callback) {
+		return addTransitionCallback(props, callback, target, this, 2000);
 	},
 
-	applyLater: function(fn, args) {
+	callNextFrame: function(fn) {
+		return this.applyNextFrame(fn, Array.prototype.slice.call(1, arguments));
+	},
+
+	cancelNextFrame: function(fn) {
+		var idx = _rafQueue.indexOf(fn);
+		(idx != -1) && _rafQueue.splice(idx, 1);
+	},
+
+	applyNextFrame: function(fn, args) {
 		var context = this;
 		var bound = function () {
-			_callLaterQueue.splice(_callLaterQueue.indexOf(bound), 1);
+			_rafQueue.splice(_rafQueue.indexOf(bound), 1);
 			return fn.apply(context, args);
 		};
-		_callLaterQueue.push(bound);
+		_rafQueue.push(bound);
 		requestCallLater();
 		return bound;
 	},

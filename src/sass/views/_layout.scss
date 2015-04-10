@@ -43,6 +43,9 @@ $nav_height_portrait: 14.25rem;
 	box-sizing: border-box;
 	padding-left: $hu;
 	padding-right: $hu;
+	&, * {
+		user-select: none !important;
+	}
 }
 
 // - - - - - - - - - - - - - - - - - -
@@ -99,6 +102,7 @@ $nav_height_portrait: 14.25rem;
 
 .transform-wrapper {
 	@include nav_translate(0, 0);
+	transition: none 0s 0s;
 }
 @include media($desktop_small) {
 	.transform-wrapper {
@@ -111,9 +115,6 @@ $nav_height_portrait: 14.25rem;
 		@include skip_transitions();
 	}
 }
-
-
-
 
 //.transform-wrapper, %nav_list {
 //	transform-style: preserve-3d;
@@ -216,6 +217,12 @@ html, body {
 }
 @import "_content";
 
+// - - - - - - - - - - - - - - - - - -
+// footer
+// - - - - - - - - - - - - - - - - - -
+
+//@import "views/_footer";
+
 // ------------------------------------
 // Body init
 // ------------------------------------
@@ -293,3 +300,5 @@ body, .mutable-faded {
 		}
 	}
 }
+//@import "views/_transitions";
+//@import "views/_footer";

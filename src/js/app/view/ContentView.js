@@ -152,13 +152,9 @@ var ContentView = View.extend({
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
 	},
 
-	_onVPanMove: function (ev) {
-		var delta = ev.deltaY;
-		var maxDelta = this._collapsedOffsetY;
-
-		delta += ev.thresholdOffsetY;
-		maxDelta += Math.abs(ev.thresholdOffsetY);
-
+	_onVPanMove1: function (ev) {
+		var delta = ev.deltaY + ev.thresholdOffsetY;
+		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapse/expand
 		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
 
@@ -167,14 +163,28 @@ var ContentView = View.extend({
 		if (isDirAllowed && delta > COLLAPSE_THRESHOLD) {
 			this.touch.off("vpanmove", this._onVPanMove);
 			this.touch.off("vpanend vpancancel", this._onVPanFinal);
-
+			this.setCollapsed(!this.isCollapsed());
 			_.each(this.children, function(view) {
 				this.enableTransitions(view);
 				this.transforms.clear(view.el);
+//				this.transforms.capture(view.el);
 			}, this);
-			this.setCollapsed(!this.isCollapsed());
-			return;
+		} else {
+			if (!isDirAllowed) delta *= -PAN_OVERSHOOT_FACTOR; // delta is opposite
+			delta *= this.isCollapsed()? 1 : -1; // reapply sign
+			_.each(this.children, function(view) {
+				this.transforms.move(view.el, void 0, delta);
+			}, this);
 		}
+	},
+
+	_onVPanMove: function (ev) {
+		var delta = ev.deltaY + ev.thresholdOffsetY;
+		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+		// check if direction is aligned with collapse/expand
+		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
+
+		delta = Math.abs(delta); // remove sign
 
 		if (isDirAllowed) {
 			if (delta > maxDelta) {				// overshooting
@@ -198,6 +208,7 @@ var ContentView = View.extend({
 
 		_.each(this.children, function(view) {
 			this.enableTransitions(view);
+		view.$el.css(this.getPrefixedStyle("transition"), "");
 			this.transforms.clear(view.el);
 		}, this);
 		(ev.type === "vpanend") && this._onVPanEnd(ev);
@@ -205,32 +216,15 @@ var ContentView = View.extend({
 
 	_onVPanEnd: function (ev) {
 		var delta = ev.deltaY + ev.thresholdOffsetY;
-		if (this.isCollapsed()) {
-			if (delta > COLLAPSE_THRESHOLD) {
-				this.setCollapsed(false);
-			}
-		} else {
-			if (delta < -COLLAPSE_THRESHOLD) {
-				this.setCollapsed(true);
-			}
+		if (this.willCollapseChange(ev)) {
+			this.setCollapsed(!this.isCollapsed());
 		}
 	},
 
-//	_onVPanEnd: function (ev) {
-//		//if (ev.distance > this._collapseThreshold &&
-//		//	(ev.offsetDirection & (this._collapsed? Hammer.DIRECTION_UP: Hammer.DIRECTION_DOWN)))
-//		if (this._collapsed) {
-//			if (ev.deltaY < -this._collapseThreshold) {
-//				this._collapsed = false;
-//				this.$el.removeClass("collapsed");
-//			}
-//		} else {
-//			if (ev.deltaY > this._collapseThreshold) {
-//				this._collapsed = true;
-//				this.$el.addClass("collapsed");
-//			}
-//		}
-//	},
+	willCollapseChange: function(ev) {
+		var delta = ev.deltaY + ev.thresholdOffsetY;
+		return this.isCollapsed()? delta > COLLAPSE_THRESHOLD : delta < -COLLAPSE_THRESHOLD;
+	},
 
 	/* -------------------------------
 	 * collapse
@@ -246,9 +240,9 @@ var ContentView = View.extend({
 		if (this._collapsed !== collapsed) {
 			this._collapsed = collapsed;
 			if (collapsed) {
-				this.$el.removeClass("not-collapsed");
+				this.$el.removeClass("expanded");
 			} else {
-				this.$el.addClass("not-collapsed");
+				this.$el.addClass("expanded");
 			}
 		}
 	},
@@ -258,24 +252,13 @@ var ContentView = View.extend({
 	 * ------------------------------- */
 
 	enableTransitions: function(view) {
-		view.$el.css({"transition": "", "-webkit-transition": ""});
-//		view.$el.clearQueue().transit({transform: ""});
-
-//		view.$el.css({"transition": "transform 0.5s", "-webkit-transition": "-webkit-transform 0.5s"});
-//		addTransitionCallback("transform", function() {
-//			view.$el.css({"transition": "", "-webkit-transition": ""});
-//		}, el, this);
-
-//		this.$el.removeClass("skip-transitions");
+		//this.$el.removeClass("skip-transitions");
+		view.$el.css(this.getPrefixedStyle("transition"), "");
 	},
 
 	disableTransitions: function(view) {
-		view.$el.css({"transition": "none 0s 0s", "-webkit-transition": "none 0s 0s"});
-//		view.$el.clearQueue().css({"transition": "none 0s 0s"});
-//		view.$el.clearQueue().css({"transition": "", "-webkit-transition": "", "transform": "", "-webkit-transform": ""});
-
-//		this.transforms._getTransform(el).$el.css({transition: "none 0s 0s"});
-//		this.$el.addClass("skip-transitions");
+		//this.$el.addClass("skip-transitions");
+		view.$el.css(this.getPrefixedStyle("transition"), "none 0s 0s");
 	},
 
 	/* -------------------------------
@@ -284,39 +267,48 @@ var ContentView = View.extend({
 
 	/** Create children on bundle select */
 	createChildren: function (bundle, skipAnimation) {
-		var images = bundle.get("images");
+		//this.children.push(this.createImageCaptionCarousel(bundle, images));
+		this.children.push(this.createImageCaptionStack(bundle));
+		this.children.push(this.createImageCarousel(bundle));
 
-//		this.children[this.children.length] = this.createImageCaptionCarousel(bundle, images);
-		this.children[this.children.length] = this.createImageCaptionStack(bundle, images);
-		this.children[this.children.length] = this.createImageCarousel(bundle, images);
-
+		var startProps = {opacity: 0};
+		var endProps = {delay: Globals.ENTERING_DELAY, opacity: 1};
 		// Show views
 		_.each(this.children, function(view) {
+			this.listenToOnce(view, "view:remove", this.onChildRemove);
 			view.render().$el.appendTo(this.el);
 			if (!skipAnimation) {
-				view.$el.css({opacity: 0})
-//				.delay(Globals.TRANSITION_DELAY * 2).transit({delay: 1, opacity: 1})
-				.transit({delay: Globals.TRANSITION_DELAY * 2 + 1, opacity: 1});
+				view.$el.css(startProps).transit(endProps);
 			}
 		}, this);
 	},
 
 	removeChildren: function (bundle, skipAnimation) {
+//		var startProps = {position: "absolute"};
+		var endProps = {delay: Globals.EXITING_DELAY, opacity: 0};
+		var txStyle = this.getPrefixedStyle("transform");
+
 		_.each(this.children, function(view) {
 			if (skipAnimation) {
 				view.remove();
 			} else {
+//				startProps.top = view.el.offsetTop;
+//				startProps.left = view.el.offsetLeft;
+				endProps[txStyle] = view.$el.css(txStyle);
 				view.$el
-//				.css({ position: "absolute", top: view.el.offsetTop, left: view.el.offsetLeft })
-				.transit({transform: view.$el.css(this.getPrefixedCSS("transform")), opacity: 0, delay: 1})
-				.queue(function(next) {
-					view.remove();
-					next();
-				});
+//					.css(startProps)
+					.transit(endProps)
+					.queue(function(next) {
+						view.remove(); next();
+					});
 			}
 		}, this);
-		// clear child references
+		// clear child references immediately
 		this.children.length = 0;
+	},
+
+	onChildRemove: function(view) {
+		this.transforms.destroy(view.el);
 	},
 
 	/* -------------------------------
@@ -326,11 +318,12 @@ var ContentView = View.extend({
 	/**
 	 * image-carousel
 	 */
-	createImageCarousel: function(bundle, images) {
+	createImageCarousel: function(bundle) {
 		// Create carousel
+		var images = bundle.get("images");
 		var attrs = bundle.get("attrs");
 		var classname = "image-carousel " + bundle.get("handle");
-		if (attrs && attrs.hasOwnProperty("@classname")) {
+		if (attrs && ("@classname" in attrs)) {
 			classname += " " + attrs["@classname"];
 		}
 		var emptyRenderer = CarouselEmptyRenderer.extend({
@@ -350,26 +343,22 @@ var ContentView = View.extend({
 			"view:select:none": controller.deselectImage,
 			"view:remove": controller.stopListening
 		});
-		this.listenToOnce(view, "view:remove", this.onViewRemove);
 		return view;
 	},
 
 	/**
 	 * image-caption-stack
 	 */
-	createImageCaptionStack: function(bundle, images) {
+	createImageCaptionStack: function(bundle) {
+		var images = bundle.get("images");
 		var view = new CollectionStack({
 			collection: images,
 			template: imageCaptionTemplate,
 			className: "image-caption-stack"
 		});
-		this.listenToOnce(view, "view:remove", this.onViewRemove);
 		return view;
 	},
 
-	onViewRemove: function(view) {
-		this.transforms.destroy(view.el);
-	},
 
 
 //	/**

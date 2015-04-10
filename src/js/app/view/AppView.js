@@ -2,10 +2,12 @@
  * @module app/view/AppView
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {module:jquery} */
+var $ = Backbone.$;
+/** @type {module:underscore} */
+var _ = require("underscore");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../control/Globals");
@@ -76,13 +78,13 @@ var AppView = View.extend({
 //		this.navigationView.render();
 //		this.contentView.render();
 //		window.requestAnimationFrame(function() {
-		this.callLater(function() {
-			Backbone.$(document.documentElement).removeClass("app-initial").addClass("app-ready");
+		this.callNextFrame(function() {
+			$(document.documentElement).removeClass("app-initial").addClass("app-ready");
 		});
 //		_.delay(function(view) {
-//			Backbone.$(document.documentElement).removeClass("app-initial").addClass("app-ready");
+//			$(document.documentElement).removeClass("app-initial").addClass("app-ready");
 //			view.render();
-////			Backbone.$(".app-initial").removeClass("app-initial").addClass("app-ready");
+////			$(".app-initial").removeClass("app-initial").addClass("app-ready");
 ////			view.$el.removeClass("app-initial").addClass("app-ready");
 //		}, 66, this);
 	},
@@ -121,8 +123,8 @@ var AppView = View.extend({
 			}
 			delayedId = window.setTimeout(delayedFn, delayedMs);
 		};
-		Backbone.$(window).on("resize orientationchange", debouncedFn);
-		//Backbone.$(window).on("orientationchange resize", debouncedFn);
+		$(window).on("resize orientationchange", debouncedFn);
+		//$(window).on("orientationchange resize", debouncedFn);
 	},
 
 	/* -------------------------------
@@ -151,8 +153,8 @@ var AppView = View.extend({
 			console.log("AppView.initializeResizeHandlers [debounced] id:" + delayedId);
 		};
 		debouncedFn = _.debounce(debouncedFn, debouncedMs);
-		Backbone.$(window).on("resize orientationchange", debouncedFn);
-		//Backbone.$(window).on("orientationchange resize", debouncedFn);
+		$(window).on("resize orientationchange", debouncedFn);
+		//$(window).on("orientationchange resize", debouncedFn);
 	},
 
 	/* -------------------------------
@@ -193,8 +195,8 @@ var AppView = View.extend({
 			onFrameId = window.requestAnimationFrame(onFrame);
 			//console.log("AppView._raf onFrame req:" + onFrameId);
 		};
-		Backbone.$(window).on("resize", onResize);
-		//Backbone.$(window).on("orientationchange resize", onResize);
+		$(window).on("resize", onResize);
+		//$(window).on("orientationchange resize", onResize);
 	},
 //	*/
 
@@ -235,8 +237,8 @@ var AppView = View.extend({
 			//console.log("AppView [RESIZE ON_EVENT    ] onFrame requested: " + onFrameId, onFrameIds);
 			onFrameIds.push(onFrameId);
 		};
-		Backbone.$(window).on("resize", eventFn);
-		//Backbone.$(window).on("orientationchange resize", eventFn);
+		$(window).on("resize", eventFn);
+		//$(window).on("orientationchange resize", eventFn);
 	},
 	*/
 
@@ -255,8 +257,8 @@ var AppView = View.extend({
 			view.$el.addClass("skip-transitions");
 			_.defer(deferFn);
 		};
-		Backbone.$(window).on("resize", eventFn);
-		//Backbone.$(window).on("orientationchange resize", eventFn);
+		$(window).on("resize", eventFn);
+		//$(window).on("orientationchange resize", eventFn);
 	},
 	*/
 

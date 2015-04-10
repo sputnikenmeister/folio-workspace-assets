@@ -17,7 +17,7 @@ var Container = require("backbone.babysitter");
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
 /** @type {module:app/utils/event/addTransitionEndCommand} */
-var addTransitionCallback = require("../../utils/event/addTransitionCallback");
+//var addTransitionCallback = require("../../utils/event/addTransitionCallback");
 
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
@@ -314,7 +314,7 @@ var Carousel = DeferredView.extend({
 	_scrollBy: function (delta, skipTransitions) {
 		var metrics, sView, sMetrics, cView, cMetrics, pos, txProp;
 
-		txProp = this.getPrefixedJS("transform");
+		txProp = this.getPrefixedProperty("transform");
 		sView = this._scrollCandidateView || this._selectedView;
 		cView = this._panCandidateView || this._selectedView;
 		sMetrics = this.metrics[sView.cid];
@@ -322,7 +322,7 @@ var Carousel = DeferredView.extend({
 
 
 //		var opacity, opacityProp;
-//		opacityProp = this.getPrefixedJS("opacity");
+//		opacityProp = this.getPrefixedProperty("opacity");
 
 		this.children.each(function (view) {
 			metrics = this.metrics[view.cid];
@@ -350,13 +350,16 @@ var Carousel = DeferredView.extend({
 			this.$el.addClass("skip-transitions");
 		} else {
 			this.$el.removeClass("skip-transitions");
-			this._scrollEndCancellable = addTransitionCallback(this.getPrefixedCSS("transform"), function(exec) {
-				this._scrollEndCancellable = void 0;
-				exec && this.$el.removeClass("scrolling");
-			}, this._selectedView.el, this, Globals.TRANSITION_DURATION * 2);
+			this._scrollEndCancellable = this.onTransitionEnd(this._selectedView.el, this.getPrefixedStyle("transform"), this._onScrollEnd, Globals.TRANSITION_DURATION * 2);
+//			this._scrollEndCancellable = addTransitionCallback(this.getPrefixedStyle("transform"), this._onScrollEnd, this._selectedView.el, this, Globals.TRANSITION_DURATION * 2);
 		}
 
 		this.commitScrollSelection();
+	},
+
+	_onScrollEnd: function(exec) {
+		this._scrollEndCancellable = void 0;
+		exec && this.$el.removeClass("scrolling");
 	},
 
 	_getScrollOffset: function (delta, m, ms, mc) {

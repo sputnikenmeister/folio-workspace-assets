@@ -10,21 +10,29 @@ function _log(d) {
 	args[0] = "addTransitionCallback " + d.id + " " + d.method + s;
 	console[(console[d.level]? d.level : "log")].apply(console, args);
 }
-var _logCmdCount = 0;
+var _logCount = 0;
 
-module.exports = function(prop, action, target, context, timeout) {
-	var props, listener, eventName, execute, timeoutId, pending = true;
+/**
+ * get the prefixed transitionend event name
+ * @param {String} props
+ * @param {Function} action
+ * @param {HTMLElement} target
+ * @param {Object} context
+ * @param {Number} timeout
+ */
+module.exports = function(props, action, target, context, timeout) {
+	var listener, eventName, execute, timeoutId, pending = true;
 
 	eventName = transitionEventName(target);
-	props = prop.split(" ");
+	props = props.split(" ");
 	timeout || (timeout = 2000);
 
-	var d = { id: _logCmdCount++, level: "log", method: "[prepared]"};
+	var d = { id: _logCount++, level: "log", method: "[prepared]"};
 	d.target = target.getAttribute("data-cid") || target.id || target.classList[0];
 	d.context = (context.model && context.model.get("name")) || context.cid || context;
 
 	timeoutId = window.setTimeout(function() {
-		d = _.extend(d, {level: "warn", method: "[timeout]", timeoutId: timeoutId, elapsed: timeout, props: prop});
+		d = _.extend(d, {level: "warn", method: "[timeout]", timeoutId: timeoutId, elapsed: timeout, props: props.join(" ")});
 		execute(true);
 	}, timeout);
 
@@ -33,7 +41,7 @@ module.exports = function(prop, action, target, context, timeout) {
 			d = _.extend(d, {method: "[event]", ev: ev.type, prop: ev.propertyName});
 			execute(true);
 		} else {
-			d.ignored = d.ignored? d.ignored + 1 : 0;
+			d.ignored = d.ignored? d.ignored + 1 : 1;
 		}
 	};
 
@@ -47,6 +55,7 @@ module.exports = function(prop, action, target, context, timeout) {
 			console[d.level] || (d.level = "log");
 		}
 		_log(d);//,target);
+		d = void 0;
 
 		if (pending) {
 			pending = false;

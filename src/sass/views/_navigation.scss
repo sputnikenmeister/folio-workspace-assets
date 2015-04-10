@@ -1,16 +1,4 @@
 // -----------------------------------
-// Leaf elements
-// -----------------------------------
-
-#site-name, .list-item, .list-group,
-#bundle-pager .button {
-	@extend %leaf-content;
-	&, * {
-		user-select: none !important;
-	}
-}
-
-// -----------------------------------
 // Navigation
 // -----------------------------------
 
@@ -18,25 +6,29 @@
 // bundle-pager
 // - - - - - - - - - - - - - - - - - -
 
-#bundle-pager {
-	position: absolute;
-    display: inline-block;
-    top: -1rem;
-	.button {
-		position: absolute;
-		margin-left: 0 !important;
-		opacity: 0;
-		.name {
-			min-width: $aside_width;
-		}
-	}
-	.following-button {
-		left: $main_width;
-		@include media($desktop_small) {
-			left: $aside_width_large;
-		}
-	}
-}
+//@import "components/_pager.folio";
+//#bundle-pager {
+//	position: absolute;
+//    display: inline-block;
+//    top: -1rem;
+//	.button {
+//		position: absolute;
+//		margin-left: 0 !important;
+//		opacity: 0;
+//		.name {
+//			min-width: $aside_width;
+//		}
+//	}
+//	.following-button {
+//		left: $main_width;
+//		@include media($desktop_small) {
+//			left: $aside_width_large;
+//		}
+//	}
+//}
+//#bundle-pager .button {
+//	@extend %leaf-content;
+//}
 
 // - - - - - - - - - - - - - - - - - -
 // site-name + wrapper
@@ -64,6 +56,20 @@
 	}
 	@include heading_font();
 	color: $link_color;
+}
+#site-name {
+	@extend %leaf-content;
+}
+// -----------------------------------
+// FilterableList(s) (.filterable):
+// 	- #bundle-list
+//	- #keyword-list
+// -----------------------------------
+
+@import "../components/_filterable";
+
+.list-item, .list-group {
+	@extend %leaf-content;
 }
 
 // - - - - - - - - - - - - - - - - - -

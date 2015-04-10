@@ -37,7 +37,7 @@ var CollectionPager = require("./component/CollectionPager");
 /** @type {module:app/helper/TransformHelper} */
 var TransformHelper = require("../helper/TransformHelper");
 /** @type {module:app/utils/event/addTransitionEndCommand} */
-var addTransitionCallback = require("../utils/event/addTransitionCallback");
+//var addTransitionCallback = require("../utils/event/addTransitionCallback");
 
 var COLLAPSE_THRESHOLD = 100;
 var PAN_OVERSHOOT_FACTOR = 0.05;
@@ -92,8 +92,8 @@ module.exports = View.extend({
 	initializeTransitionHandlers: function() {
 		var cancellable;
 		var $body = $("body");
-		var eventProp = this.getPrefixedCSS("transform");
-		//var css = {}, styleName = this.getPrefixedCSS("transition-delay");
+		var eventProp = this.getPrefixedStyle("transform");
+		//var css = {}, styleName = this.getPrefixedStyle("transition-delay");
 		//var $els = this.$(".transform-wrapper, .filterable, .grouped .list-group span");
 
 		var callback = function(exec) {
@@ -110,7 +110,8 @@ module.exports = View.extend({
 				//$els.css(css);
 				$body.addClass("entering-bundle");
 				console.log("entering-bundle in", Date.now());
-				cancellable = addTransitionCallback(eventProp, callback, this.el, this);
+				cancellable = this.onTransitionEnd(this.el, eventProp, callback, Globals.TRANSITION_END_TIMEOUT);
+//				cancellable = addTransitionCallback(eventProp, callback, this.el, this);
 			}
 		};
 		this.listenTo(bundles, "deselect:one deselect:none", handler);
@@ -274,13 +275,9 @@ module.exports = View.extend({
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
 	},
 
-	_onVPanMove: function (ev) {
-		var delta = ev.deltaY;
-		var maxDelta = this._collapsedOffsetY;
-
-		delta += ev.thresholdOffsetY;
-		maxDelta += Math.abs(ev.thresholdOffsetY);
-
+	_onVPanMove1: function (ev) {
+		var delta = ev.deltaY + ev.thresholdOffsetY;
+		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapse/expand
 		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
 
@@ -289,18 +286,31 @@ module.exports = View.extend({
 		if (isDirAllowed && delta > COLLAPSE_THRESHOLD) {
 			this.touch.off("vpanmove", this._onVPanMove);
 			this.touch.off("vpanend vpancancel", this._onVPanFinal);
-
+			this.setCollapsed(!this.isCollapsed());
 			_.each(this.children, function(view) {
 				this.enableTransitions(view);
 				this.transforms.clear(view.el);
 			}, this);
-			this.setCollapsed(!this.isCollapsed());
-			return;
+		} else {
+			delta *= PAN_OVERSHOOT_FACTOR;
+			delta *= this.isCollapsed()? 1 : -1;
+			_.each(this.children, function(view) {
+				this.transforms.move(view.el, void 0, delta);
+			}, this);
 		}
+	},
 
+	_onVPanMove: function (ev) {
+		var delta = ev.deltaY + ev.thresholdOffsetY;
+		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+		// check if direction is aligned with collapse/expand
+		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
 		var moveFactor = this.isCollapsed()? PAN_MOVE_FACTOR : 1 - PAN_MOVE_FACTOR;
+
+		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
 		maxDelta *= moveFactor;
+
 		if (isDirAllowed) {
 			if (delta > maxDelta) {				// overshooting
 				delta = (delta - maxDelta) * PAN_OVERSHOOT_FACTOR + maxDelta;
@@ -331,15 +341,14 @@ module.exports = View.extend({
 
 	_onVPanEnd: function (ev) {
 		var delta = ev.deltaY + ev.thresholdOffsetY;
-		if (this.isCollapsed()) {
-			if (delta > COLLAPSE_THRESHOLD) {
-				this.setCollapsed(false);
-			}
-		} else {
-			if (delta < -COLLAPSE_THRESHOLD) {
-				this.setCollapsed(true);
-			}
+		if (this.willCollapseChange(ev)) {
+			this.setCollapsed(!this.isCollapsed());
 		}
+	},
+
+	willCollapseChange: function(ev) {
+		var delta = ev.deltaY + ev.thresholdOffsetY;
+		return this.isCollapsed()? delta > COLLAPSE_THRESHOLD : delta < -COLLAPSE_THRESHOLD;
 	},
 
 //	_onVPan: function (ev) {
@@ -394,11 +403,11 @@ module.exports = View.extend({
 			this._collapsed = collapsed;
 			this.bundleList.setCollapsed(collapsed);
 			this.keywordList.setCollapsed(collapsed);
-			//if (collapsed) {
-			//	this.$el.addClass("collapsed");
-			//} else {
-			//	this.$el.removeClass("collapsed");
-			//}
+			if (collapsed) {
+				this.$el.addClass("collapsed");
+			} else {
+				this.$el.removeClass("collapsed");
+			}
 		}
 	},
 
@@ -407,13 +416,19 @@ module.exports = View.extend({
 	 * ------------------------------- */
 
 	enableTransitions: function(view) {
-		view.$el.css(CSS_CLEAR_TRANSITIONS);
-		view.$wrapper.css(CSS_CLEAR_TRANSITIONS);
+		//this.$el.removeClass("skip-transitions");
+		view.$el.css(this.getPrefixedStyle("transition"), "");
+		view.$wrapper.css(this.getPrefixedStyle("transition"), "");
+//		view.$el.css(CSS_CLEAR_TRANSITIONS);
+//		view.$wrapper.css(CSS_CLEAR_TRANSITIONS);
 	},
 
 	disableTransitions: function(view) {
-		view.$el.css(CSS_REMOVE_TRANSITIONS);
-		view.$wrapper.css(CSS_REMOVE_TRANSITIONS);
+		//this.$el.addClass("skip-transitions");
+		view.$el.css(this.getPrefixedStyle("transition"), "none 0s 0s");
+		view.$wrapper.css(this.getPrefixedStyle("transition"), "none 0s 0s");
+//		view.$el.css(CSS_REMOVE_TRANSITIONS);
+//		view.$wrapper.css(CSS_REMOVE_TRANSITIONS);
 	},
 
 	/* -------------------------------

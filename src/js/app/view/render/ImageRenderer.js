@@ -15,7 +15,7 @@ var ImageItem = require("../../model/item/ImageItem");
 var View = require("../base/View");
 
 /** @type {module:app/utils/event/addTransitionEndCommand} */
-var addTransitionCallback = require("../../utils/event/addTransitionCallback");
+//var addTransitionCallback = require("../../utils/event/addTransitionCallback");
 /** @type {module:app/utils/net/loadImage} */
 var loadImage = require("../../utils/net/loadImage");
 //var loadImage = require("../../utils/net/loadImageDOM");
@@ -172,7 +172,7 @@ module.exports = View.extend({
 		var transitionCallback, transitionProp, transitionCancellable;
 		var handleRemove, handleSelect;
 
-		transitionProp = this.getPrefixedCSS("transform");
+		transitionProp = this.getPrefixedStyle("transform");
 		transitionCallback = function(exec) {
 			this.off("view:remove", handleRemove);
 			exec && this.createImagePromise().request();
@@ -184,8 +184,9 @@ module.exports = View.extend({
 			if (check(owner.selectedIndex)) {
 				this.stopListening(owner, "select:one select:none", handleSelect);
 				this.on("view:remove", handleRemove);
-				transitionCancellable = addTransitionCallback(transitionProp, transitionCallback,
-						this.el, this, Globals.TRANSITION_DELAY * 2);
+
+				transitionCancellable = this.onTransitionEnd(this.el, transitionProp, transitionCallback, Globals.TRANSITION_DELAY * 2);
+//				transitionCancellable = addTransitionCallback(transitionProp, transitionCallback, this.el, this, Globals.TRANSITION_DELAY * 2);
 			}
 		};
 		if (check(owner.selectedIndex)) {
