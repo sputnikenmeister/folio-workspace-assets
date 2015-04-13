@@ -105,7 +105,7 @@ $collapse_ease: $ease;
 	&.collapsed {
 		.list-group.excluded, .list-item.excluded {
 			// fadeout, collapse, wait
-			transition-timing-function: step-end, $collapse_ease, $collapse_ease;
+			transition-timing-function: step-end, $collapse_ease, step-end;//$collapse_ease;
 			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
 //			transition:
 //				visibility ($delay*2 + $duration - 0.001s) step-end ($delay*0 + 0.001s) ,
@@ -118,14 +118,14 @@ $collapse_ease: $ease;
 //			transition-delay: $delay * 1 + 0.001s, $delay * 1 + 0.001s, $delay * 0 + 0.001s;
 //		}
 //	}
-//	&.entering.collapsed {
-//		.list-group, .list-item {
-//			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
-//		}
-//		.list-group.excluded, .list-item.excluded {
-//			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
-//		}
-//	}
+	&.entering.collapsed {
+		.list-group, .list-item {
+			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
+		}
+		.list-group.excluded, .list-item.excluded {
+			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
+		}
+	}
 	&.skip-transitions {
 		.list-group, .list-item {
 			@include skip_transitions;

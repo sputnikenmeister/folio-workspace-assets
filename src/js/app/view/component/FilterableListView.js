@@ -14,7 +14,6 @@ var Container = require("backbone.babysitter");
 /** @type {module:app/view/base/DeferredView} */
 var DeferredView = require("../base/DeferredView");
 
-
 /**
  * @constructor
  * @type {module:app/view/component/SelectableListView}
@@ -100,17 +99,15 @@ var FilterableListView = DeferredView.extend({
 	},
 
 	renderLayout: function() {
-		var tx, elt, posX, posY;
+		var elt, posX, posY;
+		var _transformProp = this.getPrefixedProperty("transform");
 		elt = this.el.firstElementChild;
 		posY = elt.clientTop;
 		//posY = elt.offsetTop;
 		posX = 0;
 		do {
-			tx = "translate3d(" + posX + "px," + posY + "px, 0px)";
 			elt.style.position = "absolute";
-			elt.style.webkitTransform = tx;
-			elt.style.mozTransform = tx;
-			elt.style.transform = tx;
+			elt.style[_transformProp] = "translate3d(" + posX + "px," + posY + "px, 0px)";
 			if (!this._collapsed || elt.className.indexOf("excluded") === -1) {
 				posY += elt.clientHeight;
 				//posY += elt.offsetHeight;

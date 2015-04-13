@@ -22,7 +22,7 @@ var controller = require("../control/Controller");
 var bundles = require("../model/collection/BundleList");
 
 /** @type {module:app/view/base/View} */
-var View = require("./base/View");
+var ContainerView = require("./base/ContainerView");
 /** @type {module:app/view/component/Carousel} */
 var Carousel = require("./component/Carousel");
 /** @type {module:app/view/render/ImageRenderer} */
@@ -36,10 +36,10 @@ var CollectionStack = require("./component/CollectionStack");
 /** @type {module:app/view/render/DotNavigationRenderer} */
 //var DotNavigationRenderer = require("./render/DotNavigationRenderer");
 
-/** @type {module:app/helper/TransformHelper} */
-var TransformHelper = require("../helper/TransformHelper");
-/** @type {module:app/utils/event/addTransitionEndCommand} */
-var addTransitionCallback = require("../utils/event/addTransitionCallback");
+// /** @type {module:app/helper/TransformHelper} */
+// var TransformHelper = require("../helper/TransformHelper");
+// /** @type {module:app/utils/event/addTransitionEndCommand} */
+// var addTransitionCallback = require("../utils/event/addTransitionCallback");
 
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
@@ -56,29 +56,33 @@ var PAN_OVERSHOOT_FACTOR = 0.05;
  * @constructor
  * @type {module:app/view/ContentView}
  */
-var ContentView = View.extend({
+var ContentView = ContainerView.extend({
+
+	/** @override */
+	className: "expanded",
 
 	initialize: function (options) {
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
 		this.children = [];
+		this.transitionables = [];
 		this.touch = TouchManager.getInstance();
-		this.transforms = new TransformHelper();
+		// this.transforms = new TransformHelper();
 
 		this._collapsedOffsetY = 300;
 
 		// Model listeners
-//		this.listenTo(bundles, {
-//			"select:one": function (bundle) {
-//				this.createChildren(bundle, false);
-//			},
-//			"deselect:one": function (bundle) {
-//				this.removeChildren(bundle, false);
-//			}
-//		});
+		// this.listenTo(bundles, {
+		// 	"select:one": function (bundle) {
+		// 		this.createChildren(bundle, false);
+		// 	},
+		// 	"deselect:one": function (bundle) {
+		// 		this.removeChildren(bundle, false);
+		// 	}
+		// });
 		this.listenTo(bundles, {
 			"select:one": this._onSelectOne,
-			"deselect:one": this._onDeselectOne,
 			"select:none": this._onSelectNone,
+			"deselect:one": this._onDeselectOne,
 			"deselect:none": this._onDeselectNone,
 		});
 
@@ -105,12 +109,12 @@ var ContentView = View.extend({
 		_.each(this.children, function(child) {
 			child.render();
 		}, this);
-		return View.prototype.render.apply(this, arguments);
+		return ContainerView.prototype.render.apply(this, arguments);
 	},
 
-	/* -------------------------------
-	 * model events
-	 * ------------------------------- */
+	/* --------------------------- *
+	 * Model event handlers
+	 * --------------------------- */
 
 	_onSelectOne: function(bundle) {
 		this.setCollapsed(true);
@@ -118,21 +122,21 @@ var ContentView = View.extend({
 	},
 
 	_onSelectNone: function() {
-		this.setCollapsed(false);
 		this.touch.off("vpanstart", this._onVPanStart);
-//		this.touch.off("vpanend", this._onVPanFinal);
-//		this.touch.off("panstart", this._onPanStart);
+		// this.touch.off("vpanend", this._onVPanFinal);
+		// this.touch.off("panstart", this._onPanStart);
 	},
 
 	_onDeselectOne: function(bundle) {
 		this.removeChildren(bundle, false);
+		this.setCollapsed(false);
 	},
 
 	_onDeselectNone: function() {
-//		this.setCollapsed(true);
+		this.setCollapsed(true);
 		this.touch.on("vpanstart", this._onVPanStart);
-//		this.touch.on("vpanend", this._onVPanFinal);
-//		this.touch.on("panstart", this._onPanStart);
+		// this.touch.on("vpanend", this._onVPanFinal);
+		// this.touch.on("panstart", this._onPanStart);
 	},
 
 	/* -------------------------------
@@ -140,10 +144,8 @@ var ContentView = View.extend({
 	 * ------------------------------- */
 
 	_onVPanStart: function (ev) {
-		//this.disableTransitions(this);
-		//this.transforms.capture(this.el);
 		_.each(this.children, function(view) {
-			this.disableTransitions(view);
+			this.disableTransitions(view.el);
 			this.transforms.capture(view.el);
 		}, this);
 		this._onVPanMove(ev);
@@ -165,7 +167,7 @@ var ContentView = View.extend({
 			this.touch.off("vpanend vpancancel", this._onVPanFinal);
 			this.setCollapsed(!this.isCollapsed());
 			_.each(this.children, function(view) {
-				this.enableTransitions(view);
+				this.enableTransitions(view.el);
 				this.transforms.clear(view.el);
 //				this.transforms.capture(view.el);
 			}, this);
@@ -206,19 +208,27 @@ var ContentView = View.extend({
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 
+		this._onVPanEnd(ev);
 		_.each(this.children, function(view) {
-			this.enableTransitions(view);
-		view.$el.css(this.getPrefixedStyle("transition"), "");
+			// this.enableTransitions(view);
 			this.transforms.clear(view.el);
 		}, this);
-		(ev.type === "vpanend") && this._onVPanEnd(ev);
+		// (ev.type === "vpanend") && this._onVPanEnd(ev);
 	},
 
 	_onVPanEnd: function (ev) {
-		var delta = ev.deltaY + ev.thresholdOffsetY;
 		if (this.willCollapseChange(ev)) {
+		//	this.$transitionables.transit(this.transitions[this.isCollapsed()? "exiting":"entering"]);
+			this.runTransformTransition(this.transitionables, this.isCollapsed()? "exiting":"entering");
 			this.setCollapsed(!this.isCollapsed());
+		} else {
+		//	this.$transitionables.transit(this.transitions["immediate"]);
+			this.runTransformTransition(this.transitionables, "immediate");
 		}
+		//var changing = this.willCollapseChange(ev);
+		//this.transition.delay = changing? Globals.TRANSITION_DELAY: 1;
+		//this.$transitionables.transit(this.transition);
+		//changing && this.setCollapsed(!this.isCollapsed());
 	},
 
 	willCollapseChange: function(ev) {
@@ -240,26 +250,26 @@ var ContentView = View.extend({
 		if (this._collapsed !== collapsed) {
 			this._collapsed = collapsed;
 			if (collapsed) {
-				this.$el.removeClass("expanded");
+				this.$el.addClass("collapsed").removeClass("expanded");
 			} else {
-				this.$el.addClass("expanded");
+				this.$el.addClass("expanded").removeClass("collapsed");
 			}
 		}
 	},
 
-	/* -------------------------------
-	 * transitions
-	 * ------------------------------- */
-
-	enableTransitions: function(view) {
-		//this.$el.removeClass("skip-transitions");
-		view.$el.css(this.getPrefixedStyle("transition"), "");
-	},
-
-	disableTransitions: function(view) {
-		//this.$el.addClass("skip-transitions");
-		view.$el.css(this.getPrefixedStyle("transition"), "none 0s 0s");
-	},
+	// /* -------------------------------
+	//  * transitions
+	//  * ------------------------------- */
+	//
+	// enableTransitions: function(view) {
+	// 	//this.$el.removeClass("skip-transitions");
+	// 	view.$el.css(this.getPrefixedStyle("transition"), "");
+	// },
+	//
+	// disableTransitions: function(view) {
+	// 	//this.$el.addClass("skip-transitions");
+	// 	view.$el.css(this.getPrefixedStyle("transition"), "none 0s 0s");
+	// },
 
 	/* -------------------------------
 	 * create/remove children on bundle selection
@@ -275,6 +285,7 @@ var ContentView = View.extend({
 		var endProps = {delay: Globals.ENTERING_DELAY, opacity: 1};
 		// Show views
 		_.each(this.children, function(view) {
+			this.transitionables.push(view.el);
 			this.listenToOnce(view, "view:remove", this.onChildRemove);
 			view.render().$el.appendTo(this.el);
 			if (!skipAnimation) {
@@ -308,6 +319,7 @@ var ContentView = View.extend({
 	},
 
 	onChildRemove: function(view) {
+		this.transitionables.splice(this.transitionables.indexOf(view.el), 1);
 		this.transforms.destroy(view.el);
 	},
 

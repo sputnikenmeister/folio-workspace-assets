@@ -92,8 +92,8 @@ var View = Backbone.View.extend({
 		return _prefixedStyles[prop];
 	},
 
-	onTransitionEnd: function(target, props, callback) {
-		return addTransitionCallback(props, callback, target, this, 2000);
+	onTransitionEnd: function(target, props, callback, timeout) {
+		return addTransitionCallback(props, callback, target, this, timeout || 2000);
 	},
 
 	callNextFrame: function(fn) {
@@ -123,4 +123,3 @@ var View = Backbone.View.extend({
 });
 
 module.exports = View;
-

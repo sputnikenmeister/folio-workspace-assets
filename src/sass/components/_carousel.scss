@@ -60,7 +60,7 @@ $pan_ease: $ease;
 		// *** "mutable" properties: must be in the first matching rule
 		color: $background_color;
 		background-color: mix($color, $background_color, 7%);
-//		border: 1px solid transparent;
+		// border: 1px solid transparent;
 	}
 
 	.placeholder:before
@@ -92,7 +92,7 @@ $pan_ease: $ease;
 	}*/
 
 	img {
-//		transition: opacity $duration $delay + 0.001s $ease;
+		// transition: opacity $duration $delay + 0.001s $ease;
 		transition: opacity $duration $ease 0.001s;
 		opacity: 0;
 	}
@@ -105,17 +105,17 @@ $pan_ease: $ease;
 		&.done img {
 			opacity: 1;
 		}
-		&.done .placeholder {
-//			transition: visibility $duration * 2 step-end 0.001s;
-//			transition: visibility $duration $ease 0.001s;
-			transition-timing-function: step-end;
-			visibility: hidden;
-		}
+		// &.done .placeholder {
+		// 	// transition: visibility $duration * 2 step-end 0.001s;
+		// 	// transition: visibility $duration $ease 0.001s;
+		// 	transition-timing-function: step-end;
+		// 	visibility: hidden;
+		// }
 	}
 	.placeholder:before {
 		transition: opacity $duration $ease $delay + 0.001s;
-//		transition: opacity $duration $ease 0.001s;
-//		transition: opacity $duration $ease;
+		// transition: opacity $duration $ease 0.001s;
+		// transition: opacity $duration $ease;
 		opacity: 0;
 		content: "";
 		font-style: italic;
@@ -134,7 +134,7 @@ $pan_ease: $ease;
 			opacity: 1;
 		}
 	}
-//	&.selected, .empty-item.selected + & {
+	// &.selected, .empty-item.selected + & {
 	&.selected, &.candidate, .empty-item.selected + & {
 		&.pending .placeholder[data-progress]:before {
 			content: attr(data-progress) "%";
@@ -169,33 +169,31 @@ $mock_browser_height: 2rem;
 	padding-top: $mock_browser_height;
 	margin-top: -$mock_browser_height;
 	.sizing {
-//		box-sizing: content-box;
+		// box-sizing: content-box;
 		padding-top: $mock_browser_height;
 	}
 	img {
-		border-top-left-radius: 0.35rem;
-		border-top-right-radius: 0.35rem;
 		padding-top: $mock_browser_height;
 		margin-top: -$mock_browser_height;
 		transform: translateY($mock_browser_height);
-//		background-color: hsl(0,0%,65%) !important;
+		// background-color: hsl(0,0%,65%) !important;
 		box-shadow:
-//			inset 0rem 4.5rem 4rem -3rem hsl(0,0%,100%),
-//			inset 0 71px 0 -3rem hsl(0,0%,85%),
+			// inset 0rem 4.5rem 4rem -3rem hsl(0,0%,100%),
+			// inset 0 71px 0 -3rem hsl(0,0%,85%),
 			0px 0px 0px 1px hsla(0,0%,0%,0.15),
 			0px 1rem 1rem -0.5rem hsla(0,0%,0%,0.5) !important;
-//		box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
-//		border: 1px solid rgba(0,0,0,0.15) !important;
-//		border: 0 none transparent !important;
+		// box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		// border: 1px solid rgba(0,0,0,0.15) !important;
+		// border: 0 none transparent !important;
 	}
-//	img:after {
-//		content: 'ooo';
-//		position: absolute;
-//		display: block;
-//		top: $mock_browser_height;
-//		left: 1rem;
-//		margin: 0.25rem;
-//	}
+	// img:after {
+	// 	content: 'ooo';
+	// 	position: absolute;
+	// 	display: block;
+	// 	top: $mock_browser_height;
+	// 	left: 1rem;
+	// 	margin: 0.25rem;
+	// }
 }
 
 .carousel.image-carousel {
@@ -244,4 +242,3 @@ $mock_browser_height: 2rem;
 		}
 	}
 }
-

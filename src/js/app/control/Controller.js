@@ -58,38 +58,37 @@ var Controller = Backbone.Router.extend({
 		this.initializeBundleStyles();
 		this.inilializeStateHandlers();
 
-//		this.listenToOnce(bundles, "all", this.routeInitialized);
-
-//		if (DEBUG) {
-//			// error trace
-//			var bundleTracer =	traceArgs("Bundles \t", "info");
-//			var imageTracer = 	traceArgs("Images  \t", "info");
-//			var routeTracer = 	traceArgs("Router  \t", "info");
-//			var appTracer = 	traceArgs("App     \t", "info");
-//
-//			this.listenTo(this, "route", routeTracer);
-//			this.listenTo(Backbone,	"all", appTracer);
-//			this.listenTo(bundles, {
-//				"all": bundleTracer,
-//				"select:one": function(bundle) {
-//					this.listenTo(bundle.get("images"), "all", imageTracer);
-//				},
-//				"deselect:one": function(bundle) {
-//					this.stopListening(bundle.get("images"), "all", imageTracer);
-//				}
-//			});
-//		}
+		// this.listenToOnce(bundles, "all", this.routeInitialized);
+		// if (DEBUG) {
+		// 	// error trace
+		// 	var bundleTracer =	traceArgs("Bundles \t", "info");
+		// 	var imageTracer = 	traceArgs("Images  \t", "info");
+		// 	var routeTracer = 	traceArgs("Router  \t", "info");
+		// 	var appTracer = 	traceArgs("App     \t", "info");
+		//
+		// 	this.listenTo(this, "route", routeTracer);
+		// 	this.listenTo(Backbone,	"all", appTracer);
+		// 	this.listenTo(bundles, {
+		// 		"all": bundleTracer,
+		// 		"select:one": function(bundle) {
+		// 			this.listenTo(bundle.get("images"), "all", imageTracer);
+		// 		},
+		// 		"deselect:one": function(bundle) {
+		// 			this.stopListening(bundle.get("images"), "all", imageTracer);
+		// 		}
+		// 	});
+		// }
 	},
 
-//	listenTo: function() {
-//		console.log("Controller.listenTo", arguments);
-//		return Backbone.Router.prototype.listenTo.apply(this, arguments);
-//	},
+	// listenTo: function() {
+	// 	console.log("Controller.listenTo", arguments);
+	// 	return Backbone.Router.prototype.listenTo.apply(this, arguments);
+	// },
 
-	stopListening: function() {
-		console.log("Controller.stopListening", arguments);
-		return Backbone.Router.prototype.stopListening.apply(this, arguments);
-	},
+	// stopListening: function() {
+	// 	console.log("Controller.stopListening", arguments);
+	// 	return Backbone.Router.prototype.stopListening.apply(this, arguments);
+	// },
 
 	/* ---------------------------
 	 * Document body classes
@@ -199,14 +198,11 @@ var Controller = Backbone.Router.extend({
 					(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
 
 		this._applyClassProviders(bundle, image);
-		//var lastBundle = bundles.selected;
+
 		if (_.isUndefined(bundle)) {
 			bundles.deselect();
-			//if (lastBundle) {
-			//	lastBundle.get("images").deselect();
-			//}
 		} else {
-			var opts = { silent: (bundle !== bundles.selected) }; // if bundle changed,
+			var opts = { silent: (bundle !== bundles.selected) };
 			if (_.isUndefined(image)) {
 				bundle.get("images").deselect(opts);
 			} else {
@@ -214,29 +210,10 @@ var Controller = Backbone.Router.extend({
 			}
 			bundles.select(bundle);
 		}
+//		this._applyClassProviders(bundle, image);
 		console.log("Controller._changeSelection [after]  bundle:" +
 					(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
 	},
-
-	/* --------------------------- *
-	 * Initialization
-	 * --------------------------- */
-
-//	routeInitialized: function() {
-//		console.log("Controller.routeInitialized [before] bundle:" + (bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
-//
-//		this.initializeBrowserTitle();
-//		this.initializeBundleStyles();
-//		this.inilializeStateHandlers();
-//
-//		var bundle = bundles.selected;
-//		var image = bundles.selected && bundles.selected.get("images").selected;
-//
-//		console.log("Controller.routeInitialized [after]  bundle:" + (bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
-//
-//		// initialize body classes
-//		this._applyClassProviders(bundle, image);
-//	},
 
 
 	/* --------------------------- *
@@ -266,7 +243,6 @@ var Controller = Backbone.Router.extend({
 
 	initializeBundleStyles: function() {
 		var classProvider, toBodyClass, createDerivedStyles;
-
 		toBodyClass = function (bundle) {
 			return "bundle-" + bundle.id;
 		};
@@ -278,8 +254,9 @@ var Controller = Backbone.Router.extend({
 			var bgDefault, fgDefault;
 			var attrs, styles, bodySelector, carouselSelector;
 			var bodyStyles = ["background", "background-color", "color"];
-			var fontSmoothingStyles = ["-moz-osx-font-smoothing", "-webkit-font-smoothing"];
+			// var fontSmoothingStyles = ["-moz-osx-font-smoothing", "-webkit-font-smoothing"];
 			var carouselImageStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
+			// var placeholderStyles = ["border-radius"];
 
 			bgDefault = new Color(Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
 			fgDefault = new Color(Styles.getCSSProperty("body", "color") || "hsl(47, 5%, 15%)");
@@ -310,35 +287,29 @@ var Controller = Backbone.Router.extend({
 				styles = _.pick(attrs, carouselImageStyles);//, "background-color"]);
 				Styles.createCSSRule(carouselSelector + " .image-item img", styles);
 
+				// text color luminosity is inverse from body, apply oposite rendering mode
 				styles = {
-					// text color luminosity is inverse from body, apply oposite rendering mode
 					"-webkit-font-smoothing": (bgLum < fgLum? "auto" : "antialiased"),
-				//	"color": 			bgColor.toHexString(),
+					"border-radius":	attrs["border-radius"] || 0,
+					"background-color": bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString(),
 					"color": 			bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString(),
-				//	"color": 			bgColor.lightness(fgLum * 0.125 + bgLum * 0.875).toHexString(),
-				//	"border-color": 	bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
-				//	"background-color": bgColor.lightness(fgLum * 0.100 + bgLum * 0.900).toHexString(),
-					"background-color": bgColor.lightness(fgLum * 0.075 + bgLum * 0.925).toHexString(),
-				//	"border": 			"0 none transparent",
 				};
 				Styles.createCSSRule(carouselSelector + " .image-item .placeholder", styles);
 			});
 		};
-
-//		var $body = Backbone.$("body");
-//		var handlers = {
-//			"deselect:one": function (bundle) {
-//				$body.removeClass(toBodyClass(bundle));
-//			},
-//			"select:one": function (bundle) {
-//				$body.addClass(toBodyClass(bundle));
-//			},
-//		};
-//		this.listenTo(bundles, handlers);
-//		if (bundles.selected) {
-//			handlers["select:one"].call(this, bundles.selected);
-//		}
-
+		// var $body = Backbone.$("body");
+		// var handlers = {
+		// 	"deselect:one": function (bundle) {
+		// 		$body.removeClass(toBodyClass(bundle));
+		// 	},
+		// 	"select:one": function (bundle) {
+		// 		$body.addClass(toBodyClass(bundle));
+		// 	},
+		// };
+		// this.listenTo(bundles, handlers);
+		// if (bundles.selected) {
+		// 	handlers["select:one"].call(this, bundles.selected);
+		// }
 		if (document.readyState === "complete") {
 			createDerivedStyles();
 		} else {
@@ -352,9 +323,6 @@ var Controller = Backbone.Router.extend({
 	 * --------------------------- */
 
 	inilializeStateHandlers: function() {
-//		this.inilializeHandlers();
-//		this.initializeEnteringHandlers();
-
 		this.addClassProvider(function(classes, bundle, image) {
 			classes.push(bundle? "with-bundle":"without-bundle");
 			bundle && classes.push(image? "with-image":"without-image");
@@ -433,19 +401,20 @@ var Controller = Backbone.Router.extend({
 		};
 		this.listenTo(bundles, bundleHandlers);
 
-//		if (bundles.selected) {
-//			withBundle.call(this);
-//			images = bundles.selected.get("images");
-//			if (images.selected) {
-//				withImage.call(this);
-//			} else {
-//				withoutImage.call(this);
-//			}
-//		} else {
-//			withoutBundle.call(this);
-//		}
+		// if (bundles.selected) {
+		// 	withBundle.call(this);
+		// 	images = bundles.selected.get("images");
+		// 	if (images.selected) {
+		// 		withImage.call(this);
+		// 	} else {
+		// 		withoutImage.call(this);
+		// 	}
+		// } else {
+		// 	withoutBundle.call(this);
+		// }
 		(bundles.selected? withBundle : withoutBundle).call(this);
 	},*/
+
 	/*
 	initializeEnteringHandlers: function () {
 		var $body = Backbone.$("body");
