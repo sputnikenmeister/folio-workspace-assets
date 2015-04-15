@@ -78,24 +78,6 @@ $nav_height_portrait: 14.25rem;
 	}
 }
 
-@mixin nav_transition_long($delay_count: null) {
-	@if $delay_count == -1 {
-		transition-property: none;
-		transition-duration: 0s;
-		transition-delay: 0s;
-	} @else if $delay_count {
-		transition-property: transform;
-		transition-timing-function: $ease;
-		transition-duration: #{$duration - 0.001s};
-		transition-delay: #{$delay * $delay_count + 0.001s};
-	} @else {
-		transition-property: transform;
-		transition-timing-function: $ease;
-		transition-duration: $duration;
-		transition-delay: 0s;
-	}
-}
-
 @mixin nav_translate($x, $y) {
 	transform: translate3d($x, $y, 0);
 	// transform: translate3d($x, $y, 0) scale3d(1,1,1);
@@ -115,13 +97,13 @@ $nav_height_portrait: 14.25rem;
 .with-bundle %nav_list {
 	@include nav_translate(0, 0);
 }
-.skip-transitions {
-	&, &.with-bundle {
-		%nav_list {
-			@include skip_transitions();
-		}
-	}
-}
+// .skip-transitions {
+// 	&, &.with-bundle {
+// 		%nav_list {
+// 			@include skip_transitions();
+// 		}
+// 	}
+// }
 @include media($desktop_small) {
 	%nav_list {
 		@include nav_translate(0, #{$nav_height_landscape - 1.5rem});

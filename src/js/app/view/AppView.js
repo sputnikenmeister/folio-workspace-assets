@@ -63,7 +63,8 @@ var AppView = View.extend({
 		});
 
 		// .skip-transitions on resize
-		this.initializeResizeHandlers_debounce();
+		this.initializeResizeHandlers_min();
+		// this.initializeResizeHandlers_debounce();
 
 		// start router, which will request appropiate state
 		Backbone.history.start({
@@ -75,18 +76,9 @@ var AppView = View.extend({
 		// CSS animations do not trigger while on .app-initial,
 		// so everything will be rendered in it's final state
 		this.render();
-//		this.navigationView.render();
-//		this.contentView.render();
-//		window.requestAnimationFrame(function() {
-		this.callNextFrame(function() {
+		window.requestAnimationFrame(function() {
 			$(document.documentElement).removeClass("app-initial").addClass("app-ready");
 		});
-//		_.delay(function(view) {
-//			$(document.documentElement).removeClass("app-initial").addClass("app-ready");
-//			view.render();
-////			$(".app-initial").removeClass("app-initial").addClass("app-ready");
-////			view.$el.removeClass("app-initial").addClass("app-ready");
-//		}, 66, this);
 	},
 
 	render: function () {
@@ -99,32 +91,10 @@ var AppView = View.extend({
 	 * Resize (debounce)
 	 * ------------------------------- */
 
-	initializeResizeHandlers_timeout: function() {
-		var debouncedFn, debouncedMs, delayedFn, delayedMs, delayedId = 0, view = this;
-//		debouncedMs = Math.ceil(1000/30);
-//		delayedMs = debouncedMs * 2;
-		debouncedMs = 100;
-		delayedMs = 150;
-		delayedFn = function () {
-			console.log("AppView [RESIZE LAST] timeout:" + delayedId);
-			view.render();
-			view.$el.removeClass("skip-transitions");
-			delayedId = 0;
-		};
-		debouncedFn = function(ev) {
-			if (delayedId == 0) {
-				console.log("AppView [RESIZE FIRST]");
-				view.$el.addClass("skip-transitions");
-//				view.render();
-			} else {
-				console.log("AppView [RESIZE REPEAT] timeout:" + delayedId);
-				window.clearTimeout(delayedId);
-				view.render();
-			}
-			delayedId = window.setTimeout(delayedFn, delayedMs);
-		};
-		$(window).on("resize orientationchange", debouncedFn);
-		//$(window).on("orientationchange resize", debouncedFn);
+	initializeResizeHandlers_min: function() {
+		$(window).on("resize orientationchange",_.throttle(
+			_.bind(this.render, this), 300, {leading: true, trailing: true}
+		));
 	},
 
 	/* -------------------------------
@@ -133,8 +103,8 @@ var AppView = View.extend({
 
 	initializeResizeHandlers_debounce: function() {
 		var debouncedFn, debouncedMs, delayedFn, delayedMs, delayedId, view = this;
-//		debouncedMs = Math.ceil(1000/30);
-//		delayedMs = debouncedMs * 2;
+		// debouncedMs = Math.ceil(1000/30);
+		// delayedMs = debouncedMs * 2;
 		debouncedMs = 100;
 		delayedMs = 150;
 		delayedFn = function () {
@@ -158,47 +128,79 @@ var AppView = View.extend({
 	},
 
 	/* -------------------------------
+	 * Resize (debounce)
+	 * ------------------------------- */
+
+	// initializeResizeHandlers_timeout: function() {
+	// 	var debouncedFn, debouncedMs, delayedFn, delayedMs, delayedId = 0, view = this;
+	// 	// debouncedMs = Math.ceil(1000/30);
+	// 	// delayedMs = debouncedMs * 2;
+	// 	debouncedMs = 100;
+	// 	delayedMs = 150;
+	// 	delayedFn = function () {
+	// 		console.log("AppView [RESIZE LAST] timeout:" + delayedId);
+	// 		view.render();
+	// 		view.$el.removeClass("skip-transitions");
+	// 		delayedId = 0;
+	// 	};
+	// 	debouncedFn = function(ev) {
+	// 		if (delayedId == 0) {
+	// 			console.log("AppView [RESIZE FIRST]");
+	// 			view.$el.addClass("skip-transitions");
+	// 			// view.render();
+	// 		} else {
+	// 			console.log("AppView [RESIZE REPEAT] timeout:" + delayedId);
+	// 			window.clearTimeout(delayedId);
+	// 			view.render();
+	// 		}
+	// 		delayedId = window.setTimeout(delayedFn, delayedMs);
+	// 	};
+	// 	$(window).on("resize orientationchange", debouncedFn);
+	// 	//$(window).on("orientationchange resize", debouncedFn);
+	// },
+
+	/* -------------------------------
 	 * Resize (requestAnimationFrame)
 	 * ------------------------------- */
 
-//	/*
-	initializeResizeHandlers_raf: function() {
-		var view = this;
-		var afterFrameId = 0;
-		var onFrameId = 0;
-		var afterFrame = function() {
-			//console.log("AppView._raf afterFrame exec:"+afterFrameId);
-			afterFrameId = 0;
-			view.$el.removeClass("skip-transitions");
-			//console.log("AppView.removeClass skip-transitions");
-		};
-		var onFrame = function() {
-			//console.log("AppView._raf onFrame exec:"+onFrameId);
-			onFrameId = 0;
-			if (afterFrameId != 0) {
-				window.cancelAnimationFrame(afterFrameId);
-				//console.log("AppView._raf afterFrame cancel:"+afterFrameId);
-			}
-			view.render();
-			afterFrameId = window.requestAnimationFrame(afterFrame);
-			//console.log("AppView._raf afterFrame req:"+afterFrameId);
-		};
-		var onResize = function (ev) {
-			//console.log("AppView._raf onEvent", ev && [ev.type, ev]);
-			if (onFrameId != 0) {
-				window.cancelAnimationFrame(onFrameId);
-				//console.log("AppView._raf onFrame cancel:"+onFrameId);
-			} else {
-				view.$el.addClass("skip-transitions");
-				//console.log("AppView.addClass skip-transitions");
-			}
-			onFrameId = window.requestAnimationFrame(onFrame);
-			//console.log("AppView._raf onFrame req:" + onFrameId);
-		};
-		$(window).on("resize", onResize);
-		//$(window).on("orientationchange resize", onResize);
-	},
-//	*/
+	// /*
+	// initializeResizeHandlers_raf: function() {
+	// 	var view = this;
+	// 	var afterFrameId = 0;
+	// 	var onFrameId = 0;
+	// 	var afterFrame = function() {
+	// 		//console.log("AppView._raf afterFrame exec:"+afterFrameId);
+	// 		afterFrameId = 0;
+	// 		view.$el.removeClass("skip-transitions");
+	// 		//console.log("AppView.removeClass skip-transitions");
+	// 	};
+	// 	var onFrame = function() {
+	// 		//console.log("AppView._raf onFrame exec:"+onFrameId);
+	// 		onFrameId = 0;
+	// 		if (afterFrameId != 0) {
+	// 			window.cancelAnimationFrame(afterFrameId);
+	// 			//console.log("AppView._raf afterFrame cancel:"+afterFrameId);
+	// 		}
+	// 		view.render();
+	// 		afterFrameId = window.requestAnimationFrame(afterFrame);
+	// 		//console.log("AppView._raf afterFrame req:"+afterFrameId);
+	// 	};
+	// 	var onResize = function (ev) {
+	// 		//console.log("AppView._raf onEvent", ev && [ev.type, ev]);
+	// 		if (onFrameId != 0) {
+	// 			window.cancelAnimationFrame(onFrameId);
+	// 			//console.log("AppView._raf onFrame cancel:"+onFrameId);
+	// 		} else {
+	// 			view.$el.addClass("skip-transitions");
+	// 			//console.log("AppView.addClass skip-transitions");
+	// 		}
+	// 		onFrameId = window.requestAnimationFrame(onFrame);
+	// 		//console.log("AppView._raf onFrame req:" + onFrameId);
+	// 	};
+	// 	$(window).on("resize", onResize);
+	// 	//$(window).on("orientationchange resize", onResize);
+	// },
+	// */
 
 	/* -------------------------------
 	 * Resize (requestAnimationFrame stacked)

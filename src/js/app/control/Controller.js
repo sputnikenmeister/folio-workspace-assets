@@ -290,10 +290,10 @@ var Controller = Backbone.Router.extend({
 				// text color luminosity is inverse from body, apply oposite rendering mode
 				styles = {
 					"-webkit-font-smoothing": (bgLum < fgLum? "auto" : "antialiased"),
-					"border-radius":	attrs["border-radius"] || 0,
 					"background-color": bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString(),
 					"color": 			bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString(),
 				};
+				("border-radius" in attrs) && (styles["border-radius"] = attrs["border-radius"]);
 				Styles.createCSSRule(carouselSelector + " .image-item .placeholder", styles);
 			});
 		};

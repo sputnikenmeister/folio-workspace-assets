@@ -27,48 +27,24 @@ var TransformHelper = require("../../helper/TransformHelper");
  */
 module.exports = View.extend({
 
-	// transforms: TransformHelper(),
-
-	constructor: function(options) {
-		this.__initializeContainer();
-		View.apply(this, arguments);
-	},
 	/** @override */
-	__initializeContainer: function () {
+	constructor: function(options) {
 		this.transforms = new TransformHelper();
-
-		this.transitions = {};
-		this.transitions["exiting"] = _.clone(Globals.TRANSIT_EXITING);
-		this.transitions["changing"] = _.clone(Globals.TRANSIT_CHANGING);
-		this.transitions["entering"] = _.clone(Globals.TRANSIT_ENTERING);
-		this.transitions["immediate"] = _.clone(Globals.TRANSIT_IMMEDIATE);
-
-		//this.transition = {};
-		//this.transition.easing = Globals.TRANSITION_EASE;
-		//this.transition.delay = Globals.TRANSITION_DELAY - 1;
-		//this.transition.duration = Globals.TRANSITION_DURATION + 1;
-		//this.transition[this.getPrefixedStyle("transform")] = "";
-		//this.transition[this.getPrefixedProperty("transform")] = "";
-		//this.transition.transform = "";
-
-		//var transformStyle = this.getPrefixedStyle("transform");
-		//for (var t in this.transitions) {
-		//	this.transitions[t][transformStyle] = "";
-		//}
+		View.apply(this, arguments);
 	},
 
 	runTransformTransition: function (targets, transition, useEvent) {
 		if (_.isString(targets)) {
 			targets = this.el.querySelectorAll(targets);
 		}
-		if (_.isString(transition)) {
-			transition = this.transitions[transition];
-		}
+		// if (_.isString(transition)) {
+		// 	transition = this.transitions[transition];
+		// }
 		if (targets && targets.length > 0) {
-			var i, num, target, styleProp, prop, val, callback, timeout;
+			var i, num, target, transitionProp, prop, val, callback, timeout;
 
 			timeout = transition.duration + transition.delay + 500;
-			styleProp = this.getPrefixedProperty("transition");
+			transitionProp = this.getPrefixedProperty("transition");
 			prop = this.getPrefixedStyle("transform");
 
 			val = prop + " ";
@@ -77,16 +53,17 @@ module.exports = View.extend({
 			val += transition.delay/1000 + "s";
 
 			callback = function(exec, el) {
-				if (el.style[styleProp] == val) {
-					el.style[styleProp] = "";
+				if (el.style[transitionProp] == val) {
+					el.style[transitionProp] = "";
 				} else {
-					console.log("Transition: '" + styleProp + "' has changed from '" + val + "' to '" + el.style[styleProp] + "', leaving as-is.");
+					console.log("runTransformTransition: '" + transitionProp + "' has changed from '" +
+						val + "' to '" + el.style[transitionProp] + "', leaving as-is.");
 				}
 			};
 
 			for (i = 0; i < targets.length; ++i) {
 				target = targets[i];
-				target.style[styleProp] = val;
+				target.style[transitionProp] = val;
 				if (useEvent) {
 					this.onTransitionEnd(target, prop, callback, timeout);
 				}

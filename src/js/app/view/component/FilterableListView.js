@@ -14,6 +14,39 @@ var Container = require("backbone.babysitter");
 /** @type {module:app/view/base/DeferredView} */
 var DeferredView = require("../base/DeferredView");
 
+/** @type {module:app/utils/css/parseTransformMatrix} */
+// var parseTransformMatrix = require("../../utils/css/parseTransformMatrix");
+
+var CSS_BOX_PROPS =  [
+	"top", "bottom", //"left", "right",
+	"paddingTop","paddingBottom",//"paddingLeft","paddingRight",
+	"marginTop","marginBottom",//"marginLeft","marginRight"
+];
+
+// function getElementFontSize(context) {
+//     // Returns a number of the computed font-size, so in px
+//     return parseFloat(window.getComputedStyle(context).fontSize);
+// }
+// function parseDimension(value, context) {
+// 	if (/rem$/.test(value)) {
+// 		return parseFloat(value) * getElementFontSize(value, document.documentElement);
+// 	} else if (/em$/.test(value)) {
+// 		return parseFloat(value) * getElementFontSize(value, context);
+// 	} else { //if (/px$/.test(value)) {
+// 		return parseFloat(value)
+// 	}
+// }
+//
+function measure(el) {
+	return _.extend(_.pick(window.getComputedStyle(el), CSS_BOX_PROPS), {
+		// el: 			el,
+		clientTop: 		el.clientTop,
+		clientHeight: 	el.clientHeight,
+		offsetTop: 		el.offsetTop,
+		offsetHeight: 	el.offsetHeight,
+	});
+}
+
 /**
  * @constructor
  * @type {module:app/view/component/SelectableListView}
@@ -41,24 +74,24 @@ var FilterableListView = DeferredView.extend({
 		this.collection.each(this.assignChildView, this);
 
 		_.bindAll(this, "_onResize");
-		Backbone.$(window).on("orientationchange resize", this._onResize);
+		$(window).on("orientationchange resize", this._onResize);
 
 		this.listenTo(this.collection, {
 			"select:one": this.setSelection,
 			"select:none": this.setSelection
 		});
 
-//		this.listenTo(this.collection, {
-//			"reset": this._onCollectionReset,
-//			"select:one": this._onSelectOne,
-//			"select:none": this._onSelectNone,
-//			"deselect:one": this._onDeselectOne,
-//		});
+		// this.listenTo(this.collection, {
+		// 	"reset": this._onCollectionReset,
+		// 	"select:one": this._onSelectOne,
+		// 	"select:none": this._onSelectNone,
+		// 	"deselect:one": this._onDeselectOne,
+		// });
 		// this.listenTo(this.collection, "change:excluded", this.whenExcludedChange);
 	},
 
 	remove: function () {
-		Backbone.$(window).off("orientationchange resize", this._onResize);
+		$(window).off("orientationchange resize", this._onResize);
 		DeferredView.prototype.remove.apply(this);
 	},
 
@@ -68,7 +101,11 @@ var FilterableListView = DeferredView.extend({
 
 	/** @param {Object} ev */
 	_onResize: function (ev) {
+		// this.$el.addClass("skip-transitions");
 		this.renderLayout();
+		// this.requestAnimationFrame(function() {
+		// 	this.$el.removeClass("skip-transitions");
+		// });
 	},
 
 	render: function() {
@@ -98,50 +135,71 @@ var FilterableListView = DeferredView.extend({
 		this.renderLayout();
 	},
 
-	renderLayout: function() {
-		var elt, posX, posY;
-		var _transformProp = this.getPrefixedProperty("transform");
-		elt = this.el.firstElementChild;
-		posY = elt.clientTop;
-		//posY = elt.offsetTop;
-		posX = 0;
-		do {
-			elt.style.position = "absolute";
-			elt.style[_transformProp] = "translate3d(" + posX + "px," + posY + "px, 0px)";
-			if (!this._collapsed || elt.className.indexOf("excluded") === -1) {
-				posY += elt.clientHeight;
-				//posY += elt.offsetHeight;
-			}
-		} while (elt = elt.nextElementSibling);
+	// getRendererStyles: function(el) {
+	// 	var s, rs, p, props, value;
+	// 	s = window.getComputedStyle(el);
+	// 	rs = window.getComputedStyle(document.documentElement);
+	// 	props = _.pluck(s, CSS_BOX_PROPS);
+	// 	for (p in props) {
+	// 		value = props[p];
+	// 		if (/rem$/.test(value)) {
+	// 			props[p] = parseFloat(value) * rs.fontSize;
+	// 		} else if (/em$/.test(value)) {
+	// 			props[p] = parseFloat(value) * s.fontSize;
+	// 		} else { //if (/px$/.test(value)) {
+	// 			props[p] = parseFloat(value)
+	// 		}
+	// 	}
+	// 	return props;
+	// },
 
-		this.el.style.minHeight = (posY > 0)? posY + "px" : "";
+	renderLayout: function() {
+		var _transformProp = this.getPrefixedProperty("transform");
+		var el = this.el.firstElementChild, posX = 0, posY = 0, isExcluded;
+		// posY = el.clientTop;
+		// posY = el.offsetTop;
+		do {
+			isExcluded = el.className.indexOf("excluded") != -1;
+			if ((!this._collapsed || !isExcluded) && el.offsetHeight == 0) {
+				posY -= el.offsetTop;
+			}
+			// el.style.position = "absolute";
+			el.style[_transformProp] = "translate3d(" + posX + "px," + posY + "px, 0px)";
+
+			if (!this._collapsed || !isExcluded) {
+				// console.log(measure(el));
+				posY += el.offsetHeight + el.offsetTop;
+			}
+		} while (el = el.nextElementSibling);
+
+		this.el.style.height = (posY > 0)? posY + "px" : "";
 	},
 
-//	measure: function(force) {
-//		if (_.isUndefined(this.childSizes) || force) {
-//			this.childSizes = {};
-//			this.children.each(this.measureChild, this);
-//		}
-//	},
+	// measure: function(force) {
+	// 	if (_.isUndefined(this.childSizes) || force) {
+	// 		this.childSizes = {};
+	// 		this.children.each(this.measureChild, this);
+	// 	}
+	// },
 
-//	measureElements: function() {
-//		if (_.isUndefined(this.childSizes)) {
-//			this.childSizes = {};
-//			elt = this.el.firstElementChild;
-//			do {
-//				this.childSizes[elt] = elt.clientHeight;
-//				elt.style.position = "absolute";
-//			} while (elt = elt.nextElementSibling);
-//		}
-//	},
+	// measureElements: function() {
+	// 	if (_.isUndefined(this.childSizes)) {
+	// 		this.childSizes = {};
+	// 		elt = this.el.firstElementChild;
+	// 		do {
+	// 			this.childSizes[elt] = elt.clientHeight;
+	// 			elt.style.position = "absolute";
+	// 		} while (elt = elt.nextElementSibling);
+	// 	}
+	// },
 
-//	measureChild: function(child) {
-//		var sizes = {}, elt = child.el;
-//		sizes.height = elt.clientHeight;
-//		sizes.left = elt.clientLeft;
-//		this.childSizes[child.cid] = sizes;
-//		return sizes;
-//	},
+	// measureChild: function(child) {
+	// 	var sizes = {}, elt = child.el;
+	// 	sizes.height = elt.clientHeight;
+	// 	sizes.left = elt.clientLeft;
+	// 	this.childSizes[child.cid] = sizes;
+	// 	return sizes;
+	// },
 
 	/* --------------------------- *
 	 * Child views
@@ -155,6 +213,7 @@ var FilterableListView = DeferredView.extend({
 		});
 		this.children.add(view);//, item.id);
 		this.listenTo(view, "renderer:click", this.onChildClick);
+		// this._rendererInstance || (this._rendererInstance = view);
 		return view;
 	},
 
@@ -181,7 +240,7 @@ var FilterableListView = DeferredView.extend({
 	setCollapsed: function (collapsed, force) {
 		if (force || collapsed !== this._collapsed) {
 			this._collapsed = collapsed;
-//			this.requestRender("collapsed");
+			// this.requestRender("collapsed");
 			this.requestRender("collapsed", _.bind(this.renderCollapsed, this, collapsed));
 		}
 	},
@@ -251,14 +310,14 @@ var FilterableListView = DeferredView.extend({
 		if (newIds) {
 			newExcludes = _.difference(oldIds || this.itemIds, newIds);
 			_.each(newExcludes, function (id) {
-//				this.children.findByCustom(id).$el.addClass("excluded");
+				// this.children.findByCustom(id).$el.addClass("excluded");
 				this.children.findByModel(this.collection.get(id)).$el.addClass("excluded");
 			}, this);
 		}
 		if (oldIds) {
 			newIncludes = _.difference(newIds || this.itemIds, oldIds);
 			_.each(newIncludes, function (id) {
-//				this.children.findByCustom(id).$el.removeClass("excluded");
+				// this.children.findByCustom(id).$el.removeClass("excluded");
 				this.children.findByModel(this.collection.get(id)).$el.removeClass("excluded");
 			}, this);
 		}

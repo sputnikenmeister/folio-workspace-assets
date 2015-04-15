@@ -3,13 +3,15 @@ var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 
-/** @type {module:app/utils/strings/prefixed} */
-var prefixed = require("../utils/strings/prefixed");
+
+/** @type {module:app/utils/css/prefixedStyleName} */
+// var prefixedStyleName = require("../utils/css/prefixedStyleName");
+/** @type {module:app/utils/css/prefixedProperty} */
+var prefixedProperty = require("../utils/css/prefixedProperty");
+/** @type {module:app/utils/css/prefixedProperty} */
+var parseTransformMatrix = require("../utils/css/parseTransformMatrix");
 /** @type {module:app/utils/strings/camelToDashed} */
 var camelToDashed = require("../utils/strings/camelToDashed");
-
-/** @type {module:app/utils/strings/prefixedStyleName} */
-// var prefixedStyleName = require("../utils/strings/prefixedStyleName");
 
 var _tidSeed = 0;
 var _transformProp = null;
@@ -32,11 +34,11 @@ TransformHelper.prototype = {
 	 * Private
 	 * ------------------------------- */
 
-	_initTransform: function(el) {
+	_init: function(el) {
 		var idx = this._elements.indexOf(el);
 		if (el && idx == -1) {
 			if (_tidSeed == 0) {
-				_transformProp = prefixed(el.style, "transform");
+				_transformProp = prefixedProperty(el.style, "transform");
 				_transformStyle = (_transformProp != "transform")?
 					"-" + camelToDashed(_transformProp): "transform";
 			}
@@ -54,7 +56,7 @@ TransformHelper.prototype = {
 	_getValues: function(el) {
 		var idx = this._elements.indexOf(el);
 		if (idx == -1) {
-			idx = this._initTransform(el);
+			idx = this._init(el);
 		}
 		return this._values[idx];
 	},
@@ -204,8 +206,20 @@ TransformHelper.prototype = {
 		this._move(this._getValues(el), x, y);
 	},
 
+	moveAll: function(x, y) {
+		for (var i = 0; i < this._values.length; ++i) {
+			this._move(this._values[i], x, y);
+		}
+	},
+
 	capture: function(el){
 		this._capture(this._getValues(el));
+	},
+
+	captureAll: function() {
+		for (var i = 0; i < this._values.length; ++i) {
+			this._capture(this._values[i]);
+		}
 	},
 
 	release: function(el) {
@@ -226,6 +240,10 @@ TransformHelper.prototype = {
 		for (var i = 0; i < this._values.length; ++i) {
 			this._clear(this._values[i]);
 		}
+	},
+
+	init: function(el) {
+		this._init(el);
 	},
 
 	destroy: function(el) {

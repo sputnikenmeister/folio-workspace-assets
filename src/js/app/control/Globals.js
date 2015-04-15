@@ -44,6 +44,9 @@ module.exports = (function () {
 	globals.HORIZONTAL_STEP				=	20; // pixels
 	globals.VERTICAL_STEP				=	12; // pixels
 
+	globals.HMOVE_OUT_OF_BOUNDS_DRAG	=	0.4; // factor
+	globals.VMOVE_OUT_OF_BOUNDS_DRAG	=	0.1; // factor
+
 	globals.APP_ROOT					=	window.approot;
 	globals.MEDIA_DIR					=	window.mediadir;
 

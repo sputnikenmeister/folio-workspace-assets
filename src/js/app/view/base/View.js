@@ -7,8 +7,8 @@ var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {module:app/utils/strings/prefixed} */
-var prefixed = require("../../utils/strings/prefixed");
+/** @type {module:app/utils/css/prefixedProperty} */
+var prefixedProperty = require("../../utils/css/prefixedProperty");
 /** @type {module:app/utils/strings/dashedToCamel} */
 var dashedToCamel = require("../../utils/strings/dashedToCamel");
 /** @type {module:app/utils/strings/camelToDashed} */
@@ -24,21 +24,25 @@ var _views = [];
 var _elements = [];
 var _count = 0;
 
-var _rafQueue = [];
-var _rafQueueId = 0;
-
-function requestCallLater() {
-	if (_rafQueueId == 0) {
-		_rafQueueId = window.requestAnimationFrame(function() {
-			var num = _rafQueue.length;
-			do {
-				_rafQueue[--num].call();
-			}
-			while (num > 0);
-			_rafQueueId = 0;
-		});
-	}
-}
+// var _frameHandlers = [];
+// var _frameQueue = [];
+// var _frameQueueNum = [];
+// var _frameQueueId = 0;
+//
+// function _runFrameQueue() {
+// 	do {
+// 		_frameQueue[--_frameQueueNum].call();
+// 	} while (_frameQueueNum > 0);
+// 	_frameHandlers.length = 0;
+// 	_frameQueue.length = 0;
+// 	_frameQueueId = 0;
+// }
+//
+// function _requestFrameRun() {
+// 	if (_frameQueueId == 0) {
+// 		_frameQueueId = window.requestAnimationFrame(_frameCallback);
+// 	}
+// }
 
 /**
  * @constructor
@@ -79,7 +83,7 @@ var View = Backbone.View.extend({
 	},
 
 	getPrefixedProperty: function(prop) {
-		return _prefixedProps[prop] || (_prefixedProps[prop] = prefixed(this.el.style, prop));
+		return _prefixedProps[prop] || (_prefixedProps[prop] = prefixedProperty(this.el.style, prop));
 	},
 
 	getPrefixedStyle: function(prop) {
@@ -96,25 +100,45 @@ var View = Backbone.View.extend({
 		return addTransitionCallback(props, callback, target, this, timeout || 2000);
 	},
 
-	callNextFrame: function(fn) {
-		return this.applyNextFrame(fn, Array.prototype.slice.call(1, arguments));
+	requestAnimationFrame: function(callback) {
+		return window.requestAnimationFrame(_.bind(callback, this));
 	},
 
-	cancelNextFrame: function(fn) {
-		var idx = _rafQueue.indexOf(fn);
-		(idx != -1) && _rafQueue.splice(idx, 1);
+	cancelAnimationFrame: function(id) {
+		return window.cancelAnimationFrame(id);
 	},
 
-	applyNextFrame: function(fn, args) {
-		var context = this;
-		var bound = function () {
-			_rafQueue.splice(_rafQueue.indexOf(bound), 1);
-			return fn.apply(context, args);
-		};
-		_rafQueue.push(bound);
-		requestCallLater();
-		return bound;
-	},
+	// callNextFrame: function(fn) {
+	// 	return this.applyNextFrame(fn, Array.prototype.slice.call(1, arguments));
+	// },
+	//
+	// onNextFrame: function(handler, args) {
+	// 	var context = this;
+	// 	var bound = function () {
+	// 		context.offNextFrame(handler)
+	// 		return handler.apply(context, args);
+	// 	};
+	// 	var idx = _frameHandlers.indexOf(handler);
+	// 	if (idx == -1)
+	// 		idx = _frameQueueNum;
+	// 		_frameQueueNum++;
+	// 	}
+	// 	_frameHandlers[idx] = handler;
+	// 	_frameQueue[idx] = bound;
+	// 	_requestFrameRun();
+	// 	return bound;
+	// },
+	//
+	// offNextFrame: function(fn) {
+	// 	var idx = _frameHandlers.indexOf(fn);
+	// 	if (idx == -1) {
+	// 		_frameHandlers.splice(idx, 1);
+	// 		_frameQueue.splice(idx, 1);
+	// 		_frameQueueNum--;
+	// 	} else {
+	// 		console.error("onNextFrame not registered");
+	// 	}
+	// },
 
 },{
 	findByElement: function(element) {

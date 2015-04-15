@@ -457,7 +457,7 @@ var Carousel = DeferredView.extend({
 			this._panCandidateView && this._panCandidateView.$el.addClass("candidate");
 		}
 		if (this._panCandidateView === void 0) {
-			delta *= 0.4;
+			delta *= Globals.HMOVE_OUT_OF_BOUNDS_DRAG;
 		}
 		this.scrollByNow(delta, Carousel.IMMEDIATE);
 		//this.scrollByLater(delta, Carousel.IMMEDIATE);

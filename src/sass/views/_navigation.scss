@@ -14,36 +14,6 @@
 }
 
 // - - - - - - - - - - - - - - - - - -
-// bundle-pager
-// - - - - - - - - - - - - - - - - - -
-
-/*
-@import "components/_pager.folio";
-#bundle-pager {
-	position: absolute;
-    display: inline-block;
-    top: -1rem;
-	.button {
-		position: absolute;
-		margin-left: 0 !important;
-		opacity: 0;
-		.name {
-			min-width: $aside_width;
-		}
-	}
-	.following-button {
-		left: $main_width;
-		@include media($desktop_small) {
-			left: $aside_width_large;
-		}
-	}
-}
-#bundle-pager .button {
-	@extend %leaf-content;
-}
-*/
-
-// - - - - - - - - - - - - - - - - - -
 // site-name + wrapper
 // - - - - - - - - - - - - - - - - - -
 
@@ -62,10 +32,10 @@
 	min-height: 2rem;
 	top: 1.5rem;
 	@include nav_translate(-1px, 0);
-	@include nav_transition(changing);
+	// @include nav_transition(changing);
 	@at-root .with-bundle #site-name {
 		@include nav_translate(-100%, 0);
-		@include nav_transition(exiting);
+		// @include nav_transition(exiting);
 	}
 	@include heading_font();
 	color: $link_color;
@@ -140,6 +110,7 @@
 	.list-group {
 		height: 0;
 		width: calc(100% - #{$gutter});
+		margin-top: 0.5rem; // in js, this value is ignored when height == 0
 		span {
 			display: inline-block;
 			width: 100%;
@@ -160,22 +131,9 @@
 		/* override %nav_list */
 		@include nav_translate(0, #{$nav_height_landscape - 0.5rem});
 		.list-group {
-			height: 2rem;
+			height: 1.5rem;
 			span {
-				@include nav_translate(-0.1px, 0.5rem);
-			}
-		}
-	}
-	#keyword-list .list-group span {
-		@include nav_transition(changing);
-	}
-	.with-bundle:not(.entering-bundle) .list-group span {
-		@include nav_transition();
-	}
-	.skip-transitions {
-		&, &.with-bundle:not(.entering-bundle) {
-			#keyword-list, #keyword-list .list-group span {
-				@include nav_transition(skip);
+				@include nav_translate(-0.1px, 0.0rem);
 			}
 		}
 	}
@@ -184,68 +142,45 @@
 #keyword-list-wrapper {
 	position: absolute;
 	display: inline-block;
-	// position: static;
 	top: 0; left: 0;
 	@include nav_translate($main_width, 0);
 }
 
 @include media($desktop_small) {
 	#keyword-list-wrapper {
-		position: absolute;
 		@include nav_translate($main_width_large, 0);
 	}
 	.with-image .collapsed #keyword-list-wrapper {
 		@include nav_translate(0,0);
 	}
-	#keyword-list-wrapper {
-		@include nav_transition();
-	}
-	.entering-bundle.with-image, .without-bundle {
-		#keyword-list-wrapper {
-			@include nav_transition(changing);
+}
+
+// - - - - - - - - - - - - - - - - - -
+// bundle-pager
+// - - - - - - - - - - - - - - - - - -
+
+/*
+@import "components/_pager.folio";
+#bundle-pager {
+	position: absolute;
+    display: inline-block;
+    top: -1rem;
+	.button {
+		position: absolute;
+		margin-left: 0 !important;
+		opacity: 0;
+		.name {
+			min-width: $aside_width;
 		}
 	}
-	.skip-transitions {
-		&, &.entering-bundle.with-image, &.without-bundle {
-			#keyword-list-wrapper {
-				@include nav_transition(skip);
-			}
+	.following-button {
+		left: $main_width;
+		@include media($desktop_small) {
+			left: $aside_width_large;
 		}
 	}
 }
-
-//.skip-transitions {
-//	#keyword-list {
-//		@include skip_transitions;
-//	}
-//}
-
-/* alt implementation #1 */ /*
-@include media($desktop_small) {
-	#keyword-list-wrapper {
-		@include nav_transition(changing);
-	}
-	.with-image, .without-image {
-		&:not(.entering-bundle) #keyword-list-wrapper {
-			transition: transform $duration $ease 0s;
-		}
-	}
-}
-*/
-/* alt implementation #2 */ /*
-@include media($desktop_small) {
-	#keyword-list-wrapper {
-		@include nav_transition(changing);
-	}
-	.with-image #keyword-list-wrapper,
-	.without-image #keyword-list-wrapper {
-	//.with-bundle #keyword-list-wrapper {
-		transition: transform $duration $ease 0s;
-	}
-	.with-image.entering-bundle #keyword-list-wrapper,
-	.without-image.entering-bundle #keyword-list-wrapper {
-	//.with-bundle.entering-bundle #keyword-list-wrapper {
-		@include nav_transition(changing);
-	}
+#bundle-pager .button {
+	@extend %leaf-content;
 }
 */

@@ -31,15 +31,8 @@ var ImageRenderer = require("./render/ImageRenderer");
 var CarouselEmptyRenderer = require("./render/CarouselEmptyRenderer");
 /** @type {module:app/view/component/CollectionStack} */
 var CollectionStack = require("./component/CollectionStack");
-/** @type {module:app/view/component/SelectableListView} */
-//var SelectableListView = require("./component/SelectableListView");
 /** @type {module:app/view/render/DotNavigationRenderer} */
 //var DotNavigationRenderer = require("./render/DotNavigationRenderer");
-
-// /** @type {module:app/helper/TransformHelper} */
-// var TransformHelper = require("../helper/TransformHelper");
-// /** @type {module:app/utils/event/addTransitionEndCommand} */
-// var addTransitionCallback = require("../utils/event/addTransitionCallback");
 
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
@@ -47,10 +40,11 @@ var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 var imageCaptionTemplate = require("./template/CollectionStack.Image.tpl");
 
 var COLLAPSE_THRESHOLD = 100;
-var PAN_OVERSHOOT_FACTOR = 0.05;
-//var PAN_MOVE_FACTOR = 0.75;
-//// move factor is applied on top, so demultiply
-//PAN_OVERSHOOT_FACTOR /= PAN_MOVE_FACTOR;
+var PAN_MOVE_FACTOR = 1;
+var PAN_OVERSHOOT_FACTOR = Globals.VMOVE_OUT_OF_BOUNDS_DRAG;
+// var PAN_OVERSHOOT_FACTOR = 0.2;
+/* move factor is applied on top, so demultiply */
+PAN_OVERSHOOT_FACTOR *= PAN_MOVE_FACTOR;
 
 /**
  * @constructor
@@ -109,6 +103,7 @@ var ContentView = ContainerView.extend({
 		_.each(this.children, function(child) {
 			child.render();
 		}, this);
+		this.transforms.releaseAll();
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
 
@@ -140,6 +135,27 @@ var ContentView = ContainerView.extend({
 	},
 
 	/* -------------------------------
+	 * collapse
+	 * ------------------------------- */
+
+	_collapsed: false,
+
+	isCollapsed: function() {
+		return this._collapsed;
+	},
+
+	setCollapsed: function(collapsed) {
+		if (this._collapsed !== collapsed) {
+			this._collapsed = collapsed;
+			if (collapsed) {
+				this.$el.addClass("collapsed").removeClass("expanded");
+			} else {
+				this.$el.addClass("expanded").removeClass("collapsed");
+			}
+		}
+	},
+
+	/* -------------------------------
 	 * Vertical touch/move (_onVPan*)
 	 * ------------------------------- */
 
@@ -154,31 +170,31 @@ var ContentView = ContainerView.extend({
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
 	},
 
-	_onVPanMove1: function (ev) {
-		var delta = ev.deltaY + ev.thresholdOffsetY;
-		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
-		// check if direction is aligned with collapse/expand
-		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-
-		delta = Math.abs(delta); // remove sign
-
-		if (isDirAllowed && delta > COLLAPSE_THRESHOLD) {
-			this.touch.off("vpanmove", this._onVPanMove);
-			this.touch.off("vpanend vpancancel", this._onVPanFinal);
-			this.setCollapsed(!this.isCollapsed());
-			_.each(this.children, function(view) {
-				this.enableTransitions(view.el);
-				this.transforms.clear(view.el);
-//				this.transforms.capture(view.el);
-			}, this);
-		} else {
-			if (!isDirAllowed) delta *= -PAN_OVERSHOOT_FACTOR; // delta is opposite
-			delta *= this.isCollapsed()? 1 : -1; // reapply sign
-			_.each(this.children, function(view) {
-				this.transforms.move(view.el, void 0, delta);
-			}, this);
-		}
-	},
+	// _onVPanMove1: function (ev) {
+	// 	var delta = ev.deltaY + ev.thresholdOffsetY;
+	// 	var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+	// 	// check if direction is aligned with collapse/expand
+	// 	var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
+	//
+	// 	delta = Math.abs(delta); // remove sign
+	//
+	// 	if (isDirAllowed && delta > COLLAPSE_THRESHOLD) {
+	// 		this.touch.off("vpanmove", this._onVPanMove);
+	// 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
+	// 		this.setCollapsed(!this.isCollapsed());
+	// 		_.each(this.children, function(view) {
+	// 			this.enableTransitions(view.el);
+	// 			this.transforms.clear(view.el);
+	// 			// this.transforms.capture(view.el);
+	// 		}, this);
+	// 	} else {
+	// 		if (!isDirAllowed) delta *= -PAN_OVERSHOOT_FACTOR; // delta is opposite
+	// 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
+	// 		_.each(this.children, function(view) {
+	// 			this.transforms.move(view.el, void 0, delta);
+	// 		}, this);
+	// 	}
+	// },
 
 	_onVPanMove: function (ev) {
 		var delta = ev.deltaY + ev.thresholdOffsetY;
@@ -199,62 +215,36 @@ var ContentView = ContainerView.extend({
 		}
 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
 
-		_.each(this.children, function(view) {
-			this.transforms.move(view.el, void 0, delta);
-		}, this);
+		this.transforms.moveAll(void 0, delta);
+		// _.each(this.children, function(view) {
+		// 	this.transforms.move(view.el, void 0, delta);
+		// }, this);
 	},
 
 	_onVPanFinal: function(ev) {
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 
-		this._onVPanEnd(ev);
-		_.each(this.children, function(view) {
-			// this.enableTransitions(view);
-			this.transforms.clear(view.el);
-		}, this);
-		// (ev.type === "vpanend") && this._onVPanEnd(ev);
-	},
-
-	_onVPanEnd: function (ev) {
 		if (this.willCollapseChange(ev)) {
-		//	this.$transitionables.transit(this.transitions[this.isCollapsed()? "exiting":"entering"]);
-			this.runTransformTransition(this.transitionables, this.isCollapsed()? "exiting":"entering");
+			// this.$transitionables.transit(this.transitions[this.isCollapsed()
+			// 	Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING]);
+			this.runTransformTransition(this.transitionables,
+				this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING);
 			this.setCollapsed(!this.isCollapsed());
 		} else {
-		//	this.$transitionables.transit(this.transitions["immediate"]);
-			this.runTransformTransition(this.transitionables, "immediate");
+			// this.$transitionables.transit(this.transitions[Globals.TRANSIT_IMMEDIATE]);
+			this.runTransformTransition(this.transitionables, Globals.TRANSIT_IMMEDIATE);
 		}
-		//var changing = this.willCollapseChange(ev);
-		//this.transition.delay = changing? Globals.TRANSITION_DELAY: 1;
-		//this.$transitionables.transit(this.transition);
-		//changing && this.setCollapsed(!this.isCollapsed());
+		this.transforms.clearAll();
+		// _.each(this.children, function(view) {
+		// 	// this.enableTransitions(view);
+		// 	this.transforms.clear(view.el);
+		// }, this);
 	},
 
 	willCollapseChange: function(ev) {
 		var delta = ev.deltaY + ev.thresholdOffsetY;
 		return this.isCollapsed()? delta > COLLAPSE_THRESHOLD : delta < -COLLAPSE_THRESHOLD;
-	},
-
-	/* -------------------------------
-	 * collapse
-	 * ------------------------------- */
-
-	_collapsed: false,
-
-	isCollapsed: function() {
-		return this._collapsed;
-	},
-
-	setCollapsed: function(collapsed) {
-		if (this._collapsed !== collapsed) {
-			this._collapsed = collapsed;
-			if (collapsed) {
-				this.$el.addClass("collapsed").removeClass("expanded");
-			} else {
-				this.$el.addClass("expanded").removeClass("collapsed");
-			}
-		}
 	},
 
 	// /* -------------------------------
@@ -285,6 +275,7 @@ var ContentView = ContainerView.extend({
 		var endProps = {delay: Globals.ENTERING_DELAY, opacity: 1};
 		// Show views
 		_.each(this.children, function(view) {
+			this.transforms.init(view.el);
 			this.transitionables.push(view.el);
 			this.listenToOnce(view, "view:remove", this.onChildRemove);
 			view.render().$el.appendTo(this.el);

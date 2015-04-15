@@ -57,6 +57,10 @@ var GroupingListView = FilterableListView.extend({
 		}
 	},
 
+	// renderLayout: function () {
+	// 	return FilterableListView.prototype.renderLayout.apply(this, arguments);
+	// },
+
 	/** @private Create children views */
 	assignGroupingView: function (item) {
 		var view = new this.groupingRenderer({
@@ -64,6 +68,7 @@ var GroupingListView = FilterableListView.extend({
 			el: this.$(".list-group[data-id=" + item.id + "]")
 		});
 		this.children.add(view);//, item.id);
+		// this._groupingRendererInstance || (this._groupingRendererInstance = view);
 		return view;
 	},
 
