@@ -29,43 +29,69 @@ module.exports = View.extend({
 
 	/** @override */
 	constructor: function(options) {
+		this.transitions = [];
 		this.transforms = new TransformHelper();
 		View.apply(this, arguments);
 	},
 
 	runTransformTransition: function (targets, transition, useEvent) {
-		if (_.isString(targets)) {
-			targets = this.el.querySelectorAll(targets);
+		if (!_.isBoolean(useEvent)) {
+			useEvent = false;
+		}
+		if (!_.isArray(targets)) {
+			if (_.isString(targets)) {
+				targets = this.el.querySelectorAll(targets);
+			} else {
+				targets = [targets];
+			}
 		}
 		// if (_.isString(transition)) {
 		// 	transition = this.transitions[transition];
 		// }
 		if (targets && targets.length > 0) {
-			var i, num, target, transitionProp, prop, val, callback, timeout;
+			var transitionProp, transformProp, val, callback, timeout;
 
-			timeout = transition.duration + transition.delay + 500;
+			timeout = transition.duration + transition.delay + 300;
 			transitionProp = this.getPrefixedProperty("transition");
-			prop = this.getPrefixedStyle("transform");
+			transformProp = this.getPrefixedStyle("transform");
 
-			val = prop + " ";
+			val = transformProp + " ";
 			val += transition.duration/1000 + "s ";
 			val += transition.easing + " ";
 			val += transition.delay/1000 + "s";
 
-			callback = function(exec, el) {
-				if (el.style[transitionProp] == val) {
-					el.style[transitionProp] = "";
+			callback = _.bind(function(exec, target) {
+				var idx2 = this.transitions.indexOf(target);
+				if (idx2 != -1) {
+					this.transitions.splice(idx2, 1);
+				} else {
+					console.warn("runTransformTransition > callback: element already removed", target);
+				}
+
+				if (target.style[transitionProp] == val) {
+					target.style[transitionProp] = "";
+					// console.log("runTransformTransition: clearing '" + transitionProp + "'");
 				} else {
 					console.log("runTransformTransition: '" + transitionProp + "' has changed from '" +
-						val + "' to '" + el.style[transitionProp] + "', leaving as-is.");
+						val + "' to '" + target.style[transitionProp] + "', leaving as-is.");
 				}
-			};
+			}, this);
+
+			var i, num, idx1, target;
 
 			for (i = 0; i < targets.length; ++i) {
 				target = targets[i];
+				idx1 = this.transitions.indexOf(target);
+				if (idx1 != -1) {
+					console.warn("runTransformTransition: element already transitioning", target);
+				} else {
+					idx1 = this.transitions.length;
+					this.transitions[idx1] = target;
+				}
+
 				target.style[transitionProp] = val;
 				if (useEvent) {
-					this.onTransitionEnd(target, prop, callback, timeout);
+					this.onTransitionEnd(target, transformProp, callback, timeout);
 				}
 			}
 			if (!useEvent) {

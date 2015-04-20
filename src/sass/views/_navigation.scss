@@ -6,39 +6,21 @@
 // leaf elements
 // - - - - - - - - - - - - - - - - - -
 
-#site-name {
-	@extend %leaf-content;
-}
-.list-item, .list-group {
+#site-name, .list-item, .list-group {
 	@extend %leaf-content;
 }
 
 // - - - - - - - - - - - - - - - - - -
-// site-name + wrapper
+// site-name
 // - - - - - - - - - - - - - - - - - -
 
-#site-name-wrapper {
-	position: relative;
-	top: 0;
-	height: $nav_height_portrait;
-	@include media($desktop_small) {
-		height: $nav_height_landscape;
-	}
-}
-
 #site-name {
+	@include heading_font();
 	position: relative;
 	display: inline-block;
-	min-height: 2rem;
 	top: 1.5rem;
-	@include nav_translate(-1px, 0);
-	// @include nav_transition(changing);
-	@at-root .with-bundle #site-name {
-		@include nav_translate(-100%, 0);
-		// @include nav_transition(exiting);
-	}
-	@include heading_font();
 	color: $link_color;
+	min-height: 2rem;
 }
 
 // -----------------------------------
@@ -54,17 +36,10 @@
 // - - - - - - - - - - - - - - - - - -
 
 #bundle-list {
-	@extend %nav_list;
-	min-height: 2rem;
-	top: 1.5rem;
-	width: $main_width - $aside_width;
-	@include media($desktop_small) {
-		width: $main_width_large - $aside_width_large;
-		@at-root .with-bundle #bundle-list {
-			width: $aside_width_large;
-		}
-	}
 	@include heading_font();
+	min-height: 4.5rem;
+	padding-top: 1.5rem;
+	padding-bottom: 1.5rem;
 	.list-item {
 		height: 2rem;
 		width: 100%;
@@ -83,75 +58,28 @@
 	}
 }
 
-#bundle-list-wrapper {
-	position: absolute;
-	display: inline-block;
-	top: 0; left: 0;
-}
-
 // - - - - - - - - - - - - - - - - - -
-// keyword-list + wrapper
+// keyword-list
 // - - - - - - - - - - - - - - - - - -
 
 #keyword-list {
-	@extend %nav_list;
-	top: 1.25rem;
-	width: $aside_width;
+	// margin-top: -0.25rem;
+	padding-top: 1.25rem;
+	padding-bottom: 1.5rem;
 	.list-item {
 		white-space: nowrap;
-		width: 100%;
-		height: 1.5rem;
 		a {
-			font-size: 13px;
 			display: inline-block;
 			margin-left: -1px;
+			font-size: 13px;
 		}
 	}
 	.list-group {
-		height: 0;
-		width: calc(100% - #{$gutter});
 		margin-top: 0.5rem; // in js, this value is ignored when height == 0
 		span {
 			display: inline-block;
-			width: 100%;
 			@include small_caps($lead: 1.5rem);
-			@include nav_translate(-100%, 0.0rem);
 		}
-	}
-}
-
-@include media($desktop_small) {
-	#keyword-list {
-		width: $aside_width_large;
-		.list-group {
-			width: 100%;
-		}
-	}
-	.with-bundle .collapsed #keyword-list {
-		/* override %nav_list */
-		@include nav_translate(0, #{$nav_height_landscape - 0.5rem});
-		.list-group {
-			height: 1.5rem;
-			span {
-				@include nav_translate(-0.1px, 0.0rem);
-			}
-		}
-	}
-}
-
-#keyword-list-wrapper {
-	position: absolute;
-	display: inline-block;
-	top: 0; left: 0;
-	@include nav_translate($main_width, 0);
-}
-
-@include media($desktop_small) {
-	#keyword-list-wrapper {
-		@include nav_translate($main_width_large, 0);
-	}
-	.with-image .collapsed #keyword-list-wrapper {
-		@include nav_translate(0,0);
 	}
 }
 
@@ -163,8 +91,8 @@
 @import "components/_pager.folio";
 #bundle-pager {
 	position: absolute;
-    display: inline-block;
-    top: -1rem;
+	display: inline-block;
+	top: -1rem;
 	.button {
 		position: absolute;
 		margin-left: 0 !important;
@@ -184,3 +112,31 @@
 	@extend %leaf-content;
 }
 */
+
+// - - - - - - - - - - - - - - - - - -
+// TEMP
+// - - - - - - - - - - - - - - - - - -
+
+.with-bundle .expanded {
+	#keyword-list .list-item:not(.excluded),
+	#bundle-list .list-item.selected {
+		&:before {
+			content: "*";
+			font-size: 1.25em;
+			line-height: 0.75em;
+			position: absolute;
+			display: inline-block;
+			top: calc(50% - 0.325em);
+			left: 0;
+			width: 0.5em;
+			height: 0.5em;
+		}
+	}
+	#bundle-list .list-item.selected {
+		&:before {
+			color: $link_color;
+			font-weight: 400;
+			left: -0.125em;
+		}
+	}
+}

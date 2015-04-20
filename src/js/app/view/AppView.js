@@ -15,8 +15,8 @@ var Globals = require("../control/Globals");
 var TouchManager = require("../control/TouchManager");
 /** @type {module:app/control/Controller} */
 var controller = require("../control/Controller");
-/** @type {module:app/model/collection/BundleList} */
-var bundles = require("../model/collection/BundleList");
+/** @type {module:app/model/collection/BundleCollection} */
+var bundles = require("../model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
 var View = require("./base/View");

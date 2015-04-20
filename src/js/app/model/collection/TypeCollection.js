@@ -1,5 +1,5 @@
 /**
-* @module app/model/collection/TypeList
+* @module app/model/collection/TypeCollection
 * @requires module:backbone
 */
 
@@ -11,13 +11,13 @@ var TypeItem = require( "../item/TypeItem" );
 
 /**
  * @constructor
- * @type {module:app/model/collection/TypeList}
+ * @type {module:app/model/collection/TypeCollection}
  */
-var TypeList = Backbone.Collection.extend({
+var TypeCollection = Backbone.Collection.extend({
 
 	/** @type {Backbone.Model} */
 	model: TypeItem
 
 });
 
-module.exports = new TypeList();
+module.exports = new TypeCollection();

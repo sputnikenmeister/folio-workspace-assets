@@ -22,12 +22,12 @@ var traceArgs = require("../utils/debug/traceArgs");
 /** @type {module:app/utils/debug/traceArgs} */
 var stripTags = require("../utils/strings/stripTags");
 
-/** @type {module:app/model/collection/TypeList} */
-var types = require("../model/collection/TypeList");
-/** @type {module:app/model/collection/KeywordList} */
-var keywords = require("../model/collection/KeywordList");
-/** @type {module:app/model/collection/BundleList} */
-var bundles = require("../model/collection/BundleList");
+/** @type {module:app/model/collection/TypeCollection} */
+var types = require("../model/collection/TypeCollection");
+/** @type {module:app/model/collection/KeywordCollection} */
+var keywords = require("../model/collection/KeywordCollection");
+/** @type {module:app/model/collection/BundleCollection} */
+var bundles = require("../model/collection/BundleCollection");
 
 /* --------------------------- *
  * Static private
@@ -42,7 +42,7 @@ var Controller = Backbone.Router.extend({
 	/** @override */
 	routes: {
 		"bundles/:bundleHandle(/:imageIndex)": "toBundleItem",
-		"bundles": "toBundleList",
+		"bundles": "toBundleCollection",
 		"": function () {
 			this.navigate("bundles", {
 				trigger: true, replace: true
@@ -184,7 +184,7 @@ var Controller = Backbone.Router.extend({
 		this._changeSelection(bundle, image);
 	},
 
-	toBundleList: function () {
+	toBundleCollection: function () {
 		this._changeSelection();
 	},
 

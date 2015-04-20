@@ -18,8 +18,8 @@ var Globals = require("../control/Globals");
 var TouchManager = require("../control/TouchManager");
 /** @type {module:app/control/Controller} */
 var controller = require("../control/Controller");
-/** @type {module:app/model/collection/BundleList} */
-var bundles = require("../model/collection/BundleList");
+/** @type {module:app/model/collection/BundleCollection} */
+var bundles = require("../model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
 var ContainerView = require("./base/ContainerView");
@@ -201,8 +201,11 @@ var ContentView = ContainerView.extend({
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapse/expand
 		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
+		// var moveFactor = this.isCollapsed()? PAN_MOVE_FACTOR : (1-PAN_MOVE_FACTOR)*0.5;
 
 		delta = Math.abs(delta); // remove sign
+		// delta *= moveFactor;
+		// maxDelta *= moveFactor;
 
 		if (isDirAllowed) {
 			if (delta > maxDelta) {				// overshooting
@@ -244,7 +247,7 @@ var ContentView = ContainerView.extend({
 
 	willCollapseChange: function(ev) {
 		var delta = ev.deltaY + ev.thresholdOffsetY;
-		return this.isCollapsed()? delta > COLLAPSE_THRESHOLD : delta < -COLLAPSE_THRESHOLD;
+		return ev.type == "vpanend"? this.isCollapsed()? delta > COLLAPSE_THRESHOLD : delta < -COLLAPSE_THRESHOLD : false;
 	},
 
 	// /* -------------------------------
@@ -368,7 +371,7 @@ var ContentView = ContainerView.extend({
 //	 * image-pager
 //	 */
 //	createImagePager: function(bundle, images) {
-//		var view = new SelectableListView({
+//		var view = new SelectableCollectionView({
 //			collection: images,
 //			renderer: DotNavigationRenderer,
 //			className: "image-pager dots-fontello mutable-faded"

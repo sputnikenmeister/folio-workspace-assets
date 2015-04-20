@@ -203,6 +203,11 @@ TransformHelper.prototype = {
 	 * -------------------------------- */
 
 	move: function(el, x, y){
+		// if (_.isArray(el)) {
+		// 	for (var i = 0; i < el.length; ++i) {
+		// 		this._move(this._getValues(el[i]), x, y);
+		// 	}
+		// } else if (el instanceof window.HTMLElement)
 		this._move(this._getValues(el), x, y);
 	},
 
@@ -212,7 +217,7 @@ TransformHelper.prototype = {
 		}
 	},
 
-	capture: function(el){
+	capture: function(el) {
 		this._capture(this._getValues(el));
 	},
 
@@ -323,5 +328,6 @@ TransformHelper.prototype = {
 		return o;
 	},*/
 };
+
 
 module.exports = TransformHelper;

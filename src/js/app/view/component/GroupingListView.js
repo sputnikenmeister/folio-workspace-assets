@@ -8,6 +8,8 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
+/** @type {module:app/view/base/View} */
+var View = require("../base/View");
 /** @type {module:app/view/component/FilterableListView} */
 var FilterableListView = require("./FilterableListView");
 
@@ -29,7 +31,7 @@ var GroupingListView = FilterableListView.extend({
 			this.groupingKey = options.groupings.key;
 			this.groupingCollection = options.groupings.collection;
 			//this.groupingChildren = this.children;//new Container();
-			this.groupingRenderer = options.groupings.renderer || GroupingListView.GroupingRenderer;
+			this.groupingRenderer = options.groupings.renderer || GroupingListView.defaultGroupRenderer;
 			this.groupingCollection.each(this.assignGroupingView, this);
 		}
 	},
@@ -75,9 +77,9 @@ var GroupingListView = FilterableListView.extend({
 }, {
 	/**
 	 * @constructor
-	 * @type {module:app/view/component/GroupingRenderer}
+	 * @type {module:app/view/component/GroupingListView.defaultGroupRenderer}
 	 */
-	GroupingRenderer: Backbone.View.extend({
+	defaultGroupRenderer: View.extend({
 		/** @override */
 		tagName: "dt",
 		/** @override */

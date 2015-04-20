@@ -7,9 +7,10 @@ $hu: 20px;
 $vu: 12px;
 
 // Time base units (transitions/animations)
-$delay_interval: 	0.025s;
-// $duration:  		0.375s;
-$duration:  		0.6s;
+$delay_interval: 	0.005s;
+// $delay_interval:	0.025s;
+$duration:  		0.445s;
+// $duration:  		0.6s;
 
 $delay: $duration + $delay_interval;
 

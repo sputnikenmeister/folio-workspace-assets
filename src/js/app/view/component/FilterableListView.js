@@ -11,6 +11,8 @@ var $ = Backbone.$;
 
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
+/** @type {module:app/view/base/View} */
+var View = require("../base/View");
 /** @type {module:app/view/base/DeferredView} */
 var DeferredView = require("../base/DeferredView");
 
@@ -23,33 +25,48 @@ var CSS_BOX_PROPS =  [
 	"marginTop","marginBottom",//"marginLeft","marginRight"
 ];
 
-// function getElementFontSize(context) {
+
+// var documentFontSize;
+// function getDocumentFontSize() {
 //     // Returns a number of the computed font-size, so in px
-//     return parseFloat(window.getComputedStyle(context).fontSize);
+//     return documentFontSize || (documentFontSize = parseFloat(
+// 		window.getComputedStyle(document.documentElement).fontSize));
 // }
-// function parseDimension(value, context) {
-// 	if (/rem$/.test(value)) {
-// 		return parseFloat(value) * getElementFontSize(value, document.documentElement);
-// 	} else if (/em$/.test(value)) {
-// 		return parseFloat(value) * getElementFontSize(value, context);
-// 	} else { //if (/px$/.test(value)) {
-// 		return parseFloat(value)
+// function measure(el)
+// {
+// 	var prop, val, ret = {}, styles = window.getComputedStyle(el);
+// 	for (var i = 0; i < CSS_BOX_PROPS.length; i++)
+// 	{
+// 		prop = CSS_BOX_PROPS[i];
+// 		if (prop in styles)
+// 		{
+// 			val = styles[prop];
+// 			if (val.indexOf("px")) {
+// 				ret[prop] = parseFloat(val);
+// 			} else if (/em$/.test(val)) {
+// 				ret[prop] = parseFloat(val) * styles.fontSize;
+// 			} else if (/rem$/.test(val)) {
+// 				ret[prop] = parseFloat(val) * getDocumentFontSize();
+// 			} else {
+// 				console.warn("unit " + val[2] + " not recognized in " + styles[prop]);
+// 				ret[prop] = 0;
+// 			}
+// 			//val = val.match(/^([-\.0-9]+)([rem]+)$/);
+// 		}
 // 	}
+// 	// return ret;
+// 	return _.extend(ret, {
+// 		// el: 			el,
+// 		clientTop: 		el.clientTop,
+// 		clientHeight: 	el.clientHeight,
+// 		offsetTop: 		el.offsetTop,
+// 		offsetHeight: 	el.offsetHeight,
+// 	});
 // }
-//
-function measure(el) {
-	return _.extend(_.pick(window.getComputedStyle(el), CSS_BOX_PROPS), {
-		// el: 			el,
-		clientTop: 		el.clientTop,
-		clientHeight: 	el.clientHeight,
-		offsetTop: 		el.offsetTop,
-		offsetHeight: 	el.offsetHeight,
-	});
-}
 
 /**
  * @constructor
- * @type {module:app/view/component/SelectableListView}
+ * @type {module:app/view/component/SelectableCollectionView}
  */
 var FilterableListView = DeferredView.extend({
 
@@ -61,7 +78,7 @@ var FilterableListView = DeferredView.extend({
 	/** @override */
 	initialize: function (options) {
 		this.children = new Container();
-		this.renderer = options.renderer || FilterableListView.FilterableRenderer;
+		this.renderer = options.renderer || FilterableListView.defaultRenderer;
 
 		this.itemIds = this.collection.pluck("id");
 		this.filterKey = options.filterKey;
@@ -69,8 +86,9 @@ var FilterableListView = DeferredView.extend({
 		this.setSelection(this.collection.selected);
 		this.setCollapsed((_.isBoolean(options.collapsed)? options.collapsed : false));
 
-		this.skipTransitions = false;
+		this.skipTransitions = true;
 		this.$el.addClass("skip-transitions");
+
 		this.collection.each(this.assignChildView, this);
 
 		_.bindAll(this, "_onResize");
@@ -87,7 +105,6 @@ var FilterableListView = DeferredView.extend({
 		// 	"select:none": this._onSelectNone,
 		// 	"deselect:one": this._onDeselectOne,
 		// });
-		// this.listenTo(this.collection, "change:excluded", this.whenExcludedChange);
 	},
 
 	remove: function () {
@@ -101,11 +118,8 @@ var FilterableListView = DeferredView.extend({
 
 	/** @param {Object} ev */
 	_onResize: function (ev) {
-		// this.$el.addClass("skip-transitions");
-		this.renderLayout();
-		// this.requestAnimationFrame(function() {
-		// 	this.$el.removeClass("skip-transitions");
-		// });
+		this.skipTransitions = true;
+		this.render();
 	},
 
 	render: function() {
@@ -117,11 +131,11 @@ var FilterableListView = DeferredView.extend({
 	renderLater: function () {
 		if (this.skipTransitions) {
 			this.$el.addClass("skip-transitions");
+			this.requestAnimationFrame(function() {
+				this.skipTransitions = false;
+				this.$el.removeClass("skip-transitions");
+			});
 		}
-		_.defer(_.bind(function() {
-			this.skipTransitions = false;
-			this.$el.removeClass("skip-transitions");
-		}, this));
 
 		if (this.needsRender("collapsed")) {
 			this.validateRender("collapsed");
@@ -135,27 +149,12 @@ var FilterableListView = DeferredView.extend({
 		this.renderLayout();
 	},
 
-	// getRendererStyles: function(el) {
-	// 	var s, rs, p, props, value;
-	// 	s = window.getComputedStyle(el);
-	// 	rs = window.getComputedStyle(document.documentElement);
-	// 	props = _.pluck(s, CSS_BOX_PROPS);
-	// 	for (p in props) {
-	// 		value = props[p];
-	// 		if (/rem$/.test(value)) {
-	// 			props[p] = parseFloat(value) * rs.fontSize;
-	// 		} else if (/em$/.test(value)) {
-	// 			props[p] = parseFloat(value) * s.fontSize;
-	// 		} else { //if (/px$/.test(value)) {
-	// 			props[p] = parseFloat(value)
-	// 		}
-	// 	}
-	// 	return props;
-	// },
-
 	renderLayout: function() {
 		var _transformProp = this.getPrefixedProperty("transform");
-		var el = this.el.firstElementChild, posX = 0, posY = 0, isExcluded;
+		var el = this.el.firstElementChild, isExcluded;
+		var style = window.getComputedStyle(this.el);
+		var posY = parseFloat(style.paddingTop);
+		var posX = parseFloat(style.paddingLeft);
 		// posY = el.clientTop;
 		// posY = el.offsetTop;
 		do {
@@ -167,11 +166,11 @@ var FilterableListView = DeferredView.extend({
 			el.style[_transformProp] = "translate3d(" + posX + "px," + posY + "px, 0px)";
 
 			if (!this._collapsed || !isExcluded) {
-				// console.log(measure(el));
 				posY += el.offsetHeight + el.offsetTop;
 			}
 		} while (el = el.nextElementSibling);
 
+		posY += parseFloat(style.paddingBottom);
 		this.el.style.height = (posY > 0)? posY + "px" : "";
 	},
 
@@ -328,7 +327,7 @@ var FilterableListView = DeferredView.extend({
 	 * @constructor
 	 * @type {module:app/view/component/ItemView}
 	 */
-	FilterableRenderer: Backbone.View.extend({
+	defaultRenderer: View.extend({
 		/** @type {Object} */
 		events: {
 			"click": function (ev) {

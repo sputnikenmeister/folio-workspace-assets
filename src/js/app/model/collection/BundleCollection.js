@@ -1,10 +1,10 @@
 /**
-* @module app/model/collection/BundleList
+* @module app/model/collection/BundleCollection
 * @requires module:backbone
 */
 
-/** @type {module:app/model/SelectableList} */
-var SelectableList = require( "../../model/SelectableList" );
+/** @type {module:app/model/SelectableCollection} */
+var SelectableCollection = require( "../../model/SelectableCollection" );
 
 /** @type {module:app/model/item/BundleItem} */
 var BundleItem = require( "../item/BundleItem" );
@@ -13,7 +13,7 @@ var BundleItem = require( "../item/BundleItem" );
  * @constructor
  * @type {module:app/model/collection/List}
  */
-var BundleList = SelectableList.extend({
+var BundleCollection = SelectableCollection.extend({
 
 	/** @type {Backbone.Model} */
 	model: BundleItem,
@@ -36,4 +36,4 @@ var BundleList = SelectableList.extend({
 
 });
 
-module.exports = new BundleList();
+module.exports = new BundleCollection();

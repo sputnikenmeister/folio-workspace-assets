@@ -1,5 +1,6 @@
-$collapse_ease: $ease;
-//$collapse_ease: ease-out;
+// -----------------------------------
+// Filterable
+// -----------------------------------
 
 // - - - - - - - - - - - - - - - - - -
 // Filterable
@@ -10,7 +11,7 @@ $collapse_ease: $ease;
 		// position: static;
 		position: absolute;
 		display: block;
-		// top: 0; left: 0;
+		top: 0; left: 0;
 		transform: translate3d(0,0,0);
 		transform-style: preserve-3d;
 	}
@@ -41,21 +42,19 @@ $collapse_ease: $ease;
 #bundle-list {
 	.list-item {
 		// wait, expand, fadein
-		transition-property: visibility, opacity, transform;//max-height;
-		transition-timing-function: step-start, $collapse_ease, $collapse_ease;
-		transition-duration: $delay * 2 + $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
-		transition-delay: 0s + 0.001s, $delay * 2 + 0.001s, $delay * 1 + 0.001s;
+		@extend %changing-list;
 	}
 	&.collapsed {
 		.list-item:not(.selected) {
 			// fadeout, collapse, wait
-			transition-timing-function: step-end, $collapse_ease, $collapse_ease;
-			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
+			@extend %changing-list-excluded;
 		}
 	}
 	&.skip-transitions {
 		.list-group, .list-item {
-			@include skip_transitions;
+			&, * {
+				@include skip_transitions;
+			}
 		}
 	}
 }
@@ -68,78 +67,52 @@ $collapse_ease: $ease;
 		visibility: visible;
 		opacity: 1;
 		height: auto;
-//		max-height: none;
 	}
-//	.list-item {
-//		max-height: 1.5em;
-//	}
-//	.list-group {
-//		height: 2em;
-//	}
 	&.collapsed {
 		.list-item.excluded, .list-group.excluded {
 			visibility: hidden;
 			opacity: 0;
 			height: 0;
 		}
-//		.list-item.excluded {
-//			max-height: 0;
-//		}
-//		.list-group.excluded {
-//			height: 0;
-//		}
 	}
 }
 
 #keyword-list  {
 	.list-group, .list-item {
 		// wait, expand, fadein
-		transition-property: visibility, opacity, transform;
-		transition-timing-function: step-start, $collapse_ease, $collapse_ease;
-		transition-duration: $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
-		transition-delay: $delay * 2 + 0.001s, $delay * 2 + 0.001s, $delay * 1 + 0.001s;
-//		transition:
-//			visibility ($delay*2 + $duration - 0.001s) step-start ($delay*0 + 0.001s),
-//			opacity ($duration*1 - 0.001s) $collapse_ease ($delay*2 + 0.001s),
-//			transform ($duration*1 - 0.001s) $collapse_ease ($delay*1 + 0.001s);
+		@extend %changing-list;
 	}
 	&.collapsed {
 		.list-group.excluded, .list-item.excluded {
 			// fadeout, collapse, wait
-			transition-timing-function: step-end, $collapse_ease, step-end;//$collapse_ease;
-			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
-//			transition:
-//				visibility ($delay*2 + $duration - 0.001s) step-end ($delay*0 + 0.001s) ,
-//				opacity ($duration*1 - 0.001s) $collapse_ease ($delay*0 + 0.001s),
-//				transform ($duration*1 - 0.001s) $collapse_ease ($delay*1 + 0.001s);
+			@extend %changing-list-excluded;
 		}
 	}
-//	&.entering {
-//		.list-group, .list-item {
-//			transition-delay: $delay * 1 + 0.001s, $delay * 1 + 0.001s, $delay * 0 + 0.001s;
-//		}
-//	}
 	&.entering.collapsed {
 		.list-group, .list-item {
-			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
-		}
-		.list-group.excluded, .list-item.excluded {
-			transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
+			&, &.excluded {
+				@extend %entering-list;
+			}
 		}
 	}
 	&.skip-transitions {
 		.list-group, .list-item {
-			@include skip_transitions;
-		}
-	}
-}
-
-.skip-transitions {
-	#bundle-list, #keyword-list {
-		&:not(.collapsed), &.collapsed, &.entering.collapsed {
-			.list-group, .list-item {
+			&, * {
 				@include skip_transitions;
 			}
 		}
 	}
 }
+
+// .skip-transitions {
+// 	#bundle-list, #keyword-list {
+// 		&:not(.collapsed), &.collapsed, &.entering.collapsed {
+// 			.list-group, .list-item {
+// 				// @include skip_transitions;
+// 				&, * {
+// 					@include skip_transitions;
+// 				}
+// 			}
+// 		}
+// 	}
+// }

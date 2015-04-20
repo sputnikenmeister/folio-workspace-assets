@@ -13,7 +13,7 @@ var View = require("../base/View");
 /** @type {module:app/view/component/DefaultSelectableRenderer} */
 var DefaultSelectableRenderer = require("../render/DefaultSelectableRenderer");
 
-var SelectableListView = View.extend({
+var SelectableCollectionView = View.extend({
 	/** @override */
 	tagName: "ul",
 	/** @override */
@@ -89,7 +89,7 @@ var SelectableListView = View.extend({
 	 * --------------------------- */
 
 	createNullView: function () {
-		var view = new SelectableListView.NullRenderer({
+		var view = new SelectableCollectionView.NullRenderer({
 			collection: this.collection
 		});
 		this.children.add(view);
@@ -209,4 +209,4 @@ var SelectableListView = View.extend({
 	})
 });
 
-module.exports = SelectableListView;
+module.exports = SelectableCollectionView;

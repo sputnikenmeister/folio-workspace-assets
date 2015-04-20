@@ -1,0 +1,65 @@
+// -----------------------------------
+// Transition definitions
+// -----------------------------------
+
+@mixin nav_transition($delay_count: null) {
+}
+
+@mixin nav_transition_short($phase: null) {
+	@if $phase == exiting {
+		transition: transform #{$duration - 0.001s} $ease 0.001s;
+	} @else if $phase == changing {
+		transition: transform #{$duration - 0.001s} $ease #{$delay*1 + 0.001s};
+	} @else if $phase == entering {
+		transition: transform #{$duration - 0.001s} $ease #{$delay*2 + 0.001s};
+	} @else if $phase == skip {
+		transition: none 0s 0s;
+	} @else {
+		transition: transform $duration $ease 0s;
+	}
+}
+
+// -----------------------------------
+// Transition definitions
+// -----------------------------------
+$collapse_ease: $ease;
+//$collapse_ease: ease-out;
+
+%changing-list {
+	// wait, expand, fadein
+	transition-property: visibility, opacity, transform;
+	transition-timing-function: step-start, $collapse_ease, $collapse_ease;
+	/* bundle-style */
+	// transition-duration: $delay * 2 + $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
+	// transition-delay: $delay * 0 + 0.001s, $delay * 2 + 0.001s, $delay * 1 + 0.001s;
+	/* keyword-style */
+	transition-duration: $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
+	transition-delay: $delay * 2 + 0.001s, $delay * 2 + 0.001s, $delay * 1 + 0.001s;
+}
+%changing-list-excluded {
+	// fadeout, collapse, wait
+	// transition-timing-function: step-end, $collapse_ease, $collapse_ease;
+	transition-timing-function: step-end, $collapse_ease, step-end;
+	transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
+}
+%changing-list-shorthand {
+	transition:
+		visibility ($duration - 0.001s) step-start ($delay*2 + 0.001s),
+		opacity ($duration - 0.001s) $collapse_ease ($delay*2 + 0.001s),
+		transform ($duration - 0.001s) $collapse_ease ($delay*1 + 0.001s);
+}
+%changing-list-excluded-shorthand {
+	transition:
+		visibility ($duration*1 - 0.001s) step-end ($delay*0 + 0.001s) ,
+		opacity ($duration*1 - 0.001s) $collapse_ease ($delay*0 + 0.001s),
+		transform ($duration*1 - 0.001s) $collapse_ease ($delay*1 + 0.001s);
+}
+// &.entering {
+// 	.list-group, .list-item {
+// 		transition-delay: $delay * 1 + 0.001s, $delay * 1 + 0.001s, $delay * 0 + 0.001s;
+// 	}
+// }
+%entering-list {
+	transition-duration: $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
+	transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
+}

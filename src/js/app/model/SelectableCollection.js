@@ -1,5 +1,5 @@
 /**
- * @module app/model/SelectableList
+ * @module app/model/SelectableCollection
  */
 
 /** @type {module:underscore} */
@@ -9,9 +9,9 @@ var Backbone = require("backbone");
 
 /**
  * @constructor
- * @type {module:app/model/SelectableList}
+ * @type {module:app/model/SelectableCollection}
  */
-var SelectableList = Backbone.Collection.extend({
+var SelectableCollection = Backbone.Collection.extend({
 
 	/*initialize: function (models, options) {
 		options = _.defaults({}, options, {initialSelection: "none", silentInitial: true});
@@ -133,4 +133,4 @@ var SelectableList = Backbone.Collection.extend({
 
 });
 
-module.exports = SelectableList;
+module.exports = SelectableCollection;

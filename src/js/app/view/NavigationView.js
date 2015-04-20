@@ -18,12 +18,12 @@ var TouchManager = require("../control/TouchManager");
 /** @type {module:app/control/Controller} */
 var controller = require("../control/Controller");
 
-/** @type {module:app/model/collection/BundleList} */
-var bundles = require("../model/collection/BundleList");
-/** @type {module:app/model/collection/KeywordList} */
-var keywords = require("../model/collection/KeywordList");
-/** @type {module:app/model/collection/TypeList} */
-var types = require("../model/collection/TypeList");
+/** @type {module:app/model/collection/BundleCollection} */
+var bundles = require("../model/collection/BundleCollection");
+/** @type {module:app/model/collection/KeywordCollection} */
+var keywords = require("../model/collection/KeywordCollection");
+/** @type {module:app/model/collection/TypeCollection} */
+var types = require("../model/collection/TypeCollection");
 
 /** @type {module:app/view/base/View} */
 // var View = require("./base/View");
@@ -59,29 +59,30 @@ module.exports = ContainerView.extend({
 		//_.bindAll(this, "_onVPanFinal", "_onVPan");
 		this.touch = TouchManager.getInstance();
 
-		_.bindAll(this, "_onSitenameClick");
-
-		this.$sitename = this.$("#site-name");
-		this.$sitename.on("click", this._onSitenameClick);
-		this.$sitename.wrap("<div id=\"site-name-wrapper\" class=\"transform-wrapper\"></div>");
-
+		this.sitename = this.assignSitenameButton();
+		this.bundleList = this.createBundleCollection();
+		this.keywordList = this.createKeywordCollection();
 		// this.bundlePager = this.createBundlePager();
-		this.bundleList = this.createBundleList();
-		this.keywordList = this.createKeywordList();
+		this.children = [this.bundleList, this.keywordList];
 		// this.bundleList.renderNow();
 		// this.keywordList.renderNow();
 
-		this.children = [this.bundleList, this.keywordList];
+		this.hGroupings = [];
+		var nodes = this.keywordList.el.querySelectorAll(".list-group span");
+		for (var i = 0, num = nodes.length; i != num; i++) {
+			this.hGroupings[i] = nodes[i];
+		}
+		this.hLists = [this.bundleList.wrapper, this.keywordList.wrapper];
+		this.hTransitionables = this.hGroupings.concat(this.hLists);
+		this.vTransitionables = [this.bundleList.el, this.keywordList.el, this.sitename.el];
 
-		// this.$hTransitionables = this.$(".transform-wrapper, .grouped .list-group span");
-		// this.$vTransitionables = this.$(".filterable");
-		this.vTransitionables = this.el.querySelectorAll("#site-name, .filterable");
-		this.hTransitionables = this.el.querySelectorAll(
-			"#bundle-list-wrapper, #keyword-list-wrapper, .grouped .list-group span");
+		// this.vTransitionables = this.el.querySelectorAll("#site-name, #bundle-list, #keyword-list");
+		// this.hTransitionables = this.el.querySelectorAll(
+		// 	"#bundle-list-wrapper, #keyword-list-wrapper, #keyword-list .list-group span");
 
 		this._collapsedOffsetY = 300;
-		// this.initializeResizeHandlers();
 
+		// this.initializeResizeHandlers();
 		// this.addTransitionHandlers();
 		this.listenTo(bundles, {
 			"select:one": this._onSelectOne,
@@ -111,43 +112,33 @@ module.exports = ContainerView.extend({
 	 * Model event handlers
 	 * --------------------------- */
 
-	addTransitionHandlers: function() {
-		// this.listenTo(bundles, "deselect:one deselect:none", function(bundle) {
-		// 	console.log("NavigationView.addTransitionHandlers deselect:" + (bundle?"one":"none"));
-		// 	this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
-		// });
-		// this.listenTo(bundles, "deselect:none", function() {
-		// 	// this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_CHANGING);
-		// 	this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_ENTERING);
-		// });
-		// this.listenTo(bundles, "deselect:one", function() {
-		// 	this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_CHANGING);
-		// 	// this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_EXITING);
-		// });
-
-		// this.listenTo(bundles, "select:one", function() {
-		// 	this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
-		// 	this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_ENTERING);
-		// });
-		// this.listenTo(bundles, "select:none", function() {
-		// 	this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
-		// 	this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_EXITING);
-		// });
-	},
+	// addTransitionHandlers: function() {
+	// 	this.listenTo(bundles, "deselect:none", function() {
+	// 		this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
+	// 		this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_ENTERING);
+	// 	});
+	// 	this.listenTo(bundles, "deselect:one", function() {
+	// 		this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
+	// 		this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_EXITING);
+	// 	});
+	// },
 
 	_onDeselectOne: function(bundle) {
 		console.log("NavigationView._onDeselectOne");
-		this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
-		this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_EXITING);
+		this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_PARENT);
+		this.runTransformTransition(this.hGroupings, Globals.TRANSIT_EXITING);
+		this.runTransformTransition(this.keywordList.wrapper, Globals.TRANSIT_EXITING);
+		this.runTransformTransition(this.bundleList.wrapper, Globals.TRANSIT_ENTERING);
 		// this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_EXITING);
 		// this.runTransformTransition(this.hTransitionables,
 		// 	(this.isCollapsed()? Globals.TRANSIT_ENTERING : Globals.TRANSIT_EXITING);
 		// this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
+		this.stopListening(bundle.get("images"), "deselect:one deselect:none", this._onImageChange);
 	},
 
 	_onDeselectNone: function() {
 		console.log("NavigationView._onDeselectNone");
-		this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
+		this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_PARENT);
 		// this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_EXITING);
 		// this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
 		// this.setCollapsed(true);
@@ -159,14 +150,24 @@ module.exports = ContainerView.extend({
 		this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_ENTERING);
 		this.setCollapsed(true);
 		this.keywordList.filterBy(bundle);
+		// this.keywordList.render();
+		this.listenTo(bundle.get("images"), "deselect:one deselect:none", this._onImageChange);
 	},
 
 	_onSelectNone: function() {
 		this.setCollapsed(false);
 		this.keywordList.filterBy(null);
+		// this.keywordList.render();
 
 		this.touch.off("panstart", this._onHPanStart);
 		this.touch.off("vpanstart", this._onVPanStart);
+	},
+
+	_onImageChange: function() {
+		this.runTransformTransition(this.keywordList.wrapper, Globals.TRANSIT_IMMEDIATE);
+		if (!this.isCollapsed()) {
+			this.runTransformTransition([this.bundleList.wrapper, this.sitename.el], Globals.TRANSIT_IMMEDIATE);
+		}
 	},
 
 	/* --------------------------- *
@@ -201,7 +202,7 @@ module.exports = ContainerView.extend({
 			// this.transforms.clear(this.keywordList.wrapper);
 
 			this.transforms.release(this.keywordList.wrapper);
-			this.transforms.capture(this.keywordList.wrapper);
+			// this.transforms.capture(this.keywordList.wrapper);
 			this._onHPanMove(ev);
 		}
 	},
@@ -222,6 +223,7 @@ module.exports = ContainerView.extend({
 	_onHPanFinal: function(ev) {
 		this.enableTransitions(this.keywordList.wrapper);
 
+		// WARNING: transition will be set twice if there is a new selection!
 		this.runTransformTransition([this.keywordList.wrapper], Globals.TRANSIT_IMMEDIATE, false);
 		this.transforms.clear(this.keywordList.wrapper);
 
@@ -262,6 +264,7 @@ module.exports = ContainerView.extend({
 			this.transforms.capture(view.el);
 		}, this);
 		this._onVPanMove(ev);
+
 		this.touch.on("vpanmove", this._onVPanMove);
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
 	},
@@ -296,7 +299,7 @@ module.exports = ContainerView.extend({
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapse/expand
 		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-		var moveFactor = this.isCollapsed()? PAN_MOVE_FACTOR : 1 - PAN_MOVE_FACTOR;
+		var moveFactor = this.isCollapsed()? PAN_MOVE_FACTOR : (1-PAN_MOVE_FACTOR)*0.5;
 
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
@@ -313,10 +316,11 @@ module.exports = ContainerView.extend({
 		}
 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
 
+		this.transforms.moveAll(void 0, delta);
 		//this.transforms.move(this.el, void 0, delta);
-		_.each(this.children, function(view) {
-			this.transforms.move(view.el, void 0, delta);
-		}, this);
+		// _.each(this.children, function(view) {
+		// 	this.transforms.move(view.el, void 0, delta);
+		// }, this);
 	},
 
 	_onVPanFinal: function(ev) {
@@ -324,7 +328,7 @@ module.exports = ContainerView.extend({
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 
 		if (this.willCollapseChange(ev)) {
-			this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
+			this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_PARENT);
 			this.runTransformTransition(this.hTransitionables,
 				this.isCollapsed()? Globals.TRANSIT_IMMEDIATE : Globals.TRANSIT_ENTERING);
 			this.setCollapsed(!this.isCollapsed());
@@ -333,10 +337,11 @@ module.exports = ContainerView.extend({
 			this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_IMMEDIATE);
 		}
 
-		_.each(this.children, function(view) {
-		//	this.enableTransitions(view);
-			this.transforms.clear(view.el);
-		}, this);
+		this.transforms.clearAll();
+		// _.each(this.children, function(view) {
+		// //	this.enableTransitions(view);
+		// 	this.transforms.clear(view.el);
+		// }, this);
 	},
 
 	willCollapseChange: function(ev) {
@@ -348,14 +353,26 @@ module.exports = ContainerView.extend({
 	 * Components
 	 * ------------------------------- */
 
+	assignSitenameButton: function() {
+		_.bindAll(this, "_onSitenameClick");
+		var pseudo = {};
+		pseudo.$el = this.$("#site-name");
+		pseudo.$el.on("click", this._onSitenameClick);
+		pseudo.$el.wrap("<div id=\"site-name-wrapper\" class=\"transform-wrapper\"></div>");
+		pseudo.el = pseudo.$el[0];
+		pseudo.wrapper = pseudo.el.parentElement;
+		pseudo.$wrapper = pseudo.$el.parent();
+		return pseudo;
+	},
+
 	/**
 	 * bundle-list
 	 */
-	createBundleList: function() {
+	createBundleCollection: function() {
 		var view = new FilterableListView({
 			el: "#bundle-list",
 			collection: bundles,
-			// collapsed is set later by showBundleItem/showBundleList
+			// collapsed is set later by showBundleItem/showBundleCollection
 			//collapsed: bundles.selected,
 			collapsed: false,
 			filterBy: keywords.selected,
@@ -378,7 +395,7 @@ module.exports = ContainerView.extend({
 	/**
 	 * keyword-list
 	 */
-	createKeywordList: function() {
+	createKeywordCollection: function() {
 		var view = new GroupingListView({
 			el: "#keyword-list",
 			collection: keywords,

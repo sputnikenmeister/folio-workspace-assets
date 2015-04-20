@@ -39,12 +39,12 @@ $(document).ready(function($) {
 	var Globals = require("./control/Globals");
 	$.fx.speeds._default = Globals.TRANSITION_DURATION;
 
-	/** @type {module:app/model/collection/TypeList} */
-	var typeList = require("./model/collection/TypeList");
-	/** @type {module:app/model/collection/KeywordList} */
-	var keywordList = require("./model/collection/KeywordList");
-	/** @type {module:app/model/collection/BundleList} */
-	var bundleList = require("./model/collection/BundleList");
+	/** @type {module:app/model/collection/TypeCollection} */
+	var typeList = require("./model/collection/TypeCollection");
+	/** @type {module:app/model/collection/KeywordCollection} */
+	var keywordList = require("./model/collection/KeywordCollection");
+	/** @type {module:app/model/collection/BundleCollection} */
+	var bundleList = require("./model/collection/BundleCollection");
 
 	var types = window.bootstrap["types-all"];
 	var keywords = window.bootstrap["keywords-all"];

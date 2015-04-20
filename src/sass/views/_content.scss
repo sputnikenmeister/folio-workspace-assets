@@ -2,66 +2,33 @@
 // Content
 // -----------------------------------
 
-$nav_collapse_extra: 26rem;
-
-#content,
-#content:not(.expanded) {
-	.image-caption-stack, .image-carousel {
-		@include nav_transition(entering);
-	}
-	.image-carousel {
-		@include nav_translate(0,0);
-	}
-	@include media($desktop_small) {
-	}
-}
-
-.with-bundle #content.expanded {
-	.image-caption-stack, .image-carousel {
-		@include nav_transition(exiting);
-	}
-	.image-carousel {
-		@include nav_translate(0, $nav_collapse_extra);
-	}
-	@include media($desktop_small) {
-	}
-}
-
-.expanded .image-item {
-	&.selected, &.candidate, .empty-item.selected + & {
-		&.done img {
-			opacity: 0;
-		}
-		// &.done .placeholder {
-		// 	transition: none 0s 0s;
-		// 	visibility: visible;
-		// }
-	}
-}
-
 // - - - - - - - - - - - - - - - - - -
-// image-pager
+// leaf elements
 // - - - - - - - - - - - - - - - - - -
-//@import "components/_selectable.dots-fontello.scss";
 
-/*.image-pager {
-	position: absolute;
-//	top: -1.5rem; height: 1.5rem;
-    top: -3rem; height: 1.5rem;
-}*/
+.carousel-item.empty-item .content p,
+.stack .content {
+	@extend %leaf-content;
+}
+
+.carousel-item.image-item {
+	.sizing {
+		margin-left: $hu;
+		margin-right: $hu;
+	}
+}
 
 // - - - - - - - - - - - - - - - - - -
 // image-caption-stack
 // - - - - - - - - - - - - - - - - - -
 
 .image-caption-stack {
-	position: absolute;
-	top: 2.25rem;
 	.content {
 		top: 1.5rem;
 		position: absolute;
 		display: block;
 		p {
+			margin-left: -1px;
 			@include heading_font($size: 20px, $weight: 300, $lead: 26px);
 			//@include heading_font($size: 1.666rem, $weight: 300, $lead: 2rem);
 		}
@@ -75,47 +42,6 @@ $nav_collapse_extra: 26rem;
 	}
 }
 
-.image-caption-stack {
-	left: calc(50% - #{$page_width/2});
-	width: $page_width;
-	.content {
-		width: $page_width;
-	}
-	@include media($desktop_small) {
-		left: calc(50% - #{$page_width_large/2});
-		width: $page_width_large;
-		.content {
-			width: $main_width_large;
-		}
-	}
-}
-
-#content, #content:not(.expanded) {
-	.image-caption-stack {
-		@include nav_translate(-1px, #{$nav_height_portrait - 3.75rem});
-	}
-	@include media($desktop_small) {
-		.image-caption-stack {
-			@include nav_translate($aside_width_large - 1px, 0);
-		}
-	}
-}
-.with-bundle #content.expanded {
-	.image-caption-stack {
-		@include nav_translate(-1px, #{$nav_height_portrait - 3.75rem + $nav_collapse_extra});
-	}
-	@include media($desktop_small) {
-		.image-caption-stack {
-			// @include nav_translate($aside_width_large - 1px, #{$nav_height_landscape - 3.75rem + $nav_collapse_extra});
-			@include nav_translate(-1px, #{$nav_height_landscape + $nav_collapse_extra});
-		}
-	}
-}
-// .skip-transitions .image-caption-stack {
-// 	@include nav_transition(skip);
-// 	// @include skip_transitions();
-// }
-
 // -----------------------------------
 // Carousel(s)
 // -----------------------------------
@@ -123,79 +49,33 @@ $nav_collapse_extra: 26rem;
 @import "components/_carousel";
 
 // - - - - - - - - - - - - - - - - - -
-// image-carousel, label-carousel
-//  - horizontal layout
-// - - - - - - - - - - - - - - - - - -
-
-//.label-carousel,
-.image-carousel {
-	width: 100%;
-	min-width: $page_width;
-	.carousel-item {
-		//padding: 1.5rem $hu;
-		left: calc(50% - #{$page_width/2});
-		width: $page_width;
-	}
-	.empty-item {
-		width: $main_width - $aside_width + $hu*4 - 9px;
-	}
-	@include media($desktop_small) {
-		min-width: $page_width_large;
-		.carousel-item {
-			left: calc(50% - #{$page_width_large/2});
-			width: $page_width_large;
-			padding-left: $aside_width_large;
-			padding-right: 0;
-		}
-		.empty-item {
-			width: $page_width_large - $hu*2 - 7px;
-			padding-left: 0;
-			padding-right: $aside_width_large - $hu*1;
-		}
-	}
-}
-// .skip-transitions .image-carousel {
-// 	@include nav_transition(skip);
-// 	// @include skip_transitions();
-// }
-
-// - - - - - - - - - - - - - - - - - -
 // image-carousel
-//  - vertical layout
-//  - children
 // - - - - - - - - - - - - - - - - - -
 
-//#content .image-carousel {
 .image-carousel {
 	position: absolute;
 	overflow: hidden;
-//	box-sizing: content-box;
-//	top: 0;
+	// box-sizing: content-box;
+	// top: 0;
+	// height: 100%;
+	// height: calc(100% - 3rem);
 	bottom: 0;
-//	height: 100%;
-//	height: calc(100% - 3rem);
 	padding-top: 1.5rem;
 	padding-bottom: 3rem;//1.5rem;
-
-	top: $nav_height_portrait + $header_height;
 	.carousel-item {
-//		padding-top: 1.5rem;
-//		padding-bottom: 1.5rem;
+		// padding-top: 1.5rem;
+		// padding-bottom: 1.5rem;
 		height: calc(100% - 4.5rem);//3rem);
 	}
 	.empty-item {
 		overflow: hidden;
 		height: auto;
-		max-height: calc(100% - 3rem);
+		max-height: calc(100% - 4.5rem);
 		.content p {
-//			height: 100%;
-//			overflow: hidden;
-//			@extend %large_text;
-
-			transform: translate3d(-1.5px,0,0);
-//			transform: translateX(-1.1px);
-//			margin-left: -2px;
-//			margin-right: 2px;
+			// height: 100%;
+			// overflow: hidden;
+			// transform: translate3d(-1.5px,0,0);
+			margin-left: -1.5px;
 			margin-top: 0;
 			margin-bottom: 9px;
 			@include heading_font($weight: 300, $size: 22px, $lead: 24px);
@@ -203,51 +83,42 @@ $nav_collapse_extra: 26rem;
 		}
 	}
 	@include media($desktop_small) {
-		top: $nav_height_landscape + $header_height;
 		.empty-item .content p {
 			font-size: 28px;
 			line-height: 30px;
-//			letter-spacing: -0.5px;
 			&:first-child { margin-top: -4px; }
 		}
 	}
 }
 
 // - - - - - - - - - - - - - - - - - -
-// label-carousel
-//  - vertical layout
-//  - children
+// image-pager
 // - - - - - - - - - - - - - - - - - -
 
-/*.label-carousel {
-	position: absolute;
-	padding-top: 0;
-	padding-bottom: 0;
-	//top: -1.5rem;
-	.carousel-item {
-		.content {
-			@include heading_font($size: 20px, $weight: 300, $lead: 24px);
-			//margin-left: -1px; margin-right: -1px;
-			transform: translateX(-1px);
-		}
-	}
-	.empty-item {
-		height: 100%;
-	}
-}*/
+//@import "components/_selectable.dots-fontello.scss";
+// .image-pager {
+// 	position: absolute;
+// 	// top: -1.5rem; height: 1.5rem;
+// 	top: -3rem; height: 1.5rem;
+// }
 
-// -----------------------------------
-// leaf elements
-// -----------------------------------
+// - - - - - - - - - - - - - - - - - -
+// label-carousel
+// - - - - - - - - - - - - - - - - - -
 
-.carousel-item.empty-item .content p,
-.stack .content {
-	@extend %leaf-content;
-}
-
-.carousel-item.image-item {
-	.sizing {
-		margin-left: $hu;
-		margin-right: $hu;
-	}
-}
+// .label-carousel {
+// 	position: absolute;
+// 	padding-top: 0;
+// 	padding-bottom: 0;
+// 	//top: -1.5rem;
+// 	.carousel-item {
+// 		.content {
+// 			@include heading_font($size: 20px, $weight: 300, $lead: 24px);
+// 			//margin-left: -1px; margin-right: -1px;
+// 			transform: translateX(-1px);
+// 		}
+// 	}
+// 	.empty-item {
+// 		height: 100%;
+// 	}
+// }

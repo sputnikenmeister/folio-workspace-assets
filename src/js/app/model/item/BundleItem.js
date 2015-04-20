@@ -12,8 +12,8 @@ var stripTags = require("../../utils/strings/stripTags");
 /** @type {module:app/utils/strings/parseTaglist} */
 var parseSymAttrs = require("../../utils/strings/parseSymAttrs");
 
-/** @type {module:app/model/SelectableList} */
-var SelectableList = require("../../model/SelectableList");
+/** @type {module:app/model/SelectableCollection} */
+var SelectableCollection = require("../../model/SelectableCollection");
 /** @type {module:app/model/item/ImageItem} */
 var ImageItem = require("../item/ImageItem");
 
@@ -43,7 +43,7 @@ module.exports = Backbone.Model.extend({
 				_.each(value, function(o) {
 					o.bundle = this;
 				}, this);
-				set(key, new SelectableList(value, {
+				set(key, new SelectableCollection(value, {
 					model: ImageItem,
 					comparator: "o"
 				}), options);
