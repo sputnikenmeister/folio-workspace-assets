@@ -53,6 +53,7 @@ var Controller = Backbone.Router.extend({
 	/** @override */
 	initialize: function (options) {
 		this._classProviders = [];
+		this._initialBodyClasses = document.body.className;
 
 		this.initializeBrowserTitle();
 		this.initializeBundleStyles();
@@ -95,7 +96,7 @@ var Controller = Backbone.Router.extend({
 	 * --------------------------- */
 
 	_applyClassProviders: function(bundle, image) {
-		var classes = [];
+		var classes = [this._initialBodyClasses];
 		_.each(this._classProviders, function(fn) {
 			fn(classes, bundle, image);
 		});

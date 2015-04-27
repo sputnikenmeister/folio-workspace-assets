@@ -171,7 +171,7 @@ var ContentView = ContainerView.extend({
 	},
 
 	// _onVPanMove1: function (ev) {
-	// 	var delta = ev.deltaY + ev.thresholdOffsetY;
+	// 	var delta = ev.thresholdDeltaY;
 	// 	var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 	// 	// check if direction is aligned with collapse/expand
 	// 	var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
@@ -197,11 +197,11 @@ var ContentView = ContainerView.extend({
 	// },
 
 	_onVPanMove: function (ev) {
-		var delta = ev.deltaY + ev.thresholdOffsetY;
+		var delta = ev.thresholdDeltaY;
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapse/expand
 		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-		// var moveFactor = this.isCollapsed()? PAN_MOVE_FACTOR : (1-PAN_MOVE_FACTOR)*0.5;
+		// var moveFactor = this.isCollapsed()? PAN_MOVE_FACTOR : (1-PAN_MOVE_FACTOR);
 
 		delta = Math.abs(delta); // remove sign
 		// delta *= moveFactor;
@@ -246,8 +246,8 @@ var ContentView = ContainerView.extend({
 	},
 
 	willCollapseChange: function(ev) {
-		var delta = ev.deltaY + ev.thresholdOffsetY;
-		return ev.type == "vpanend"? this.isCollapsed()? delta > COLLAPSE_THRESHOLD : delta < -COLLAPSE_THRESHOLD : false;
+		return ev.type == "vpanend"? this.isCollapsed()?
+			ev.thresholdDeltaY > COLLAPSE_THRESHOLD : ev.thresholdDeltaY < -COLLAPSE_THRESHOLD : false;
 	},
 
 	// /* -------------------------------
@@ -278,10 +278,12 @@ var ContentView = ContainerView.extend({
 		var endProps = {delay: Globals.ENTERING_DELAY, opacity: 1};
 		// Show views
 		_.each(this.children, function(view) {
-			this.transforms.init(view.el);
+			this.transforms.add(view.el);
 			this.transitionables.push(view.el);
 			this.listenToOnce(view, "view:remove", this.onChildRemove);
-			view.render().$el.appendTo(this.el);
+			this.$el.append(view.el);
+			view.render();
+			// view.render().$el.appendTo(this.el);
 			if (!skipAnimation) {
 				view.$el.css(startProps).transit(endProps);
 			}
@@ -289,7 +291,7 @@ var ContentView = ContainerView.extend({
 	},
 
 	removeChildren: function (bundle, skipAnimation) {
-//		var startProps = {position: "absolute"};
+		var startProps = {position: "absolute"};
 		var endProps = {delay: Globals.EXITING_DELAY, opacity: 0};
 		var txStyle = this.getPrefixedStyle("transform");
 
@@ -297,11 +299,11 @@ var ContentView = ContainerView.extend({
 			if (skipAnimation) {
 				view.remove();
 			} else {
-//				startProps.top = view.el.offsetTop;
-//				startProps.left = view.el.offsetLeft;
+				startProps.top = view.el.offsetTop;
+				startProps.left = view.el.offsetLeft;
 				endProps[txStyle] = view.$el.css(txStyle);
 				view.$el
-//					.css(startProps)
+					.css(startProps)
 					.transit(endProps)
 					.queue(function(next) {
 						view.remove(); next();

@@ -441,14 +441,14 @@ var Carousel = DeferredView.extend({
 	/** @param {Object} ev */
 	_onPanStart: function (ev) {
 		this.commitScrollSelection();
-		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX + ev.thresholdOffsetX : ev.deltaY + ev.thresholdOffsetY;
+		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.thresholdDeltaX : ev.thresholdDeltaY;
 		this.$el.addClass("panning scrolling");
 		this.scrollByNow(delta, Carousel.IMMEDIATE);
 	},
 
 	/** @param {Object} ev */
 	_onPanMove: function (ev) {
-		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX + ev.thresholdOffsetX : ev.deltaY + ev.thresholdOffsetY;
+		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.thresholdDeltaX : ev.thresholdDeltaY;
 		var view = (ev.offsetDirection & this._precedingDir)? this._precedingView : this._followingView;
 
 		if (this._panCandidateView !== view) {

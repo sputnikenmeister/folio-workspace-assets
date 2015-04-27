@@ -18,6 +18,18 @@
 		transition: transform $duration $ease 0s;
 	}
 }
+.transform-exiting {
+	@include nav_transition_short(exiting);
+}
+.transform-changing {
+	@include nav_transition_short(changing);
+}
+.transform-entering {
+	@include nav_transition_short(entering);
+}
+.transform-immediate {
+	@include nav_transition_short();
+}
 
 // -----------------------------------
 // Transition definitions

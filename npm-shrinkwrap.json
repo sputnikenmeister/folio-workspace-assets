@@ -20,7 +20,7 @@
       "version": "*"
     },
     "jquery": {
-      "version": "*"
+      "version": "2.1.1"
     },
     "jquery-hammerjs": {
       "version": "*"

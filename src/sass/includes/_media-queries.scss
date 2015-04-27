@@ -3,27 +3,60 @@
 // ------------------------------------
 
 @mixin media($query) {
-	@media #{$query} {
+	// @media #{map-get($query, "query")} {
+	// 	@content;
+	// }
+	@at-root .#{map-get($query, "class") &} {
 		@content;
 	}
 }
-						/* Smartphones (portrait and landscape)  */
-$smartphone: 			"only screen and (min-device-width : 320px) and (max-device-width : 480px)";
-						/* Smartphones (landscape)  */
-$smartphone_landscape: 	"only screen and (min-width : 321px)";
-						/* Smartphones (portrait)  */
-$smartphone_portrait: 	"only screen and (max-width : 320px)";
-						/* iPads (portrait and landscape)  */
-$ipad: 					"only screen and (min-device-width : 768px) and (max-device-width : 1024px)";
-						/* iPads (landscape)  */
-$ipad_landscape: 		"only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape)";
-						/* iPads (portrait)  */
-$ipad_portrait: 		"only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : portrait)";
-						/* Desktops and laptops  */
-$desktop_small:			"only screen and (min-width : 1024px)";
-						/* Desktops and laptops  */
-$desktop_medium:		"only screen and (min-width : 1224px)";
-						/* Large screens  */
-$desktop_large: 		"only screen and (min-width : 1824px)";
-						/* iPhone 4  */
-$iphone4: 				"only screen and (-webkit-min-device-pixel-ratio : 1.5), only screen and (min-device-pixel-ratio : 1.5)";
+/* Smartphones (portrait and landscape)  */
+$smartphone: (
+	class: "smartphone",
+	query: "only screen and (min-device-width : 320px) and (max-device-width : 480px)"
+);
+/* Smartphones (landscape)  */
+$smartphone-landscape: (
+	class: "smartphone-landscape",
+	query: "only screen and (min-width : 321px)"
+);
+/* Smartphones (portrait)  */
+$smartphone-portrait: (
+	class: "smartphone-portrait",
+	query: "only screen and (max-width : 320px)"
+);
+/* iPads (portrait and landscape)  */
+$ipad: (
+	class: "ipad",
+	query: "only screen and (min-device-width : 768px) and (max-device-width : 1024px)"
+);
+/* iPads (landscape)  */
+$ipad-landscape: (
+	class: "ipad-landscape",
+	query: "only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape)"
+);
+/* iPads (portrait)  */
+$ipad-portrait: (
+	class: "ipad-portrait",
+	query: "only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : portrait)"
+);
+/* Desktops and laptops  */
+$desktop-small: (
+	class: "desktop-small",
+	query: "only screen and (min-width : 1024px)"
+);
+/* Desktops and laptops  */
+$desktop-medium: (
+	class: "desktop-medium",
+	query: "only screen and (min-width : 1224px)"
+);
+/* Large screens  */
+$desktop-large: (
+	class: "desktop-large",
+	query: "only screen and (min-width : 1824px)"
+);
+/* iPhone 4  */
+$iphone4: (
+	class: "iphone4",
+	query: "only screen and (-webkit-min-device-pixel-ratio : 1.5), only screen and (min-device-pixel-ratio : 1.5)"
+);

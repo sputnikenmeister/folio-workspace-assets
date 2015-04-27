@@ -65,15 +65,18 @@ module.exports = View.extend({
 				if (idx2 != -1) {
 					this.transitions.splice(idx2, 1);
 				} else {
-					console.warn("runTransformTransition > callback: element already removed", target);
+					console.warn("runTransformTransition > callback: element already removed",
+						target.id || target.className, target);
 				}
 
+				// target.classList.remove(transition.className);
 				if (target.style[transitionProp] == val) {
 					target.style[transitionProp] = "";
 					// console.log("runTransformTransition: clearing '" + transitionProp + "'");
 				} else {
 					console.log("runTransformTransition: '" + transitionProp + "' has changed from '" +
-						val + "' to '" + target.style[transitionProp] + "', leaving as-is.");
+						val + "' to '" + target.style[transitionProp] + "', leaving as-is.",
+						target.id || target.className, target);
 				}
 			}, this);
 
@@ -83,12 +86,14 @@ module.exports = View.extend({
 				target = targets[i];
 				idx1 = this.transitions.indexOf(target);
 				if (idx1 != -1) {
-					console.warn("runTransformTransition: element already transitioning", target);
+					console.warn("runTransformTransition: element already transitioning",
+						target.id || target.className, target);
 				} else {
 					idx1 = this.transitions.length;
 					this.transitions[idx1] = target;
 				}
 
+				// target.classList.add(transition.className);
 				target.style[transitionProp] = val;
 				if (useEvent) {
 					this.onTransitionEnd(target, transformProp, callback, timeout);

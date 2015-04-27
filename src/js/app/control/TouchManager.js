@@ -153,11 +153,8 @@ Hammer.inherit(SmoothPan, Hammer.Pan, {
 		}
 		input.thresholdOffsetX = this.thresholdOffsetX;
 		input.thresholdOffsetY = this.thresholdOffsetY;
-//		input.thresholdOffset = this.thresholdOffset;
-//		input.thres = {
-//			deltaX: input.deltaX + this.thresholdOffsetX,
-//			deltaY: input.deltaY + this.thresholdOffsetY,
-//		};
+		input.thresholdDeltaX = input.deltaX + this.thresholdOffsetX,
+		input.thresholdDeltaY = input.deltaY + this.thresholdOffsetY,
 
         this.pX = input.deltaX;
         this.pY = input.deltaY;

@@ -1,8 +1,12 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:backbone} */
-var Backbone = require("backbone");
+var $ = require("jquery");
 
+/** @type {module:jshashtable} */
+// var HashTable = require("jshashtable");
+/** @type {module:hashes.HashTable} */
+// var HashTable = require('hashes').HashTable;
 
 /** @type {module:app/utils/css/prefixedStyleName} */
 // var prefixedStyleName = require("../utils/css/prefixedStyleName");
@@ -16,6 +20,14 @@ var camelToDashed = require("../utils/strings/camelToDashed");
 var _tidSeed = 0;
 var _transformProp = null;
 var _transformStyle = null;
+
+function _initPrefixed(el) {
+	if (_transformProp === null) {
+		_transformProp = prefixedProperty(el.style, "transform");
+		_transformStyle = (_transformProp != "transform")?
+			"-" + camelToDashed(_transformProp): "transform";
+	}
+}
 // var _captureProps = ["transform"];
 // var _captureStyles = ["transform"];
 
@@ -26,39 +38,72 @@ var _transformStyle = null;
 function TransformHelper() {
 	this._elements = [];
 	this._values = [];
+	// this._store = new HashTable();
 }
 
 TransformHelper.prototype = {
+
+	add: function(el) {
+		this._add(el);
+	},
+
+	get: function(el) {
+		return this._get(el);
+	},
+
+	destroy: function(el) {
+		this._remove(el);
+	},
 
 	/* -------------------------------
 	 * Private
 	 * ------------------------------- */
 
-	_init: function(el) {
+	// _add_ht: function(el) {
+	// 	if (!this._store.containsKey(el)) {
+	// 		_addPrefixed(el);
+	// 		this._store.put(el, {el: el, $el: $(el)})
+	// 	}
+	// 	return this._store.get(el);
+	// },
+	//
+	// _get_ht: function(el) {
+	// 	return this._add(el);
+	// },
+	//
+	// _remove_ht: function(el) {
+	// 	this._store.remove(el);
+	// },
+
+	_add: function(el) {
 		var idx = this._elements.indexOf(el);
 		if (el && idx == -1) {
-			if (_tidSeed == 0) {
-				_transformProp = prefixedProperty(el.style, "transform");
-				_transformStyle = (_transformProp != "transform")?
-					"-" + camelToDashed(_transformProp): "transform";
-			}
+			_initPrefixed(el);
 			idx = this._elements.length;
 			this._elements[idx] = el;
-			this._values[idx] = {
-				id: _tidSeed++,
-				el: el,
-				$el: Backbone.$(el)
-			};
+			this._values[idx] = { id: _tidSeed++, el: el, $el: $(el) };
 		}
 		return idx;
 	},
 
-	_getValues: function(el) {
+	_get: function(el) {
 		var idx = this._elements.indexOf(el);
 		if (idx == -1) {
-			idx = this._init(el);
+			idx = this._add(el);
 		}
 		return this._values[idx];
+	},
+
+	_remove: function(el) {
+		var o, idx = this._elements.indexOf(el);
+		if (idx != -1) {
+			o = this._values[idx];
+			if (o.offset) {
+				this._clearElementTransform(o.$el);
+			}
+			this._elements.splice(idx, 1);
+			this._values.splice(idx, 1);
+		}
 	},
 
 	/* -------------------------------
@@ -66,7 +111,7 @@ TransformHelper.prototype = {
 	 * ------------------------------- */
 
 	hasTransition: function(el) {
-		var o = this._getValues(el), ret = false;
+		var o = this._get(el), ret = false;
 		if (o.transition === void 0) {
 			o.transition = this._parseTransitionValues(o);
 			ret = o.transition.delay + o.transition.duration > 0;
@@ -205,10 +250,10 @@ TransformHelper.prototype = {
 	move: function(el, x, y){
 		// if (_.isArray(el)) {
 		// 	for (var i = 0; i < el.length; ++i) {
-		// 		this._move(this._getValues(el[i]), x, y);
+		// 		this._move(this._get(el[i]), x, y);
 		// 	}
 		// } else if (el instanceof window.HTMLElement)
-		this._move(this._getValues(el), x, y);
+		this._move(this._get(el), x, y);
 	},
 
 	moveAll: function(x, y) {
@@ -218,7 +263,7 @@ TransformHelper.prototype = {
 	},
 
 	capture: function(el) {
-		this._capture(this._getValues(el));
+		this._capture(this._get(el));
 	},
 
 	captureAll: function() {
@@ -228,7 +273,7 @@ TransformHelper.prototype = {
 	},
 
 	release: function(el) {
-		this._release(this._getValues(el));
+		this._release(this._get(el));
 	},
 
 	releaseAll: function() {
@@ -238,7 +283,7 @@ TransformHelper.prototype = {
 	},
 
 	clear: function(el) {
-		this._clear(this._getValues(el));
+		this._clear(this._get(el));
 	},
 
 	clearAll: function() {
@@ -247,28 +292,12 @@ TransformHelper.prototype = {
 		}
 	},
 
-	init: function(el) {
-		this._init(el);
-	},
-
-	destroy: function(el) {
-		var o, idx = this._elements.indexOf(el);
-		if (idx != -1) {
-			o = this._values[idx];
-			if (o.offset) {
-				this._clearElementTransform(o.$el);
-			}
-			this._elements.splice(idx, 1);
-			this._values.splice(idx, 1);
-		}
-	},
-
 	/* -------------------------------
 	 * old
 	 * ------------------------------- */
 
 	/*update: function(el) {
-		var o = this._getValues(el);
+		var o = this._get(el);
 		if (o.offset) {
 			if (!o.captured) {
 				console.info("TransformHelper._updateCSSTransform", "captured values not set: capturing now");
@@ -304,7 +333,7 @@ TransformHelper.prototype = {
 		var css, prop, ret;
 		//css = window.getComputedStyle(el);
 		//prop = css.webkitTransition || css.MozTransitionProperty || css.webkitTransitionProperty || css.MozTransition || css.transition;
-		css = this._getValues(el).$el.css(["transition-property", "transition"]);
+		css = this._get(el).$el.css(["transition-property", "transition"]);
 		prop = css["transition-property"] || css["transition"];
 		ret = prop.indexOf("transform") != -1;
 		console.log("TransformHelper._hasCSSTransition", (ret?"has":"has no") + " transition", css);

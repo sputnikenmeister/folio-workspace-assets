@@ -10,10 +10,8 @@
 	@extend %leaf-content;
 }
 
-// - - - - - - - - - - - - - - - - - -
 // site-name
 // - - - - - - - - - - - - - - - - - -
-
 #site-name {
 	@include heading_font();
 	position: relative;
@@ -24,17 +22,12 @@
 }
 
 // -----------------------------------
-// FilterableList(s) (.filterable):
-// 	- #bundle-list
-//	- #keyword-list
+// FilterableList
 // -----------------------------------
-
 @import "../components/_filterable";
 
+// bundle-list
 // - - - - - - - - - - - - - - - - - -
-// bundle-list + wrapper
-// - - - - - - - - - - - - - - - - - -
-
 #bundle-list {
 	@include heading_font();
 	min-height: 4.5rem;
@@ -58,10 +51,8 @@
 	}
 }
 
-// - - - - - - - - - - - - - - - - - -
 // keyword-list
 // - - - - - - - - - - - - - - - - - -
-
 #keyword-list {
 	// margin-top: -0.25rem;
 	padding-top: 1.25rem;
@@ -83,12 +74,9 @@
 	}
 }
 
-// - - - - - - - - - - - - - - - - - -
 // bundle-pager
 // - - - - - - - - - - - - - - - - - -
-
-/*
-@import "components/_pager.folio";
+/*@import "components/_pager.folio";
 #bundle-pager {
 	position: absolute;
 	display: inline-block;
@@ -117,26 +105,33 @@
 // TEMP
 // - - - - - - - - - - - - - - - - - -
 
-.with-bundle .expanded {
-	#keyword-list .list-item:not(.excluded),
-	#bundle-list .list-item.selected {
-		&:before {
-			content: "*";
-			font-size: 1.25em;
-			line-height: 0.75em;
-			position: absolute;
-			display: inline-block;
-			top: calc(50% - 0.325em);
-			left: 0;
-			width: 0.5em;
-			height: 0.5em;
+#keyword-list .list-item:before {
+	content: "*";
+	font-size: 1.25em;
+	line-height: 0.75em;
+	position: absolute;
+	display: inline-block;
+	top: calc(50% - 0.325em);
+	left: 0;
+	width: 0.5em;
+	height: 0.5em;
+	opacity: 0;
+}
+.with-bundle {
+	#keyword-list {
+		.list-item:before {
+			transition: opacity $duration $ease $delay;
+		}
+		&:not(.collapsed) .list-item:not(.excluded):before {
+			opacity: 1;
 		}
 	}
-	#bundle-list .list-item.selected {
-		&:before {
+	#bundle-list {
+		.list-item .name {
+			transition: color $duration steps(8) $delay;
+		}
+		&:not(.collapsed) .list-item.selected .name {
 			color: $link_color;
-			font-weight: 400;
-			left: -0.125em;
 		}
 	}
 }

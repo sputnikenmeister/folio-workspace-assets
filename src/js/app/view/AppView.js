@@ -34,6 +34,8 @@ if (DEBUG) {
 	var DebugToolbar = require("./DebugToolbar");
 }
 
+var $document = $(document.documentElement);
+
 /**
  * @constructor
  * @type {module:app/view/AppView}
@@ -62,8 +64,11 @@ var AppView = View.extend({
 			el: "#footer"
 		});
 
+		this.$document = $document;
 		// .skip-transitions on resize
+		// this.updateDocumentLayoutClass();
 		this.initializeResizeHandlers_min();
+		// this.initializeResizeHandlers_class();
 		// this.initializeResizeHandlers_debounce();
 
 		// start router, which will request appropiate state
@@ -76,15 +81,31 @@ var AppView = View.extend({
 		// CSS animations do not trigger while on .app-initial,
 		// so everything will be rendered in it's final state
 		this.render();
-		window.requestAnimationFrame(function() {
-			$(document.documentElement).removeClass("app-initial").addClass("app-ready");
+		this.requestAnimationFrame(function() {
+			document.documentElement.classList.remove("app-initial");
+			document.documentElement.classList.add("app-ready");
+			// this.$document.removeClass("app-initial").addClass("app-ready");
 		});
 	},
 
 	render: function () {
+		document.documentElement.classList.toggle("desktop-small", window.innerWidth >= 1024);
 		this.navigationView.render();
 		this.contentView.render();
 		return this;
+	},
+
+	/* -------------------------------
+	 * Resize (class-based/no CSS media queries)
+	 * ------------------------------- */
+
+	updateDocumentLayoutClass: function() {
+		// if (window.innerWidth >= 1024 && !this.$document.hasClass("desktop-small")) {
+		// 	this.$document.addClass("desktop-small");
+		// } else
+		// if (window.innerWidth < 1024 && this.$document.removeClass("desktop-small")){
+		// 	this.$document.removeClass("desktop-small");
+		// }
 	},
 
 	/* -------------------------------
@@ -92,8 +113,19 @@ var AppView = View.extend({
 	 * ------------------------------- */
 
 	initializeResizeHandlers_min: function() {
-		$(window).on("resize orientationchange",_.throttle(
-			_.bind(this.render, this), 300, {leading: true, trailing: true}
+		var view = this;
+		var handler = function() {
+			// if (window.innerWidth >= 1024 && !docClassList.contains("desktop-small")) {
+			// 	docClassList.add("desktop-small");
+			// } else
+			// if (window.innerWidth < 1024 && docClassList.contains("desktop-small")){
+			// 	docClassList.remove("desktop-small");
+			// }
+			// view.updateDocumentLayoutClass();
+			view.render();
+		};
+		$(window).on("resize orientationchange", _.throttle(
+			handler, 100, {leading: true, trailing: true}
 		));
 	},
 

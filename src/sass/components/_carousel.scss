@@ -176,15 +176,17 @@ $mock_browser_height: 2rem;
 		padding-top: $mock_browser_height;
 		margin-top: -$mock_browser_height;
 		transform: translateY($mock_browser_height);
-		// background-color: hsl(0,0%,65%) !important;
+		// background-color: hsla(0,0%,0%,0.15) !important;
+		background-color: hsl(0,0%,75%) !important;
 		box-shadow:
-			// inset 0rem 4.5rem 4rem -3rem hsl(0,0%,100%),
-			// inset 0 71px 0 -3rem hsl(0,0%,85%),
+			0px 1px 1px 0px hsl(0, 0%, 100%) inset,
+			0px 3em 0px -1.1em hsla(0,0%,100%,0.85) inset,
 			0px 0px 0px 1px hsla(0,0%,0%,0.15),
-			0px 1rem 1rem -0.5rem hsla(0,0%,0%,0.5) !important;
-		// box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
-		// border: 1px solid rgba(0,0,0,0.15) !important;
-		// border: 0 none transparent !important;
+			0px 1rem 1rem -0.5rem hsla(0,0%,0%,0.5);
+	}
+	.placeholder, img {
+		border-top-left-radius: $mock_browser_height * 0.15;
+		border-top-right-radius: $mock_browser_height * 0.15;
 	}
 	// img:after {
 	// 	content: 'ooo';

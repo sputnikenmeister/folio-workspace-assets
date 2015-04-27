@@ -2,6 +2,8 @@
  * @module app/view/base/View
  */
 
+/** @type {module:classlist-polyfill} */
+require('classlist-polyfill');
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 /** @type {module:underscore} */
@@ -19,30 +21,10 @@ var addTransitionCallback = require("../../utils/event/addTransitionCallback");
 var _prefixedProps = {};
 var _prefixedStyles = {};
 
-//var _viewsByCid = {};
-var _views = [];
-var _elements = [];
-var _count = 0;
-
-// var _frameHandlers = [];
-// var _frameQueue = [];
-// var _frameQueueNum = [];
-// var _frameQueueId = 0;
-//
-// function _runFrameQueue() {
-// 	do {
-// 		_frameQueue[--_frameQueueNum].call();
-// 	} while (_frameQueueNum > 0);
-// 	_frameHandlers.length = 0;
-// 	_frameQueue.length = 0;
-// 	_frameQueueId = 0;
-// }
-//
-// function _requestFrameRun() {
-// 	if (_frameQueueId == 0) {
-// 		_frameQueueId = window.requestAnimationFrame(_frameCallback);
-// 	}
-// }
+//var _viewObjsByCid = {};
+var _viewElements = [];
+var _viewObjs = [];
+var _viewObjsNum = 0;
 
 /**
  * @constructor
@@ -59,10 +41,10 @@ var View = Backbone.View.extend({
 
 	remove: function() {
 		this.trigger("view:remove", this);
-		var idx = _views.indexOf(this);
-		_views.splice(idx, 1);
-		_elements.splice(idx, 1);
-		_count--;
+		var idx = _viewObjs.indexOf(this);
+		_viewObjs.splice(idx, 1);
+		_viewElements.splice(idx, 1);
+		_viewObjsNum--;
 		return Backbone.View.prototype.remove.apply(this, arguments);
 	},
 
@@ -76,9 +58,9 @@ var View = Backbone.View.extend({
 			Backbone.View.prototype.setElement.apply(this, arguments);
 		}
 		this.$el.attr("data-cid", this.cid);
-		_views[_count] = this;
-		_elements[_count] = this.el;
-		_count++;
+		_viewObjs[_viewObjsNum] = this;
+		_viewElements[_viewObjsNum] = this.el;
+		_viewObjsNum++;
 		return this;
 	},
 
@@ -142,7 +124,7 @@ var View = Backbone.View.extend({
 
 },{
 	findByElement: function(element) {
-		return _views[_elements.indexOf(element)];
+		return _viewObjs[_viewElements.indexOf(element)];
 	},
 });
 

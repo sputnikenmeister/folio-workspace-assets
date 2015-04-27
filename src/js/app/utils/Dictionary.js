@@ -52,7 +52,7 @@ Dictionary.prototype.add = function(key, value) {
 		//create a new tuple in our bucket
 		//note that this could either be the new empty bucket we created above
 		//or a bucket with other tuples with keys that are different than
-		//the key of the tuple we are adding. These tupules are in the same
+		//the key of the tuple we are adding. These tuples are in the same
 		//bucket because their keys all equate to the same numeric index when
 		//passing through our hash function.
 		bucket.push([key, value]);

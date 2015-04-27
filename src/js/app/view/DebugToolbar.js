@@ -15,16 +15,15 @@ var Globals = require("../control/Globals");
 var Cookies = require("cookies-js");
 
 /** @type {string} */
-var viewTemplate = require("./template/DebugToolbar.tpl");
+// var viewTemplate = require("./template/DebugToolbar.tpl");
 
 var DebugToolbar = Backbone.View.extend({
-
 	/** @override */
 	tagName: "ul",
 	/** @override */
 	className: "toolbar",
 	/** @override */
-	template: viewTemplate,
+	template: require("./template/DebugToolbar.tpl"),//viewTemplate,
 
 	initialize: function (options) {
 		var $container, $backendEl, $viewSourceEl, $showGridEl, $showBlocksEl;
