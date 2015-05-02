@@ -33,7 +33,7 @@
 			//@include heading_font($size: 1.666rem, $weight: 300, $lead: 2rem);
 		}
 	}
-	@include media($desktop_small) {
+	@include media(desktop-small) {
 		.content {
 			p {
 				@include heading_font($weight: 300);//, $lead: 0.990);
@@ -82,7 +82,7 @@
 			&:first-child { margin-top: 0; }
 		}
 	}
-	@include media($desktop_small) {
+	@include media(desktop-small) {
 		.empty-item .content p {
 			font-size: 28px;
 			line-height: 30px;

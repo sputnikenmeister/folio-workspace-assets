@@ -20,20 +20,10 @@ body {
 	line-height: 1.5rem;
 	-moz-osx-font-smoothing: grayscale;
 }
-
-//p {
-//	@include paragraph_font();
-//}
-//h1 {
-//	@include heading_font();
-//}
-//h2 {
-//	@include heading_font($size: 28px, $weight: 300, $lead: 30px);
-//}
-//h3 {
-//	@include heading_font($size: 20px, $weight: 300, $lead: 24px);
-//}
-
+// p  { @include paragraph_font(); }
+// h1 { @include heading_font(); }
+// h2 { @include heading_font($size: 28px, $weight: 300, $lead: 30px); }
+// h3 { @include heading_font($size: 20px, $weight: 300, $lead: 24px); }
 em {
 	font-style: italic;
 }

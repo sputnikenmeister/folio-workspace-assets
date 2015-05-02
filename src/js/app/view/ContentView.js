@@ -40,11 +40,12 @@ var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 var imageCaptionTemplate = require("./template/CollectionStack.Image.tpl");
 
 var COLLAPSE_THRESHOLD = 100;
-var PAN_MOVE_FACTOR = 1;
-var PAN_OVERSHOOT_FACTOR = Globals.VMOVE_OUT_OF_BOUNDS_DRAG;
-// var PAN_OVERSHOOT_FACTOR = 0.2;
-/* move factor is applied on top, so demultiply */
-PAN_OVERSHOOT_FACTOR *= PAN_MOVE_FACTOR;
+
+// var PAN_MOVE_FACTOR = 1;
+// var PAN_OVERSHOOT_FACTOR = Globals.VMOVE_OUT_OF_BOUNDS_DRAG;
+// // var PAN_OVERSHOOT_FACTOR = 0.2;
+// /* move factor is applied on top, so demultiply */
+// PAN_OVERSHOOT_FACTOR *= PAN_MOVE_FACTOR;
 
 /**
  * @constructor
@@ -62,7 +63,7 @@ var ContentView = ContainerView.extend({
 		this.touch = TouchManager.getInstance();
 		// this.transforms = new TransformHelper();
 
-		this._collapsedOffsetY = 300;
+		// this._collapsedOffsetY = 300;
 
 		// Model listeners
 		// this.listenTo(bundles, {
@@ -135,136 +136,6 @@ var ContentView = ContainerView.extend({
 	},
 
 	/* -------------------------------
-	 * collapse
-	 * ------------------------------- */
-
-	_collapsed: false,
-
-	isCollapsed: function() {
-		return this._collapsed;
-	},
-
-	setCollapsed: function(collapsed) {
-		if (this._collapsed !== collapsed) {
-			this._collapsed = collapsed;
-			if (collapsed) {
-				this.$el.addClass("collapsed").removeClass("expanded");
-			} else {
-				this.$el.addClass("expanded").removeClass("collapsed");
-			}
-		}
-	},
-
-	/* -------------------------------
-	 * Vertical touch/move (_onVPan*)
-	 * ------------------------------- */
-
-	_onVPanStart: function (ev) {
-		_.each(this.children, function(view) {
-			this.disableTransitions(view.el);
-			this.transforms.capture(view.el);
-		}, this);
-		this._onVPanMove(ev);
-
-		this.touch.on("vpanmove", this._onVPanMove);
-		this.touch.on("vpanend vpancancel", this._onVPanFinal);
-	},
-
-	// _onVPanMove1: function (ev) {
-	// 	var delta = ev.thresholdDeltaY;
-	// 	var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
-	// 	// check if direction is aligned with collapse/expand
-	// 	var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-	//
-	// 	delta = Math.abs(delta); // remove sign
-	//
-	// 	if (isDirAllowed && delta > COLLAPSE_THRESHOLD) {
-	// 		this.touch.off("vpanmove", this._onVPanMove);
-	// 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
-	// 		this.setCollapsed(!this.isCollapsed());
-	// 		_.each(this.children, function(view) {
-	// 			this.enableTransitions(view.el);
-	// 			this.transforms.clear(view.el);
-	// 			// this.transforms.capture(view.el);
-	// 		}, this);
-	// 	} else {
-	// 		if (!isDirAllowed) delta *= -PAN_OVERSHOOT_FACTOR; // delta is opposite
-	// 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
-	// 		_.each(this.children, function(view) {
-	// 			this.transforms.move(view.el, void 0, delta);
-	// 		}, this);
-	// 	}
-	// },
-
-	_onVPanMove: function (ev) {
-		var delta = ev.thresholdDeltaY;
-		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
-		// check if direction is aligned with collapse/expand
-		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-		// var moveFactor = this.isCollapsed()? PAN_MOVE_FACTOR : (1-PAN_MOVE_FACTOR);
-
-		delta = Math.abs(delta); // remove sign
-		// delta *= moveFactor;
-		// maxDelta *= moveFactor;
-
-		if (isDirAllowed) {
-			if (delta > maxDelta) {				// overshooting
-				delta = (delta - maxDelta) * PAN_OVERSHOOT_FACTOR + maxDelta;
-			} else { 							// no overshooting
-				delta = delta;
-			}
-		} else {
-			delta = delta * -PAN_OVERSHOOT_FACTOR; // delta is opposite
-		}
-		delta *= this.isCollapsed()? 1 : -1; // reapply sign
-
-		this.transforms.moveAll(void 0, delta);
-		// _.each(this.children, function(view) {
-		// 	this.transforms.move(view.el, void 0, delta);
-		// }, this);
-	},
-
-	_onVPanFinal: function(ev) {
-		this.touch.off("vpanmove", this._onVPanMove);
-		this.touch.off("vpanend vpancancel", this._onVPanFinal);
-
-		if (this.willCollapseChange(ev)) {
-			// this.$transitionables.transit(this.transitions[this.isCollapsed()
-			// 	Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING]);
-			this.runTransformTransition(this.transitionables,
-				this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING);
-			this.setCollapsed(!this.isCollapsed());
-		} else {
-			// this.$transitionables.transit(this.transitions[Globals.TRANSIT_IMMEDIATE]);
-			this.runTransformTransition(this.transitionables, Globals.TRANSIT_IMMEDIATE);
-		}
-		this.transforms.clearAll();
-		// _.each(this.children, function(view) {
-		// 	// this.enableTransitions(view);
-		// 	this.transforms.clear(view.el);
-		// }, this);
-	},
-
-	willCollapseChange: function(ev) {
-		return ev.type == "vpanend"? this.isCollapsed()?
-			ev.thresholdDeltaY > COLLAPSE_THRESHOLD : ev.thresholdDeltaY < -COLLAPSE_THRESHOLD : false;
-	},
-
-	// /* -------------------------------
-	//  * transitions
-	//  * ------------------------------- */
-	//
-	// enableTransitions: function(view) {
-	// 	//this.$el.removeClass("skip-transitions");
-	// 	view.$el.css(this.getPrefixedStyle("transition"), "");
-	// },
-	//
-	// disableTransitions: function(view) {
-	// 	//this.$el.addClass("skip-transitions");
-	// 	view.$el.css(this.getPrefixedStyle("transition"), "none 0s 0s");
-	// },
-
-	/* -------------------------------
 	 * create/remove children on bundle selection
 	 * ------------------------------- */
 
@@ -293,17 +164,20 @@ var ContentView = ContainerView.extend({
 	removeChildren: function (bundle, skipAnimation) {
 		var startProps = {position: "absolute"};
 		var endProps = {delay: Globals.EXITING_DELAY, opacity: 0};
-		var txStyle = this.getPrefixedStyle("transform");
+		// var txStyleName = this.getPrefixedStyle("transform");
+		var txPropName = this.getPrefixedProperty("transform");
 
 		_.each(this.children, function(view) {
 			if (skipAnimation) {
 				view.remove();
 			} else {
-				startProps.top = view.el.offsetTop;
-				startProps.left = view.el.offsetLeft;
-				endProps[txStyle] = view.$el.css(txStyle);
+				view.el.style[txPropName] = window.getComputedStyle(view.el)[txPropName];
+				// startProps[txStyleName] = view.$el.css(txStyleName);
+				// startProps["top"] = view.el.offsetTop;
+				// startProps["left"] = view.el.offsetLeft;
 				view.$el
-					.css(startProps)
+					// .css(startProps)
+					.addClass("removing")
 					.transit(endProps)
 					.queue(function(next) {
 						view.remove(); next();
@@ -318,6 +192,142 @@ var ContentView = ContainerView.extend({
 		this.transitionables.splice(this.transitionables.indexOf(view.el), 1);
 		this.transforms.destroy(view.el);
 	},
+
+	/* -------------------------------
+	 * collapse
+	 * ------------------------------- */
+
+	_collapsed: false,
+
+	isCollapsed: function() {
+		return this._collapsed;
+	},
+
+	setCollapsed: function(collapsed) {
+		if (this._collapsed !== collapsed) {
+			this._collapsed = collapsed;
+			if (collapsed) {
+				this.$el.addClass("collapsed").removeClass("expanded");
+			} else {
+				this.$el.addClass("expanded").removeClass("collapsed");
+			}
+		}
+	},
+
+	/* -------------------------------
+	 * Vertical touch/move (_onVPan*)
+	 * ------------------------------- */
+
+	// _onVPanMove1: function (ev) {
+	// 	var delta = ev.thresholdDeltaY;
+	// 	var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+	// 	// check if direction is aligned with collapse/expand
+	// 	var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
+	//
+	// 	delta = Math.abs(delta); // remove sign
+	//
+	// 	if (isDirAllowed && delta > COLLAPSE_THRESHOLD) {
+	// 		this.touch.off("vpanmove", this._onVPanMove);
+	// 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
+	// 		this.setCollapsed(!this.isCollapsed());
+	// 		_.each(this.children, function(view) {
+	// 			this.enableTransitions(view.el);
+	// 			this.transforms.clear(view.el);
+	// 			// this.transforms.capture(view.el);
+	// 		}, this);
+	// 	} else {
+	// 		if (!isDirAllowed) delta *= -PAN_OVERSHOOT_FACTOR; // delta is opposite
+	// 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
+	// 		_.each(this.children, function(view) {
+	// 			this.transforms.move(view.el, void 0, delta);
+	// 		}, this);
+	// 	}
+	// },
+
+	_onVPanStart: function (ev) {
+		_.each(this.children, function(view) {
+			this.disableTransitions(view.el);
+			this.transforms.capture(view.el);
+		}, this);
+		this._onVPanMove(ev);
+
+		this.touch.on("vpanmove", this._onVPanMove);
+		this.touch.on("vpanend vpancancel", this._onVPanFinal);
+	},
+
+	PAN_MOVE_FACTOR: 0.05,
+	PAN_OVERSHOOT_FACTOR: Globals.VMOVE_OUT_OF_BOUNDS_DRAG,
+	_collapsedOffsetY: 300,
+
+	_onVPanMove: function (ev) {
+		var delta = ev.thresholdDeltaY;
+		// check if direction is aligned with collapse/expand
+		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
+		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+		var moveFactor = this.isCollapsed()? 1 - this.PAN_MOVE_FACTOR : this.PAN_MOVE_FACTOR;
+		/* move factor is applied on top, so demultiply */
+		var overshootFactor = this.PAN_OVERSHOOT_FACTOR;// * this.PAN_MOVE_FACTOR;
+
+		delta = Math.abs(delta); // remove sign
+		delta *= moveFactor;
+		maxDelta *= moveFactor;
+
+		if (isDirAllowed) {
+			if (delta > maxDelta) { // overshooting
+				delta = (delta - maxDelta) * overshootFactor + maxDelta;
+			} else { // no overshooting
+				delta = delta;
+			}
+		} else {
+			delta = delta * -overshootFactor; // delta is opposite
+		}
+		delta *= this.isCollapsed()? 1 : -1; // reapply sign
+
+		// this.transforms.moveAll(void 0, delta);
+		_.each(this.children, function(view) {
+			this.transforms.move(view.el, void 0, delta);
+		}, this);
+	},
+
+	_onVPanFinal: function(ev) {
+		this.touch.off("vpanmove", this._onVPanMove);
+		this.touch.off("vpanend vpancancel", this._onVPanFinal);
+
+		if (this.willCollapseChange(ev)) {
+			// this.$transitionables.transit(this.transitions[this.isCollapsed()
+			// 	Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING]);
+			this.runTransformTransition(this.transitionables,
+				this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING);
+			this.setCollapsed(!this.isCollapsed());
+		} else {
+			// this.$transitionables.transit(this.transitions[Globals.TRANSIT_IMMEDIATE]);
+			this.runTransformTransition(this.transitionables, Globals.TRANSIT_IMMEDIATE);
+		}
+		// this.transforms.clearAll();
+		_.each(this.children, function(view) {
+			// this.enableTransitions(view);
+			this.transforms.clear(view.el);
+		}, this);
+	},
+
+	willCollapseChange: function(ev) {
+		return ev.type == "vpanend"? this.isCollapsed()?
+			ev.thresholdDeltaY > COLLAPSE_THRESHOLD : ev.thresholdDeltaY < -COLLAPSE_THRESHOLD : false;
+	},
+
+	// /* -------------------------------
+	//  * transitions
+	//  * ------------------------------- */
+	//
+	// enableTransitions: function(view) {
+	// 	//this.$el.removeClass("skip-transitions");
+	// 	view.$el.css(this.getPrefixedStyle("transition"), "");
+	// },
+	//
+	// disableTransitions: function(view) {
+	// 	//this.$el.addClass("skip-transitions");
+	// 	view.$el.css(this.getPrefixedStyle("transition"), "none 0s 0s");
+	// },
 
 	/* -------------------------------
 	 * Components

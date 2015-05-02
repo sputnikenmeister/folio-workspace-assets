@@ -26,7 +26,7 @@ $darkolivegreen:	darkolivegreen;
 	background-image: image-url("debug-background-720.svg");
 //	background-image: image-url("debug-background.svg#bg720_g");
 //	background-size: 719px 1599px;
-	@include media($desktop_small) {
+	@include media(desktop-small) {
 		background-image: image-url("debug-background-960.svg");
 //		background-image: image-url("debug-background.svg#bg960_g");
 //		background-size: 959px 1599px;

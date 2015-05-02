@@ -3,7 +3,7 @@
  */
 
 /** @type {module:classlist-polyfill} */
-require('classlist-polyfill');
+require("classlist-polyfill");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 /** @type {module:underscore} */

@@ -23,9 +23,8 @@ var camelCase = jQuery.camelCase;
 var refreshCSSRule = function(selector) {
 	if (!_.isEmpty(selector)) {
 		_aliases.hasOwnProperty(selector) && (selector = _aliases[selector]);
-		_rules[selector] = _.findWhere(document.styleSheets[0].cssRules, {
-			selectorText: selector
-		});
+		_rules[selector] =
+			_.findWhere(document.styleSheets[0].cssRules, {selectorText: selector});
 	}
 };
 
@@ -35,9 +34,8 @@ var refreshCSSRule = function(selector) {
 var getCSSRule = function (selector) {
 	if (!_.isEmpty(selector)) {
 		_aliases.hasOwnProperty(selector) && (selector = _aliases[selector]);
-		_rules.hasOwnProperty(selector) || (_rules[selector] = _.findWhere(document.styleSheets[0].cssRules, {
-			selectorText: selector
-		}));
+		_rules.hasOwnProperty(selector) || (_rules[selector] =
+			_.findWhere(document.styleSheets[0].cssRules, {selectorText: selector}));
 		return _rules[selector];
 	} else {
 		return;

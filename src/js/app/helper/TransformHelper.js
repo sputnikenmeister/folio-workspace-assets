@@ -17,19 +17,9 @@ var parseTransformMatrix = require("../utils/css/parseTransformMatrix");
 /** @type {module:app/utils/strings/camelToDashed} */
 var camelToDashed = require("../utils/strings/camelToDashed");
 
-var _tidSeed = 0;
-var _transformProp = null;
-var _transformStyle = null;
-
-function _initPrefixed(el) {
-	if (_transformProp === null) {
-		_transformProp = prefixedProperty(el.style, "transform");
-		_transformStyle = (_transformProp != "transform")?
-			"-" + camelToDashed(_transformProp): "transform";
-	}
-}
-// var _captureProps = ["transform"];
-// var _captureStyles = ["transform"];
+var _idSeed = 0;
+var _transformProp = prefixedProperty(document.body.style, "transform");
+var _transformStyle = (_transformProp != "transform")? "-" + camelToDashed(_transformProp): "transform";
 
 /**
  * @constructor
@@ -78,10 +68,9 @@ TransformHelper.prototype = {
 	_add: function(el) {
 		var idx = this._elements.indexOf(el);
 		if (el && idx == -1) {
-			_initPrefixed(el);
 			idx = this._elements.length;
 			this._elements[idx] = el;
-			this._values[idx] = { id: _tidSeed++, el: el, $el: $(el) };
+			this._values[idx] = {id: _idSeed++, el: el, $el: $(el)};
 		}
 		return idx;
 	},

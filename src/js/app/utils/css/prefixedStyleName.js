@@ -1,7 +1,3 @@
-/*
- *
- */
-
 /** @type {module:app/utils/strings/camelToDashed} */
 var camelToDashed = require("../strings/camelToDashed");
 
@@ -20,7 +16,7 @@ module.exports = function(style, property) {
 	for (var i = 0; i < CSS_VENDOR_PREFIXES.length; i++) {
 		prefixed = CSS_VENDOR_PREFIXES[i] + normalized;
 		if (prefixed in style) {
-			console.log("Prefix: style name for '" + property + "' is '" + prop + "'");
+			console.log("Prefix: style name for '" + property + "' is '" + prefixed + "'");
 			return prefixed;
 		}
 	}

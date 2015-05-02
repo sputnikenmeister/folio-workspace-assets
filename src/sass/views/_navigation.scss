@@ -91,7 +91,7 @@
 	}
 	.following-button {
 		left: $main_width;
-		@include media($desktop_small) {
+		@include media(desktop-small) {
 			left: $aside_width_large;
 		}
 	}

@@ -195,25 +195,26 @@ var Controller = Backbone.Router.extend({
 
 	/* Select Bundle/image */
 	_changeSelection: function (bundle, image) {
-		console.log("Controller._changeSelection [before] bundle:" +
-					(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
+		// console.log("Controller._changeSelection [before] bundle:" +
+		// 			(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
 
 		this._applyClassProviders(bundle, image);
-
 		if (_.isUndefined(bundle)) {
 			bundles.deselect();
 		} else {
-			var opts = { silent: (bundle !== bundles.selected) };
+			// var opts = { silent: (bundle !== bundles.selected) };
 			if (_.isUndefined(image)) {
-				bundle.get("images").deselect(opts);
+				// bundle.get("images").deselect(opts);
+				bundle.get("images").deselect();
 			} else {
-				bundle.get("images").select(image, opts);
+				// bundle.get("images").select(image, opts);
+				bundle.get("images").select(image);
 			}
 			bundles.select(bundle);
 		}
-//		this._applyClassProviders(bundle, image);
-		console.log("Controller._changeSelection [after]  bundle:" +
-					(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
+		// this._applyClassProviders(bundle, image);
+		// console.log("Controller._changeSelection [after]  bundle:" +
+		// 			(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
 	},
 
 
@@ -243,14 +244,16 @@ var Controller = Backbone.Router.extend({
 	 * --------------------------- */
 
 	initializeBundleStyles: function() {
-		var classProvider, toBodyClass, createDerivedStyles;
-		toBodyClass = function (bundle) {
+		var toBodyClass = function (bundle) {
 			return "bundle-" + bundle.id;
 		};
-		classProvider = function(classes, bundle, image) {
+
+		var classProvider = function(classes, bundle, image) {
 			bundle && classes.push(toBodyClass(bundle));
 		};
-		createDerivedStyles = function() {
+		this.addClassProvider(classProvider);
+
+		var createDerivedStyles = function() {
 			var fgColor, bgColor, bgLum, fgLum;
 			var bgDefault, fgDefault;
 			var attrs, styles, bodySelector, carouselSelector;
@@ -298,25 +301,13 @@ var Controller = Backbone.Router.extend({
 				Styles.createCSSRule(carouselSelector + " .image-item .placeholder", styles);
 			});
 		};
-		// var $body = Backbone.$("body");
-		// var handlers = {
-		// 	"deselect:one": function (bundle) {
-		// 		$body.removeClass(toBodyClass(bundle));
-		// 	},
-		// 	"select:one": function (bundle) {
-		// 		$body.addClass(toBodyClass(bundle));
-		// 	},
-		// };
-		// this.listenTo(bundles, handlers);
-		// if (bundles.selected) {
-		// 	handlers["select:one"].call(this, bundles.selected);
-		// }
-		if (document.readyState === "complete") {
+		if (document.readyState == "complete") {
 			createDerivedStyles();
 		} else {
-			$(window).load(createDerivedStyles);
+			document.addEventListener("load", createDerivedStyles);
+			console.warn("Controller.initializeBundleStyles: document.readyState is '" +
+				document.readyState + "', will wait for 'load' event.");
 		}
-		this.addClassProvider(classProvider);
 	},
 
 	/* --------------------------- *

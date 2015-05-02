@@ -1,4 +1,3 @@
-
 /** @type {module:app/utils/css/prefixedStyleName} */
 var prefixedStyleName = require("./prefixedStyleName");
 /** @type {module:app/utils/css/prefixedProperty} */

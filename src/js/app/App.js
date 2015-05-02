@@ -1,7 +1,7 @@
 /**
  * @module app/App
  */
-console.log("App.js first line");
+console.log("App first line");
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -21,12 +21,12 @@ require("Backbone.Mutators");
 //global._ = _;
 //global.$ = $;
 
-//$(window).load(function(ev) {
-//	"use strict";
-//	console.log("window.load()", document.readyState, arguments.length, arguments);
-$(document).ready(function($) {
+$(window).load(function(ev) {
 	"use strict";
-	console.log("document.ready()", document.readyState, arguments.length, arguments);
+//	console.log("window.load()", document.readyState, arguments.length, arguments);
+// $(document).ready(function($) {
+// 	"use strict";
+// 	console.log("document.ready()", document.readyState, arguments.length, arguments);
 
 	if (window.bootstrap === void 0) {
 		console.error("bootstrap data missing");
@@ -78,11 +78,11 @@ $(document).ready(function($) {
 	/* jshint -W051 */
 	delete window.bootstrap;
 	/* jshint +W051 */
-});
-
-$(window).load(function() {
-	"use strict";
-	console.log("window.load()", document.readyState, arguments.length, arguments);
+// });
+//
+// $(window).load(function() {
+// 	"use strict";
+// 	console.log("window.load()", document.readyState, arguments.length, arguments);
 
 	/** @type {module:app/view/AppView} */
 	var AppView = require("./view/AppView");

@@ -14,8 +14,7 @@
     "**/.*"
   ],
   "resolutions": {
-    "hammerjs": "~2.0.4",
-    "jquery-hammerjs": "~2.0.0",
+    "underscore": "1.6.x",
     "jquery": "2.1.x"
   },
   "dependencies": {

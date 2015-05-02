@@ -2,7 +2,6 @@
 module.exports = function (grunt) {
 	"use strict";
 
-	// grunt.initConfig({});
 	grunt.config("pkg", grunt.file.readJSON("package.json"));
 
 	grunt.config("DEBUG_CLIENT_JS", "folio-debug-client");
@@ -14,15 +13,14 @@ module.exports = function (grunt) {
 	/* ---------------------------------
 	 * Style Sheets
 	 * --------------------------------- */
+	// NOTE: `gem install compass sass-json-vars`
 
 	/* Task defaults
 	 * - - - - - - - - - - - - - - - - - */
-	// "gem install compass sass-json-vars"
-	grunt.loadNpmTasks("grunt-contrib-compass"); /* Compass (SASS) (requires compass gem) */
+	grunt.loadNpmTasks("grunt-contrib-compass");
 	grunt.config("compass.options", {
 		require: [
 			"sass-json-vars",
-			// "/usr/local/lib/ruby/gems/2.2.0/gems/sass-json-vars-0.3.2/lib/sass-json-vars.rb",
 			// "./build/compass-encode.rb",
 		],
 		sassDir: "src/sass",
@@ -33,7 +31,7 @@ module.exports = function (grunt) {
 		relativeAssets: true,
 		//httpPath: "/workspace/assets",
 	});
-	grunt.loadNpmTasks("grunt-autoprefixer"); /* CSS prefixes */
+	grunt.loadNpmTasks("grunt-autoprefixer");
 	grunt.config("autoprefixer.options", {
 		map: true, //{ inline: false },
 		//browsers: [ "ie > 8", "> 1%", "last 2 versions", "Firefox ESR", "Opera 12.1"]
@@ -68,7 +66,7 @@ module.exports = function (grunt) {
 	grunt.loadNpmTasks("grunt-contrib-jshint");
 	grunt.config("jshint", {
 		options: {
-			jshintrc: "./.jshintrc"
+			jshintrc: "./src/js/.jshintrc"
 		},
 		files: [
 			"./src/js/app/**/*.js"
@@ -94,6 +92,7 @@ module.exports = function (grunt) {
 			]
 		},
 	});
+
 	/* browserify:client */
 	grunt.config("browserify.client", {
 		dest: "./js/<%= DEBUG_CLIENT_JS %>.js",
@@ -111,6 +110,7 @@ module.exports = function (grunt) {
 			external: ["jquery-color"].concat(grunt.config("browserify.vendor.options.require"))
 		}
 	});
+
 	/* browserify:watchable */
 	// Duplicate browserify.client task for watch
 	grunt.config("browserify.watchable", grunt.config("browserify.client"));
@@ -122,7 +122,7 @@ module.exports = function (grunt) {
 		options: {
 			strict: false,
 			root: "../",
-//			root: "/workspace/assets/"
+			// root: "/workspace/assets/"
 		},
 		vendor: {
 			files: {
@@ -192,14 +192,14 @@ module.exports = function (grunt) {
 		},
 		"build-styles": {
 			tasks: ["compass:debug", "autoprefixer:debug"],
-			files: ["src/sass/**/*.scss"],
+			files: ["src/sass/**/*.scss", "src/sass/**/*.json"],
 		},
 		"process-vendor": {
-			tasks: ["exorcise:vendor"],//"uglify:vendor"],
+			tasks: ["exorcise:vendor"],
 			files: ["js/<%= DEBUG_VENDOR_JS %>.js"],
 		},
 		"process-client": {
-			tasks: ["exorcise:client"],//"uglify:client"
+			tasks: ["exorcise:client"],
 			files: ["js/<%= DEBUG_CLIENT_JS %>.js"],
 		},
 		"reload-config": {
@@ -207,16 +207,19 @@ module.exports = function (grunt) {
 				spawn: true
 			},
 			files: ["gruntfile.js"],
-			// tasks: ["clean-all", "compass:debug", "autoprefixer:debug",
-			// 	"browserify:vendor", "browserify:client", "build-dist"],
 			tasks: ["compass:debug", "autoprefixer:debug",
 				"browserify:vendor", "browserify:client"],
+			// tasks: ["clean-all", "compass:debug", "autoprefixer:debug",
+			// 	"browserify:vendor", "browserify:client", "build-dist"],
 		},
 		// "build-styles-svg": {
 		// 	tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
 		// 	files: ["images/**/*.svg"],
 		// },
-		//"process-sources": { tasks: ["jshint"], files: ["src/js/**/*.js"], },
+		// "process-sources": {
+		// 	tasks: ["jshint"],
+		// 	files: ["src/js/**/*.js"],
+		// },
 	});
 
 
@@ -279,32 +282,18 @@ module.exports = function (grunt) {
 	 * Main Targets
 	 * -------------------------------- */
 
-	// DEBUG: check config result
-	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
-	var _debugTasks = (function() {
-		var _tasks = {};
-		_tasks.buildStyles 		= ["compass:debug", "autoprefixer:debug"];
-		_tasks.buildVendor 		= ["browserify:vendor", "exorcise:vendor"];//, "uglify:vendor"];
-		_tasks.buildClient 		= ["browserify:client", "exorcise:client"];//, "uglify:client"];
-		_tasks.buildScripts 	= _tasks.buildVendor.concat(_tasks.buildClient);
-		_tasks.buildAll 		= _tasks.buildStyles.concat(_tasks.buildScripts);
-		return _tasks.buildAll;
-	})();
-
-	grunt.registerTask("clean-all",
-		["clean", "compass:clean", "compass:fonts"]);
-	grunt.registerTask("build-debug", _debugTasks);
-	grunt.registerTask("build-watch",
-		["build-debug", "browserify:watchable", "watch"]);
-	grunt.registerTask("build-dist",
-		["compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
-	grunt.registerTask("build-all",
-		["clean-all", "build-debug", "build-dist"]);
+	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
+	grunt.registerTask("build-debug", ["compass:debug", "autoprefixer:debug", "browserify:vendor",
+		"exorcise:vendor", "browserify:client", "exorcise:client"]);
+	grunt.registerTask("build-dist", ["compass:dist", "autoprefixer:dist", "browserify:dist",
+		"uglify:dist"]);
+	grunt.registerTask("build-watch", ["browserify:watchable", "watch"]);
+	grunt.registerTask("build-all", ["clean-all", "build-debug", "build-dist"]);
 	// Default task
 	grunt.registerTask("default", ["build-all"]);
 
 	/* --------------------------------
-	 * Resources: Sprites
+	 * Resources
 	 * -------------------------------- */
 
 	/* generate-sprites
@@ -331,13 +320,14 @@ module.exports = function (grunt) {
 		imgOpts: {quality: 50},
 		src: "build/bundle-sprites/"+previewSize+"/*.{jpg,gif,png}",
 		dest: "images/bundle-sprites.png",
-		destCss: "src/sass/includes/_bundle-sprites-generated.scss"
+		destCss: "src/sass/generated/_bundle-sprites-generated.scss"
 	});
 
 	// grunt.config("compass.bundle-sprites.options", {
-	// 	specify: "src/sass/includes/_bundle-sprites.scss",
+	// 	specify: "src/sass/generated/_bundle-sprites.scss",
 	// 	sourcemap: false,
 	// });
+
 	grunt.registerTask("generate-sprites",
 		["responsive_images:bundle-sprites", "sprite:bundle-sprites"]);
 
@@ -369,4 +359,7 @@ module.exports = function (grunt) {
 		}
 	});
 	grunt.registerTask("generate-favicon", ["favicons"]);
+
+	// DEBUG: check config result
+	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
 };

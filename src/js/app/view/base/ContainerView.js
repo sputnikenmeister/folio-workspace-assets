@@ -66,7 +66,7 @@ module.exports = View.extend({
 					this.transitions.splice(idx2, 1);
 				} else {
 					console.warn("runTransformTransition > callback: element already removed",
-						target.id || target.className, target);
+						target.id || target.className);
 				}
 
 				// target.classList.remove(transition.className);
@@ -76,7 +76,7 @@ module.exports = View.extend({
 				} else {
 					console.log("runTransformTransition: '" + transitionProp + "' has changed from '" +
 						val + "' to '" + target.style[transitionProp] + "', leaving as-is.",
-						target.id || target.className, target);
+						target.id || target.className);
 				}
 			}, this);
 
@@ -87,7 +87,7 @@ module.exports = View.extend({
 				idx1 = this.transitions.indexOf(target);
 				if (idx1 != -1) {
 					console.warn("runTransformTransition: element already transitioning",
-						target.id || target.className, target);
+						target.id || target.className);
 				} else {
 					idx1 = this.transitions.length;
 					this.transitions[idx1] = target;

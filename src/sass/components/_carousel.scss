@@ -128,7 +128,7 @@ $pan_ease: $ease;
 	&.selected, &.candidate, .empty-item.selected + & {
 		&.pending .placeholder:before {
 			opacity: 1;
-			background-color: crimson;
+			// background-color: crimson;
 		}
 		&.error .placeholder:before {
 			opacity: 1;

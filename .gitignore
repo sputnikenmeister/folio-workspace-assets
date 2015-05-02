@@ -1,13 +1,14 @@
 .DS_Store
 ~*
-_~*.scss
 /.sass-cache
 /node_modules
 /bower_components
 /flash
 /html
+/build/stash
 /build/bundle-sprites
 /css
 /images/favicon
 /js
 /lib
+/components

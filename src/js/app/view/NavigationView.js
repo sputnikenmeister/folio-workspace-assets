@@ -37,11 +37,12 @@ var GroupingListView = require("./component/GroupingListView");
 var CollectionPager = require("./component/CollectionPager");
 
 var COLLAPSE_THRESHOLD = 100;
-var PAN_MOVE_FACTOR = 0.15;
-var PAN_OVERSHOOT_FACTOR = Globals.VMOVE_OUT_OF_BOUNDS_DRAG;
-// var PAN_OVERSHOOT_FACTOR = 0.2;
-/* move factor is applied on top, so demultiply */
-PAN_OVERSHOOT_FACTOR *= PAN_MOVE_FACTOR;
+
+// var PAN_MOVE_FACTOR = 0.15;
+// var PAN_OVERSHOOT_FACTOR = Globals.VMOVE_OUT_OF_BOUNDS_DRAG;
+// // var PAN_OVERSHOOT_FACTOR = 0.2;
+// /* move factor is applied on top, so demultiply */
+// PAN_OVERSHOOT_FACTOR *= PAN_MOVE_FACTOR;
 
 /**
  * @constructor
@@ -72,15 +73,15 @@ module.exports = ContainerView.extend({
 		for (var i = 0, num = nodes.length; i != num; i++) {
 			this.hGroupings[i] = nodes[i];
 		}
-		this.hLists = [this.bundleList.wrapper, this.keywordList.wrapper];
-		this.hTransitionables = this.hGroupings.concat(this.hLists);
+		this.hWrappers = [this.bundleList.wrapper, this.keywordList.wrapper];
+		this.hTransitionables = this.hGroupings.concat(this.hWrappers);
 		this.vTransitionables = [this.bundleList.el, this.keywordList.el, this.sitename.el];
 
 		// this.vTransitionables = this.el.querySelectorAll("#site-name, #bundle-list, #keyword-list");
 		// this.hTransitionables = this.el.querySelectorAll(
 		// 	"#bundle-list-wrapper, #keyword-list-wrapper, #keyword-list .list-group span");
 
-		this._collapsedOffsetY = 300;
+		// this._collapsedOffsetY = 300;
 
 		// this.initializeResizeHandlers();
 		// this.addTransitionHandlers();
@@ -248,16 +249,6 @@ module.exports = ContainerView.extend({
 	 * Vertical touch/move (_onVPan*)
 	 * ------------------------------- */
 
-	_onVPanStart: function (ev) {
-		_.each(this.children, function(view) {
-			this.disableTransitions(view.el);
-			this.transforms.capture(view.el);
-		}, this);
-		this._onVPanMove(ev);
-		this.touch.on("vpanmove", this._onVPanMove);
-		this.touch.on("vpanend vpancancel", this._onVPanFinal);
-	},
-
 	// _onVPanMove1: function (ev) {
 	// 	var delta = ev.thresholdDeltaY;
 	// 	var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
@@ -283,12 +274,29 @@ module.exports = ContainerView.extend({
 	// 	}
 	// },
 
+	_onVPanStart: function (ev) {
+		_.each(this.children, function(view) {
+			this.disableTransitions(view.el);
+			this.transforms.capture(view.el);
+		}, this);
+		this._onVPanMove(ev);
+
+		this.touch.on("vpanmove", this._onVPanMove);
+		this.touch.on("vpanend vpancancel", this._onVPanFinal);
+	},
+
+	PAN_MOVE_FACTOR: 0.05,
+	PAN_OVERSHOOT_FACTOR: Globals.VMOVE_OUT_OF_BOUNDS_DRAG,
+	_collapsedOffsetY: 300,
+
 	_onVPanMove: function (ev) {
 		var delta = ev.thresholdDeltaY;
-		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapse/expand
 		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-		var moveFactor = this.isCollapsed()? PAN_MOVE_FACTOR : 1 - PAN_MOVE_FACTOR;
+		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+		var moveFactor = this.isCollapsed()? this.PAN_MOVE_FACTOR : 1 - this.PAN_MOVE_FACTOR;
+		/* move factor is applied on top, so demultiply */
+		var overshootFactor = this.PAN_OVERSHOOT_FACTOR;// * this.PAN_MOVE_FACTOR;
 
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
@@ -296,17 +304,16 @@ module.exports = ContainerView.extend({
 
 		if (isDirAllowed) {
 			if (delta > maxDelta) { // overshooting
-				delta = (delta - maxDelta) * PAN_OVERSHOOT_FACTOR + maxDelta;
+				delta = (delta - maxDelta) * overshootFactor + maxDelta;
 			} else { // no overshooting
 				delta = delta;
 			}
 		} else {
-			delta = delta * -PAN_OVERSHOOT_FACTOR; // delta is opposite
+			delta = delta * -overshootFactor; // delta is opposite
 		}
 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
 
 		// this.transforms.moveAll(void 0, delta);
-		// this.transforms.move(this.el, void 0, delta);
 		_.each(this.children, function(view) {
 			this.transforms.move(view.el, void 0, delta);
 		}, this);

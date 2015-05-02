@@ -50,6 +50,11 @@ var AppView = View.extend({
 		/* create single hammerjs manager */
 		this.touch = TouchManager.init(document.querySelector("#container"));
 
+		/**/
+		controller.addClassProvider(function(classes, bundle, image) {
+			window.innerWidth >= 1024 && classes.push("desktop-small");
+		});
+
 		if (DEBUG) {
 			this.$el.append((new DebugToolbar({id: "debug-toolbar", collection: bundles})).render().el);
 		}
@@ -64,7 +69,6 @@ var AppView = View.extend({
 			el: "#footer"
 		});
 
-		this.$document = $document;
 		// .skip-transitions on resize
 		// this.updateDocumentLayoutClass();
 		this.initializeResizeHandlers_min();
@@ -89,23 +93,11 @@ var AppView = View.extend({
 	},
 
 	render: function () {
+		document.body.classList.toggle("desktop-small", window.innerWidth >= 1024);
 		document.documentElement.classList.toggle("desktop-small", window.innerWidth >= 1024);
 		this.navigationView.render();
 		this.contentView.render();
 		return this;
-	},
-
-	/* -------------------------------
-	 * Resize (class-based/no CSS media queries)
-	 * ------------------------------- */
-
-	updateDocumentLayoutClass: function() {
-		// if (window.innerWidth >= 1024 && !this.$document.hasClass("desktop-small")) {
-		// 	this.$document.addClass("desktop-small");
-		// } else
-		// if (window.innerWidth < 1024 && this.$document.removeClass("desktop-small")){
-		// 	this.$document.removeClass("desktop-small");
-		// }
 	},
 
 	/* -------------------------------
@@ -133,31 +125,31 @@ var AppView = View.extend({
 	 * Resize (debounce)
 	 * ------------------------------- */
 
-	initializeResizeHandlers_debounce: function() {
-		var debouncedFn, debouncedMs, delayedFn, delayedMs, delayedId, view = this;
-		// debouncedMs = Math.ceil(1000/30);
-		// delayedMs = debouncedMs * 2;
-		debouncedMs = 100;
-		delayedMs = 150;
-		delayedFn = function () {
-			view.$el.removeClass("skip-transitions");
-			console.log("AppView.initializeResizeHandlers [delayed]   id:" + delayedId);
-			delayedId = null;
-		};
-		debouncedFn = function (ev) {
-			if (delayedId) {
-				window.clearTimeout(delayedId);
-			} else {
-				view.$el.addClass("skip-transitions");
-			}
-			view.render();
-			delayedId = _.delay(delayedFn, delayedMs);
-			console.log("AppView.initializeResizeHandlers [debounced] id:" + delayedId);
-		};
-		debouncedFn = _.debounce(debouncedFn, debouncedMs);
-		$(window).on("resize orientationchange", debouncedFn);
-		//$(window).on("orientationchange resize", debouncedFn);
-	},
+	// initializeResizeHandlers_debounce: function() {
+	// 	var debouncedFn, debouncedMs, delayedFn, delayedMs, delayedId, view = this;
+	// 	// debouncedMs = Math.ceil(1000/30);
+	// 	// delayedMs = debouncedMs * 2;
+	// 	debouncedMs = 100;
+	// 	delayedMs = 150;
+	// 	delayedFn = function () {
+	// 		view.$el.removeClass("skip-transitions");
+	// 		console.log("AppView.initializeResizeHandlers [delayed]   id:" + delayedId);
+	// 		delayedId = null;
+	// 	};
+	// 	debouncedFn = function (ev) {
+	// 		if (delayedId) {
+	// 			window.clearTimeout(delayedId);
+	// 		} else {
+	// 			view.$el.addClass("skip-transitions");
+	// 		}
+	// 		view.render();
+	// 		delayedId = _.delay(delayedFn, delayedMs);
+	// 		console.log("AppView.initializeResizeHandlers [debounced] id:" + delayedId);
+	// 	};
+	// 	debouncedFn = _.debounce(debouncedFn, debouncedMs);
+	// 	$(window).on("resize orientationchange", debouncedFn);
+	// 	//$(window).on("orientationchange resize", debouncedFn);
+	// },
 
 	/* -------------------------------
 	 * Resize (debounce)
