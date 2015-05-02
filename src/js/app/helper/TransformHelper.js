@@ -8,18 +8,49 @@ var $ = require("jquery");
 /** @type {module:hashes.HashTable} */
 // var HashTable = require('hashes').HashTable;
 
+/** @type {module:app/utils/strings/camelToDashed} */
+var camelToDashed = require("../utils/strings/camelToDashed");
+/** @type {module:app/utils/css/prefixedProperty} */
+var prefixedProperty = require("../utils/css/prefixedProperty");
 /** @type {module:app/utils/css/prefixedStyleName} */
 // var prefixedStyleName = require("../utils/css/prefixedStyleName");
 /** @type {module:app/utils/css/prefixedProperty} */
-var prefixedProperty = require("../utils/css/prefixedProperty");
-/** @type {module:app/utils/css/prefixedProperty} */
 var parseTransformMatrix = require("../utils/css/parseTransformMatrix");
-/** @type {module:app/utils/strings/camelToDashed} */
-var camelToDashed = require("../utils/strings/camelToDashed");
+/** @type {String} */
+var transitionEnd = require("../utils/event/transitionEnd");
 
-var _idSeed = 0;
-var _transformProp = prefixedProperty(document.body.style, "transform");
-var _transformStyle = (_transformProp != "transform")? "-" + camelToDashed(_transformProp): "transform";
+var _idSeed = 100;
+var _property = (function() {
+	var ret = {};
+	var props = ["transform", "transformStyle", "transition", "transitionDuration",
+		"transitionDelay", "transitionProperty", "transitionTimingFunction"];
+	for (var i = 0; i < props.length; ++i) {
+		ret[props[i]] = prefixedProperty(document.body.style, props[i]);
+	}
+	return ret;
+}());
+var _styleName = (function() {
+	var ret = {};
+	for (var p in _property) {
+		ret[p] = (p != _property[p])? "-" + camelToDashed(_property[p]): p;
+	}
+	return ret;
+}());
+
+function traceElt(el) {
+	var traceId = "";
+	if (el.hasAttribute("id")) {
+		traceId += "#" + el.id + " ";
+	}
+	if (el.hasAttribute("data-cid")) {
+		traceId += "@" + el.getAttribute("data-cid") + " ";
+	}
+	if (traceId == "") {
+		traceId += "?(" + el.tagName + ") ";
+	}
+	traceId += "[" + el.classList[0] + "]";
+	return traceId;
+}
 
 /**
  * @constructor
@@ -28,6 +59,7 @@ var _transformStyle = (_transformProp != "transform")? "-" + camelToDashed(_tran
 function TransformHelper() {
 	this._elements = [];
 	this._values = [];
+	_.bindAll(this, "handleTransitionEnd");
 	// this._store = new HashTable();
 }
 
@@ -70,7 +102,12 @@ TransformHelper.prototype = {
 		if (el && idx == -1) {
 			idx = this._elements.length;
 			this._elements[idx] = el;
-			this._values[idx] = {id: _idSeed++, el: el, $el: $(el)};
+			this._values[idx] = {id: _idSeed, el: el, $el: $(el)};
+			if (!el.hasAttribute("data-cid")) {
+				el.setAttribute("data-cid", "elt" + _idSeed);
+			}
+			el.addEventListener(transitionEnd, this.handleTransitionEnd, false);
+			_idSeed++;
 		}
 		return idx;
 	},
@@ -92,6 +129,7 @@ TransformHelper.prototype = {
 			}
 			this._elements.splice(idx, 1);
 			this._values.splice(idx, 1);
+			el.removeEventListener(transitionEnd, this.handleTransitionEnd, false);
 		}
 	},
 
@@ -112,6 +150,19 @@ TransformHelper.prototype = {
 				o.transition.delay, o.transition.duration, "(cached)");
 		}
 		return ret;
+	},
+
+	handleTransitionEnd: function(ev) {
+		if (this._elements.indexOf(ev.target) == -1) {
+			return;
+		}
+		var el = ev.target;
+
+		var computed = window.getComputedStyle(el);
+		console.log(traceElt(el), ev.propertyName,
+			computed.getPropertyValue(ev.propertyName),
+			computed.getPropertyValue(_property["transition"])
+		);
 	},
 
 	_parseTransitionValues: function(o) {
@@ -140,7 +191,7 @@ TransformHelper.prototype = {
 
 	_parseTransformValues: function(o) {
 		var m, mm, ret = {};
-		var css = o.$el.css(_transformStyle);
+		var css = o.$el.css(_styleName["transform"]);
 		if (!o.captured || o.captured.css !== css) {
 			mm = css.match(/(matrix|matrix3d)\(([^\)]+)\)/);
 			if (mm) {
@@ -160,20 +211,19 @@ TransformHelper.prototype = {
 		} else {
 			ret = o.captured;
 		}
-		console.log("TransformHelper captured css", css, o.$el.css("transform-style"),
-			(o.el.id || o.el.classList[0] || o.el.getAttribute("data-cid")));
+		console.log("TransformHelper captured css", css, o.$el.css("transform-style"), traceElt(o.el));
 		return ret;
 	},
 
 	_clearElementTransform: function(o) {
-		o.el.style[_transformProp] = "";
-		// o.$el.css(_transformStyle, "");
+		o.el.style[_property["transform"]] = "";
+		// o.$el.css(_styleName["transform"], "");
 	},
 
 	_applyElementTransform: function(o, x, y) {
 		// var val = "translate3d(" + x + "px, " + y + "px, 0px)";
-		o.el.style[_transformProp] = "translate3d(" + x + "px, " + y + "px, 0px)";
-		// o.$el.css(_transformStyle, "translate3d(" + x + "px, " + y + "px, 0px)");
+		o.el.style[_property["transform"]] = "translate3d(" + x + "px, " + y + "px, 0px)";
+		// o.$el.css(_styleName["transform"], "translate3d(" + x + "px, " + y + "px, 0px)");
 	},
 
 	/* -------------------------------
@@ -213,8 +263,7 @@ TransformHelper.prototype = {
 			o.offset = void 0;
 			// console.log("TransformHelper.clear", o.id);
 		} else {
-			console.warn("TransformHelper.clear", o.id, "nothing to clear",
-				(o.el.id || o.el.classList[0] || o.el.getAttribute("data-cid")));
+			console.warn("TransformHelper.clear", o.id, "nothing to clear", traceElt(o.el));
 		}
 	},
 
@@ -225,8 +274,7 @@ TransformHelper.prototype = {
 
 		if (!o.captured) {
 			o.captured = this._parseTransformValues(o);
-			console.warn("TransformHelper.move", o.id, "captured values not set: capturing now",
-				(o.el.id || o.el.classList[0] || o.el.getAttribute("data-cid")));
+			console.warn("TransformHelper.move", o.id, "captured values not set: capturing now", traceElt(o.el));
 		}
 
 		this._applyElementTransform(o, o.offset.x + o.captured.x, o.offset.y + o.captured.y);

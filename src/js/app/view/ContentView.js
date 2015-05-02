@@ -39,14 +39,6 @@ var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
 var imageCaptionTemplate = require("./template/CollectionStack.Image.tpl");
 
-var COLLAPSE_THRESHOLD = 100;
-
-// var PAN_MOVE_FACTOR = 1;
-// var PAN_OVERSHOOT_FACTOR = Globals.VMOVE_OUT_OF_BOUNDS_DRAG;
-// // var PAN_OVERSHOOT_FACTOR = 0.2;
-// /* move factor is applied on top, so demultiply */
-// PAN_OVERSHOOT_FACTOR *= PAN_MOVE_FACTOR;
-
 /**
  * @constructor
  * @type {module:app/view/ContentView}
@@ -61,19 +53,7 @@ var ContentView = ContainerView.extend({
 		this.children = [];
 		this.transitionables = [];
 		this.touch = TouchManager.getInstance();
-		// this.transforms = new TransformHelper();
 
-		// this._collapsedOffsetY = 300;
-
-		// Model listeners
-		// this.listenTo(bundles, {
-		// 	"select:one": function (bundle) {
-		// 		this.createChildren(bundle, false);
-		// 	},
-		// 	"deselect:one": function (bundle) {
-		// 		this.removeChildren(bundle, false);
-		// 	}
-		// });
 		this.listenTo(bundles, {
 			"select:one": this._onSelectOne,
 			"select:none": this._onSelectNone,
@@ -162,19 +142,18 @@ var ContentView = ContainerView.extend({
 	},
 
 	removeChildren: function (bundle, skipAnimation) {
-		var startProps = {position: "absolute"};
+		// var startProps = {position: "absolute"};
 		var endProps = {delay: Globals.EXITING_DELAY, opacity: 0};
-		// var txStyleName = this.getPrefixedStyle("transform");
 		var txPropName = this.getPrefixedProperty("transform");
 
-		_.each(this.children, function(view) {
+		_.each(this.children, function(view, index, children) {
 			if (skipAnimation) {
 				view.remove();
 			} else {
-				view.el.style[txPropName] = window.getComputedStyle(view.el)[txPropName];
 				// startProps[txStyleName] = view.$el.css(txStyleName);
 				// startProps["top"] = view.el.offsetTop;
 				// startProps["left"] = view.el.offsetLeft;
+				view.el.style[txPropName] = window.getComputedStyle(view.el)[txPropName];
 				view.$el
 					// .css(startProps)
 					.addClass("removing")
@@ -183,6 +162,7 @@ var ContentView = ContainerView.extend({
 						view.remove(); next();
 					});
 			}
+			children[index] = void 0;
 		}, this);
 		// clear child references immediately
 		this.children.length = 0;
@@ -226,7 +206,7 @@ var ContentView = ContainerView.extend({
 	//
 	// 	delta = Math.abs(delta); // remove sign
 	//
-	// 	if (isDirAllowed && delta > COLLAPSE_THRESHOLD) {
+	// 	if (isDirAllowed && delta > Globals.COLLAPSE_THRESHOLD) {
 	// 		this.touch.off("vpanmove", this._onVPanMove);
 	// 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 	// 		this.setCollapsed(!this.isCollapsed());
@@ -256,7 +236,7 @@ var ContentView = ContainerView.extend({
 	},
 
 	PAN_MOVE_FACTOR: 0.05,
-	PAN_OVERSHOOT_FACTOR: Globals.VMOVE_OUT_OF_BOUNDS_DRAG,
+	PAN_OVERSHOOT_FACTOR: Globals.V_PANOUT_DRAG,
 	_collapsedOffsetY: 300,
 
 	_onVPanMove: function (ev) {
@@ -312,7 +292,7 @@ var ContentView = ContainerView.extend({
 
 	willCollapseChange: function(ev) {
 		return ev.type == "vpanend"? this.isCollapsed()?
-			ev.thresholdDeltaY > COLLAPSE_THRESHOLD : ev.thresholdDeltaY < -COLLAPSE_THRESHOLD : false;
+			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD : ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD : false;
 	},
 
 	// /* -------------------------------
@@ -361,6 +341,7 @@ var ContentView = ContainerView.extend({
 			"view:select:none": controller.deselectImage,
 			"view:remove": controller.stopListening
 		});
+		// controller.listenToOnce("view:remove", controller.stopListening);
 		return view;
 	},
 

@@ -8,7 +8,7 @@ module.exports = (function (style) {
 		"transition" : "transitionend",
 		"WebkitTransition" : "webkitTransitionEnd",
 		"MozTransition" : "transitionend",
-		"msTransition" : "MSTransitionEnd",
+		// "msTransition" : "MSTransitionEnd",
 		"OTransition" : "oTransitionEnd"
 	};
 	for (prop in map) {

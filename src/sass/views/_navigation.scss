@@ -127,10 +127,11 @@
 		}
 	}
 	#bundle-list {
-		.list-item .name {
-			transition: color $duration steps(8) $delay;
+		.list-item.selected .name {
+			transition: color $duration steps(16);//$ease;// $delay;
 		}
 		&:not(.collapsed) .list-item.selected .name {
+			// transition: color $duration steps(16);//$ease;// $delay;
 			color: $link_color;
 		}
 	}

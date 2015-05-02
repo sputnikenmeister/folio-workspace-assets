@@ -15,10 +15,10 @@ module.exports = function(style, property) {
 		prop = (prefix) ? prefix + camelProp : property;
 
 		if (prop in style) {
-			console.log("Prefix: style name for '" + property + "' is '" + prop + "'");
+			console.log("Prefixed property '" + property + "' is '" + prop + "'");
 			return prop;
 		}
 	}
-	console.log("Prefix: style name for '" + property + "' not found");
+	console.log("Prefixed property '" + property + "' not found");
 	return void 0;
 };

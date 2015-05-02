@@ -13,8 +13,6 @@ var $ = Backbone.$;
 var Globals = require("../../control/Globals");
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
-/** @type {module:app/view/base/DeferredView} */
-//var DeferredView = require("../../view/base/DeferredView");
 
 /** @type {string} */
 var viewTemplate = require("./CollectionStack.tpl");
@@ -24,12 +22,13 @@ var viewTemplate = require("./CollectionStack.tpl");
  * @type {module:app/component/CollectionStack}
  */
 module.exports = View.extend({
-//module.exports = DeferredView.extend({
 
 	/** @override */
 	tagName: "div",
+
 	/** @override */
 	className: "stack",
+
 	/** @override */
 	template: viewTemplate,
 
@@ -42,8 +41,8 @@ module.exports = View.extend({
 			"reset": this._onCollectionReset,
 			"select:one": this._onSelectOne,
 			"deselect:one": this._onDeselectOne,
-//			"select:none": this._onSelectNone,
-//			"deselect:none": this._onDeselectNone,
+			// "select:none": this._onSelectNone,
+			// "deselect:none": this._onDeselectNone,
 		});
 
 		this.renderPending = true;
@@ -59,7 +58,7 @@ module.exports = View.extend({
 	 * --------------------------- */
 
 	$createContentElement: function(item) {
-		return Backbone.$(this._createContentElement(item));
+		return $(this._createContentElement(item));
 	},
 
 	_createContentElement: function(item) {
@@ -91,7 +90,8 @@ module.exports = View.extend({
 						position: "absolute",
 						display: "block",
 					};
-					//var contentRect = _.extend(contentRect, this.$content[0].getBoundingClientRect(), this.$content.position());
+					//var contentRect = _.extend(contentRect, this.$content[0].getBoundingClientRect(),
+					//	this.$content.position());
 					this.$el.css({						// Have the parent keep it's previous size
 						minWidth: this.el.offsetWidth,
 						minHeight: this.el.offsetHeight,
@@ -167,8 +167,7 @@ module.exports = View.extend({
 		}
 	},
 
-//	_onDeselectNone: function() {},
-
-//	_onSelectNone: function() {},
+	// _onDeselectNone: function() {},
+	// _onSelectNone: function() {},
 
 });

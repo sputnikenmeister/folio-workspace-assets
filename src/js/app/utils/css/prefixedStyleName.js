@@ -16,10 +16,10 @@ module.exports = function(style, property) {
 	for (var i = 0; i < CSS_VENDOR_PREFIXES.length; i++) {
 		prefixed = CSS_VENDOR_PREFIXES[i] + normalized;
 		if (prefixed in style) {
-			console.log("Prefix: style name for '" + property + "' is '" + prefixed + "'");
+			console.log("Prefixed style name '" + property + "' is '" + prefixed + "'");
 			return prefixed;
 		}
 	}
-	console.log("Prefix: style name for '" + property + "' not found");
+	console.log("Prefixed style name '" + property + "' not found");
 	return void 0;
 };

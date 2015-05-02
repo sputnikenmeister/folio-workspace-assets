@@ -71,7 +71,7 @@ var Carousel = DeferredView.extend({
 		options.renderer && (this.renderer = options.renderer);
 		options.emptyRenderer && (this.emptyRenderer = options.emptyRenderer);
 
-//		_.isNumber(options.gap) && (this.gap = options.gap);
+		// _.isNumber(options.gap) && (this.gap = options.gap);
 		this.children = new Container();
 		this.childGap = this.dirProp(20, 18);
 		this.metrics = {};
@@ -88,13 +88,13 @@ var Carousel = DeferredView.extend({
 			"deselect:none": this._onDeselectAny,
 		});
 
-//		this.hammer.on("tap", this._onTap);
+		// this.hammer.on("tap", this._onTap);
 		this.hammer.on("panstart panmove panend pancancel", this._onPan);
 	},
 
 	remove: function () {
 		this._scrollPendingAction && this._scrollPendingAction(true);
-//		this.hammer.off("tap", this._onTap);
+		// this.hammer.off("tap", this._onTap);
 		this.hammer.off("panstart panmove panend pancancel", this._onPan);
 		this.removeChildren();
 		return DeferredView.prototype.remove.apply(this);
@@ -321,8 +321,8 @@ var Carousel = DeferredView.extend({
 		cMetrics = this.metrics[cView.cid];
 
 
-//		var opacity, opacityProp;
-//		opacityProp = this.getPrefixedProperty("opacity");
+		// var opacity, opacityProp;
+		// opacityProp = this.getPrefixedProperty("opacity");
 
 		this.children.each(function (view) {
 			metrics = this.metrics[view.cid];
@@ -330,18 +330,18 @@ var Carousel = DeferredView.extend({
 			view.el.style[txProp] = (this.direction & Hammer.DIRECTION_HORIZONTAL)?
 					"translate3d(" + pos + "px,0,0)" : "translate3d(0," + pos + "px,0)";
 
-//			if (skipTransitions) {
-//				if (view === this._panCandidateView) {
-//					opacity = Math.min(1, (1 - Math.abs(pos) / metrics.outer) * 4);
-//				} else if (view === this._selectedView) {
-//					opacity = 1;
-//				} else {
-//					opacity = 0;
-//				}
-//			} else {
-//				alphaVal = "";
-//			}
-//			metrics.content.style[opacityProp] = opacity;
+			// if (skipTransitions) {
+			// 	if (view === this._panCandidateView) {
+			// 		opacity = Math.min(1, (1 - Math.abs(pos) / metrics.outer) * 4);
+			// 	} else if (view === this._selectedView) {
+			// 		opacity = 1;
+			// 	} else {
+			// 		opacity = 0;
+			// 	}
+			// } else {
+			// 	alphaVal = "";
+			// }
+			// metrics.content.style[opacityProp] = opacity;
 		}, this);
 
 		// cancel callback
@@ -351,7 +351,7 @@ var Carousel = DeferredView.extend({
 		} else {
 			this.$el.removeClass("skip-transitions");
 			this._scrollEndCancellable = this.onTransitionEnd(this._selectedView.el, this.getPrefixedStyle("transform"), this._onScrollEnd, Globals.TRANSITION_DURATION * 2);
-//			this._scrollEndCancellable = addTransitionCallback(this.getPrefixedStyle("transform"), this._onScrollEnd, this._selectedView.el, this, Globals.TRANSITION_DURATION * 2);
+			// this._scrollEndCancellable = addTransitionCallback(this.getPrefixedStyle("transform"), this._onScrollEnd, this._selectedView.el, this, Globals.TRANSITION_DURATION * 2);
 		}
 
 		this.commitScrollSelection();
@@ -421,7 +421,7 @@ var Carousel = DeferredView.extend({
 			this.$el.addClass("scrolling");
 
 			this.scrollByNow(0, Carousel.ANIMATED);
-//			this.scrollByLater(0, Carousel.ANIMATED);
+			// this.scrollByLater(0, Carousel.ANIMATED);
 		}
 	},
 
@@ -457,7 +457,7 @@ var Carousel = DeferredView.extend({
 			this._panCandidateView && this._panCandidateView.$el.addClass("candidate");
 		}
 		if (this._panCandidateView === void 0) {
-			delta *= Globals.HMOVE_OUT_OF_BOUNDS_DRAG;
+			delta *= Globals.H_PANOUT_DRAG;
 		}
 		this.scrollByNow(delta, Carousel.IMMEDIATE);
 		//this.scrollByLater(delta, Carousel.IMMEDIATE);
@@ -472,18 +472,18 @@ var Carousel = DeferredView.extend({
 				(Math.abs(delta) > this.selectThreshold)) {					// gesture must overshoot selectThreshold
 			this._scrollCandidateView = view;					// choose next scroll target
 		}
-//		if (this._precedingView && (this._precedingView !== this._scrollCandidateView)) {
-//			this._precedingView.$el.removeClass("candidate");
-//		}
-//		if (this._followingView && (this._followingView !== this._scrollCandidateView)) {
-//			this._followingView.$el.removeClass("candidate");
-//		}
+		// if (this._precedingView && (this._precedingView !== this._scrollCandidateView)) {
+		// 	this._precedingView.$el.removeClass("candidate");
+		// }
+		// if (this._followingView && (this._followingView !== this._scrollCandidateView)) {
+		// 	this._followingView.$el.removeClass("candidate");
+		// }
 		if (this._panCandidateView && (this._panCandidateView !== this._scrollCandidateView)) {
 			this._panCandidateView.$el.removeClass("candidate");
 		}
 		this.$el.removeClass("panning");
 		this._panCandidateView = void 0;
-//		this.scrollByLater(0, Carousel.ANIMATED);
+		// this.scrollByLater(0, Carousel.ANIMATED);
 		this.scrollByNow(0, Carousel.ANIMATED);
 	},
 
@@ -508,16 +508,16 @@ var Carousel = DeferredView.extend({
 		this.updateSelection();
 		this._selectedView.$el.addClass("selected");
 		if (this._internalSelection) {
-//			console.log("Internal selection");
+			// console.log("Internal selection");
 			return;
 		}
 		this.$el.addClass("scrolling");
-//		this.scrollByLater(0, Carousel.ANIMATED);
+		// this.scrollByLater(0, Carousel.ANIMATED);
 		this.scrollByNow(0, Carousel.ANIMATED);
 	},
 
 	_onDeselectAny: function (model) {
-//		this._selectedView.$el.removeClass("selected");
+		// this._selectedView.$el.removeClass("selected");
 	},
 
 	/* --------------------------- *

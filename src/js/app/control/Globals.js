@@ -3,17 +3,13 @@
  */
 /** @type {module:underscore} */
 var _ = require("underscore");
-var sassVars = require("../../../sass/variables.json");
+
 
 module.exports = (function () {
 	var globals = {};
-	// to match css values in _globals.scss, units are in seconds
-	// globals.TRANSITION_GAP				=	0.025 * 1000;
-	// globals.TRANSITION_DURATION			=	0.475 * 1000;
-	// globals.TRANSITION_DURATION			=	0.6 * 1000;
-	// globals.TRANSITION_EASE				=	"ease-out";
-	// globals.HORIZONTAL_STEP				=	20; // pixels
-	// globals.VERTICAL_STEP				=	12; // pixels
+
+	// SASS <--> JS shared values
+	var sassVars = require("../../../sass/variables.json");
 
 	globals.HORIZONTAL_STEP				=	parseFloat(sassVars.units["hu_px"]);
 	globals.VERTICAL_STEP				=	parseFloat(sassVars.units["vu_px"]);
@@ -21,8 +17,8 @@ module.exports = (function () {
 	globals.TRANSITION_DURATION			=	parseFloat(sassVars.transitions["duration_ms"]);
 	globals.TRANSITION_EASE				=	sassVars.transitions["ease"];
 
-	globals.TRANSITION_DELAY			=	(globals.TRANSITION_DURATION + globals.TRANSITION_GAP);
 	globals.NO_DELAY	 				=	0;
+	globals.TRANSITION_DELAY			=	(globals.TRANSITION_DURATION + globals.TRANSITION_GAP);
 	globals.EXITING_DELAY 				=	globals.TRANSITION_DELAY * 0 + 1;
 	globals.CHANGING_DELAY 				=	globals.TRANSITION_DELAY * 1 + 1;
 	globals.ENTERING_DELAY 				=	globals.TRANSITION_DELAY * 2 + 1;
@@ -61,8 +57,10 @@ module.exports = (function () {
 	globals.TRANSIT_PARENT.className = "transform-changing";
 	// globals.TRANSIT_PARENT.easing = "linear";
 
-	globals.HMOVE_OUT_OF_BOUNDS_DRAG	=	0.4; // factor
-	globals.VMOVE_OUT_OF_BOUNDS_DRAG	=	0.1; // factor
+	globals.H_PANOUT_DRAG	=	0.4; // factor
+	globals.V_PANOUT_DRAG	=	0.1; // factor
+	globals.COLLAPSE_THRESHOLD = 100; // px
+	globals.PAN_THRESHOLD = 15;
 
 	globals.APP_ROOT					=	window.approot;
 	globals.MEDIA_DIR					=	window.mediadir;

@@ -36,14 +36,6 @@ var GroupingListView = require("./component/GroupingListView");
 /** @type {module:app/view/component/CollectionPager} */
 var CollectionPager = require("./component/CollectionPager");
 
-var COLLAPSE_THRESHOLD = 100;
-
-// var PAN_MOVE_FACTOR = 0.15;
-// var PAN_OVERSHOOT_FACTOR = Globals.VMOVE_OUT_OF_BOUNDS_DRAG;
-// // var PAN_OVERSHOOT_FACTOR = 0.2;
-// /* move factor is applied on top, so demultiply */
-// PAN_OVERSHOOT_FACTOR *= PAN_MOVE_FACTOR;
-
 /**
  * @constructor
  * @type {module:app/view/NavigationView}
@@ -225,7 +217,7 @@ module.exports = ContainerView.extend({
 		var delta = ev.thresholdDeltaX;
 		if (bundles.selected.get("images").selectedIndex == -1) {
 			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)?
-				Globals.HMOVE_OUT_OF_BOUNDS_DRAG : 0.75;
+				Globals.H_PANOUT_DRAG : 0.75;
 			//delta *= (delta > 0)? 0.40: 0.75;
 		} else {//if (images.selectedIndex == 0) {
 			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)? 0.75 : 0.0;
@@ -257,7 +249,7 @@ module.exports = ContainerView.extend({
 	//
 	// 	delta = Math.abs(delta); // remove sign
 	//
-	// 	if (isDirAllowed && delta > COLLAPSE_THRESHOLD) {
+	// 	if (isDirAllowed && delta > Globals.COLLAPSE_THRESHOLD) {
 	// 		this.touch.off("vpanmove", this._onVPanMove);
 	// 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 	// 		this.setCollapsed(!this.isCollapsed());
@@ -286,7 +278,7 @@ module.exports = ContainerView.extend({
 	},
 
 	PAN_MOVE_FACTOR: 0.05,
-	PAN_OVERSHOOT_FACTOR: Globals.VMOVE_OUT_OF_BOUNDS_DRAG,
+	PAN_OVERSHOOT_FACTOR: Globals.V_PANOUT_DRAG,
 	_collapsedOffsetY: 300,
 
 	_onVPanMove: function (ev) {
@@ -342,7 +334,7 @@ module.exports = ContainerView.extend({
 
 	willCollapseChange: function(ev) {
 		return ev.type == "vpanend"? this.isCollapsed()?
-			ev.thresholdDeltaY > COLLAPSE_THRESHOLD : ev.thresholdDeltaY < -COLLAPSE_THRESHOLD : false;
+			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD : ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD : false;
 	},
 
 	/* -------------------------------

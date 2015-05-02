@@ -29,7 +29,7 @@ var DeferredView = View.extend({
 	 */
 	requestRender: function (key, value) {
 		if (this._renderRequestId == 0) {
-			this._renderRequestId = window.requestAnimationFrame(this.applyRender, this.el);
+			this._renderRequestId = window.requestAnimationFrame(this.applyRender);
 			this._renderJobs = {};
 		}
 		if (key) {
@@ -66,6 +66,13 @@ var DeferredView = View.extend({
 
 	/** @abstract */
 	renderLater: function () {},
+
+	remove: function () {
+		if (this._renderRequestId != 0) {
+			window.cancelAnimationFrame(this._renderRequestId);
+		}
+		return View.prototype.remove.apply(this);
+	},
 
 });
 

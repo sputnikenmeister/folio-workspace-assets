@@ -5,12 +5,11 @@
 	},
 	"transitions": {
 		"delay_interval_ms": "15",
-		"duration_ms": "450",
-		"ease": "ease-out"
+		"duration_ms": "435",
+		"ease": "ease"
 	},
 	"breakpoints": {
-		"unquoted": "only screen and (min-device-width : 320px) and (max-device-width : 480px)",
-
+		"_unquoted": "only screen and (min-device-width : 320px) and (max-device-width : 480px)",
 		"smartphone": "'only screen and (min-device-width : 320px) and (max-device-width : 480px)'",
 		"smartphone-landscape": "'only screen and (min-width : 321px)'",
 		"smartphone-portrait": "'only screen and (max-width : 320px)'",
