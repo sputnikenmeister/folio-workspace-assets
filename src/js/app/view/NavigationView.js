@@ -115,37 +115,46 @@ module.exports = ContainerView.extend({
 			this._collapsed = collapsed;
 			this.bundleList.setCollapsed(collapsed);
 			this.keywordList.setCollapsed(collapsed);
-			if (collapsed) {
-				this.$el.removeClass("expanded").addClass("collapsed");
-			} else {
-				this.$el.removeClass("collapsed").addClass("expanded");
-			}
+
+			this.el.classList.toggle("collapsed", collapsed);
+			this.el.classList.toggle("expanded", !collapsed);
+
+			// if (collapsed) {
+			// 	this.$el.removeClass("expanded").addClass("collapsed");
+			// } else {
+			// 	this.$el.removeClass("collapsed").addClass("expanded");
+			// }
 		}
 	},
 
 	/* --------------------------- *
-	 * Model event handlers
+	 * bundles event handlers
 	 * --------------------------- */
 
 	_onDeselectOne: function(bundle) {
-		console.log("NavigationView._onDeselectOne");
-		this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_PARENT);
-		this.runTransformTransition(this.hGroupings, Globals.TRANSIT_EXITING);
-		this.runTransformTransition(this.keywordList.wrapper, Globals.TRANSIT_EXITING);
-		this.runTransformTransition(this.bundleList.wrapper, Globals.TRANSIT_ENTERING);
-		// this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_EXITING);
-		// this.runTransformTransition(this.hTransitionables,
+		console.log("NavigationView._onDeselectOne", document.body.className);
+
+		// this.transforms.releaseAll();
+		this.transforms.runTransition(this.vTransitionables, Globals.TRANSIT_PARENT);
+		this.transforms.runTransition(this.hGroupings, Globals.TRANSIT_EXITING);
+		this.transforms.runTransition(this.keywordList.wrapper, Globals.TRANSIT_EXITING);
+		this.transforms.runTransition(this.bundleList.wrapper, Globals.TRANSIT_ENTERING);
+		// this.transforms.runTransition(this.hTransitionables, Globals.TRANSIT_EXITING);
+		// this.transforms.runTransition(this.hTransitionables,
 		// 	(this.isCollapsed()? Globals.TRANSIT_ENTERING : Globals.TRANSIT_EXITING);
-		// this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
-		this.stopListening(bundle.get("images"), "deselect:one deselect:none", this._onImageChange);
+		// this.transforms.runTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
+		this.stopListening(bundle.get("images"), "deselect:one deselect:none", this._onDeselectImage);
+		this.stopListening(bundle.get("images"), "select:one select:none", this._onSelectImage);
 	},
 
 	_onDeselectNone: function() {
-		console.log("NavigationView._onDeselectNone");
-		this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_PARENT);
-		this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_ENTERING);
-		// this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
-		// this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_EXITING);
+		console.log("NavigationView._onDeselectNone", document.body.className);
+
+		// this.transforms.releaseAll();
+		this.transforms.runTransition(this.vTransitionables, Globals.TRANSIT_PARENT);
+		this.transforms.runTransition(this.hTransitionables, Globals.TRANSIT_ENTERING);
+		// this.transforms.runTransition(this.vTransitionables, Globals.TRANSIT_CHANGING);
+		// this.transforms.runTransition(this.hTransitionables, Globals.TRANSIT_EXITING);
 		// this.setCollapsed(true);
 		if (this.el.matches(".default-layout " + this.el.tagName)) {
 			this.touch.on("panstart", this._onHPanStart);
@@ -156,7 +165,9 @@ module.exports = ContainerView.extend({
 	_onSelectOne: function(bundle) {
 		this.setCollapsed(true);
 		this.keywordList.filterBy(bundle);
-		this.listenTo(bundle.get("images"), "deselect:one deselect:none", this._onImageChange);
+		this.listenTo(bundle.get("images"), "deselect:one deselect:none", this._onDeselectImage);
+		this.listenTo(bundle.get("images"), "select:one select:none", this._onSelectImage);
+		console.log("NavigationView._onSelectOne", document.body.className);
 	},
 
 	_onSelectNone: function() {
@@ -166,15 +177,27 @@ module.exports = ContainerView.extend({
 			this.touch.off("panstart", this._onHPanStart);
 		}
 		this.touch.off("vpanstart", this._onVPanStart);
+
+		console.log("NavigationView._onSelectOne", document.body.className);
 	},
 
-	_onImageChange: function() {
-		console.log("NavigationView._onImageChange");
+	/* --------------------------- *
+	 * bundle.images event handlers
+	 * --------------------------- */
+
+	_onDeselectImage: function() {
+		console.log("NavigationView._onDeselectImage", document.body.className);
+
 		this.transforms.clear(this.keywordList.wrapper);
-		this.runTransformTransition(this.keywordList.wrapper, Globals.TRANSIT_IMMEDIATE);
+		this.transforms.runTransition(this.keywordList.wrapper, Globals.TRANSIT_IMMEDIATE);
 		if (!this.isCollapsed()) {
-			this.runTransformTransition([this.bundleList.wrapper, this.sitename.el], Globals.TRANSIT_IMMEDIATE);
+			this.transforms.runTransition([this.bundleList.wrapper, this.sitename.el], Globals.TRANSIT_IMMEDIATE);
 		}
+	},
+
+	_onSelectImage: function() {
+		this.setCollapsed(true);
+		console.log("NavigationView._onSelectImage", document.body.className);
 	},
 
 	/* --------------------------- *
@@ -203,9 +226,10 @@ module.exports = ContainerView.extend({
 			this.touch.on("panend pancancel", this._onHPanFinal);
 			this.touch.on("panmove", this._onHPanMove);
 
-			// this.disableTransitions(this.keywordList.wrapper);
+			this.transforms.disableTransitions(this.keywordList.wrapper);
+			// this.keywordList.wrapper.style[this.getPrefixedStyle("transition")] = "none 0s 0s";
+
 			// this.keywordList.wrapper.style[this.getPrefixedStyle("transition")] = "";
-			this.keywordList.wrapper.style[this.getPrefixedStyle("transition")] = "none 0s 0s";
 			// this.transforms.clear(this.keywordList.wrapper);
 			// this.transforms.release(this.keywordList.wrapper);
 			this.transforms.capture(this.keywordList.wrapper);
@@ -227,10 +251,10 @@ module.exports = ContainerView.extend({
 	},
 
 	_onHPanFinal: function(ev) {
-		this.enableTransitions(this.keywordList.wrapper);
+		this.transforms.enableTransitions(this.keywordList.wrapper);
 
 		// WARNING: transition will be set twice if there is a new selection!
-		this.runTransformTransition([this.keywordList.wrapper], Globals.TRANSIT_IMMEDIATE, false);
+		this.transforms.runTransition([this.keywordList.wrapper], Globals.TRANSIT_IMMEDIATE, false);
 		this.transforms.clear(this.keywordList.wrapper);
 
 		this.touch.off("panmove", this._onHPanMove);
@@ -241,34 +265,10 @@ module.exports = ContainerView.extend({
 	 * Vertical touch/move (_onVPan*)
 	 * ------------------------------- */
 
-	// _onVPanMove1: function (ev) {
-	// 	var delta = ev.thresholdDeltaY;
-	// 	var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
-	// 	// check if direction is aligned with collapse/expand
-	// 	var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-	//
-	// 	delta = Math.abs(delta); // remove sign
-	//
-	// 	if (isDirAllowed && delta > Globals.COLLAPSE_THRESHOLD) {
-	// 		this.touch.off("vpanmove", this._onVPanMove);
-	// 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
-	// 		this.setCollapsed(!this.isCollapsed());
-	// 		_.each(this.children, function(view) {
-	// 			this.enableTransitions(view.el);
-	// 			this.transforms.clear(view.el);
-	// 		}, this);
-	// 	} else {
-	// 		delta *= PAN_OVERSHOOT_FACTOR;
-	// 		delta *= this.isCollapsed()? 1 : -1;
-	// 		_.each(this.children, function(view) {
-	// 			this.transforms.move(view.el, void 0, delta);
-	// 		}, this);
-	// 	}
-	// },
-
 	_onVPanStart: function (ev) {
 		_.each(this.children, function(view) {
-			this.disableTransitions(view.el);
+			// view.el.style[this.getPrefixedStyle("transition")] = "none 0s 0s";
+			this.transforms.disableTransitions(view.el);
 			this.transforms.capture(view.el);
 		}, this);
 		this._onVPanMove(ev);
@@ -315,26 +315,30 @@ module.exports = ContainerView.extend({
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 
+		_.each(this.children, function(view) {
+			this.transforms.enableTransitions(view.el);
+		}, this);
+
 		if (this.willCollapseChange(ev)) {
-			this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_PARENT);
-			this.runTransformTransition(this.hTransitionables,
+			this.transforms.runTransition(this.vTransitionables, Globals.TRANSIT_PARENT);
+			this.transforms.runTransition(this.hTransitionables,
 				this.isCollapsed()? Globals.TRANSIT_IMMEDIATE : Globals.TRANSIT_ENTERING);
 			this.setCollapsed(!this.isCollapsed());
 		} else {
-			this.runTransformTransition(this.vTransitionables, Globals.TRANSIT_IMMEDIATE);
-			this.runTransformTransition(this.hTransitionables, Globals.TRANSIT_IMMEDIATE);
+			this.transforms.runTransition(this.vTransitionables, Globals.TRANSIT_IMMEDIATE);
+			this.transforms.runTransition(this.hTransitionables, Globals.TRANSIT_IMMEDIATE);
 		}
 
-		// this.transforms.clearAll();
 		_.each(this.children, function(view) {
-		//	this.enableTransitions(view);
 			this.transforms.clear(view.el);
 		}, this);
 	},
 
 	willCollapseChange: function(ev) {
 		return ev.type == "vpanend"? this.isCollapsed()?
-			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD : ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD : false;
+			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
+			ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
+			false;
 	},
 
 	/* -------------------------------
@@ -593,4 +597,29 @@ module.exports = ContainerView.extend({
 		//	}
 		//}
 //	},
+
+	// _onVPanMove1: function (ev) {
+	// 	var delta = ev.thresholdDeltaY;
+	// 	var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+	// 	// check if direction is aligned with collapse/expand
+	// 	var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
+	//
+	// 	delta = Math.abs(delta); // remove sign
+	//
+	// 	if (isDirAllowed && delta > Globals.COLLAPSE_THRESHOLD) {
+	// 		this.touch.off("vpanmove", this._onVPanMove);
+	// 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
+	// 		this.setCollapsed(!this.isCollapsed());
+	// 		_.each(this.children, function(view) {
+	// 			this.enableTransitions(view.el);
+	// 			this.transforms.clear(view.el);
+	// 		}, this);
+	// 	} else {
+	// 		delta *= PAN_OVERSHOOT_FACTOR;
+	// 		delta *= this.isCollapsed()? 1 : -1;
+	// 		_.each(this.children, function(view) {
+	// 			this.transforms.move(view.el, void 0, delta);
+	// 		}, this);
+	// 	}
+	// },
 });

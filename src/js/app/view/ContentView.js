@@ -51,7 +51,7 @@ var ContentView = ContainerView.extend({
 	initialize: function (options) {
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
 		this.children = [];
-		this.transitionables = [];
+		this.childrenEls = [];
 		this.touch = TouchManager.getInstance();
 
 		this.listenTo(bundles, {
@@ -81,20 +81,34 @@ var ContentView = ContainerView.extend({
 
 	/** @override */
 	render: function (ev) {
-		_.each(this.children, function(child) {
-			child.render();
+		_.each(this.children, function(view) {
+			view.render();
+			this.transforms.release(view.el);
 		}, this);
-		this.transforms.releaseAll();
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
 
 	/* --------------------------- *
-	 * Model event handlers
+	 * bundles event handlers
 	 * --------------------------- */
+
+	_onDeselectOne: function(bundle) {
+		this.removeChildren(bundle, false);
+		this.setCollapsed(false);
+		this.stopListening(bundle.get("images"), "select:one select:none", this._onSelectImage);
+	},
+
+	_onDeselectNone: function() {
+		this.setCollapsed(true);
+		this.touch.on("vpanstart", this._onVPanStart);
+		// this.touch.on("vpanend", this._onVPanFinal);
+		// this.touch.on("panstart", this._onPanStart);
+	},
 
 	_onSelectOne: function(bundle) {
 		this.setCollapsed(true);
 		this.createChildren(bundle, false);
+		this.listenTo(bundle.get("images"), "select:one select:none", this._onSelectImage);
 	},
 
 	_onSelectNone: function() {
@@ -103,16 +117,15 @@ var ContentView = ContainerView.extend({
 		// this.touch.off("panstart", this._onPanStart);
 	},
 
-	_onDeselectOne: function(bundle) {
-		this.removeChildren(bundle, false);
-		this.setCollapsed(false);
+	/* --------------------------- *
+	 * bundle.images event handlers
+	 * --------------------------- */
+
+	_onDeselectImage: function() {
 	},
 
-	_onDeselectNone: function() {
+	_onSelectImage: function() {
 		this.setCollapsed(true);
-		this.touch.on("vpanstart", this._onVPanStart);
-		// this.touch.on("vpanend", this._onVPanFinal);
-		// this.touch.on("panstart", this._onPanStart);
 	},
 
 	/* -------------------------------
@@ -130,7 +143,7 @@ var ContentView = ContainerView.extend({
 		// Show views
 		_.each(this.children, function(view) {
 			this.transforms.add(view.el);
-			this.transitionables.push(view.el);
+			this.childrenEls.push(view.el);
 			this.listenToOnce(view, "view:remove", this.onChildRemove);
 			this.$el.append(view.el);
 			view.render();
@@ -162,6 +175,8 @@ var ContentView = ContainerView.extend({
 						view.remove(); next();
 					});
 			}
+			this.childrenEls.splice(this.childrenEls.indexOf(view.el), 1);
+			this.transforms.remove(view.el);
 			children[index] = void 0;
 		}, this);
 		// clear child references immediately
@@ -169,8 +184,8 @@ var ContentView = ContainerView.extend({
 	},
 
 	onChildRemove: function(view) {
-		this.transitionables.splice(this.transitionables.indexOf(view.el), 1);
-		this.transforms.destroy(view.el);
+		// this.childrenEls.splice(this.childrenEls.indexOf(view.el), 1);
+		// this.transforms.remove(view.el);
 	},
 
 	/* -------------------------------
@@ -186,11 +201,17 @@ var ContentView = ContainerView.extend({
 	setCollapsed: function(collapsed) {
 		if (this._collapsed !== collapsed) {
 			this._collapsed = collapsed;
-			if (collapsed) {
-				this.$el.addClass("collapsed").removeClass("expanded");
-			} else {
-				this.$el.addClass("expanded").removeClass("collapsed");
-			}
+			// if (collapsed) {
+			// 	this.$el.addClass("collapsed").removeClass("expanded");
+			// } else {
+			// 	this.$el.addClass("expanded").removeClass("collapsed");
+			// }
+			_.each(this.children, function(view) {
+				view.setEnabled(collapsed);
+			});
+			// this.touch.get("pan").set({ enable: collapsed });
+			this.el.classList.toggle("collapsed", collapsed);
+			this.el.classList.toggle("expanded", !collapsed);
 		}
 	},
 
@@ -198,35 +219,9 @@ var ContentView = ContainerView.extend({
 	 * Vertical touch/move (_onVPan*)
 	 * ------------------------------- */
 
-	// _onVPanMove1: function (ev) {
-	// 	var delta = ev.thresholdDeltaY;
-	// 	var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
-	// 	// check if direction is aligned with collapse/expand
-	// 	var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-	//
-	// 	delta = Math.abs(delta); // remove sign
-	//
-	// 	if (isDirAllowed && delta > Globals.COLLAPSE_THRESHOLD) {
-	// 		this.touch.off("vpanmove", this._onVPanMove);
-	// 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
-	// 		this.setCollapsed(!this.isCollapsed());
-	// 		_.each(this.children, function(view) {
-	// 			this.enableTransitions(view.el);
-	// 			this.transforms.clear(view.el);
-	// 			// this.transforms.capture(view.el);
-	// 		}, this);
-	// 	} else {
-	// 		if (!isDirAllowed) delta *= -PAN_OVERSHOOT_FACTOR; // delta is opposite
-	// 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
-	// 		_.each(this.children, function(view) {
-	// 			this.transforms.move(view.el, void 0, delta);
-	// 		}, this);
-	// 	}
-	// },
-
 	_onVPanStart: function (ev) {
 		_.each(this.children, function(view) {
-			this.disableTransitions(view.el);
+			this.transforms.disableTransitions(view.el);
 			this.transforms.capture(view.el);
 		}, this);
 		this._onVPanMove(ev);
@@ -273,19 +268,19 @@ var ContentView = ContainerView.extend({
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 
+		_.each(this.children, function(view) {
+			this.transforms.enableTransitions(view.el);
+		}, this);
+
 		if (this.willCollapseChange(ev)) {
-			// this.$transitionables.transit(this.transitions[this.isCollapsed()
-			// 	Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING]);
-			this.runTransformTransition(this.transitionables,
+			this.transforms.runTransition(this.childrenEls,
 				this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING);
 			this.setCollapsed(!this.isCollapsed());
 		} else {
-			// this.$transitionables.transit(this.transitions[Globals.TRANSIT_IMMEDIATE]);
-			this.runTransformTransition(this.transitionables, Globals.TRANSIT_IMMEDIATE);
+			this.transforms.runTransition(this.childrenEls, Globals.TRANSIT_IMMEDIATE);
 		}
 		// this.transforms.clearAll();
 		_.each(this.children, function(view) {
-			// this.enableTransitions(view);
 			this.transforms.clear(view.el);
 		}, this);
 	},
@@ -294,20 +289,6 @@ var ContentView = ContainerView.extend({
 		return ev.type == "vpanend"? this.isCollapsed()?
 			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD : ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD : false;
 	},
-
-	// /* -------------------------------
-	//  * transitions
-	//  * ------------------------------- */
-	//
-	// enableTransitions: function(view) {
-	// 	//this.$el.removeClass("skip-transitions");
-	// 	view.$el.css(this.getPrefixedStyle("transition"), "");
-	// },
-	//
-	// disableTransitions: function(view) {
-	// 	//this.$el.addClass("skip-transitions");
-	// 	view.$el.css(this.getPrefixedStyle("transition"), "none 0s 0s");
-	// },
 
 	/* -------------------------------
 	 * Components
@@ -392,6 +373,31 @@ var ContentView = ContainerView.extend({
 //		return view;
 //	},
 
+	// _onVPanMove1: function (ev) {
+	// 	var delta = ev.thresholdDeltaY;
+	// 	var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+	// 	// check if direction is aligned with collapse/expand
+	// 	var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
+	//
+	// 	delta = Math.abs(delta); // remove sign
+	//
+	// 	if (isDirAllowed && delta > Globals.COLLAPSE_THRESHOLD) {
+	// 		this.touch.off("vpanmove", this._onVPanMove);
+	// 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
+	// 		this.setCollapsed(!this.isCollapsed());
+	// 		_.each(this.children, function(view) {
+	// 			this.enableTransitions(view.el);
+	// 			this.transforms.clear(view.el);
+	// 			// this.transforms.capture(view.el);
+	// 		}, this);
+	// 	} else {
+	// 		if (!isDirAllowed) delta *= -PAN_OVERSHOOT_FACTOR; // delta is opposite
+	// 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
+	// 		_.each(this.children, function(view) {
+	// 			this.transforms.move(view.el, void 0, delta);
+	// 		}, this);
+	// 	}
+	// },
 });
 
 module.exports = ContentView;

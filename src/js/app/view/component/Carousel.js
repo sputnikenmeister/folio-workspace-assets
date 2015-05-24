@@ -88,14 +88,31 @@ var Carousel = DeferredView.extend({
 			"deselect:none": this._onDeselectAny,
 		});
 
-		// this.hammer.on("tap", this._onTap);
-		this.hammer.on("panstart panmove panend pancancel", this._onPan);
+		// this._enabled = true;
+		// this.hammer.on("panstart panmove panend pancancel", this._onPan);
+		this.setEnabled(true);
+	},
+
+	setEnabled: function(enabled) {
+		if (this._enabled !== enabled) {
+			this._enabled = enabled;
+			if (enabled) {
+				// this.hammer.on("tap", this._onTap);
+				this.hammer.on("panstart panmove panend pancancel", this._onPan);
+			} else {
+				// this.hammer.off("tap", this._onTap);
+				this.hammer.off("panstart panmove panend pancancel", this._onPan);
+			}
+			this.el.classList.toggle("disabled", !enabled);
+		}
 	},
 
 	remove: function () {
 		this._scrollPendingAction && this._scrollPendingAction(true);
-		// this.hammer.off("tap", this._onTap);
-		this.hammer.off("panstart panmove panend pancancel", this._onPan);
+		if (this._enabled) {
+			// this.hammer.off("tap", this._onTap);
+			this.hammer.off("panstart panmove panend pancancel", this._onPan);
+		}
 		this.removeChildren();
 		return DeferredView.prototype.remove.apply(this);
 	},

@@ -34,6 +34,41 @@ module.exports = View.extend({
 		View.apply(this, arguments);
 	},
 
+	runTransformTransition: function(targets, transition, useEvent) {
+		this.transforms.runTransition(targets, transition);
+	},
+
+	/* -------------------------------
+	 * transitions
+	 * ------------------------------- */
+
+	enableTransitions: function(el) {
+		this.transforms.enableTransitions(el);
+	},
+
+	disableTransitions: function(el) {
+		this.transforms.disableTransitions(el);
+	},
+
+	/* -------------------------------
+	 * old
+	 * ------------------------------- */
+
+	/*
+	enableTransitions: function(el) {
+		el.style[this.getPrefixedProperty("transition")] = "";
+		//this.$el.removeClass("skip-transitions");
+		//view.$el.css(CSS_CLEAR_TRANSITIONS);
+		//view.$wrapper.css(CSS_CLEAR_TRANSITIONS);
+	},
+
+	disableTransitions: function(el) {
+		el.style[this.getPrefixedProperty("transition")] = "none 0s 0s";
+		//this.$el.addClass("skip-transitions");
+		//view.$el.css(CSS_REMOVE_TRANSITIONS);
+		//view.$wrapper.css(CSS_REMOVE_TRANSITIONS);
+	},
+
 	runTransformTransition: function (targets, transition, useEvent) {
 		if (!_.isBoolean(useEvent)) {
 			useEvent = false;
@@ -108,22 +143,5 @@ module.exports = View.extend({
 			}
 		}
 	},
-
-	/* -------------------------------
-	 * transitions
-	 * ------------------------------- */
-
-	enableTransitions: function(el) {
-		el.style[this.getPrefixedProperty("transition")] = "";
-		//this.$el.removeClass("skip-transitions");
-		//view.$el.css(CSS_CLEAR_TRANSITIONS);
-		//view.$wrapper.css(CSS_CLEAR_TRANSITIONS);
-	},
-
-	disableTransitions: function(el) {
-		el.style[this.getPrefixedProperty("transition")] = "none 0s 0s";
-		//this.$el.addClass("skip-transitions");
-		//view.$el.css(CSS_REMOVE_TRANSITIONS);
-		//view.$wrapper.css(CSS_REMOVE_TRANSITIONS);
-	},
+	*/
 });

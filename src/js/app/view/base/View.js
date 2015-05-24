@@ -21,10 +21,10 @@ var addTransitionCallback = require("../../utils/event/addTransitionCallback");
 var _prefixedProps = {};
 var _prefixedStyles = {};
 
-//var _viewObjsByCid = {};
-var _viewElements = [];
-var _viewObjs = [];
-var _viewObjsNum = 0;
+var _viewsByCid = {};
+// var _viewElements = [];
+// var _viewObjs = [];
+// var _viewObjsNum = 0;
 
 /**
  * @constructor
@@ -41,12 +41,17 @@ var View = Backbone.View.extend({
 
 	remove: function() {
 		this.trigger("view:remove", this);
-		var idx = _viewObjs.indexOf(this);
-		_viewObjs.splice(idx, 1);
-		_viewElements.splice(idx, 1);
-		_viewObjsNum--;
+		// var idx = _viewObjs.indexOf(this);
+		// _viewObjs.splice(idx, 1);
+		// _viewElements.splice(idx, 1);
+		// _viewObjsNum--;
+		delete _viewsByCid[this.cid];
 		return Backbone.View.prototype.remove.apply(this, arguments);
 	},
+
+	// _ensureElement: function() {
+	// 	Backbone.View.prototype._ensureElement.apply(this, arguments);
+	// },
 
     setElement: function(element, delegate) {
 		// setElement always initializes this.el,
@@ -57,12 +62,20 @@ var View = Backbone.View.extend({
 		} else {
 			Backbone.View.prototype.setElement.apply(this, arguments);
 		}
-		this.$el.attr("data-cid", this.cid);
-		_viewObjs[_viewObjsNum] = this;
-		_viewElements[_viewObjsNum] = this.el;
-		_viewObjsNum++;
+		if (this.el === void 0) {
+			console.warn("Backbone view has no element");
+		} else {
+			this.$el.attr("data-cid", this.cid);
+			this.el.cid = this.cid;
+		}
+		_viewsByCid[this.cid] = this;
+		// _viewObjs[_viewObjsNum] = this;
+		// _viewElements[_viewObjsNum] = this.el;
+		// _viewObjsNum++;
 		return this;
 	},
+
+	setEnabled: function(enable) {},
 
 	getPrefixedProperty: function(prop) {
 		return _prefixedProps[prop] || (_prefixedProps[prop] = prefixedProperty(this.el.style, prop));
@@ -124,7 +137,8 @@ var View = Backbone.View.extend({
 
 },{
 	findByElement: function(element) {
-		return _viewObjs[_viewElements.indexOf(element)];
+		return _viewsByCid[element.cid]
+		// return _viewObjs[_viewElements.indexOf(element)];
 	},
 });
 

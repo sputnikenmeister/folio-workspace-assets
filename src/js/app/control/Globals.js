@@ -9,13 +9,13 @@ module.exports = (function () {
 	var globals = {};
 
 	// SASS <--> JS shared values
-	var sassVars = require("../../../sass/variables.json");
+	var jsonSassVars = require("../../../sass/variables.json");
 
-	globals.HORIZONTAL_STEP				=	parseFloat(sassVars.units["hu_px"]);
-	globals.VERTICAL_STEP				=	parseFloat(sassVars.units["vu_px"]);
-	globals.TRANSITION_GAP				=	parseFloat(sassVars.transitions["delay_interval_ms"]);
-	globals.TRANSITION_DURATION			=	parseFloat(sassVars.transitions["duration_ms"]);
-	globals.TRANSITION_EASE				=	sassVars.transitions["ease"];
+	globals.HORIZONTAL_STEP				=	parseFloat(jsonSassVars.units["hu_px"]);
+	globals.VERTICAL_STEP				=	parseFloat(jsonSassVars.units["vu_px"]);
+	globals.TRANSITION_GAP				=	parseFloat(jsonSassVars.transitions["delay_interval_ms"]);
+	globals.TRANSITION_DURATION			=	parseFloat(jsonSassVars.transitions["duration_ms"]);
+	globals.TRANSITION_EASE				=	jsonSassVars.transitions["ease"];
 
 	globals.NO_DELAY	 				=	0;
 	globals.TRANSITION_DELAY			=	(globals.TRANSITION_DURATION + globals.TRANSITION_GAP);

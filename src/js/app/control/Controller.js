@@ -195,6 +195,7 @@ var Controller = Backbone.Router.extend({
 
 	/* Select Bundle/image */
 	_changeSelection: function (bundle, image) {
+		console.log("---- selection changing ----");
 		// console.log("Controller._changeSelection [before] bundle:" +
 		// 			(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
 
