@@ -46,14 +46,15 @@ module.exports = function (url, image, context) {
 			if (timeoutId) {
 				window.clearTimeout(timeoutId);
 			}
-//			if (request.readyState !== XMLHttpRequest.DONE) {
-				request.abort();
-//			}
+			request.abort();
 		},
 		destroy: function () {
 			//URL.revokeObjectURL(this.image.src);
 			cleanup();
-			this.abort();
+			if (timeoutId) {
+				window.clearTimeout(timeoutId);
+			}
+			request.abort();
 		},
 	};
 	request.onload = function (ev) {

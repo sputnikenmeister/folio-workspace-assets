@@ -33,37 +33,32 @@ module.exports = (function () {
 
 	globals.TRANSIT_ENTERING = _.clone(transit);
 	globals.TRANSIT_ENTERING.delay = globals.ENTERING_DELAY;
-	globals.TRANSIT_ENTERING.easing = "ease-out";
 	globals.TRANSIT_ENTERING.className = "transform-entering";
 
 	globals.TRANSIT_EXITING = _.clone(transit);
 	globals.TRANSIT_EXITING.delay = globals.EXITING_DELAY;
-	globals.TRANSIT_EXITING.easing = "ease-in";
 	globals.TRANSIT_EXITING.className = "transform-exiting";
 
 	globals.TRANSIT_IMMEDIATE = _.clone(transit);
 	globals.TRANSIT_IMMEDIATE.delay = globals.NO_DELAY;
 	globals.TRANSIT_IMMEDIATE.duration = globals.TRANSITION_DURATION;
-	// globals.TRANSIT_IMMEDIATE.easing = "ease";
 	globals.TRANSIT_IMMEDIATE.className = "transform-immediate";
 
 	globals.TRANSIT_CHANGING = _.clone(transit);
 	globals.TRANSIT_CHANGING.delay = globals.CHANGING_DELAY;
 	globals.TRANSIT_CHANGING.className = "transform-changing";
-	// globals.TRANSIT_CHANGING.easing = "ease";
 
 	globals.TRANSIT_PARENT = _.clone(transit);
 	globals.TRANSIT_PARENT.delay = globals.CHANGING_DELAY;
 	globals.TRANSIT_PARENT.className = "transform-changing";
-	// globals.TRANSIT_PARENT.easing = "linear";
 
 	globals.H_PANOUT_DRAG	=	0.4; // factor
 	globals.V_PANOUT_DRAG	=	0.1; // factor
-	globals.COLLAPSE_THRESHOLD = 100; // px
-	globals.PAN_THRESHOLD = 15;
+	globals.COLLAPSE_THRESHOLD = 75; // px
+	globals.PAN_THRESHOLD	=	 15; // px
 
-	globals.APP_ROOT					=	window.approot;
-	globals.MEDIA_DIR					=	window.mediadir;
+	globals.APP_ROOT		=	window.approot;
+	globals.MEDIA_DIR		=	window.mediadir;
 
 	delete window.approot;
 	delete window.mediadir;

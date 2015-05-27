@@ -18,13 +18,9 @@ var camelToDashed = require("../../utils/strings/camelToDashed");
 /** @type {module:app/utils/event/addTransitionEndCommand} */
 var addTransitionCallback = require("../../utils/event/addTransitionCallback");
 
-var _prefixedProps = {};
-var _prefixedStyles = {};
-
+var _styleProps = {};
+var _styleNames = {};
 var _viewsByCid = {};
-// var _viewElements = [];
-// var _viewObjs = [];
-// var _viewObjsNum = 0;
 
 /**
  * @constructor
@@ -41,17 +37,9 @@ var View = Backbone.View.extend({
 
 	remove: function() {
 		this.trigger("view:remove", this);
-		// var idx = _viewObjs.indexOf(this);
-		// _viewObjs.splice(idx, 1);
-		// _viewElements.splice(idx, 1);
-		// _viewObjsNum--;
 		delete _viewsByCid[this.cid];
 		return Backbone.View.prototype.remove.apply(this, arguments);
 	},
-
-	// _ensureElement: function() {
-	// 	Backbone.View.prototype._ensureElement.apply(this, arguments);
-	// },
 
     setElement: function(element, delegate) {
 		// setElement always initializes this.el,
@@ -69,27 +57,28 @@ var View = Backbone.View.extend({
 			this.el.cid = this.cid;
 		}
 		_viewsByCid[this.cid] = this;
-		// _viewObjs[_viewObjsNum] = this;
-		// _viewElements[_viewObjsNum] = this.el;
-		// _viewObjsNum++;
 		return this;
 	},
 
 	setEnabled: function(enable) {},
 
 	getPrefixedProperty: function(prop) {
-		return _prefixedProps[prop] || (_prefixedProps[prop] = prefixedProperty(this.el.style, prop));
+		return _styleProps[prop] || (_styleProps[prop] = prefixedProperty(this.el.style, prop));
 	},
 
 	getPrefixedStyle: function(prop) {
 		var p, pp;
-		if (_prefixedStyles[prop] === void 0) {
+		if (_styleNames[prop] === void 0) {
 			p = dashedToCamel(prop);
 			pp = this.getPrefixedProperty(p);
-			_prefixedStyles[prop] = (p === pp? "" : "-") + camelToDashed(pp);
+			_styleNames[prop] = (p === pp? "" : "-") + camelToDashed(pp);
 		}
-		return _prefixedStyles[prop];
+		return _styleNames[prop];
 	},
+
+	/* -------------------------------
+	 * transitionEnd helpers
+	 * ------------------------------- */
 
 	onTransitionEnd: function(target, props, callback, timeout) {
 		return addTransitionCallback(props, callback, target, this, timeout || 2000);
@@ -103,42 +92,9 @@ var View = Backbone.View.extend({
 		return window.cancelAnimationFrame(id);
 	},
 
-	// callNextFrame: function(fn) {
-	// 	return this.applyNextFrame(fn, Array.prototype.slice.call(1, arguments));
-	// },
-	//
-	// onNextFrame: function(handler, args) {
-	// 	var context = this;
-	// 	var bound = function () {
-	// 		context.offNextFrame(handler)
-	// 		return handler.apply(context, args);
-	// 	};
-	// 	var idx = _frameHandlers.indexOf(handler);
-	// 	if (idx == -1)
-	// 		idx = _frameQueueNum;
-	// 		_frameQueueNum++;
-	// 	}
-	// 	_frameHandlers[idx] = handler;
-	// 	_frameQueue[idx] = bound;
-	// 	_requestFrameRun();
-	// 	return bound;
-	// },
-	//
-	// offNextFrame: function(fn) {
-	// 	var idx = _frameHandlers.indexOf(fn);
-	// 	if (idx == -1) {
-	// 		_frameHandlers.splice(idx, 1);
-	// 		_frameQueue.splice(idx, 1);
-	// 		_frameQueueNum--;
-	// 	} else {
-	// 		console.error("onNextFrame not registered");
-	// 	}
-	// },
-
 },{
 	findByElement: function(element) {
-		return _viewsByCid[element.cid]
-		// return _viewObjs[_viewElements.indexOf(element)];
+		return _viewsByCid[element.cid];
 	},
 });
 

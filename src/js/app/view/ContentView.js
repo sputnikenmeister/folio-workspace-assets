@@ -81,9 +81,11 @@ var ContentView = ContainerView.extend({
 
 	/** @override */
 	render: function (ev) {
+		// this.transforms.releaseAll();
 		_.each(this.children, function(view) {
-			view.render();
 			this.transforms.release(view.el);
+			this.transforms.clearTransitions(view.el);
+			view.render();
 		}, this);
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
@@ -94,12 +96,12 @@ var ContentView = ContainerView.extend({
 
 	_onDeselectOne: function(bundle) {
 		this.removeChildren(bundle, false);
-		this.setCollapsed(false);
+		// this.setCollapsed(false);
 		this.stopListening(bundle.get("images"), "select:one select:none", this._onSelectImage);
 	},
 
 	_onDeselectNone: function() {
-		this.setCollapsed(true);
+		// this.setCollapsed(true);
 		this.touch.on("vpanstart", this._onVPanStart);
 		// this.touch.on("vpanend", this._onVPanFinal);
 		// this.touch.on("panstart", this._onPanStart);
@@ -112,6 +114,7 @@ var ContentView = ContainerView.extend({
 	},
 
 	_onSelectNone: function() {
+		this.setCollapsed(false);
 		this.touch.off("vpanstart", this._onVPanStart);
 		// this.touch.off("vpanend", this._onVPanFinal);
 		// this.touch.off("panstart", this._onPanStart);
@@ -122,6 +125,10 @@ var ContentView = ContainerView.extend({
 	 * --------------------------- */
 
 	_onDeselectImage: function() {
+		if (!this.isCollapsed()) {
+			this.transforms.clearAll();
+			this.transforms.runTransition(Globals.TRANSIT_EXITING, this.childrenEls);
+		}
 	},
 
 	_onSelectImage: function() {
@@ -231,17 +238,14 @@ var ContentView = ContainerView.extend({
 	},
 
 	PAN_MOVE_FACTOR: 0.05,
-	PAN_OVERSHOOT_FACTOR: Globals.V_PANOUT_DRAG,
 	_collapsedOffsetY: 300,
 
 	_onVPanMove: function (ev) {
 		var delta = ev.thresholdDeltaY;
-		// check if direction is aligned with collapse/expand
 		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
+		// check if direction is aligned with collapse/expand
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		var moveFactor = this.isCollapsed()? 1 - this.PAN_MOVE_FACTOR : this.PAN_MOVE_FACTOR;
-		/* move factor is applied on top, so demultiply */
-		var overshootFactor = this.PAN_OVERSHOOT_FACTOR;// * this.PAN_MOVE_FACTOR;
 
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
@@ -249,18 +253,18 @@ var ContentView = ContainerView.extend({
 
 		if (isDirAllowed) {
 			if (delta > maxDelta) { // overshooting
-				delta = (delta - maxDelta) * overshootFactor + maxDelta;
+				delta = ((delta - maxDelta) * Globals.V_PANOUT_DRAG) + maxDelta;
 			} else { // no overshooting
 				delta = delta;
 			}
 		} else {
-			delta = delta * -overshootFactor; // delta is opposite
+			delta = delta * -Globals.V_PANOUT_DRAG; // delta is opposite
 		}
 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
 
 		// this.transforms.moveAll(void 0, delta);
 		_.each(this.children, function(view) {
-			this.transforms.move(view.el, void 0, delta);
+			this.transforms.move(void 0, delta, view.el);
 		}, this);
 	},
 
@@ -273,11 +277,11 @@ var ContentView = ContainerView.extend({
 		}, this);
 
 		if (this.willCollapseChange(ev)) {
-			this.transforms.runTransition(this.childrenEls,
-				this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING);
+			this.transforms.runTransition(
+				this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING, this.childrenEls);
 			this.setCollapsed(!this.isCollapsed());
 		} else {
-			this.transforms.runTransition(this.childrenEls, Globals.TRANSIT_IMMEDIATE);
+			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE, this.childrenEls);
 		}
 		// this.transforms.clearAll();
 		_.each(this.children, function(view) {
@@ -287,7 +291,9 @@ var ContentView = ContainerView.extend({
 
 	willCollapseChange: function(ev) {
 		return ev.type == "vpanend"? this.isCollapsed()?
-			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD : ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD : false;
+			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
+			ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
+			false;
 	},
 
 	/* -------------------------------
@@ -339,8 +345,6 @@ var ContentView = ContainerView.extend({
 		return view;
 	},
 
-
-
 //	/**
 //	 * image-pager
 //	 */
@@ -373,31 +377,6 @@ var ContentView = ContainerView.extend({
 //		return view;
 //	},
 
-	// _onVPanMove1: function (ev) {
-	// 	var delta = ev.thresholdDeltaY;
-	// 	var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
-	// 	// check if direction is aligned with collapse/expand
-	// 	var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-	//
-	// 	delta = Math.abs(delta); // remove sign
-	//
-	// 	if (isDirAllowed && delta > Globals.COLLAPSE_THRESHOLD) {
-	// 		this.touch.off("vpanmove", this._onVPanMove);
-	// 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
-	// 		this.setCollapsed(!this.isCollapsed());
-	// 		_.each(this.children, function(view) {
-	// 			this.enableTransitions(view.el);
-	// 			this.transforms.clear(view.el);
-	// 			// this.transforms.capture(view.el);
-	// 		}, this);
-	// 	} else {
-	// 		if (!isDirAllowed) delta *= -PAN_OVERSHOOT_FACTOR; // delta is opposite
-	// 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
-	// 		_.each(this.children, function(view) {
-	// 			this.transforms.move(view.el, void 0, delta);
-	// 		}, this);
-	// 	}
-	// },
 });
 
 module.exports = ContentView;

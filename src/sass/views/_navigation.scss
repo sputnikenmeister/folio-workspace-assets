@@ -17,8 +17,15 @@
 	position: relative;
 	display: inline-block;
 	top: 1.5rem;
-	color: $link_color;
 	min-height: 2rem;
+}
+
+#site-name a {
+	transition: color $duration $ease $delay;
+	color: $link_color;
+}
+.with-bundle .expanded #site-name a {
+	color: inherit;
 }
 
 // -----------------------------------
@@ -111,7 +118,7 @@
 	line-height: 0.75em;
 	position: absolute;
 	display: inline-block;
-	top: calc(50% - 0.325em);
+	top: 0.375em;
 	left: 0;
 	width: 0.5em;
 	height: 0.5em;
@@ -133,6 +140,11 @@
 		&:not(.collapsed) .list-item.selected .name {
 			// transition: color $duration steps(16);//$ease;// $delay;
 			color: $link_color;
+			// color: hsla(0 ,0% ,100% ,0.75);
+			// text-shadow:
+			// 	-4px 0px rgba(255, 0, 0, 0.33),
+			// 	0px 0px rgba(0, 0, 255, 0.33),
+			// 	4px 0px rgba(64, 255, 32, 0.5)
 		}
 	}
 }

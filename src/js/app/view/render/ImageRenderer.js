@@ -43,17 +43,17 @@ module.exports = View.extend({
 		this.createChildren();
 
 		if (this.model.has("prefetched")) {
-			console.log("ImageRenderer.initialize: using prefetched " + this.model.get("prefetched"));
+			// console.log("ImageRenderer.initialize: using prefetched " + this.model.get("prefetched"));
 			this.image.src = this.model.get("prefetched");
 			this.$el.removeClass("idle").addClass("done");
 		} else {
-//			this.initializePromise();
+			// this.initializePromise();
 			this.addSiblingListeners();
 		}
 	},
 
 	remove: function() {
-//		this.promise.destroy();
+		// this.promise.destroy();
 		this.$image.off("dragstart");
 		return View.prototype.remove.apply(this, arguments);
 	},
@@ -105,16 +105,16 @@ module.exports = View.extend({
 			cW = Math.round((cH / sH) * sW);
 		}
 
-//		this.$image.attr({width: cW, height: cH});
+		// this.$image.attr({width: cW, height: cH});
 		img.setAttribute("width", cW);
 		img.setAttribute("height", cH);
 
-//		this.$image.css({left: cX, top: cY});
+		// this.$image.css({left: cX, top: cY});
 		img.style.left = cX + "px";
 		img.style.top = cY + "px";
 
-//		this.$placeholder.css({maxWidth: cW + (poW - pcW), maxHeight: cH + (poH - pcH)});
-//		this.$placeholder.css({maxWidth: cW, maxHeight: cH});
+		// this.$placeholder.css({maxWidth: cW + (poW - pcW), maxHeight: cH + (poH - pcH)});
+		// this.$placeholder.css({maxWidth: cW, maxHeight: cH});
 		p.style.maxWidth = img.offsetWidth + "px";
 		p.style.maxHeight = img.offsetHeight + "px";
 
@@ -186,7 +186,7 @@ module.exports = View.extend({
 				this.on("view:remove", handleRemove);
 
 				transitionCancellable = this.onTransitionEnd(this.el, transitionProp, transitionCallback, Globals.TRANSITION_DELAY * 2);
-//				transitionCancellable = addTransitionCallback(transitionProp, transitionCallback, this.el, this, Globals.TRANSITION_DELAY * 2);
+				// transitionCancellable = addTransitionCallback(transitionProp, transitionCallback, this.el, this, Globals.TRANSITION_DELAY * 2);
 			}
 		};
 		if (check(owner.selectedIndex)) {

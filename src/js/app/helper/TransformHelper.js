@@ -5,166 +5,132 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {module:jshashtable} */
-// var HashTable = require("jshashtable");
-/** @type {module:hashes.HashTable} */
-// var HashTable = require('hashes').HashTable;
-
 /** @type {module:app/helper/TransformItem} */
 var TransformItem = require("./TransformItem");
 
-function traceElt(el) {
-	var traceId = "";
-	var cid;
-	if (el.hasAttribute("id")) {
-		traceId += "#" + el.id + " ";
-	}
-	if (el.hasAttribute("data-cid")) {
-		cid = el.getAttribute("data-cid");
-		if (el.cid === cid) {
-			traceId += "@" + cid + " ";
-		} else {
-			traceId += "@!" + cid + " ";
-		}
-	}
-	if (traceId == "") {
-		traceId += "?(" + el.tagName + ") ";
-	}
-	traceId += "[" + el.classList[0] + "]";
-	return traceId;
-}
+/** @type {module:app/utils/debug/traceElement} */
+var traceElt = require("../utils/debug/traceElement");
+
+var _idSeed = 100;
 
 /**
  * @constructor
  * @type {module:app/helper/TransformHelper}
  */
 function TransformHelper() {
-	// this._elements = [];
-	// this._values = [];
 	this._items = {};
+	this.get = this.add;
+	this.clearTransitions = this.enableTransitions;
 }
 
 TransformHelper.prototype = {
 
+	/* -------------------------------
+	* Public
+	* ------------------------------- */
+
 	add: function(el) {
-		this._add(el);
+		if (this.has(el)) {
+			return this._items[el.cid];
+		} else {
+			if (!el.cid) {
+				el.cid = "elt" + _idSeed++;
+				el.setAttribute("data-cid", el.cid);
+			}
+			return this._items[el.cid] = new TransformItem(el);
+		}
 	},
+
+	// get: function(el) {
+	// 	return this.has(el)? this._items[el.cid] : this.add(el);
+	// },
 
 	has: function(el) {
-		return this._has(el);
-	},
-
-	get: function(el) {
-		return this._get(el);
+		return el.cid && this._items[el.cid] !== void 0;
 	},
 
 	remove: function(el) {
-		this._remove(el);
-	},
-
-	/* -------------------------------
-	* Private
-	* ------------------------------- */
-
-	_add: function(el) {
-		if (this._has(el)) {
-			return this._items[el.cid];
-		} else {
-			var o = new TransformItem(el);
-			this._items[o.cid] = o;
-			return o;
-		}
-	},
-	_get: function(el) {
-		return this._has(el)? this._items[el.cid] : this._add(el);
-	},
-	_has: function(el) {
-		return el.cid && this._items[el.cid] !== void 0;
-	},
-	_remove: function(el) {
-		if (this._has(el)) {
+		if (this.has(el)) {
 			var o = this._items[el.cid];
 			o.destroy();
 			delete this._items[el.cid];
 		}
 	},
-	releaseAll: function() {
-		for (var i in this._items) {
-			this._items[i]._release();
-		}
+
+	/* --------------------------------
+	 * Public: transform
+	 * -------------------------------- */
+
+	move: function(x, y, el){
+		this.get(el).move(x, y);
 	},
 
-	/* -------------------------------
-	 * Private
-	 * ------------------------------- */
+	capture: function(el) {
+		this.get(el).capture();
+	},
 
-	/*_add: function(el) {
-		var idx = this._elements.indexOf(el);
-		if (el && idx == -1) {
-			idx = this._elements.length;
-			this._elements[idx] = el;
-			this._values[idx] = new TransformItem(el);
-			// el.addEventListener(transitionEnd, this.handleTransitionEnd, false);
-		}
-		return idx;
+	release: function(el) {
+		this.get(el).release();
 	},
-	_has: function(el) {
-		return this._elements.indexOf(el) != -1;
+
+	clear: function(el) {
+		this.get(el).clear();
 	},
-	_get: function(el) {
-		var idx = this._elements.indexOf(el);
-		if (idx == -1) {
-			idx = this._add(el);
-		}
-		return this._values[idx];
-	},
-	_remove: function(el) {
-		var o, idx = this._elements.indexOf(el);
-		if (idx != -1) {
-			o = this._values[idx];
-			this._elements.splice(idx, 1);
-			this._values.splice(idx, 1);
-			o.destroy();
-		}
-	},
+
 	moveAll: function(x, y) {
-		for (var i = 0; i < this._values.length; ++i) {
-			this._values[i]._move(x, y);
+		for (var i in this._items) {
+			this._items[i].move(x, y);
 		}
 	},
 
 	captureAll: function() {
-		for (var i = 0; i < this._values.length; ++i) {
-			this._values[i]._capture();
+		for (var i in this._items) {
+			this._items[i].capture();
 		}
 	},
 
-
 	releaseAll: function() {
-		for (var i = 0; i < this._values.length; ++i) {
-			this._values[i]._release();
+		for (var i in this._items) {
+			this._items[i].release();
 		}
 	},
 
 	clearAll: function() {
-		for (var i = 0; i < this._values.length; ++i) {
-			this._values[i]._clear();
+		for (var i in this._items) {
+			this._items[i].clear();
 		}
-	},*/
+	},
 
 	/* -------------------------------
 	 * Public: transitions
 	 * ------------------------------- */
 
-	runTransition: function(el, transition) {
-		if (_.isArray(el)) {
-			for (var i = 0; i < el.length; ++i) {
-				this.get(el[i]).runTransition(transition);
+	runTransition: function(transition) {
+		for (var i = 1; i < arguments.length; ++i) {
+			var el = arguments[i];
+			if (_.isArray(el)) {
+				for (var j = 0; j < el.length; ++j) {
+					this.get(el[j]).runTransition(transition);
+				}
+			} else {
+				this.get(el).runTransition(transition);
 			}
-		} else {
-			this.get(el).runTransition(transition);
 		}
 	},
+
+	// runTransition2: function(transition, el) {
+	// 	if (arguments.length > 2) {
+	// 		for (var i = 1; i < arguments.length; ++i) {
+	// 			this.get(arguments[i]).runTransition(transition);
+	// 		}
+	// 	} else if (_.isArray(el)) {
+	// 		for (var j = 0; j < el.length; ++j) {
+	// 			this.get(el[j]).runTransition(transition);
+	// 		}
+	// 	} else {
+	// 		this.get(el).runTransition(transition);
+	// 	}
+	// },
 
 	enableTransitions: function(el) {
 		if (this.has(el)) {
@@ -186,25 +152,6 @@ TransformHelper.prototype = {
 		}
 	},
 
-	/* --------------------------------
-	 * Public: transform
-	 * -------------------------------- */
-
-	move: function(el, x, y){
-		this.get(el)._move(x, y);
-	},
-
-	capture: function(el) {
-		this.get(el)._capture();
-	},
-
-	release: function(el) {
-		this.get(el)._release();
-	},
-
-	clear: function(el) {
-		this.get(el)._clear();
-	},
 
 
 	/* -------------------------------
@@ -228,95 +175,11 @@ TransformHelper.prototype = {
 	// },
 
 	/* -------------------------------
-	 * old
-	 * ------------------------------- */
-
-	/*update: function(el) {
-		var o = this.get(el);
-		if (o.offset) {
-			if (!o.captured) {
-				console.info("TransformHelper._updateCSSTransform", "captured values not set: capturing now");
-				o.captured = this._captureElementTransform(o.$el.css("transform"));
-			}
-			o.$el.css({transform: "translate3d(" +
-					   (o.offset.x + o.captured.x) + "px, " +
-					   (o.offset.y + o.captured.y) + "px, 0px)"
-			});
-		} else {
-			o.$el.css({"transform": ""});
-		}
-	},*/
-
-	/*_captureElementTransform: function(css) {
-		var o = { css: css };
-		var m = css.match(/(-?[\d\.]+)(?=[\)\,])/g);
-		if (m && m.length == 6) {
-			o.x = parseFloat(m[4]);
-			o.y = parseFloat(m[5]);
-		} else if (m && m.length == 16) {
-			o.x = parseFloat(m[12]);
-			o.y = parseFloat(m[13]);
-		} else {
-			o.x = 0;
-			o.y = 0;
-		}
-		console.log("TransformHelper._captureElementTransform_2", o.x, o.y, cssval);
-		return o;
-	},*/
-
-// _parseTransformValue: function(css) {
-// 	var m, mm, ret = {};
-// 	mm = css.match(/(matrix|matrix3d)\(([^\)]+)\)/);
-// 	if (mm) {
-// 		m = mm[2].split(",");
-// 		if (mm[1] === "matrix") {
-// 			ret.x = parseFloat(m[4]);
-// 			ret.y = parseFloat(m[5]);
-// 		} else {
-// 			ret.x = parseFloat(m[12]);
-// 			ret.y = parseFloat(m[13]);
-// 		}
-// 	} else {
-// 		ret.x = 0;
-// 		ret.y = 0;
-// 	}
-// 	return ret;
-// },
-
-	/*hasTransition: function(el) {
-		var css, prop, ret;
-		//css = window.getComputedStyle(el);
-		//prop = css.webkitTransition || css.MozTransitionProperty || css.webkitTransitionProperty
-		//		|| css.MozTransition || css.transition;
-		css = this.get(el).$el.css(["transition-property", "transition"]);
-		prop = css["transition-property"] || css["transition"];
-		ret = prop.indexOf("transform") != -1;
-		console.log("TransformHelper._hasCSSTransition", (ret?"has":"has no") + " transition", css);
-		return ret;
-	},*/
-
-	/*_captureElementTransform: function(css) {
-		var o = { css: css };
-		var m = css.match(/(-?[\d\.]+)(?=[\)\,])/g);
-		if (m && m.length == 6) {
-			o.x = parseFloat(m[4]);
-			o.y = parseFloat(m[5]);
-		} else if (m && m.length == 16) {
-			o.x = parseFloat(m[12]);
-			o.y = parseFloat(m[13]);
-		} else {
-			o.x = 0;
-			o.y = 0;
-		}
-		console.log("TransformHelper._captureElementTransform_2", o.x, o.y, cssval);
-		return o;
-	},*/
-
-	/* -------------------------------
 	 * transition
 	 * ------------------------------- */
 
-	/*_parseTransitionValues: function(o) {
+	/*
+	_parseTransitionValues: function(o) {
 		var ret = {};
 		var css, values, idx, d = 0;
 		css = o.$el.css(["transition-property", "transition-duration", "transition-delay"]);

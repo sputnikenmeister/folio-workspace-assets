@@ -52,44 +52,18 @@ var Controller = Backbone.Router.extend({
 
 	/** @override */
 	initialize: function (options) {
+		this._lastBundle = null;
+		this._lastImage = null;
+		this._currentBundle = null;
+		this._currentImage = null;
+
 		this._classProviders = [];
 		this._initialBodyClasses = document.body.className;
 
 		this.initializeBrowserTitle();
 		this.initializeBundleStyles();
 		this.inilializeStateHandlers();
-
-		// this.listenToOnce(bundles, "all", this.routeInitialized);
-		// if (DEBUG) {
-		// 	// error trace
-		// 	var bundleTracer =	traceArgs("Bundles \t", "info");
-		// 	var imageTracer = 	traceArgs("Images  \t", "info");
-		// 	var routeTracer = 	traceArgs("Router  \t", "info");
-		// 	var appTracer = 	traceArgs("App     \t", "info");
-		//
-		// 	this.listenTo(this, "route", routeTracer);
-		// 	this.listenTo(Backbone,	"all", appTracer);
-		// 	this.listenTo(bundles, {
-		// 		"all": bundleTracer,
-		// 		"select:one": function(bundle) {
-		// 			this.listenTo(bundle.get("images"), "all", imageTracer);
-		// 		},
-		// 		"deselect:one": function(bundle) {
-		// 			this.stopListening(bundle.get("images"), "all", imageTracer);
-		// 		}
-		// 	});
-		// }
 	},
-
-	// listenTo: function() {
-	// 	console.log("Controller.listenTo", arguments);
-	// 	return Backbone.Router.prototype.listenTo.apply(this, arguments);
-	// },
-
-	// stopListening: function() {
-	// 	console.log("Controller.stopListening", arguments);
-	// 	return Backbone.Router.prototype.stopListening.apply(this, arguments);
-	// },
 
 	/* ---------------------------
 	 * Document body classes
@@ -195,29 +169,35 @@ var Controller = Backbone.Router.extend({
 
 	/* Select Bundle/image */
 	_changeSelection: function (bundle, image) {
-		console.log("---- selection changing ----");
-		// console.log("Controller._changeSelection [before] bundle:" +
-		// 			(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
+		this._lastBundle = this._currentBundle;
+		this._lastImage = this._currentImage;
+		this._currentBundle = bundle;
+		this._currentImage = image;
+
+		console.log("Controller._changeSelection " +
+		// console.log("Controller._changeSelection [before]" +
+			" [bundle: " + (this._lastBundle? this._lastBundle.cid : "none") +
+			" => " + (bundle? bundle.cid : "none") +
+			"] [image: " + (this._lastImage? this._lastImage.cid : "none") +
+			" => " + (image? image.cid : "none") +
+			"]"
+		);
 
 		this._applyClassProviders(bundle, image);
 		if (_.isUndefined(bundle)) {
 			bundles.deselect();
 		} else {
-			// var opts = { silent: (bundle !== bundles.selected) };
+			bundles.select(bundle);
 			if (_.isUndefined(image)) {
-				// bundle.get("images").deselect(opts);
 				bundle.get("images").deselect();
 			} else {
-				// bundle.get("images").select(image, opts);
 				bundle.get("images").select(image);
 			}
-			bundles.select(bundle);
+			// bundles.select(bundle);
 		}
 		// this._applyClassProviders(bundle, image);
-		// console.log("Controller._changeSelection [after]  bundle:" +
-		// 			(bundle? bundle.cid : "-") + " image:" + (image? image.cid : "-"));
+		// console.log("Controller._changeSelection [after]");
 	},
-
 
 	/* --------------------------- *
 	 * browser title
@@ -358,6 +338,7 @@ var Controller = Backbone.Router.extend({
 		}
 	},
 	*/
+
 	/*
 	inilializeHandlers2: function() {
 		var $body = Backbone.$("body");
@@ -407,26 +388,6 @@ var Controller = Backbone.Router.extend({
 		// }
 		(bundles.selected? withBundle : withoutBundle).call(this);
 	},*/
-
-	/*
-	initializeEnteringHandlers: function () {
-		var $body = Backbone.$("body");
-		var enteringBundle = function () {
-			$body.removeClass("entering-bundle");
-		};
-		var bundleEnteringHandlers = {
-			"select:one": function (bundle) {
-				$body.addClass("entering-bundle");
-				this.listenToOnce(bundle.get("images"), "select:one select:none", enteringBundle);
-			},
-			"deselect:one": function (bundle) {
-				$body.removeClass("entering-bundle");
-				this.stopListening(bundle.get("images"), "select:one select:none", enteringBundle);
-			},
-		};
-		this.listenTo(bundles, bundleEnteringHandlers);
-	},
-	*/
 });
 
 module.exports = new Controller();

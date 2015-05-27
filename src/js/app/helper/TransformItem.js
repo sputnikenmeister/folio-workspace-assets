@@ -16,45 +16,32 @@ var prefixedProperty = require("../utils/css/prefixedProperty");
 /** @type {module:app/utils/css/prefixedProperty} */
 // var parseTransformMatrix = require("../utils/css/parseTransformMatrix");
 
+/** @type {module:app/utils/debug/traceElement} */
+var traceElt = require("../utils/debug/traceElement");
+
 
 /* -------------------------------
  * Private static
  * ------------------------------- */
 
-var _idSeed = 100;
-var _properties = {}, _styleNames = {};
+var _styleProps = {}, _styleNames = {};
 (function() {
 	var p, pp, ps;
 	var props = ["transform", "transformStyle", "transition", "transitionDuration",
 		"transitionDelay", "transitionProperty", "transitionTimingFunction"];
 	for (var i = 0; i < props.length; ++i) {
 		p = props[i];
-		pp = prefixedProperty(document.body.style, p);
-		_properties[p] = pp;
-		_styleNames[p] = p != pp? "-" + camelToDashed(pp): p;
-	}
-}());
-
-function traceElt(el) {
-	var traceId = "";
-	var cid;
-	if (el.hasAttribute("id")) {
-		traceId += "#" + el.id + " ";
-	}
-	if (el.hasAttribute("data-cid")) {
-		cid = el.getAttribute("data-cid");
-		if (el.cid === cid) {
-			traceId += "@" + cid + " ";
+		pp = prefixedProperty(window.getComputedStyle(document.body), p);
+		if (pp) {
+			_styleProps[p] = pp;
+			_styleNames[p] = p != pp? "-" + camelToDashed(pp): camelToDashed(p);
 		} else {
-			traceId += "@!" + cid + " ";
+			console.warn("Property '" + p + "' is not available");
+			_styleProps[p] = p;
+			_styleNames[p] = camelToDashed(p);
 		}
 	}
-	if (traceId == "") {
-		traceId += "?(" + el.tagName + ") ";
-	}
-	traceId += "[" + el.classList[0] + "]";
-	return traceId;
-}
+}());
 
 /* -------------------------------
  * TransformItem
@@ -64,8 +51,6 @@ function traceElt(el) {
  * @constructor
  */
 function TransformItem(el) {
-	this.id = _idSeed++;
-
 	this._hasOffset = false;
 	this._offsetX = null;
 	this._offsetY = null;
@@ -79,16 +64,11 @@ function TransformItem(el) {
 	this._transitionsDisabled = false;
 
 	this.el = el;
+	this.id = el.cid;
 	_.bindAll(this, "handleTransitionEnd");
 	el.addEventListener(transitionEnd, this.handleTransitionEnd, false);
 
-	if (el.hasAttribute("data-cid")) {
-		this.cid = el.getAttribute("data-cid");
-	} else {
-		this.cid = "elt" + this.id;
-		el.setAttribute("data-cid", this.cid);
-		el.cid = this.cid;
-	}
+	this.clearTransitions = this.enableTransitions;
 }
 
 TransformItem.prototype = {
@@ -103,6 +83,14 @@ TransformItem.prototype = {
 	/* -------------------------------
 	 * css <--> object
 	 * ------------------------------- */
+
+	_clearElementTransform: function() {
+		this.el.style[_styleProps["transform"]] = "";
+	},
+
+	_applyElementTransform: function(x, y) {
+		this.el.style[_styleProps["transform"]] = "translate3d(" + x + "px, " + y + "px, 0px)";
+	},
 
 	_captureElementTransform: function() {
 		var lastTransformValue, currTransformValue;
@@ -135,11 +123,14 @@ TransformItem.prototype = {
 		this._needsCapture = false;
 	},
 
-	_capture: function() {
+	/* -------------------------------
+	 * Public
+	 * ------------------------------- */
+
+	capture: function() {
 		if (this._hasOffset) {
 			this._clearElementTransform();
-			console.warn("TransformItem.capture", this.id,
-				"offset values still set: clearing, capturing, reapplying");
+			console.warn("TransformItem.capture: offset is set: clearing, capturing, reapplying", traceElt(this.el));
 		}
 		this._captureElementTransform();
 		if (this._hasOffset) {
@@ -147,14 +138,14 @@ TransformItem.prototype = {
 		}
 	},
 
-	_move: function(x, y) {
+	move: function(x, y) {
 		// x || (x = 0); y || (y = 0);
 		if (this._needsCapture) {
 			if (this._hasOffset) {
 				this._clearElementTransform();
 			}
 			this._captureElementTransform();
-			console.warn("TransformItem.move", this.id, "captured values not set: capturing now", traceElt(this.el));
+			console.warn("TransformItem.move: _needsCapture=true, capturing", traceElt(this.el));
 		}
 
 		this._offsetX = x || 0;
@@ -164,30 +155,18 @@ TransformItem.prototype = {
 		this._applyElementTransform(this._offsetX + this._capturedX, this._offsetY + this._capturedY);
 	},
 
-	_clear: function() {
+	clear: function() {
 		if (this._hasOffset) {
 			this._hasOffset = false;
 			this._clearElementTransform();
 		} else {
-			console.warn("TransformItem.clear", this.id, "nothing to clear", traceElt(this.el));
+			console.warn("TransformItem.clear: _hasOffset=false, doing nothing", traceElt(this.el));
 		}
 	},
 
-	_release: function() {
+	release: function() {
 		this._hasOffset = false;
 		this._needsCapture = true;
-	},
-
-	/* -------------------------------
-	 * element.style
-	 * ------------------------------- */
-
-	_clearElementTransform: function() {
-		this.el.style[_properties["transform"]] = "";
-	},
-
-	_applyElementTransform: function(x, y) {
-		this.el.style[_properties["transform"]] = "translate3d(" + x + "px, " + y + "px, 0px)";
 	},
 
 	/* -------------------------------
@@ -210,7 +189,7 @@ TransformItem.prototype = {
 				"s " + transition.easing + " " + transition.delay/1000 + "s";
 
 		this.transtioning = _styleNames["transform"];
-		this.el.style[_properties["transition"]] = val;
+		this.el.style[_styleProps["transition"]] = val;
 	},
 
 	handleTransitionEnd: function(ev) {
@@ -218,18 +197,23 @@ TransformItem.prototype = {
 			return;
 		}
 		if (this.transitioning && this.transitioning === ev.propertyName) {
-			this.el.style[_properties["transition"]] = this._transitionsDisabled? "none 0s 0s": "";
+			this.el.style[_styleProps["transition"]] = this._transitionsDisabled? "none 0s 0s": "";
 			this.transitioning = null;
 		}
 	},
 
+	// clearTransitions: function() {
+	// 	this.el.style[_styleProps["transition"]] = "";
+	// 	this._transitionsDisabled = false;
+	// },
+
 	enableTransitions: function() {
-		this.el.style[_properties["transition"]] = "";
+		this.el.style[_styleProps["transition"]] = "";
 		this._transitionsDisabled = false;
 	},
 
 	disableTransitions: function() {
-		this.el.style[_properties["transition"]] = "none 0s 0s";
+		this.el.style[_styleProps["transition"]] = "none 0s 0s";
 		this._transitionsDisabled = true;
 	},
 

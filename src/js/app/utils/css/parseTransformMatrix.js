@@ -7,15 +7,15 @@
  * @see https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function
  */
 /**
- * @param {String} cssval
+ * @param {String} cssval	css value
+ * @param {Object} o 		optional value host
  * @returns {Object}
  */
-module.exports = function(cssval) {
-	var m, o = {};
-	m = cssval.match(/(matrix|matrix3d)\(([^\)]+)\)/);
+module.exports = function(cssval, o) {
+	var m = cssval.match(/(matrix|matrix3d)\(([^\)]+)\)/);
+	o || (o = {});
 	if (m) {
-		o.css = cssval;
-		o.type = mm[1];
+		o.type = m[1];
 		m = m[2].split(",");
 		if (o.type === "matrix") {
 			o.x = parseFloat(m[4]);
@@ -27,8 +27,7 @@ module.exports = function(cssval) {
 			o.z = parseFloat(m[14]);
 		}
 	} else {
-		o.css = "";
-		o.type = "";
+		o.type = "none";
 		o.x = 0;
 		o.y = 0;
 		o.z = 0;
