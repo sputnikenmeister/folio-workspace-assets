@@ -68,6 +68,9 @@ var AppView = View.extend({
 		// this.footerView = new FooterView({
 		// 	el: "#footer"
 		// });
+		this.breakpoints = {
+			"desktop-small": window.matchMedia(Globals.BREAKPOINTS["desktop-small"])
+		};
 
 		// .skip-transitions on resize
 		// this.initializeResizeHandlers_min();
@@ -93,8 +96,9 @@ var AppView = View.extend({
 	},
 
 	render: function () {
-		document.body.classList.toggle("desktop-small", window.innerWidth >= 1024);
-		document.documentElement.classList.toggle("desktop-small", window.innerWidth >= 1024);
+		document.body.classList.toggle("desktop-small",
+			this.breakpoints["desktop-small"].matches);
+		document.documentElement.classList.toggle("desktop-small",	this.breakpoints["desktop-small"].matches);
 		this.navigationView.render();
 		this.contentView.render();
 		return this;

@@ -187,13 +187,13 @@ var Controller = Backbone.Router.extend({
 		if (_.isUndefined(bundle)) {
 			bundles.deselect();
 		} else {
-			bundles.select(bundle);
+			// bundles.select(bundle);
 			if (_.isUndefined(image)) {
 				bundle.get("images").deselect();
 			} else {
 				bundle.get("images").select(image);
 			}
-			// bundles.select(bundle);
+			bundles.select(bundle);
 		}
 		// this._applyClassProviders(bundle, image);
 		// console.log("Controller._changeSelection [after]");

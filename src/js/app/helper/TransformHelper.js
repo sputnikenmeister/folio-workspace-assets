@@ -18,6 +18,8 @@ var _idSeed = 100;
  * @type {module:app/helper/TransformHelper}
  */
 function TransformHelper() {
+	this._validateCallbackId = null;
+	this._validateCallback = this._validateCallback.bind(this);
 	this._items = {};
 	this.get = this.add;
 	this.clearTransitions = this.enableTransitions;
@@ -58,12 +60,8 @@ TransformHelper.prototype = {
 	},
 
 	/* --------------------------------
-	 * Public: transform
+	 * Public, non-invalidating
 	 * -------------------------------- */
-
-	move: function(x, y, el){
-		this.get(el).move(x, y);
-	},
 
 	capture: function(el) {
 		this.get(el).capture();
@@ -71,16 +69,6 @@ TransformHelper.prototype = {
 
 	release: function(el) {
 		this.get(el).release();
-	},
-
-	clear: function(el) {
-		this.get(el).clear();
-	},
-
-	moveAll: function(x, y) {
-		for (var i in this._items) {
-			this._items[i].move(x, y);
-		}
 	},
 
 	captureAll: function() {
@@ -95,10 +83,32 @@ TransformHelper.prototype = {
 		}
 	},
 
+	/* --------------------------------
+	 * Public, invalidating
+	 * -------------------------------- */
+
+	move: function(x, y, el){
+		this.get(el).move(x, y);
+		this._invalidate();
+	},
+
+	clear: function(el) {
+		this.get(el).clear();
+		this._invalidate();
+	},
+
+	moveAll: function(x, y) {
+		for (var i in this._items) {
+			this._items[i].move(x, y);
+		}
+		this._invalidate();
+	},
+
 	clearAll: function() {
 		for (var i in this._items) {
 			this._items[i].clear();
 		}
+		this._invalidate();
 	},
 
 	/* -------------------------------
@@ -152,7 +162,20 @@ TransformHelper.prototype = {
 		}
 	},
 
+	_invalidate: function() {
+		if (this._validateCallbackId === null) {
+			this._validateCallbackId = window.setTimeout(this._validateCallback, 0);
+		}
+	},
 
+	_validateCallback: function() {
+		this._validateCallbackId = null;
+		for (var i in this._items) {
+			if (this._items.hasOwnProperty(i)) {
+				this._items[i].validate();
+			}
+		}
+	},
 
 	/* -------------------------------
 	* Private 1

@@ -97,6 +97,7 @@ var ContentView = ContainerView.extend({
 	_onDeselectOne: function(bundle) {
 		this.removeChildren(bundle, false);
 		// this.setCollapsed(false);
+		this.stopListening(bundle.get("images"), "deselect:one deselect:none", this._onDeselectImage);
 		this.stopListening(bundle.get("images"), "select:one select:none", this._onSelectImage);
 	},
 
@@ -110,6 +111,7 @@ var ContentView = ContainerView.extend({
 	_onSelectOne: function(bundle) {
 		this.setCollapsed(true);
 		this.createChildren(bundle, false);
+		this.listenTo(bundle.get("images"), "deselect:one deselect:none", this._onDeselectImage);
 		this.listenTo(bundle.get("images"), "select:one select:none", this._onSelectImage);
 	},
 
@@ -127,7 +129,7 @@ var ContentView = ContainerView.extend({
 	_onDeselectImage: function() {
 		if (!this.isCollapsed()) {
 			this.transforms.clearAll();
-			this.transforms.runTransition(Globals.TRANSIT_EXITING, this.childrenEls);
+			this.transforms.runTransition(Globals.TRANSIT_ENTERING, this.childrenEls);
 		}
 	},
 
