@@ -4,7 +4,7 @@
 		"vu_px": "12"
 	},
 	"transitions": {
-		"delay_interval_ms": "100",
+		"delay_interval_ms": "50",
 		"duration_ms": "400",
 		"ease": "ease"
 	},

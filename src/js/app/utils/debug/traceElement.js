@@ -5,6 +5,8 @@ module.exports = function(el) {
 	}
 	if (el.hasAttribute("id")) {
 		traceId += "#" + el.id + " ";
+	} else {
+		traceId += "." + el.classList[0] + " ";
 	}
 	// var cid;
 	// if (el.hasAttribute("data-cid")) {
@@ -16,8 +18,7 @@ module.exports = function(el) {
 	// 	}
 	// }
 	if (traceId == "") {
-		traceId += "?(" + el.tagName + ") ";
+		traceId += "(" + el.tagName + ")?";
 	}
-	traceId += "[" + el.classList[0] + "]";
 	return traceId;
-}
+};

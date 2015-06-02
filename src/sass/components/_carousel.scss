@@ -2,7 +2,7 @@
 	.carousel-item {
 		display: block;
 		position: absolute;
-		.content {
+		* {
 			user-select: none !important;
 		}
 //		.sizing {
@@ -204,8 +204,8 @@ $mock_browser_height: 2rem;
 .carousel.image-carousel {
 	.empty-item {
 		.content {
-			transition: opacity $duration $ease 0.001s;
-			opacity: 0.2;
+			transition: opacity #{$duration - 0.001s} $ease #{$delay + 0.001s};
+			opacity: 0.25;
 		}
 		&.selected,	&.candidate {
 			.content {
@@ -216,14 +216,14 @@ $mock_browser_height: 2rem;
 	&.panning .empty-item {
 		&.selected,	&.candidate {
 			.content {
-				opacity: 0.3;
+				opacity: 0.5;
 			}
 		}
 	}
 	&.disabled .empty-item {
 		&.selected,	&.candidate {
 			.content {
-				opacity: 0.2;
+				opacity: 0.15;
 			}
 		}
 	}

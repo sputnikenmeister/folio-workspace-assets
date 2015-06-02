@@ -169,25 +169,36 @@ var Controller = Backbone.Router.extend({
 
 	/* Select Bundle/image */
 	_changeSelection: function (bundle, image) {
-		this._lastBundle = this._currentBundle;
-		this._lastImage = this._currentImage;
-		this._currentBundle = bundle;
-		this._currentImage = image;
+		// this._lastBundle = this._currentBundle;
+		// this._lastImage = this._currentImage;
+		// this._currentBundle = bundle;
+		// this._currentImage = image;
 
-		console.log("Controller._changeSelection " +
+		this.trigger("change:before", bundle, image);
+		this._applyClassProviders(bundle, image);
+
+		var lastBundle = bundles.selected,
+		    lastImage = bundles.selected? bundles.selected.get("images").selected : void 0;
+		console.info("- - - - - - Controller._changeSelection " +
 		// console.log("Controller._changeSelection [before]" +
-			" [bundle: " + (this._lastBundle? this._lastBundle.cid : "none") +
+			" [bundle: " + (lastBundle? lastBundle.cid : "none") +
 			" => " + (bundle? bundle.cid : "none") +
-			"] [image: " + (this._lastImage? this._lastImage.cid : "none") +
+			"] [image: " + (lastImage? lastImage.cid : "none") +
 			" => " + (image? image.cid : "none") +
 			"]"
 		);
 
-		this._applyClassProviders(bundle, image);
 		if (_.isUndefined(bundle)) {
 			bundles.deselect();
 		} else {
-			// bundles.select(bundle);
+
+			// NOTE: Selection execution order
+			//  - Apply image selection to *incoming bundle*, as not to trigger unneccesary events
+			//    on an outgoing bundle. Outgoing bundle image selection remains untouched.
+			//  - Apply image selection *before* selecting the incoming bundle. Views normally
+			//    listen to the selected bundle only, so if the bundle is changing, they will not
+			//    be listening to image selection changes yet.
+
 			if (_.isUndefined(image)) {
 				bundle.get("images").deselect();
 			} else {
@@ -195,8 +206,8 @@ var Controller = Backbone.Router.extend({
 			}
 			bundles.select(bundle);
 		}
-		// this._applyClassProviders(bundle, image);
-		// console.log("Controller._changeSelection [after]");
+
+		this.trigger("change:after", bundle, image);
 	},
 
 	/* --------------------------- *

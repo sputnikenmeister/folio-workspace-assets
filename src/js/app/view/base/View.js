@@ -18,6 +18,9 @@ var camelToDashed = require("../../utils/strings/camelToDashed");
 /** @type {module:app/utils/event/addTransitionEndCommand} */
 var addTransitionCallback = require("../../utils/event/addTransitionCallback");
 
+require("../../../shims/requestAnimationFrame");
+require("../../../shims/matchesSelector");
+
 var _styleProps = {};
 var _styleNames = {};
 var _viewsByCid = {};

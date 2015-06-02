@@ -34,8 +34,6 @@ if (DEBUG) {
 	var DebugToolbar = require("./DebugToolbar");
 }
 
-var $document = $(document.documentElement);
-
 /**
  * @constructor
  * @type {module:app/view/AppView}
@@ -49,11 +47,6 @@ var AppView = View.extend({
 	initialize: function (options) {
 		/* create single hammerjs manager */
 		this.touch = TouchManager.init(document.querySelector("#container"));
-
-		/**/
-		controller.addClassProvider(function(classes, bundle, image) {
-			window.innerWidth >= 1024 && classes.push("desktop-small");
-		});
 
 		if (DEBUG) {
 			this.$el.append((new DebugToolbar({id: "debug-toolbar", collection: bundles})).render().el);
@@ -74,9 +67,10 @@ var AppView = View.extend({
 
 		// .skip-transitions on resize
 		// this.initializeResizeHandlers_min();
-		$(window).on("resize orientationchange", _.throttle(
-			this.render.bind(this), 100, {leading: true, trailing: true}
-		));
+		$(window).on("resize orientationchange", _.debounce(this.render.bind(this), 100, false));
+		// $(window).on("resize orientationchange", _.throttle(
+		// 	this.render.bind(this), 100, {leading: true, trailing: true}
+		// ));
 
 		// start router, which will request appropiate state
 		Backbone.history.start({
@@ -96,27 +90,17 @@ var AppView = View.extend({
 	},
 
 	render: function () {
-		document.body.classList.toggle("desktop-small",
-			this.breakpoints["desktop-small"].matches);
+		// document.body.classList.toggle("desktop-small",
+		// 	this.breakpoints["desktop-small"].matches);
 		document.documentElement.classList.toggle("desktop-small",	this.breakpoints["desktop-small"].matches);
 		this.navigationView.render();
 		this.contentView.render();
 		return this;
 	},
 
-	/* -------------------------------
-	 * Resize (debounce)
-	 * ------------------------------- */
+	_onResize: function(ev) {
 
-	// initializeResizeHandlers_min: function() {
-	// 	var view = this;
-	// 	var handler = function() {
-	// 		view.render();
-	// 	};
-	// 	$(window).on("resize orientationchange", _.throttle(
-	// 		handler, 100, {leading: true, trailing: true}
-	// 	));
-	// },
+	},
 
 });
 

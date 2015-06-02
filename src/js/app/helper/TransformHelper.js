@@ -11,16 +11,23 @@ var TransformItem = require("./TransformItem");
 /** @type {module:app/utils/debug/traceElement} */
 var traceElt = require("../utils/debug/traceElement");
 
-var _idSeed = 100;
+require("../../shims/requestAnimationFrame");
+
+var idSeed = 0;
+var cidSeed = 100;
+var slice = Array.prototype.slice;
 
 /**
  * @constructor
  * @type {module:app/helper/TransformHelper}
  */
 function TransformHelper() {
-	this._validateCallbackId = null;
-	this._validateCallback = this._validateCallback.bind(this);
+	this.id = idSeed++;
 	this._items = {};
+
+	this._validateCallbackId = -1;
+	this._validateCallback = this._validateCallback.bind(this);
+
 	this.get = this.add;
 	this.clearTransitions = this.enableTransitions;
 }
@@ -31,24 +38,20 @@ TransformHelper.prototype = {
 	* Public
 	* ------------------------------- */
 
+	has: function(el) {
+		return el.cid && this._items[el.cid] !== void 0;
+	},
+
 	add: function(el) {
 		if (this.has(el)) {
 			return this._items[el.cid];
 		} else {
 			if (!el.cid) {
-				el.cid = "elt" + _idSeed++;
+				el.cid = "elt" + cidSeed++;
 				el.setAttribute("data-cid", el.cid);
 			}
 			return this._items[el.cid] = new TransformItem(el);
 		}
-	},
-
-	// get: function(el) {
-	// 	return this.has(el)? this._items[el.cid] : this.add(el);
-	// },
-
-	has: function(el) {
-		return el.cid && this._items[el.cid] !== void 0;
 	},
 
 	remove: function(el) {
@@ -60,15 +63,24 @@ TransformHelper.prototype = {
 	},
 
 	/* --------------------------------
-	 * Public, non-invalidating
+	 * public
 	 * -------------------------------- */
+	
+	/* public: capture
+	 * - - - - - - - - - - - - - - - - */
 
-	capture: function(el) {
-		this.get(el).capture();
+	capture: function() {
+		//  _.each(_.flatten(arguments, true), function(el) {
+		// 	this.get(el).capture();
+		// }, this);
+		this._invoke("capture", arguments);
 	},
 
-	release: function(el) {
-		this.get(el).release();
+	clearCapture: function() {
+		//  _.each(_.flatten(arguments, true), function(el) {
+		// 	this.get(el).clearCapture();
+		// }, this);
+		this._invoke("clearCapture", arguments);
 	},
 
 	captureAll: function() {
@@ -77,165 +89,119 @@ TransformHelper.prototype = {
 		}
 	},
 
-	releaseAll: function() {
+	clearCaptureAll: function() {
 		for (var i in this._items) {
-			this._items[i].release();
+			this._items[i].clearCapture();
 		}
 	},
 
-	/* --------------------------------
-	 * Public, invalidating
-	 * -------------------------------- */
+	/* public: offset
+	 * - - - - - - - - - - - - - - - - */
 
-	move: function(x, y, el){
-		this.get(el).move(x, y);
-		this._invalidate();
+	offset: function(x, y){
+		//  _.each(_.flatten(slice.call(arguments, 2), true), function(el) {
+		// 	this.get(el).offset(x, y);
+		// 	// this._invalidate();
+		// }, this);
+		this._invoke("offset", arguments, 2);
 	},
 
-	clear: function(el) {
-		this.get(el).clear();
-		this._invalidate();
+	clearOffset: function() {
+		//  _.each(_.flatten(arguments, true), function(el) {
+		// 	this.get(el).clearOffset();
+		// 	// this._invalidate();
+		// }, this);
+		this._invoke("clearOffset", arguments);
 	},
 
-	moveAll: function(x, y) {
+	offsetAll: function(x, y) {
 		for (var i in this._items) {
-			this._items[i].move(x, y);
+			this._items[i].offset(x, y);
 		}
-		this._invalidate();
 	},
 
-	clearAll: function() {
+	clearOffsetAll: function() {
 		for (var i in this._items) {
-			this._items[i].clear();
+			this._items[i].clearOffset();
 		}
-		this._invalidate();
+	},
+
+	/* public: transitions
+	 * - - - - - - - - - - - - - - - - */
+
+	runTransition: function(transition) {
+		this._invoke("runTransition", arguments, 1);
+	},
+
+	enableTransitions: function(el) {
+		this._invoke("enableTransitions", arguments);
+	},
+
+	disableTransitions: function(el) {
+		this._invoke("disableTransitions", arguments);
 	},
 
 	/* -------------------------------
-	 * Public: transitions
+	 * private utils
 	 * ------------------------------- */
 
-	runTransition: function(transition) {
-		for (var i = 1; i < arguments.length; ++i) {
-			var el = arguments[i];
+	_invoke: function(funcName, args, startIndex) {
+		var i, j, el, o;
+		var funcArgs = null;
+		if (startIndex !== void 0) {
+			funcArgs = slice.call(args, 0, startIndex);
+		} else {
+			startIndex = 0;
+		}
+		for (i = startIndex; i < args.length; ++i) {
+			el = args[i];
 			if (_.isArray(el)) {
-				for (var j = 0; j < el.length; ++j) {
-					this.get(el[j]).runTransition(transition);
+				for (j = 0; j < el.length; ++j) {
+					o = this.get(el[j]);
+					o[funcName].apply(o, funcArgs);
 				}
 			} else {
-				this.get(el).runTransition(transition);
+				o = this.get(el);
+				o[funcName].apply(o, funcArgs);
 			}
 		}
 	},
 
-	// runTransition2: function(transition, el) {
-	// 	if (arguments.length > 2) {
-	// 		for (var i = 1; i < arguments.length; ++i) {
-	// 			this.get(arguments[i]).runTransition(transition);
-	// 		}
-	// 	} else if (_.isArray(el)) {
-	// 		for (var j = 0; j < el.length; ++j) {
-	// 			this.get(el[j]).runTransition(transition);
-	// 		}
-	// 	} else {
-	// 		this.get(el).runTransition(transition);
-	// 	}
-	// },
+	/* -------------------------------
+	 * validation
+	 * ------------------------------- */
 
-	enableTransitions: function(el) {
-		if (this.has(el)) {
-			var o = this.get(el);
-			o.enableTransitions();
-		} else {
-			console.warn("element not being tracked:" , traceElt(el));
-			// el.style[_properties["transition"]] = "";
+	validate: function () {
+		if (this._validateCallbackId !== -1) {
+			window.cancelTimeout(this._validateCallbackId);
+			this._validateCallbackId = -1;
 		}
+		this._validate();
 	},
 
-	disableTransitions: function(el) {
-		if (this.has(el)) {
-			var o = this.get(el);
-			o.disableTransitions();
-		} else {
-			console.warn("element not being tracked:" , traceElt(el));
-			// el.style[_properties["transition"]] = "none 0s 0s";
-		}
-	},
-
-	_invalidate: function() {
-		if (this._validateCallbackId === null) {
-			this._validateCallbackId = window.setTimeout(this._validateCallback, 0);
+	invalidate: function() {
+		if (this._validateCallbackId === -1) {
+			// console.warn("TransformHelper._invalidate");
+			this._validateCallbackId = window.setTimeout(this._validateCallback, 100);
+			// this._validateCallbackId = window.requestAnimationFrame(this._validateCallback);
+			console.log("TransformHelper.invalidate", this._validateCallbackId);
 		}
 	},
 
 	_validateCallback: function() {
-		this._validateCallbackId = null;
+		console.log("TransformHelper._validateCallback", this._validateCallbackId);
+		this._validateCallbackId = -1;
+		this._validate();
+	},
+
+	_validate: function () {
+		console.log("TransformHelper._validate", this.id);
 		for (var i in this._items) {
-			if (this._items.hasOwnProperty(i)) {
+			// if (this._items.hasOwnProperty(i)) {
 				this._items[i].validate();
-			}
+			// }
 		}
 	},
-
-	/* -------------------------------
-	* Private 1
-	* ------------------------------- */
-
-	// _add_ht: function(el) {
-	// 	if (!this._store.containsKey(el)) {
-	// 		_addPrefixed(el);
-	// 		this._store.put(el, {el: el, $el: $(el)})
-	// 	}
-	// 	return this._store.get(el);
-	// },
-	//
-	// _get_ht: function(el) {
-	// 	return this._add(el);
-	// },
-	//
-	// _remove_ht: function(el) {
-	// 	this._store.remove(el);
-	// },
-
-	/* -------------------------------
-	 * transition
-	 * ------------------------------- */
-
-	/*
-	_parseTransitionValues: function(o) {
-		var ret = {};
-		var css, values, idx, d = 0;
-		css = o.$el.css(["transition-property", "transition-duration", "transition-delay"]);
-		values = css["transition-property"].split(",");
-		idx = values.length;
-		do { --idx; } while (idx != -1 && values[idx].indexOf("transform") == -1);
-		//while (idx && values[--idx].indexOf("transform")) {}
-		if (idx != -1) {
-			values = css["transition-duration"].split(",");
-			ret.duration = parseFloat((idx < values.length)? values[idx] : values[values.length - 1]);
-			values = css["transition-delay"].split(",");
-			ret.delay = parseFloat((idx < values.length)? values[idx] : values[values.length - 1]);
-		} else {
-			ret.duration = 0;
-			ret.delay = 0;
-		}
-		return ret;
-	},
-
-	hasTransition: function(el) {
-		var o = this.get(el), ret = false;
-		if (o.transition === void 0) {
-			o.transition = this._parseTransitionValues(o);
-			ret = o.transition.delay + o.transition.duration > 0;
-			console.log("TransformHelper.hasTransition", o.id, ret,
-				o.transition.delay, o.transition.duration);
-		} else {
-			ret = o.transition.delay + o.transition.duration > 0;
-			console.log("TransformHelper.hasTransition", o.id, ret,
-				o.transition.delay, o.transition.duration, "(cached)");
-		}
-		return ret;
-	},*/
 };
 
 

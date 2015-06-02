@@ -1,7 +1,22 @@
 /**
  * @module app/App
  */
-console.log("App first line");
+"use strict";
+
+console.log("App first statement");
+
+// if (DEBUG) {
+	console.log("Strict mode", (function() {
+		try {
+			/* jshint -W117 */
+			undeclaredVar = 1;
+			/* jshint +W117 */
+		} catch (e) {
+			return true;
+		}
+		return false;
+	})());
+// }
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -22,11 +37,14 @@ require("Backbone.Mutators");
 //global.$ = $;
 
 $(window).load(function(ev) {
-	"use strict";
 //	console.log("window.load()", document.readyState, arguments.length, arguments);
 // $(document).ready(function($) {
 // 	"use strict";
 // 	console.log("document.ready()", document.readyState, arguments.length, arguments);
+
+	/* jshint -W117 */
+	// undeclaredVar = 1;
+	/* jshint +W117 */
 
 	if (window.bootstrap === void 0) {
 		console.error("bootstrap data missing");
@@ -75,9 +93,7 @@ $(window).load(function(ev) {
 	keywordList.reset(keywords);
 	bundleList.reset(bundles);
 
-	/* jshint -W051 */
 	delete window.bootstrap;
-	/* jshint +W051 */
 // });
 //
 // $(window).load(function() {

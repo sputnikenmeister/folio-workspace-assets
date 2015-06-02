@@ -43,16 +43,14 @@ var CollectionPager = require("./component/CollectionPager");
 module.exports = ContainerView.extend({
 
 	/** @override */
-	className: "navigation expanded",
+	className: "navigation",
 
 	/** @override */
 	initialize: function (options) {
+		ContainerView.prototype.initialize.apply(this, arguments);
+
 		_.bindAll(this, "_onHPanStart", "_onHPanMove", "_onHPanFinal");
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
-		//_.bindAll(this, "_onVPanFinal", "_onVPan");
-		this.touch = TouchManager.getInstance();
-
-		this._useHPan = this.el.matches(".default-layout " + this.el.tagName);
 
 		this.sitename = this.assignSitenameButton();
 		this.bundleList = this.createBundleList();
@@ -67,31 +65,30 @@ module.exports = ContainerView.extend({
 		for (var i = 0, num = nodes.length; i != num; i++) {
 			this.hGroupings[i] = nodes[i];
 		}
-		this.hWrappers = [this.bundleList.wrapper, this.keywordList.wrapper];
-		this.hTransitionables = this.hGroupings.concat(this.hWrappers);
-		this.vTransitionables = [this.bundleList.el, this.keywordList.el, this.sitename.el];
-		this.childrenEls = this.vTransitionables.concat(this.hWrappers);
 
-		// this.vTransitionables = this.el.querySelectorAll("#site-name, #bundle-list, #keyword-list");
-		// this.hTransitionables = this.el.querySelectorAll(
-		// 	"#bundle-list-wrapper, #keyword-list-wrapper, #keyword-list .list-group span");
-
-		// this._collapsedOffsetY = 300;
-
-		// this.initializeResizeHandlers();
-		// this.addTransitionHandlers();
-		this.listenTo(bundles, {
+		this.bundleListeners = {
 			"select:one": this._onSelectOne,
 			"select:none": this._onSelectNone,
 			"deselect:one": this._onDeselectOne,
 			"deselect:none": this._onDeselectNone,
-		});
-		//(bundles.selected)? this._onDeselectNone(): this._onSelectNone();
+		};
+		this.imageListeners = {
+			"select:one": this._onSelectImage,
+			"select:none": this._onSelectImage,
+			"deselect:one": this._onDeselectImage,
+			"deselect:none": this._onDeselectImage,
+		};
 
-		var vendors = ["ms", "moz", "webkit", "o"], x;
-		for (x = 0; x < vendors.length && !this.el.matches; ++x) {
-			this.el.matches = this.el[vendors[x] + "MatchesSelector"];
-		}
+		this.listenTo(this, "collapsed:change", this._onCollapseChange);
+		this.listenTo(bundles, this.bundleListeners);
+
+		// if (bundles.selected) {
+		// 	this.touch.on("panstart", this._onHPanStart);
+		// 	this.touch.on("vpanstart", this._onVPanStart);
+		// 	this.setCollapsed(true);
+		// } else {
+		// 	this.setCollapsed(false);
+		// }
 	},
 
 	/* --------------------------- *
@@ -100,16 +97,12 @@ module.exports = ContainerView.extend({
 
 	/** @override */
 	render: function () {
-		// this.transforms.clearAll();
-		// this.transforms.releaseAll();
-		this.transforms.release(this.sitename.el);
-		this.transforms.clearTransitions(this.sitename.el);
+		this.transforms.clearCaptureAll();
+		this.transforms.clearCapture(this.sitename.el, this.bundleList.el, this.keywordList.el, this.bundleList.wrapper, this.keywordList.wrapper);
+		this.transforms.clearTransitions(this.sitename.el, this.bundleList.el, this.keywordList.el, this.bundleList.wrapper, this.keywordList.wrapper);
+		// this.transforms.validate();
 		_.each(this.children, function(view) {
 			view.renderNow();
-			this.transforms.release(view.el);
-			this.transforms.release(view.wrapper);
-			this.transforms.clearTransitions(view.el);
-			this.transforms.clearTransitions(view.wrapper);
 		}, this);
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
@@ -118,22 +111,9 @@ module.exports = ContainerView.extend({
 	 * collapse
 	 * ------------------------------- */
 
-	_collapsed: false,
-
-	isCollapsed: function() {
-		return this._collapsed;
-	},
-
-	setCollapsed: function(collapsed) {
-		if (this._collapsed !== collapsed) {
-			this._collapsed = collapsed;
-
-			this.bundleList.setCollapsed(collapsed);
-			this.keywordList.setCollapsed(collapsed);
-
-			this.el.classList.toggle("collapsed", collapsed);
-			this.el.classList.toggle("expanded", !collapsed);
-		}
+	_onCollapseChange: function(collapsed) {
+		this.bundleList.setCollapsed(collapsed);
+		this.keywordList.setCollapsed(collapsed);
 	},
 
 	/* --------------------------- *
@@ -141,63 +121,58 @@ module.exports = ContainerView.extend({
 	 * --------------------------- */
 
 	_onDeselectOne: function(bundle) {
-		console.log("NavigationView._onDeselectOne()");
+		// console.log("NavigationView._onDeselectOne()");
 
-		// this.transforms.releaseAll();
+		// this.transforms.captureAll();
 		this.transforms.runTransition(Globals.TRANSIT_EXITING,
 			this.keywordList.wrapper);
+		this.transforms.runTransition(Globals.TRANSIT_ENTERING,
+			this.bundleList.wrapper);//, this.hGroupings);
 		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
 			this.bundleList.el, this.keywordList.el);
+
 		this.transforms.runTransition(Globals.TRANSIT_ENTERING,
-			this.bundleList.wrapper, this.sitename.el);//, this.hGroupings);
+			this.sitename.el);
 
 		this.transforms.runTransition(
 			this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
 			this.hGroupings);
-		// this.transforms.runTransition(Globals.TRANSIT_ENTERING, this.hGroupings);
 
-		this.stopListening(bundle.get("images"), "deselect:one deselect:none", this._onDeselectImage);
-		this.stopListening(bundle.get("images"), "select:one select:none", this._onSelectImage);
+		this.stopListening(bundle.get("images"), this.imageListeners);
 	},
 
 	_onDeselectNone: function() {
-		console.log("NavigationView._onDeselectNone()");
+		// console.log("NavigationView._onDeselectNone()");
 
-		// this.transforms.releaseAll();
+		// this.transforms.captureAll();
 		this.transforms.runTransition(Globals.TRANSIT_ENTERING,
 			this.bundleList.wrapper, this.keywordList.wrapper);//, this.hGroupings);
 		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
 			this.bundleList.el, this.keywordList.el, this.sitename.el);
 
-		// this.transforms.runTransition(
-		// 	this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
-		// 	this.hGroupings);
 		this.transforms.runTransition(Globals.TRANSIT_ENTERING, this.hGroupings);
 
-		this._useHPan && this.touch.on("panstart", this._onHPanStart);
+		this.touch.on("panstart", this._onHPanStart);
 		this.touch.on("vpanstart", this._onVPanStart);
 	},
 
 	_onSelectOne: function(bundle) {
-		// this.transforms.runTransition(Globals.TRANSIT_ENTERING, this.hGroupings);
-		this.setCollapsed(true);
+		// this.setCollapsed(true);
 		this.keywordList.filterBy(bundle);
+		this.listenTo(bundle.get("images"), this.imageListeners);
 
-		this.listenTo(bundle.get("images"), "deselect:one deselect:none", this._onDeselectImage);
-		this.listenTo(bundle.get("images"), "select:one select:none", this._onSelectImage);
-
-		console.log("NavigationView._onSelectOne(" + bundle.cid + ")");
+		// this.transforms.invalidate();
+		// console.log("NavigationView._onSelectOne(" + bundle.cid + ")");
 	},
 
 	_onSelectNone: function() {
-		// this.transforms.runTransition(Globals.TRANSIT_EXITING, this.hGroupings);
-		this.setCollapsed(false);
+		// this.setCollapsed(false);
 		this.keywordList.filterBy(null);
 
-		this._useHPan && this.touch.off("panstart", this._onHPanStart);
+		this.touch.off("panstart", this._onHPanStart);
 		this.touch.off("vpanstart", this._onVPanStart);
 
-		console.log("NavigationView._onSelectNone(none)");
+		// console.log("NavigationView._onSelectNone(none)");
 	},
 
 	/* --------------------------- *
@@ -205,10 +180,10 @@ module.exports = ContainerView.extend({
 	 * --------------------------- */
 
 	_onDeselectImage: function(image) {
-		console.log("NavigationView._onDeselectImage()");
+		// console.log("NavigationView._onDeselectImage()");
 
 		if (this.isCollapsed()) {
-			this.transforms.clear(this.keywordList.wrapper);
+			this.transforms.clearOffset(this.keywordList.wrapper);
 			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE,
 				this.keywordList.wrapper);
 		} else {
@@ -224,8 +199,8 @@ module.exports = ContainerView.extend({
 	},
 
 	_onSelectImage: function(image) {
-		this.setCollapsed(true);
-		console.log("NavigationView._onSelectImage(" + (image? image.cid : "none") + ")");
+		// this.setCollapsed(true);
+		// console.log("NavigationView._onSelectImage(" + (image? image.cid : "none") + ")");
 	},
 
 	/* --------------------------- *
@@ -242,24 +217,17 @@ module.exports = ContainerView.extend({
 	 * Horizontal touch/move (_onHPan*)
 	 * ------------------------------- */
 
-	needsHPan: function() {
-		return this.isCollapsed() && bundles.selected.get("images").selectedIndex <= 0 &&
-			this.keywordList.$wrapper.css("transform-style") == "preserve-3d";
-			// this.keywordList.wrapper.style[this.getPrefixedStyle("transform-style")] == "preserve-3d";
-			//this.transforms.hasTransition(this.keywordList.wrapper);
-	},
-
 	_onHPanStart: function(ev) {
-		if (this.needsHPan()) {
+		if (this.isCollapsed() &&
+			bundles.selected.get("images").selectedIndex <= 0 &&
+			document.body.matches(".desktop-small .default-layout")
+			// this.el.matches(".desktop-small.default-layout " + this.el.tagName)
+			// window.matchMedia(Globals.BREAKPOINTS["desktop-small"]).matches)
+		){
 			this.touch.on("panend pancancel", this._onHPanFinal);
 			this.touch.on("panmove", this._onHPanMove);
 
 			this.transforms.disableTransitions(this.keywordList.wrapper);
-			// this.keywordList.wrapper.style[this.getPrefixedStyle("transition")] = "none 0s 0s";
-
-			// this.keywordList.wrapper.style[this.getPrefixedStyle("transition")] = "";
-			// this.transforms.clear(this.keywordList.wrapper);
-			// this.transforms.release(this.keywordList.wrapper);
 			this.transforms.capture(this.keywordList.wrapper);
 			this._onHPanMove(ev);
 		}
@@ -275,18 +243,18 @@ module.exports = ContainerView.extend({
 			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)? 0.75 : 0.0;
 			//delta *= (delta > 0)? 0.75: 0.00;
 		}
-		this.transforms.move(delta, void 0, this.keywordList.wrapper);
+		this.transforms.offset(delta, void 0, this.keywordList.wrapper);
 	},
 
 	_onHPanFinal: function(ev) {
-		this.transforms.enableTransitions(this.keywordList.wrapper);
-
-		// WARNING: transition will be set twice if there is a new selection!
-		this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE, this.keywordList.wrapper);
-		this.transforms.clear(this.keywordList.wrapper);
-
 		this.touch.off("panmove", this._onHPanMove);
 		this.touch.off("panend pancancel", this._onHPanFinal);
+
+		// NOTE: transition will be set twice if there is a new selection!
+		this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE, this.keywordList.wrapper);
+		this.transforms.clearOffset(this.keywordList.wrapper);
+		this.transforms.validate();
+
 	},
 
 	/* -------------------------------
@@ -294,15 +262,12 @@ module.exports = ContainerView.extend({
 	 * ------------------------------- */
 
 	_onVPanStart: function (ev) {
-		_.each(this.children, function(view) {
-			// view.el.style[this.getPrefixedStyle("transition")] = "none 0s 0s";
-			this.transforms.disableTransitions(view.el);
-			this.transforms.capture(view.el);
-		}, this);
-		this._onVPanMove(ev);
-
 		this.touch.on("vpanmove", this._onVPanMove);
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
+
+		this.transforms.disableTransitions(this.bundleList.el, this.keywordList.el);
+		this.transforms.clearCapture(this.bundleList.el, this.keywordList.el);
+		this._onVPanMove(ev);
 	},
 
 	PAN_MOVE_FACTOR: 0.05,
@@ -330,19 +295,12 @@ module.exports = ContainerView.extend({
 		}
 		delta *= this.isCollapsed()? 0.5 : -1; // reapply sign
 
-		// this.transforms.moveAll(void 0, delta);
-		_.each(this.children, function(view) {
-			this.transforms.move(void 0, delta, view.el);
-		}, this);
+		this.transforms.offset(0, delta, this.bundleList.el, this.keywordList.el);
 	},
 
 	_onVPanFinal: function(ev) {
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
-
-		_.each(this.children, function(view) {
-			this.transforms.enableTransitions(view.el);
-		}, this);
 
 		if (this.willCollapseChange(ev)) {
 			this.transforms.runTransition(Globals.TRANSIT_CHANGING,
@@ -350,18 +308,14 @@ module.exports = ContainerView.extend({
 			this.transforms.runTransition(this.isCollapsed()?
 				Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
 				this.bundleList.wrapper, this.keywordList.wrapper, this.sitename.el, this.hGroupings);
-				// this.isCollapsed()? Globals.TRANSIT_IMMEDIATE : Globals.TRANSIT_ENTERING);
 			this.setCollapsed(!this.isCollapsed());
 		} else {
 			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE,
 				this.bundleList.el, this.keywordList.el);
-			// this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE,
-			// 	this.vTransitionables, this.hWrappers, this.hGroupings);
 		}
 
-		_.each(this.children, function(view) {
-			this.transforms.clear(view.el);
-		}, this);
+		this.transforms.clearOffset(this.bundleList.el, this.keywordList.el);
+		this.transforms.validate();
 	},
 
 	willCollapseChange: function(ev) {

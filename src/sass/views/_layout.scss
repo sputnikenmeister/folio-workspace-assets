@@ -415,12 +415,16 @@ $nav_collapse_extra: 24rem;
 	}
 }
 
+// NOTE: .expanded with empty-item alignment
+// $item-type: image;
+$item-type: bundle;
+
 // site-name
 // - - - - - - - - - - - - - - - - - -
-.with-image .expanded #site-name {
+.with-#{$item-type} .expanded #site-name {
 	@include nav_translate(-1px, 0);
 }
-.with-image.right-layout .expanded #site-name {
+.with-#{$item-type}.right-layout .expanded #site-name {
 	@include nav_translate(-100%, 0);
 }
 
@@ -442,10 +446,10 @@ $nav_collapse_extra: 24rem;
 
 // bundle-list-wrapper
 // - - - - - - - - - - - - - - - - - -
-.with-image .expanded #bundle-list-wrapper {
+.with-#{$item-type} .expanded #bundle-list-wrapper {
 	@include nav_translate($aside_width_large, 0);
 }
-.with-image.right-layout .expanded #bundle-list-wrapper {
+.with-#{$item-type}.right-layout .expanded #bundle-list-wrapper {
 	@include nav_translate(0, 0);
 }
 
@@ -464,10 +468,10 @@ $_fixme_empty_padding: $aside_width_large - ($hu*2 + 7px);
 .with-image #keyword-list-wrapper {
 	@include nav_translate(-$_fixme_kw_left, 0); // FIXME
 }
-.with-image .expanded #keyword-list-wrapper {
+.with-#{$item-type} .expanded #keyword-list-wrapper {
 	@include nav_translate(0, 0);
 }
-.with-image.right-layout #keyword-list-wrapper {
+.with-#{$item-type}.right-layout #keyword-list-wrapper {
 	@include nav_translate(0, 0);
 }
 
@@ -498,6 +502,20 @@ $_fixme_empty_padding: $aside_width_large - ($hu*2 + 7px);
 	.carousel-item.image-item {
 		padding-left: $aside_width_large;
 		padding-right: 0;
+	}
+	.carousel-item.empty-item .content {
+		transform: translate(0, 0);
+		// transition: all #{$duration - 0.001s} $ease;
+		transition-property: transform, opacity;
+		transition-duration: #{$duration - 0.001s};
+		transition-timing-function: $ease;
+		transition-delay: #{$delay*1 + 0.001s}, #{$delay*2 + 0.001s};
+	}
+	&.disabled .carousel-item.empty-item .content {
+		transition-delay: #{$delay*1 + 0.001s}, #{$delay*0 + 0.001s};
+	}
+	&.disabled .carousel-item.empty-item.selected .content {
+		transform: translate($aside_width_large, 0);
 	}
 }
 .right-layout .image-carousel {
