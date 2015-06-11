@@ -51,21 +51,7 @@ module.exports = ContainerView.extend({
 
 		_.bindAll(this, "_onHPanStart", "_onHPanMove", "_onHPanFinal");
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
-
-		this.sitename = this.assignSitenameButton();
-		this.bundleList = this.createBundleList();
-		this.keywordList = this.createKeywordList();
-		// this.bundlePager = this.createBundlePager();
-		this.children = [this.bundleList, this.keywordList];
-		// this.bundleList.renderNow();
-		// this.keywordList.renderNow();
-
-		this.hGroupings = [];
-		var nodes = this.keywordList.el.querySelectorAll(".list-group span");
-		for (var i = 0, num = nodes.length; i != num; i++) {
-			this.hGroupings[i] = nodes[i];
-		}
-
+		
 		this.bundleListeners = {
 			"select:one": this._onSelectOne,
 			"select:none": this._onSelectNone,
@@ -78,9 +64,33 @@ module.exports = ContainerView.extend({
 			"deselect:one": this._onDeselectImage,
 			"deselect:none": this._onDeselectImage,
 		};
-
-		this.listenTo(this, "collapsed:change", this._onCollapseChange);
 		this.listenTo(bundles, this.bundleListeners);
+
+		this.sitename = this.assignSitenameButton();
+		this.bundleList = this.createBundleList();
+		this.keywordList = this.createKeywordList();
+		// this.bundlePager = this.createBundlePager();
+		this.children = [this.bundleList, this.keywordList];
+		// this.bundleList.renderNow();
+		// this.keywordList.renderNow();
+		
+		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group span");
+		
+		// var nodes = this.keywordList.el.querySelectorAll(".list-group span");
+		// this.hGroupings = [];
+		// for (var i = 0, num = nodes.length; i != num; i++) {
+		// 	this.hGroupings[i] = nodes[i];
+		// }
+		
+		// XXX
+		this.transforms.add(
+			this.bundleList.el, this.keywordList.el,
+			this.bundleList.wrapper, this.keywordList.wrapper,
+			this.sitename.el, this.hGroupings
+		);
+		// XXX
+		// this.transforms.clearAllCaptures();
+		// this.transforms.validate();
 
 		// if (bundles.selected) {
 		// 	this.touch.on("panstart", this._onHPanStart);
@@ -97,91 +107,76 @@ module.exports = ContainerView.extend({
 
 	/** @override */
 	render: function () {
-		this.transforms.clearCaptureAll();
-		this.transforms.clearCapture(this.sitename.el, this.bundleList.el, this.keywordList.el, this.bundleList.wrapper, this.keywordList.wrapper);
-		this.transforms.clearTransitions(this.sitename.el, this.bundleList.el, this.keywordList.el, this.bundleList.wrapper, this.keywordList.wrapper);
-		// this.transforms.validate();
+		console.log(".... NavigationView.render()");
+		this.transforms.clearAllCaptures();
+		this.transforms.stopAllTransitions();
+		// this.transforms.clearAllTransitions();
 		_.each(this.children, function(view) {
-			view.renderNow();
+			view.skipTransitions = true;
+			view.render();
 		}, this);
+		this.transforms.validate();
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
 
-	/* -------------------------------
-	 * collapse
-	 * ------------------------------- */
-
-	_onCollapseChange: function(collapsed) {
-		this.bundleList.setCollapsed(collapsed);
-		this.keywordList.setCollapsed(collapsed);
-	},
+	// /* -------------------------------
+	//  * Router -> before model change
+	//  * ------------------------------- */
+	// 
+	// _beforeChange: function(bundle,image) {
+	// 	console.log(">>>> NavigationView._beforeChange");
+	// },
+	// 
+	// _afterChange: function(bundle,image) {
+	// 	console.log("<<<< NavigationView._afterChange");
+	// },
 
 	/* --------------------------- *
-	 * bundles event handlers
+	 * Deselect event handlers
 	 * --------------------------- */
 
 	_onDeselectOne: function(bundle) {
-		// console.log("NavigationView._onDeselectOne()");
-
+		
+		this.stopListening(bundle.get("images"), this.imageListeners);
+		
+		// console.log("NavigationView._onDeselectOne(" + bundle.cid + ")");
 		// this.transforms.captureAll();
+		// this.transforms.clearAllCaptures();
+		this.transforms.runTransition(Globals.TRANSIT_ENTERING,
+			this.bundleList.wrapper);
 		this.transforms.runTransition(Globals.TRANSIT_EXITING,
 			this.keywordList.wrapper);
-		this.transforms.runTransition(Globals.TRANSIT_ENTERING,
-			this.bundleList.wrapper);//, this.hGroupings);
 		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
 			this.bundleList.el, this.keywordList.el);
-
 		this.transforms.runTransition(Globals.TRANSIT_ENTERING,
 			this.sitename.el);
-
 		this.transforms.runTransition(
 			this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
 			this.hGroupings);
-
-		this.stopListening(bundle.get("images"), this.imageListeners);
+		this.transforms.validate();
 	},
 
 	_onDeselectNone: function() {
-		// console.log("NavigationView._onDeselectNone()");
-
-		// this.transforms.captureAll();
-		this.transforms.runTransition(Globals.TRANSIT_ENTERING,
-			this.bundleList.wrapper, this.keywordList.wrapper);//, this.hGroupings);
-		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
-			this.bundleList.el, this.keywordList.el, this.sitename.el);
-
-		this.transforms.runTransition(Globals.TRANSIT_ENTERING, this.hGroupings);
-
 		this.touch.on("panstart", this._onHPanStart);
 		this.touch.on("vpanstart", this._onVPanStart);
+		
+		// console.log("NavigationView._onDeselectNone()");
+		// this.transforms.captureAll();
+		// this.transforms.clearAllCaptures();
+		this.transforms.runTransition(Globals.TRANSIT_ENTERING,
+			this.bundleList.wrapper, this.keywordList.wrapper);
+		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
+			this.bundleList.el, this.keywordList.el);
+		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
+			this.sitename.el);
+		this.transforms.runTransition(Globals.TRANSIT_ENTERING, this.hGroupings);
+		this.transforms.validate();
 	},
-
-	_onSelectOne: function(bundle) {
-		// this.setCollapsed(true);
-		this.keywordList.filterBy(bundle);
-		this.listenTo(bundle.get("images"), this.imageListeners);
-
-		// this.transforms.invalidate();
-		// console.log("NavigationView._onSelectOne(" + bundle.cid + ")");
-	},
-
-	_onSelectNone: function() {
-		// this.setCollapsed(false);
-		this.keywordList.filterBy(null);
-
-		this.touch.off("panstart", this._onHPanStart);
-		this.touch.off("vpanstart", this._onVPanStart);
-
-		// console.log("NavigationView._onSelectNone(none)");
-	},
-
-	/* --------------------------- *
-	 * bundle.images event handlers
-	 * --------------------------- */
 
 	_onDeselectImage: function(image) {
 		// console.log("NavigationView._onDeselectImage()");
-
+		// this.transforms.captureAll();
+		// this.transforms.clearAllCaptures();
 		if (this.isCollapsed()) {
 			this.transforms.clearOffset(this.keywordList.wrapper);
 			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE,
@@ -196,13 +191,43 @@ module.exports = ContainerView.extend({
 			// 	image? Globals.TRANSIT_ENTERING : Globals.TRANSIT_EXITING,
 			// 	this.hGroupings);
 		}
+		this.transforms.validate();
 	},
 
+	/* --------------------------- *
+	 * Select event handlers
+	 * --------------------------- */
+
+	_onSelectOne: function(bundle) {
+		// console.log("NavigationView._onSelectOne(" + bundle.cid + ")");
+		this.listenTo(bundle.get("images"), this.imageListeners);
+		this.keywordList.filterBy(bundle);
+		this.setCollapsed(true);
+	},
+	
+	_onSelectNone: function() {
+		// console.log("NavigationView._onSelectNone()");
+		this.touch.off("panstart", this._onHPanStart);
+		this.touch.off("vpanstart", this._onVPanStart);
+		this.keywordList.clearFilter();
+		this.setCollapsed(false);
+	},
+	
 	_onSelectImage: function(image) {
-		// this.setCollapsed(true);
-		// console.log("NavigationView._onSelectImage(" + (image? image.cid : "none") + ")");
+		// console.log("NavigationView._onSelectImage(" + (image? image.cid : "") + ")");
+		this.setCollapsed(true);
 	},
 
+	/* -------------------------------
+	 * collapse
+	 * ------------------------------- */
+
+	_onCollapseChange: function(collapsed) {
+		// console.log("NavigationView._onCollapseChange(" + (collapsed?"true":"false") + ")");
+		this.bundleList.setCollapsed(collapsed);
+		this.keywordList.setCollapsed(collapsed);
+	},
+	
 	/* --------------------------- *
 	 * jQuery/DOM event handlers
 	 * --------------------------- */
@@ -220,19 +245,19 @@ module.exports = ContainerView.extend({
 	_onHPanStart: function(ev) {
 		if (this.isCollapsed() &&
 			bundles.selected.get("images").selectedIndex <= 0 &&
-			document.body.matches(".desktop-small .default-layout")
+			document.body.matches(".breakpoint-desktop-small .default-layout")
 			// this.el.matches(".desktop-small.default-layout " + this.el.tagName)
 			// window.matchMedia(Globals.BREAKPOINTS["desktop-small"]).matches)
-		){
+		) {
 			this.touch.on("panend pancancel", this._onHPanFinal);
 			this.touch.on("panmove", this._onHPanMove);
-
-			this.transforms.disableTransitions(this.keywordList.wrapper);
-			this.transforms.capture(this.keywordList.wrapper);
+			
+			this.transforms.stopTransitions(this.keywordList.wrapper);
+			this.transforms.clearCapture(this.keywordList.wrapper);
 			this._onHPanMove(ev);
 		}
 	},
-
+	
 	_onHPanMove: function(ev) {
 		var delta = ev.thresholdDeltaX;
 		if (bundles.selected.get("images").selectedIndex == -1) {
@@ -243,47 +268,50 @@ module.exports = ContainerView.extend({
 			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)? 0.75 : 0.0;
 			//delta *= (delta > 0)? 0.75: 0.00;
 		}
+		// this.transforms.get(this.keywordList.wrapper).offset(delta, void 0).validate();
 		this.transforms.offset(delta, void 0, this.keywordList.wrapper);
+		this.transforms.validate();
 	},
-
+	
 	_onHPanFinal: function(ev) {
 		this.touch.off("panmove", this._onHPanMove);
 		this.touch.off("panend pancancel", this._onHPanFinal);
-
+		
 		// NOTE: transition will be set twice if there is a new selection!
+		// this.transforms.get(this.keywordList.wrapper)
+		// 		.runTransition(Globals.TRANSIT_IMMEDIATE).clearOffset().validate();
 		this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE, this.keywordList.wrapper);
 		this.transforms.clearOffset(this.keywordList.wrapper);
 		this.transforms.validate();
-
 	},
-
+	
 	/* -------------------------------
 	 * Vertical touch/move (_onVPan*)
 	 * ------------------------------- */
-
+	
 	_onVPanStart: function (ev) {
 		this.touch.on("vpanmove", this._onVPanMove);
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
 
-		this.transforms.disableTransitions(this.bundleList.el, this.keywordList.el);
+		this.transforms.stopTransitions(this.bundleList.el, this.keywordList.el);
 		this.transforms.clearCapture(this.bundleList.el, this.keywordList.el);
 		this._onVPanMove(ev);
 	},
-
+	
 	PAN_MOVE_FACTOR: 0.05,
 	_collapsedOffsetY: 300,
-
+	
 	_onVPanMove: function (ev) {
 		var delta = ev.thresholdDeltaY;
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapse/expand
 		var isValidDir = this.isCollapsed()? (delta > 0) : (delta < 0);
 		var moveFactor = this.isCollapsed()? this.PAN_MOVE_FACTOR : 1 - this.PAN_MOVE_FACTOR;
-
+		
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
 		maxDelta *= moveFactor;
-
+		
 		if (isValidDir) {
 			if (delta > maxDelta) { // overshooting
 				delta = ((delta - maxDelta) * Globals.V_PANOUT_DRAG) + maxDelta;
@@ -296,8 +324,9 @@ module.exports = ContainerView.extend({
 		delta *= this.isCollapsed()? 0.5 : -1; // reapply sign
 
 		this.transforms.offset(0, delta, this.bundleList.el, this.keywordList.el);
+		this.transforms.validate();
 	},
-
+	
 	_onVPanFinal: function(ev) {
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
@@ -313,18 +342,18 @@ module.exports = ContainerView.extend({
 			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE,
 				this.bundleList.el, this.keywordList.el);
 		}
-
+		
 		this.transforms.clearOffset(this.bundleList.el, this.keywordList.el);
 		this.transforms.validate();
 	},
-
+	
 	willCollapseChange: function(ev) {
 		return ev.type == "vpanend"? this.isCollapsed()?
 			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
 			ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
 			false;
 	},
-
+	
 	/* -------------------------------
 	 * Components
 	 * ------------------------------- */

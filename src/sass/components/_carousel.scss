@@ -202,9 +202,16 @@ $mock_browser_height: 2rem;
 // - - - - - - - - - - - - - - - - - -
 
 .carousel.image-carousel {
+	// &:not(.disabled-changing) .empty-item .content {
+	// 	transition: opacity #{$duration - 0.001s} $ease 0.001s;
+	// }
+	// &.disabled-changing .empty-item .content {
+	// 	transition: opacity #{$duration - 0.001s} $ease #{$delay + 0.001s};
+	// }
 	.empty-item {
 		.content {
-			transition: opacity #{$duration - 0.001s} $ease #{$delay + 0.001s};
+			// transition: opacity #{$duration - 0.001s} $ease #{$delay + 0.001s};
+			transition: opacity #{$duration - 0.001s} $ease 0.001s;
 			opacity: 0.25;
 		}
 		&.selected,	&.candidate {
@@ -227,6 +234,10 @@ $mock_browser_height: 2rem;
 			}
 		}
 	}
+	
+	// &.disabled-changing .empty-item {
+	// 	outline: 2px solid blue;
+	// }
 }
 
 // - - - - - - - - - - - - - - - - - -

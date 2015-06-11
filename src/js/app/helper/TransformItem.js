@@ -20,13 +20,20 @@ var prefixedProperty = require("../utils/css/prefixedProperty");
 var traceElt = require("../utils/debug/traceElement");
 
 var log = function() {
-	if (arguments[0] === "error") {
-		console.error.apply(console, arguments);
-	} else if (arguments[0] === "warn") {
-		console.warn.apply(console, arguments);
-	} else {
-		// console.log.apply(console, arguments);
+	var logFn = "log";
+	var args = Array.prototype.slice.apply(arguments);
+	switch(args[0]) {
+		case "error":
+		case "warn":
+		case "info":
+			logFn = args.shift();
+			break;
+		default:
+			// break;
+			return;
 	}
+	args[0] = "\t" + args[0];
+	console[logFn].apply(console, args);
 };
 
 /* -------------------------------
@@ -45,6 +52,7 @@ var computedDefaults = {
 var transformProps = ["transform", "transformStyle"];
 var transitionProps = ["transition", "transitionDuration", "transitionDelay",
 	"transitionProperty", "transitionTimingFunction"];
+	
 var _styleProps = {}, _styleNames = {};
 (function() {
 	var p, pp, ps;
@@ -56,12 +64,17 @@ var _styleProps = {}, _styleNames = {};
 			_styleProps[p] = pp;
 			_styleNames[p] = p != pp? "-" + camelToDashed(pp): camelToDashed(p);
 		} else {
-			console.warn("Property '" + p + "' is not available");
+			// console.warn("Property '" + p + "' is not available");
 			_styleProps[p] = p;
 			_styleNames[p] = camelToDashed(p);
 		}
 	}
 }());
+
+var transitionTemplate = function(o) {
+	return o.property + " " + o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
+};
+// var transitionTemplate = _.template("<%= property %> <% duration/1000 %>s <%= easing %> <% delay/1000 %>s");
 
 /* -------------------------------
  * TransformItem
@@ -70,72 +83,215 @@ var _styleProps = {}, _styleNames = {};
 /**
  * @constructor
  */
-function TransformItem(el) {
-	this._invalid = false;
+function TransformItem(el, immediate) {
+	_.bindAll(this, "_handleTransitionEnd");
+	
+	this.el = el;
+	this.immediate = immediate;
 
+	this.id = el.cid;
+	this.el.addEventListener(transitionEnd, this._handleTransitionEnd, false);
+	
+	this._captureInvalid = false;
 	this._capturedX = null;
 	this._capturedY = null;
 	this._currCapturedValues = {};
 	this._lastCapturedValues = {};
-	this._capturedChanged = false;
-
+	this._capturedValuesChanged = false;
+	
+	this._offsetInvalid = false;
 	this._hasOffset = false;
 	this._offsetX = null;
 	this._offsetY = null;
-	this._offsetInvalid = false;
+	
+	this._transitionInvalid = false;
+	this._hasTransition = false;
+	this._transitionRunning = false;
+	this._transition = {};
 
 	this._renderedX = null;
 	this._renderedY = null;
-	this._renderedChanged = false;
-
-	this._transitionEnabled = true;
-	this._transitionRunning = false;
-	this._transitionProperty = "none";
-	this._transitionInvalid = false;
-
-	this.el = el;
-	this.id = el.cid;
-	_.bindAll(this, "_handleTransitionEnd");
-	el.addEventListener(transitionEnd, this._handleTransitionEnd, false);
+	// this._renderedChanged = false;
 
 	this.enableTransitions = this.clearTransitions;
 	this.disableTransitions = this.stopTransitions;
-
-	this._needsCapture = false;
-	this._capture();
+	
+	this._assertNoTransition = false;
 }
 
 TransformItem.prototype = {
 
 	/* -------------------------------
-	 * css <--> object
+	 *
 	 * ------------------------------- */
 
-	_capture: function() {
+	destroy: function() {
+		// NOTE: In most cases, element is being removed from DOM when this is called, so if needed
+		// clearOffset(element) should be called explicitly.
+		this.el.removeEventListener(transitionEnd, this._handleTransitionEnd, false);
+	},
+
+	/* -------------------------------
+	 *
+	 * ------------------------------- */
+
+	/* capture
+	 * - - - - - - - - - - - - - - - - */
+
+	capture: function() {
+		log(traceElt(this.el), "TransformItem.capture");
+
+		// this._captureInvalid = true;
+		this._validateCapture();
+		// log(traceElt(this.el), this._capturedX, this._capturedY);
+		// log(traceElt(this.el), this._capturedValuesChanged, this._lastCapturedValues.transform, this._currCapturedValues.transform);
+		return this;
+	},
+
+	clearCapture: function() {
+		log(traceElt(this.el), "TransformItem.clearCapture");
+
+		// this._hasOffset = false;
+		this._captureInvalid = true;
+		return this;
+	},
+	
+	/* offset/clear
+	 * - - - - - - - - - - - - - - - - */
+	
+	offset: function(x, y, immediate) {
+		log(traceElt(this.el), "TransformItem.offset");
+		
+		this._hasOffset = true;
+		this._offsetInvalid = true;
+		this._offsetX = x || 0;
+		this._offsetY = y || 0;
+
+		if (this.immediate && immediate !== false) {
+			this._validateOffset();
+		}
+		return this;
+	},
+
+	clearOffset: function(immediate) {
+		if (this._hasOffset) {
+			log(traceElt(this.el), "TransformItem.clearOffset");
+			
+			this._hasOffset = false;
+			this._offsetInvalid = true;
+			this._offsetX = null;
+			this._offsetY = null;
+			
+			if (this.immediate && immediate !== false) {
+				this._validateOffset();
+			}
+		} else {
+			log(traceElt(this.el), "TransformItem.clearOffset", "no offset to clear");
+		}
+		return this;
+	},
+
+	/* -------------------------------
+	 * transitions
+	 * ------------------------------- */
+	
+	runTransition: function(transition, immediate) {
+		// log(traceElt(this.el), "TransformItem.runTransition");
+		
+		this._transition.property = _styleNames["transform"];
+		for (var prop in transition) {
+			this._transition[prop] = transition[prop];
+		}
+		if (this._transitionInvalid) {
+			log("error", traceElt(this.el), "TransformItem.runTransition changed twice",
+				this._transitionValue, transitionTemplate(this._transition));
+		}
+		this._transitionValue = transitionTemplate(this._transition);
+		
+		this._hasTransition = true;
+		this._transitionInvalid = true;
+		if (this.immediate && immediate !== false) {
+			this._validateTransition();
+		}
+		return this;
+	},
+	
+	clearTransitions: function(immediate) {
+		// log(traceElt(this.el), "TransformItem.clearTransitions");
+		
+		this._transition.property = "none";
+		this._transitionValue =  "none 0s 0s";
+		
+		this._hasTransition = false;
+		this._transitionInvalid = true;
+		if (this.immediate && immediate !== false) {
+			this._validateTransition();
+		}
+		return this;
+	},
+	
+	stopTransitions: function(immediate) {
+		// log(traceElt(this.el), "TransformItem.stopTransitions");
+		
+		this._transition.property = "none";
+		this._transitionValue =  "none 0s 0s";
+
+		this._hasTransition = false;
+		this._transitionInvalid = true;
+		if (this.immediate && immediate !== false) {
+			this._validateTransition();
+		}
+		return this;
+	},
+	
+	/* -------------------------------
+	 * validation
+	 * ------------------------------- */
+
+	validate: function() {
+		this.el.removeEventListener(transitionEnd, this._handleTransitionEnd, false);
+		this._validateTransition();
+		this._validateOffset();
+		this.el.addEventListener(transitionEnd, this._handleTransitionEnd, false);
+		
+		this._capturedValuesChanged = false;
+		// this._captureInvalid = true;
+		return this;
+	},
+
+	_validateCapture: function() {
+		if (!this._captureInvalid) {
+			return;
+		}
 		var computed, capturedValues;
-		var currTransformValue, eltTransformValue = null;
+		var eltTransformValue = null;
+		
+		log("info", traceElt(this.el), "TransformItem._validateCapture", {
+			"transition invalid": this._transitionInvalid,
+			"offset invalid": this._offsetInvalid,
+		});
 
 		// this is an explicit call to capture() instead of a subcall from _validateOffset()
 		if (this._hasOffset && !this._offsetInvalid) {
 			eltTransformValue = this.el.style[_styleProps["transform"]];
-			if (eltTransformValue === "")
-				log("error", traceElt(this.el), "TransformItem._capture: _hasOffset=true but eltTransformValue=\"\" ?");
+			if (eltTransformValue === "") {
+				log("error", traceElt(this.el), "TransformItem._capture", "has valid offset but eltTransformValue=\"\" ?", this._offsetX, this._offsetY);
+			} else {
+				// log(traceElt(this.el), "TransformItem._capture", "clearing before capture");
+			}
 			this.el.style[_styleProps["transform"]] = "";
 		}
 
 		// NOTE: reusing object, all props will be overwritten
 		capturedValues = {};//this._lastCapturedValues;
 		this._lastCapturedValues = this._currCapturedValues;
-
 		computed = window.getComputedStyle(this.el);
 		for (var p in _styleNames) {
 			capturedValues[p] = computed.getPropertyValue(_styleNames[p]);
 		}
-
 		this._currCapturedValues = capturedValues;
-		this._capturedChanged = this._currCapturedValues.transform !== this._lastCapturedValues.transform;
-
-		if (this._capturedChanged) {
+		
+		if (this._currCapturedValues.transform !== this._lastCapturedValues.transform) {
 			var m, mm, ret = {};
 			mm = this._currCapturedValues.transform.match(/(matrix|matrix3d)\(([^\)]+)\)/);
 			if (mm) {
@@ -151,201 +307,108 @@ TransformItem.prototype = {
 				this._capturedX = 0;
 				this._capturedY = 0;
 			}
+			this._capturedValuesChanged = true;
 		}
 		if (eltTransformValue !== null) {
+			log(traceElt(this.el), "TransformItem._capture", "reapplying after capture", eltTransformValue);
 			this.el.style[_styleProps["transform"]] = eltTransformValue;
 		}
-		this._needsCapture = false;
+		this._captureInvalid = false;
 	},
-
-	_validateOffset: function() {
-		var tx, ty;
-
-		if (this._needsCapture) {
-			log(traceElt(this.el), "TransformItem._validateOffset: lazy-capturing");
-			this._capture();
-		}
-
-		if (this._hasOffset) {
-			tx = this._offsetX + this._capturedX;
-			ty = this._offsetY + this._capturedY;
-		} else {
-			tx = null;
-			ty = null;
-		}
-
-		if (tx !== this._renderedX || ty !== this._renderedY) {
-			this._renderedX = tx;
-			this._renderedY = ty;
-			if (this._hasOffset) {
-				this.el.style[_styleProps["transform"]] = "translate3d(" + this._renderedX + "px, " + this._renderedY + "px, 0px)";
-				// this.el.style.outline = "2px solid blue";
-			} else {
-				this.el.style[_styleProps["transform"]] = "";
-				// this.el.style.outline = "";
-			}
-			this._renderedChanged = true;
-		}
-		this._offsetInvalid = false;
-	},
-
-	/* -------------------------------
-	 * internal
-	 * ------------------------------- */
-
-	validate: function() {
-		this._invalid = false;
-		// this._needsCapture = true;
-		this._renderedChanged = false;
-		this._capturedChanged = false;
-
-		this._validateTransition();
-		this._validateOffset();
-	},
-
-	destroy: function() {
-		// NOTE: In most cases, element is being removed from DOM when this is called, so if needed
-		// clearOffset(element) should be called explicitly.
-		this.el.removeEventListener(transitionEnd, this._handleTransitionEnd, false);
-	},
-
-	/* -------------------------------
-	 * public
-	 * ------------------------------- */
-
-	/* capture/release
-	 * - - - - - - - - - - - - - - - - */
-
-	capture: function() {
-		log(traceElt(this.el), "TransformItem.capture");
-
-		// console.log(traceElt(this.el), this._capturedX, this._capturedY);
-		// this._needsCapture = true;
-		this._capture();
-		// console.log(traceElt(this.el), this._capturedX, this._capturedY);
-		// console.log(traceElt(this.el), this._capturedChanged, this._lastCapturedValues.transform, this._currCapturedValues.transform);
-	},
-
-	clearCapture: function() {
-		log(traceElt(this.el), "TransformItem.clearCapture");
-
-		// this._hasOffset = false;
-		this._needsCapture = true;
-	},
-
-	/* offset/clear
-	 * - - - - - - - - - - - - - - - - */
-
-	offset: function(x, y, immediately) {
-		log(traceElt(this.el), "TransformItem.offset");
-
-		this._hasOffset = true;
-		this._offsetInvalid = true;
-		this._offsetX = x || 0;
-		this._offsetY = y || 0;
-
-		if (immediately !== false) {
-			this._validateOffset();
-		}
-	},
-
-	clearOffset: function(immediately) {
-		log(traceElt(this.el), "TransformItem.clearOffset");
-
-		if (!this._hasOffset) {
-			log(traceElt(this.el), "TransformItem.clear: _hasOffset=false, doing nothing" );
-			return;
-		}
-		this._hasOffset = false;
-		this._offsetInvalid = true;
-		this._offsetX = null;
-		this._offsetY = null;
-
-		if (immediately !== false) {
-			this._validateOffset();
-		}
-	},
-
-	/* -------------------------------
-	 * transitions
-	 * ------------------------------- */
 
 	_validateTransition: function() {
+		// log(traceElt(this.el), "TransformItem._validateTransition", "invalid: "+this._transitionInvalid, "hasTx: "+this._hasTransition);
+		
 		if (this._transitionInvalid) {
-			this._transitionInvalid = false;
-			this._transitionRunning = true;
-
-			this.el.style[_styleProps["transition"]] = this._transitionValue;
-			// this.el.style.backgroundColor = "hsla(180,50%,50%,0.1)";
-
-			// if (this._transitionValue === "" || this._transitionValue === "none 0s 0s") {
-			// 	this.el.style.backgroundColor = "";
-			// } else {
-			// 	this.el.style.backgroundColor = "hsla(180,50%,50%,0.1)";
+			var capturing = this._captureInvalid;
+			// if (this._captureInvalid) {
+				// log(traceElt(this.el), "TransformItem._validateOffset", "lazy capture");
+				this._validateCapture();
 			// }
-			// _.defer(function(context) {
-			// 	context._transitionInvalid = false;
-			// }, this);
-		}
-	},
-
-	_cleanupTransition: function(force) {
-		if (this._transitionInvalid) {
-			log("error", traceElt(this.el), "TransformItem.runTransition changed then cleared",  this.el.style[_styleProps["transition"]], this._transitionValue);
-		}
-		// if (!this._transitionRunning && !this._transitionInvalid) {
-		// 	log("error", traceElt(this.el), "TransformItem._cleanupTransition(force): transition not running and not invalid", this.el.style[_styleProps["transition"]]);
-		// }
-		if (this._transitionRunning) {
-			this._transitionRunning = false;
-			this._transitionValue = force? "none 0s 0s": "";
+			// if (this._capturedValuesChanged && !this._hasOffset) {}
+			log(traceElt(this.el), "TransformItem._validateTransition", logObj);
+			var logObj = {
+				"capture invalid": capturing,
+				"capture changed": this._capturedValuesChanged,
+				"has transition": this._hasTransition,
+				"has offset": this._hasOffset,
+			};
+			
+			// if (!this._transitionRunning) {
+			// }
+			if (this._hasTransition) {
+				this._transitionRunning = true;
+				// this.el.addEventListener(transitionEnd, this._handleTransitionEnd, false);
+			} else {
+				this._transitionRunning = false;
+				// 	this.el.removeEventListener(transitionEnd, this._handleTransitionEnd, false);
+			}
+			
+			// this._assertNoTransition = false;
+			// if (this._hasTransition) {
+			// 	if (this._offsetInvalid) {
+			// 		// offset is being cleared/changed, transition will ocurr
+			// 		this.el.style.backgroundColor = "hsla(120,100%,25%,0.1)";
+			// 	} else
+			// 	if (this._capturedValuesChanged) {
+			// 		// captured changed, transition will ocurr;
+			// 		this.el.style.backgroundColor = "hsla(120,100%,25%,0.1)";
+			// 	} else
+			// 	{
+			// 		// transition not expected
+			// 		this.el.style.backgroundColor = "hsla(0,50%,50%,0.1)";
+			// 		this._assertNoTransition = true;
+			// 	}
+			// } else {
+			// 	this.el.style.backgroundColor = "";//hsla(0,25%,50%,0.1)";
+			// }
 			this.el.style[_styleProps["transition"]] = this._transitionValue;
-			// this.el.style.backgroundColor = "";
-		}
-	},
-
-	runTransition: function(transition, immediately) {
-		log(traceElt(this.el), "TransformItem.runTransition");
-
-		this._transitionProperty = _styleNames["transform"];
-		this._transitionDuration = transition.duration;
-		this._transitionEasing = transition.easing;
-		this._transitionDelay = transition.delay;
-
-		this._transitionValue =
-			this._transitionProperty + " " +
-			this._transitionDuration/1000 + "s " +
-			this._transitionEasing + " " +
-			this._transitionDelay/1000 + "s";
-
-		if (this._transitionInvalid) {
-			log("error", traceElt(this.el), "TransformItem.runTransition changed twice",  this.el.style[_styleProps["transition"]], this._transitionValue);
-		}
-
-		this._transitionInvalid = true;
-		if (immediately !== false) {
-			this._validateTransition();
+			this._transitionInvalid = false;
 		}
 	},
 
 	_handleTransitionEnd: function(ev) {
-		(this.el === ev.target) && (this._transitionProperty === ev.propertyName) && this._cleanupTransition();
+		// if (this._transitionInvalid) {}
+		if (this._transitionRunning && (this.el === ev.target) && (this._transition.property === ev.propertyName)) {
+			this._transitionRunning = false;
+			// this.el.removeEventListener(transitionEnd, this._handleTransitionEnd, false);
+			this.el.style[_styleProps["transition"]] = "none 0s 0s";
+			this.el.style.backgroundColor = "";//hsla(0,25%,50%,0.1)";
+			
+			// if (!this._hasTransition) {
+			// 	log("error", traceElt(this.el), "TransformItem._hasTransition == false");//, this);
+			// }
+			// if (this._assertNoTransition) {
+			// 	log("error", traceElt(this.el), "TransformItem._assertNoTransition == true");//, this);
+			// 	this._assertNoTransition = false;
+			// }
+		}
 	},
-
-	clearTransitions: function() {
-		log(traceElt(this.el), "TransformItem.clearTransitions");
-
-		// this._transitionEnabled = true;
-		// this.el.style[_styleProps["transition"]] = "";
-		this._cleanupTransition();
-	},
-
-	stopTransitions: function() {
-		log(traceElt(this.el), "TransformItem.stopTransitions");
-
-		// this._transitionEnabled = false;
-		// this.el.style[_styleProps["transition"]] = "none 0s 0s";
-		this._cleanupTransition(true);
+	
+	_validateOffset: function() {
+		if (this._offsetInvalid) {
+			// log(traceElt(this.el), "TransformItem._validateOffset");
+			// if (this._captureInvalid) {
+				// log(traceElt(this.el), "TransformItem._validateOffset", "lazy capture");
+				this._validateCapture();
+			// }
+			if (this._hasOffset) {
+				var tx = this._offsetX + this._capturedX;
+				var ty = this._offsetY + this._capturedY;
+				if (tx !== this._renderedX || ty !== this._renderedY) {
+					this._renderedX = tx;
+					this._renderedY = ty;
+					this.el.style[_styleProps["transform"]] = "translate3d(" + this._renderedX + "px, " + this._renderedY + "px, 0px)";
+					// this.el.style.outline = "2px solid blue";
+				}
+			} else {
+				this._renderedX = null;
+				this._renderedY = null;
+				this.el.style[_styleProps["transform"]] = "";
+				// this.el.style.outline = "";
+			}
+			this._offsetInvalid = false;
+		}
 	},
 };
 

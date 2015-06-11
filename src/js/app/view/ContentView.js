@@ -65,8 +65,6 @@ var ContentView = ContainerView.extend({
 			"deselect:one": this._onDeselectImage,
 			"deselect:none": this._onDeselectImage,
 		};
-
-		this.listenTo(this, "collapsed:change", this._onCollapseChange);
 		this.listenTo(bundles, this.bundleListeners);
 
 		// if (bundles.selected) {
@@ -80,70 +78,94 @@ var ContentView = ContainerView.extend({
 
 	/** @override */
 	render: function () {
-		// this.transforms.clearCaptureAll();
+		// this.transforms.clearAllCaptures();
+		// this.transforms.stopAllTransitions();
+		// this.transforms.clearAllTransitions();
+		// this.transforms.validate();
+
 		_.each(this.children, function(view) {
-			view.render();
 			this.transforms.clearCapture(view.el);
 			this.transforms.clearTransitions(view.el);
+			view.render();
 		}, this);
-
+		this.transforms.validate();
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
-
+	
 	/* -------------------------------
 	 * collapse
 	 * ------------------------------- */
-
+	
 	_onCollapseChange: function(collapsed) {
 		_.each(this.children, function(view) {
 			view.setEnabled(collapsed);
 		});
-		// this.touch.get("pan").set({ enable: collapsed });
 	},
-
+	
+	/* -------------------------------
+	 * Router -> Model change
+	 * ------------------------------- */
+	
+	_beforeChange: function(bundle,image) {
+		// console.log(">>>> ContentView._beforeChange");
+		// this.transforms.captureAll();
+	},
+	
+	_afterChange: function(bundle,image) {
+		// console.log("<<<< ContentView._afterChange");
+		// this.setCollapsed(bundle !== void 0);
+		// this.transforms.validate();
+	},
+	
 	/* --------------------------- *
-	 * bundles event handlers
+	 * Deselect event handlers
 	 * --------------------------- */
-
+	
 	_onDeselectOne: function(bundle) {
 		this.removeChildren(bundle, false);
 		this.stopListening(bundle.get("images"), this.imageListeners);
 	},
-
+	
 	_onDeselectNone: function() {
 		this.touch.on("vpanstart", this._onVPanStart);
 		// this.touch.on("vpanend", this._onVPanFinal);
 		// this.touch.on("panstart", this._onPanStart);
 	},
-
+	
+	_onDeselectImage: function(image) {
+		if (!this.isCollapsed()) {
+			this.transforms.clearAllOffsets();
+			this.transforms.runTransition(Globals.TRANSIT_ENTERING, this.childrenEls);
+			this.transforms.validate();
+		}
+	},
+	
+	/* --------------------------- *
+	 * Select event handlers
+	 * --------------------------- */
+	
 	_onSelectOne: function(bundle) {
-		// this.setCollapsed(true);
 		this.createChildren(bundle, false);
 		this.listenTo(bundle.get("images"), this.imageListeners);
-	},
 
+		this.setCollapsed(true);
+		// this.transforms.validate(); 			// XXX
+	},
+	
 	_onSelectNone: function() {
-		// this.setCollapsed(false);
 		this.touch.off("vpanstart", this._onVPanStart);
 		// this.touch.off("vpanend", this._onVPanFinal);
 		// this.touch.off("panstart", this._onPanStart);
+		
+		this.setCollapsed(false);
+		// this.transforms.validate(); 			// XXX
 	},
-
-	/* --------------------------- *
-	 * bundle.images event handlers
-	 * --------------------------- */
-
-	_onDeselectImage: function(image) {
-		if (!this.isCollapsed()) {
-			this.transforms.clearOffsetAll();
-			this.transforms.runTransition(Globals.TRANSIT_ENTERING, this.childrenEls);
-		}
-	},
-
+	
 	_onSelectImage: function(image) {
-		// this.setCollapsed(true);
+		this.setCollapsed(true);
+		// this.transforms.validate(); 			// XXX
 	},
-
+	
 	/* -------------------------------
 	 * create/remove children on bundle selection
 	 * ------------------------------- */
@@ -158,7 +180,7 @@ var ContentView = ContainerView.extend({
 		var endProps = {delay: Globals.ENTERING_DELAY, opacity: 1};
 		// Show views
 		_.each(this.children, function(view) {
-			this.transforms.add(view.el);
+			// this.transforms.add(view.el);
 			this.childrenEls.push(view.el);
 			this.listenToOnce(view, "view:remove", this.onChildRemove);
 			this.$el.append(view.el);
@@ -168,13 +190,15 @@ var ContentView = ContainerView.extend({
 				view.$el.css(startProps).transit(endProps);
 			}
 		}, this);
+		this.transforms.add(this.childrenEls);
 	},
 
 	removeChildren: function (bundle, skipAnimation) {
 		// var startProps = {position: "absolute"};
 		var endProps = {delay: Globals.EXITING_DELAY, opacity: 0};
 		var txPropName = this.getPrefixedProperty("transform");
-
+		
+		this.transforms.remove(this.childrenEls);
 		_.each(this.children, function(view, index, children) {
 			if (skipAnimation) {
 				view.remove();
@@ -191,11 +215,12 @@ var ContentView = ContainerView.extend({
 						view.remove(); next();
 					});
 			}
-			this.childrenEls.splice(this.childrenEls.indexOf(view.el), 1);
-			this.transforms.remove(view.el);
-			children[index] = void 0;
+			// this.childrenEls.splice(this.childrenEls.indexOf(view.el), 1);
+			// this.transforms.remove(view.el);
+			// children[index] = void 0;
 		}, this);
 		// clear child references immediately
+		this.childrenEls.length = 0;
 		this.children.length = 0;
 	},
 
@@ -216,7 +241,7 @@ var ContentView = ContainerView.extend({
 		// 	this.transforms.clearCapture(view.el);
 		// 	// this.transforms.capture(view.el);
 		// }, this);
-		this.transforms.disableTransitions(this.childrenEls);
+		this.transforms.stopTransitions(this.childrenEls);
 		this.transforms.clearCapture(this.childrenEls);
 		this._onVPanMove(ev);
 	},
@@ -251,6 +276,7 @@ var ContentView = ContainerView.extend({
 		// 	this.transforms.offset(0, delta, view.el);
 		// }, this);
 		this.transforms.offset(0, delta, this.childrenEls);
+		this.transforms.validate();
 	},
 
 	_onVPanFinal: function(ev) {
@@ -273,7 +299,7 @@ var ContentView = ContainerView.extend({
 		// 	this.transforms.clearOffset(view.el);
 		// }, this);
 
-		this.transforms.clearOffsetAll();
+		this.transforms.clearAllOffsets();
 		this.transforms.validate();
 	},
 

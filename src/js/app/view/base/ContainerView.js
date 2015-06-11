@@ -27,7 +27,7 @@ var controller = require("../../control/Controller");
  */
 module.exports = View.extend({
 
-	className: "expanded",
+	className: "container-expanded",
 
 	/** @override */
 	constructor: function(options) {
@@ -42,21 +42,8 @@ module.exports = View.extend({
 			"change:before": this._beforeChange,
 			"change:after": this._afterChange
 		});
-	},
 
-	/* -------------------------------
-	 * Router -> Model change
-	 * ------------------------------- */
-
-	_beforeChange: function(bundle,image) {
-		console.log("---- ContainerView._beforeChange ----", this.el.id);
-		// this.transforms.captureAll();
-	},
-
-	_afterChange: function(bundle,image) {
-		console.log("---- ContainerView._afterChange ----", this.el.id);
-		this.setCollapsed(bundle !== void 0);
-		this.transforms.validate();
+		this.listenTo(this, "collapsed:change", this._onCollapseChange);
 	},
 
 	/* -------------------------------
@@ -70,13 +57,30 @@ module.exports = View.extend({
 	},
 
 	setCollapsed: function(collapsed) {
-		if (this._collapsed != collapsed) {
+		if (this._collapsed !== collapsed) {
 			this._collapsed = collapsed;
-			console.log("ContainerView.setCollapsed( " + (collapsed? "true":"false") + " )");
-
-			this.el.classList.toggle("collapsed", collapsed);
-			this.el.classList.toggle("expanded", !collapsed);
+			this.el.classList.toggle("container-collapsed", collapsed);
+			this.el.classList.toggle("container-expanded", !collapsed);
 			this.trigger("collapsed:change", collapsed);
 		}
+	},
+
+	/* -------------------------------
+	 * Router -> Model change
+	 * ------------------------------- */
+
+	_beforeChange: function(bundle,image) {
+		// console.log(">>>> ContainerView._beforeChange");
+		// this.transforms.captureAll();
+	},
+
+	_afterChange: function(bundle,image) {
+		// console.log("<<<< ContainerView._afterChange");
+		// this.setCollapsed(bundle !== void 0);
+		// this.transforms.validate();
+	},
+
+	_onCollapseChange: function(collapsed) {
+		// console.log("ContainerView._onCollapseChange(" + (collapsed?"true":"false") + ")");
 	},
 });

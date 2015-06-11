@@ -21,7 +21,7 @@
 }
 
 #site-name a {
-	transition: color $duration $ease $delay;
+	transition: color $duration $ease $delay * 2;
 	color: $link_color;
 }
 .with-bundle .expanded #site-name a {
@@ -124,6 +124,7 @@
 	height: 0.5em;
 	opacity: 0;
 }
+
 .with-bundle {
 	#keyword-list {
 		.list-item:before {

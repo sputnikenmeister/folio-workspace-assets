@@ -91,8 +91,8 @@ var FilterableListView = DeferredView.extend({
 
 		this.collection.each(this.assignChildView, this);
 
-		_.bindAll(this, "_onResize");
-		$(window).on("orientationchange resize", this._onResize);
+		// _.bindAll(this, "_onResize");
+		// $(window).on("orientationchange resize", this._onResize);
 
 		this.listenTo(this.collection, {
 			"select:one": this.setSelection,
@@ -116,11 +116,11 @@ var FilterableListView = DeferredView.extend({
 	 * Render
 	 * --------------------------- */
 
-	/** @param {Object} ev */
-	_onResize: function (ev) {
-		this.skipTransitions = true;
-		this.render();
-	},
+	// /** @param {Object} ev */
+	// _onResize: function (ev) {
+	// 	this.skipTransitions = true;
+	// 	this.render();
+	// },
 
 	render: function() {
 		this.renderNow();
@@ -143,7 +143,7 @@ var FilterableListView = DeferredView.extend({
 		} else {
 			this.$el.removeClass("entering");
 		}
-
+		// this.validateRender("collapsed");
 		this.validateRender("selection");
 		this.validateRender("filterBy");
 		this.renderLayout();
@@ -237,6 +237,7 @@ var FilterableListView = DeferredView.extend({
 	 * @return {?Boolean}
 	 */
 	setCollapsed: function (collapsed, force) {
+		force && console.warn("FilterableListView.setCollapsed", "force=true");
 		if (force || collapsed !== this._collapsed) {
 			this._collapsed = collapsed;
 			// this.requestRender("collapsed");
@@ -294,6 +295,10 @@ var FilterableListView = DeferredView.extend({
 			this._filter = filter;
 			this.requestRender("filterBy", _.bind(this.renderFilterBy, this, filter, oldVal));
 		}
+	},
+	
+	clearFilter: function(force) {
+		this.filterBy(null, force);
 	},
 
 	/** @private */

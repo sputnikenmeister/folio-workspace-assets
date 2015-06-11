@@ -21,13 +21,13 @@ $delay: 			$duration + $delay_interval;
 
 $breakpoint_large: 			1024px;
 $gutter: 					2 * $hu;
-$page_margin_left: 			1 * $hu;
-$page_margin_right: 		3 * $hu;
+$page_margin_left: 			2 * $hu;
+$page_margin_right: 		2 * $hu;
 
 $page_width: 				34 * $hu;//700px;
-$page_width_large: 			48 * $hu;//940px;
+$page_width_large: 			47 * $hu;//940px;
 $aside_width:				10 * $hu;
-$aside_width_large: 		12 * $hu;
+$aside_width_large: 		11 * $hu;
 $main_width:				$page_width - $aside_width;
 $main_width_large:			$page_width_large - $aside_width_large;
 
@@ -179,9 +179,9 @@ $base_font: $font_webfont_sans;
 
 @mixin skip_transitions {
 	transition: none 0s 0s !important;
-	transition-property: none !important;
-	transition-duration: 0s !important;
-	transition-delay: 0s !important;
+	// transition-property: none !important;
+	// transition-duration: 0s !important;
+	// transition-delay: 0s !important;
 }
 
 //%skip_transitions {

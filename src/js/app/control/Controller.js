@@ -52,10 +52,10 @@ var Controller = Backbone.Router.extend({
 
 	/** @override */
 	initialize: function (options) {
-		this._lastBundle = null;
-		this._lastImage = null;
-		this._currentBundle = null;
-		this._currentImage = null;
+		// this._lastBundle = null;
+		// this._lastImage = null;
+		// this._currentBundle = null;
+		// this._currentImage = null;
 
 		this._classProviders = [];
 		this._initialBodyClasses = document.body.className;
@@ -174,13 +174,9 @@ var Controller = Backbone.Router.extend({
 		// this._currentBundle = bundle;
 		// this._currentImage = image;
 
-		this.trigger("change:before", bundle, image);
-		this._applyClassProviders(bundle, image);
-
-		var lastBundle = bundles.selected,
-		    lastImage = bundles.selected? bundles.selected.get("images").selected : void 0;
-		console.info("- - - - - - Controller._changeSelection " +
-		// console.log("Controller._changeSelection [before]" +
+		var lastBundle = bundles.selected;
+		var lastImage = lastBundle? lastBundle.get("images").selected : void 0;
+		console.info("----\n ---- Controller._changeSelection " +
 			" [bundle: " + (lastBundle? lastBundle.cid : "none") +
 			" => " + (bundle? bundle.cid : "none") +
 			"] [image: " + (lastImage? lastImage.cid : "none") +
@@ -188,25 +184,27 @@ var Controller = Backbone.Router.extend({
 			"]"
 		);
 
-		if (_.isUndefined(bundle)) {
-			bundles.deselect();
-		} else {
-
-			// NOTE: Selection execution order
-			//  - Apply image selection to *incoming bundle*, as not to trigger unneccesary events
-			//    on an outgoing bundle. Outgoing bundle image selection remains untouched.
-			//  - Apply image selection *before* selecting the incoming bundle. Views normally
-			//    listen to the selected bundle only, so if the bundle is changing, they will not
-			//    be listening to image selection changes yet.
-
-			if (_.isUndefined(image)) {
-				bundle.get("images").deselect();
-			} else {
-				bundle.get("images").select(image);
-			}
-			bundles.select(bundle);
-		}
-
+		this.trigger("change:before", bundle, image);
+		this._applyClassProviders(bundle, image);
+		
+		// NOTE: Selection order
+		//  - Apply image selection to *incoming bundle*, as not to trigger  unneccesary events on an outgoing bundle. Outgoing bundle image selection remains untouched.
+		//  - Apply image selection *before* selecting the incoming bundle. Views normally listen to the selected bundle only, so if the bundle is changing, they will not be listening to image selection changes yet.
+		
+		// if (_.isUndefined(bundle)) {
+		// 	bundles.deselect();
+		// } else {
+		// 	if (_.isUndefined(image)) {
+		// 		bundle.get("images").deselect();
+		// 	} else {
+		// 		bundle.get("images").select(image);
+		// 	}
+		// 	bundles.select(bundle);
+		// }
+		bundle && bundle.get("images").select(image);
+		bundles.select(bundle);
+		
+		
 		this.trigger("change:after", bundle, image);
 	},
 

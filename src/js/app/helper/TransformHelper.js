@@ -24,12 +24,12 @@ var slice = Array.prototype.slice;
 function TransformHelper() {
 	this.id = idSeed++;
 	this._items = {};
+	this.immediate = false;
 
 	this._validateCallbackId = -1;
 	this._validateCallback = this._validateCallback.bind(this);
 
-	this.get = this.add;
-	this.clearTransitions = this.enableTransitions;
+	// this.add = this.get;
 }
 
 TransformHelper.prototype = {
@@ -42,7 +42,7 @@ TransformHelper.prototype = {
 		return el.cid && this._items[el.cid] !== void 0;
 	},
 
-	add: function(el) {
+	get: function(el) {
 		if (this.has(el)) {
 			return this._items[el.cid];
 		} else {
@@ -50,46 +50,66 @@ TransformHelper.prototype = {
 				el.cid = "elt" + cidSeed++;
 				el.setAttribute("data-cid", el.cid);
 			}
-			return this._items[el.cid] = new TransformItem(el);
+			return this._items[el.cid] = new TransformItem(el, this.immediate);
+		}
+	},
+	
+	add: function() {
+		var i, j, el;
+		for (i = 0; i < arguments.length; ++i) {
+			el = arguments[i];
+			if (el.length) { //_.isArray(el)) {
+				for (j = 0; j < el.length; ++j) {
+					this.get(el[j]);
+				}
+			} else {
+				this.get(el);
+			}
 		}
 	},
 
-	remove: function(el) {
+	remove: function() {
+		var i, j, el;
+		for (i = 0; i < arguments.length; ++i) {
+			el = arguments[i];
+			if (el.length) { //_.isArray(el)) {
+				for (j = 0; j < el.length; ++j) {
+					this._remove(el[j]);
+				}
+			} else {
+				this._remove(el);
+			}
+		}
+	},
+	
+	_remove: function(el) {
 		if (this.has(el)) {
 			var o = this._items[el.cid];
 			o.destroy();
 			delete this._items[el.cid];
-		}
+		}	
 	},
 
 	/* --------------------------------
 	 * public
 	 * -------------------------------- */
-	
+
 	/* public: capture
 	 * - - - - - - - - - - - - - - - - */
 
 	capture: function() {
-		//  _.each(_.flatten(arguments, true), function(el) {
-		// 	this.get(el).capture();
-		// }, this);
 		this._invoke("capture", arguments);
 	},
-
-	clearCapture: function() {
-		//  _.each(_.flatten(arguments, true), function(el) {
-		// 	this.get(el).clearCapture();
-		// }, this);
-		this._invoke("clearCapture", arguments);
-	},
-
 	captureAll: function() {
 		for (var i in this._items) {
 			this._items[i].capture();
 		}
 	},
 
-	clearCaptureAll: function() {
+	clearCapture: function() {
+		this._invoke("clearCapture", arguments);
+	},
+	clearAllCaptures: function() {
 		for (var i in this._items) {
 			this._items[i].clearCapture();
 		}
@@ -99,28 +119,18 @@ TransformHelper.prototype = {
 	 * - - - - - - - - - - - - - - - - */
 
 	offset: function(x, y){
-		//  _.each(_.flatten(slice.call(arguments, 2), true), function(el) {
-		// 	this.get(el).offset(x, y);
-		// 	// this._invalidate();
-		// }, this);
 		this._invoke("offset", arguments, 2);
 	},
-
-	clearOffset: function() {
-		//  _.each(_.flatten(arguments, true), function(el) {
-		// 	this.get(el).clearOffset();
-		// 	// this._invalidate();
-		// }, this);
-		this._invoke("clearOffset", arguments);
-	},
-
 	offsetAll: function(x, y) {
 		for (var i in this._items) {
 			this._items[i].offset(x, y);
 		}
 	},
 
-	clearOffsetAll: function() {
+	clearOffset: function() {
+		this._invoke("clearOffset", arguments);
+	},
+	clearAllOffsets: function() {
 		for (var i in this._items) {
 			this._items[i].clearOffset();
 		}
@@ -133,12 +143,22 @@ TransformHelper.prototype = {
 		this._invoke("runTransition", arguments, 1);
 	},
 
-	enableTransitions: function(el) {
-		this._invoke("enableTransitions", arguments);
+	clearTransitions: function() {
+		this._invoke("clearTransitions", arguments);
+	},
+	clearAllTransitions: function() {
+		for (var i in this._items) {
+			this._items[i].clearCapture();
+		}
 	},
 
-	disableTransitions: function(el) {
-		this._invoke("disableTransitions", arguments);
+	stopTransitions: function() {
+		this._invoke("stopTransitions", arguments);
+	},
+	stopAllTransitions: function() {
+		for (var i in this._items) {
+			this._items[i].stopTransitions();
+		}
 	},
 
 	/* -------------------------------
@@ -155,7 +175,7 @@ TransformHelper.prototype = {
 		}
 		for (i = startIndex; i < args.length; ++i) {
 			el = args[i];
-			if (_.isArray(el)) {
+			if (el.length) { //_.isArray(el)) {
 				for (j = 0; j < el.length; ++j) {
 					o = this.get(el[j]);
 					o[funcName].apply(o, funcArgs);
@@ -195,7 +215,7 @@ TransformHelper.prototype = {
 	},
 
 	_validate: function () {
-		console.log("TransformHelper._validate", this.id);
+		// console.info("TransformHelper._validate", this.id);
 		for (var i in this._items) {
 			// if (this._items.hasOwnProperty(i)) {
 				this._items[i].validate();

@@ -39,15 +39,19 @@ if (DEBUG) {
  * @type {module:app/view/AppView}
  */
 var AppView = View.extend({
-
+	
 	/** @override */
 	el: "body",
-
+	
 	/** @override */
 	initialize: function (options) {
 		/* create single hammerjs manager */
 		this.touch = TouchManager.init(document.querySelector("#container"));
-
+		
+		this.breakpoints = {
+			"desktop-small": window.matchMedia(Globals.BREAKPOINTS["desktop-small"])
+		};
+		
 		if (DEBUG) {
 			this.$el.append((new DebugToolbar({id: "debug-toolbar", collection: bundles})).render().el);
 		}
@@ -58,48 +62,40 @@ var AppView = View.extend({
 		this.contentView = new ContentView({
 			el: "#content"
 		});
-		// this.footerView = new FooterView({
-		// 	el: "#footer"
-		// });
-		this.breakpoints = {
-			"desktop-small": window.matchMedia(Globals.BREAKPOINTS["desktop-small"])
-		};
-
+		
 		// .skip-transitions on resize
-		// this.initializeResizeHandlers_min();
-		$(window).on("resize orientationchange", _.debounce(this.render.bind(this), 100, false));
-		// $(window).on("resize orientationchange", _.throttle(
-		// 	this.render.bind(this), 100, {leading: true, trailing: true}
-		// ));
-
+		$(window).on("resize orientationchange", function(ev) {
+			console.log("AppView [listener]", ev.type);
+		});
+		$(window).on("resize orientationchange", _.throttle(
+			this.render.bind(this), 200, {leading: true, trailing: true}
+		));
+		// $(window).on("resize orientationchange", _.debounce(this.render.bind(this), 100, false));
+		
 		// start router, which will request appropiate state
 		Backbone.history.start({
 			pushState: false,
 			hashChange: true
 		});
-
+		
 		// Change to .app-ready on next frame:
 		// CSS animations do not trigger while on .app-initial,
 		// so everything will be rendered in it's final state
 		this.requestAnimationFrame(function() {
 			document.documentElement.classList.remove("app-initial");
 			document.documentElement.classList.add("app-ready");
-			// this.$document.removeClass("app-initial").addClass("app-ready");
 		});
 		this.render();
 	},
-
+	
 	render: function () {
 		// document.body.classList.toggle("desktop-small",
 		// 	this.breakpoints["desktop-small"].matches);
-		document.documentElement.classList.toggle("desktop-small",	this.breakpoints["desktop-small"].matches);
+		document.documentElement.classList.toggle("breakpoint-desktop-small",
+			this.breakpoints["desktop-small"].matches);
 		this.navigationView.render();
 		this.contentView.render();
 		return this;
-	},
-
-	_onResize: function(ev) {
-
 	},
 
 });
