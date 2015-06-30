@@ -11,6 +11,8 @@ var $ = Backbone.$;
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../control/Globals");
+/** @type {module:app/control/Controller} */
+var controller = require("../control/Controller");
 /** @type {module:cookies-js} */
 var Cookies = require("cookies-js");
 
@@ -24,18 +26,36 @@ var DebugToolbar = Backbone.View.extend({
 	className: "toolbar",
 	/** @override */
 	template: require("./template/DebugToolbar.tpl"),//viewTemplate,
+	
+	events: {
+		"click dt.debug-group": function(ev) {
+			this.$debugGroup.css("display", "none");
+			this.$classesGroup.css("display", "");
+		},
+		"click dt.classes-group": function(ev) {
+			this.$debugGroup.css("display", "");
+			this.$classesGroup.css("display", "none");
+		},
+	},
 
 	initialize: function (options) {
-		var $container, $backendEl, $viewSourceEl, $showGridEl, $showBlocksEl;
-
+		Cookies.defaults = {
+			domain: String(window.location).match(/^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1]
+		};
+		
 		this.$el.html(this.template({approot: Globals.APP_ROOT}));
-
-		$backendEl = this.$("#edit-backend");
-		$showBlocksEl = this.$("#show-blocks");
-		$showGridEl = this.$("#show-grid");
-		$viewSourceEl = this.$("#source");
-
-		$backendEl.text("Edit");
+		
+		/* .debug-group
+		 * - - - - - - - - - - - - - - - - */
+		this.$debugGroup = this.$(".debug-group");
+		
+		var $showGridEl = this.$("#show-grid");
+		var $showBlocksEl = this.$("#show-blocks");
+		var $container = $("#container");
+		this.initializeToggle("debug-grid", $showGridEl, $container);
+		this.initializeToggle("debug-blocks", $showBlocksEl, $container);
+		
+		var $backendEl = this.$("#edit-backend");
 		this.listenTo(this.collection, {
 			"select:one": function(model) {
 				$backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/edit/" + model.id);
@@ -44,14 +64,26 @@ var DebugToolbar = Backbone.View.extend({
 				$backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/");
 			}
 		});
-
-		Cookies.defaults = {
-			domain: String(window.location).match(/^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1]
+		
+		// var $viewSourceEl = this.$("#source");
+		
+		/* .classes-group
+		 * - - - - - - - - - - - - - - - - */
+		this.$classesGroup = this.$(".classes-group");
+		
+		var $documentClassesEl = this.$("#document-classes");
+		var $bodyClassesEl = this.$("#body-classes");
+		var updateClassesGroup = function () {
+			$documentClassesEl.text(document.documentElement.className);
+			$bodyClassesEl.text(document.body.className);
 		};
-
-		$container = Backbone.$("#container");
-		this.initializeToggle("debug-grid", $showGridEl, $container);
-		this.initializeToggle("debug-blocks", $showBlocksEl, $container);
+		$(window).on("resize orientationchange", updateClassesGroup);
+		this.listenTo(controller, "change:after", updateClassesGroup);
+		updateClassesGroup();
+		
+		/* show dt.debug-group | dt.classes-group
+		 * - - - - - - - - - - - - - - - - */
+		this.events["click dt.debug-group"].call(this, void 0);
 	},
 
 	initializeToggle: function (className, toggleEl, targetEl) {
@@ -62,7 +94,7 @@ var DebugToolbar = Backbone.View.extend({
 		if (Cookies.get(className)) {
 			targetEl.addClass(className);
 		}
-	}
+	},
 });
 
 module.exports = DebugToolbar;

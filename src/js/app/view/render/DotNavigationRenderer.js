@@ -1,5 +1,5 @@
 /**
- * @module app/view/render/DefaultSelectableRenderer
+ * @module app/view/render/DotNavigationRenderer
  */
 
 /** @type {module:underscore} */
@@ -8,12 +8,14 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 /** @type {string} */
 var viewTemplate = require("./DotNavigationRenderer.tpl");
+/** @type {module:app/view/component/ClickableRenderer} */
+var ClickableRenderer = require("./ClickableRenderer");
 
 /**
  * @constructor
- * @type {module:app/view/render/DefaultSelectableRenderer}
+ * @type {module:app/view/render/DotNavigationRenderer}
  */
-var DotNavigationRenderer = Backbone.View.extend({
+var DotNavigationRenderer = ClickableRenderer.extend({
 
 	/** @override */
 	tagName: "li",
@@ -21,13 +23,17 @@ var DotNavigationRenderer = Backbone.View.extend({
 	className: "list-item",
 	/** @override */
 	template: viewTemplate,
-	/** @override */
-	events: {
-		"click": function (ev) {
-			ev.isDefaultPrevented() || ev.preventDefault();
-			this.trigger("renderer:click", this.model);
-		}
-	},
+	
+	// /** @override */
+	// events: {
+	// 	"click": function (ev) {
+	// 		console.log(this.cid, ev.type, ev.defaultPrevented);
+	// 		if (!ev.defaultPrevented) {
+	// 			ev.preventDefault();
+	// 			this.trigger("renderer:click", this.model);
+	// 		}
+	// 	}
+	// },
 
 	/** @override */
 	initialize: function (options) {

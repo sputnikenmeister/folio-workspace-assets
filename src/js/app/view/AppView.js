@@ -63,20 +63,22 @@ var AppView = View.extend({
 			el: "#content"
 		});
 		
-		// .skip-transitions on resize
-		$(window).on("resize orientationchange", function(ev) {
-			console.log("AppView [listener]", ev.type);
-		});
-		$(window).on("resize orientationchange", _.throttle(
-			this.render.bind(this), 200, {leading: true, trailing: true}
-		));
-		// $(window).on("resize orientationchange", _.debounce(this.render.bind(this), 100, false));
-		
 		// start router, which will request appropiate state
 		Backbone.history.start({
 			pushState: false,
 			hashChange: true
 		});
+		
+		// .skip-transitions on resize
+		// $(window).on("resize orientationchange", function(ev) {
+		// 	console.log("AppView [listener]", ev.type);
+		// });
+		// $(window).on("orientationchange resize", _.throttle(
+		// 	this.render.bind(this), 100, {leading: true, trailing: true}
+		// ));
+		var handler = this.render.bind(this);
+		$(window).on("orientationchange", handler);
+		$(window).on("resize", _.debounce(handler, 100, false));
 		
 		// Change to .app-ready on next frame:
 		// CSS animations do not trigger while on .app-initial,
@@ -91,7 +93,7 @@ var AppView = View.extend({
 	render: function () {
 		// document.body.classList.toggle("desktop-small",
 		// 	this.breakpoints["desktop-small"].matches);
-		document.documentElement.classList.toggle("breakpoint-desktop-small",
+		document.documentElement.classList.toggle("desktop-small",
 			this.breakpoints["desktop-small"].matches);
 		this.navigationView.render();
 		this.contentView.render();

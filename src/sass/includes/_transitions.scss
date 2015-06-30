@@ -66,7 +66,7 @@ $collapse_ease: $ease;
 		opacity ($duration*1 - 0.001s) $collapse_ease ($delay*0 + 0.001s),
 		transform ($duration*1 - 0.001s) $collapse_ease ($delay*1 + 0.001s);
 }
-// &.entering {
+// &.collapsed-changed {
 // 	.list-group, .list-item {
 // 		transition-delay: $delay * 1 + 0.001s, $delay * 1 + 0.001s, $delay * 0 + 0.001s;
 // 	}

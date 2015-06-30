@@ -21,21 +21,23 @@ var bundles = require("../model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
 var ContainerView = require("./base/ContainerView");
-/** @type {module:app/view/component/Carousel} */
-var Carousel = require("./component/Carousel");
-/** @type {module:app/view/render/ImageRenderer} */
-var ImageRenderer = require("./render/ImageRenderer");
-/** @type {module:app/view/render/CarouselEmptyRenderer} */
-var CarouselEmptyRenderer = require("./render/CarouselEmptyRenderer");
 /** @type {module:app/view/component/CollectionStack} */
 var CollectionStack = require("./component/CollectionStack");
 /** @type {module:app/view/render/DotNavigationRenderer} */
 //var DotNavigationRenderer = require("./render/DotNavigationRenderer");
-
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
 var imageCaptionTemplate = require("./template/CollectionStack.Image.tpl");
+
+/** @type {module:app/view/component/Carousel} */
+var Carousel = require("./component/Carousel");
+/** @type {module:app/view/render/ImageRenderer} */
+var ImageRenderer = require("./render/ImageRenderer");
+/** @type {module:app/view/render/VideoRenderer} */
+var VideoRenderer = require("./render/VideoRenderer");
+/** @type {module:app/view/render/CarouselEmptyRenderer} */
+var CarouselEmptyRenderer = require("./render/CarouselEmptyRenderer");
 
 /**
  * @constructor
@@ -79,16 +81,16 @@ var ContentView = ContainerView.extend({
 	/** @override */
 	render: function () {
 		// this.transforms.clearAllCaptures();
-		// this.transforms.stopAllTransitions();
+		this.transforms.stopAllTransitions();
 		// this.transforms.clearAllTransitions();
-		// this.transforms.validate();
+		this.transforms.validate();
 
 		_.each(this.children, function(view) {
-			this.transforms.clearCapture(view.el);
-			this.transforms.clearTransitions(view.el);
+			// this.transforms.clearCapture(view.el);
+			// this.transforms.clearTransitions(view.el);
+			view.skipTransitions = true;
 			view.render();
 		}, this);
-		this.transforms.validate();
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
 	
@@ -100,21 +102,6 @@ var ContentView = ContainerView.extend({
 		_.each(this.children, function(view) {
 			view.setEnabled(collapsed);
 		});
-	},
-	
-	/* -------------------------------
-	 * Router -> Model change
-	 * ------------------------------- */
-	
-	_beforeChange: function(bundle,image) {
-		// console.log(">>>> ContentView._beforeChange");
-		// this.transforms.captureAll();
-	},
-	
-	_afterChange: function(bundle,image) {
-		// console.log("<<<< ContentView._afterChange");
-		// this.setCollapsed(bundle !== void 0);
-		// this.transforms.validate();
 	},
 	
 	/* --------------------------- *
@@ -147,23 +134,16 @@ var ContentView = ContainerView.extend({
 	_onSelectOne: function(bundle) {
 		this.createChildren(bundle, false);
 		this.listenTo(bundle.get("images"), this.imageListeners);
-
 		this.setCollapsed(true);
-		// this.transforms.validate(); 			// XXX
 	},
 	
 	_onSelectNone: function() {
 		this.touch.off("vpanstart", this._onVPanStart);
-		// this.touch.off("vpanend", this._onVPanFinal);
-		// this.touch.off("panstart", this._onPanStart);
-		
 		this.setCollapsed(false);
-		// this.transforms.validate(); 			// XXX
 	},
 	
 	_onSelectImage: function(image) {
 		this.setCollapsed(true);
-		// this.transforms.validate(); 			// XXX
 	},
 	
 	/* -------------------------------
@@ -282,25 +262,18 @@ var ContentView = ContainerView.extend({
 	_onVPanFinal: function(ev) {
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
-
-		// _.each(this.children, function(view) {
-		// 	this.transforms.enableTransitions(view.el);
-		// }, this);
-
+		
+		this.transforms.clearAllOffsets();
 		if (this.willCollapseChange(ev)) {
 			this.transforms.runTransition(
-				this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING, this.childrenEls);
+				this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
+				this.childrenEls);
+			this.transforms.validate();
 			this.setCollapsed(!this.isCollapsed());
 		} else {
 			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE, this.childrenEls);
+			this.transforms.validate();
 		}
-
-		// _.each(this.children, function(view) {
-		// 	this.transforms.clearOffset(view.el);
-		// }, this);
-
-		this.transforms.clearAllOffsets();
-		this.transforms.validate();
 	},
 
 	willCollapseChange: function(ev) {
@@ -329,10 +302,22 @@ var ContentView = ContainerView.extend({
 			model: bundle,
 			template: bundleDescTemplate,
 		});
+		
+		var rendererFunction = function(item, index, arr) {
+			if (index == -1) {
+				return emptyRenderer;
+			}
+			var attrs = item.get("attrs");
+			if (attrs && attrs["@renderer"] == "video") {
+				return VideoRenderer;
+			}
+			return ImageRenderer;
+		}
 		var view = new Carousel({
 			className: classname,
 			collection: images,
-			renderer: ImageRenderer,
+			rendererFunction: rendererFunction,
+			// renderer: ImageRenderer,
 			emptyRenderer: emptyRenderer,
 			direction: Carousel.DIRECTION_HORIZONTAL,
 			hammer: this.touch,

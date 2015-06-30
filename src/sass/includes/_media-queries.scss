@@ -10,7 +10,7 @@
 	// @media #{map-get($breakpoints, $query)} {
 	// 	@content;
 	// }
-	@at-root .breakpoint-#{$query &} {
+	@at-root .#{$query &} {
 		@content;
 	}
 }

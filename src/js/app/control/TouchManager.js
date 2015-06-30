@@ -170,54 +170,125 @@ Hammer.inherit(SmoothPan, Hammer.Pan, {
 	}
 });
 
+function createInstance(el) {
+	var recognizers = [];
+	var manager = new Hammer.Manager(el);
+	
+	var hpan = new SmoothPan({
+	// var hpan = new Hammer.Pan({
+		threshold: Globals.THRESHOLD,
+		direction: Hammer.DIRECTION_HORIZONTAL,
+	});
+	recognizers.push(hpan);
+	
+	var vpan = new SmoothPan({
+		event: "vpan",
+		threshold: Globals.THRESHOLD,
+		direction: Hammer.DIRECTION_VERTICAL,
+	});
+	recognizers.push(vpan);
+	vpan.requireFailure(hpan);
+	
+	// var tap = new Hammer.Tap({
+	// 	// threshold: Globals.THRESHOLD-1,
+	// 	// interval: 50, time: 200,
+	// });
+	// recognizers.push(tap);
+	// tap.recognizeWith(hpan);
+	
+	// instance.add([hpan, vpan, tap]);
+	manager.add(recognizers);
+	return manager;
+}
+	
+	//https://gist.githubusercontent.com/jtangelder/361052976f044200ea17/raw/f54c2cef78d59da3f38286fad683471e1c976072/PreventGhostClick.js
+/*
+function preventGhostClick(hev)
+	manager.on("panend vpanend pancancel vpancancel", function(hev) {
+		var targetEvType = "click";
+		var targetEvHandler;
+		targetEvHandler = function (ev) {
+			console.log("[TouchManager] " + ev.type + " (after " + hev.type + ")",
+					ev.timeStamp, "preventDefault()");
+				el.removeEventListener(targetEvType, targetEvHandler, true);
+				ev.preventDefault();
+				ev.stopPropagation();
+				// ev.stopImmediatePropagation();
+			};
+		console.log("[TouchManager] " + hev.type + " (" + hev.srcEvent.type + ")",
+			hev.srcEvent.timeStamp, "will prevent next " + targetEvType);
+		el.addEventListener(targetEvType, targetEvHandler, true);
+	});
+	// instance.on("pancancel vpancancel", function(hev) {
+	// 	console.log("[TouchManager] " + hev.type + " (" + hev.srcEvent.type + ")",
+	// 		hev.srcEvent.timeStamp);
+	// });
+	
+	// instance.on("tap panend pancancel vpanend vpancancel", function(ev) {
+	// 	var sev = ev.srcEvent;
+	// 	var prevType = ev.type;
+	// 	var targetType = "click";
+	// 	if ((ev.type == "panend" || ev.type == "vpanend") && sev.type == "mouseup") {
+	// 		var handler;
+	// 		handler = function (ev) {
+	// 			console.log("[TouchManager] " + ev.type + " (after " + prevType + ")",
+	// 				ev.timeStamp, "preventing default");
+	// 			el.removeEventListener(targetType, handler, true);
+	// 			ev.preventDefault();
+	// 			ev.stopPropagation();
+	// 			// ev.stopImmediatePropagation();
+	// 		};
+	// 		console.log("[TouchManager] " + sev.type +" (" + ev.type + ")",
+	// 			sev.timeStamp, "will prevent next " + targetType);
+	// 		el.addEventListener(targetType, handler, true);
+	// 	}
+	// 	// if (ev.type == "tap") {
+	// 	else {
+	// 		console.log("[TouchManager] " + sev.type +" ("+ev.type+")", sev.timeStamp);
+	// 	}
+	// });
+	
+};*/
+
 var instance = null;
 
 module.exports = {
-
 	init: function(el) {
 		if (_.isNull(instance)) {
-			var recognizers = [];
+			var lastTimeStamp = -1;
+			var recordTimeStamp = function(hev) {
+				lastTimeStamp = hev.srcEvent.timeStamp;
+				// console.log("[TouchManager] " + hev.type +" (" + hev.srcEvent.type + ")",
+				// 	lastTimeStamp, "will prevent next click");
+			};
+			var preventClickEvent = function(domev) {
+				if (lastTimeStamp == domev.timeStamp) {
+					// console.log("[TouchManager] " + domev.type, domev.timeStamp, "preventing default");
+					lastTimeStamp = 0;
+					domev.preventDefault();
+					domev.stopPropagation();
+				}
+			};
 			
-			var hpan = new SmoothPan({//new Hammer.Pan({
-				threshold: Globals.THRESHOLD,
-				direction: Hammer.DIRECTION_HORIZONTAL,
-			});
-			recognizers.push(hpan);
-
-			var vpan = new SmoothPan({//new Hammer.Pan({
-				event: "vpan",
-				threshold: Globals.THRESHOLD,
-				direction: Hammer.DIRECTION_VERTICAL,
-			});
-			recognizers.push(vpan);
-			vpan.requireFailure(hpan);
-
-			var tap = new Hammer.Tap({
-				threshold: Globals.THRESHOLD-1,
-				interval: 50,
-				time: 200,
-			});
-			recognizers.push(tap);
-			tap.recognizeWith(hpan);
-
-			instance = new Hammer.Manager(el);
-			// instance.add([hpan, vpan, tap]);
-			instance.add(recognizers);
+			instance = createInstance(el);
+			instance.on("panend pancancel vpanend vpancancel", recordTimeStamp);
+			instance.element.addEventListener("click", preventClickEvent, true);
+			this.handlerRef = preventClickEvent;
+			
 		} else {
 			console.warn("cannot initialize more than once");
 		}
 		return instance;
 	},
-
 	destroy: function() {
 		if (_.isNull(instance)) {
 			console.warn("no instance to destroy");
 		} else {
+			instance.element.removeEventListener("click", this.handlerRef, true);
 			instance.destroy();
 			instance = null;
 		}
 	},
-
 	getInstance: function() {
 		if (_.isNull(instance)) {
 			console.error("must initialize first");

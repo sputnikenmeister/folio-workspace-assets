@@ -266,10 +266,10 @@ TransformItem.prototype = {
 		var computed, capturedValues;
 		var eltTransformValue = null;
 		
-		log("info", traceElt(this.el), "TransformItem._validateCapture", {
-			"transition invalid": this._transitionInvalid,
-			"offset invalid": this._offsetInvalid,
-		});
+		// log("info", traceElt(this.el), "TransformItem._validateCapture", {
+		// 	"transition invalid": this._transitionInvalid,
+		// 	"offset invalid": this._offsetInvalid,
+		// });
 
 		// this is an explicit call to capture() instead of a subcall from _validateOffset()
 		if (this._hasOffset && !this._offsetInvalid) {

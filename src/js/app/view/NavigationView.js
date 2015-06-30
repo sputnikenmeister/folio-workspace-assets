@@ -69,12 +69,12 @@ module.exports = ContainerView.extend({
 		this.sitename = this.assignSitenameButton();
 		this.bundleList = this.createBundleList();
 		this.keywordList = this.createKeywordList();
+		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group span");
 		// this.bundlePager = this.createBundlePager();
 		this.children = [this.bundleList, this.keywordList];
 		// this.bundleList.renderNow();
 		// this.keywordList.renderNow();
 		
-		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group span");
 		
 		// var nodes = this.keywordList.el.querySelectorAll(".list-group span");
 		// this.hGroupings = [];
@@ -108,14 +108,15 @@ module.exports = ContainerView.extend({
 	/** @override */
 	render: function () {
 		console.log(".... NavigationView.render()");
-		this.transforms.clearAllCaptures();
+		// this.transforms.clearAllCaptures();
 		this.transforms.stopAllTransitions();
 		// this.transforms.clearAllTransitions();
+		this.transforms.validate();
+		
 		_.each(this.children, function(view) {
 			view.skipTransitions = true;
 			view.render();
 		}, this);
-		this.transforms.validate();
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
 
@@ -148,7 +149,7 @@ module.exports = ContainerView.extend({
 			this.keywordList.wrapper);
 		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
 			this.bundleList.el, this.keywordList.el);
-		this.transforms.runTransition(Globals.TRANSIT_ENTERING,
+		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
 			this.sitename.el);
 		this.transforms.runTransition(
 			this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
@@ -187,6 +188,7 @@ module.exports = ContainerView.extend({
 			this.transforms.runTransition(Globals.TRANSIT_ENTERING,
 				this.bundleList.wrapper, this.keywordList.wrapper, this.sitename.el,
 				this.hGroupings);
+			
 			// this.transforms.runTransition(
 			// 	image? Globals.TRANSIT_ENTERING : Globals.TRANSIT_EXITING,
 			// 	this.hGroupings);
@@ -245,7 +247,7 @@ module.exports = ContainerView.extend({
 	_onHPanStart: function(ev) {
 		if (this.isCollapsed() &&
 			bundles.selected.get("images").selectedIndex <= 0 &&
-			document.body.matches(".breakpoint-desktop-small .default-layout")
+			document.body.matches(".desktop-small .default-layout")
 			// this.el.matches(".desktop-small.default-layout " + this.el.tagName)
 			// window.matchMedia(Globals.BREAKPOINTS["desktop-small"]).matches)
 		) {
@@ -330,21 +332,22 @@ module.exports = ContainerView.extend({
 	_onVPanFinal: function(ev) {
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
-
+		
+		this.transforms.clearOffset(this.bundleList.el, this.keywordList.el);
+		
 		if (this.willCollapseChange(ev)) {
 			this.transforms.runTransition(Globals.TRANSIT_CHANGING,
 				this.bundleList.el, this.keywordList.el);
-			this.transforms.runTransition(this.isCollapsed()?
-				Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
+			this.transforms.runTransition(
+				this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
 				this.bundleList.wrapper, this.keywordList.wrapper, this.sitename.el, this.hGroupings);
 			this.setCollapsed(!this.isCollapsed());
+			this.transforms.validate();
 		} else {
 			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE,
 				this.bundleList.el, this.keywordList.el);
+			this.transforms.validate();
 		}
-		
-		this.transforms.clearOffset(this.bundleList.el, this.keywordList.el);
-		this.transforms.validate();
 	},
 	
 	willCollapseChange: function(ev) {

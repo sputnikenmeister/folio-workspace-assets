@@ -14,13 +14,14 @@ var View = require("../base/View");
  * @type {module:app/view/render/CarouselEmptyRenderer}
  */
 module.exports = View.extend({
-
+	
+	/** @override */
+	//	model: Backbone.Model,
 	/** @override */
 	className: "carousel-item empty-item",
 	/** @override */
-//	model: Backbone.Model,
-	/** @override */
 	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
+	
 	/** @override */
 	render: function() {
 		this.$el.html(this.template(this.model.attributes));

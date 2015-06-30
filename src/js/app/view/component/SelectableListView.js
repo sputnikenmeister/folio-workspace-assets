@@ -12,6 +12,8 @@ var Container = require("backbone.babysitter");
 var View = require("../base/View");
 /** @type {module:app/view/component/DefaultSelectableRenderer} */
 var DefaultSelectableRenderer = require("../render/DefaultSelectableRenderer");
+/** @type {module:app/view/component/ClickableRenderer} */
+var ClickableRenderer = require("../render/ClickableRenderer");
 
 var SelectableCollectionView = View.extend({
 	/** @override */
@@ -172,20 +174,12 @@ var SelectableCollectionView = View.extend({
 //			view.$el.removeClass("selected");
 //	},
 }, {
-	NullRenderer: View.extend({
+	NullRenderer: ClickableRenderer.extend({
 
 		/** @override */
 		tagName: "li",
 		/** @override */
 		className: "list-item null-item",
-
-		/** @override */
-		events: {
-			"click": function (ev) {
-				ev.isDefaultPrevented() || ev.preventDefault();
-				this.trigger("renderer:click", this.model);
-			}
-		},
 
 		/** @override */
 		initialize: function (options) {

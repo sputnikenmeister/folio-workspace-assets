@@ -277,25 +277,31 @@ module.exports = function (grunt) {
 			"js/<%= DIST_JS %>.js": ["./js/<%= DIST_JS %>.js"]
 		}
 	});
-
+	
 	/* --------------------------------
 	 * Main Targets
 	 * -------------------------------- */
-
+	
+	grunt.registerTask("build-debug", [
+		"compass:debug", "autoprefixer:debug",
+		"browserify:vendor", "exorcise:vendor",
+		"browserify:client", "exorcise:client"
+	]);
+	grunt.registerTask("build-dist", [
+		"compass:dist", "autoprefixer:dist",
+		"browserify:dist", "uglify:dist"
+	]);
 	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
-	grunt.registerTask("build-debug", ["compass:debug", "autoprefixer:debug", "browserify:vendor",
-		"exorcise:vendor", "browserify:client", "exorcise:client"]);
-	grunt.registerTask("build-dist", ["compass:dist", "autoprefixer:dist", "browserify:dist",
-		"uglify:dist"]);
-	grunt.registerTask("build-watch", ["browserify:watchable", "watch"]);
 	grunt.registerTask("build-all", ["clean-all", "build-debug", "build-dist"]);
+	grunt.registerTask("build-watch", ["browserify:watchable", "watch"]);
+	
 	// Default task
-	grunt.registerTask("default", ["build-all"]);
+	grunt.registerTask("default", ["build-debug"]);
 
 	/* --------------------------------
 	 * Resources
 	 * -------------------------------- */
-
+	
 	/* generate-sprites
 	 * - - - - - - - - - - - - - - - - - */
 	var previewSize = "10%";
@@ -312,7 +318,7 @@ module.exports = function (grunt) {
 			custom_dest: "build/bundle-sprites/{%= width %}/"
 		}]
 	});
-
+	
 	grunt.loadNpmTasks("grunt-spritesmith");
 	grunt.config("sprite.bundle-sprites", {
 		algorithm: "binary-tree",
@@ -322,12 +328,12 @@ module.exports = function (grunt) {
 		dest: "images/bundle-sprites.png",
 		destCss: "src/sass/generated/_bundle-sprites-generated.scss"
 	});
-
+	
 	// grunt.config("compass.bundle-sprites.options", {
 	// 	specify: "src/sass/generated/_bundle-sprites.scss",
 	// 	sourcemap: false,
 	// });
-
+	
 	grunt.registerTask("generate-sprites",
 		["responsive_images:bundle-sprites", "sprite:bundle-sprites"]);
 
@@ -340,7 +346,7 @@ module.exports = function (grunt) {
 			opts: {stdio: "inherit"}
 		}, this.async());
 	});
-
+	
 	/* generate-favicons
 	 * - - - - - - - - - - - - - - - - - */
 	grunt.loadNpmTasks("grunt-favicons");

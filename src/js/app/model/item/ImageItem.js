@@ -15,10 +15,10 @@ var Globals = require("../../control/Globals");
 
 /** @type {Object} */
 var imageUrlTemplates = {
-	"original" : _.template(Globals.MEDIA_DIR + "/<%= f %>"),
-//	"original" : _.template(Globals.APP_ROOT + Globals.MEDIA_DIR + "/<%= f %>"),
-	"constrain-width" : _.template(Globals.APP_ROOT + "image/1/<%= width %>/0/uploads/<%= f %>"),
-	"constrain-height" : _.template(Globals.APP_ROOT + "image/1/0/<%= height %>/uploads/<%= f %>")
+	"original" : _.template(Globals.MEDIA_DIR + "/<%= src %>"),
+//	"original" : _.template(Globals.APP_ROOT + Globals.MEDIA_DIR + "/<%= src %>"),
+	"constrain-width" : _.template(Globals.APP_ROOT + "image/1/<%= width %>/0/uploads/<%= src %>"),
+	"constrain-height" : _.template(Globals.APP_ROOT + "image/1/0/<%= height %>/uploads/<%= src %>")
 };
 /** @type {Function} */
 var longdescTemplate = _.template("i<%= id %>-caption");
@@ -28,24 +28,24 @@ var longdescTemplate = _.template("i<%= id %>-caption");
  * @type {module:app/model/item/ImageItem}
  */
 module.exports = Backbone.Model.extend({
-
+	
 	/** @type {Object} */
 	defaults: {
 		bId: 0,
 		o: 0,
-		f: "",
+		src: "",
 		w: 0,
 		h: 0,
 		desc: "<p><em>No description</em></p>",
 		attrs: [],
 	},
-
+	
 	mutators: {
 		name: function () {
-			return this.get("text") || this.get("f");
+			return this.get("text") || this.get("src");
 		},
 		handle: function () {
-			return this.get("f");
+			return this.get("src");
 		},
 		text: function () {
 			return stripTags(this.get("desc"));
@@ -69,31 +69,18 @@ module.exports = Backbone.Model.extend({
 			}
 		}
 	},
-
-//	initialize: function() {
-//		_.once(_.bind(this.getImageUrl, this));
-//		_.once(_.bind(this.selector, this));
-//	},
-
+	
 	setImageUrl: function(url) {
 		this._imageUrl = url;
 	},
-
+	
 	getImageUrl: function() {
 		if (_.isUndefined(this._imageUrl)) {
 			this._imageUrl = imageUrlTemplates.original(this.attributes);
 		}
 		return this._imageUrl;
 	},
-
-//	selector: function() {
-//		return "#" + this.domId();
-//	},
-//
-//	domId: function() {
-//		return "i" + this.id;
-//	},
-
+	
 	/** @override */
 	toString: function() {
 		return this.id;

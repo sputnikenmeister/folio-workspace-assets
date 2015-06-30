@@ -173,6 +173,17 @@ $base_font: $font_webfont_sans;
 	}
 }
 
+@mixin text_outline($color: black, $radius: 1px) {
+	// PI/4=0.78539816339 1/(PI/2)=1.27323954474
+	$r1: $radius;// top, bottom, left, right
+	$r2: $radius;// top-left, top-right, bottom-left, bottom-right
+	text-shadow:
+		// $color 0 -#{$r1} 0, $color 0 #{$r1} 0,
+		$color -#{$r1} 0 0, $color #{$r1} 0 0,
+		$color -#{$r2} -#{$r2} 0, $color #{$r2} #{$r2} 0,
+		$color #{$r2} -#{$r2} 0, $color -#{$r2} #{$r2} 0;
+}
+
 // ------------------------------------
 // transitions
 // ------------------------------------

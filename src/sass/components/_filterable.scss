@@ -88,7 +88,7 @@
 			@extend %changing-list-excluded;
 		}
 	}
-	&.entering.collapsed {
+	&.collapsed-changed.collapsed {
 		.list-group, .list-item {
 			&, &.excluded {
 				@extend %entering-list;

@@ -15,6 +15,8 @@ var Container = require("backbone.babysitter");
 var View = require("../base/View");
 /** @type {module:app/view/base/DeferredView} */
 var DeferredView = require("../base/DeferredView");
+/** @type {module:app/view/component/ClickableRenderer} */
+var ClickableRenderer = require("../render/ClickableRenderer");
 
 /** @type {module:app/utils/css/parseTransformMatrix} */
 // var parseTransformMatrix = require("../../utils/css/parseTransformMatrix");
@@ -108,7 +110,7 @@ var FilterableListView = DeferredView.extend({
 	},
 
 	remove: function () {
-		$(window).off("orientationchange resize", this._onResize);
+		// $(window).off("orientationchange resize", this._onResize);
 		DeferredView.prototype.remove.apply(this);
 	},
 
@@ -136,14 +138,16 @@ var FilterableListView = DeferredView.extend({
 				this.$el.removeClass("skip-transitions");
 			});
 		}
-
-		if (this.needsRender("collapsed")) {
-			this.validateRender("collapsed");
-			this.$el.addClass("entering");
-		} else {
-			this.$el.removeClass("entering");
-		}
-		// this.validateRender("collapsed");
+		// if (this.needsRender("collapsed")) {
+		// 	this.validateRender("collapsed");
+		// 	this.$el.addClass("collapsed-changed");
+		// } else {
+		// 	this.$el.removeClass("collapsed-changed");
+		// }
+		// this.el.classList.toggle("collapsed", this.isCollapsed());
+		// this.el.classList.toggle("collapsed-changed", this.needsRender("collapsed"));
+		this.validateRender("collapsed");
+		
 		this.validateRender("selection");
 		this.validateRender("filterBy");
 		this.renderLayout();
@@ -153,10 +157,10 @@ var FilterableListView = DeferredView.extend({
 		var _transformProp = this.getPrefixedProperty("transform");
 		var el = this.el.firstElementChild, isExcluded;
 		var style = window.getComputedStyle(this.el);
-		var posY = parseFloat(style.paddingTop);
 		var posX = parseFloat(style.paddingLeft);
-		// posY = el.clientTop;
-		// posY = el.offsetTop;
+		var posY = parseFloat(style.paddingTop);
+		// var posX = el.offsetLeft;
+		// var posY = el.offsetTop;
 		do {
 			isExcluded = el.className.indexOf("excluded") != -1;
 			if ((!this._collapsed || !isExcluded) && el.offsetHeight == 0) {
@@ -170,7 +174,7 @@ var FilterableListView = DeferredView.extend({
 			}
 		} while (el = el.nextElementSibling);
 
-		posY += parseFloat(style.paddingBottom);
+		// posY += parseFloat(style.paddingBottom);
 		this.el.style.height = (posY > 0)? posY + "px" : "";
 	},
 
@@ -250,11 +254,12 @@ var FilterableListView = DeferredView.extend({
 
 	/** @private */
 	renderCollapsed: function (collapsed) {
-		if (collapsed) {
-			this.$el.addClass("collapsed");
-		} else {
-			this.$el.removeClass("collapsed");
-		}
+		this.el.classList.toggle("collapsed", collapsed);
+		// if (collapsed) {
+		// 	this.$el.addClass("collapsed");
+		// } else {
+		// 	this.$el.removeClass("collapsed");
+		// }
 	},
 
 	/* --------------------------- *
@@ -328,19 +333,23 @@ var FilterableListView = DeferredView.extend({
 	},
 
 }, {
-	/**
-	 * @constructor
-	 * @type {module:app/view/component/ItemView}
-	 */
-	defaultRenderer: View.extend({
-		/** @type {Object} */
-		events: {
-			"click": function (ev) {
-				ev.isDefaultPrevented() || ev.preventDefault();
-				this.trigger("renderer:click", this.model);
-			}
-		},
-	})
+	defaultRenderer: ClickableRenderer,
+	// /**
+	//  * @constructor
+	//  * @type {module:app/view/component/ItemView}
+	//  */
+	// defaultRenderer: View.extend({
+	// 	/** @type {Object} */
+	// 	events: {
+	// 		"click": function (ev) {
+	// 			if (!ev.defaultPrevented) {
+	// 				console.log(this.cid, ev.type + " event preventDefault()");
+	// 				ev.preventDefault();
+	// 				this.trigger("renderer:click", this.model);
+	// 			}
+	// 		}
+	// 	},
+	// })
 });
 
 module.exports = FilterableListView;

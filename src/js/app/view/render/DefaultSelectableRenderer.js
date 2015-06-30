@@ -8,24 +8,32 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 /** @type {string} */
 var viewTemplate = require("./DefaultSelectableRenderer.tpl");
+/** @type {module:app/view/component/ClickableRenderer} */
+var ClickableRenderer = require("./ClickableRenderer");
 
 /**
  * @constructor
  * @type {module:app/view/render/DefaultSelectableRenderer}
  */
-var DefaultSelectableRenderer = Backbone.View.extend({
-
+var DefaultSelectableRenderer = ClickableRenderer.extend({
+	
 	/** @override */
 	tagName: "li",
 	/** @override */
 	className: "list-item",
 	/** @override */
 	template: viewTemplate,
-	/** @override */
-	events: {
-		"click": "onClick",
-	},
-
+	// /** @override */
+	// events: {
+	// 	"click": function (ev) {
+	// 		if (!ev.defaultPrevented) {
+	// 			console.log(this.cid, ev.type + " event preventDefault()");
+	// 			ev.preventDefault();
+	// 			this.trigger("renderer:click", this.model);
+	// 		}
+	// 	}
+	// },
+	
 	initialize: function (options) {
 		this.listenTo(this.model, {
 			"selected": function () {
@@ -39,7 +47,7 @@ var DefaultSelectableRenderer = Backbone.View.extend({
 			this.$el.addClass("selected");
 		}
 	},
-
+	
 	/** @override */
 	render: function () {
 		this.$el.html(this.template({
@@ -52,11 +60,6 @@ var DefaultSelectableRenderer = Backbone.View.extend({
 //			this.$el.removeClass("selected");
 //		}
 		return this;
-	},
-
-	onClick: function (ev) {
-		ev.isDefaultPrevented() || ev.preventDefault();
-		this.trigger("renderer:click", this.model);
 	},
 });
 

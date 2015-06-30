@@ -33,7 +33,7 @@ module.exports = View.extend({
 	template: viewTemplate,
 
 	initialize: function (options) {
-		_.bindAll(this, "renderLater");
+		_.bindAll(this, "renderLater", "_onTransitionEnd");
 		// options
 		options.template && (this.template = options.template);
 		// listeners
@@ -44,6 +44,9 @@ module.exports = View.extend({
 			// "select:none": this._onSelectNone,
 			// "deselect:none": this._onDeselectNone,
 		});
+		
+		this.$content = null;
+		this.$lastContent = null;
 
 		this.renderPending = true;
 		this.skipTransitions = true;
@@ -75,11 +78,14 @@ module.exports = View.extend({
 		if (this.renderPending) {
 			if (this.$content) {
 				if (this.skipTransitions) {
-					this.$el.removeAttr("style");
+					// this.$el.css({ minWidth: "", minHeight: ""});
+					// this.$el.removeAttr("style");
 					this.$content
 						.stop()
 						.clearQueue()
-						.remove();
+						// .remove()
+						;
+					this._onTransitionEnd(this.$content);
 				} else {
 					var content = this.$content[0];		// Get content's size while still in the flow
 					var contentRect = {//_.extend({
@@ -99,12 +105,14 @@ module.exports = View.extend({
 					this.$content						// Fade it out
 						.clearQueue()
 						.css(contentRect)
-						//.delay(Globals.TRANSITION_DELAY * 0).transit({opacity: 0, delay: 1})
-						.transit({opacity: 0, delay: Globals.TRANSITION_DELAY * 0 + 1})
-						.promise().always(function($content) {
-							$content.parent().removeAttr("style");
-							$content.remove();
-						});
+						.delay(Globals.TRANSITION_DELAY * 0 + 1).transit({opacity: 0, delay: 1})
+						// .transit({opacity: 0, delay: Globals.TRANSITION_DELAY * 0 + 1})
+						.promise().always(this._onTransitionEnd);
+						// .promise().always(function($content) {
+						// 	$content.parent().css({ minWidth: "", minHeight: ""});
+						// 	$content.parent().removeAttr("style");
+						// 	$content.remove();
+						// });
 				}
 				delete this.$content;
 			}
@@ -116,8 +124,8 @@ module.exports = View.extend({
 				} else {
 					this.$content
 						.css({opacity: 0})
-						.prependTo(this.el).transit({opacity: 1, delay: Globals.TRANSITION_DELAY * 1 + 1});
-						//.delay(Globals.TRANSITION_DELAY * 1).prependTo(this.el).transit({opacity: 1, delay: 1});
+						// .prependTo(this.el).transit({opacity: 1, delay: Globals.TRANSITION_DELAY * 1 + 1});
+						.delay(Globals.TRANSITION_DELAY * 1).prependTo(this.el).transit({opacity: 1, delay: 1});
 				}
 			}
 
@@ -125,6 +133,11 @@ module.exports = View.extend({
 			this.renderPending = false;
 		}
 		return this;
+	},
+	
+	_onTransitionEnd: function($content) {
+		$content.remove();
+		this.$el.css({ minWidth: "", minHeight: ""});
 	},
 
 	/* --------------------------- *

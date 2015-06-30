@@ -23,7 +23,7 @@
 @mixin sprites($sprites) {
 	@each $sprite in $sprites {
 		$sprite_name: nth($sprite, 10);
-		.image-item.#{$sprite_name} .placeholder:before {
+		.media-item.#{$sprite_name} .placeholder:before {
 			background-image: image-url("previews.png");
 			@include sprite($sprite);
 		}

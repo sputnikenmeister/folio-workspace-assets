@@ -98,18 +98,18 @@ var Controller = Backbone.Router.extend({
 		this._changeSelection(bundle, image);
 		this._updateLocation();
 	},
-
+	
 	deselectImage: function () {
 		var bundle = bundles.selected;
 		this._changeSelection(bundle);
 		this._updateLocation();
 	},
-
+	
 	deselectBundle: function () {
 		this._changeSelection();
 		this._updateLocation();
 	},
-
+	
 	/** Update location when navigation happens internally */
 	_updateLocation: function() {
 		var bundle, image;
@@ -120,7 +120,7 @@ var Controller = Backbone.Router.extend({
 		//_.defer(_.bind(this.navigate, this), this._getLocation(bundle, image), {trigger: false});
 		this.navigate(this._getLocation(bundle, image), {trigger: false});
 	},
-
+	
 	_getLocation: function(bundle, image) {
 		var images, imageIndex, location;
 		location = "bundles";
@@ -135,15 +135,15 @@ var Controller = Backbone.Router.extend({
 		}
 		return location;
 	},
-
+	
 	_goToLocation: function(bundle, image) {
 		this.navigate(this._getLocation(bundle, image), {trigger: true});
 	},
-
+	
 	/* --------------------------- *
 	 * Router handlers (browser address changes)
 	 * --------------------------- */
-
+	
 	toBundleItem: function (bundleHandle, imageIndex) {
 		var bundle, image;
 		bundle = bundles.findWhere({handle: bundleHandle});
@@ -162,34 +162,40 @@ var Controller = Backbone.Router.extend({
 	toBundleCollection: function () {
 		this._changeSelection();
 	},
-
+	
 	/* -------------------------------
 	 * Select Bundle/image
 	 * ------------------------------- */
-
+	
+	/*
+	 * NOTE: Selection order
+	 * - Apply image selection to *incoming bundle*, as not to trigger
+	 *	unneccesary events on an outgoing bundle. Outgoing bundle image selection
+	 *	remains untouched.
+	 * - Apply image selection *before* selecting the incoming bundle. Views
+	 *	normally listen to the selected bundle only, so if the bundle is changing,
+	 *	they will not be listening to image selection changes yet.
+	 */
 	/* Select Bundle/image */
 	_changeSelection: function (bundle, image) {
 		// this._lastBundle = this._currentBundle;
 		// this._lastImage = this._currentImage;
 		// this._currentBundle = bundle;
 		// this._currentImage = image;
-
+		
 		var lastBundle = bundles.selected;
 		var lastImage = lastBundle? lastBundle.get("images").selected : void 0;
-		console.info("----\n ---- Controller._changeSelection " +
+		console.log("----");
+		console.log("---- Controller._changeSelection " +
 			" [bundle: " + (lastBundle? lastBundle.cid : "none") +
 			" => " + (bundle? bundle.cid : "none") +
 			"] [image: " + (lastImage? lastImage.cid : "none") +
 			" => " + (image? image.cid : "none") +
 			"]"
 		);
-
-		this.trigger("change:before", bundle, image);
-		this._applyClassProviders(bundle, image);
 		
-		// NOTE: Selection order
-		//  - Apply image selection to *incoming bundle*, as not to trigger  unneccesary events on an outgoing bundle. Outgoing bundle image selection remains untouched.
-		//  - Apply image selection *before* selecting the incoming bundle. Views normally listen to the selected bundle only, so if the bundle is changing, they will not be listening to image selection changes yet.
+		this.trigger("change:before", bundle, image);
+		// this._applyClassProviders(bundle, image);
 		
 		// if (_.isUndefined(bundle)) {
 		// 	bundles.deselect();
@@ -204,14 +210,14 @@ var Controller = Backbone.Router.extend({
 		bundle && bundle.get("images").select(image);
 		bundles.select(bundle);
 		
-		
+		this._applyClassProviders(bundle, image);
 		this.trigger("change:after", bundle, image);
 	},
-
+	
 	/* --------------------------- *
 	 * browser title
 	 * --------------------------- */
-
+	
 	initializeBrowserTitle: function() {
 		var handlers = {
 			"select:one": function (bundle) {
@@ -249,7 +255,7 @@ var Controller = Backbone.Router.extend({
 			var attrs, styles, bodySelector, carouselSelector;
 			var bodyStyles = ["background", "background-color", "color"];
 			// var fontSmoothingStyles = ["-moz-osx-font-smoothing", "-webkit-font-smoothing"];
-			var carouselImageStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
+			var carouselMediaStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
 			// var placeholderStyles = ["border-radius"];
 
 			bgDefault = new Color(Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
@@ -262,33 +268,39 @@ var Controller = Backbone.Router.extend({
 				//bgColor = bgDefault; fgColor = fgDefault;
 				bgLum = bgColor.lightness();
 				fgLum = fgColor.lightness();
-
+				
+				// per-bundle body rules
 				bodySelector = "body." + toBodyClass(bundle);
-				//styles = {};
 				styles = _.pick(attrs, bodyStyles);
 				styles["-webkit-font-smoothing"] = (bgLum < fgLum? "antialiased" : "auto");
-				/* 'body { -moz-osx-font-smoothing: grayscale; }' works ok in all situations: hardcoded in _base.scss */
+				/* NOTE: In Firefox 'body { -moz-osx-font-smoothing: grayscale; }'
+				/* works both in light over dark and dark over light, hardcoded in _base.scss */
 				//styles["-moz-osx-font-smoothing"] = (bgLum < fgLum? "grayscale" : "auto");
 				Styles.createCSSRule(bodySelector, styles);
-
-				styles = {
-					"color":			fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString(),
-					"border-color": 	fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString(),
-				};
+				
+				styles = {};
+				styles["color"] = fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString();
+				styles["border-color"] = fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString();
 				Styles.createCSSRule(bodySelector + " .mutable-faded", styles);
-
+				
+				// per-bundle .carousel .media-item rules
 				carouselSelector = ".carousel." + bundle.get("handle");
-				styles = _.pick(attrs, carouselImageStyles);//, "background-color"]);
-				Styles.createCSSRule(carouselSelector + " .image-item img", styles);
-
+				styles = _.pick(attrs, carouselMediaStyles);//, "background-color"]);
+				Styles.createCSSRule(carouselSelector + " .media-item .content", styles);
+				
 				// text color luminosity is inverse from body, apply oposite rendering mode
-				styles = {
-					"-webkit-font-smoothing": (bgLum < fgLum? "auto" : "antialiased"),
-					"background-color": bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString(),
-					"color": 			bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString(),
-				};
+				styles = {};
+				styles["-webkit-font-smoothing"] = (bgLum < fgLum? "auto" : "antialiased");
+				styles["background-color"] = bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString();
+				styles["color"] = bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString();
 				("border-radius" in attrs) && (styles["border-radius"] = attrs["border-radius"]);
-				Styles.createCSSRule(carouselSelector + " .image-item .placeholder", styles);
+				Styles.createCSSRule(carouselSelector + " .media-item .content-decoration", styles);
+				
+				styles = {};
+				styles["background-color"] = bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).alpha(0.5).toRgbaString();
+				Styles.createCSSRule(carouselSelector + " .media-item .overlay", styles);
+				// Styles.createCSSRule(bodySelector + " .mutable-faded", styles);
+				// console.log(carouselSelector + " .media-item .content-decoration", styles["background-color"]);
 			});
 		};
 		if (document.readyState == "complete") {

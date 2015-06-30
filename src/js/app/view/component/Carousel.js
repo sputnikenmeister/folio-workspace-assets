@@ -67,9 +67,11 @@ var Carousel = DeferredView.extend({
 		_.bindAll(this, "_createChildren", "_measure", "_onPan", "_onTap");
 		
 		this.initializeHammer(options);
+		
 		options.template && (this.template = options.template);
 		options.renderer && (this.renderer = options.renderer);
 		options.emptyRenderer && (this.emptyRenderer = options.emptyRenderer);
+		_.isFunction(options.rendererFunction) && (this.rendererFunction = options.rendererFunction);
 		
 		// _.isNumber(options.gap) && (this.gap = options.gap);
 		this.children = new Container();
@@ -95,7 +97,7 @@ var Carousel = DeferredView.extend({
 	remove: function () {
 		this._scrollPendingAction && this._scrollPendingAction(true);
 		if (this._enabled) {
-			// this.hammer.off("tap", this._onTap);
+			this.hammer.off("tap", this._onTap);
 			this.hammer.off("panstart panmove panend pancancel", this._onPan);
 		}
 		this.removeChildren();
@@ -110,13 +112,15 @@ var Carousel = DeferredView.extend({
 		} // do nothing: the default is horizontal
 
 		// validate external hammer or create one if neccesary
-		if ((hammer = options.hammer) && (pan = hammer.get("pan")) && hammer.get("tap")) {
+		// if ((hammer = options.hammer) && (pan = hammer.get("pan")) && hammer.get("tap")) {
+		if ((hammer = options.hammer) && (pan = hammer.get("pan"))) {
 			// Override direction only if specific
 			if (pan.options.direction !== Hammer.DIRECTION_ALL) {
 				this.direction = pan.options.direction;
 			}
 			this.panThreshold = pan.options.threshold;
 		} else {
+			console.log("Carousel created own Hammer");
 			hammer = new Hammer.Manager(this.el);
 			pan = new Hammer.Pan({
 				threshold: this.panThreshold,
@@ -169,6 +173,10 @@ var Carousel = DeferredView.extend({
 	 * Create children
 	 * --------------------------- */
 	
+	_getRenderer: function(item, index, arr) {
+		return this.rendererFunction? this.rendererFunction(item, index, arr) : this.renderer;
+	},
+	
 	createChildrenNow: function () {
 		this._createChildren();
 	},
@@ -190,7 +198,8 @@ var Carousel = DeferredView.extend({
 				sIndex = 0;
 			}
 			this.collection.each(function (item, index, arr) {
-				buffer.appendChild(this.createChildView(this.renderer, {model: item}, index, sIndex).el);
+				buffer.appendChild(this.createChildView(this._getRenderer(item, index, arr), {model: item}, index, sIndex).el);
+				// buffer.appendChild(this.createChildView(this.renderer, {model: item}, index, sIndex).el);
 			}, this);
 			this.$el.append(buffer);
 		}
@@ -333,12 +342,15 @@ var Carousel = DeferredView.extend({
 	/** @private */
 	renderEnabled: function (enabled) {
 		if (enabled) {
-			// this.hammer.on("tap", this._onTap);
+			this.hammer.on("tap", this._onTap);
 			this.hammer.on("panstart panmove panend pancancel", this._onPan);
 		} else {
-			// this.hammer.off("tap", this._onTap);
+			this.hammer.off("tap", this._onTap);
 			this.hammer.off("panstart panmove panend pancancel", this._onPan);
 		}
+		this.children.each(function (view) {
+			view.setEnabled(enabled);
+		});
 		this.el.classList.toggle("disabled", !enabled);
 	},
 	
