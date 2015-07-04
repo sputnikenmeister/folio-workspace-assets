@@ -37,7 +37,7 @@ module.exports = Backbone.Model.extend({
 		w: 0,
 		h: 0,
 		desc: "<p><em>No description</em></p>",
-		attrs: [],
+		attrs: {},
 	},
 	
 	mutators: {
@@ -62,12 +62,26 @@ module.exports = Backbone.Model.extend({
 							attrs[attr] = "";
 						}
 					});
-					set(key, attrs, options);
-				} else {
-					set(key, value, options);
+					value = attrs;
 				}
+				if (!_.isObject(value)) {
+					console.warn("ImageItem.attrs", "value set is not an object: " + (typeof value));
+					value = void 0;
+				} 
+				set(key, value, options);
+				_.extend(this.attrs(), this.get("attrs"));
 			}
-		}
+		},
+		bundle: {
+			set: function (key, value, options, set) {
+				set(key, value, options);
+				_.defaults(this.attrs(), value.get("attrs"));
+			},
+		},
+	},
+	
+	attrs: function() {
+		return this._attrs || (this._attrs = {});
 	},
 	
 	setImageUrl: function(url) {

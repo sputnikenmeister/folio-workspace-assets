@@ -14,8 +14,6 @@ var ImageItem = require("../../model/item/ImageItem");
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
 
-/** @type {module:app/utils/event/addTransitionEndCommand} */
-//var addTransitionCallback = require("../../utils/event/addTransitionCallback");
 /** @type {module:app/utils/net/loadImage} */
 var loadImage = require("../../utils/net/loadImage");
 //var loadImage = require("../../utils/net/loadImageDOM");

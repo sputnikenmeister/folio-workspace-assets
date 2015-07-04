@@ -83,7 +83,7 @@ var DebugToolbar = Backbone.View.extend({
 		
 		/* show dt.debug-group | dt.classes-group
 		 * - - - - - - - - - - - - - - - - */
-		this.events["click dt.debug-group"].call(this, void 0);
+		this.events["click dt.classes-group"].call(this, void 0);
 	},
 
 	initializeToggle: function (className, toggleEl, targetEl) {

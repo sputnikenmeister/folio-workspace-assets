@@ -20,7 +20,7 @@ module.exports = View.extend({
 	/** @override */
 	tagName: "div",
 	/** @override */
-	className: "carousel-item default-carousel-item",
+	className: "carousel-item default-renderer",
 	/** @override */
 	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
 
@@ -28,7 +28,7 @@ module.exports = View.extend({
 //	events: {
 //		"dragstart img": function (ev) {
 //			ev.preventDefault();
-//		} /* prevent conflict with hammer.js */
+//		}
 //	},
 
 	/** @override */

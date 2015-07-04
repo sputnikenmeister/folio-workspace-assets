@@ -4,19 +4,18 @@
 "use strict";
 
 console.log("App first statement");
+console.log("Strict mode", (function() {
+	try {
+		/* jshint -W117 */
+		undeclaredVar = 1;
+		/* jshint +W117 */
+	} catch (e) {
+		return true;
+	}
+	return false;
+})());
 
-// if (DEBUG) {
-	console.log("Strict mode", (function() {
-		try {
-			/* jshint -W117 */
-			undeclaredVar = 1;
-			/* jshint +W117 */
-		} catch (e) {
-			return true;
-		}
-		return false;
-	})());
-// }
+require("es6-promise").polyfill();
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -26,7 +25,6 @@ var $ = require("jquery");
 var Backbone = require("backbone");
 
 global.jQuery = Backbone.$ = $;
-
 require("hammerjs");
 require("jquery.transit");
 require("jquery-color");

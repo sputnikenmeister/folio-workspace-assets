@@ -59,10 +59,13 @@ module.exports = Backbone.Model.extend({
 							attrs[s.substring(0, i)] = parseSymAttrs(s.substring(i + 1));
 						}
 					});
-					set(key, attrs, options);
-				} else {
-					set(key, value, options);
+					value = attrs;
 				}
+				if (!_.isObject(value)) {
+					console.warn("ImageItem.attrs", "value set is not an object: " + (typeof value));
+					value = void 0;
+				} 
+				set(key, value, options);
 			}
 		}
 	},

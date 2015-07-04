@@ -15,6 +15,7 @@
 		"setTimeout": false,
 		"clearTimeout": false,
 		"module": true,
+		"Promise": true,
 		"$": true,
 		"_": true,
 		"DEBUG": true

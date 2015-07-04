@@ -14,8 +14,6 @@ var ImageItem = require("../../model/item/ImageItem");
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
 
-/** @type {module:app/utils/event/addTransitionEndCommand} */
-//var addTransitionCallback = require("../../utils/event/addTransitionCallback");
 /** @type {module:app/utils/css/parseColor} */
 var parseColor = require("../../utils/css/parseColor");
 /** @type {module:app/utils/net/loadImage} */
@@ -35,8 +33,10 @@ var allMediaEvents = [
 var mediaEvents = [
 	"loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled",
 	"loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting",
-	"seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause",
-	"ratechange", "resize", "volumechange"
+	"seeking", "seeked", "ended", "durationchange", "play", "pause",
+	"ratechange", "resize",
+	// "volumechange",
+	"timeupdate", 
 	];
 
 /**
@@ -105,30 +105,27 @@ module.exports = View.extend({
 		
 		this.el.innerHTML = this.template(this.model.toJSON());
 		
-		this.sizing = this.el.querySelector(".sizing");
 		this.placeholder = this.el.querySelector(".placeholder");
 		this.playToggle = this.el.querySelector(".play-toggle");
 		this.content = this.el.querySelector(".content");
 		this.video = this.content.querySelector("video");
 		this.overlay = this.content.querySelector(".overlay");
 		
-		// var pStyle = window.getComputedStyle(this.placeholder, null);
-		// var pColor = pStyle.getPropertyValue("color");
-		// if (pColor != "") {
-		// 	pColor = parseColor(pColor);
+		// console.log(this.model.id,
+		// 	this.model.attrs()["color"],
+		// 	this.model.attrs()["background-color"]);
+		// 
+		// var pColor = parseColor(this.model.attrs().color);
+		// if (pColor) {
 		// 	pColor.a = 0.75;
 		// 	this.overlay.style.backgroundColor = pColor.toColorString();
 		// }
-		// console.log(this.model.id,
-		// 	pStyle.getPropertyValue("background-color"),
-		// 	pStyle.getPropertyValue("color"), pColor);
 		
 		this.video.setAttribute("preload", "none");
 		this.video.setAttribute("poster", this.model.getImageUrl());
 		// this.overlay.firstElementChild.textContent = this.video.readyState > 3? "Play":"Wait";
 		
-		var attrs = this.model.get("attrs");
-		if (attrs.hasOwnProperty("@video-loop")) {
+		if (this.model.attrs()["@video-loop"]) {
 			this.video.setAttribute("loop", "loop");
 		}
 		
@@ -149,7 +146,7 @@ module.exports = View.extend({
 		var pA, sA;
 		
 		var content = this.content;
-		var sizing = this.sizing;
+		var sizing = this.placeholder;
 		
 		sizing.style.maxWidth = "";
 		sizing.style.maxHeight = "";
@@ -175,8 +172,20 @@ module.exports = View.extend({
 			cW = Math.round((cH / sH) * sW);
 		}
 		
+		// crop video 1px top/bottom
+		// var vH = cH + 2;
+		// var vW = Math.round((vH / sH) * sW);
+		// this.video.style.margin = "-1px auto";
+		// this.video.parentElement.style.overflow = "hidden";
+		// this.video.setAttribute("width", vW);
+		// this.video.setAttribute("height", vH);
+		
+		// crop video 1px top
+		this.video.style.marginTop = "-1px";
+		this.video.parentElement.style.overflow = "hidden";
 		this.video.setAttribute("width", cW);
 		this.video.setAttribute("height", cH);
+		cH--; // NOTE: other elements must use video's CROPPED height 
 		
 		content.style.left = cX + "px";
 		content.style.top = cY + "px";
@@ -193,9 +202,9 @@ module.exports = View.extend({
 		return this;
 	},
 	
+	/** @override */
 	setEnabled: function(enabled) {
 		!enabled && !this.video.paused && this.video.pause();
-		// this.video.
 		// this.toggleVideoPlayback(enabled);
 	},
 	
@@ -250,7 +259,8 @@ module.exports = View.extend({
 	},
 	
 	_onMediaEvent: function(ev) {
-		console.log(this.model.id, ev.type);
+		console.log(this.model.id, ev.type, _.pick(this.video, "readyState", "paused", "ended"));
+			//{ readyState: this.video.readyState, paused: this.video.paused, ended: this.video.ended});
 		// this.overlay.setAttribute("data-state", ev.type);
 		this.overlay.classList.toggle("playing", ev.type == "timeupdate" || ev.type == "playing");
 		switch (ev.type) {
@@ -264,14 +274,33 @@ module.exports = View.extend({
 				this.overlay.firstElementChild.textContent = "Resume";
 				break;
 			case "ended":
-				if (!this.video.loop) {
-					this.overlay.firstElementChild.textContent = "Replay";
-					this.toggleVideoPlayback(false);
-				}
+				// NOTE: "ended" event is not triggered when the "loop" property is set
+				this.overlay.firstElementChild.textContent = "Replay";
+				this.toggleVideoPlayback(false);
 				break;
 			default:
 				
 		}
+		if (this.video.paused) {
+			this.overlay.setAttribute("data-state", "user");
+		} else if (ev.type == "timeupdate" || ev.type == "playing") {
+			this.overlay.setAttribute("data-state", "media");
+		} else {
+			this.overlay.setAttribute("data-state", "network");
+		}
+		// switch (ev.type) {
+		// 	case "ended":
+		// 	case "pause":
+		// 		this.overlay.setAttribute("data-state", "user");
+		// 		break;
+		// 	case "playing":
+		// 	case "timeupdate":
+		// 		this.overlay.setAttribute("data-state", "media");
+		// 		break;
+		// 	default:
+		// 		this.overlay.setAttribute("data-state", "network");
+		// 		
+		// }
 	},
 
 	toggleVideoPlayback: function(newPlayState) {
@@ -385,3 +414,10 @@ module.exports = View.extend({
 		return promise;
 	},
 });
+
+
+/*
+
+
+
+*/

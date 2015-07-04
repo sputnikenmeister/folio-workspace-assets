@@ -97,24 +97,23 @@ $pan_ease: $ease;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: -0.05em;
-	}
-	.placeholder:before {
-		transition: opacity $duration $ease $delay + 0.001s;
-		// transition: opacity $duration $ease 0.001s;
-		// transition: opacity $duration $ease;
-		opacity: 0;
 		content: "";
 		font-style: italic;
 	}
-	//&.idle .placeholder:before 		{ content: "Waiting"; }
-	&.pending .placeholder:before 	{ content: "Loading"; }
-	&.error .placeholder:before 	{ content: "Error";	}
-	&.done .placeholder:before 		{ content: "Done"; }
+	.placeholder:before {
+		// transition: opacity $duration $ease;
+		// transition: opacity $duration $ease 0.001s;
+		transition: opacity $duration $ease $delay + 0.001s;
+		opacity: 0;
+	}
+	//&.idle .placeholder:before { content: "Waiting"; }
+	&.pending .placeholder:before { content: "Loading"; }
+	&.error .placeholder:before { content: "Error";	}
+	&.done .placeholder:before { content: "Done"; }
 
 	&.selected, &.candidate, .empty-item.selected + & {
 		&.pending .placeholder:before {
 			opacity: 1;
-			// background-color: crimson;
 		}
 		&.error .placeholder:before {
 			opacity: 1;
@@ -129,31 +128,36 @@ $pan_ease: $ease;
 	}
 }
 
-// VideoRenderer
+// SequenceRenderer
 // - - - - - - - - - - - - - - - - - -
-// .media-item.video-renderer.done {
-// 	.placeholder {
-// 		color: inherit !important;
-// 		// border: 1px solid currentColor;
-// 		box-shadow: inset 0 0 2px -1px currentColor;
-// 		opacity: 0.95;
-// 	}
-// 	&.video-playing .placeholder 	{ opacity: 0; }
-// 	.placeholder:before {
-// 		top: calc(50% - 0.75em);
-// 		height: 1.5em; width: 100%;
-// 		margin: 0; text-align: center;
-// 	}
-// 	.placeholder:before { opacity: 0; content: "Play"; }
-// 	&.selected .placeholder:before { opacity: 1; }
-// 	&.selected.video-paused .placeholder:before { content: "Resume"; }
-// 	&.selected.video-playing .placeholder:before { content: "Resume"; }
-// }
+.sequence-renderer {
+	.content img {
+		position: absolute;
+		top: 0; left: 0;
+		
+		z-index: 0;
+		opacity: 0;
+		visibility: hidden;
+		transition-property: opacity, visibility;
+		transition-timing-function: step-end;
+		transition-duration: $duration * 2;
+		transition-delay: 0.001s;
+		
+		&.current {
+			z-index: 1;
+			opacity: 1;
+			visibility: visible;
+			transition-timing-function: $ease, step-start;
+		}
+	}
+	
+	.content img:not(.current) {
+	}
+}
 
 // VideoRenderer
 // - - - - - - - - - - - - - - - - - -
-.video-renderer.done {
-// 	/** .overlay */
+.video-renderer {
 	.overlay {
 		position: absolute;
 		top: 0; left: 0;
@@ -166,21 +170,6 @@ $pan_ease: $ease;
 		// box-shadow: inset 0 0 2px -1px currentColor;
 		// background-color: transparent !important;
 	}
-	/** states */
-	.overlay {
-		transition: background-color $duration $ease 0.001s;
-		// opacity: 1;
-	}
-	.overlay.playing {
-		background-color: transparent !important;
-	}
-	// &.selected, &.candidate {
-	// 	&.video-playing .overlay {
-	// 		opacity: 0;
-	// 	}
-	// }
-	// &.selected .overlay { transition-delay: 0.001s; }
-	// &:not(.selected) .overlay { transition-delay: $delay + 0.001s; }
 	
 	/** .overlay:before */
 	.overlay .label {
@@ -205,18 +194,38 @@ $pan_ease: $ease;
 		overflow: hidden;
 		white-space: nowrap;
 	}
-	.overlay.playing .label {
-		visibility: hidden;
+	/** states */
+	.overlay {
+		transition: background-color $duration $ease 0.001s;
+		// opacity: 1;
 	}
-	// .overlay:before {
-	// 	@include small_caps($lead: 1rem);
-	// 	content: attr(data-state);
-	// 	position: absolute;
-	// 	bottom: 0; right: 0;
-	// 	padding: 0 0.5em;
-	// 	color: black;
-	// 	background-color: white;
-	// }
+	// .overlay.playing,
+	.overlay[data-state="media"] {
+		background-color: transparent !important;
+		&:before, .label {
+			visibility: hidden;
+		}
+	}
+	.overlay[data-state="network"] {
+		.label {
+			visibility: hidden;
+		}
+	}
+	.overlay[data-state="user"] {
+		.label {
+			visibility: visible;
+		}
+	}
+	
+	.overlay:before {
+		@include small_caps($lead: 1rem);
+		content: "Waiting for " attr(data-state);
+		position: absolute;
+		bottom: 0; right: 0;
+		padding: 0 0.25em;
+		color: black;
+		background-color: white;
+	}
 }
 
 // .disaabled .media-item
@@ -311,9 +320,9 @@ $mock_browser_height: 2rem;
 }
 
 // - - - - - - - - - - - - - - - - - -
-// .default-carousel-item
+// .default-renderer
 // - - - - - - - - - - - - - - - - - -
-.default-carousel-item {
+.carousel-item.default-renderer {
 	.sizing {
 		display: inline-block;
 	}

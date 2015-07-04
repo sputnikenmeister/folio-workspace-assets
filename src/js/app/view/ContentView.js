@@ -28,12 +28,14 @@ var CollectionStack = require("./component/CollectionStack");
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
-var imageCaptionTemplate = require("./template/CollectionStack.Image.tpl");
+var mediaCaptionTemplate = require("./template/CollectionStack.Image.tpl");
 
 /** @type {module:app/view/component/Carousel} */
 var Carousel = require("./component/Carousel");
 /** @type {module:app/view/render/ImageRenderer} */
 var ImageRenderer = require("./render/ImageRenderer");
+/** @type {module:app/view/render/SequenceRenderer} */
+var SequenceRenderer = require("./render/SequenceRenderer");
 /** @type {module:app/view/render/VideoRenderer} */
 var VideoRenderer = require("./render/VideoRenderer");
 /** @type {module:app/view/render/CarouselEmptyRenderer} */
@@ -152,8 +154,8 @@ var ContentView = ContainerView.extend({
 
 	/** Create children on bundle select */
 	createChildren: function (bundle, skipAnimation) {
-		//this.children.push(this.createImageCaptionCarousel(bundle, images));
-		this.children.push(this.createImageCaptionStack(bundle));
+		//this.children.push(this.createMediaCaptionCarousel(bundle, images));
+		this.children.push(this.createMediaCaptionStack(bundle));
 		this.children.push(this.createImageCarousel(bundle));
 
 		var startProps = {opacity: 0};
@@ -302,17 +304,27 @@ var ContentView = ContainerView.extend({
 			model: bundle,
 			template: bundleDescTemplate,
 		});
-		
 		var rendererFunction = function(item, index, arr) {
 			if (index == -1) {
 				return emptyRenderer;
 			}
-			var attrs = item.get("attrs");
-			if (attrs && attrs["@renderer"] == "video") {
-				return VideoRenderer;
+			// var attrs = item.get("attrs");
+			// if (attrs && attrs.hasOwnProperty("@renderer")) {
+			// 	switch (attrs["@renderer"]) {
+			// 		case "video": return VideoRenderer;
+			// 		case "sequence": return SequenceRenderer;
+			// 		case "image": return ImageRenderer;
+			// 	}
+			// }
+			// return ImageRenderer;
+			var rendererKey = item.has("attrs") && item.get("attrs")["@renderer"];
+			switch (rendererKey) {
+				case "video": return VideoRenderer;
+				case "sequence": return SequenceRenderer;
+				case "image": return ImageRenderer;
+				default: return ImageRenderer;
 			}
-			return ImageRenderer;
-		}
+		};
 		var view = new Carousel({
 			className: classname,
 			collection: images,
@@ -332,14 +344,14 @@ var ContentView = ContainerView.extend({
 	},
 
 	/**
-	 * image-caption-stack
+	 * media-caption-stack
 	 */
-	createImageCaptionStack: function(bundle) {
+	createMediaCaptionStack: function(bundle) {
 		var images = bundle.get("images");
 		var view = new CollectionStack({
 			collection: images,
-			template: imageCaptionTemplate,
-			className: "image-caption-stack"
+			template: mediaCaptionTemplate,
+			className: "media-caption-stack"
 		});
 		return view;
 	},
@@ -355,7 +367,8 @@ var ContentView = ContainerView.extend({
 //		});
 //		controller.listenTo(view, {
 //			"view:select:one": controller.selectImage,
-//			"view:select:none": controller.deselectImage
+//			"view:select:none": controller.deselectImage,
+//			"view:remove": controller.stopListening
 //		});
 //		return view;
 //	},
@@ -363,7 +376,7 @@ var ContentView = ContainerView.extend({
 //	/**
 //	 * label-carousel
 //	 */
-//	createImageCaptionCarousel: function(bundle, images) {
+//	createMediaCaptionCarousel: function(bundle, images) {
 //		var view = new Carousel({
 //			className: "label-carousel",
 //			collection: images,
