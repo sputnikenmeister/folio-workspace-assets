@@ -65,17 +65,17 @@ $(window).load(function(ev) {
 	var types = window.bootstrap["types-all"];
 	var keywords = window.bootstrap["keywords-all"];
 	var bundles = window.bootstrap["bundles-all"];
-	var images = window.bootstrap["images-all"];
+	var media = window.bootstrap["media-all"];
 	// Fix-ups to bootstrap data.
 
-	// Attach images to their bundles
-	var imagesByBundle = _.groupBy(images, "bId");
+	// Attach media to their bundles
+	var mediaByBundle = _.groupBy(media, "bId");
 	// Fill-in back-references:
 	// Create Keyword.bundleIds from existing Bundle.keywordIds,
 	// then Bundle.typeIds from unique Keyword.typeId
 	_.each(bundles, function (bo, bi, ba) {
 		bo.tIds = [];
-		bo.images = imagesByBundle[bo.id];
+		bo.media = mediaByBundle[bo.id];
 		_.each(keywords, function (ko, ki, ka) {
 			if (bi === 0) { ko.bIds = []; }
 			if (_.contains(bo.kIds, ko.id)) {

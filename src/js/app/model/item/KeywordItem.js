@@ -20,7 +20,11 @@ module.exports = Backbone.Model.extend({
 		tId: 0,
 		excluded: false,
 	},
-
+	
+	attrs: function() {
+		return this.get("attrs");
+	},
+	
 	/** @override */
 	toString: function() {
 		return this.id;

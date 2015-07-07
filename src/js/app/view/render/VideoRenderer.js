@@ -9,8 +9,8 @@ var Backbone = require("backbone");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
-/** @type {module:app/model/item/ImageItem} */
-var ImageItem = require("../../model/item/ImageItem");
+/** @type {module:app/model/item/MediaItem} */
+var MediaItem = require("../../model/item/MediaItem");
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
 
@@ -19,6 +19,9 @@ var parseColor = require("../../utils/css/parseColor");
 /** @type {module:app/utils/net/loadImage} */
 var loadImage = require("../../utils/net/loadImage");
 //var loadImage = require("../../utils/net/loadImageDOM");
+
+/** @type {module:app/helper/StyleHelper} */
+var Styles = require("../../helper/StyleHelper");
 
 /** @type {Function} */
 var viewTemplate = require( "./VideoRenderer.tpl" );
@@ -49,19 +52,19 @@ module.exports = View.extend({
 	tagName: "div",
 	/** @type {string} */
 	className: "carousel-item media-item video-renderer done",
-	/** @type {module:app/model/ImageItem} */
-	model: ImageItem,
+	/** @type {module:app/model/MediaItem} */
+	model: MediaItem,
 	/** @type {Function} */
 	template: viewTemplate,
 	
 	// events: {
-	// 	// "mouseup .placeholder": "_onMouseUp",
-	// 	"click .placeholder": "_onMouseUp",
+	// 	// "mouseup .placeholder": "_onContentClick",
+	// 	"click .placeholder": "_onContentClick",
 	// },
 	
 	/** @override */
 	initialize: function (opts) {
-		_.bindAll(this, "_onMouseUp", "_onMediaEvent");
+		_.bindAll(this, "_onContentClick", "_onMediaEvent");
 		this.createChildren();
 		
 		// this.$(".content").on("dragstart", function (ev) {
@@ -70,7 +73,7 @@ module.exports = View.extend({
 		
 		// if (this.model.has("prefetched")) {
 		// 	// console.log("ImageRenderer.initialize: using prefetched " + this.model.get("prefetched"));
-		// 	this.image.src = this.model.get("prefetched");
+		// 	this.media.src = this.model.get("prefetched");
 		// 	this.$el.removeClass("idle").addClass("done");
 		// } else {
 		// 	// this.initializePromise();
@@ -78,13 +81,13 @@ module.exports = View.extend({
 		// }
 		this.addSelectionListeners();
 		this.addMediaListeners();
-		// this.placeholder.addEventListener("mouseup", this._onMouseUp, false);
+		// this.placeholder.addEventListener("mouseup", this._onContentClick, false);
 	},
 	
 	remove: function() {
 		// this.promise.destroy();
 		// this.$(".content").off("dragstart");
-		// this.placeholder.removeEventListener("mouseup", this._onMouseUp, false);
+		// this.placeholder.removeEventListener("mouseup", this._onContentClick, false);
 		return View.prototype.remove.apply(this, arguments);
 	},
 	
@@ -111,14 +114,20 @@ module.exports = View.extend({
 		this.video = this.content.querySelector("video");
 		this.overlay = this.content.querySelector(".overlay");
 		
-		// console.log(this.model.id,
-		// 	this.model.attrs()["color"],
-		// 	this.model.attrs()["background-color"]);
-		// 
-		// var pColor = parseColor(this.model.attrs().color);
+		console.log(this.model.id,
+			this.model.attrs()["color"],
+			this.model.attrs()["background-color"]);
+			
+		// var pColor = parseColor(this.model.attrs()["color"]);
+		// var pColor = parseColor(this.model.attrs()["background-color"]);
 		// if (pColor) {
+		// 	var c1, c2, cssGrad;
+		// 	pColor.a = 0.0;
+		// 	c1 = pColor.toColorString();
 		// 	pColor.a = 0.75;
-		// 	this.overlay.style.backgroundColor = pColor.toColorString();
+		// 	c2 = pColor.toColorString();
+		// 	this.overlay.style.backgroundColor = "transparent";
+		// 	this.overlay.style.background = "linear-gradient(to bottom, " + c1 + " 0%, " + c2 + " 100%)";
 		// }
 		
 		this.video.setAttribute("preload", "none");
@@ -172,14 +181,6 @@ module.exports = View.extend({
 			cW = Math.round((cH / sH) * sW);
 		}
 		
-		// crop video 1px top/bottom
-		// var vH = cH + 2;
-		// var vW = Math.round((vH / sH) * sW);
-		// this.video.style.margin = "-1px auto";
-		// this.video.parentElement.style.overflow = "hidden";
-		// this.video.setAttribute("width", vW);
-		// this.video.setAttribute("height", vH);
-		
 		// crop video 1px top
 		this.video.style.marginTop = "-1px";
 		this.video.parentElement.style.overflow = "hidden";
@@ -205,41 +206,48 @@ module.exports = View.extend({
 	/** @override */
 	setEnabled: function(enabled) {
 		!enabled && !this.video.paused && this.video.pause();
-		// this.toggleVideoPlayback(enabled);
+		// this.toggleMediaPlayback(enabled);
+	},
+	
+	/* ---------------------------
+	 * selection handlers
+	 * --------------------------- */
+	
+	addSelectionListeners: function() {
+		this.listenTo(this.model, {
+			"selected": this._onModelSelected,
+			"deselected": this._onModelDeselected,
+		});
+		this.model.selected && this._onModelSelected();
 	},
 	
 	/* ---------------------------
 	 * model event handlers
 	 * --------------------------- */
 	
-	_onCollectionSelect: function(model) {
-		if (model === this.model) {
-			this.playToggle.addEventListener("click", this._onMouseUp, false);
-			this.listenTo(this, "view:remove", this._removeMouseUpHandler);
-		}
+	_onModelSelected: function() {
+		this.playToggle.addEventListener("click", this._onContentClick, false);
+		this.listenTo(this, "view:remove", this._removeClickHandler);
 	},
 	
-	_onCollectionDeselect: function(model) {
-		if (model === this.model) {
-			this.playToggle.removeEventListener("click", this._onMouseUp, false);
-			this.stopListening(this, "view:remove", this._removeMouseUpHandler);
-			this.toggleVideoPlayback(false);
-		}
+	_onModelDeselected: function() {
+		this.toggleMediaPlayback(false);
+		this.playToggle.removeEventListener("click", this._onContentClick, false);
+		this.stopListening(this, "view:remove", this._removeClickHandler);
+	},
+	
+	_removeClickHandler: function() {
+		this.placeholder.removeEventListener("mouseup", this._onContentClick, false);
 	},
 	
 	/* ---------------------------
 	 * dom event handlers
 	 * --------------------------- */
 	
-	_onMouseUp: function(ev) {
+	_onContentClick: function(ev) {
 		var sev = ev.originalEvent || ev;
 		console.log("[VideoRenderer] " + sev.type, sev.defaultPrevented, sev.timeStamp, sev);
-		// ev.defaultPrevented || ev.preventDefault();
-		ev.defaultPrevented || this.toggleVideoPlayback();
-	},
-	
-	_removeMouseUpHandler: function() {
-		this.placeholder.removeEventListener("mouseup", this._onMouseUp, false);
+		ev.defaultPrevented || this.toggleMediaPlayback();
 	},
 	
 	/* ---------------------------
@@ -276,7 +284,7 @@ module.exports = View.extend({
 			case "ended":
 				// NOTE: "ended" event is not triggered when the "loop" property is set
 				this.overlay.firstElementChild.textContent = "Replay";
-				this.toggleVideoPlayback(false);
+				this.toggleMediaPlayback(false);
 				break;
 			default:
 				
@@ -303,7 +311,7 @@ module.exports = View.extend({
 		// }
 	},
 
-	toggleVideoPlayback: function(newPlayState) {
+	toggleMediaPlayback: function(newPlayState) {
 		// is playback changing?
 		if (_.isBoolean(newPlayState) && newPlayState !== this.video.paused) {
 			return; // requested state is current, do nothing
@@ -317,19 +325,6 @@ module.exports = View.extend({
 		} else {
 			this.video.pause();
 		}
-	},
-	
-	/* ---------------------------
-	 * selection handlers
-	 * --------------------------- */
-	
-	addSelectionListeners: function() {
-		var owner = this.model.collection;
-		this.listenTo(owner, {
-			"select:one": this._onCollectionSelect,
-			"deselect:one": this._onCollectionDeselect,
-		});
-		this._onCollectionSelect(owner.selected);
 	},
 	
 	addSiblingListeners: function () {
@@ -354,9 +349,7 @@ module.exports = View.extend({
 			if (check(owner.selectedIndex)) {
 				this.stopListening(owner, "select:one select:none", handleSelect);
 				this.on("view:remove", handleRemove);
-				
 				transitionCancellable = this.onTransitionEnd(this.el, transitionProp, transitionCallback, Globals.TRANSITION_DELAY * 2);
-				// transitionCancellable = addTransitionCallback(transitionProp, transitionCallback, this.el, this, Globals.TRANSITION_DELAY * 2);
 			}
 		};
 		if (check(owner.selectedIndex)) {
@@ -372,52 +365,37 @@ module.exports = View.extend({
 	},
 	
 	/* --------------------------- *
-	 * image loading
+	 * media loading
 	 * --------------------------- */
 	
-	createImagePromise: function() {
+	/*createImagePromise: function() {
 		var onLoad, onError, onProgress, doAlways, promise;
 		
 		onProgress = function (progress, source, ev) {
 			if (progress == "loadstart") {
-				//console.debug("VideoRenderer.onProgress_loadstart: " + this.model.get("src"));
 				this.$el.removeClass("idle").addClass("pending");
-				//this.model.trigger("load:start");
 			} else {
-				// this.$placeholder.attr("data-progress", (progress * 100).toFixed(0));
 				this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-				//this.model.trigger("load:progress", progress);
 			}
 		};
 		onProgress = _.throttle(onProgress, 100, {leading: true, trailing: true});
 		onError = function (err, source, ev) {
 			console.error("VideoRenderer.onError: " + err.message, arguments);
 			this.$el.removeClass("pending").addClass("error");
-			//this.model.trigger("load:error");
 		};
 		onLoad = function (url, source, ev) {
-			//console.debug("VideoRenderer.onLoad: " + this.model.get("src"));
 			this.model.set({"prefetched": url});
 			this.$el.removeClass("pending").addClass("done");
-			//this.model.trigger("load:done");
 		};
 		doAlways = function() {
-			// this.$placeholder.removeAttr("data-progress");
 			this.placeholder.removeAttribute("data-progress");
 			this.off("view:remove", promise.destroy);
 		};
 		
-		promise = loadImage(this.model.getImageUrl(), this.image, this);
+		promise = loadImage(this.model.getImageUrl(), this.media, this);
 		promise.then(onLoad, onError, onProgress).always(doAlways);
 		this.on("view:remove", promise.destroy);
 		
 		return promise;
-	},
+	},*/
 });
-
-
-/*
-
-
-
-*/

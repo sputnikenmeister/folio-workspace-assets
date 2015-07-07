@@ -69,12 +69,12 @@ module.exports = View.extend({
 	 * Router -> Model change
 	 * ------------------------------- */
 
-	_beforeChange: function(bundle,image) {
+	_beforeChange: function(bundle,media) {
 		// console.log(">>>> ContainerView._beforeChange");
 		// this.transforms.captureAll();
 	},
 
-	_afterChange: function(bundle,image) {
+	_afterChange: function(bundle,media) {
 		// console.log("<<<< ContainerView._afterChange");
 		// this.setCollapsed(bundle !== void 0);
 		// this.transforms.validate();

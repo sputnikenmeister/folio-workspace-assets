@@ -63,11 +63,11 @@ var ContentView = ContainerView.extend({
 			"deselect:one": this._onDeselectOne,
 			"deselect:none": this._onDeselectNone,
 		};
-		this.imageListeners = {
-			"select:one": this._onSelectImage,
-			"select:none": this._onSelectImage,
-			"deselect:one": this._onDeselectImage,
-			"deselect:none": this._onDeselectImage,
+		this.mediaListeners = {
+			"select:one": this._onSelectMedia,
+			"select:none": this._onSelectMedia,
+			"deselect:one": this._onDeselectMedia,
+			"deselect:none": this._onDeselectMedia,
 		};
 		this.listenTo(bundles, this.bundleListeners);
 
@@ -112,7 +112,7 @@ var ContentView = ContainerView.extend({
 	
 	_onDeselectOne: function(bundle) {
 		this.removeChildren(bundle, false);
-		this.stopListening(bundle.get("images"), this.imageListeners);
+		this.stopListening(bundle.get("media"), this.mediaListeners);
 	},
 	
 	_onDeselectNone: function() {
@@ -121,7 +121,7 @@ var ContentView = ContainerView.extend({
 		// this.touch.on("panstart", this._onPanStart);
 	},
 	
-	_onDeselectImage: function(image) {
+	_onDeselectMedia: function(media) {
 		if (!this.isCollapsed()) {
 			this.transforms.clearAllOffsets();
 			this.transforms.runTransition(Globals.TRANSIT_ENTERING, this.childrenEls);
@@ -135,7 +135,7 @@ var ContentView = ContainerView.extend({
 	
 	_onSelectOne: function(bundle) {
 		this.createChildren(bundle, false);
-		this.listenTo(bundle.get("images"), this.imageListeners);
+		this.listenTo(bundle.get("media"), this.mediaListeners);
 		this.setCollapsed(true);
 	},
 	
@@ -144,7 +144,7 @@ var ContentView = ContainerView.extend({
 		this.setCollapsed(false);
 	},
 	
-	_onSelectImage: function(image) {
+	_onSelectMedia: function(media) {
 		this.setCollapsed(true);
 	},
 	
@@ -154,9 +154,9 @@ var ContentView = ContainerView.extend({
 
 	/** Create children on bundle select */
 	createChildren: function (bundle, skipAnimation) {
-		//this.children.push(this.createMediaCaptionCarousel(bundle, images));
+		//this.children.push(this.createMediaCaptionCarousel(bundle, media));
 		this.children.push(this.createMediaCaptionStack(bundle));
-		this.children.push(this.createImageCarousel(bundle));
+		this.children.push(this.createMediaCarousel(bundle));
 
 		var startProps = {opacity: 0};
 		var endProps = {delay: Globals.ENTERING_DELAY, opacity: 1};
@@ -290,15 +290,14 @@ var ContentView = ContainerView.extend({
 	 * ------------------------------- */
 
 	/**
-	 * image-carousel
+	 * media-carousel
 	 */
-	createImageCarousel: function(bundle) {
+	createMediaCarousel: function(bundle) {
 		// Create carousel
-		var images = bundle.get("images");
-		var attrs = bundle.get("attrs");
-		var classname = "image-carousel " + bundle.get("handle");
-		if (attrs && ("@classname" in attrs)) {
-			classname += " " + attrs["@classname"];
+		var media = bundle.get("media");
+		var classname = "media-carousel " + bundle.get("handle");
+		if (bundle.attrs().hasOwnProperty("@classname")) {
+			classname += " " + bundle.attrs()["@classname"];
 		}
 		var emptyRenderer = CarouselEmptyRenderer.extend({
 			model: bundle,
@@ -308,17 +307,8 @@ var ContentView = ContainerView.extend({
 			if (index == -1) {
 				return emptyRenderer;
 			}
-			// var attrs = item.get("attrs");
-			// if (attrs && attrs.hasOwnProperty("@renderer")) {
-			// 	switch (attrs["@renderer"]) {
-			// 		case "video": return VideoRenderer;
-			// 		case "sequence": return SequenceRenderer;
-			// 		case "image": return ImageRenderer;
-			// 	}
-			// }
-			// return ImageRenderer;
-			var rendererKey = item.has("attrs") && item.get("attrs")["@renderer"];
-			switch (rendererKey) {
+			// var rendererKey = item.has("attrs") && item.get("attrs")["@renderer"];
+			switch (item.attrs()["@renderer"]) {
 				case "video": return VideoRenderer;
 				case "sequence": return SequenceRenderer;
 				case "image": return ImageRenderer;
@@ -327,7 +317,7 @@ var ContentView = ContainerView.extend({
 		};
 		var view = new Carousel({
 			className: classname,
-			collection: images,
+			collection: media,
 			rendererFunction: rendererFunction,
 			// renderer: ImageRenderer,
 			emptyRenderer: emptyRenderer,
@@ -335,8 +325,8 @@ var ContentView = ContainerView.extend({
 			hammer: this.touch,
 		});
 		controller.listenTo(view, {
-			"view:select:one": controller.selectImage,
-			"view:select:none": controller.deselectImage,
+			"view:select:one": controller.selectMedia,
+			"view:select:none": controller.deselectMedia,
 			"view:remove": controller.stopListening
 		});
 		// controller.listenToOnce("view:remove", controller.stopListening);
@@ -347,9 +337,9 @@ var ContentView = ContainerView.extend({
 	 * media-caption-stack
 	 */
 	createMediaCaptionStack: function(bundle) {
-		var images = bundle.get("images");
+		var media = bundle.get("media");
 		var view = new CollectionStack({
-			collection: images,
+			collection: media,
 			template: mediaCaptionTemplate,
 			className: "media-caption-stack"
 		});
@@ -357,17 +347,17 @@ var ContentView = ContainerView.extend({
 	},
 
 //	/**
-//	 * image-pager
+//	 * media-pager
 //	 */
-//	createImagePager: function(bundle, images) {
+//	createMediaPager: function(bundle, media) {
 //		var view = new SelectableCollectionView({
-//			collection: images,
+//			collection: media,
 //			renderer: DotNavigationRenderer,
-//			className: "image-pager dots-fontello mutable-faded"
+//			className: "media-pager dots-fontello mutable-faded"
 //		});
 //		controller.listenTo(view, {
-//			"view:select:one": controller.selectImage,
-//			"view:select:none": controller.deselectImage,
+//			"view:select:one": controller.selectMedia,
+//			"view:select:none": controller.deselectMedia,
 //			"view:remove": controller.stopListening
 //		});
 //		return view;
@@ -376,15 +366,15 @@ var ContentView = ContainerView.extend({
 //	/**
 //	 * label-carousel
 //	 */
-//	createMediaCaptionCarousel: function(bundle, images) {
+//	createMediaCaptionCarousel: function(bundle, media) {
 //		var view = new Carousel({
 //			className: "label-carousel",
-//			collection: images,
+//			collection: media,
 //			hammer: this.touch,
 //		});
 ////		controller.listenTo(view, {
-////			"view:select:one": controller.selectImage,
-////			"view:select:none": controller.deselectImage
+////			"view:select:one": controller.selectMedia,
+////			"view:select:none": controller.deselectMedia
 ////		});
 //		return view;
 //	},

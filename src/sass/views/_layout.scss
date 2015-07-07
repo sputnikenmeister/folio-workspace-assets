@@ -91,7 +91,7 @@ body, .mutable-faded {
 	}
 	#content {
 		// z-index: 1;
-		@at-root .image-carousel {
+		@at-root .media-carousel {
 			z-index: 0;
 			&.scrolling, &.panning {
 				z-index: 2;
@@ -280,7 +280,7 @@ $nav_collapse_extra: 28rem;
 // image-carousel
 // - - - - - - - - - - - - - - - - - -
 //.label-carousel,
-.image-carousel {
+.media-carousel {
 	width: 100%;
 	min-width: $page_width;
 	top: $nav_height_portrait + $header_height;
@@ -299,7 +299,7 @@ $nav_collapse_extra: 28rem;
 		width: $main_width - $aside_width + $hu*4 - 9px;
 	}
 }
-.container-expanded .image-carousel {
+.container-expanded .media-carousel {
 	@include nav_translate(0, $nav_collapse_extra);
 	// .empty-item.selected {
 	// 	.content {
@@ -314,10 +314,10 @@ $nav_collapse_extra: 28rem;
 	// 	}
 	// }
 }
-.removing.image-carousel .empty-item .content,
-.removing.image-carousel .media-item img {
+.removing.media-carousel .empty-item .content,
+.removing.media-carousel .media-item img {
 	// NOTE: do not fade-in images when removing carousel:
-	// Set delay longer than `.removing.image-carousel`'s fade-out duration,
+	// Set delay longer than `.removing.media-carousel`'s fade-out duration,
 	transition-delay: $delay * 5;
 }
 
@@ -467,7 +467,7 @@ $_fixme_empty_padding: $aside_width_large - ($hu*2 + 7px);
 #keyword-list-wrapper {
 	left: $_fixme_kw_left; // FIXME
 }
-.with-image #keyword-list-wrapper {
+.with-media #keyword-list-wrapper {
 	@include nav_translate(-$_fixme_kw_left, 0); // FIXME
 }
 .with-#{$item-type} .container-expanded #keyword-list-wrapper {
@@ -486,7 +486,7 @@ $_fixme_empty_padding: $aside_width_large - ($hu*2 + 7px);
 
 // image-carousel
 // - - - - - - - - - - - - - - - - - -
-.image-carousel {
+.media-carousel {
 	min-width: $page_width_large;
 	.carousel-item {
 		left: calc(50% - #{$page_width_large/2});
@@ -498,7 +498,7 @@ $_fixme_empty_padding: $aside_width_large - ($hu*2 + 7px);
 		padding-left: 0;
 	}
 }
-.default-layout .image-carousel {
+.default-layout .media-carousel {
 	top: $nav_height_landscape + $header_height;
 	// @include nav_translate(0, $nav_height_landscape + $header_height);
 	.carousel-item.media-item {
@@ -533,7 +533,7 @@ $_fixme_empty_padding: $aside_width_large - ($hu*2 + 7px);
 	// 	transition-delay: #{$delay*2 + 0.001s}, #{$delay*2 + 0.001s};
 	// }
 }
-.right-layout .image-carousel {
+.right-layout .media-carousel {
 	top: $nav_height_landscape_right + $header_height;
 	// @include nav_translate(0, $nav_height_landscape_right + $header_height);
 	.carousel-item.media-item {

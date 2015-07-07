@@ -41,7 +41,7 @@ var Controller = Backbone.Router.extend({
 
 	/** @override */
 	routes: {
-		"bundles/:bundleHandle(/:imageIndex)": "toBundleItem",
+		"bundles/:bundleHandle(/:mediaIndex)": "toBundleItem",
 		"bundles": "toBundleCollection",
 		"": function () {
 			this.navigate("bundles", {
@@ -53,9 +53,9 @@ var Controller = Backbone.Router.extend({
 	/** @override */
 	initialize: function (options) {
 		// this._lastBundle = null;
-		// this._lastImage = null;
+		// this._lastMedia = null;
 		// this._currentBundle = null;
-		// this._currentImage = null;
+		// this._currentMedia = null;
 
 		this._classProviders = [];
 		this._initialBodyClasses = document.body.className;
@@ -69,10 +69,10 @@ var Controller = Backbone.Router.extend({
 	 * Document body classes
 	 * --------------------------- */
 
-	_applyClassProviders: function(bundle, image) {
+	_applyClassProviders: function(bundle, media) {
 		var classes = [this._initialBodyClasses];
 		_.each(this._classProviders, function(fn) {
-			fn(classes, bundle, image);
+			fn(classes, bundle, media);
 		});
 		document.body.className = classes.join(" ");
 	},
@@ -85,21 +85,21 @@ var Controller = Backbone.Router.extend({
 	 * Public command methods
 	 * --------------------------- */
 
-	selectImage: function (image) {
-		var bundle = image.get("bundle");
-		//this._goToLocation(bundle, image);
-		this._changeSelection(bundle, image);
+	selectMedia: function (media) {
+		var bundle = media.get("bundle");
+		//this._goToLocation(bundle, media);
+		this._changeSelection(bundle, media);
 		this._updateLocation();
 	},
 
 	selectBundle: function (bundle) {
-		//var image = bundle.get("images").selected;
-		var image = void 0;
-		this._changeSelection(bundle, image);
+		//var media = bundle.get("media").selected;
+		var media = void 0;
+		this._changeSelection(bundle, media);
 		this._updateLocation();
 	},
 	
-	deselectImage: function () {
+	deselectMedia: function () {
 		var bundle = bundles.selected;
 		this._changeSelection(bundle);
 		this._updateLocation();
@@ -112,51 +112,51 @@ var Controller = Backbone.Router.extend({
 	
 	/** Update location when navigation happens internally */
 	_updateLocation: function() {
-		var bundle, image;
+		var bundle, media;
 		bundle = bundles.selected;
 		if (bundle) {
-			image = bundle.get("images").selected;
+			media = bundle.get("media").selected;
 		}
-		//_.defer(_.bind(this.navigate, this), this._getLocation(bundle, image), {trigger: false});
-		this.navigate(this._getLocation(bundle, image), {trigger: false});
+		//_.defer(_.bind(this.navigate, this), this._getLocation(bundle, media), {trigger: false});
+		this.navigate(this._getLocation(bundle, media), {trigger: false});
 	},
 	
-	_getLocation: function(bundle, image) {
-		var images, imageIndex, location;
+	_getLocation: function(bundle, media) {
+		var mediaIndex, location;
 		location = "bundles";
 		if (bundle) {
 			location += "/" + bundle.get("handle");
-			if (image) {
-				imageIndex = bundle.get("images").indexOf(image);
-				if (imageIndex >= 0) {
-					location += "/" + imageIndex;
+			if (media) {
+				mediaIndex = bundle.get("media").indexOf(media);
+				if (mediaIndex >= 0) {
+					location += "/" + mediaIndex;
 				}
 			}
 		}
 		return location;
 	},
 	
-	_goToLocation: function(bundle, image) {
-		this.navigate(this._getLocation(bundle, image), {trigger: true});
+	_goToLocation: function(bundle, media) {
+		this.navigate(this._getLocation(bundle, media), {trigger: true});
 	},
 	
 	/* --------------------------- *
 	 * Router handlers (browser address changes)
 	 * --------------------------- */
 	
-	toBundleItem: function (bundleHandle, imageIndex) {
-		var bundle, image;
+	toBundleItem: function (bundleHandle, mediaIndex) {
+		var bundle, media;
 		bundle = bundles.findWhere({handle: bundleHandle});
 		if (!bundle) {
 			throw new Error("Cannot find bundle with handle \"" + bundleHandle + "\"");
 		}
-		if (imageIndex) {
-			image = bundle.get("images").at(imageIndex);
-			if (!image) {
-				throw new Error("No image at index " + imageIndex + " bundle with handle \"" + bundleHandle + "\"");
+		if (mediaIndex) {
+			media = bundle.get("media").at(mediaIndex);
+			if (!media) {
+				throw new Error("No media at index " + mediaIndex + " bundle with handle \"" + bundleHandle + "\"");
 			}
 		}
-		this._changeSelection(bundle, image);
+		this._changeSelection(bundle, media);
 	},
 
 	toBundleCollection: function () {
@@ -164,54 +164,54 @@ var Controller = Backbone.Router.extend({
 	},
 	
 	/* -------------------------------
-	 * Select Bundle/image
+	 * Select Bundle/media
 	 * ------------------------------- */
 	
 	/*
 	 * NOTE: Selection order
-	 * - Apply image selection to *incoming bundle*, as not to trigger
-	 *	unneccesary events on an outgoing bundle. Outgoing bundle image selection
+	 * - Apply media selection to *incoming bundle*, as not to trigger
+	 *	unneccesary events on an outgoing bundle. Outgoing bundle media selection
 	 *	remains untouched.
-	 * - Apply image selection *before* selecting the incoming bundle. Views
+	 * - Apply media selection *before* selecting the incoming bundle. Views
 	 *	normally listen to the selected bundle only, so if the bundle is changing,
-	 *	they will not be listening to image selection changes yet.
+	 *	they will not be listening to media selection changes yet.
 	 */
-	/* Select Bundle/image */
-	_changeSelection: function (bundle, image) {
+	/* Select Bundle/media */
+	_changeSelection: function (bundle, media) {
 		// this._lastBundle = this._currentBundle;
-		// this._lastImage = this._currentImage;
+		// this._lastMedia = this._currentMedia;
 		// this._currentBundle = bundle;
-		// this._currentImage = image;
+		// this._currentMedia = media;
 		
 		var lastBundle = bundles.selected;
-		var lastImage = lastBundle? lastBundle.get("images").selected : void 0;
+		var lastMedia = lastBundle? lastBundle.get("media").selected : void 0;
 		console.log("----");
 		console.log("---- Controller._changeSelection " +
 			" [bundle: " + (lastBundle? lastBundle.cid : "none") +
 			" => " + (bundle? bundle.cid : "none") +
-			"] [image: " + (lastImage? lastImage.cid : "none") +
-			" => " + (image? image.cid : "none") +
+			"] [media: " + (lastMedia? lastMedia.cid : "none") +
+			" => " + (media? media.cid : "none") +
 			"]"
 		);
 		
-		this.trigger("change:before", bundle, image);
-		// this._applyClassProviders(bundle, image);
+		this.trigger("change:before", bundle, media);
+		// this._applyClassProviders(bundle, media);
 		
 		// if (_.isUndefined(bundle)) {
 		// 	bundles.deselect();
 		// } else {
-		// 	if (_.isUndefined(image)) {
-		// 		bundle.get("images").deselect();
+		// 	if (_.isUndefined(media)) {
+		// 		bundle.get("media").deselect();
 		// 	} else {
-		// 		bundle.get("images").select(image);
+		// 		bundle.get("media").select(media);
 		// 	}
 		// 	bundles.select(bundle);
 		// }
-		bundle && bundle.get("images").select(image);
+		bundle && bundle.get("media").select(media);
 		bundles.select(bundle);
 		
-		this._applyClassProviders(bundle, image);
-		this.trigger("change:after", bundle, image);
+		this._applyClassProviders(bundle, media);
+		this.trigger("change:after", bundle, media);
 	},
 	
 	/* --------------------------- *
@@ -244,44 +244,61 @@ var Controller = Backbone.Router.extend({
 			return "bundle-" + bundle.id;
 		};
 
-		var classProvider = function(classes, bundle, image) {
+		var classProvider = function(classes, bundle, media) {
 			bundle && classes.push(toBodyClass(bundle));
 		};
 		this.addClassProvider(classProvider);
 
 		var createDerivedStyles = function() {
-			var fgColor, bgColor, bgLum, fgLum;
-			var bgDefault, fgDefault;
-			var attrs, styles, bodySelector, carouselSelector;
 			var bodyStyles = ["background", "background-color", "color"];
 			// var fontSmoothingStyles = ["-moz-osx-font-smoothing", "-webkit-font-smoothing"];
 			var carouselMediaStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
 			// var placeholderStyles = ["border-radius"];
-
+			var attrs, styles, bodySelector, carouselSelector;
+			var fgColor, bgColor, bgLum, fgLum, isLightOverDark, tmpVal;
+			var bgDefault, fgDefault;
+			
 			bgDefault = new Color(Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
 			fgDefault = new Color(Styles.getCSSProperty("body", "color") || "hsl(47, 5%, 15%)");
-
+			
 			bundles.each(function (bundle) {
-				attrs = bundle.get("attrs");
+				attrs = bundle.attrs();//get("attrs");
 				fgColor = attrs["color"]? new Color(attrs["color"]) : fgDefault;
 				bgColor = attrs["background-color"]? new Color(attrs["background-color"]) : bgDefault;
 				//bgColor = bgDefault; fgColor = fgDefault;
 				bgLum = bgColor.lightness();
 				fgLum = fgColor.lightness();
+				isLightOverDark = bgLum < fgLum;
 				
 				// per-bundle body rules
 				bodySelector = "body." + toBodyClass(bundle);
 				styles = _.pick(attrs, bodyStyles);
-				styles["-webkit-font-smoothing"] = (bgLum < fgLum? "antialiased" : "auto");
+				styles["-webkit-font-smoothing"] = (isLightOverDark? "antialiased" : "auto");
 				/* NOTE: In Firefox 'body { -moz-osx-font-smoothing: grayscale; }'
 				/* works both in light over dark and dark over light, hardcoded in _base.scss */
-				//styles["-moz-osx-font-smoothing"] = (bgLum < fgLum? "grayscale" : "auto");
+				//styles["-moz-osx-font-smoothing"] = (isLightOverDark? "grayscale" : "auto");
 				Styles.createCSSRule(bodySelector, styles);
 				
 				styles = {};
-				styles["color"] = fgColor.lightness(fgLum * 0.500 + bgLum * 0.500).toHexString();
-				styles["border-color"] = fgColor.lightness(fgLum * 0.300 + bgLum * 0.700).toHexString();
+				styles["color"] = fgColor.lightness(fgLum * 0.5 + bgLum * 0.5).toHexString();
+				styles["border-color"] = fgColor.lightness(fgLum * 0.3 + bgLum * 0.7).toHexString();
 				Styles.createCSSRule(bodySelector + " .mutable-faded", styles);
+				
+				// inverted fg/bg (slightly muted)
+				styles = {};
+				styles["color"] = bgColor.lightness(bgLum * 0.9 + fgLum * 0.1).toHexString();
+				styles["border-color"] = bgColor.lightness(bgLum * 0.7 + fgLum * 0.3).toHexString();
+				Styles.createCSSRule(bodySelector + " .color-invert-fg", styles);
+				styles = {};
+				styles["background-color"] = fgColor.lightness(fgLum * 0.9 + bgLum * 0.1).toHexString();
+				Styles.createCSSRule(bodySelector + " .color-invert-bg", styles);
+				
+				// styles = {};
+				// styles["background-color"] = "transparent";
+				// styles["background"] = "linear-gradient(to bottom, " +
+				// 		bgColor.alpha(0.11).toRgbaString() + " 33%, " +
+				// 		bgColor.alpha(0.66).toRgbaString() + " 66%)";
+				// Styles.createCSSRule(carouselSelector + " .media-item[data-state=\"user\"] .gradient", styles);
 				
 				// per-bundle .carousel .media-item rules
 				carouselSelector = ".carousel." + bundle.get("handle");
@@ -290,17 +307,18 @@ var Controller = Backbone.Router.extend({
 				
 				// text color luminosity is inverse from body, apply oposite rendering mode
 				styles = {};
-				styles["-webkit-font-smoothing"] = (bgLum < fgLum? "auto" : "antialiased");
+				styles["-webkit-font-smoothing"] = (isLightOverDark? "auto" : "antialiased");
 				styles["background-color"] = bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString();
 				styles["color"] = bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString();
 				("border-radius" in attrs) && (styles["border-radius"] = attrs["border-radius"]);
-				Styles.createCSSRule(carouselSelector + " .media-item .content-decoration", styles);
+				Styles.createCSSRule(carouselSelector + " .media-item .placeholder", styles);
 				
 				styles = {};
-				styles["background-color"] = bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).alpha(0.5).toRgbaString();
-				Styles.createCSSRule(carouselSelector + " .media-item .overlay", styles);
-				// Styles.createCSSRule(bodySelector + " .mutable-faded", styles);
-				// console.log(carouselSelector + " .media-item .content-decoration", styles["background-color"]);
+				// Darken if dark, lighten if light, then clamp value to 0-1
+				tmpVal = Math.min(Math.max(bgLum * (isLightOverDark? 0.95 : 1.05), 0), 1); 
+				// tmpVal = fgLum * 0.050 + bgLum * 0.950;
+				styles["background-color"] = bgColor.lightness(tmpVal).alpha(0.66).toRgbaString();
+				Styles.createCSSRule(carouselSelector + " .video-renderer.selected .overlay[data-state=\"user\"]", styles);
 			});
 		};
 		if (document.readyState == "complete") {
@@ -317,33 +335,33 @@ var Controller = Backbone.Router.extend({
 	 * --------------------------- */
 
 	inilializeStateHandlers: function() {
-		this.addClassProvider(function(classes, bundle, image) {
+		this.addClassProvider(function(classes, bundle, media) {
 			classes.push(bundle? "with-bundle":"without-bundle");
-			bundle && classes.push(image? "with-image":"without-image");
+			bundle && classes.push(media? "with-media":"without-media");
 		});
 	},
 
 	/*
 	inilializeHandlers: function() {
 		var $body = Backbone.$("body");
-		var imageHandlers = {
+		var mediaHandlers = {
 			"select:none": function () {
-				$body.removeClass("with-image").addClass("without-image");
+				$body.removeClass("with-media").addClass("without-media");
 			},
 			"deselect:none": function () {
-				$body.removeClass("without-image").addClass("with-image");
+				$body.removeClass("without-media").addClass("with-media");
 			},
 		};
 		var bundleHandlers = {
 			"select:one": function (bundle) {
-				var images = bundle.get("images");
-				this.listenTo(images, imageHandlers);
-				$body.addClass((images.selected? "with-image" : "without-image"));
+				var media = bundle.get("media");
+				this.listenTo(media, mediaHandlers);
+				$body.addClass((media.selected? "with-media" : "without-media"));
 			},
 			"deselect:one": function (bundle) {
-				var images = bundle.get("images");
-				this.stopListening(images, imageHandlers);
-				$body.removeClass((images.selected? "with-image" : "without-image"));
+				var media = bundle.get("media");
+				this.stopListening(media, mediaHandlers);
+				$body.removeClass((media.selected? "with-media" : "without-media"));
 			},
 			"select:none": function () {
 				$body.removeClass("with-bundle").addClass("without-bundle");
@@ -363,16 +381,16 @@ var Controller = Backbone.Router.extend({
 	/*
 	inilializeHandlers2: function() {
 		var $body = Backbone.$("body");
-		var images = null;
-		var withBundle, withoutBundle, withImage, withoutImage;
+		var media = null;
+		var withBundle, withoutBundle, withMedia, withoutMedia;
 
-		withImage = function() {
-			$body.removeClass("without-image").addClass("with-image");
-			this.listenToOnce(images, "select:none", withoutImage);
+		withMedia = function() {
+			$body.removeClass("without-media").addClass("with-media");
+			this.listenToOnce(media, "select:none", withoutMedia);
 		};
-		withoutImage = function () {
-			$body.removeClass("with-image").addClass("without-image");
-			this.listenToOnce(images, "select:one", withImage);
+		withoutMedia = function () {
+			$body.removeClass("with-media").addClass("without-media");
+			this.listenToOnce(media, "select:one", withMedia);
 		};
 		withBundle = function() {
 			$body.removeClass("without-bundle").addClass("with-bundle");
@@ -385,24 +403,24 @@ var Controller = Backbone.Router.extend({
 
 		var bundleHandlers = {
 			"select:one": function (bundle) {
-				images = bundle.get("images");
-				(images.selected? withImage : withoutImage).call(this);
+				media = bundle.get("media");
+				(media.selected? withMedia : withoutMedia).call(this);
 			},
 			"deselect:one": function (bundle) {
-				images = null;
-				$body.removeClass("with-image without-image");
-				this.stopListening(bundle.get("images"), {"select:none": withoutImage, "select:one": withImage });
+				media = null;
+				$body.removeClass("with-media without-media");
+				this.stopListening(bundle.get("media"), {"select:none": withoutMedia, "select:one": withMedia });
 			},
 		};
 		this.listenTo(bundles, bundleHandlers);
 
 		// if (bundles.selected) {
 		// 	withBundle.call(this);
-		// 	images = bundles.selected.get("images");
-		// 	if (images.selected) {
-		// 		withImage.call(this);
+		// 	media = bundles.selected.get("media");
+		// 	if (media.selected) {
+		// 		withMedia.call(this);
 		// 	} else {
-		// 		withoutImage.call(this);
+		// 		withoutMedia.call(this);
 		// 	}
 		// } else {
 		// 	withoutBundle.call(this);

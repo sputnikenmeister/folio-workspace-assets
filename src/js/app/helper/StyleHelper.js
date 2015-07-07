@@ -62,7 +62,7 @@ var findCSSRule = function (selector) {
 	for (var i = document.styleSheets.length; i > 0 && match === null; --i) {
 		match = _.findWhere(document.styleSheets[i].cssRules, {selectorText: selector});
 	}
-	return match
+	return match;
 };
 var findCSSRule2 = function (selector) {
 	return [].slice.call(document.styleSheets).reduce(

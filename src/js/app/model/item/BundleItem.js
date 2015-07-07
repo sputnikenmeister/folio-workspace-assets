@@ -14,8 +14,8 @@ var parseSymAttrs = require("../../utils/strings/parseSymAttrs");
 
 /** @type {module:app/model/SelectableCollection} */
 var SelectableCollection = require("../../model/SelectableCollection");
-/** @type {module:app/model/item/ImageItem} */
-var ImageItem = require("../item/ImageItem");
+/** @type {module:app/model/item/MediaItem} */
+var MediaItem = require("../item/MediaItem");
 
 /**
  * @constructor
@@ -38,13 +38,13 @@ module.exports = Backbone.Model.extend({
 		text: function () {
 			return stripTags(this.get("desc"));
 		},
-		images: {
+		media: {
 			set: function (key, value, options, set) {
 				_.each(value, function(o) {
 					o.bundle = this;
 				}, this);
 				set(key, new SelectableCollection(value, {
-					model: ImageItem,
+					model: MediaItem,
 					comparator: "o"
 				}), options);
 			}
@@ -62,7 +62,7 @@ module.exports = Backbone.Model.extend({
 					value = attrs;
 				}
 				if (!_.isObject(value)) {
-					console.warn("ImageItem.attrs", "value set is not an object: " + (typeof value));
+					console.warn("MediaItem.attrs", "value set is not an object: " + (typeof value));
 					value = void 0;
 				} 
 				set(key, value, options);
@@ -83,6 +83,10 @@ module.exports = Backbone.Model.extend({
 //	domId: function() {
 //		return "b" + this.id;
 //	},
+
+	attrs: function() {
+		return this.get("attrs");
+	},
 
 	/** @override */
 	toString: function () {

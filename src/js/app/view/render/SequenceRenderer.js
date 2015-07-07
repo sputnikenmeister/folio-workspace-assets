@@ -9,15 +9,15 @@ var Backbone = require("backbone");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
-/** @type {module:app/model/item/ImageItem} */
-var ImageItem = require("../../model/item/ImageItem");
+/** @type {module:app/model/item/MediaItem} */
+var MediaItem = require("../../model/item/MediaItem");
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
 
 /** @type {module:app/utils/net/loadImage} */
-// var loadImage = require("../../utils/net/loadImage");
-var loadImageXHR = require("../../utils/net/loadImageXHR");
-var loadImageDOM = require("../../utils/net/loadImageDOM");
+var loadImage = require("../../utils/net/loadImage");
+// var loadImageXHR = require("../../utils/net/loadImageXHR");
+// var loadImageDOM = require("../../utils/net/loadImageDOM");
 
 /** @type {Function} */
 var viewTemplate = require( "./SequenceRenderer.tpl" );
@@ -35,22 +35,17 @@ module.exports = View.extend({
 	tagName: "div",
 	/** @type {string} */
 	className: "carousel-item media-item sequence-renderer idle",
-	/** @type {module:app/model/ImageItem} */
-	model: ImageItem,
+	/** @type {module:app/model/MediaItem} */
+	model: MediaItem,
 	/** @type {Function} */
 	template: viewTemplate,
 	
 	/** @override */
 	initialize: function (opts) {
-		this._onProgress = _.throttle(this._onProgress, 100, {leading: true, trailing: true});
-		
+		_.bindAll(this, "_onContentClick", "_onSequenceStep");
 		this.createChildren();
 		
 		if (this.model.has("prefetched")) {
-			// console.log("SequenceRenderer.initialize: using prefetched " + this.model.get("prefetched"));
-			// this._sequenceSrc[0] = this.model.get("prefetched");
-			// this._sequenceIdx = 0;
-			
 			this.image.src = this.model.get("prefetched");
 			this.el.classList.remove("idle");
 			this.el.classList.add("done");
@@ -75,19 +70,12 @@ module.exports = View.extend({
 		this.el.innerHTML = this.template(this.model.toJSON());
 		
 		this.placeholder = this.el.querySelector(".placeholder");
+		this.playToggle = this.el.querySelector(".play-toggle");
 		this.content = this.el.querySelector(".content");
+		this.overlay = this.content.querySelector(".overlay");
 		this.image = this.content.querySelector("img.current");
 		
 		this.content.addEventListener("dragstart", this._preventDragstartDefault, true);
-		
-		// this.$el.html(this.template(this.model.toJSON()));
-		// this.$placeholder = this.$(".placeholder");
-		// this.$content = this.$(".content");
-		// this.placeholder = this.$placeholder[0];
-		// this.content = this.$content[0];
-		// this.$(".content").on("dragstart", function (ev) {
-		// 	ev.isDefaultPrevented() || ev.preventDefault();
-		// });
 	},
 	
 	/** @return {this} */
@@ -123,8 +111,10 @@ module.exports = View.extend({
 		cX = sizing.offsetLeft + sizing.clientLeft;
 		cY = sizing.offsetTop + sizing.clientTop;
 		
-		this.image.setAttribute("width", cW);
-		this.image.setAttribute("height", cH);
+		// NOTE: image elements are given 100% w/h in CSS (.sequence-renderer .content img);
+		// actual dimensions are set to the parent element (.sequence-renderer .content)
+		// this.image.setAttribute("width", cW);
+		// this.image.setAttribute("height", cH);
 		
 		content.style.left = cX + "px";
 		content.style.top = cY + "px";
@@ -143,11 +133,7 @@ module.exports = View.extend({
 	
 	/** @override */
 	setEnabled: function(enabled) {
-		if (enabled && this.model.collection.selected === this.model) {
-			this.startSequence();
-		} else {
-			this.stopSequence();
-		}
+		this.toggleMediaPlayback(enabled && this.model.selected);
 	},
 	
 	/* --------------------------- *
@@ -195,19 +181,19 @@ module.exports = View.extend({
 	},
 	
 	_onSelectSibling: function() {
-		this.createFirstImagePromise().request();
+		this.createDefaultImagePromise().request();
 	},
 	
 	/* --------------------------- *
 	 * first image promise
 	 * --------------------------- */
 	
-	createFirstImagePromise: function() {
-		var promise = loadImageXHR(this.model.getImageUrl(), this.image, this);
+	createDefaultImagePromise: function() {
+		var promise = loadImage(this.model.getImageUrl(), this.image, this);
 		promise.then(
-			this._onFirstImageDone,
-			this._onFirstImageError, 
-			this._onFirstImageProgress
+			this._onDefaultImageDone,
+			this._onDefaultImageError, 
+			_.throttle(this._onDefaultImageProgress, 100, {leading: true, trailing: true})
 		).always(function() {
 			this.placeholder.removeAttribute("data-progress");
 			this.off("view:remove", promise.destroy);
@@ -216,7 +202,7 @@ module.exports = View.extend({
 		return promise;
 	},
 	
-	_onFirstImageProgress: function (progress, source, ev) {
+	_onDefaultImageProgress: function (progress, source, ev) {
 		if (progress == "loadstart") {
 			this.el.classList.remove("idle");
 			this.el.classList.add("pending");
@@ -225,14 +211,14 @@ module.exports = View.extend({
 		}
 	},
 	
-	_onFirstImageDone: function (url, source, ev) {
+	_onDefaultImageDone: function (url, source, ev) {
 		this.model.set({"prefetched": url});
 		this.el.classList.remove("pending");
 		this.el.classList.add("done");
 		this.initializeSequence();
 	},
 	
-	_onFirstImageError: function (err, source, ev) {
+	_onDefaultImageError: function (err, source, ev) {
 		console.error("VideoRenderer.onError: " + err.message, arguments);
 		this.el.classList.remove("pending");
 		this.el.classList.add("error");
@@ -242,12 +228,12 @@ module.exports = View.extend({
 	 * sequence image promise
 	 * --------------------------- */
 	
-	createNextImagePromise: function(url) {
-		var promise = loadImageDOM(url, this.image, this);
+	createNextImagePromise: function(url, imgEl) {
+		var promise = loadImage(url, this.imgEl, this);
 		promise.then(
 			this._onNextImageDone,
 			this._onNextImageError,
-			this._onNextImageProgress
+			_.throttle(this._onNextImageProgress, 100, {leading: true, trailing: true})
 		).always(function() {
 			this.off("view:remove", promise.destroy);
 		});
@@ -291,34 +277,27 @@ module.exports = View.extend({
 	initializeSequence: function() {
 		this._sequenceIntervalId = -1;
 		this._sequenceInterval = 3000;
-		this._onSequenceStep = this._onSequenceStep.bind(this);
-		
 		this.createSequenceChildren();
 		
-		var owner = this.model.collection;
-		var startOnSelect = function(model) {
-			if (model === this.model) {
-				this.startSequence();
-				this.listenToOnce(owner, "deselect:one", this.stopSequence);
-			}
-		};
-		this.listenTo(owner, "select:one", startOnSelect);
-		startOnSelect.call(this, owner.selected);
+		this.addSelectionListeners();
 	},
 	
 	createSequenceChildren: function() {
 		if (this.model.has("srcset")) {
-			var buffer = document.createDocumentFragment();
+			var seqBuffer = document.createDocumentFragment();
 			var srcset = this.model.get("srcset");
 			var img, i = srcset.length;
+			// var seqEl = this.el.querySelector(".sequence");
+			var seqEl = this.image.parentElement;
+			
 			this.image.className = "current"; // ensure who is the current node...
 			while (i--) {
 				img = this.image.cloneNode();
 				img.className = ""; // ...and who is not
 				img.src = Globals.MEDIA_DIR + "/" + srcset[i]["src"];
-				buffer.appendChild(img);
+				seqBuffer.appendChild(img);
 			}
-			this.content.insertBefore(buffer, this.content.firstElementChild);
+			seqEl.insertBefore(seqBuffer, seqEl.firstElementChild);
 		}
 	},
 	
@@ -345,9 +324,61 @@ module.exports = View.extend({
 	// 	}
 	// },
 	
+	addSelectionListeners: function() {
+		this.listenTo(this.model, {
+			"selected": this._onModelSelected,
+			"deselected": this._onModelDeselected,
+		});
+		this.model.selected && this._onModelSelected();
+	},
+	
+	/* ---------------------------
+	 * model event handlers
+	 * --------------------------- */
+	
+	_onModelSelected: function() {
+		this.toggleMediaPlayback(true);
+		this.playToggle.addEventListener("click", this._onContentClick, false);
+		this.listenTo(this, "view:remove", this._removeClickHandler);
+	},
+	
+	_onModelDeselected: function() {
+		this.toggleMediaPlayback(false);
+		this.playToggle.removeEventListener("click", this._onContentClick, false);
+		this.stopListening(this, "view:remove", this._removeClickHandler);
+	},
+	
+	_removeClickHandler: function() {
+		this.placeholder.removeEventListener("mouseup", this._onContentClick, false);
+	},
+	
+	/* ---------------------------
+	 * dom event handlers
+	 * --------------------------- */
+	
+	_onContentClick: function(ev) {
+		var sev = ev.originalEvent || ev;
+		console.log("[VideoRenderer] " + sev.type, sev.defaultPrevented, sev.timeStamp, sev);
+		ev.defaultPrevented || this.toggleMediaPlayback();
+	},
+	
+	
 	/* --------------------------- *
 	 * sequence ctl
 	 * --------------------------- */
+	
+	toggleMediaPlayback: function(newPlayState) {
+		if (_.isBoolean(newPlayState) && newPlayState === this.isSequenceRunning()) {
+			return; // requested state is current, do nothing
+		} else {
+			newPlayState = !this.isSequenceRunning();
+		}
+		if (newPlayState) { // changing to what?
+			this.startSequence();
+		} else {
+			this.stopSequence();
+		}
+	},
 	
 	isSequenceRunning: function() {
 		return this._sequenceIntervalId != -1;
@@ -355,18 +386,22 @@ module.exports = View.extend({
 	
 	startSequence: function() {
 		if (this._sequenceIntervalId == -1) {
+			console.log(this.cid, "SequenceRenderer.startSequence");
+			
 			this._sequenceIntervalId = window.setInterval(this._onSequenceStep, this._sequenceInterval);
 			this.listenTo(this, "view:remove", this.stopSequence);
-			console.log(this.cid, "SequenceRenderer.startSequence");
+			this.overlay.setAttribute("data-state", "media");
 		}
 	},
 	
 	stopSequence: function() {
 		if (this._sequenceIntervalId != -1) {
+			console.log(this.cid, "SequenceRenderer.stopSequence");
+			
 			window.clearInterval(this._sequenceIntervalId);
 			this._sequenceIntervalId = -1;
 			this.stopListening(this, "view:remove", this.stopSequence);
-			console.log(this.cid, "SequenceRenderer.stopSequence");
+			this.overlay.setAttribute("data-state", "user");
 		}
 	},
 	
@@ -374,7 +409,7 @@ module.exports = View.extend({
 		var outgoing = this.content.querySelector(".current");
 		var incoming = outgoing.previousElementSibling;
 		if (!incoming) {
-			incoming = this.content.lastElementChild;
+			incoming = outgoing.parentElement.lastElementChild;
 		}
 		outgoing.className = "";
 		incoming.className = "current";
@@ -384,7 +419,7 @@ module.exports = View.extend({
 	/* --------------------------- *
 	 * svg progress display
 	 * --------------------------- */
-	
+	/*
 	createProgressDisplay: function() {
 		var progressEl = this.el.querySelector(".progress-circle");
 		
@@ -417,5 +452,5 @@ module.exports = View.extend({
 		};
 	},
 	
-	updateProgress: function() {},
+	updateProgress: function() {},*/
 });

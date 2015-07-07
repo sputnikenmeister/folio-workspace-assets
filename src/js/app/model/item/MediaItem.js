@@ -1,5 +1,5 @@
 /**
-* @module app/model/item/ImageItem
+* @module app/model/item/MediaItem
 */
 
 /** @type {module:backbone} */
@@ -14,18 +14,18 @@ var parseSymAttrs = require("../../utils/strings/parseSymAttrs");
 var Globals = require("../../control/Globals");
 
 /** @type {Object} */
-var imageUrlTemplates = {
+var mediaUrlTemplates = {
 	"original" : _.template(Globals.MEDIA_DIR + "/<%= src %>"),
 //	"original" : _.template(Globals.APP_ROOT + Globals.MEDIA_DIR + "/<%= src %>"),
-	"constrain-width" : _.template(Globals.APP_ROOT + "image/1/<%= width %>/0/uploads/<%= src %>"),
-	"constrain-height" : _.template(Globals.APP_ROOT + "image/1/0/<%= height %>/uploads/<%= src %>")
+	"constrain-width" : _.template(Globals.APP_ROOT + "media/1/<%= width %>/0/uploads/<%= src %>"),
+	"constrain-height" : _.template(Globals.APP_ROOT + "media/1/0/<%= height %>/uploads/<%= src %>")
 };
 /** @type {Function} */
 var longdescTemplate = _.template("i<%= id %>-caption");
 
 /**
  * @constructor
- * @type {module:app/model/item/ImageItem}
+ * @type {module:app/model/item/MediaItem}
  */
 module.exports = Backbone.Model.extend({
 	
@@ -65,7 +65,7 @@ module.exports = Backbone.Model.extend({
 					value = attrs;
 				}
 				if (!_.isObject(value)) {
-					console.warn("ImageItem.attrs", "value set is not an object: " + (typeof value));
+					console.warn("MediaItem.attrs", "value set is not an object: " + (typeof value));
 					value = void 0;
 				} 
 				set(key, value, options);
@@ -85,14 +85,14 @@ module.exports = Backbone.Model.extend({
 	},
 	
 	setImageUrl: function(url) {
-		this._imageUrl = url;
+		this._mediaUrl = url;
 	},
 	
 	getImageUrl: function() {
-		if (_.isUndefined(this._imageUrl)) {
-			this._imageUrl = imageUrlTemplates.original(this.attributes);
+		if (_.isUndefined(this._mediaUrl)) {
+			this._mediaUrl = mediaUrlTemplates.original(this.attributes);
 		}
-		return this._imageUrl;
+		return this._mediaUrl;
 	},
 	
 	/** @override */

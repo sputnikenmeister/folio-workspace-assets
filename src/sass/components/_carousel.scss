@@ -81,6 +81,7 @@ $pan_ease: $ease;
 			opacity: 1;
 		}
 	}
+	
 }
 
 // - - - - - - - - - - - - - - - - - -
@@ -97,20 +98,25 @@ $pan_ease: $ease;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: -0.05em;
-		content: "";
 		font-style: italic;
-	}
-	.placeholder:before {
-		// transition: opacity $duration $ease;
-		// transition: opacity $duration $ease 0.001s;
-		transition: opacity $duration $ease $delay + 0.001s;
-		opacity: 0;
+		content: "";
+		// text-shadow: -1px -1px 0 rgba(0, 0%, 50%, 0.2);
 	}
 	//&.idle .placeholder:before { content: "Waiting"; }
 	&.pending .placeholder:before { content: "Loading"; }
 	&.error .placeholder:before { content: "Error";	}
 	&.done .placeholder:before { content: "Done"; }
-
+	// &.selected, .empty-item.selected + & {
+	&.selected, &.candidate, .empty-item.selected + & {
+		&.pending .placeholder[data-progress]:before {
+			content: attr(data-progress) "%";
+			font-style: normal;
+		}
+	}
+	.placeholder:before {
+		transition: opacity $duration $ease $delay + 0.001s;
+		opacity: 0;
+	}
 	&.selected, &.candidate, .empty-item.selected + & {
 		&.pending .placeholder:before {
 			opacity: 1;
@@ -119,59 +125,16 @@ $pan_ease: $ease;
 			opacity: 1;
 		}
 	}
-	// &.selected, .empty-item.selected + & {
-	&.selected, &.candidate, .empty-item.selected + & {
-		&.pending .placeholder[data-progress]:before {
-			content: attr(data-progress) "%";
-			font-style: normal;
-		}
-	}
 }
 
-// SequenceRenderer
-// - - - - - - - - - - - - - - - - - -
-.sequence-renderer {
-	.content img {
-		position: absolute;
-		top: 0; left: 0;
-		
-		z-index: 0;
-		opacity: 0;
-		visibility: hidden;
-		transition-property: opacity, visibility;
-		transition-timing-function: step-end;
-		transition-duration: $duration * 2;
-		transition-delay: 0.001s;
-		
-		&.current {
-			z-index: 1;
-			opacity: 1;
-			visibility: visible;
-			transition-timing-function: $ease, step-start;
-		}
-	}
-	
-	.content img:not(.current) {
-	}
-}
-
-// VideoRenderer
-// - - - - - - - - - - - - - - - - - -
+.sequence-renderer,
 .video-renderer {
-	.overlay {
+	.content > .overlay {
 		position: absolute;
 		top: 0; left: 0;
-		width: 100%;
-		height: 100%;
-		// color: inherit !important;
+		width: 100%; height: 100%;
 		text-align: center;
-		// border: 1px solid currentColor;
-		// background-color: hsla(0, 0%, 50%, 0.333);
-		// box-shadow: inset 0 0 2px -1px currentColor;
-		// background-color: transparent !important;
 	}
-	
-	/** .overlay:before */
 	.overlay .label {
 		font-size: 1.25rem;
 		font-weight: 600;
@@ -185,8 +148,8 @@ $pan_ease: $ease;
 		top: calc(50% - 1.33em);
 		// margin-top: -1.33em;
 		padding: 0.33em 0.5em;
-		color: black;
-		background-color: white;
+		// color: black;
+		// background-color: white;
 		// border: 0.25rem solid white;
 		// border-radius: 9999px;
 		// text-shadow: 2px 2px 0 white;
@@ -194,30 +157,65 @@ $pan_ease: $ease;
 		overflow: hidden;
 		white-space: nowrap;
 	}
-	/** states */
-	.overlay {
-		transition: background-color $duration $ease 0.001s;
-		// opacity: 1;
-	}
-	// .overlay.playing,
-	.overlay[data-state="media"] {
-		background-color: transparent !important;
-		&:before, .label {
-			visibility: hidden;
-		}
-	}
-	.overlay[data-state="network"] {
-		.label {
-			visibility: hidden;
-		}
-	}
-	.overlay[data-state="user"] {
-		.label {
+}
+
+// SequenceRenderer
+// - - - - - - - - - - - - - - - - - -
+.sequence-renderer {
+	// .content > .sequence {
+	// 	position: absolute;
+	// 	top: 0; left: 0;
+	// 	width: 100%; height: 100%;
+	// }
+	.content > .sequence > img {
+		position: absolute;
+		top: 0; left: 0;
+		width: 100%; height: 100%;
+		
+		z-index: 0;
+		opacity: 0;
+		visibility: hidden;
+		transition-property: opacity, visibility;
+		transition-timing-function: step-end;
+		transition-duration: $duration * 1;
+		transition-delay: 0.001s;
+		
+		&.current {
+			z-index: 1;
+			opacity: 1;
 			visibility: visible;
+			transition-timing-function: $ease, step-start;
 		}
 	}
+	.overlay {
+		z-index: 2;
+	}
+	.overlay .label {
+		visibility: hidden;
+	}
+	&.selected .overlay[data-state="user"] .label {
+		visibility: visible;
+	}
+}
+
+// VideoRenderer
+// - - - - - - - - - - - - - - - - - -
+.video-renderer {
+	// .overlay {
+	// 	transition: opacity $duration $ease 0.001s;
+	// 	opacity: 0;
+	// }
+	// &.selected.done .overlay {
+	// 	opacity: 1;
+	// }
+	// &.idle,	&.error {
+	// 	.overlay {
+	// 		visibility: hidden;
+	// 	}
+	// }
 	
-	.overlay:before {
+	/** .overlay:before */
+	.overlay:after {
 		@include small_caps($lead: 1rem);
 		content: "Waiting for " attr(data-state);
 		position: absolute;
@@ -225,6 +223,27 @@ $pan_ease: $ease;
 		padding: 0 0.25em;
 		color: black;
 		background-color: white;
+		opacity: 0.75;
+	}
+	/** states */
+	.overlay {
+		transition: background-color $duration $ease 0.001s;
+		background-color: transparent;
+		&:after, .label {
+			visibility: hidden;
+		}
+	}
+	&.selected .overlay[data-state="user"] {
+		.label {
+			visibility: visible;
+		}
+	}
+	&.selected .overlay[data-state="network"] {
+		&:after {
+			visibility: visible;
+		}
+	}
+	&.selected .overlay[data-state="media"] {
 	}
 }
 
@@ -280,7 +299,7 @@ $mock_browser_height: 2rem;
 // .empty-item
 // - - - - - - - - - - - - - - - - - -
 
-.carousel.image-carousel {
+.carousel.media-carousel {
 	// &:not(.disabled-changing) .empty-item .content {
 	// 	transition: opacity #{$duration - 0.001s} $ease 0.001s;
 	// }

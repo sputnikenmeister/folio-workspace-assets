@@ -58,11 +58,11 @@ module.exports = ContainerView.extend({
 			"deselect:one": this._onDeselectOne,
 			"deselect:none": this._onDeselectNone,
 		};
-		this.imageListeners = {
-			"select:one": this._onSelectImage,
-			"select:none": this._onSelectImage,
-			"deselect:one": this._onDeselectImage,
-			"deselect:none": this._onDeselectImage,
+		this.mediaListeners = {
+			"select:one": this._onSelectMedia,
+			"select:none": this._onSelectMedia,
+			"deselect:one": this._onDeselectMedia,
+			"deselect:none": this._onDeselectMedia,
 		};
 		this.listenTo(bundles, this.bundleListeners);
 
@@ -124,11 +124,11 @@ module.exports = ContainerView.extend({
 	//  * Router -> before model change
 	//  * ------------------------------- */
 	// 
-	// _beforeChange: function(bundle,image) {
+	// _beforeChange: function(bundle,media) {
 	// 	console.log(">>>> NavigationView._beforeChange");
 	// },
 	// 
-	// _afterChange: function(bundle,image) {
+	// _afterChange: function(bundle,media) {
 	// 	console.log("<<<< NavigationView._afterChange");
 	// },
 
@@ -138,7 +138,7 @@ module.exports = ContainerView.extend({
 
 	_onDeselectOne: function(bundle) {
 		
-		this.stopListening(bundle.get("images"), this.imageListeners);
+		this.stopListening(bundle.get("media"), this.mediaListeners);
 		
 		// console.log("NavigationView._onDeselectOne(" + bundle.cid + ")");
 		// this.transforms.captureAll();
@@ -174,8 +174,8 @@ module.exports = ContainerView.extend({
 		this.transforms.validate();
 	},
 
-	_onDeselectImage: function(image) {
-		// console.log("NavigationView._onDeselectImage()");
+	_onDeselectMedia: function(media) {
+		// console.log("NavigationView._onDeselectMedia()");
 		// this.transforms.captureAll();
 		// this.transforms.clearAllCaptures();
 		if (this.isCollapsed()) {
@@ -190,7 +190,7 @@ module.exports = ContainerView.extend({
 				this.hGroupings);
 			
 			// this.transforms.runTransition(
-			// 	image? Globals.TRANSIT_ENTERING : Globals.TRANSIT_EXITING,
+			// 	media? Globals.TRANSIT_ENTERING : Globals.TRANSIT_EXITING,
 			// 	this.hGroupings);
 		}
 		this.transforms.validate();
@@ -202,7 +202,7 @@ module.exports = ContainerView.extend({
 
 	_onSelectOne: function(bundle) {
 		// console.log("NavigationView._onSelectOne(" + bundle.cid + ")");
-		this.listenTo(bundle.get("images"), this.imageListeners);
+		this.listenTo(bundle.get("media"), this.mediaListeners);
 		this.keywordList.filterBy(bundle);
 		this.setCollapsed(true);
 	},
@@ -215,8 +215,8 @@ module.exports = ContainerView.extend({
 		this.setCollapsed(false);
 	},
 	
-	_onSelectImage: function(image) {
-		// console.log("NavigationView._onSelectImage(" + (image? image.cid : "") + ")");
+	_onSelectMedia: function(media) {
+		// console.log("NavigationView._onSelectMedia(" + (media? media.cid : "") + ")");
 		this.setCollapsed(true);
 	},
 
@@ -246,7 +246,7 @@ module.exports = ContainerView.extend({
 
 	_onHPanStart: function(ev) {
 		if (this.isCollapsed() &&
-			bundles.selected.get("images").selectedIndex <= 0 &&
+			bundles.selected.get("media").selectedIndex <= 0 &&
 			document.body.matches(".desktop-small .default-layout")
 			// this.el.matches(".desktop-small.default-layout " + this.el.tagName)
 			// window.matchMedia(Globals.BREAKPOINTS["desktop-small"]).matches)
@@ -262,11 +262,11 @@ module.exports = ContainerView.extend({
 	
 	_onHPanMove: function(ev) {
 		var delta = ev.thresholdDeltaX;
-		if (bundles.selected.get("images").selectedIndex == -1) {
+		if (bundles.selected.get("media").selectedIndex == -1) {
 			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)?
 				Globals.H_PANOUT_DRAG : 0.75;
 			//delta *= (delta > 0)? 0.40: 0.75;
-		} else {//if (images.selectedIndex == 0) {
+		} else {//if (media.selectedIndex == 0) {
 			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)? 0.75 : 0.0;
 			//delta *= (delta > 0)? 0.75: 0.00;
 		}
