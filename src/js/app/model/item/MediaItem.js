@@ -13,16 +13,6 @@ var parseSymAttrs = require("../../utils/strings/parseSymAttrs");
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
 
-/** @type {Object} */
-var mediaUrlTemplates = {
-	"original" : _.template(Globals.MEDIA_DIR + "/<%= src %>"),
-//	"original" : _.template(Globals.APP_ROOT + Globals.MEDIA_DIR + "/<%= src %>"),
-	"constrain-width" : _.template(Globals.APP_ROOT + "media/1/<%= width %>/0/uploads/<%= src %>"),
-	"constrain-height" : _.template(Globals.APP_ROOT + "media/1/0/<%= height %>/uploads/<%= src %>")
-};
-/** @type {Function} */
-var longdescTemplate = _.template("i<%= id %>-caption");
-
 /**
  * @constructor
  * @type {module:app/model/item/MediaItem}
@@ -30,14 +20,15 @@ var longdescTemplate = _.template("i<%= id %>-caption");
 module.exports = Backbone.Model.extend({
 	
 	/** @type {Object} */
-	defaults: {
-		bId: 0,
-		o: 0,
-		src: "",
-		w: 0,
-		h: 0,
-		desc: "<p><em>No description</em></p>",
-		attrs: {},
+	defaults: function () {
+		return {
+			o: 0,
+			bId: -1,
+			desc: "<p><em>Untitled</em></p>",
+			src: "", w: 0, h: 0,
+			srcset: [],
+			attrs: {},
+		};
 	},
 	
 	mutators: {
@@ -64,35 +55,40 @@ module.exports = Backbone.Model.extend({
 					});
 					value = attrs;
 				}
-				if (!_.isObject(value)) {
+				if (_.isObject(value)) {
+					_.extend(this.attrs(), value);
+				} else {
 					console.warn("MediaItem.attrs", "value set is not an object: " + (typeof value));
-					value = void 0;
+					value = {};//void 0;
 				} 
 				set(key, value, options);
-				_.extend(this.attrs(), this.get("attrs"));
 			}
 		},
 		bundle: {
 			set: function (key, value, options, set) {
-				set(key, value, options);
 				_.defaults(this.attrs(), value.get("attrs"));
+				set(key, value, options);
 			},
 		},
+	},
+	
+	initialize: function() {
+		var src = this.get("src");
+		this._imageUrl = Globals.IMAGE_URL_TEMPLATES["original"]({ src: src });
+		this._thumbUrl = Globals.IMAGE_URL_TEMPLATES["constrain-width"]({ src: src, width: 60 });
+		// _.defaults(_.extend(this.attrs(), this.get("attrs")), this.get("bundle").get("attrs"));
 	},
 	
 	attrs: function() {
 		return this._attrs || (this._attrs = {});
 	},
 	
-	setImageUrl: function(url) {
-		this._mediaUrl = url;
+	getImageUrl: function() {
+		return this._imageUrl;
 	},
 	
-	getImageUrl: function() {
-		if (_.isUndefined(this._mediaUrl)) {
-			this._mediaUrl = mediaUrlTemplates.original(this.attributes);
-		}
-		return this._mediaUrl;
+	getThumbUrl: function() {
+		return this._thumbUrl;
 	},
 	
 	/** @override */

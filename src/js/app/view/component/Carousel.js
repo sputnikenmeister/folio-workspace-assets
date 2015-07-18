@@ -125,12 +125,12 @@ var Carousel = DeferredView.extend({
 			pan = new Hammer.Pan({
 				threshold: this.panThreshold,
 				direction: this.direction,
-				//enable: _.bind(this._canEnablePan, this),
+				//enable: this._canEnablePan.bind(this),
 			});
 			tap = new Hammer.Tap({
 				threshold: this.panThreshold - 1,
 				interval: 50, time: 200,
-				//enable: _.bind(this._canEnableTan, this),
+				//enable: this._canEnableTan.bind(this),
 			});
 			tap.recognizeWith(pan);
 			hammer.add([pan, tap]);
@@ -329,7 +329,7 @@ var Carousel = DeferredView.extend({
 	setEnabled: function(enabled) {
 		if (this._enabled !== enabled) {
 			this._enabled = enabled;
-			this.requestRender("enabled", _.bind(this.renderEnabled, this, enabled));
+			this.requestRender("enabled", this.renderEnabled.bind(this, enabled));
 		}
 	},
 	setEnabledNow: function(enabled) {
@@ -359,7 +359,7 @@ var Carousel = DeferredView.extend({
 	 * --------------------------- */
 	
 	scrollByLater: function (delta, skipTransitions) {
-		this.requestRender("scrollBy", _.bind(this._scrollBy, this, delta, skipTransitions));
+		this.requestRender("scrollBy", this._scrollBy.bind(this, delta, skipTransitions));
 	},
 	
 	scrollByNow: function (delta, skipTransitions) {

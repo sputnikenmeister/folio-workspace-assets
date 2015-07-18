@@ -16,6 +16,9 @@ console.log("Strict mode", (function() {
 })());
 
 require("es6-promise").polyfill();
+require("classlist-polyfill");
+require("../shims/requestAnimationFrame");
+require("../shims/matchesSelector");
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -35,19 +38,15 @@ require("Backbone.Mutators");
 //global.$ = $;
 
 $(window).load(function(ev) {
-//	console.log("window.load()", document.readyState, arguments.length, arguments);
+// 	console.log("window.load()", document.readyState, arguments.length, arguments);
 // $(document).ready(function($) {
-// 	"use strict";
 // 	console.log("document.ready()", document.readyState, arguments.length, arguments);
-
-	/* jshint -W117 */
-	// undeclaredVar = 1;
-	/* jshint +W117 */
 
 	if (window.bootstrap === void 0) {
 		console.error("bootstrap data missing");
-		$(document.body).empty().html("<h1>Oops... </h1>");
-		$(document.documentElement).removeClass("app-initial").addClass("app-error");
+		document.body.innerHTML = "<h1>Oops... </h1>";
+		document.documentElement.classList.remove("app-initial");
+		document.documentElement.classList.add("app-error");
 		return;
 	}
 

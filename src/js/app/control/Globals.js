@@ -69,6 +69,16 @@ module.exports = (function () {
 
 	globals.APP_ROOT		=	window.approot;
 	globals.MEDIA_DIR		=	window.mediadir;
+	
+	/** @type {Object} */
+	globals.IMAGE_URL_TEMPLATES = {
+		"original" :
+			_.template(globals.MEDIA_DIR + "/<%= src %>"),
+		"constrain-width" :
+			_.template(globals.APP_ROOT + "image/1/<%= width %>/0/uploads/<%= src %>"),
+		"constrain-height" :
+			_.template(globals.APP_ROOT + "image/1/0/<%= height %>/uploads/<%= src %>")
+	};
 
 	delete window.approot;
 	delete window.mediadir;

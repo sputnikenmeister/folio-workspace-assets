@@ -117,7 +117,7 @@ var SelectableCollectionView = View.extend({
 //			collection: this.collection
 //		});
 //		this.children.add(view);
-//		view.$el.on("click", _.bind(function (ev) {
+//		view.$el.on("click", function.bind((ev) {
 //			if (this.collection.selectedIndex != -1) {
 //				ev.isDefaultPrevented() || ev.preventDefault();
 //				this.trigger("view:select:none");

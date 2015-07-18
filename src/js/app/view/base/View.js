@@ -2,8 +2,6 @@
  * @module app/view/base/View
  */
 
-/** @type {module:classlist-polyfill} */
-require("classlist-polyfill");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 /** @type {module:underscore} */
@@ -15,11 +13,10 @@ var prefixedProperty = require("../../utils/css/prefixedProperty");
 var dashedToCamel = require("../../utils/strings/dashedToCamel");
 /** @type {module:app/utils/strings/camelToDashed} */
 var camelToDashed = require("../../utils/strings/camelToDashed");
-/** @type {module:app/utils/event/addTransitionEndCommand} */
+/** @type {module:app/utils/event/addTransitionCallback} */
 var addTransitionCallback = require("../../utils/event/addTransitionCallback");
-
-require("../../../shims/requestAnimationFrame");
-require("../../../shims/matchesSelector");
+/** @type {Function} */
+var transitionEnd = require("../../utils/event/transitionEnd");
 
 var _styleProps = {};
 var _styleNames = {};
@@ -30,21 +27,21 @@ var _viewsByCid = {};
  * @type {module:app/view/base/View}
  */
 var View = Backbone.View.extend({
-
+	
 	constructor: function(options) {
 		if (options && options.className && this.className) {
 			options.className += " " + _.result(this, "className");
 		}
 		Backbone.View.apply(this, arguments);
 	},
-
+	
 	remove: function() {
 		this.trigger("view:remove", this);
 		delete _viewsByCid[this.cid];
 		return Backbone.View.prototype.remove.apply(this, arguments);
 	},
-
-    setElement: function(element, delegate) {
+	
+	 setElement: function(element, delegate) {
 		// setElement always initializes this.el,
 		// so this.el has to be checked before calling super
 		if (this.el) {
@@ -62,13 +59,13 @@ var View = Backbone.View.extend({
 		_viewsByCid[this.cid] = this;
 		return this;
 	},
-
+	
 	setEnabled: function(enable) {},
-
+	
 	getPrefixedProperty: function(prop) {
 		return _styleProps[prop] || (_styleProps[prop] = prefixedProperty(this.el.style, prop));
 	},
-
+	
 	getPrefixedStyle: function(prop) {
 		var p, pp;
 		if (_styleNames[prop] === void 0) {
@@ -78,23 +75,69 @@ var View = Backbone.View.extend({
 		}
 		return _styleNames[prop];
 	},
-
+	
 	/* -------------------------------
 	 * transitionEnd helpers
 	 * ------------------------------- */
-
-	onTransitionEnd: function(target, props, callback, timeout) {
-		return addTransitionCallback(props, callback, target, this, timeout || 2000);
+	 
+	onTransitionEnd: function(target, prop, callback, timeout) {
+		return addTransitionCallback(target, prop, callback, this, timeout || 2000);
 	},
-
+	
+	whenTransitionEnds: function(target, prop, timeout) {
+		var view = this;
+		var eventHandler, timeoutId, viewRemoveHandler;
+		timeout || (timeout = 1000);
+		
+		var cleanup = function() {
+         console.log(view.cid, "whenTransitionEnds promise: cleanup");
+			timeoutId && window.clearTimeout(timeoutId);
+			target.removeEventListener(transitionEnd, eventHandler, false);
+			view.off("view:remove", viewRemoveHandler);
+		};
+		
+		return Promise.race([
+			new Promise(function(resolve, reject){
+				// resolve on event
+				eventHandler = function(ev) {
+					if (ev.target === target && prop == ev.propertyName) {
+						console.log(view.cid, "whenTransitionEnds promise", "DOM Event: " + transitionEnd);
+						resolve();
+					}
+				};
+				target.addEventListener(transitionEnd, eventHandler, false);
+			}),
+			new Promise(function(resolve, reject){
+				// resolve on timeout
+				timeoutId = window.setTimeout(function () {
+					console.log(view.cid, "whenTransitionEnds promise", "timeoutId: " + timeoutId);
+					timeoutId = null;
+					resolve();
+				}, timeout);
+			}),
+			new Promise(function(resolve, reject){
+				// resolve on view removal
+				viewRemoveHandler = function() {
+					console.log(view.cid, "whenTransitionEnds promise", "view:remove");
+					reject();
+				};
+				view.on("view:remove", viewRemoveHandler);
+			}),
+		]).then(cleanup, cleanup);
+	},
+	
+	/* -------------------------------
+	 * requestAnimationFrame
+	 * ------------------------------- */
+	
 	requestAnimationFrame: function(callback) {
-		return window.requestAnimationFrame(_.bind(callback, this));
+		return window.requestAnimationFrame(callback.bind(this));
 	},
-
+	
 	cancelAnimationFrame: function(id) {
 		return window.cancelAnimationFrame(id);
 	},
-
+	
 },{
 	findByElement: function(element) {
 		return _viewsByCid[element.cid];

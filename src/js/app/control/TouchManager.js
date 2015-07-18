@@ -12,6 +12,9 @@ var Backbone = require("backbone");
 /** @type {module:app/control/Globals} */
 var Globals = require("./Globals");
 
+/** @type {module:app/utils/debug/traceElement} */
+var traceElement = require("../utils/debug/traceElement");
+
 /**
  * get a usable string, used as event postfix
  * @param {Const} state
@@ -151,8 +154,8 @@ Hammer.inherit(SmoothPan, Hammer.Pan, {
 		if (this.state == Hammer.STATE_BEGAN) {
 			this.thresholdOffsetX = (direction & Hammer.DIRECTION_HORIZONTAL)? ((direction & Hammer.DIRECTION_LEFT)? threshold: -threshold) : 0;
 			this.thresholdOffsetY = (direction & Hammer.DIRECTION_VERTICAL)? ((direction & Hammer.DIRECTION_UP)? threshold: -threshold) : 0;
-//			this.thresholdOffset = (direction & Hammer.DIRECTION_HORIZONTAL)? input.thresholdOffsetX : input.thresholdOffsetY;
-//			console.log("RECOGNIZER STATE", directionStr(direction), stateStr(this.state), this.thresholdOffsetX);
+			// this.thresholdOffset = (direction & Hammer.DIRECTION_HORIZONTAL)? input.thresholdOffsetX : input.thresholdOffsetY;
+			// console.log("RECOGNIZER STATE", directionStr(direction), stateStr(this.state), this.thresholdOffsetX);
 		}
 		input.thresholdOffsetX = this.thresholdOffsetX;
 		input.thresholdOffsetY = this.thresholdOffsetY;
@@ -200,99 +203,65 @@ function createInstance(el) {
 	manager.add(recognizers);
 	return manager;
 }
-	
-	//https://gist.githubusercontent.com/jtangelder/361052976f044200ea17/raw/f54c2cef78d59da3f38286fad683471e1c976072/PreventGhostClick.js
-/*
-function preventGhostClick(hev)
-	manager.on("panend vpanend pancancel vpancancel", function(hev) {
-		var targetEvType = "click";
-		var targetEvHandler;
-		targetEvHandler = function (ev) {
-			console.log("[TouchManager] " + ev.type + " (after " + hev.type + ")",
-					ev.timeStamp, "preventDefault()");
-				el.removeEventListener(targetEvType, targetEvHandler, true);
-				ev.preventDefault();
-				ev.stopPropagation();
-				// ev.stopImmediatePropagation();
-			};
-		console.log("[TouchManager] " + hev.type + " (" + hev.srcEvent.type + ")",
-			hev.srcEvent.timeStamp, "will prevent next " + targetEvType);
-		el.addEventListener(targetEvType, targetEvHandler, true);
-	});
-	// instance.on("pancancel vpancancel", function(hev) {
-	// 	console.log("[TouchManager] " + hev.type + " (" + hev.srcEvent.type + ")",
-	// 		hev.srcEvent.timeStamp);
-	// });
-	
-	// instance.on("tap panend pancancel vpanend vpancancel", function(ev) {
-	// 	var sev = ev.srcEvent;
-	// 	var prevType = ev.type;
-	// 	var targetType = "click";
-	// 	if ((ev.type == "panend" || ev.type == "vpanend") && sev.type == "mouseup") {
-	// 		var handler;
-	// 		handler = function (ev) {
-	// 			console.log("[TouchManager] " + ev.type + " (after " + prevType + ")",
-	// 				ev.timeStamp, "preventing default");
-	// 			el.removeEventListener(targetType, handler, true);
-	// 			ev.preventDefault();
-	// 			ev.stopPropagation();
-	// 			// ev.stopImmediatePropagation();
-	// 		};
-	// 		console.log("[TouchManager] " + sev.type +" (" + ev.type + ")",
-	// 			sev.timeStamp, "will prevent next " + targetType);
-	// 		el.addEventListener(targetType, handler, true);
-	// 	}
-	// 	// if (ev.type == "tap") {
-	// 	else {
-	// 		console.log("[TouchManager] " + sev.type +" ("+ev.type+")", sev.timeStamp);
-	// 	}
-	// });
-	
-};*/
+
+/*https://gist.githubusercontent.com/jtangelder/361052976f044200ea17/raw/f54c2cef78d59da3f38286fad683471e1c976072/PreventGhostClick.js*/
+var lastTimeStamp = -1;
+var captureTimeStamp = function(hev) {
+	lastTimeStamp = hev.srcEvent.timeStamp;
+};
+
+var captureHandlers = {
+	"click": function(domev) {
+		if (lastTimeStamp == domev.timeStamp) {
+			lastTimeStamp = 0;
+			domev.preventDefault();
+			domev.stopPropagation();
+		}
+	},
+	"dragstart": function(domev) {
+		if (domev.target.nodeName.toLowerCase() == "img") {
+			domev.defaultPrevented || domev.preventDefault();
+			console.log("dragstart prevented on " + traceElement(domev.target));
+		}
+	}
+};
 
 var instance = null;
 
-module.exports = {
+var TouchManager = {
 	init: function(el) {
-		if (_.isNull(instance)) {
-			var lastTimeStamp = -1;
-			var recordTimeStamp = function(hev) {
-				lastTimeStamp = hev.srcEvent.timeStamp;
-				// console.log("[TouchManager] " + hev.type +" (" + hev.srcEvent.type + ")",
-				// 	lastTimeStamp, "will prevent next click");
-			};
-			var preventClickEvent = function(domev) {
-				if (lastTimeStamp == domev.timeStamp) {
-					// console.log("[TouchManager] " + domev.type, domev.timeStamp, "preventing default");
-					lastTimeStamp = 0;
-					domev.preventDefault();
-					domev.stopPropagation();
-				}
-			};
-			
+		if (instance === null) {
 			instance = createInstance(el);
-			instance.on("panend pancancel vpanend vpancancel", recordTimeStamp);
-			instance.element.addEventListener("click", preventClickEvent, true);
-			this.handlerRef = preventClickEvent;
-			
-		} else {
-			console.warn("cannot initialize more than once");
+			instance.on("panend pancancel vpanend vpancancel", captureTimeStamp);
+			for (var eventName in captureHandlers) {
+				if (captureHandlers.hasOwnProperty(eventName)) {
+					instance.element.addEventListener(eventName, captureHandlers[eventName], true);
+				}
+			}
+		} else if (instance.element !== el){
+			console.warn("TouchManager already initialized with another element");
 		}
 		return instance;
 	},
 	destroy: function() {
-		if (_.isNull(instance)) {
+		if (instance === null) {
 			console.warn("no instance to destroy");
 		} else {
-			instance.element.removeEventListener("click", this.handlerRef, true);
+			for (var eventName in captureHandlers) {
+				if (captureHandlers.hasOwnProperty(eventName)) {
+					instance.element.removeEventListener(eventName, captureHandlers[eventName], true);
+				}
+			}
 			instance.destroy();
 			instance = null;
 		}
 	},
 	getInstance: function() {
-		if (_.isNull(instance)) {
-			console.error("must initialize first");
+		if (instance === null) {
+			console.error("TouchManager has not been initialized");
 		}
 		return instance;
 	}
 };
+
+module.exports = TouchManager;

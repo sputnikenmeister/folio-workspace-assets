@@ -17,6 +17,11 @@ var SelectableCollection = require("../../model/SelectableCollection");
 /** @type {module:app/model/item/MediaItem} */
 var MediaItem = require("../item/MediaItem");
 
+/** @private */
+var BundleMediaCollection = SelectableCollection.extend({
+	model: MediaItem, comparator: "o"
+});
+
 /**
  * @constructor
  * @type {module:app/model/item/BundleItem}
@@ -43,10 +48,11 @@ module.exports = Backbone.Model.extend({
 				_.each(value, function(o) {
 					o.bundle = this;
 				}, this);
-				set(key, new SelectableCollection(value, {
-					model: MediaItem,
-					comparator: "o"
-				}), options);
+				set(key, new BundleMediaCollection(value), options);
+				// set(key, new SelectableCollection(value, {
+				// 	model: MediaItem,
+				// 	comparator: "o"
+				// }), options);
 			}
 		},
 		attrs: {

@@ -11,7 +11,7 @@ var transitionEnd = require("./transitionEnd");
  * @param {Object} context
  * @param {Number} timeout
  */
-module.exports = function(prop, action, target, context, timeout) {
+module.exports = function(target, prop, callback, context, timeout) {
 	var listener, execute, timeoutId, pending = true;
 
 	context || (context = window);
@@ -29,7 +29,7 @@ module.exports = function(prop, action, target, context, timeout) {
 			pending = false;
 			target.removeEventListener(transitionEnd, listener, false);
 			window.clearTimeout(timeoutId);
-			action.call(context, exec, target);
+			callback.call(context, exec, target);
 		}
 	};
 	target.addEventListener(transitionEnd, listener, false);

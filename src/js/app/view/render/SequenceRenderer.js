@@ -11,6 +11,8 @@ var Backbone = require("backbone");
 var Globals = require("../../control/Globals");
 /** @type {module:app/model/item/MediaItem} */
 var MediaItem = require("../../model/item/MediaItem");
+/** @type {module:app/model/SelectableCollection} */
+var SelectableCollection = require("../../model/SelectableCollection");
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
 
@@ -21,9 +23,10 @@ var loadImage = require("../../utils/net/loadImage");
 
 /** @type {Function} */
 var viewTemplate = require( "./SequenceRenderer.tpl" );
-
 /** @type {Function} */
-// var progressTemplate = require( "../template/ProgressCircleSVG.tpl" );
+var progressTemplate = require( "../template/CircleProgressMeter.svg.tpl" );
+
+var transitionEndEvent = require("../../utils/event/transitionEnd");
 
 /**
  * @constructor
@@ -42,24 +45,30 @@ module.exports = View.extend({
 	
 	/** @override */
 	initialize: function (opts) {
-		_.bindAll(this, "_onContentClick", "_onSequenceStep");
-		this.createChildren();
+		_.bindAll(this, 
+			"createSequenceChildren",
+			"startSequence", "stopSequence",
+			"_startSequenceStep", "_completeSequenceStep",
+			"_onContentClick"
+		);
+		this._onLoadImageProgress = _.throttle(this._onLoadImageProgress.bind(this), 100,
+					{leading: true, trailing: true});
 		
-		if (this.model.has("prefetched")) {
-			this.image.src = this.model.get("prefetched");
-			this.el.classList.remove("idle");
-			this.el.classList.add("done");
-			this.initializeSequence();
-		} else {
-			this.addSiblingListeners();
-		}
-	},
-	
-	remove: function() {
-		// NOTE: pending promises are destroyed on "view:remove" event
-		// this.el.classList.contains("pending") && this.promise.destroy();
-		this.content.removeEventListener("dragstart", this._preventDragstartDefault, true);
-		return View.prototype.remove.apply(this, arguments);
+		// Prepare sequence model
+		var srcMapFn = function(item) {
+			return Globals.MEDIA_DIR + "/" + item.src;
+			// return { src: Globals.MEDIA_DIR + "/" + item.src };
+		};
+		var srcVal = this.model.get("srcset").map(srcMapFn);
+		srcVal.unshift(srcMapFn(this.model.attributes));
+		
+		this._sequenceIdx = -1;
+		this._sequenceEls = [];
+		this._sequenceSrc = srcVal;
+		// this.sources = new SelectableCollection(srcVal);
+		
+		this.createChildren();
+		this.initializeMediaAllocation();
 	},
 	
 	/* --------------------------- *
@@ -67,15 +76,25 @@ module.exports = View.extend({
 	 * --------------------------- */
 	
 	createChildren: function() {
-		this.el.innerHTML = this.template(this.model.toJSON());
+		var o = null;
 		
-		this.placeholder = this.el.querySelector(".placeholder");
-		this.playToggle = this.el.querySelector(".play-toggle");
-		this.content = this.el.querySelector(".content");
-		this.overlay = this.content.querySelector(".overlay");
-		this.image = this.content.querySelector("img.current");
+		o = this.el;
+		o.innerHTML = this.template(this.model.toJSON());
+		this.placeholder = o.querySelector(".placeholder");
+		this.playToggle = o.querySelector(".play-toggle");
 		
-		this.content.addEventListener("dragstart", this._preventDragstartDefault, true);
+		o = this.content = o.querySelector(".content");
+		// this.overlay = o.querySelector(".overlay");
+		this.sequence = o.querySelector(".sequence");
+		this.image = o.querySelector("img.current");
+		
+		this._isSequenceRunning = false;
+		this._sequenceIntervalId = -1;
+		this._sequenceInterval = 2500;
+		this._sequenceStepDelay = 200;
+		this._sequenceStepDur = (this._sequenceInterval - this._sequenceStepDelay - 1);
+		
+		this.progressMeter = this.createProgressMeter();
 	},
 	
 	/** @return {this} */
@@ -133,203 +152,37 @@ module.exports = View.extend({
 	
 	/** @override */
 	setEnabled: function(enabled) {
-		this.toggleMediaPlayback(enabled && this.model.selected);
+		this.model.selected && this.toggleMediaPlayback(enabled);
 	},
 	
 	/* --------------------------- *
-	 * dom event handlers
+	 * media init
 	 * --------------------------- */
 	
-	_preventDragstartDefault: function (ev) {
-		ev.defaultPrevented || ev.preventDefault();
+	initializeMediaAllocation: function() {
+		this._isMediaRequested = false;
+		this.listenTo(this.model.collection,
+			"select:one select:none", this._validateMediaAllocation);
+		this._validateMediaAllocation();
 	},
 	
-	/* --------------------------- *
-	 * selection
-	 * --------------------------- */
+	keepAllocatedMedia: function() {
+		this.stopListening(this.model.collection, "select:one select:none", this._validateMediaAllocation);
+	},
 	
-	addSiblingListeners: function () {
-		var owner = this.model.collection;
-		var m = owner.indexOf(this.model);
-		var check = function (n) {
-			// Check indices for contiguity
-			return (m === n) || (m + 1 === n) || (m - 1 === n);
-		};
-		var transitionCallback, transitionProp, transitionCancellable;
-		var handleRemove, handleSelect;
-
-		transitionProp = this.getPrefixedStyle("transform");
-		transitionCallback = function(exec) {
-			this.off("view:remove", handleRemove);
-			exec && this._onSelectSibling();
-		};
-		handleRemove = function() {
-			transitionCancellable(false);
-		};
-		handleSelect = function(model) {
-			if (check(owner.selectedIndex)) {
-				this.stopListening(owner, "select:one select:none", handleSelect);
-				this.on("view:remove", handleRemove);
-				transitionCancellable = this.onTransitionEnd(this.el, transitionProp, transitionCallback, Globals.TRANSITION_DELAY * 2);
-			}
-		};
-		if (check(owner.selectedIndex)) {
-			this._onSelectSibling();
-		} else {
-			this.listenTo(owner, "select:one select:none", handleSelect);
+	_getSelectionDistance: function() {
+		return Math.abs(this.model.collection.indexOf(this.model) - this.model.collection.selectedIndex);
+	},
+	
+	_validateMediaAllocation: function() {
+		var d = this._getSelectionDistance();
+		if (d < 2 && !this._isMediaRequested) {
+			this._isMediaRequested = true;
+			this.allocateMediaResources();
+		} else if (d > 1 && this._isMediaRequested) {
+			this._isMediaRequested = false;
+			this.deallocateMediaResources();
 		}
-	},
-	
-	_onSelectSibling: function() {
-		this.createDefaultImagePromise().request();
-	},
-	
-	/* --------------------------- *
-	 * first image promise
-	 * --------------------------- */
-	
-	createDefaultImagePromise: function() {
-		var promise = loadImage(this.model.getImageUrl(), this.image, this);
-		promise.then(
-			this._onDefaultImageDone,
-			this._onDefaultImageError, 
-			_.throttle(this._onDefaultImageProgress, 100, {leading: true, trailing: true})
-		).always(function() {
-			this.placeholder.removeAttribute("data-progress");
-			this.off("view:remove", promise.destroy);
-		});
-		this.on("view:remove", promise.destroy);
-		return promise;
-	},
-	
-	_onDefaultImageProgress: function (progress, source, ev) {
-		if (progress == "loadstart") {
-			this.el.classList.remove("idle");
-			this.el.classList.add("pending");
-		} else {
-			this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-		}
-	},
-	
-	_onDefaultImageDone: function (url, source, ev) {
-		this.model.set({"prefetched": url});
-		this.el.classList.remove("pending");
-		this.el.classList.add("done");
-		this.initializeSequence();
-	},
-	
-	_onDefaultImageError: function (err, source, ev) {
-		console.error("VideoRenderer.onError: " + err.message, arguments);
-		this.el.classList.remove("pending");
-		this.el.classList.add("error");
-	},
-	
-	/* --------------------------- *
-	 * sequence image promise
-	 * --------------------------- */
-	
-	createNextImagePromise: function(url, imgEl) {
-		var promise = loadImage(url, this.imgEl, this);
-		promise.then(
-			this._onNextImageDone,
-			this._onNextImageError,
-			_.throttle(this._onNextImageProgress, 100, {leading: true, trailing: true})
-		).always(function() {
-			this.off("view:remove", promise.destroy);
-		});
-		this.on("view:remove", promise.destroy);
-		return promise;
-	},
-	_onNextImageProgress: function (progress, source, ev) {},
-	_onNextImageError: function (err, source, ev) {},
-	_onNextImageDone: function (url, source, ev) {},
-	
-	/* --------------------------- *
-	 * selection #2
-	 * --------------------------- */
-	
-	// addSelectionListeners: function() {
-	// 	this.listenTo(this.model.collection, "select:one select:none", this._onSelectAny);
-	// 	this._onSelectAny();
-	// },
-	// 
-	// _onSelectAny: function() {
-	// 	var modelIndex = this.model.collection.indexOf(this.model);
-	// 	var selectedIndex = this.model.collection.selectedIndex;
-	// 	var indexDelta = Math.abs(selectedIndex - modelIndex);
-	// 	if (modelIndex != 0) return;
-	// 	switch (indexDelta) {
-	// 		case 0:
-	// 			// prepare resources & show media
-	// 			break;
-	// 		case 1:
-	// 			// prepare resources
-	// 			break;
-	// 		default:
-	// 			// clean resources
-	// 	}
-	// },
-	
-	/* --------------------------- *
-	 * sequence init
-	 * --------------------------- */
-		
-	initializeSequence: function() {
-		this._sequenceIntervalId = -1;
-		this._sequenceInterval = 3000;
-		this.createSequenceChildren();
-		
-		this.addSelectionListeners();
-	},
-	
-	createSequenceChildren: function() {
-		if (this.model.has("srcset")) {
-			var seqBuffer = document.createDocumentFragment();
-			var srcset = this.model.get("srcset");
-			var img, i = srcset.length;
-			// var seqEl = this.el.querySelector(".sequence");
-			var seqEl = this.image.parentElement;
-			
-			this.image.className = "current"; // ensure who is the current node...
-			while (i--) {
-				img = this.image.cloneNode();
-				img.className = ""; // ...and who is not
-				img.src = Globals.MEDIA_DIR + "/" + srcset[i]["src"];
-				seqBuffer.appendChild(img);
-			}
-			seqEl.insertBefore(seqBuffer, seqEl.firstElementChild);
-		}
-	},
-	
-	// createSequenceModel: function() {
-	// 	this._sequenceIdx = -1;
-	// 	this._sequenceSrc = [];
-	// 	// add first image
-	// 	this._sequenceSrc[0] = this.model.getImageUrl();
-	// 	this._sequenceEls[0] = this.image;
-	// 	
-	// 	if (this.model.has("srcset")) {
-	// 		var buffer = document.createDocumentFragment();
-	// 		var srcset = this.model.get("srcset");
-	// 		for (var i = 0, img, src; i < srcset.length; i++) {
-	// 			img = this.image.cloneNode();
-	// 			src = Globals.MEDIA_DIR + "/" + srcset[i]["src"];
-	// 			img.className = "";
-	// 			img.src = src;
-	// 			this._sequenceSrc[i + 1] = src;
-	// 			this._sequenceEls[i + 1] = img;
-	// 			buffer.appendChild(img);
-	// 		}
-	// 		this.content.insertBefore(buffer, this.content.firstElementChild);
-	// 	}
-	// },
-	
-	addSelectionListeners: function() {
-		this.listenTo(this.model, {
-			"selected": this._onModelSelected,
-			"deselected": this._onModelDeselected,
-		});
-		this.model.selected && this._onModelSelected();
 	},
 	
 	/* ---------------------------
@@ -338,23 +191,27 @@ module.exports = View.extend({
 	
 	_onModelSelected: function() {
 		this.toggleMediaPlayback(true);
-		this.playToggle.addEventListener("click", this._onContentClick, false);
+		this.content.addEventListener("click", this._onContentClick, false);
 		this.listenTo(this, "view:remove", this._removeClickHandler);
 	},
 	
 	_onModelDeselected: function() {
 		this.toggleMediaPlayback(false);
-		this.playToggle.removeEventListener("click", this._onContentClick, false);
+		this.content.removeEventListener("click", this._onContentClick, false);
 		this.stopListening(this, "view:remove", this._removeClickHandler);
 	},
 	
 	_removeClickHandler: function() {
-		this.placeholder.removeEventListener("mouseup", this._onContentClick, false);
+		this.content.removeEventListener("click", this._onContentClick, false);
 	},
 	
 	/* ---------------------------
 	 * dom event handlers
 	 * --------------------------- */
+	
+	_preventDragstartDefault: function (ev) {
+		ev.defaultPrevented || ev.preventDefault();
+	},
 	
 	_onContentClick: function(ev) {
 		var sev = ev.originalEvent || ev;
@@ -362,13 +219,46 @@ module.exports = View.extend({
 		ev.defaultPrevented || this.toggleMediaPlayback();
 	},
 	
-	
 	/* --------------------------- *
-	 * sequence ctl
+	 * MediaRenderer impl
 	 * --------------------------- */
 	
+	allocateMediaResources: function() {
+		// NOTE: allocating once
+		this.keepAllocatedMedia();
+		
+		var whenSelectTransitionEnds = function() {
+			if (!this.model.selected) {
+				return this.whenTransitionEnds(this.el, "transform", Globals.TRANSITION_DELAY * 2);
+			}
+		}.bind(this);
+		
+		Promise.resolve(whenSelectTransitionEnds)
+			.then(this.createDeferredImage(this.model.getImageUrl(), this.image).promise)
+			.then(this.createSequenceChildren);
+			
+		// .then(function() {
+		// 	this.model.selected && this.startSequence();
+		// }.bind(this));
+			
+		// if (this.model.selected) {
+		// 	deferredImage.promise()
+		// 		.then(this.createSequenceChildren)
+		// 		.then(this.startSequence);
+		// } else {
+		// 	this.getTransitionPromise2(this.el, "transform", Globals.TRANSITION_DELAY * 2)
+		// 		.then(deferredImage.promise)
+		// 		.then(this.createSequenceChildren);
+		// }
+	},
+	
+	deallocateMediaResources: function() {
+		// abstract
+	},
+	
 	toggleMediaPlayback: function(newPlayState) {
-		if (_.isBoolean(newPlayState) && newPlayState === this.isSequenceRunning()) {
+		if (!this.isSequenceReady() ||
+				(_.isBoolean(newPlayState) && newPlayState === this.isSequenceRunning())) {
 			return; // requested state is current, do nothing
 		} else {
 			newPlayState = !this.isSequenceRunning();
@@ -380,77 +270,343 @@ module.exports = View.extend({
 		}
 	},
 	
+	/* --------------------------- *
+	 * sequence private
+	 * --------------------------- */
+	
+	isSequenceReady: function() {
+		return this._sequenceIdx != -1;
+	},
+	
+	getNextSequenceIndex: function () {
+		var nextIdx = this._sequenceIdx + 1;
+		if (nextIdx >= this._sequenceSrc.length) {
+			nextIdx = 0;
+		}
+		return nextIdx;
+	},
+	
 	isSequenceRunning: function() {
-		return this._sequenceIntervalId != -1;
+		return this._isSequenceRunning;
 	},
 	
 	startSequence: function() {
-		if (this._sequenceIntervalId == -1) {
-			console.log(this.cid, "SequenceRenderer.startSequence");
+		if (!this._isSequenceRunning) {
+			this._isSequenceRunning = true;
 			
-			this._sequenceIntervalId = window.setInterval(this._onSequenceStep, this._sequenceInterval);
 			this.listenTo(this, "view:remove", this.stopSequence);
-			this.overlay.setAttribute("data-state", "media");
+			// this.overlay.setAttribute("data-state", "media");
+			this.el.setAttribute("data-state", "media");
+			
+			this._startSequenceStep();
+			// this._sequenceIntervalId = this._sequenceStep();
+			// this.updateProgress(this._sequenceIdx);
+			// this.updateProgress(this._sequenceIdx, this._sequenceIdx + 1);
+			// this._sequenceIntervalId = window.setInterval(this._sequenceStep, this._sequenceInterval);
+			console.log(this.cid, "SequenceRenderer.startSequence", this._sequenceIntervalId);
 		}
 	},
 	
 	stopSequence: function() {
-		if (this._sequenceIntervalId != -1) {
-			console.log(this.cid, "SequenceRenderer.stopSequence");
+		if (this._isSequenceRunning) {
+			this._isSequenceRunning = false;
 			
-			window.clearInterval(this._sequenceIntervalId);
-			this._sequenceIntervalId = -1;
 			this.stopListening(this, "view:remove", this.stopSequence);
-			this.overlay.setAttribute("data-state", "user");
+			// this.overlay.setAttribute("data-state", "user");
+			this.el.setAttribute("data-state", "user");
+			
+			this._cancelSequenceStep();
+			// this.updateProgress(this._sequenceIdx);
+			// window.clearInterval(this._sequenceIntervalId);
+			// this._sequenceIntervalId = -1;
+			
+			console.log(this.cid, "SequenceRenderer.stopSequence", this._sequenceIntervalId);
 		}
 	},
 	
-	_onSequenceStep: function() {
-		var outgoing = this.content.querySelector(".current");
-		var incoming = outgoing.previousElementSibling;
-		if (!incoming) {
-			incoming = outgoing.parentElement.lastElementChild;
+	_cancelSequenceStep: function () {
+		this.updateProgress(this._sequenceIdx);
+		this._sequenceIntervalId && window.clearTimeout(this._sequenceIntervalId) || (this._sequenceIntervalId = -1);
+	},
+	
+	// _completeSequenceStep: function () {
+	// 	// this._sequenceIntervalId = -1;
+	// 	if (this._isSequenceRunning) {
+	// 		console.log("SequenceRenderer.applySequenceStep", this._sequenceIdx, this.getNextSequenceIndex());
+	// 		var nextIdx = this.getNextSequenceIndex();
+	// 		this._sequenceEls[this._sequenceIdx].className = "";
+	// 		this._sequenceEls[nextIdx].className = "current";
+	// 		this._sequenceIdx = nextIdx;
+	// 		this._startSequenceStep();
+	// 	} else {
+	// 		console.log("SequenceRenderer.applySequenceStep", this._sequenceIdx, "[sequence not running]");
+	// 	}
+	// },
+	
+	_startSequenceStep: function() {
+		var view = this;
+		return new Promise(function(resolve, reject) {
+			var nextEl = view._sequenceEls[view.getNextSequenceIndex()];
+			view._sequenceIntervalId = window.setTimeout(function() {
+				view._sequenceIntervalId = -1;
+				if (nextEl.complete) {
+					console.log("resolve", "complete", nextEl.src);
+					resolve();
+				} else {
+					resolve(new Promise(function(resolve, reject) {
+						nextEl.onload = function(ev) {
+							console.log("resolve", ev.type, nextEl.src);
+							resolve.apply(this, arguments);
+						};
+						nextEl.onerror = function(ev) {
+							console.log("reject", ev);
+							reject.apply(this, arguments);
+						};
+					}));
+				}
+			}, view._sequenceInterval);
+			view.updateProgress(view._sequenceIdx, view._sequenceIdx + 1);
+		}).then(function () {
+			// view._sequenceIntervalId = -1;
+			if (view._isSequenceRunning) {
+				console.log("SequenceRenderer.applySequenceStep", view._sequenceIdx, view.getNextSequenceIndex());
+				var nextIdx = view.getNextSequenceIndex();
+				view._sequenceEls[view._sequenceIdx].className = "";
+				view._sequenceEls[nextIdx].className = "current";
+				view._sequenceIdx = nextIdx;
+				view._startSequenceStep();
+			} else {
+				console.log("SequenceRenderer.applySequenceStep", view._sequenceIdx, "[sequence not running]");
+			}
+		});
+	},
+	
+	// _completeSequenceStep_2: function () {
+	// 	this._sequenceIntervalId = -1;
+	// 	if (this._isSequenceRunning) {
+	// 		console.log("SequenceRenderer.applySequenceStep", this._sequenceIdx, this.getNextSequenceIndex());
+	// 		
+	// 		var nextIdx = this.getNextSequenceIndex();
+	// 		this._sequenceEls[this._sequenceIdx].className = "";
+	// 		this._sequenceEls[nextIdx].className = "current";
+	// 		this._sequenceIdx = nextIdx;
+	// 		this._startSequenceStep();
+	// 	} else {
+	// 		console.log("SequenceRenderer.applySequenceStep", this._sequenceIdx, "[sequence not running]");
+	// 	}
+	// },
+	// _startSequenceStep_2: function() {	
+	// 	var nextElPromise = function(resolve, reject) {
+	// 		var nextEl = this._sequenceEls[this.getNextSequenceIndex()];
+	// 		if (nextEl.complete) {
+	// 			console.log("resolve", "complete", nextEl.src);
+	// 			resolve();
+	// 		} else {
+	// 			nextEl.onload = function(ev) {
+	// 				console.log("resolve", ev.type, nextEl.src);
+	// 				resolve.apply(this, arguments);
+	// 			};
+	// 			nextEl.onerror = function(ev) {
+	// 				console.log("reject", ev);
+	// 				reject.apply(this, arguments);
+	// 			};
+	// 		}
+	// 	}.bind(this);
+	// 	
+	// 	var timeoutPromise = function(resolve, reject) {
+	// 		this.updateProgress(this._sequenceIdx, this._sequenceIdx + 1);
+	// 		this._sequenceIntervalId = window.setTimeout(resolve, this._sequenceInterval);
+	// 	}.bind(this);
+	// 	
+	// 	Promise.all([
+	// 		new Promise(nextElPromise),
+	// 		new Promise(timeoutPromise)
+	// 	]).then(
+	// 		this._completeSequenceStep.bind(this)
+	// 	);
+	// },
+	
+	// _startSequenceStep_1 function() {
+	// 	var nextIdx = this.getNextSequenceIndex();
+	// 	var currEl = this._sequenceEls[this._sequenceIdx];
+	// 	var nextEl = this._sequenceEls[nextIdx];
+	// 	
+	// 	var applySequenceStep = function () {
+	// 		currEl.className = "";
+	// 		nextEl.className = "current";
+	// 		this._sequenceIdx = nextIdx;
+	// 		this._startSequenceStep();
+	// 	}.bind(this);
+	// 	
+	// 	this.updateProgress(this._sequenceIdx, this._sequenceIdx + 1);
+	// 	return window.setTimeout(applySequenceStep, this._sequenceInterval);
+	// },
+	
+	/* --------------------------- *
+	 * sequence init
+	 * --------------------------- */
+		
+	createSequenceChildren: function() {
+		// add first image, set it as selected idx
+		this._sequenceEls[0] = this.image;
+		this._sequenceIdx = 0;
+		
+		var buffer = document.createDocumentFragment();
+		for (var i = 1, img; i < this._sequenceSrc.length; i++) {
+			img = this._sequenceEls[i] = this.image.cloneNode();
+			img.className = "";
+			img.src = this._sequenceSrc[i];
+			buffer.appendChild(img);
 		}
-		outgoing.className = "";
-		incoming.className = "current";
-		console.log(this.cid, "SequenceRenderer._onSequenceStep");
+		this.sequence.appendChild(buffer);
+		
+		this.listenTo(this.model, {
+			"selected": this._onModelSelected,
+			"deselected": this._onModelDeselected,
+		});
+		this.model.selected && this._onModelSelected();
 	},
 	
 	/* --------------------------- *
-	 * svg progress display
+	 * progress meter
 	 * --------------------------- */
-	/*
-	createProgressDisplay: function() {
-		var progressEl = this.el.querySelector(".progress-circle");
+	
+	createProgressMeter: function() {
+		var p, el, shape;
+		var stepsNum = this._sequenceSrc.length;
 		
-		var amountShape = progressEl.querySelector("#amount");
-		var stepsShape = progressEl.querySelector("#steps");
+		// TODO: all this should be static
+		// sw: step mark width in px
+		// p = { w: 30, h: 30, s1: 1.5, s2: 1.4 };
+		// p.sw = Math.max(p.s1, p.s2) * 1.5;
+		// p = { w: 24, h: 24, s1: 1.2, s2: 1.1, sw: 3 };
+		// p = { w: 100, h: 100, s1: 5, s2: 4.9, sw: 10 };
+		// for (var prop in p) p[prop] = Math.round(p[prop] * 10 * 10) / 10;
+		// console.log(p);
+		// p.r1 = p.r2 = ((Math.min(p.w, p.h) - Math.max(p.s1, p.s2)) / 2) - 1;
 		
-		var start = 0.75;
-		var stepsWidth = 8;
-		var stepsNum = this.content.children.length;
-
-		var c2 = stepsShape.getAttribute("r") * Math.PI * 2;
-		stepsShape.style.strokeDashoffset = (start) * c2 + stepsWidth/2;
-		stepsShape.style.strokeDasharray = [stepsWidth, (c2 - (stepsNum*stepsWidth))/stepsNum].join(",");
-
-		var clampFloat = function(val) {
-		  if (isNaN(val)) return 0; 
-		  else if (val < 0) return 0;
-		  else if (val > 1) return 1;
-		  else return val;
-		};
-
-		this.updateProgress = function() {
-			var amount = 0.33;
-
-			var c = amountShape.getAttribute("r") * Math.PI * 2;
-			amountShape.style.strokeDashoffset = (start) * c;
-			amountShape.style.strokeDasharray = [amount * c, (1-amount) * c].join(",");
-			
-			progressEl.setAttribute("data-amount", amount);
-		};
+		// p = { w: 24, h: 24, r1: 10, s1: 1.50, r2: 10, s2: 1.50, sw: 2 };
+		// p = { w: 32, h: 32, r1: 13.3, s1: 2, r2: 13.3, s2: 2, sw: 2.7 };
+		// p = { w: 37, h: 37, r1: 16, s1: 2, r2: 16, s2: 1.8, sw: 3 };
+		
+		p = { w: 24, h: 24, s1: 1.51, s2: 0.51, sw: 2.5 };
+		
+		p.r1 = ((Math.min(p.w, p.h) - p.s1) / 2) - 0.5;
+		p.r2 = ((Math.min(p.w, p.h) - p.s2) / 2) - 0.5;
+		// circumferences in px
+		p.c1 = p.r1 * Math.PI * 2;
+		p.c2 = p.r2 * Math.PI * 2;
+		// rotate CCW ( 90 + half a step mark, in degrees ) so that:
+		// the arc starts from the top and step gaps appear centered
+		p.sr = ((p.sw / 2) / p.r1) * (180/Math.PI) - 90;
+		// store params for updates
+		this.amountShapeParams = p;
+		
+		// pass params to svg template, insert
+		this.content.insertAdjacentHTML("beforeend", progressTemplate(p));
+		// get new htmlelement
+		el = this.content.lastElementChild;
+		// el.style.marginLeft = "-100px";
+		
+		shape = el.querySelector("#steps");
+		shape.style.strokeDasharray = [(p.c2 / stepsNum) - p.sw, p.sw];
+		// shape.style.strokeDasharray = [p.sw, (p.c2 / stepsNum) - p.sw];
+		// shape.style.strokeDashoffset = p.sw;
+		
+		shape = el.querySelector("#amount");
+		shape.style.strokeDasharray = [p.c1 - p.sw, p.c1 + p.sw];
+		shape.style.strokeDashoffset = p.c1;
+		this.amountShape = shape;
+		
+		// shape = el.querySelector("#stepsnum-label");
+		// shape.textContent = stepsNum;
+		
+		this.progressLabel = el.querySelector("#step-label");
+		
+		// this.amountShape.addEventListener(transitionEndEvent, function(ev) {
+		// 	console.log(ev.propertyName, ev);
+		// 	if (ev.propertyName == "stroke-dashoffset") {
+		// 		ev.target.style.transition = "none 0s";
+		// 	}
+		// });
+		return el;
 	},
 	
-	updateProgress: function() {},*/
+	updateProgress: function(stepFrom, stepTo) {
+		console.log("SequenceRenderer.updateProgress", Array.prototype.join.call(arguments,","));
+		var s = this.amountShape.style;
+		var p = this.amountShapeParams;
+		var stepsNum = this._sequenceSrc.length;
+		var strokeTx = "stroke-dashoffset " + (this._sequenceStepDur / 1000) + "s linear 0s";
+		
+		var updateImmediately = function () {
+			s.transition = "none 0s";//stroke-dashoffset 0s linear 0s";
+			s.strokeDashoffset = (1 - stepFrom/stepsNum) * p.c1;
+		};
+		var updateAnimated = function () {
+			s.transition = strokeTx;
+			s.strokeDashoffset = (1 - stepTo/stepsNum) * p.c1;
+		};
+		
+		// updateImmediately();
+		// if (stepTo && stepTo > stepFrom) {
+		// 	// window.requestAnimationFrame(updateAnimated);
+		// 	// window.setTimeout(updateAnimated, this._sequenceStepDelay / 2);
+		// 	window.setTimeout(updateAnimated, 1);
+		// }
+		if (stepTo === void 0) {
+			updateImmediately();
+		} else if (stepFrom == 0) {
+			updateImmediately();
+			window.setTimeout(updateAnimated, this._sequenceStepDelay / 2);
+			// window.setTimeout(updateAnimated, 1);
+		} else {
+			updateAnimated();
+		}
+		
+		this.progressLabel.textContent = stepFrom + 1;
+	},
+	
+	/* --------------------------- *
+	 * default image promise
+	 * --------------------------- */
+	
+	createDeferredImage: function(url, target) {
+		var o = loadImage(url, target, this);
+		o.always(function() {
+			this.placeholder.removeAttribute("data-progress");
+			this.off("view:remove", o.cancel);
+		}).then(
+			this._onLoadImageDone,
+			this._onLoadImageError, 
+			this._onLoadImageProgress
+		).then(function(url) {
+			// this.model.set({"prefetched": url});
+			o.isXhr && this.on("view:remove", function() {
+				window.URL.revokeObjectURL(url);
+			});
+		});
+		this.on("view:remove", o.cancel);
+		return o;
+	},
+	
+	_onLoadImageProgress: function (progress) {
+		if (progress == "loadstart") {
+			this.el.classList.remove("idle");
+			this.el.classList.add("pending");
+		} else {
+			this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
+		}
+	},
+	
+	_onLoadImageDone: function (url) {
+		this.el.classList.remove("pending");
+		this.el.classList.add("done");
+	},
+	
+	_onLoadImageError: function (err) {
+		console.error("VideoRenderer.onError: " + err.message, err.ev);
+		this.el.classList.remove("pending");
+		this.el.classList.add("error");
+	},
 });

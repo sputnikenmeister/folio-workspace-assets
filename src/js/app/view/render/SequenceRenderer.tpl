@@ -3,5 +3,5 @@
 	<div class="sequence">
 		<img class="current" alt="<%= name %>" longdesc="#caption-<%= id %>" />
 	</div>
-	<div class="overlay" data-state="user"><span class="label color-invert-fg color-invert-bg">Resume</div></div>
+	<div class="overlay"><span class="label color-fg color-bg">Resume</span></div>
 </div>

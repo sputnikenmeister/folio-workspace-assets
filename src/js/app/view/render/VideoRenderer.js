@@ -106,6 +106,7 @@ module.exports = View.extend({
 		// buffer.appendChild(document.createElement("div"));
 		// buffer.firstElementChild.innerHTML = this.template(this.model.toJSON());
 		
+		this.el.setAttribute("data-state", "user");
 		this.el.innerHTML = this.template(this.model.toJSON());
 		
 		this.placeholder = this.el.querySelector(".placeholder");
@@ -114,9 +115,9 @@ module.exports = View.extend({
 		this.video = this.content.querySelector("video");
 		this.overlay = this.content.querySelector(".overlay");
 		
-		console.log(this.model.id,
-			this.model.attrs()["color"],
-			this.model.attrs()["background-color"]);
+		// console.log(this.model.id,
+		// 	this.model.attrs()["color"],
+		// 	this.model.attrs()["background-color"]);
 			
 		// var pColor = parseColor(this.model.attrs()["color"]);
 		// var pColor = parseColor(this.model.attrs()["background-color"]);
@@ -131,7 +132,7 @@ module.exports = View.extend({
 		// }
 		
 		this.video.setAttribute("preload", "none");
-		this.video.setAttribute("poster", this.model.getImageUrl());
+		this.video.setAttribute("poster", this.model.getThumbUrl());
 		// this.overlay.firstElementChild.textContent = this.video.readyState > 3? "Play":"Wait";
 		
 		if (this.model.attrs()["@video-loop"]) {
@@ -267,10 +268,10 @@ module.exports = View.extend({
 	},
 	
 	_onMediaEvent: function(ev) {
-		console.log(this.model.id, ev.type, _.pick(this.video, "readyState", "paused", "ended"));
-			//{ readyState: this.video.readyState, paused: this.video.paused, ended: this.video.ended});
-		// this.overlay.setAttribute("data-state", ev.type);
-		this.overlay.classList.toggle("playing", ev.type == "timeupdate" || ev.type == "playing");
+		// console.log(this.model.id, ev.type, _.pick(this.video, "readyState", "paused", "ended"));
+		//{ readyState: this.video.readyState, paused: this.video.paused, ended: this.video.ended});
+		// this.overlay.classList.toggle("playing", ev.type == "timeupdate" || ev.type == "playing");
+		
 		switch (ev.type) {
 			case "timeupdate":
 				break;
@@ -284,31 +285,19 @@ module.exports = View.extend({
 			case "ended":
 				// NOTE: "ended" event is not triggered when the "loop" property is set
 				this.overlay.firstElementChild.textContent = "Replay";
-				this.toggleMediaPlayback(false);
+				// this.toggleMediaPlayback(false);
 				break;
 			default:
-				
 		}
+		
+		var stateAttrVal = "network";
 		if (this.video.paused) {
-			this.overlay.setAttribute("data-state", "user");
+			stateAttrVal = "user";
 		} else if (ev.type == "timeupdate" || ev.type == "playing") {
-			this.overlay.setAttribute("data-state", "media");
+			stateAttrVal = "media";
 		} else {
-			this.overlay.setAttribute("data-state", "network");
 		}
-		// switch (ev.type) {
-		// 	case "ended":
-		// 	case "pause":
-		// 		this.overlay.setAttribute("data-state", "user");
-		// 		break;
-		// 	case "playing":
-		// 	case "timeupdate":
-		// 		this.overlay.setAttribute("data-state", "media");
-		// 		break;
-		// 	default:
-		// 		this.overlay.setAttribute("data-state", "network");
-		// 		
-		// }
+		this.el.setAttribute("data-state", stateAttrVal);
 	},
 
 	toggleMediaPlayback: function(newPlayState) {
@@ -360,42 +349,7 @@ module.exports = View.extend({
 	},
 	
 	_onSiblingSelect: function() {
-		// this.createImagePromise().request();
 		this.video.removeAttribute("preload");
 	},
 	
-	/* --------------------------- *
-	 * media loading
-	 * --------------------------- */
-	
-	/*createImagePromise: function() {
-		var onLoad, onError, onProgress, doAlways, promise;
-		
-		onProgress = function (progress, source, ev) {
-			if (progress == "loadstart") {
-				this.$el.removeClass("idle").addClass("pending");
-			} else {
-				this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-			}
-		};
-		onProgress = _.throttle(onProgress, 100, {leading: true, trailing: true});
-		onError = function (err, source, ev) {
-			console.error("VideoRenderer.onError: " + err.message, arguments);
-			this.$el.removeClass("pending").addClass("error");
-		};
-		onLoad = function (url, source, ev) {
-			this.model.set({"prefetched": url});
-			this.$el.removeClass("pending").addClass("done");
-		};
-		doAlways = function() {
-			this.placeholder.removeAttribute("data-progress");
-			this.off("view:remove", promise.destroy);
-		};
-		
-		promise = loadImage(this.model.getImageUrl(), this.media, this);
-		promise.then(onLoad, onError, onProgress).always(doAlways);
-		this.on("view:remove", promise.destroy);
-		
-		return promise;
-	},*/
 });

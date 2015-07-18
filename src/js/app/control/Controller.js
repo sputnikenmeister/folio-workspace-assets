@@ -117,7 +117,7 @@ var Controller = Backbone.Router.extend({
 		if (bundle) {
 			media = bundle.get("media").selected;
 		}
-		//_.defer(_.bind(this.navigate, this), this._getLocation(bundle, media), {trigger: false});
+		//_.defer(this.navigate.bind(this), this._getLocation(bundle, media), {trigger: false});
 		this.navigate(this._getLocation(bundle, media), {trigger: false});
 	},
 	
@@ -185,7 +185,7 @@ var Controller = Backbone.Router.extend({
 		
 		var lastBundle = bundles.selected;
 		var lastMedia = lastBundle? lastBundle.get("media").selected : void 0;
-		console.log("----");
+		console.log("---- ");
 		console.log("---- Controller._changeSelection " +
 			" [bundle: " + (lastBundle? lastBundle.cid : "none") +
 			" => " + (bundle? bundle.cid : "none") +
@@ -236,7 +236,7 @@ var Controller = Backbone.Router.extend({
 	},
 
 	/* --------------------------- *
-	 * per-bundle styles
+	 * per-bundle s
 	 * --------------------------- */
 
 	initializeBundleStyles: function() {
@@ -250,13 +250,12 @@ var Controller = Backbone.Router.extend({
 		this.addClassProvider(classProvider);
 
 		var createDerivedStyles = function() {
-			var bodyStyles = ["background", "background-color", "color"];
-			// var fontSmoothingStyles = ["-moz-osx-font-smoothing", "-webkit-font-smoothing"];
-			var carouselMediaStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
-			// var placeholderStyles = ["border-radius"];
-			var attrs, styles, bodySelector, carouselSelector;
-			var fgColor, bgColor, bgLum, fgLum, isLightOverDark, tmpVal;
-			var bgDefault, fgDefault;
+			var s, attrs, tmpVal;
+			var fgColor, bgColor, bgLum, fgLum, isLightOverDark;
+			var bodySelector, bodyStyles = ["background", "background-color", "color"];
+			var bgDefault, fgDefault, fgColorHex, bgColorHex;
+			var revSelector, revFgColorHex, revBgColorHex;
+			var carouselSelector, carouselMediaStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
 			
 			bgDefault = new Color(Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
 			fgDefault = new Color(Styles.getCSSProperty("body", "color") || "hsl(47, 5%, 15%)");
@@ -266,59 +265,107 @@ var Controller = Backbone.Router.extend({
 				fgColor = attrs["color"]? new Color(attrs["color"]) : fgDefault;
 				bgColor = attrs["background-color"]? new Color(attrs["background-color"]) : bgDefault;
 				//bgColor = bgDefault; fgColor = fgDefault;
+				fgColorHex = fgColor.toHexString();
+				bgColorHex = bgColor.toHexString();
 				bgLum = bgColor.lightness();
 				fgLum = fgColor.lightness();
 				isLightOverDark = bgLum < fgLum;
 				
+				// - - - - - - - - - - - - - - - - 
 				// per-bundle body rules
+				// - - - - - - - - - - - - - - - - 
 				bodySelector = "body." + toBodyClass(bundle);
-				styles = _.pick(attrs, bodyStyles);
-				styles["-webkit-font-smoothing"] = (isLightOverDark? "antialiased" : "auto");
+				s = _.pick(attrs, bodyStyles);
+				s["-webkit-font-smoothing"] = (isLightOverDark? "antialiased" : "auto");
 				/* NOTE: In Firefox 'body { -moz-osx-font-smoothing: grayscale; }'
 				/* works both in light over dark and dark over light, hardcoded in _base.scss */
-				//styles["-moz-osx-font-smoothing"] = (isLightOverDark? "grayscale" : "auto");
-				Styles.createCSSRule(bodySelector, styles);
+				//s["-moz-osx-font-smoothing"] = (isLightOverDark? "grayscale" : "auto");
+				Styles.createCSSRule(bodySelector, s);
 				
-				styles = {};
-				styles["color"] = fgColor.lightness(fgLum * 0.5 + bgLum * 0.5).toHexString();
-				styles["border-color"] = fgColor.lightness(fgLum * 0.3 + bgLum * 0.7).toHexString();
-				Styles.createCSSRule(bodySelector + " .mutable-faded", styles);
+				s = {};
+				s["color"] = fgColor.lightness(fgLum * 0.5 + bgLum * 0.5).toHexString();
+				s["border-color"] = fgColor.lightness(fgLum * 0.3 + bgLum * 0.7).toHexString();
+				Styles.createCSSRule(bodySelector + " .mutable-faded", s);
 				
-				// inverted fg/bg (slightly muted)
-				styles = {};
-				styles["color"] = bgColor.lightness(bgLum * 0.9 + fgLum * 0.1).toHexString();
-				styles["border-color"] = bgColor.lightness(bgLum * 0.7 + fgLum * 0.3).toHexString();
-				Styles.createCSSRule(bodySelector + " .color-invert-fg", styles);
-				styles = {};
-				styles["background-color"] = fgColor.lightness(fgLum * 0.9 + bgLum * 0.1).toHexString();
-				Styles.createCSSRule(bodySelector + " .color-invert-bg", styles);
+				// inverted fg/bg colors (slightly muted)
+				revFgColorHex = bgColor.lightness(bgLum * 0.9 + fgLum * 0.1).toHexString();
+				revBgColorHex = fgColor.lightness(fgLum * 0.9 + bgLum * 0.1).toHexString();
+				// var lineColorHex = bgColor.lightness(bgLum * 0.7 + fgLum * 0.3).toHexString();
+				revSelector = bodySelector + " .color-reverse";
 				
-				// styles = {};
-				// styles["background-color"] = "transparent";
-				// styles["background"] = "linear-gradient(to bottom, " +
-				// 		bgColor.alpha(0.11).toRgbaString() + " 33%, " +
-				// 		bgColor.alpha(0.66).toRgbaString() + " 66%)";
-				// Styles.createCSSRule(carouselSelector + " .media-item[data-state=\"user\"] .gradient", styles);
+				// .color-fg .color-bg
+				// - - - - - - - - - - - - - - - - 
+				s = { "color" : fgColorHex };
+				Styles.createCSSRule(bodySelector + " .color-fg", s);
+				s = { "background-color": bgColorHex };
+				Styles.createCSSRule(bodySelector + " .color-bg", s);
 				
-				// per-bundle .carousel .media-item rules
-				carouselSelector = ".carousel." + bundle.get("handle");
-				styles = _.pick(attrs, carouselMediaStyles);//, "background-color"]);
-				Styles.createCSSRule(carouselSelector + " .media-item .content", styles);
+				// inverted html
+				s = { "color" : revFgColorHex };
+				s["-webkit-font-smoothing"] = (isLightOverDark? "auto" : "antialiased");
+				Styles.createCSSRule(revSelector + " .color-fg", s);
+				Styles.createCSSRule(revSelector + ".color-fg", s);
+				s = { "background-color" : revBgColorHex };
+				Styles.createCSSRule(revSelector + " .color-bg", s);
+				Styles.createCSSRule(revSelector + ".color-bg", s);
 				
-				// text color luminosity is inverse from body, apply oposite rendering mode
-				styles = {};
-				styles["-webkit-font-smoothing"] = (isLightOverDark? "auto" : "antialiased");
-				styles["background-color"] = bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString();
-				styles["color"] = bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString();
-				("border-radius" in attrs) && (styles["border-radius"] = attrs["border-radius"]);
-				Styles.createCSSRule(carouselSelector + " .media-item .placeholder", styles);
+				// .color-stroke .color-fill (SVG)
+				// - - - - - - - - - - - - - - - - 
+				s = { "stroke": fgColorHex };
+				Styles.createCSSRule(bodySelector + " .color-stroke", s);
+				s = { "fill": bgColorHex };
+				Styles.createCSSRule(bodySelector + " .color-fill", s);
+				// svg inverted fill/stroke
+				s = { "stroke": bgColorHex };
+				Styles.createCSSRule(revSelector + " .color-stroke", s);
+				Styles.createCSSRule(revSelector + ".color-stroke", s);
+				s = { "fill": fgColorHex };
+				Styles.createCSSRule(revSelector + " .color-fill", s);
+				Styles.createCSSRule(revSelector + ".color-fill", s);
 				
-				styles = {};
+				// .color-overclip
+				// - - - - - - - - - - - - - - - - 
+				s = {};
 				// Darken if dark, lighten if light, then clamp value to 0-1
 				tmpVal = Math.min(Math.max(bgLum * (isLightOverDark? 0.95 : 1.05), 0), 1); 
-				// tmpVal = fgLum * 0.050 + bgLum * 0.950;
-				styles["background-color"] = bgColor.lightness(tmpVal).alpha(0.66).toRgbaString();
-				Styles.createCSSRule(carouselSelector + " .video-renderer.selected .overlay[data-state=\"user\"]", styles);
+				s["background-color"] = bgColor.lightness(tmpVal).alpha(0.5).toRgbaString();
+				Styles.createCSSRule(bodySelector + " .color-overclip", s);
+				s = {};
+				tmpVal = Math.min(Math.max(fgLum * (isLightOverDark? 0.95 : 1.05), 0), 1); 
+				s["background-color"] = fgColor.lightness(tmpVal).alpha(0.5).toRgbaString();
+				Styles.createCSSRule(revSelector + " .color-overclip", s);
+				Styles.createCSSRule(revSelector + ".color-overclip", s);
+				
+				// .color-gradient
+				// - - - - - - - - - - - - - - - - 
+				s = {};
+				s["background-color"] = "transparent";
+				s["background"] = "linear-gradient(to bottom, " +
+						bgColor.alpha(0.00).toRgbaString() + " 0%, " +
+						bgColor.alpha(0.11).toRgbaString() + " 100%)";
+				Styles.createCSSRule(bodySelector + " .color-gradient", s);
+				s = {};
+				s["background-color"] = "transparent";
+				s["background"] = "linear-gradient(to bottom, " +
+						fgColor.alpha(0.00).toRgbaString() + " 0%, " +
+						fgColor.alpha(0.11).toRgbaString() + " 100%)";
+				Styles.createCSSRule(revSelector + " .color-gradient", s);
+				Styles.createCSSRule(revSelector + ".color-gradient", s);
+				
+				// - - - - - - - - - - - - - - - - 
+				// per-bundle .carousel .media-item rules
+				// - - - - - - - - - - - - - - - - 
+				carouselSelector = ".carousel." + bundle.get("handle");
+				s = _.pick(attrs, carouselMediaStyles);//, "background-color"]);
+				Styles.createCSSRule(carouselSelector + " .media-item .content", s);
+				
+				// text color luminosity is inverse from body, apply oposite rendering mode
+				s = {};
+				s["-webkit-font-smoothing"] = (isLightOverDark? "auto" : "antialiased");
+				s["background-color"] = bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString();
+				s["color"] = bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString();
+				("border-radius" in attrs) && (s["border-radius"] = attrs["border-radius"]);
+				Styles.createCSSRule(carouselSelector + " .media-item .placeholder", s);
 			});
 		};
 		if (document.readyState == "complete") {
@@ -336,8 +383,8 @@ var Controller = Backbone.Router.extend({
 
 	inilializeStateHandlers: function() {
 		this.addClassProvider(function(classes, bundle, media) {
-			classes.push(bundle? "with-bundle":"without-bundle");
-			bundle && classes.push(media? "with-media":"without-media");
+			classes.push(bundle? "with-bundle" : "without-bundle");
+			bundle && classes.push(media? "with-media" : "without-media");
 		});
 	},
 

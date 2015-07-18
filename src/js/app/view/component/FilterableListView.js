@@ -245,7 +245,7 @@ var FilterableListView = DeferredView.extend({
 		if (force || collapsed !== this._collapsed) {
 			this._collapsed = collapsed;
 			// this.requestRender("collapsed");
-			this.requestRender("collapsed", _.bind(this.renderCollapsed, this, collapsed));
+			this.requestRender("collapsed", this.renderCollapsed.bind(this, collapsed));
 		}
 	},
 	getCollapsed: function () {
@@ -274,7 +274,7 @@ var FilterableListView = DeferredView.extend({
 		if (force || item !== this._selectedItem) {
 			var oldVal = this._selectedItem;
 			this._selectedItem = item;
-			this.requestRender("selection", _.bind(this.renderSelection, this, item, oldVal));
+			this.requestRender("selection", this.renderSelection.bind(this, item, oldVal));
 		}
 	},
 
@@ -298,7 +298,7 @@ var FilterableListView = DeferredView.extend({
 		if (force || filter !== this._filter) {
 			var oldVal = this._filter;
 			this._filter = filter;
-			this.requestRender("filterBy", _.bind(this.renderFilterBy, this, filter, oldVal));
+			this.requestRender("filterBy", this.renderFilterBy.bind(this, filter, oldVal));
 		}
 	},
 	
