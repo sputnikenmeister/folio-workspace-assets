@@ -15,12 +15,12 @@ var Deferred = $.Deferred;
 
 /** @type {module:app/control/Globals} */
 var Globals = require("./Globals");
-/** @type {module:app/helper/StyleHelper} */
-var Styles = require("../helper/StyleHelper");
+/** @type {module:utils/StyleHelper} */
+var Styles = require("../../utils/StyleHelper");
 /** @type {module:app/utils/debug/traceArgs} */
-var traceArgs = require("../utils/debug/traceArgs");
+var traceArgs = require("../../utils/debug/traceArgs");
 /** @type {module:app/utils/debug/traceArgs} */
-var stripTags = require("../utils/strings/stripTags");
+var stripTags = require("../../utils/strings/stripTags");
 
 /** @type {module:app/model/collection/TypeCollection} */
 var types = require("../model/collection/TypeCollection");
@@ -66,8 +66,8 @@ var Controller = Backbone.Router.extend({
 	},
 
 	/* ---------------------------
-	 * Document body classes
-	 * --------------------------- */
+	/* Document body classes
+	/* --------------------------- */
 
 	_applyClassProviders: function(bundle, media) {
 		var classes = [this._initialBodyClasses];
@@ -82,8 +82,8 @@ var Controller = Backbone.Router.extend({
 	},
 
 	/* ---------------------------
-	 * Public command methods
-	 * --------------------------- */
+	/* Public command methods
+	/* --------------------------- */
 
 	selectMedia: function (media) {
 		var bundle = media.get("bundle");
@@ -141,8 +141,8 @@ var Controller = Backbone.Router.extend({
 	},
 	
 	/* --------------------------- *
-	 * Router handlers (browser address changes)
-	 * --------------------------- */
+	/* Router handlers (browser address changes)
+	/* --------------------------- */
 	
 	toBundleItem: function (bundleHandle, mediaIndex) {
 		var bundle, media;
@@ -164,18 +164,18 @@ var Controller = Backbone.Router.extend({
 	},
 	
 	/* -------------------------------
-	 * Select Bundle/media
-	 * ------------------------------- */
+	/* Select Bundle/media
+	/* ------------------------------- */
 	
 	/*
-	 * NOTE: Selection order
-	 * - Apply media selection to *incoming bundle*, as not to trigger
-	 *	unneccesary events on an outgoing bundle. Outgoing bundle media selection
-	 *	remains untouched.
-	 * - Apply media selection *before* selecting the incoming bundle. Views
-	 *	normally listen to the selected bundle only, so if the bundle is changing,
-	 *	they will not be listening to media selection changes yet.
-	 */
+	/* NOTE: Selection order
+	/* - Apply media selection to *incoming bundle*, as not to trigger
+	/*	unneccesary events on an outgoing bundle. Outgoing bundle media selection
+	/*	remains untouched.
+	/* - Apply media selection *before* selecting the incoming bundle. Views
+	/*	normally listen to the selected bundle only, so if the bundle is changing,
+	/*	they will not be listening to media selection changes yet.
+	/*/
 	/* Select Bundle/media */
 	_changeSelection: function (bundle, media) {
 		// this._lastBundle = this._currentBundle;
@@ -215,8 +215,8 @@ var Controller = Backbone.Router.extend({
 	},
 	
 	/* --------------------------- *
-	 * browser title
-	 * --------------------------- */
+	/* browser title
+	/* --------------------------- */
 	
 	initializeBrowserTitle: function() {
 		var handlers = {
@@ -236,8 +236,8 @@ var Controller = Backbone.Router.extend({
 	},
 
 	/* --------------------------- *
-	 * per-bundle s
-	 * --------------------------- */
+	/* per-bundle s
+	/* --------------------------- */
 
 	initializeBundleStyles: function() {
 		var toBodyClass = function (bundle) {
@@ -378,8 +378,8 @@ var Controller = Backbone.Router.extend({
 	},
 
 	/* --------------------------- *
-	 * state handlers
-	 * --------------------------- */
+	/* state handlers
+	/* --------------------------- */
 
 	inilializeStateHandlers: function() {
 		this.addClassProvider(function(classes, bundle, media) {

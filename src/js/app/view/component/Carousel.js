@@ -17,7 +17,7 @@ var Container = require("backbone.babysitter");
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
 /** @type {module:app/utils/event/addTransitionEndCommand} */
-//var addTransitionCallback = require("../../utils/event/addTransitionCallback");
+//var addTransitionCallback = require("../../../utils/event/addTransitionCallback");
 
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");

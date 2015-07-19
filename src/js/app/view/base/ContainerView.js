@@ -13,8 +13,8 @@ var _ = require("underscore");
 var Globals = require("../../control/Globals");
 /** @type {module:app/view/base/View} */
 var View = require("./View");
-/** @type {module:app/helper/TransformHelper} */
-var TransformHelper = require("../../helper/TransformHelper");
+/** @type {module:utils/TransformHelper} */
+var TransformHelper = require("../../../utils/TransformHelper");
 /** @type {module:app/control/TouchManager} */
 var TouchManager = require("../../control/TouchManager");
 

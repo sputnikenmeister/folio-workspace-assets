@@ -11,7 +11,7 @@ var TransformItem = require("./TransformItem");
 /** @type {module:app/utils/debug/traceElement} */
 var traceElt = require("../utils/debug/traceElement");
 
-require("../../shims/requestAnimationFrame");
+require("../shims/requestAnimationFrame");
 
 var idSeed = 0;
 var cidSeed = 100;
@@ -91,11 +91,11 @@ TransformHelper.prototype = {
 	},
 
 	/* --------------------------------
-	 * public
-	 * -------------------------------- */
+	/* public
+	/* -------------------------------- */
 
 	/* public: capture
-	 * - - - - - - - - - - - - - - - - */
+	/* - - - - - - - - - - - - - - - - */
 
 	capture: function() {
 		this._invoke("capture", arguments);
@@ -116,7 +116,7 @@ TransformHelper.prototype = {
 	},
 
 	/* public: offset
-	 * - - - - - - - - - - - - - - - - */
+	/* - - - - - - - - - - - - - - - - */
 
 	offset: function(x, y){
 		this._invoke("offset", arguments, 2);
@@ -137,7 +137,7 @@ TransformHelper.prototype = {
 	},
 
 	/* public: transitions
-	 * - - - - - - - - - - - - - - - - */
+	/* - - - - - - - - - - - - - - - - */
 
 	runTransition: function(transition) {
 		this._invoke("runTransition", arguments, 1);
@@ -162,8 +162,8 @@ TransformHelper.prototype = {
 	},
 
 	/* -------------------------------
-	 * private utils
-	 * ------------------------------- */
+	/* private utils
+	/* ------------------------------- */
 
 	_invoke: function(funcName, args, startIndex) {
 		var i, j, el, o;
@@ -188,8 +188,8 @@ TransformHelper.prototype = {
 	},
 
 	/* -------------------------------
-	 * validation
-	 * ------------------------------- */
+	/* validation
+	/* ------------------------------- */
 
 	validate: function () {
 		if (this._validateCallbackId !== -1) {

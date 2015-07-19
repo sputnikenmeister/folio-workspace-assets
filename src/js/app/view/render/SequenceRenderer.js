@@ -10,46 +10,54 @@ var Backbone = require("backbone");
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
 /** @type {module:app/model/item/MediaItem} */
-var MediaItem = require("../../model/item/MediaItem");
+// var MediaItem = require("../../model/item/MediaItem");
 /** @type {module:app/model/SelectableCollection} */
 var SelectableCollection = require("../../model/SelectableCollection");
-/** @type {module:app/view/base/View} */
-var View = require("../base/View");
 
+/** @type {module:app/view/base/View} */
+// var View = require("../base/View");
+/** @type {module:app/view/base/ViewError} */
+var ViewError = require("../base/ViewError");
+/** @type {module:app/view/render/MediaRenderer} */
+var MediaRenderer = require("./MediaRenderer");
+
+/** @type {module:app/view/promise/whenSelectionIsContiguous} */
+var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
+/** @type {module:app/view/promise/whenTransitionEnds} */
+var whenTransitionEnds = require("../promise/whenTransitionEnds");
 /** @type {module:app/utils/net/loadImage} */
-var loadImage = require("../../utils/net/loadImage");
-// var loadImageXHR = require("../../utils/net/loadImageXHR");
-// var loadImageDOM = require("../../utils/net/loadImageDOM");
+var loadImage = require("../../../utils/net/loadImage");
+// var loadImageXHR = require("../../../utils/net/loadImageXHR");
+// var loadImageDOM = require("../../../utils/net/loadImageDOM");
 
 /** @type {Function} */
 var viewTemplate = require( "./SequenceRenderer.tpl" );
 /** @type {Function} */
 var progressTemplate = require( "../template/CircleProgressMeter.svg.tpl" );
 
-var transitionEndEvent = require("../../utils/event/transitionEnd");
-
 /**
  * @constructor
  * @type {module:app/view/render/SequenceRenderer}
  */
-module.exports = View.extend({
+module.exports = MediaRenderer.extend({
 	
 	/** @type {string} */
-	tagName: "div",
-	/** @type {string} */
-	className: "carousel-item media-item sequence-renderer idle",
-	/** @type {module:app/model/MediaItem} */
-	model: MediaItem,
+	className: function() { 
+		return MediaRenderer.prototype.className + " sequence-renderer";
+	},
 	/** @type {Function} */
 	template: viewTemplate,
 	
 	/** @override */
 	initialize: function (opts) {
-		_.bindAll(this, 
+		// MediaRenderer.prototype.initialize.apply(this, arguments);
+		_.bindAll(this,
+			"_onContentClick",
 			"createSequenceChildren",
-			"startSequence", "stopSequence",
-			"_startSequenceStep", "_completeSequenceStep",
-			"_onContentClick"
+			"startSequence",
+			"stopSequence",
+			"_startSequenceStep",
+			"_cancelSequenceStep"
 		);
 		this._onLoadImageProgress = _.throttle(this._onLoadImageProgress.bind(this), 100,
 					{leading: true, trailing: true});
@@ -68,12 +76,12 @@ module.exports = View.extend({
 		// this.sources = new SelectableCollection(srcVal);
 		
 		this.createChildren();
-		this.initializeMediaAllocation();
+		this.initializeAsync();
 	},
 	
 	/* --------------------------- *
-	 * children/layout
-	 * --------------------------- */
+	/* children/layout
+	/* --------------------------- */
 	
 	createChildren: function() {
 		var o = null;
@@ -150,112 +158,51 @@ module.exports = View.extend({
 		return this;
 	},
 	
-	/** @override */
-	setEnabled: function(enabled) {
-		this.model.selected && this.toggleMediaPlayback(enabled);
-	},
-	
 	/* --------------------------- *
-	 * media init
-	 * --------------------------- */
+	/* initializeAsync
+	/* --------------------------- */
 	
-	initializeMediaAllocation: function() {
-		this._isMediaRequested = false;
-		this.listenTo(this.model.collection,
-			"select:one select:none", this._validateMediaAllocation);
-		this._validateMediaAllocation();
-	},
-	
-	keepAllocatedMedia: function() {
-		this.stopListening(this.model.collection, "select:one select:none", this._validateMediaAllocation);
-	},
-	
-	_getSelectionDistance: function() {
-		return Math.abs(this.model.collection.indexOf(this.model) - this.model.collection.selectedIndex);
-	},
-	
-	_validateMediaAllocation: function() {
-		var d = this._getSelectionDistance();
-		if (d < 2 && !this._isMediaRequested) {
-			this._isMediaRequested = true;
-			this.allocateMediaResources();
-		} else if (d > 1 && this._isMediaRequested) {
-			this._isMediaRequested = false;
-			this.deallocateMediaResources();
-		}
+	initializeAsync: function() {
+		whenSelectionIsContiguous(this).then(
+			function(view) {
+				if (view.model.selected) {
+					return view;
+				} else {
+					return whenTransitionEnds(view, view.el, "transform");
+				}
+			}
+		).then(
+			function(view) {
+				return this.createDeferredImage(this.model.getImageUrl(), this.image).promise();
+			}.bind(this)
+		).then(
+			function(url) {
+				console.log("SequenceRenderer", this.model.cid, url);
+				this.createSequenceChildren();
+				this.addSelectionListeners();
+			}.bind(this)
+		).catch(function(err) {
+			if (err instanceof ViewError) {
+				console.log(err.view.model.cid, "SequenceRenderer: " + err.message);
+			} else {
+				console.error("SequenceRenderer promise error", err);
+			}
+		});
 	},
 	
 	/* ---------------------------
-	 * model event handlers
-	 * --------------------------- */
+	/* MediaRenderer overrides
+	/* --------------------------- */
 	
+	/** @override */
 	_onModelSelected: function() {
 		this.toggleMediaPlayback(true);
-		this.content.addEventListener("click", this._onContentClick, false);
-		this.listenTo(this, "view:remove", this._removeClickHandler);
+		return MediaRenderer.prototype._onModelSelected.apply(this, arguments);
+		// this.content.addEventListener("click", this._onContentClick, false);
+		// this.listenTo(this, "view:remove", this._removeClickHandler);
 	},
 	
-	_onModelDeselected: function() {
-		this.toggleMediaPlayback(false);
-		this.content.removeEventListener("click", this._onContentClick, false);
-		this.stopListening(this, "view:remove", this._removeClickHandler);
-	},
-	
-	_removeClickHandler: function() {
-		this.content.removeEventListener("click", this._onContentClick, false);
-	},
-	
-	/* ---------------------------
-	 * dom event handlers
-	 * --------------------------- */
-	
-	_preventDragstartDefault: function (ev) {
-		ev.defaultPrevented || ev.preventDefault();
-	},
-	
-	_onContentClick: function(ev) {
-		var sev = ev.originalEvent || ev;
-		console.log("[VideoRenderer] " + sev.type, sev.defaultPrevented, sev.timeStamp, sev);
-		ev.defaultPrevented || this.toggleMediaPlayback();
-	},
-	
-	/* --------------------------- *
-	 * MediaRenderer impl
-	 * --------------------------- */
-	
-	allocateMediaResources: function() {
-		// NOTE: allocating once
-		this.keepAllocatedMedia();
-		
-		var whenSelectTransitionEnds = function() {
-			if (!this.model.selected) {
-				return this.whenTransitionEnds(this.el, "transform", Globals.TRANSITION_DELAY * 2);
-			}
-		}.bind(this);
-		
-		Promise.resolve(whenSelectTransitionEnds)
-			.then(this.createDeferredImage(this.model.getImageUrl(), this.image).promise)
-			.then(this.createSequenceChildren);
-			
-		// .then(function() {
-		// 	this.model.selected && this.startSequence();
-		// }.bind(this));
-			
-		// if (this.model.selected) {
-		// 	deferredImage.promise()
-		// 		.then(this.createSequenceChildren)
-		// 		.then(this.startSequence);
-		// } else {
-		// 	this.getTransitionPromise2(this.el, "transform", Globals.TRANSITION_DELAY * 2)
-		// 		.then(deferredImage.promise)
-		// 		.then(this.createSequenceChildren);
-		// }
-	},
-	
-	deallocateMediaResources: function() {
-		// abstract
-	},
-	
+	/** @override */
 	toggleMediaPlayback: function(newPlayState) {
 		if (!this.isSequenceReady() ||
 				(_.isBoolean(newPlayState) && newPlayState === this.isSequenceRunning())) {
@@ -271,8 +218,8 @@ module.exports = View.extend({
 	},
 	
 	/* --------------------------- *
-	 * sequence private
-	 * --------------------------- */
+	/* sequence private
+	/* --------------------------- */
 	
 	isSequenceReady: function() {
 		return this._sequenceIdx != -1;
@@ -293,16 +240,10 @@ module.exports = View.extend({
 	startSequence: function() {
 		if (!this._isSequenceRunning) {
 			this._isSequenceRunning = true;
-			
 			this.listenTo(this, "view:remove", this.stopSequence);
-			// this.overlay.setAttribute("data-state", "media");
 			this.el.setAttribute("data-state", "media");
 			
 			this._startSequenceStep();
-			// this._sequenceIntervalId = this._sequenceStep();
-			// this.updateProgress(this._sequenceIdx);
-			// this.updateProgress(this._sequenceIdx, this._sequenceIdx + 1);
-			// this._sequenceIntervalId = window.setInterval(this._sequenceStep, this._sequenceInterval);
 			console.log(this.cid, "SequenceRenderer.startSequence", this._sequenceIntervalId);
 		}
 	},
@@ -310,16 +251,10 @@ module.exports = View.extend({
 	stopSequence: function() {
 		if (this._isSequenceRunning) {
 			this._isSequenceRunning = false;
-			
 			this.stopListening(this, "view:remove", this.stopSequence);
-			// this.overlay.setAttribute("data-state", "user");
 			this.el.setAttribute("data-state", "user");
 			
 			this._cancelSequenceStep();
-			// this.updateProgress(this._sequenceIdx);
-			// window.clearInterval(this._sequenceIntervalId);
-			// this._sequenceIntervalId = -1;
-			
 			console.log(this.cid, "SequenceRenderer.stopSequence", this._sequenceIntervalId);
 		}
 	},
@@ -328,20 +263,6 @@ module.exports = View.extend({
 		this.updateProgress(this._sequenceIdx);
 		this._sequenceIntervalId && window.clearTimeout(this._sequenceIntervalId) || (this._sequenceIntervalId = -1);
 	},
-	
-	// _completeSequenceStep: function () {
-	// 	// this._sequenceIntervalId = -1;
-	// 	if (this._isSequenceRunning) {
-	// 		console.log("SequenceRenderer.applySequenceStep", this._sequenceIdx, this.getNextSequenceIndex());
-	// 		var nextIdx = this.getNextSequenceIndex();
-	// 		this._sequenceEls[this._sequenceIdx].className = "";
-	// 		this._sequenceEls[nextIdx].className = "current";
-	// 		this._sequenceIdx = nextIdx;
-	// 		this._startSequenceStep();
-	// 	} else {
-	// 		console.log("SequenceRenderer.applySequenceStep", this._sequenceIdx, "[sequence not running]");
-	// 	}
-	// },
 	
 	_startSequenceStep: function() {
 		var view = this;
@@ -381,70 +302,9 @@ module.exports = View.extend({
 		});
 	},
 	
-	// _completeSequenceStep_2: function () {
-	// 	this._sequenceIntervalId = -1;
-	// 	if (this._isSequenceRunning) {
-	// 		console.log("SequenceRenderer.applySequenceStep", this._sequenceIdx, this.getNextSequenceIndex());
-	// 		
-	// 		var nextIdx = this.getNextSequenceIndex();
-	// 		this._sequenceEls[this._sequenceIdx].className = "";
-	// 		this._sequenceEls[nextIdx].className = "current";
-	// 		this._sequenceIdx = nextIdx;
-	// 		this._startSequenceStep();
-	// 	} else {
-	// 		console.log("SequenceRenderer.applySequenceStep", this._sequenceIdx, "[sequence not running]");
-	// 	}
-	// },
-	// _startSequenceStep_2: function() {	
-	// 	var nextElPromise = function(resolve, reject) {
-	// 		var nextEl = this._sequenceEls[this.getNextSequenceIndex()];
-	// 		if (nextEl.complete) {
-	// 			console.log("resolve", "complete", nextEl.src);
-	// 			resolve();
-	// 		} else {
-	// 			nextEl.onload = function(ev) {
-	// 				console.log("resolve", ev.type, nextEl.src);
-	// 				resolve.apply(this, arguments);
-	// 			};
-	// 			nextEl.onerror = function(ev) {
-	// 				console.log("reject", ev);
-	// 				reject.apply(this, arguments);
-	// 			};
-	// 		}
-	// 	}.bind(this);
-	// 	
-	// 	var timeoutPromise = function(resolve, reject) {
-	// 		this.updateProgress(this._sequenceIdx, this._sequenceIdx + 1);
-	// 		this._sequenceIntervalId = window.setTimeout(resolve, this._sequenceInterval);
-	// 	}.bind(this);
-	// 	
-	// 	Promise.all([
-	// 		new Promise(nextElPromise),
-	// 		new Promise(timeoutPromise)
-	// 	]).then(
-	// 		this._completeSequenceStep.bind(this)
-	// 	);
-	// },
-	
-	// _startSequenceStep_1 function() {
-	// 	var nextIdx = this.getNextSequenceIndex();
-	// 	var currEl = this._sequenceEls[this._sequenceIdx];
-	// 	var nextEl = this._sequenceEls[nextIdx];
-	// 	
-	// 	var applySequenceStep = function () {
-	// 		currEl.className = "";
-	// 		nextEl.className = "current";
-	// 		this._sequenceIdx = nextIdx;
-	// 		this._startSequenceStep();
-	// 	}.bind(this);
-	// 	
-	// 	this.updateProgress(this._sequenceIdx, this._sequenceIdx + 1);
-	// 	return window.setTimeout(applySequenceStep, this._sequenceInterval);
-	// },
-	
 	/* --------------------------- *
-	 * sequence init
-	 * --------------------------- */
+	/* sequence init
+	/* --------------------------- */
 		
 	createSequenceChildren: function() {
 		// add first image, set it as selected idx
@@ -459,17 +319,13 @@ module.exports = View.extend({
 			buffer.appendChild(img);
 		}
 		this.sequence.appendChild(buffer);
-		
-		this.listenTo(this.model, {
-			"selected": this._onModelSelected,
-			"deselected": this._onModelDeselected,
-		});
-		this.model.selected && this._onModelSelected();
+		// From MediaRenderer
+		// this.addSelectionListeners();
 	},
 	
 	/* --------------------------- *
-	 * progress meter
-	 * --------------------------- */
+	/* progress meter
+	/* --------------------------- */
 	
 	createProgressMeter: function() {
 		var p, el, shape;
@@ -479,7 +335,6 @@ module.exports = View.extend({
 		// sw: step mark width in px
 		// p = { w: 30, h: 30, s1: 1.5, s2: 1.4 };
 		// p.sw = Math.max(p.s1, p.s2) * 1.5;
-		// p = { w: 24, h: 24, s1: 1.2, s2: 1.1, sw: 3 };
 		// p = { w: 100, h: 100, s1: 5, s2: 4.9, sw: 10 };
 		// for (var prop in p) p[prop] = Math.round(p[prop] * 10 * 10) / 10;
 		// console.log(p);
@@ -489,10 +344,13 @@ module.exports = View.extend({
 		// p = { w: 32, h: 32, r1: 13.3, s1: 2, r2: 13.3, s2: 2, sw: 2.7 };
 		// p = { w: 37, h: 37, r1: 16, s1: 2, r2: 16, s2: 1.8, sw: 3 };
 		
-		p = { w: 24, h: 24, s1: 1.51, s2: 0.51, sw: 2.5 };
+		// p = { w: 24, h: 24, s1: 1.51, s2: 0.51, sw: 2.5 };
+		// p.r1 = ((Math.min(p.w, p.h) - p.s1) / 2) - 0.5;
+		// p.r2 = ((Math.min(p.w, p.h) - p.s2) / 2) - 0.5;
 		
-		p.r1 = ((Math.min(p.w, p.h) - p.s1) / 2) - 0.5;
-		p.r2 = ((Math.min(p.w, p.h) - p.s2) / 2) - 0.5;
+		p = { w: 24, h: 24, s1: 1.2, s2: 1.1, sw: 3 };
+		p.r1 = p.r2 = ((Math.min(p.w, p.h) - Math.max(p.s1, p.s2)) / 2) - 1;
+		
 		// circumferences in px
 		p.c1 = p.r1 * Math.PI * 2;
 		p.c2 = p.r2 * Math.PI * 2;
@@ -506,10 +364,10 @@ module.exports = View.extend({
 		this.content.insertAdjacentHTML("beforeend", progressTemplate(p));
 		// get new htmlelement
 		el = this.content.lastElementChild;
-		// el.style.marginLeft = "-100px";
 		
 		shape = el.querySelector("#steps");
 		shape.style.strokeDasharray = [(p.c2 / stepsNum) - p.sw, p.sw];
+		shape.style.strokeOpacity = 0.3;
 		// shape.style.strokeDasharray = [p.sw, (p.c2 / stepsNum) - p.sw];
 		// shape.style.strokeDashoffset = p.sw;
 		
@@ -556,7 +414,7 @@ module.exports = View.extend({
 		// }
 		if (stepTo === void 0) {
 			updateImmediately();
-		} else if (stepFrom == 0) {
+		} else if (stepFrom === 0) {
 			updateImmediately();
 			window.setTimeout(updateAnimated, this._sequenceStepDelay / 2);
 			// window.setTimeout(updateAnimated, 1);
@@ -568,8 +426,8 @@ module.exports = View.extend({
 	},
 	
 	/* --------------------------- *
-	 * default image promise
-	 * --------------------------- */
+	/* default image promise
+	/* --------------------------- */
 	
 	createDeferredImage: function(url, target) {
 		var o = loadImage(url, target, this);

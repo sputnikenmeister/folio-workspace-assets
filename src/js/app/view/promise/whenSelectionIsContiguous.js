@@ -20,7 +20,7 @@ module.exports = function(view) {
 			resolve(view);
 		} else {
 			var cleanupOnSettle = function() {
-				// console.log("whenSelectionIsContiguous: cleanup");
+				console.log("whenSelectionIsContiguous: cleanup");
 				collection.off("select:one select:none", resolveOnSelect);
 				view.off("view:remove", rejectOnRemove);
 			};
@@ -32,9 +32,9 @@ module.exports = function(view) {
 				}
 			};
 			var rejectOnRemove = function(view) {
-				console.error("whenSelectionIsContiguous: rejecting (view/model " + view.cid + "/" + model.cid + ")");
+				// console.error("whenSelectionIsContiguous: rejecting (view/model " + view.cid + "/" + model.cid + ")");
 				cleanupOnSettle();
-				reject(new ViewError(view, new Error("whenSelectionIsContiguous: view was removed)")));
+				reject(new ViewError(view, new Error("whenSelectionIsContiguous: view was removed")));
 			};
 			collection.on("select:one select:none", resolveOnSelect);
 			view.on("view:remove", rejectOnRemove);

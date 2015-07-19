@@ -8,9 +8,9 @@ var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:app/utils/strings/stripTags} */
-var stripTags = require("../../utils/strings/stripTags");
+var stripTags = require("../../../utils/strings/stripTags");
 /** @type {module:app/utils/strings/parseTaglist} */
-var parseSymAttrs = require("../../utils/strings/parseSymAttrs");
+var parseSymAttrs = require("../parseSymAttrs");
 
 /** @type {module:app/model/SelectableCollection} */
 var SelectableCollection = require("../../model/SelectableCollection");

@@ -19,7 +19,7 @@ var DeferredView = require("../base/DeferredView");
 var ClickableRenderer = require("../render/ClickableRenderer");
 
 /** @type {module:app/utils/css/parseTransformMatrix} */
-// var parseTransformMatrix = require("../../utils/css/parseTransformMatrix");
+// var parseTransformMatrix = require("../../../utils/css/parseTransformMatrix");
 
 var CSS_BOX_PROPS =  [
 	"top", "bottom", //"left", "right",
@@ -75,7 +75,7 @@ var FilterableListView = DeferredView.extend({
 	/** @override */
 	tagName: "ul",
 	/** @override */
-	className: "list selectable filterable skip-transitions",
+	className: "list selectable filterable skip-transitions inheritme",
 
 	/** @override */
 	initialize: function (options) {

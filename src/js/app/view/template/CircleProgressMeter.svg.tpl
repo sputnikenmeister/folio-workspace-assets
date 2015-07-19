@@ -1,9 +1,9 @@
-<div class="progress-meter" style="width: <%= w %>px; height: <%= h %>px">
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg"
+<div class="progress-meter color-bg" style="width: <%= w %>px; height: <%= h %>px">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" class="color-bg" 
 	width="<%= w %>" height="<%= h %>" viewPort="0 0 <%= w %> <%= h %>">
 	<g transform="translate(<%= w/2 %> <%= h/2 %>)">
-		<circle id="base" class="color-fill"
-			cx="0" cy="0" r="<%= Math.min(w, h)/2 %>"></circle>
+		<!-- <circle id="base" class="color-fill"
+			cx="0" cy="0" r="<%= Math.min(w, h)/2 %>"></circle> -->
 		<g transform="rotate(<%= sr %> 0 0)">
 			<!-- <circle id="steps-track" class="color-stroke"
 				cx="0" cy="0" r="<%= r2 %>"

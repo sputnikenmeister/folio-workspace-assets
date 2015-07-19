@@ -6,18 +6,18 @@
 var _ = require("underscore");
 
 /** @type {String} */
-var transitionEnd = require("../utils/event/transitionEnd");
-/** @type {module:app/utils/strings/camelToDashed} */
-var camelToDashed = require("../utils/strings/camelToDashed");
-/** @type {module:app/utils/css/prefixedProperty} */
-var prefixedProperty = require("../utils/css/prefixedProperty");
-/** @type {module:app/utils/css/prefixedStyleName} */
-// var prefixedStyleName = require("../utils/css/prefixedStyleName");
-/** @type {module:app/utils/css/prefixedProperty} */
-// var parseTransformMatrix = require("../utils/css/parseTransformMatrix");
+var transitionEnd = require("./event/transitionEnd");
+/** @type {module:utils/strings/camelToDashed} */
+var camelToDashed = require("./strings/camelToDashed");
+/** @type {module:utils/css/prefixedProperty} */
+var prefixedProperty = require("./css/prefixedProperty");
+/** @type {module:utils/css/prefixedStyleName} */
+// var prefixedStyleName = require("./css/prefixedStyleName");
+/** @type {module:utils/css/prefixedProperty} */
+// var parseTransformMatrix = require("../css/parseTransformMatrix");
 
-/** @type {module:app/utils/debug/traceElement} */
-var traceElt = require("../utils/debug/traceElement");
+/** @type {module:utils/debug/traceElement} */
+var traceElt = require("./debug/traceElement");
 
 var log = function() {
 	var logFn = "log";
@@ -122,8 +122,8 @@ function TransformItem(el, immediate) {
 TransformItem.prototype = {
 
 	/* -------------------------------
-	 *
-	 * ------------------------------- */
+	/*
+	/* ------------------------------- */
 
 	destroy: function() {
 		// NOTE: In most cases, element is being removed from DOM when this is called, so if needed
@@ -132,11 +132,11 @@ TransformItem.prototype = {
 	},
 
 	/* -------------------------------
-	 *
-	 * ------------------------------- */
+	/*
+	/* ------------------------------- */
 
 	/* capture
-	 * - - - - - - - - - - - - - - - - */
+	/* - - - - - - - - - - - - - - - - */
 
 	capture: function() {
 		log(traceElt(this.el), "TransformItem.capture");
@@ -157,7 +157,7 @@ TransformItem.prototype = {
 	},
 	
 	/* offset/clear
-	 * - - - - - - - - - - - - - - - - */
+	/* - - - - - - - - - - - - - - - - */
 	
 	offset: function(x, y, immediate) {
 		log(traceElt(this.el), "TransformItem.offset");
@@ -192,8 +192,8 @@ TransformItem.prototype = {
 	},
 
 	/* -------------------------------
-	 * transitions
-	 * ------------------------------- */
+	/* transitions
+	/* ------------------------------- */
 	
 	runTransition: function(transition, immediate) {
 		// log(traceElt(this.el), "TransformItem.runTransition");
@@ -245,8 +245,8 @@ TransformItem.prototype = {
 	},
 	
 	/* -------------------------------
-	 * validation
-	 * ------------------------------- */
+	/* validation
+	/* ------------------------------- */
 
 	validate: function() {
 		this.el.removeEventListener(transitionEnd, this._handleTransitionEnd, false);

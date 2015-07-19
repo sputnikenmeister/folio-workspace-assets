@@ -8,8 +8,6 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
-/** @type {module:app/helper/StyleHelper} */
-//var Styles = require("../../helper/StyleHelper");
 
 /**
  * @constructor

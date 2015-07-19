@@ -34,6 +34,8 @@
 	"undef": true,
 	"unused": false,
 	"sub": true,
+	"-W030": true,
+	"-W069": true,
 	"-W099": true,
 	"-W081": true,
 	"-W051": true,

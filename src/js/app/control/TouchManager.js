@@ -13,7 +13,7 @@ var Backbone = require("backbone");
 var Globals = require("./Globals");
 
 /** @type {module:app/utils/debug/traceElement} */
-var traceElement = require("../utils/debug/traceElement");
+var traceElement = require("../../utils/debug/traceElement");
 
 /**
  * get a usable string, used as event postfix

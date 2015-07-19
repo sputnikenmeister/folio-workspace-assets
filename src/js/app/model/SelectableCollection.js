@@ -13,22 +13,6 @@ var Backbone = require("backbone");
  */
 var SelectableCollection = Backbone.Collection.extend({
 	
-	/*initialize: function (models, options) {
-		options = _.defaults({}, options, {initialSelection: "none", silentInitial: true});
-		var initialOptions = {silent: options.silentInitial};
-		if (options.initialSelection == "first") {
-			this.listenTo(this, "reset", function() {
-				this.select(this.at(0), initialOptions);
-			});
-			this.select(models[0], initialOptions);
-		} else {
-			this.listenTo(this, "reset", function() {
-				this.deselect(initialOptions);
-			});
-			this.deselect(initialOptions);
-		}
-	},*/
-	
 	initialize: function (models, options) {
 		options = _.defaults({}, options, {
 			initialSelection: "none",

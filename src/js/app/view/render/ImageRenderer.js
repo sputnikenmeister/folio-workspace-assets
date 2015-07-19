@@ -22,8 +22,8 @@ var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
 var whenTransitionEnds = require("../promise/whenTransitionEnds");
 
 /** @type {module:app/utils/net/loadImage} */
-var loadImage = require("../../utils/net/loadImage");
-//var loadImage = require("../../utils/net/loadImageDOM");
+var loadImage = require("../../../utils/net/loadImage");
+//var loadImage = require("../../../utils/net/loadImageDOM");
 
 /** @type {Function} */
 var viewTemplate = require( "./ImageRenderer.tpl" );
@@ -49,17 +49,12 @@ module.exports = View.extend({
 				{leading: true, trailing: true});
 				
 		this.createChildren();
-		this.addSiblingListeners();
-	},
-	
-	remove: function() {
-		// NOTE: pending promises are destroyed on "view:remove" event
-		return View.prototype.remove.apply(this, arguments);
+		this.initializeAsync();
 	},
 	
 	/* --------------------------- *
-	 * children/layout
-	 * --------------------------- */
+	/* children/layout
+	/* --------------------------- */
 	
 	createChildren: function() {
 		this.el.innerHTML = this.template(this.model.toJSON());
@@ -120,62 +115,67 @@ module.exports = View.extend({
 	},
 	
 	/* --------------------------- *
-	 * selection
-	 * --------------------------- */
+	/* initializeAsync
+	/* --------------------------- */
 	
-	whenSelectionIsContiguous: function() {
-		return new Promise(function(resolve, reject) {
-			var owner = this.model.collection;
-			var m = owner.indexOf(this.model);
-			var check = function (n) {
-				// Check indices for contiguity
-				// return (m === n) || (m + 1 === n) || (m - 1 === n);
-				return Math.abs(m - n) < 2;
-			};
-			if (check(owner.selectedIndex)) {
-				resolve(this.model);
-			} else {
-				var handleSelect = function(model) {
-					if (check(owner.selectedIndex)) {
-						this.stopListening(owner, "select:one select:none", handleSelect);
-						resolve(this.model);
-					}
-				};
-				this.listenTo(owner, "select:one select:none", handleSelect);
-			}
-		}.bind(this));
-	},
-	
-	addSiblingListeners: function() {
-		// this.whenSelectionIsContiguous().then(
+	initializeAsync: function() {
 		whenSelectionIsContiguous(this).then(
 			function(view) {
-				if (!view.model.selected) {
-					// return this.whenTransitionEnds(this.el, "transform", Globals.TRANSITION_DELAY * 2);
-					return whenTransitionEnds(view, view.el, "transform", Globals.TRANSITION_DELAY * 2);
+				if (view.model.selected) {
+					return view;
+				} else {
+					return whenTransitionEnds(view, view.el, "transform");
 				}
 			}
 		).then(
-			function() {
+			function(view) {
 				console.log(this.model.cid, "transition promise resolved");
 				if (this.model.has("prefetched")) {
 					console.log(this.model.cid, "image promise resolved (prefetched)");
 					this.el.classList.remove("idle");
 					this.el.classList.add("done");
-					return this.image.src = this.model.get("prefetched");
+					return (this.image.src = this.model.get("prefetched"));
 				} else {
 					return this.createDeferredImage(this.model.getImageUrl(), this.image).promise();
 				}
 			}.bind(this)
-		).catch(function(err) {
-			if (err instanceof ViewError) {
-				console.log("ImageRenderer:" + err.message);
-			} else {
-				console.error("ImageRenderer promise error", err);
+		).catch(
+			function(err) {
+				if (err instanceof ViewError) {
+					console.log(err.view.model.cid, "ImageRenderer: " + err.message);
+				} else {
+					console.error("ImageRenderer promise error", err);
+				}
 			}
-		});
-			
+		);
 	},
+	
+	/* --------------------------- *
+	/* selection
+	/* --------------------------- */
+	
+	// whenSelectionIsContiguous: function() {
+	// 	return new Promise(function(resolve, reject) {
+	// 		var owner = this.model.collection;
+	// 		var m = owner.indexOf(this.model);
+	// 		var check = function (n) {
+	// 			// Check indices for contiguity
+	// 			// return (m === n) || (m + 1 === n) || (m - 1 === n);
+	// 			return Math.abs(m - n) < 2;
+	// 		};
+	// 		if (check(owner.selectedIndex)) {
+	// 			resolve(this.model);
+	// 		} else {
+	// 			var handleSelect = function(model) {
+	// 				if (check(owner.selectedIndex)) {
+	// 					this.stopListening(owner, "select:one select:none", handleSelect);
+	// 					resolve(this.model);
+	// 				}
+	// 			};
+	// 			this.listenTo(owner, "select:one select:none", handleSelect);
+	// 		}
+	// 	}.bind(this));
+	// },
 	
 	/* --------------------------- *
 	/* media loading
@@ -312,8 +312,8 @@ module.exports = View.extend({
 	},*/
 	
 	/* --------------------------- *
-	 * utils
-	 * --------------------------- */
+	/* utils
+	/* --------------------------- */
 	 
 	_getSelectionDistance: function() {
 		return Math.abs(this.model.collection.indexOf(this.model) - this.model.collection.selectedIndex);
