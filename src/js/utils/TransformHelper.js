@@ -1,17 +1,14 @@
 /* -------------------------------
-* Imports
-* ------------------------------- */
-
+ * Imports
+ * ------------------------------- */
+ 
+require("../shims/requestAnimationFrame");
+ 
 /** @type {module:underscore} */
 var _ = require("underscore");
 
 /** @type {module:app/helper/TransformItem} */
 var TransformItem = require("./TransformItem");
-
-/** @type {module:app/utils/debug/traceElement} */
-var traceElt = require("../utils/debug/traceElement");
-
-require("../shims/requestAnimationFrame");
 
 var idSeed = 0;
 var cidSeed = 100;
@@ -25,23 +22,21 @@ function TransformHelper() {
 	this.id = idSeed++;
 	this._items = {};
 	this.immediate = false;
-
+	
 	this._validateCallbackId = -1;
 	this._validateCallback = this._validateCallback.bind(this);
-
-	// this.add = this.get;
 }
 
 TransformHelper.prototype = {
-
+	
 	/* -------------------------------
-	* Public
-	* ------------------------------- */
-
+	/* Public
+	/* ------------------------------- */
+	
 	has: function(el) {
 		return el.cid && this._items[el.cid] !== void 0;
 	},
-
+	
 	get: function(el) {
 		if (this.has(el)) {
 			return this._items[el.cid];
@@ -67,7 +62,7 @@ TransformHelper.prototype = {
 			}
 		}
 	},
-
+	
 	remove: function() {
 		var i, j, el;
 		for (i = 0; i < arguments.length; ++i) {
@@ -89,14 +84,14 @@ TransformHelper.prototype = {
 			delete this._items[el.cid];
 		}	
 	},
-
+	
 	/* --------------------------------
 	/* public
 	/* -------------------------------- */
-
+	
 	/* public: capture
 	/* - - - - - - - - - - - - - - - - */
-
+	
 	capture: function() {
 		this._invoke("capture", arguments);
 	},
@@ -105,7 +100,7 @@ TransformHelper.prototype = {
 			this._items[i].capture();
 		}
 	},
-
+	
 	clearCapture: function() {
 		this._invoke("clearCapture", arguments);
 	},
@@ -114,10 +109,10 @@ TransformHelper.prototype = {
 			this._items[i].clearCapture();
 		}
 	},
-
+	
 	/* public: offset
 	/* - - - - - - - - - - - - - - - - */
-
+	
 	offset: function(x, y){
 		this._invoke("offset", arguments, 2);
 	},
@@ -126,7 +121,7 @@ TransformHelper.prototype = {
 			this._items[i].offset(x, y);
 		}
 	},
-
+	
 	clearOffset: function() {
 		this._invoke("clearOffset", arguments);
 	},
@@ -135,14 +130,14 @@ TransformHelper.prototype = {
 			this._items[i].clearOffset();
 		}
 	},
-
+	
 	/* public: transitions
 	/* - - - - - - - - - - - - - - - - */
-
+	
 	runTransition: function(transition) {
 		this._invoke("runTransition", arguments, 1);
 	},
-
+	
 	clearTransitions: function() {
 		this._invoke("clearTransitions", arguments);
 	},
@@ -151,7 +146,7 @@ TransformHelper.prototype = {
 			this._items[i].clearCapture();
 		}
 	},
-
+	
 	stopTransitions: function() {
 		this._invoke("stopTransitions", arguments);
 	},
@@ -160,23 +155,23 @@ TransformHelper.prototype = {
 			this._items[i].stopTransitions();
 		}
 	},
-
+	
 	/* -------------------------------
 	/* private utils
 	/* ------------------------------- */
-
+	
 	_invoke: function(funcName, args, startIndex) {
-		var i, j, el, o;
+		var i, ii, j, jj, el, o;
 		var funcArgs = null;
 		if (startIndex !== void 0) {
 			funcArgs = slice.call(args, 0, startIndex);
 		} else {
 			startIndex = 0;
 		}
-		for (i = startIndex; i < args.length; ++i) {
+		for (i = startIndex, ii = args.length; i < ii; ++i) {
 			el = args[i];
 			if (el.length) { //_.isArray(el)) {
-				for (j = 0; j < el.length; ++j) {
+				for (j = 0, jj = el.length; j < jj; ++j) {
 					o = this.get(el[j]);
 					o[funcName].apply(o, funcArgs);
 				}
@@ -186,11 +181,11 @@ TransformHelper.prototype = {
 			}
 		}
 	},
-
+	
 	/* -------------------------------
 	/* validation
 	/* ------------------------------- */
-
+	
 	validate: function () {
 		if (this._validateCallbackId !== -1) {
 			window.cancelTimeout(this._validateCallbackId);
@@ -198,7 +193,7 @@ TransformHelper.prototype = {
 		}
 		this._validate();
 	},
-
+	
 	invalidate: function() {
 		if (this._validateCallbackId === -1) {
 			// console.warn("TransformHelper._invalidate");
@@ -207,22 +202,18 @@ TransformHelper.prototype = {
 			console.log("TransformHelper.invalidate", this._validateCallbackId);
 		}
 	},
-
+	
 	_validateCallback: function() {
 		console.log("TransformHelper._validateCallback", this._validateCallbackId);
 		this._validateCallbackId = -1;
 		this._validate();
 	},
-
+	
 	_validate: function () {
-		// console.info("TransformHelper._validate", this.id);
 		for (var i in this._items) {
-			// if (this._items.hasOwnProperty(i)) {
-				this._items[i].validate();
-			// }
+			this._items[i].validate();
 		}
 	},
 };
-
 
 module.exports = TransformHelper;

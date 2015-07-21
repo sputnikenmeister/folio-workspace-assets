@@ -66,9 +66,13 @@ var View = Backbone.View.extend({
 	},
 	
 	setEnabled: function(enable) {},
-	
+   
+	/* -------------------------------
+	/* css prefix helpers
+	/* ------------------------------- */
+   
 	getPrefixedProperty: function(prop) {
-		return _styleProps[prop] || (_styleProps[prop] = prefixedProperty(this.el.style, prop));
+		return _styleProps[prop] || (_styleProps[prop] = prefixedProperty(prop, this.el.style));
 	},
 	
 	getPrefixedStyle: function(prop) {
@@ -87,7 +91,7 @@ var View = Backbone.View.extend({
 	 
 	onTransitionEnd: function(target, prop, callback, timeout) {
 		// prop = this.getPrefixedStyle(prop)
-		return addTransitionCallback(target, prop, callback, this, timeout || 2000);
+		return addTransitionCallback(target, prop, callback, this, timeout);
 	},
 	
 	// getTransitionPromise: function(target, prop, timeout) {

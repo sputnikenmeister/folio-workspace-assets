@@ -10,4 +10,3 @@
  * @returns
  */
 module.exports = (window.XMLHttpRequest && window.URL && window.Blob)? require("./loadImageXHR") : require("./loadImageDOM");
-//module.exports = require("./loadImageDOM");

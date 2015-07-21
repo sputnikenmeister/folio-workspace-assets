@@ -19,12 +19,12 @@ var ViewError = require("../base/ViewError");
 var MediaRenderer = require("./MediaRenderer");
 
 /** @type {module:app/view/promise/whenSelectionIsContiguous} */
-var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
+// var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
 /** @type {module:app/view/promise/whenTransitionEnds} */
-var whenTransitionEnds = require("../promise/whenTransitionEnds");
+// var whenTransitionEnds = require("../promise/whenTransitionEnds");
 
 /** @type {module:app/utils/net/loadImage} */
-var loadImage = require("../../../utils/net/loadImage");
+//var loadImage = require("../../../utils/net/loadImage");
 //var loadImage = require("../../../utils/net/loadImageDOM");
 
 /** @type {module:app/utils/css/parseColor} */
@@ -35,20 +35,11 @@ var loadImage = require("../../../utils/net/loadImage");
 /** @type {Function} */
 var viewTemplate = require( "./VideoRenderer.tpl" );
 
-// var allMediaEvents = [
-// 	"loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled",
-// 	"loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting",
-// 	"seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause",
-// 	"ratechange", "resize", "volumechange"
-// 	];
-
 var mediaEvents = [
 	"loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled",
 	"loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting",
-	"seeking", "seeked", "ended", "durationchange", "play", "pause",
-	"ratechange", "resize",
-	// "volumechange",
-	"timeupdate", 
+	"seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause",
+	/*"ratechange",*/ "resize", /*"volumechange"*/
 	];
 
 /**
@@ -59,7 +50,7 @@ module.exports = MediaRenderer.extend({
 	
 	/** @type {string} */
 	className: function() { 
-		return MediaRenderer.prototype.className + " sequence-renderer";
+		return MediaRenderer.prototype.className + " video-renderer";
 	},
 	/** @type {Function} */
 	template: viewTemplate,
@@ -98,10 +89,7 @@ module.exports = MediaRenderer.extend({
 		this.video = this.content.querySelector("video");
 		this.overlay = this.content.querySelector(".overlay");
 		
-		// we don't wait for video
-		this.el.classList.remove("idle");
-		this.el.classList.add("done");
-		
+		this.video.parentElement.style.overflow = "hidden";
 		this.video.setAttribute("preload", "none");
 		this.video.setAttribute("poster", this.model.getImageUrl());
 		// this.overlay.firstElementChild.textContent = this.video.readyState > 3? "Play":"Wait";
@@ -112,11 +100,15 @@ module.exports = MediaRenderer.extend({
 		
 		if (this.model.has("srcset")) {
 			var html = "", srcset = this.model.get("srcset");
-			for (var i = 0; i < srcset.length; i++) {
+			for (var i = 0, ii = srcset.length; i < ii; i++) {
 				html += "<source src=\"" + Globals.MEDIA_DIR + "/" + srcset[i]["src"] + "\" type=\"" + srcset[i]["mime"] + "\"></source>";
 			}
 			this.video.innerHTML = html;
 		}
+		
+		// we don't wait for video
+		this.el.classList.remove("idle");
+		this.el.classList.add("done");
 		
 		// console.log(this.model.id,
 		// 	this.model.attrs()["color"],
@@ -171,7 +163,6 @@ module.exports = MediaRenderer.extend({
 		
 		// crop video 1px top
 		this.video.style.marginTop = "-1px";
-		this.video.parentElement.style.overflow = "hidden";
 		this.video.setAttribute("width", cW);
 		this.video.setAttribute("height", cH);
 		cH--; // NOTE: other elements must use video's CROPPED height 
@@ -196,14 +187,15 @@ module.exports = MediaRenderer.extend({
 	/* --------------------------- */
 	
 	initializeAsync: function() {
-		whenSelectionIsContiguous(this).then(
-			function(view) {
-				if (view.model.selected) {
-					return view;
-				} else {
-					return whenTransitionEnds(view, view.el, "transform");
-				}
-			}
+		MediaRenderer.whenSelectionIsContiguous(this).then(
+			MediaRenderer.whenSelectTransitionEnds
+			// function(view) {
+			// 	if (view.model.selected) {
+			// 		return view;
+			// 	} else {
+			// 		return whenTransitionEnds(view, view.el, "transform");
+			// 	}
+			// }
 		).then(
 			function(view) {
 				this.video.removeAttribute("preload");
@@ -229,51 +221,6 @@ module.exports = MediaRenderer.extend({
 		// this.toggleMediaPlayback(enabled);
 	},
 	
-	/* ---------------------------
-	/* selection handlers
-	/* --------------------------- */
-	
-	// addSelectionListeners: function() {
-	// 	this.listenTo(this.model, {
-	// 		"selected": this._onModelSelected,
-	// 		"deselected": this._onModelDeselected,
-	// 	});
-	// 	this.model.selected && this._onModelSelected();
-	// },
-	// 
-	// /* ---------------------------
-	// /* model event handlers
-	// /* --------------------------- */
-	// 
-	// _onModelSelected: function() {
-	// 	this.playToggle.addEventListener("click", this._onContentClick, false);
-	// 	this.listenTo(this, "view:remove", this._removeClickHandler);
-	// },
-	// 
-	// _onModelDeselected: function() {
-	// 	this.toggleMediaPlayback(false);
-	// 	this.playToggle.removeEventListener("click", this._onContentClick, false);
-	// 	this.stopListening(this, "view:remove", this._removeClickHandler);
-	// },
-	// 
-	// _removeClickHandler: function() {
-	// 	this.placeholder.removeEventListener("mouseup", this._onContentClick, false);
-	// },
-	// 
-	// /* ---------------------------
-	// /* dom event handlers
-	// /* --------------------------- */
-	// 
-	// _onContentClick: function(ev) {
-	// 	var sev = ev.originalEvent || ev;
-	// 	console.log("[VideoRenderer] " + sev.type, sev.defaultPrevented, sev.timeStamp, sev);
-	// 	ev.defaultPrevented || this.toggleMediaPlayback();
-	// },
-	
-	/* ---------------------------
-	/* video handlers
-	/* --------------------------- */
-	
 	toggleMediaPlayback: function(newPlayState) {
 		// is playback changing?
 		if (_.isBoolean(newPlayState) && newPlayState !== this.video.paused) {
@@ -289,6 +236,10 @@ module.exports = MediaRenderer.extend({
 			this.video.pause();
 		}
 	},
+	
+	/* ---------------------------
+	/* MediaEvent handler
+	/* --------------------------- */
 	
 	addMediaListeners: function() {
 		for (var i = 0; i < mediaEvents.length; i++) {

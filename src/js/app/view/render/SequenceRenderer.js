@@ -163,18 +163,22 @@ module.exports = MediaRenderer.extend({
 	/* --------------------------- */
 	
 	initializeAsync: function() {
-		whenSelectionIsContiguous(this).then(
-			function(view) {
-				if (view.model.selected) {
-					return view;
-				} else {
-					return whenTransitionEnds(view, view.el, "transform");
-				}
-			}
+		MediaRenderer.whenSelectionIsContiguous(this).then(
+			MediaRenderer.whenSelectTransitionEnds
 		).then(
-			function(view) {
-				return this.createDeferredImage(this.model.getImageUrl(), this.image).promise();
-			}.bind(this)
+			MediaRenderer.whenDefaultImageLoads
+		// whenSelectionIsContiguous(this).then(
+		// 	function(view) {
+		// 		if (view.model.selected) {
+		// 			return view;
+		// 		} else {
+		// 			return whenTransitionEnds(view, view.el, "transform");
+		// 		}
+		// 	}
+		// ).then(
+		// 	function(view) {
+		// 		return this.createDeferredImage(this.model.getImageUrl(), this.image).promise();
+		// 	}.bind(this)
 		).then(
 			function(url) {
 				console.log("SequenceRenderer", this.model.cid, url);
@@ -188,6 +192,49 @@ module.exports = MediaRenderer.extend({
 				console.error("SequenceRenderer promise error", err);
 			}
 		});
+	},
+	
+	/* --------------------------- *
+	/* default image promise
+	/* --------------------------- */
+	
+	createDeferredImage: function(url, target) {
+		var o = loadImage(url, target, this);
+		o.always(function() {
+			this.placeholder.removeAttribute("data-progress");
+			this.off("view:remove", o.cancel);
+		}).then(
+			this._onLoadImageDone,
+			this._onLoadImageError, 
+			this._onLoadImageProgress
+		).then(function(url) {
+			// this.model.set({"prefetched": url});
+			o.isXhr && this.on("view:remove", function() {
+				window.URL.revokeObjectURL(url);
+			});
+		});
+		this.on("view:remove", o.cancel);
+		return o;
+	},
+	
+	_onLoadImageProgress: function (progress) {
+		if (progress == "loadstart") {
+			this.el.classList.remove("idle");
+			this.el.classList.add("pending");
+		} else {
+			this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
+		}
+	},
+	
+	_onLoadImageDone: function (url) {
+		this.el.classList.remove("pending");
+		this.el.classList.add("done");
+	},
+	
+	_onLoadImageError: function (err) {
+		console.error("VideoRenderer.onError: " + err.message, err.ev);
+		this.el.classList.remove("pending");
+		this.el.classList.add("error");
 	},
 	
 	/* ---------------------------
@@ -271,17 +318,17 @@ module.exports = MediaRenderer.extend({
 			view._sequenceIntervalId = window.setTimeout(function() {
 				view._sequenceIntervalId = -1;
 				if (nextEl.complete) {
-					console.log("resolve", "complete", nextEl.src);
-					resolve();
+					console.log("resolved (sync)", nextEl.src);
+					resolve(view);
 				} else {
 					resolve(new Promise(function(resolve, reject) {
 						nextEl.onload = function(ev) {
-							console.log("resolve", ev.type, nextEl.src);
-							resolve.apply(this, arguments);
+							console.log("resolved (async)", nextEl.src);
+							resolve(view);
 						};
 						nextEl.onerror = function(ev) {
-							console.log("reject", ev);
-							reject.apply(this, arguments);
+							console.log("rejected", ev);
+							reject(new Error("Failed to load image from " + nextEl.src));
 						};
 					}));
 				}
@@ -425,46 +472,4 @@ module.exports = MediaRenderer.extend({
 		this.progressLabel.textContent = stepFrom + 1;
 	},
 	
-	/* --------------------------- *
-	/* default image promise
-	/* --------------------------- */
-	
-	createDeferredImage: function(url, target) {
-		var o = loadImage(url, target, this);
-		o.always(function() {
-			this.placeholder.removeAttribute("data-progress");
-			this.off("view:remove", o.cancel);
-		}).then(
-			this._onLoadImageDone,
-			this._onLoadImageError, 
-			this._onLoadImageProgress
-		).then(function(url) {
-			// this.model.set({"prefetched": url});
-			o.isXhr && this.on("view:remove", function() {
-				window.URL.revokeObjectURL(url);
-			});
-		});
-		this.on("view:remove", o.cancel);
-		return o;
-	},
-	
-	_onLoadImageProgress: function (progress) {
-		if (progress == "loadstart") {
-			this.el.classList.remove("idle");
-			this.el.classList.add("pending");
-		} else {
-			this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-		}
-	},
-	
-	_onLoadImageDone: function (url) {
-		this.el.classList.remove("pending");
-		this.el.classList.add("done");
-	},
-	
-	_onLoadImageError: function (err) {
-		console.error("VideoRenderer.onError: " + err.message, err.ev);
-		this.el.classList.remove("pending");
-		this.el.classList.add("error");
-	},
 });

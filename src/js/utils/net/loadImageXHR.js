@@ -33,13 +33,12 @@ module.exports = function (url, image, context) {
 	});
 	mixin.cancel = function () {
 		timeoutId && window.clearTimeout(timeoutId);
-		request.abort();
+		(0 < request.readyState < 4) && request.abort();
 		cleanup();
 	};
 	
 	// resolved/success
 	// - - - - - - - - - - - - - - - - - -
-	// request.onloadend
 	request.onload = function (ev) {
 		mixin.lastEvent = ev;
 		// When the request loads, check whether it was successful
@@ -61,7 +60,6 @@ module.exports = function (url, image, context) {
 			deferred.rejectWith(context, [Error("Image didn\'t load successfully; error code:" + request.statusText)]);
 		}
 	};
-	
 	// reject/failure
 	// - - - - - - - - - - - - - - - - - -
 	request.ontimeout = request.onerror = function (ev) {
@@ -84,6 +82,7 @@ module.exports = function (url, image, context) {
 		deferred.notifyWith(context, ["loadstart"]);
 	};
 	request.onprogress = function (ev) {
+		if (request.readyState == 4) return;
 		mixin.lastEvent = ev;
 		deferred.notifyWith(context, [ev.loaded / ev.total]);
 	};
@@ -91,10 +90,13 @@ module.exports = function (url, image, context) {
 	// finally
 	// - - - - - - - - - - - - - - - - - -
 	cleanup = function () {
+		console.log("XHR loadend: " + url);
 		request.onabort = request.ontimeout = request.onerror = void 0;
-		request.onloadstart = request.onloadend = request.onprogress = void 0;
+		request.onloadstart = request.onprogress = void 0;
+		request.onload = request.onloadend = void 0;
 	};
-	deferred.always(cleanup);
+	request.onloadend = cleanup;
+	// deferred.always(cleanup);
 	
 	
 	return mixin;

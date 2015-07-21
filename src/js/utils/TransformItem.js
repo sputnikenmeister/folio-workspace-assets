@@ -59,7 +59,7 @@ var _styleProps = {}, _styleNames = {};
 	var props = transformProps.concat(transitionProps);
 	for (var i = 0; i < props.length; ++i) {
 		p = props[i];
-		pp = prefixedProperty(window.getComputedStyle(document.body), p);
+		pp = prefixedProperty(p);//, window.getComputedStyle(document.body));
 		if (pp) {
 			_styleProps[p] = pp;
 			_styleNames[p] = p != pp? "-" + camelToDashed(pp): camelToDashed(p);
@@ -88,7 +88,7 @@ function TransformItem(el, immediate) {
 	
 	this.el = el;
 	this.immediate = immediate;
-
+	
 	this.id = el.cid;
 	this.el.addEventListener(transitionEnd, this._handleTransitionEnd, false);
 	
@@ -120,17 +120,17 @@ function TransformItem(el, immediate) {
 }
 
 TransformItem.prototype = {
-
+	
 	/* -------------------------------
 	/*
 	/* ------------------------------- */
-
+	
 	destroy: function() {
 		// NOTE: In most cases, element is being removed from DOM when this is called, so if needed
 		// clearOffset(element) should be called explicitly.
 		this.el.removeEventListener(transitionEnd, this._handleTransitionEnd, false);
 	},
-
+	
 	/* -------------------------------
 	/*
 	/* ------------------------------- */
@@ -140,17 +140,17 @@ TransformItem.prototype = {
 
 	capture: function() {
 		log(traceElt(this.el), "TransformItem.capture");
-
+		
 		// this._captureInvalid = true;
 		this._validateCapture();
 		// log(traceElt(this.el), this._capturedX, this._capturedY);
 		// log(traceElt(this.el), this._capturedValuesChanged, this._lastCapturedValues.transform, this._currCapturedValues.transform);
 		return this;
 	},
-
+	
 	clearCapture: function() {
 		log(traceElt(this.el), "TransformItem.clearCapture");
-
+		
 		// this._hasOffset = false;
 		this._captureInvalid = true;
 		return this;
@@ -190,7 +190,7 @@ TransformItem.prototype = {
 		}
 		return this;
 	},
-
+	
 	/* -------------------------------
 	/* transitions
 	/* ------------------------------- */
@@ -258,7 +258,7 @@ TransformItem.prototype = {
 		// this._captureInvalid = true;
 		return this;
 	},
-
+	
 	_validateCapture: function() {
 		if (!this._captureInvalid) {
 			return;
@@ -270,7 +270,7 @@ TransformItem.prototype = {
 		// 	"transition invalid": this._transitionInvalid,
 		// 	"offset invalid": this._offsetInvalid,
 		// });
-
+		
 		// this is an explicit call to capture() instead of a subcall from _validateOffset()
 		if (this._hasOffset && !this._offsetInvalid) {
 			eltTransformValue = this.el.style[_styleProps["transform"]];

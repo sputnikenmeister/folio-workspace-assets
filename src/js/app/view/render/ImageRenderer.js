@@ -16,13 +16,18 @@ var MediaItem = require("../../model/item/MediaItem");
 var View = require("../base/View");
 /** @type {module:app/view/base/ViewError} */
 var ViewError = require("../base/ViewError");
+/** @type {module:app/view/render/MediaRenderer} */
+// var MediaRenderer = require("./MediaRenderer");
+
+/** @type {module:app/view/promise/whenSelectTransitionEnds} */
+var whenSelectTransitionEnds = require("../promise/whenSelectTransitionEnds");
 /** @type {module:app/view/promise/whenSelectionIsContiguous} */
 var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
-/** @type {module:app/view/promise/whenTransitionEnds} */
-var whenTransitionEnds = require("../promise/whenTransitionEnds");
+/** @type {module:app/view/promise/whenDefaultImageLoads} */
+var whenDefaultImageLoads = require("../promise/whenDefaultImageLoads");
 
 /** @type {module:app/utils/net/loadImage} */
-var loadImage = require("../../../utils/net/loadImage");
+// var loadImage = require("../../../utils/net/loadImage");
 //var loadImage = require("../../../utils/net/loadImageDOM");
 
 /** @type {Function} */
@@ -119,159 +124,140 @@ module.exports = View.extend({
 	/* --------------------------- */
 	
 	initializeAsync: function() {
-		whenSelectionIsContiguous(this).then(
-			function(view) {
-				if (view.model.selected) {
-					return view;
-				} else {
-					return whenTransitionEnds(view, view.el, "transform");
-				}
-			}
+		whenSelectionIsContiguous(
+			this
 		).then(
-			function(view) {
-				console.log(this.model.cid, "transition promise resolved");
-				if (this.model.has("prefetched")) {
-					console.log(this.model.cid, "image promise resolved (prefetched)");
-					this.el.classList.remove("idle");
-					this.el.classList.add("done");
-					return (this.image.src = this.model.get("prefetched"));
-				} else {
-					return this.createDeferredImage(this.model.getImageUrl(), this.image).promise();
-				}
-			}.bind(this)
+			whenSelectTransitionEnds
+		).then(
+			whenDefaultImageLoads
+		// ).then(
+		// 	function(view) {
+		// 		if (view.model.selected) {
+		// 			return view;
+		// 		} else {
+		// 			return whenTransitionEnds(view, view.el, "transform");
+		// 		}
+		// 	}
+		// ).then(
+		// 	function(view) {
+		// 		if (view.model.has("prefetched")) {
+		// 			console.log(view.cid, view.model.cid, "image is prefetched");
+		// 			view.el.classList.remove("idle");
+		// 			view.el.classList.add("done");
+		// 			view.image.src = view.model.get("prefetched");
+		// 			return view;
+		// 		} else {
+		// 			return new Promise(function(resolve, reject) {
+		// 				view.el.classList.remove("idle");
+		// 				view.el.classList.add("pending");
+		// 				whenImageLoads(view.model.getImageUrl(), view.image,
+		// 					function (progress) {
+		// 						console.log(view.cid, view.model.cid, "ImageRenderer progressHandler", progress);
+		// 						view.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
+		// 					}
+		// 				).then(
+		// 					function(url) {
+		// 						console.log(view.cid, view.model.cid, "ImageRenderer whenImageLoaded resolved", url);
+		// 						view.placeholder.removeAttribute("data-progress");
+		// 						view.el.classList.remove("pending");
+		// 						view.el.classList.add("done");
+		// 						if (/^blob\:.*/.test(url)) {
+		// 							view.model.set({"prefetched": url});
+		// 							// view.on("view:remove", function() {
+		// 							// 	window.URL.revokeObjectURL(url);
+		// 							// });
+		// 						}
+		// 						resolve(view);
+		// 					},
+		// 					function(err) {
+		// 						console.log(view.cid, view.model.cid, "ImageRenderer whenImageLoaded rejected", err.message);
+		// 						view.placeholder.removeAttribute("data-progress");
+		// 						view.el.classList.remove("pending");
+		// 						view.el.classList.add("error");
+		// 						reject(err);
+		// 					}
+		// 				);
+		// 				// var request = view.image.request; 
+		// 				// var progressHandler, loadendHandler;
+		// 				// if (request && request.readyState < 4) {
+		// 				// 	progressHandler = function (ev) {
+		// 				// 		console.log(view.cid, view.model.cid, "ImageRenderer progressHandler", ev.loaded / ev.total);
+		// 				// 		view.placeholder.setAttribute("data-progress", (ev.loaded / ev.total * 100).toFixed(0));
+		// 				// 	};
+		// 				// 	loadendHandler = function () {
+		// 				// 		console.log(view.cid, view.model.cid, "ImageRenderer loadendHandler");
+		// 				// 		view.placeholder.removeAttribute("data-progress");
+		// 				// 		request.removeEventListener("progress", progressHandler);
+		// 				// 		// request.removeEventListener("loadend", loadendHandler);
+		// 				// 	};
+		// 				// 	request.addEventListener("progress", progressHandler);
+		// 				// 	// request.addEventListener("loadend", loadendHandler);
+		// 				// 	promise.then(loadendHandler, loadendHandler);
+		// 				// }
+		// 			});
+		// 			// return view.createDeferredImage(view.model.getImageUrl(), view.image).promise();
+		// 		}
+		// 	}
 		).catch(
 			function(err) {
 				if (err instanceof ViewError) {
-					console.log(err.view.model.cid, "ImageRenderer: " + err.message);
+					console.log(err.view.cid, err.view.model.cid, "ImageRenderer: " + err.message);
 				} else {
-					console.error("ImageRenderer promise error", err);
+					console.error("ImageRenderer: " + err.name, err);
+					throw err;
 				}
 			}
 		);
 	},
-	
-	/* --------------------------- *
-	/* selection
-	/* --------------------------- */
-	
-	// whenSelectionIsContiguous: function() {
-	// 	return new Promise(function(resolve, reject) {
-	// 		var owner = this.model.collection;
-	// 		var m = owner.indexOf(this.model);
-	// 		var check = function (n) {
-	// 			// Check indices for contiguity
-	// 			// return (m === n) || (m + 1 === n) || (m - 1 === n);
-	// 			return Math.abs(m - n) < 2;
-	// 		};
-	// 		if (check(owner.selectedIndex)) {
-	// 			resolve(this.model);
-	// 		} else {
-	// 			var handleSelect = function(model) {
-	// 				if (check(owner.selectedIndex)) {
-	// 					this.stopListening(owner, "select:one select:none", handleSelect);
-	// 					resolve(this.model);
-	// 				}
-	// 			};
-	// 			this.listenTo(owner, "select:one select:none", handleSelect);
-	// 		}
-	// 	}.bind(this));
-	// },
 	
 	/* --------------------------- *
 	/* media loading
 	/* --------------------------- */
 	
-	createDeferredImage: function(url, target) {
-		var o = loadImage(url, target, this);
-		o.always(function() {
-			this.placeholder.removeAttribute("data-progress");
-			this.off("view:remove", o.cancel);
-		}).then(
-			this._onLoadImageDone,
-			this._onLoadImageError, 
-			this._onLoadImageProgress
-		);
-		this.on("view:remove", o.cancel);
-		return o.promise();
-	},
-	
-	_onLoadImageDone: function (url) {
-		console.log(this.model.cid, "ImageRenderer._onImageLoad", url);
-		this.el.classList.remove("pending");
-		this.el.classList.add("done");
-		if (/^blob\:.*/.test(url)) {
-			this.model.set({"prefetched": url});
-			// this.on("view:remove", function() {
-			// 	window.URL.revokeObjectURL(url);
-			// });
-		}
-	},
-	
-	_onLoadImageError: function (err) {
-		console.error(this.model.cid, "ImageRenderer._onImageError: " + err.message, err.ev);
-		this.el.classList.remove("pending");
-		this.el.classList.add("error");
-	},
-	
-	_onLoadImageProgress: function (progress) {
-		console.log(this.model.cid, "ImageRenderer._onImageProgress", progress);
-		if (progress == "loadstart") {
-			this.el.classList.remove("idle");
-			this.el.classList.add("pending");
-		} else {
-			this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-		}
-	},
+	// createDeferredImage: function(url, target) {
+	// 	var o = loadImage(url, target, this);
+	// 	o.always(function() {
+	// 		this.placeholder.removeAttribute("data-progress");
+	// 		this.off("view:remove", o.cancel);
+	// 	}).then(
+	// 		this._onLoadImageDone,
+	// 		this._onLoadImageError, 
+	// 		this._onLoadImageProgress
+	// 	);
+	// 	this.on("view:remove", o.cancel);
+	// 	return o.promise();
+	// },
+	// 
+	// _onLoadImageDone: function (url) {
+	// 	console.log(this.cid, this.model.cid, "ImageRenderer._onImageLoad", url);
+	// 	this.el.classList.remove("pending");
+	// 	this.el.classList.add("done");
+	// 	if (/^blob\:.*/.test(url)) {
+	// 		this.model.set({"prefetched": url});
+	// 		// this.on("view:remove", function() {
+	// 		// 	window.URL.revokeObjectURL(url);
+	// 		// });
+	// 	}
+	// },
+	// 
+	// _onLoadImageError: function (err) {
+	// 	console.error(this.cid, this.model.cid, "ImageRenderer._onImageError: " + err.message, err.ev);
+	// 	this.el.classList.remove("pending");
+	// 	this.el.classList.add("error");
+	// },
+	// 
+	// _onLoadImageProgress: function (progress) {
+	// 	console.log(this.cid, this.model.cid, "ImageRenderer._onImageProgress", progress);
+	// 	if (progress == "loadstart") {
+	// 		this.el.classList.remove("idle");
+	// 		this.el.classList.add("pending");
+	// 	} else {
+	// 		this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
+	// 	}
+	// },
 	
 	/*
-	
-	addSiblingListeners2: function () {
-		var owner = this.model.collection;
-		var m = owner.indexOf(this.model);
-		var check = function (n) {
-			// Check indices for contiguity
-			return (m === n) || (m + 1 === n) || (m - 1 === n);
-		};
-		var transitionCallback, transitionProp, transitionCancellable;
-		var handleRemove, handleSelect;
-
-		transitionProp = this.getPrefixedStyle("transform");
-		transitionCallback = function(exec) {
-			this.off("view:remove", handleRemove);
-			exec && this._onSiblingSelect();
-		};
-		handleRemove = function() {
-			transitionCancellable(false);
-		};
-		handleSelect = function(model) {
-			if (check(owner.selectedIndex)) {
-				this.stopListening(owner, "select:one select:none", handleSelect);
-				this.on("view:remove", handleRemove);
-				
-				transitionCancellable = this.onTransitionEnd(this.el, transitionProp, transitionCallback, Globals.TRANSITION_DELAY * 2);
-				// transitionCancellable = addTransitionCallback(transitionProp, transitionCallback, this.el, this, Globals.TRANSITION_DELAY * 2);
-			}
-		};
-		if (check(owner.selectedIndex)) {
-			this._onSiblingSelect();
-		} else {
-			this.listenTo(owner, "select:one select:none", handleSelect);
-		}
-	},
-	
-	_onSiblingSelect: function() {
-		if (this.model.has("prefetched")) {
-			this.image.src = this.model.get("prefetched");
-			this.el.classList.remove("idle");
-			this.el.classList.add("done");
-		} else {
-			this.createDeferredImage(this.model.getImageUrl(), this.image).promise();
-		}
-	},
-	
-	*/
-	
-	/*createDeferredImage2: function() {
+	createDeferredImage2: function() {
 		return Promise.resolve(function() {
 			this.el.classList.remove("idle");
 			if (this.model.has("prefetched")) {
@@ -309,14 +295,6 @@ module.exports = View.extend({
 				return deferred.promise();
 			}
 		}.bind(this));
-	},*/
-	
-	/* --------------------------- *
-	/* utils
-	/* --------------------------- */
-	 
-	_getSelectionDistance: function() {
-		return Math.abs(this.model.collection.indexOf(this.model) - this.model.collection.selectedIndex);
 	},
-	
+	*/
 });
