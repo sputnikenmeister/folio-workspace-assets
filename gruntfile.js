@@ -353,18 +353,33 @@ module.exports = function (grunt) {
 	grunt.config("favicons", {
 		options: {
 			trueColor: true,
-			appleTouchBackgroundColor: "#FEFCE7",
-			tileColor: "#FEFCE7",
 			tileBlackWhite: false,
 			html: "html/static.xhtml",
 			HTMLPrefix: "/workspace/assets/images/favicon/"
 		},
-		icons: {
-			src: "src/resources/favicon/favicon.png",
+		steampunk: {
+			options: {
+				appleTouchPadding: 10,
+				appleTouchBackgroundColor: "#FEFCE7",
+				tileColor: "#FEFCE7",
+			},
+			src: "src/resources/favicon/steampunk.png",
 			dest: "images/favicon"
-		}
+		},
+		img_0139: {
+			options: {
+				appleTouchPadding: 0,
+				// appleTouchBackgroundColor: "#FF00FF",
+				// tileColor: "#FF00FF",
+			},
+			src: "src/resources/favicon/IMG_0139.jpg",
+			dest: "images/favicon",
+		},
 	});
-	grunt.registerTask("generate-favicon", ["favicons"]);
+	grunt.registerTask("generate-favicons", [
+		"favicons:img_0139",
+		// "favicons:steampunk",
+	]);
 
 	// DEBUG: check config result
 	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
