@@ -52,17 +52,22 @@ module.exports = ContainerView.extend({
 		_.bindAll(this, "_onHPanStart", "_onHPanMove", "_onHPanFinal");
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
 		
+		this.listenTo(controller, {
+			"change:before": this._beforeChange,
+			"change:after": this._afterChange
+		});
+		
 		this.bundleListeners = {
-			"select:one": this._onSelectOne,
-			"select:none": this._onSelectNone,
-			"deselect:one": this._onDeselectOne,
-			"deselect:none": this._onDeselectNone,
+			"select:one": this._onSelectOneBundle,
+			"select:none": this._onSelectNoBundle,
+			"deselect:one": this._onDeselectOneBundle,
+			"deselect:none": this._onDeselectNoBundle,
 		};
 		this.mediaListeners = {
-			"select:one": this._onSelectMedia,
-			"select:none": this._onSelectMedia,
-			"deselect:one": this._onDeselectMedia,
-			"deselect:none": this._onDeselectMedia,
+			"select:one": this._onSelectAnyMedia,
+			"select:none": this._onSelectAnyMedia,
+			"deselect:one": this._onDeselectAnyMedia,
+			"deselect:none": this._onDeselectAnyMedia,
 		};
 		this.listenTo(bundles, this.bundleListeners);
 
@@ -75,30 +80,11 @@ module.exports = ContainerView.extend({
 		// this.bundleList.renderNow();
 		// this.keywordList.renderNow();
 		
-		
-		// var nodes = this.keywordList.el.querySelectorAll(".list-group span");
-		// this.hGroupings = [];
-		// for (var i = 0, num = nodes.length; i != num; i++) {
-		// 	this.hGroupings[i] = nodes[i];
-		// }
-		
-		// XXX
 		this.transforms.add(
 			this.bundleList.el, this.keywordList.el,
 			this.bundleList.wrapper, this.keywordList.wrapper,
 			this.sitename.el, this.hGroupings
 		);
-		// XXX
-		// this.transforms.clearAllCaptures();
-		// this.transforms.validate();
-
-		// if (bundles.selected) {
-		// 	this.touch.on("panstart", this._onHPanStart);
-		// 	this.touch.on("vpanstart", this._onVPanStart);
-		// 	this.setCollapsed(true);
-		// } else {
-		// 	this.setCollapsed(false);
-		// }
 	},
 
 	/* --------------------------- *
@@ -107,7 +93,7 @@ module.exports = ContainerView.extend({
 
 	/** @override */
 	render: function () {
-		console.log(".... NavigationView.render()");
+		// console.log(".... NavigationView.render()");
 		// this.transforms.clearAllCaptures();
 		this.transforms.stopAllTransitions();
 		// this.transforms.clearAllTransitions();
@@ -120,123 +106,182 @@ module.exports = ContainerView.extend({
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
 
-	// /* -------------------------------
-	//  * Router -> before model change
-	//  * ------------------------------- */
-	// 
-	// _beforeChange: function(bundle,media) {
-	// 	console.log(">>>> NavigationView._beforeChange");
-	// },
-	// 
-	// _afterChange: function(bundle,media) {
-	// 	console.log("<<<< NavigationView._afterChange");
-	// },
+	/* -------------------------------
+	 * Router -> before model change
+	 * ------------------------------- */
+	
+	_beforeChange: function(bundle, media) {
+		// var lastHadBundle = !!this._hasBundle;
+		// var lastHadMedia = !!this._hasMedia;
+		// this._hasBundle = !!bundle;
+		// this._hasMedia = !!media;
+		// var bundleStateChanged = lastHadBundle !== this._hasBundle;
+		// var mediaStateChanged = lastHadMedia !== this._hasMedia;
+		// 
+		// this._lastBundle = this._currentBundle;
+		// this._currentBundle = bundle? bundle : void 0;
+		// this._bundleChanged = (this._lastBundle !== this._currentBundle);
+		// this._lastMedia = this._currentMedia;
+		// this._currentMedia = media? media : void 0;
+		// this._mediaChanged = (this._lastMedia !== this._currentMedia);
+		// 
+		// console.log(">>>> NavigationView._beforeChange",
+		// 		"bundle changed: " + this._bundleChanged, "media changed: " + this._mediaChanged);
+		// 
+		console.log(">>>> NavigationView._beforeChange", arguments);
+		this._bundleChanging = (bundle !== bundles.selected);
+		// // var lastMedia = lastBundle? lastBundle.get("media").selected : void 0;
+	},
+	
+	_afterChange: function(bundle, media) {
+		// console.log("<<<< NavigationView._afterChange", arguments);
+	},
 
 	/* --------------------------- *
 	 * Deselect event handlers
 	 * --------------------------- */
 
-	_onDeselectOne: function(bundle) {
-		
+	_onDeselectOneBundle: function(bundle) {
 		this.stopListening(bundle.get("media"), this.mediaListeners);
 		
-		// console.log("NavigationView._onDeselectOne(" + bundle.cid + ")");
+		// console.log("NavigationView._onDeselectOneBundle(" + bundle.cid + ")");
 		// this.transforms.captureAll();
 		// this.transforms.clearAllCaptures();
-		this.transforms.runTransition(Globals.TRANSIT_ENTERING,
-			this.bundleList.wrapper);
-		this.transforms.runTransition(Globals.TRANSIT_EXITING,
-			this.keywordList.wrapper);
-		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
-			this.bundleList.el, this.keywordList.el);
-		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
+		this.transforms.runTransition(
+			Globals.TRANSIT_CHANGING,
+			// Globals.TRANSIT_EXITING,
+			this.bundleList.el,
+			this.keywordList.el);
+			
+		this.transforms.runTransition(
+			this.isCollapsed()? Globals.TRANSIT_CHANGING : Globals.TRANSIT_ENTERING,
 			this.sitename.el);
+			
 		this.transforms.runTransition(
 			this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
 			this.hGroupings);
+			
+		this.transforms.runTransition(
+			// Globals.TRANSIT_ENTERING,
+			this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
+			this.bundleList.wrapper);
+			
+		this.transforms.runTransition(
+			this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
+			this.keywordList.wrapper);
+			
 		this.transforms.validate();
 	},
 
-	_onDeselectNone: function() {
+	_onDeselectNoBundle: function() {
 		this.touch.on("panstart", this._onHPanStart);
 		this.touch.on("vpanstart", this._onVPanStart);
 		
-		// console.log("NavigationView._onDeselectNone()");
-		// this.transforms.captureAll();
-		// this.transforms.clearAllCaptures();
-		this.transforms.runTransition(Globals.TRANSIT_ENTERING,
-			this.bundleList.wrapper, this.keywordList.wrapper);
-		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
-			this.bundleList.el, this.keywordList.el);
-		this.transforms.runTransition(Globals.TRANSIT_CHANGING,
+		this.transforms.runTransition(
+			Globals.TRANSIT_CHANGING,
+			this.bundleList.el,
+			this.keywordList.el);
+		
+		this.transforms.runTransition(
+			Globals.TRANSIT_CHANGING,
 			this.sitename.el);
-		this.transforms.runTransition(Globals.TRANSIT_ENTERING, this.hGroupings);
+		
+		this.transforms.runTransition(
+			Globals.TRANSIT_ENTERING,
+			this.hGroupings);
+		
+		this.transforms.runTransition(
+			Globals.TRANSIT_ENTERING,
+			this.bundleList.wrapper,
+			this.keywordList.wrapper);
+		
 		this.transforms.validate();
 	},
 
-	_onDeselectMedia: function(media) {
-		// console.log("NavigationView._onDeselectMedia()");
-		// this.transforms.captureAll();
-		// this.transforms.clearAllCaptures();
+	_onDeselectAnyMedia: function(media) {
 		if (this.isCollapsed()) {
 			this.transforms.clearOffset(this.keywordList.wrapper);
-			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE,
+			this.transforms.runTransition(
+				Globals.TRANSIT_IMMEDIATE,
 				this.keywordList.wrapper);
 		} else {
-			this.transforms.runTransition(Globals.TRANSIT_CHANGING,
-				this.bundleList.el, this.keywordList.el);
-			this.transforms.runTransition(Globals.TRANSIT_ENTERING,
-				this.bundleList.wrapper, this.keywordList.wrapper, this.sitename.el,
+			this.transforms.runTransition(
+				Globals.TRANSIT_CHANGING,
+				this.bundleList.el,
+				this.keywordList.el);
+				
+			this.transforms.runTransition(
+				Globals.TRANSIT_ENTERING,
+				this.bundleList.wrapper,
+				this.keywordList.wrapper,
+				this.sitename.el);
+				
+			this.transforms.runTransition(
+				Globals.TRANSIT_ENTERING,
 				this.hGroupings);
-			
-			// this.transforms.runTransition(
-			// 	media? Globals.TRANSIT_ENTERING : Globals.TRANSIT_EXITING,
-			// 	this.hGroupings);
 		}
-		this.transforms.validate();
+		if (!this._bundleChanging) {
+			this.transforms.validate();
+		}
 	},
 
 	/* --------------------------- *
 	 * Select event handlers
 	 * --------------------------- */
 
-	_onSelectOne: function(bundle) {
-		// console.log("NavigationView._onSelectOne(" + bundle.cid + ")");
+	_onSelectOneBundle: function(bundle) {
 		this.listenTo(bundle.get("media"), this.mediaListeners);
 		this.keywordList.filterBy(bundle);
 		this.setCollapsed(true);
 	},
 	
-	_onSelectNone: function() {
-		// console.log("NavigationView._onSelectNone()");
+	_onSelectNoBundle: function() {
 		this.touch.off("panstart", this._onHPanStart);
 		this.touch.off("vpanstart", this._onVPanStart);
 		this.keywordList.clearFilter();
 		this.setCollapsed(false);
 	},
 	
-	_onSelectMedia: function(media) {
-		// console.log("NavigationView._onSelectMedia(" + (media? media.cid : "") + ")");
+	_onSelectAnyMedia: function(media) {
 		this.setCollapsed(true);
 	},
-
+	
+	_onKeywordListSelect: function(keyword) {
+		if (!this.isCollapsed()) {
+			keywords.select(keyword);
+			this.bundleList.filterBy(keyword);
+			// this.setCollapsed(false);
+		}
+	},
+	
+	// _onKeywordListSelect_notCollapsed: function(keyword) {
+	// 	keywords.select(keyword);
+	// 	this.bundleList.filterBy(keyword);
+	// },
+	
 	/* -------------------------------
 	 * collapse
 	 * ------------------------------- */
 
 	_onCollapseChange: function(collapsed) {
-		// console.log("NavigationView._onCollapseChange(" + (collapsed?"true":"false") + ")");
+		if (collapsed) {
+			keywords.deselect();
+			this.bundleList.clearFilter();
+		// 	this.stopListening(this.keywordList, "view:select:one view:select:none", this._onKeywordListSelect_notCollapsed);
+		// } else {
+		// 	this.listenTo(this.keywordList, "view:select:one view:select:none", this._onKeywordListSelect_notCollapsed);
+		}
 		this.bundleList.setCollapsed(collapsed);
 		this.keywordList.setCollapsed(collapsed);
 	},
 	
 	/* --------------------------- *
-	 * jQuery/DOM event handlers
+	 * DOM event handlers
 	 * --------------------------- */
 
 	/** @override */
-	_onSitenameClick: function (ev) {
-		ev.isDefaultPrevented() || ev.preventDefault();
+	_onSitenameClick: function (domev) {
+		domev.defaultPrevented || domev.preventDefault();
 		controller.deselectBundle();
 	},
 
@@ -363,13 +408,17 @@ module.exports = ContainerView.extend({
 
 	assignSitenameButton: function() {
 		_.bindAll(this, "_onSitenameClick");
+		
 		var pseudo = {};
 		pseudo.$el = this.$("#site-name");
-		pseudo.$el.on("click", this._onSitenameClick);
 		pseudo.$el.wrap("<div id=\"site-name-wrapper\" class=\"transform-wrapper\"></div>");
 		pseudo.el = pseudo.$el[0];
 		pseudo.wrapper = pseudo.el.parentElement;
-		pseudo.$wrapper = pseudo.$el.parent();
+		
+		pseudo.el.addEventListener("click", this._onSitenameClick, false);
+		this.listenTo(this, "view:remove", function () {
+			pseudo.el.removeEventListener("click", this._onSitenameClick, false);
+		});
 		return pseudo;
 	},
 
@@ -380,14 +429,12 @@ module.exports = ContainerView.extend({
 		var view = new FilterableListView({
 			el: "#bundle-list",
 			collection: bundles,
-			// collapsed is set later by showBundleItem/showBundleList
-			//collapsed: bundles.selected,
 			collapsed: false,
-			filterBy: keywords.selected,
 			filterKey: "bIds",
-			// filterFn: function () {
-			// 	return keywords.selected? keywords.selected.get("bIds"): null;
-			// },
+			filterBy: keywords.selected,
+			filterFn: function (bundle, newVal, oldVal) {
+				return newVal? newVal.get("bIds").indexOf(bundle.id) !== -1 : true;
+			},
 		});
 		controller.listenTo(view, {
 			"view:select:one": controller.selectBundle,
@@ -396,7 +443,7 @@ module.exports = ContainerView.extend({
 		// view.wrapper = this.el.querySelector("#bundle-list-wrapper") || view.$el.wrap(
 		// 	"<div id=\"bundle-list-wrapper\" class=\"transform-wrapper\"></div>")[0].parentElement;
 		view.wrapper = view.el.parentElement;
-		view.$wrapper = view.$el.parent();
+		// view.$wrapper = view.$el.parent();
 		return view;
 	},
 
@@ -408,24 +455,26 @@ module.exports = ContainerView.extend({
 			el: "#keyword-list",
 			collection: keywords,
 			collapsed: false,
-			filterBy: bundles.selected,
 			filterKey: "kIds",
+			filterBy: bundles.selected,
+			filterFn: function (keyword, newVal, oldVal) {
+				return newVal? newVal.get("kIds").indexOf(keyword.id) !== -1 : true;
+			},
 			groupings: {
 				collection: types,
-				key: "tIds"
+				key: "tIds",
+				// groupingFn: function (keyword) {
+				// 	return keyword.get("tIds");
+				// },
 			},
-			// filterFn: function () {
-			// 	return bundles.selected? bundles.selected.get("kIds"): null;
-			// },
-			// groupingFn: function (item) {
-			// 	return item.get("tIds");
-			// },
 		});
+		
+		this.listenTo(view, "view:select:one view:select:none", this._onKeywordListSelect);
 
 		// view.wrapper = this.el.querySelector("#keyword-list-wrapper") || view.$el.wrap(
 		// 	"<div id=\"keyword-list-wrapper\" class=\"transform-wrapper\"></div>")[0].parentElement;
 		view.wrapper = view.el.parentElement;
-		view.$wrapper = view.$el.parent();
+		// view.$wrapper = view.$el.parent();
 		return view;
 	},
 

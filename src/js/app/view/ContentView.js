@@ -28,7 +28,7 @@ var CollectionStack = require("./component/CollectionStack");
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
 /** @type {Function} */
-var mediaCaptionTemplate = require("./template/CollectionStack.Image.tpl");
+var mediaCaptionTemplate = require("./template/CollectionStack.Media.tpl");
 
 /** @type {module:app/view/component/Carousel} */
 var Carousel = require("./component/Carousel");
@@ -38,8 +38,6 @@ var ImageRenderer = require("./render/ImageRenderer");
 var SequenceRenderer = require("./render/SequenceRenderer");
 /** @type {module:app/view/render/VideoRenderer} */
 var VideoRenderer = require("./render/VideoRenderer");
-/** @type {module:app/view/render/CarouselEmptyRenderer} */
-var CarouselEmptyRenderer = require("./render/CarouselEmptyRenderer");
 
 /**
  * @constructor
@@ -295,11 +293,13 @@ var ContentView = ContainerView.extend({
 	createMediaCarousel: function(bundle) {
 		// Create carousel
 		var media = bundle.get("media");
-		var classname = "media-carousel " + bundle.get("handle");
+		// TODO: must match className set in Controller.js ('bundle-%bundle.id%')
+		var classname = "media-carousel bundle-" + bundle.id; 
 		if (bundle.attrs().hasOwnProperty("@classname")) {
 			classname += " " + bundle.attrs()["@classname"];
 		}
-		var emptyRenderer = CarouselEmptyRenderer.extend({
+		var emptyRenderer = Carousel.defaultRenderer.extend({
+			className: "carousel-item empty-item",
 			model: bundle,
 			template: bundleDescTemplate,
 		});

@@ -7,21 +7,22 @@ var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {module:app/utils/css/prefixedProperty} */
+/** @type {module:utils/css/prefixedProperty} */
 var prefixedProperty = require("../../../utils/css/prefixedProperty");
-/** @type {module:app/utils/strings/dashedToCamel} */
-var dashedToCamel = require("../../../utils/strings/dashedToCamel");
-/** @type {module:app/utils/strings/camelToDashed} */
-var camelToDashed = require("../../../utils/strings/camelToDashed");
-/** @type {module:app/utils/event/addTransitionCallback} */
+/** @type {module:utils/css/prefixedStyleName} */
+var prefixedStyleName = require("../../../utils/css/prefixedStyleName");
+// /** @type {module:utils/strings/dashedToCamel} */
+// var dashedToCamel = require("../../../utils/strings/dashedToCamel");
+// /** @type {module:utils/strings/camelToDashed} */
+// var camelToDashed = require("../../../utils/strings/camelToDashed");
+
+/** @type {module:utils/event/addTransitionCallback} */
 var addTransitionCallback = require("../../../utils/event/addTransitionCallback");
 /** @type {Function} */
 var transitionEnd = require("../../../utils/event/transitionEnd");
-/** @type {module:app/utils/event/getTransitionPromise} */
-// var getTransitionPromise = require("../../../utils/event/getTransitionPromise");
 
-var _styleProps = {};
-var _styleNames = {};
+// var _styleProps = {};
+// var _styleNames = {};
 var _viewsByCid = {};
 
 /**
@@ -66,23 +67,25 @@ var View = Backbone.View.extend({
 	},
 	
 	setEnabled: function(enable) {},
-   
+	
 	/* -------------------------------
 	/* css prefix helpers
 	/* ------------------------------- */
-   
+	
 	getPrefixedProperty: function(prop) {
-		return _styleProps[prop] || (_styleProps[prop] = prefixedProperty(prop, this.el.style));
+		return prefixedProperty(prop, this.el.style);
+		// return _styleProps[prop] || (_styleProps[prop] = prefixedProperty(prop, this.el.style));
 	},
 	
 	getPrefixedStyle: function(prop) {
-		var p, pp;
-		if (_styleNames[prop] === void 0) {
-			p = dashedToCamel(prop);
-			pp = this.getPrefixedProperty(p);
-			_styleNames[prop] = (p === pp? "" : "-") + camelToDashed(pp);
-		}
-		return _styleNames[prop];
+		return prefixedStyleName(prop, this.el.style);
+		// var p, pp;
+		// if (_styleNames[prop] === void 0) {
+		// 	p = dashedToCamel(prop);
+		// 	pp = this.getPrefixedProperty(p);
+		// 	_styleNames[prop] = (p === pp? "" : "-") + camelToDashed(pp);
+		// }
+		// return _styleNames[prop];
 	},
 	
 	/* -------------------------------

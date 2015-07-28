@@ -9,26 +9,13 @@ var Backbone = require("backbone");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
-/** @type {module:app/model/item/MediaItem} */
-// var MediaItem = require("../../model/item/MediaItem");
 /** @type {module:app/model/SelectableCollection} */
 var SelectableCollection = require("../../model/SelectableCollection");
 
-/** @type {module:app/view/base/View} */
-// var View = require("../base/View");
 /** @type {module:app/view/base/ViewError} */
 var ViewError = require("../base/ViewError");
 /** @type {module:app/view/render/MediaRenderer} */
 var MediaRenderer = require("./MediaRenderer");
-
-/** @type {module:app/view/promise/whenSelectionIsContiguous} */
-var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
-/** @type {module:app/view/promise/whenTransitionEnds} */
-var whenTransitionEnds = require("../promise/whenTransitionEnds");
-/** @type {module:app/utils/net/loadImage} */
-var loadImage = require("../../../utils/net/loadImage");
-// var loadImageXHR = require("../../../utils/net/loadImageXHR");
-// var loadImageDOM = require("../../../utils/net/loadImageDOM");
 
 /** @type {Function} */
 var viewTemplate = require( "./SequenceRenderer.tpl" );
@@ -50,17 +37,13 @@ module.exports = MediaRenderer.extend({
 	
 	/** @override */
 	initialize: function (opts) {
-		// MediaRenderer.prototype.initialize.apply(this, arguments);
 		_.bindAll(this,
-			"_onContentClick",
 			"createSequenceChildren",
 			"startSequence",
 			"stopSequence",
 			"_startSequenceStep",
 			"_cancelSequenceStep"
 		);
-		this._onLoadImageProgress = _.throttle(this._onLoadImageProgress.bind(this), 100,
-					{leading: true, trailing: true});
 		
 		// Prepare sequence model
 		var srcMapFn = function(item) {
@@ -117,8 +100,11 @@ module.exports = MediaRenderer.extend({
 		sizing.style.maxWidth = "";
 		sizing.style.maxHeight = "";
 		
+		cX = sizing.offsetLeft + sizing.clientLeft;
+		cY = sizing.offsetTop + sizing.clientTop;
 		pcW = sizing.clientWidth;
 		pcH = sizing.clientHeight;
+		
 		sW = this.model.get("w");
 		sH = this.model.get("h");
 		
@@ -135,8 +121,6 @@ module.exports = MediaRenderer.extend({
 			cW = Math.round((cH / sH) * sW);
 		}
 		
-		cX = sizing.offsetLeft + sizing.clientLeft;
-		cY = sizing.offsetTop + sizing.clientTop;
 		
 		// NOTE: image elements are given 100% w/h in CSS (.sequence-renderer .content img);
 		// actual dimensions are set to the parent element (.sequence-renderer .content)
@@ -150,10 +134,10 @@ module.exports = MediaRenderer.extend({
 		
 		// sizing.style.maxWidth = (cW + (poW - pcW)) + "px";
 		// sizing.style.maxHeight = (cH + (poH - pcH)) + "px";
-		// sizing.style.maxWidth = cW + "px";
-		// sizing.style.maxHeight = cH + "px";
-		sizing.style.maxWidth = content.offsetWidth + "px";
-		sizing.style.maxHeight = content.offsetHeight + "px";
+		sizing.style.maxWidth = cW + "px";
+		sizing.style.maxHeight = cH + "px";
+		// sizing.style.maxWidth = content.offsetWidth + "px";
+		// sizing.style.maxHeight = content.offsetHeight + "px";
 		
 		return this;
 	},
@@ -163,78 +147,20 @@ module.exports = MediaRenderer.extend({
 	/* --------------------------- */
 	
 	initializeAsync: function() {
-		MediaRenderer.whenSelectionIsContiguous(this).then(
-			MediaRenderer.whenSelectTransitionEnds
-		).then(
-			MediaRenderer.whenDefaultImageLoads
-		// whenSelectionIsContiguous(this).then(
-		// 	function(view) {
-		// 		if (view.model.selected) {
-		// 			return view;
-		// 		} else {
-		// 			return whenTransitionEnds(view, view.el, "transform");
-		// 		}
-		// 	}
-		// ).then(
-		// 	function(view) {
-		// 		return this.createDeferredImage(this.model.getImageUrl(), this.image).promise();
-		// 	}.bind(this)
-		).then(
-			function(url) {
-				console.log("SequenceRenderer", this.model.cid, url);
-				this.createSequenceChildren();
-				this.addSelectionListeners();
-			}.bind(this)
-		).catch(function(err) {
-			if (err instanceof ViewError) {
-				console.log(err.view.model.cid, "SequenceRenderer: " + err.message);
-			} else {
-				console.error("SequenceRenderer promise error", err);
-			}
-		});
-	},
-	
-	/* --------------------------- *
-	/* default image promise
-	/* --------------------------- */
-	
-	createDeferredImage: function(url, target) {
-		var o = loadImage(url, target, this);
-		o.always(function() {
-			this.placeholder.removeAttribute("data-progress");
-			this.off("view:remove", o.cancel);
-		}).then(
-			this._onLoadImageDone,
-			this._onLoadImageError, 
-			this._onLoadImageProgress
-		).then(function(url) {
-			// this.model.set({"prefetched": url});
-			o.isXhr && this.on("view:remove", function() {
-				window.URL.revokeObjectURL(url);
-			});
-		});
-		this.on("view:remove", o.cancel);
-		return o;
-	},
-	
-	_onLoadImageProgress: function (progress) {
-		if (progress == "loadstart") {
-			this.el.classList.remove("idle");
-			this.el.classList.add("pending");
-		} else {
-			this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-		}
-	},
-	
-	_onLoadImageDone: function (url) {
-		this.el.classList.remove("pending");
-		this.el.classList.add("done");
-	},
-	
-	_onLoadImageError: function (err) {
-		console.error("VideoRenderer.onError: " + err.message, err.ev);
-		this.el.classList.remove("pending");
-		this.el.classList.add("error");
+		MediaRenderer.whenSelectionIsContiguous(this)
+			.then(MediaRenderer.whenSelectTransitionEnds)
+			.then(MediaRenderer.whenDefaultImageLoads)
+			.then(function(view) {
+					view.createSequenceChildren();
+					view.addSelectionListeners();
+				})
+			.catch(function(err) {
+					if (err instanceof ViewError) {
+						console.log(err.view.cid, err.view.model.cid, "SequenceRenderer: " + err.message);
+					} else {
+						console.error("SequenceRenderer promise error", err);
+					}
+				});
 	},
 	
 	/* ---------------------------

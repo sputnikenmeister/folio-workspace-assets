@@ -1,1 +1,1 @@
-<div class="content sizing"><%= desc %></div>
+<div id="desc_b<%= id %>" class="content sizing"><%= desc %><div>

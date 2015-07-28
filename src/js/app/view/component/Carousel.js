@@ -10,34 +10,32 @@ var $ = Backbone.$;
 var _ = require("underscore");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
-
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
-/** @type {module:app/utils/event/addTransitionEndCommand} */
-//var addTransitionCallback = require("../../../utils/event/addTransitionCallback");
-
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
 /** @type {module:app/view/base/DeferredView} */
 var DeferredView = require("../base/DeferredView");
 
-/** @type {module:app/view/render/CarouselDefaultRenderer} */
-var CarouselDefaultRenderer = require("../render/CarouselDefaultRenderer");
-/** @type {module:app/view/render/CarouselEmptyRenderer} */
-var CarouselEmptyRenderer = require("../render/CarouselEmptyRenderer");
+/**
+ * @constructor
+ * @type {module:app/view/base/View}
+ */
+var DefaultRenderer = View.extend({
+	/** @override */
+	className: "carousel-item",
+	/** @override */
+	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
+	/** @override */
+	initialize: function (options) {
+		this.el.innerHTML = this.template(this.model.toJSON()); // = this.template(this.model.attributes);
+	},
+});
 
 
-//var ORIENTED_PROPS = {
-//	x: ["x", "y"],
-//	y: ["y", "x"],
-//	offsetLeft: ["offsetLeft", "offsetTop"],
-//	offsetTop: ["offsetTop", "offsetLeft"],
-//	offsetWidth: ["offsetWidth", "offsetHeight"],
-//	offsetHeight: ["offsetHeight", "offsetWidth"],
-//};
 
 /**
  * @constructor
@@ -58,9 +56,9 @@ var Carousel = DeferredView.extend({
 	/** @type {int} */
 	direction: Hammer.DIRECTION_HORIZONTAL,
 	/** @type {Function} */
-	renderer: CarouselDefaultRenderer,
+	renderer: DefaultRenderer.extend({ className: "carousel-item default-renderer"}),
 	/** @type {Function} */
-	emptyRenderer: null,
+	emptyRenderer: DefaultRenderer.extend({ className: "carousel-item empty-item"}),
 	
 	/** @override */
 	initialize: function (options) {
@@ -170,12 +168,8 @@ var Carousel = DeferredView.extend({
 	},
 	
 	/* --------------------------- *
-	 * Create children
-	 * --------------------------- */
-	
-	_getRenderer: function(item, index, arr) {
-		return this.rendererFunction? this.rendererFunction(item, index, arr) : this.renderer;
-	},
+	/* Create children
+	/* --------------------------- */
 	
 	createChildrenNow: function () {
 		this._createChildren();
@@ -198,11 +192,15 @@ var Carousel = DeferredView.extend({
 				sIndex = 0;
 			}
 			this.collection.each(function (item, index, arr) {
-				buffer.appendChild(this.createChildView(this._getRenderer(item, index, arr), {model: item}, index, sIndex).el);
-				// buffer.appendChild(this.createChildView(this.renderer, {model: item}, index, sIndex).el);
+				buffer.appendChild(this.createChildView(
+					this._getRenderer(item, index, arr), {model: item}, index, sIndex).el);
 			}, this);
 			this.$el.append(buffer);
 		}
+	},
+	
+	_getRenderer: function(item, index, arr) {
+		return this.rendererFunction? this.rendererFunction(item, index, arr) : this.renderer;
 	},
 	
 	createEmptyView: function () {
@@ -215,7 +213,7 @@ var Carousel = DeferredView.extend({
 		this.children.add(view);
 		switch (index - sIndex) {
 			case  0:
-				view.$el.addClass("selected");
+				view.el.classList.add("selected");
 				return this._selectedView = view;
 			case -1:
 				return this._precedingView = view;
@@ -241,6 +239,15 @@ var Carousel = DeferredView.extend({
 	 * measure
 	 * --------------------------- */
 	
+	// var ORIENTED_PROPS = {
+	// 	x: ["x", "y"],
+	// 	y: ["y", "x"],
+	// 	offsetLeft: ["offsetLeft", "offsetTop"],
+	// 	offsetTop: ["offsetTop", "offsetLeft"],
+	// 	offsetWidth: ["offsetWidth", "offsetHeight"],
+	// 	offsetHeight: ["offsetHeight", "offsetWidth"],
+	// };
+	
 	measureNow: function () {
 		this._measure();
 	},
@@ -256,7 +263,11 @@ var Carousel = DeferredView.extend({
 		
 		// chidren metrics
 		this.children.each(function(view) {
-			m = this.measureChildView(view.render());
+			view.render();
+		});
+		
+		this.children.each(function(view) {
+			m = this.measureChildView(view);
 			m.pos = pos;
 			pos += m.outer + this.childGap;
 			m.posInner = posInner;
@@ -385,12 +396,12 @@ var Carousel = DeferredView.extend({
 		// cancel callback
 		this._scrollEndCancellable && this._scrollEndCancellable(false);
 		if (skipTransitions) {
-			this.$el.addClass("skip-transitions");
+			this.el.classList.add("skip-transitions");
 		} else {
 			// if (this.el.classList.contains("disabled") !== this._enabled) {
-			// 	this.$el.addClass("disabled-changing");
+			// 	this.el.classList.add("disabled-changing");
 			// }
-			this.$el.removeClass("skip-transitions");
+			this.el.classList.remove("skip-transitions");
 			this._scrollEndCancellable = this.onTransitionEnd(this._selectedView.el,
 					this.getPrefixedStyle("transform"), this._onScrollEnd, Globals.TRANSITION_DURATION * 2);
 		}
@@ -400,9 +411,9 @@ var Carousel = DeferredView.extend({
 	
 	_onScrollEnd: function(exec) {
 		this._scrollEndCancellable = void 0;
-		// this.$el.removeClass("disabled-changing");
+		// this.el.classList.remove("disabled-changing");
 		if (exec) {
-			this.$el.removeClass("scrolling");
+			this.el.classList.remove("scrolling");
 		}
 	},
 	
@@ -449,7 +460,7 @@ var Carousel = DeferredView.extend({
 		if (this._scrollCandidateView !== void 0) {
 			var view = this._scrollCandidateView;
 			this._scrollCandidateView = void 0;
-			view.$el.removeClass("candidate");
+			view.el.classList.remove("candidate");
 			
 			this._internalSelection = true;
 			if (view === this.emptyView) {
@@ -479,8 +490,10 @@ var Carousel = DeferredView.extend({
 		}
 		
 		if (this._scrollCandidateView) {
-			this._scrollCandidateView.$el.addClass("candidate");
-			this.$el.addClass("scrolling");
+			console.log("XXX-C Carousel._onTap", ev.type);
+			ev.preventDefault();
+			this._scrollCandidateView.el.classList.add("candidate");
+			this.el.classList.add("scrolling");
 			this.scrollByNow(0, Carousel.ANIMATED);
 		}
 	},
@@ -491,10 +504,10 @@ var Carousel = DeferredView.extend({
 	
 	_onPan: function (ev) {
 		switch (ev.type) {
-			case "panstart":	return this._onPanStart(ev);
-			case "panmove":		return this._onPanMove(ev);
-			case "panend":		return this._onPanFinish(ev);
-			case "pancancel":	return this._onPanFinish(ev);
+			case "panstart": return this._onPanStart(ev);
+			case "panmove": return this._onPanMove(ev);
+			case "panend": return this._onPanFinish(ev);
+			case "pancancel": return this._onPanFinish(ev);
 		}
 	},
 	
@@ -502,7 +515,8 @@ var Carousel = DeferredView.extend({
 	_onPanStart: function (ev) {
 		this.commitScrollSelection();
 		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.thresholdDeltaX : ev.thresholdDeltaY;
-		this.$el.addClass("panning scrolling");
+		this.el.classList.add("panning");
+		this.el.classList.add("scrolling");
 		this.scrollByNow(delta, Carousel.IMMEDIATE);
 	},
 	
@@ -512,9 +526,9 @@ var Carousel = DeferredView.extend({
 		var view = (ev.offsetDirection & this._precedingDir)? this._precedingView : this._followingView;
 		
 		if (this._panCandidateView !== view) {
-			this._panCandidateView && this._panCandidateView.$el.removeClass("candidate");
+			this._panCandidateView && this._panCandidateView.el.classList.remove("candidate");
 			this._panCandidateView = view;
-			this._panCandidateView && this._panCandidateView.$el.addClass("candidate");
+			this._panCandidateView && this._panCandidateView.el.classList.add("candidate");
 		}
 		if (this._panCandidateView === void 0) {
 			delta *= Globals.H_PANOUT_DRAG;
@@ -535,15 +549,15 @@ var Carousel = DeferredView.extend({
 			this._scrollCandidateView = view;
 		}
 		// if (this._precedingView && (this._precedingView !== this._scrollCandidateView)) {
-		// 	this._precedingView.$el.removeClass("candidate");
+		// 	this._precedingView.el.classList.remove("candidate");
 		// }
 		// if (this._followingView && (this._followingView !== this._scrollCandidateView)) {
-		// 	this._followingView.$el.removeClass("candidate");
+		// 	this._followingView.el.classList.remove("candidate");
 		// }
 		if (this._panCandidateView && (this._panCandidateView !== this._scrollCandidateView)) {
-			this._panCandidateView.$el.removeClass("candidate");
+			this._panCandidateView.el.classList.remove("candidate");
 		}
-		this.$el.removeClass("panning");
+		this.el.classList.remove("panning");
 		this._panCandidateView = void 0;
 		
 		this.scrollByNow(0, Carousel.ANIMATED);
@@ -566,20 +580,20 @@ var Carousel = DeferredView.extend({
 				console.error("Carousel._onSelectAny: Select event triggered for model already selected");
 			}
 		}
-		this._selectedView.$el.removeClass("selected");
+		this._selectedView.el.classList.remove("selected");
 		this.updateSelection();
-		this._selectedView.$el.addClass("selected");
+		this._selectedView.el.classList.add("selected");
 		if (this._internalSelection) {
 			// console.log("Internal selection");
 			return;
 		}
-		this.$el.addClass("scrolling");
+		this.el.classList.add("scrolling");
 		// this.scrollByLater(0, Carousel.ANIMATED);
 		this.scrollByNow(0, Carousel.ANIMATED);
 	},
 
 	_onDeselectAny: function (model) {
-		// this._selectedView.$el.removeClass("selected");
+		// this._selectedView.el.classList.remove("selected");
 	},
 
 	/* --------------------------- *
@@ -692,6 +706,8 @@ var Carousel = DeferredView.extend({
 	DIRECTION_HORIZONTAL: Hammer.DIRECTION_HORIZONTAL,
 	/** used in crateEmptyChildView */
 	EMPTY_VIEW_OPTS: ["model", "collection", "template"],
+	
+	defaultRenderer: DefaultRenderer
 
 });
 

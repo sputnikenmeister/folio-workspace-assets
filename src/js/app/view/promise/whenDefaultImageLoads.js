@@ -1,3 +1,6 @@
+/** @type {module:underscore} */
+var _ = require("underscore");
+/** @type {module:app/view/promise/whenImageLoads} */
 var whenImageLoads = require("./whenImageLoads");
 
 module.exports = function(view) {
@@ -12,13 +15,13 @@ module.exports = function(view) {
 			view.el.classList.remove("idle");
 			view.el.classList.add("pending");
 			whenImageLoads(view.model.getImageUrl(), view.image,
-				function (progress) {
-					console.log(view.cid, view.model.cid, "ImageRenderer progressHandler", progress);
+				_.throttle(function (progress) {
+					console.log(view.cid, view.model.cid, "whenDefaultImageLoads progress", progress);
 					view.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-				}
+				}, 100, {leading: true, trailing: false})
 			).then(
 				function(url) {
-					console.log(view.cid, view.model.cid, "ImageRenderer whenImageLoaded resolved", url);
+					console.log(view.cid, view.model.cid, "whenDefaultImageLoads resolved", url);
 					view.placeholder.removeAttribute("data-progress");
 					view.el.classList.remove("pending");
 					view.el.classList.add("done");
@@ -31,7 +34,7 @@ module.exports = function(view) {
 					resolve(view);
 				},
 				function(err) {
-					console.log(view.cid, view.model.cid, "ImageRenderer whenImageLoaded rejected", err.message);
+					console.log(view.cid, view.model.cid, "whenDefaultImageLoads rejected", err.message);
 					view.placeholder.removeAttribute("data-progress");
 					view.el.classList.remove("pending");
 					view.el.classList.add("error");
@@ -40,4 +43,4 @@ module.exports = function(view) {
 			);
 		});
 	}
-}
+};

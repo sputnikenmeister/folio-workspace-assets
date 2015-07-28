@@ -30,7 +30,6 @@ var Backbone = require("backbone");
 global.jQuery = Backbone.$ = $;
 require("hammerjs");
 require("jquery.transit");
-require("jquery-color");
 require("backbone.babysitter");
 require("Backbone.Mutators");
 

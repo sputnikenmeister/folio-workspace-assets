@@ -22,11 +22,15 @@
 // media-caption-stack
 // - - - - - - - - - - - - - - - - - -
 
+@import "components/_stack";
+
 .media-caption-stack {
 	.content {
-		top: 1.5rem;
-		position: absolute;
-		display: block;
+		// position: relative;
+		margin: 1.5rem auto;
+		// top: 1.5rem;
+		// position: absolute;
+		// display: block;
 		p {
 			margin-left: -1px;
 			@include heading_font($size: 20px, $weight: 300, $lead: 26px);

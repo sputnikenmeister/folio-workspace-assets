@@ -1,5 +1,5 @@
 /**
- * @module app/view/render/CarouselEmptyRenderer
+ * @module app/view/render/CarouselDefaultRenderer
  */
 
 /** @type {module:underscore} */
@@ -11,20 +11,25 @@ var View = require("../base/View");
 
 /**
  * @constructor
- * @type {module:app/view/render/CarouselEmptyRenderer}
+ * @type {module:app/view/render/CarouselRenderer}
  */
 module.exports = View.extend({
-	
+
 	/** @override */
-	//	model: Backbone.Model,
+	tagName: "div",
 	/** @override */
-	className: "carousel-item empty-item",
+	className: "carousel-item",
 	/** @override */
 	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
 	
 	/** @override */
-	render: function() {
-		this.$el.html(this.template(this.model.attributes));
-		return this;
-	}
+	initialize: function (options) {
+		this.el.innerHTML = this.template(this.model.toJSON());
+	},
+	
+	// /** @override */
+	// render: function() {
+	// 	this.el.innerHTML = this.template(this.model.attributes);
+	// 	return this;
+	// }
 });

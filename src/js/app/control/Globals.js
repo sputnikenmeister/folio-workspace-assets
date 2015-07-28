@@ -19,15 +19,17 @@ module.exports = (function () {
 		obj[b] = jsonSassVars.breakpoints[b].slice(1, -1);
 	}
 	globals.BREAKPOINTS = obj;
+	
+	globals.DEFAULT_COLORS = _.clone(jsonSassVars.default_colors);
 
 	globals.HORIZONTAL_STEP				=	parseFloat(jsonSassVars.units["hu_px"]);
 	globals.VERTICAL_STEP				=	parseFloat(jsonSassVars.units["vu_px"]);
 
 	globals.TRANSITION_GAP				=	parseFloat(jsonSassVars.transitions["delay_interval_ms"]);
-	globals.TRANSITION_DURATION			=	parseFloat(jsonSassVars.transitions["duration_ms"]);
+	globals.TRANSITION_DURATION		=	parseFloat(jsonSassVars.transitions["duration_ms"]);
 	globals.TRANSITION_EASE				=	jsonSassVars.transitions["ease"];
 
-	globals.NO_DELAY	 				=	0;
+	globals.NO_DELAY	 					=	0;
 	globals.TRANSITION_DELAY			=	(globals.TRANSITION_DURATION + globals.TRANSITION_GAP);
 	globals.EXITING_DELAY 				=	globals.TRANSITION_DELAY * 0 + 1;
 	globals.CHANGING_DELAY 				=	globals.TRANSITION_DELAY * 1 + 1;

@@ -72,6 +72,15 @@ module.exports = function (grunt) {
 			"./src/js/app/**/*.js"
 		]
 	});
+	
+	var vendor_requires = [
+		"backbone.babysitter", "backbone", "Backbone.Mutators",
+		"jquery.transit", "hammerjs", "jquery", "underscore",
+		"color", "es6-promise", "classlist-polyfill", "cookies-js"
+	];
+	var browserify_aliases = [];
+	// browserify_aliases.push("./bower_components/jquery-color/jquery.color.js:jquery-color");
+	// vendor_requires = ["jquery-color"].concat(vendor_requires);
 
 	/* browserify */
 	grunt.loadNpmTasks("grunt-browserify");
@@ -83,13 +92,8 @@ module.exports = function (grunt) {
 				fullPaths: false,
 				debug: true
 			},
-			require: [
-				"backbone.babysitter", "backbone", "Backbone.Mutators",
-				"jquery.transit", "hammerjs", "jquery", "underscore"
-			],
-			alias: [
-				"./bower_components/jquery-color/jquery.color.js:jquery-color"
-			]
+			require: vendor_requires,
+			alias: browserify_aliases
 		},
 	});
 
@@ -107,7 +111,7 @@ module.exports = function (grunt) {
 			transform: [
 				"node-underscorify"
 			],
-			external: ["jquery-color"].concat(grunt.config("browserify.vendor.options.require"))
+			external: vendor_requires
 		}
 	});
 
@@ -209,18 +213,16 @@ module.exports = function (grunt) {
 			files: ["gruntfile.js"],
 			tasks: ["compass:debug", "autoprefixer:debug",
 				"browserify:vendor", "browserify:client"],
-			// tasks: ["clean-all", "compass:debug", "autoprefixer:debug",
-			// 	"browserify:vendor", "browserify:client", "build-dist"],
-		},
-		// "build-styles-svg": {
-		// 	tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
-		// 	files: ["images/**/*.svg"],
-		// },
-		// "process-sources": {
-		// 	tasks: ["jshint"],
-		// 	files: ["src/js/**/*.js"],
-		// },
+		}
 	});
+	
+	// grunt.config("watch.build-styles-svg", {
+	// 	tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
+	// 	files: ["images/**/*.svg"] });
+		
+	// grunt.config("watch.process-sources", {
+	// 	tasks: ["jshint"],
+	// 	files: ["src/js/**/*.js"] });
 
 
 	/* --------------------------------
@@ -255,9 +257,7 @@ module.exports = function (grunt) {
 			transform: [
 				"node-underscorify"
 			],
-			alias: [
-				"./bower_components/jquery-color/jquery.color.js:jquery-color"
-			]
+			alias: browserify_aliases
 		}
 	});
 
@@ -339,13 +339,16 @@ module.exports = function (grunt) {
 
 	/* fontello-open (run CLI program)
 	 * - - - - - - - - - - - - - - - - - */
-	grunt.registerTask("fontello-open", "Open fontello configuration in browser", function() {
-		var child = grunt.util.spawn({
-			cmd: "fontello-cli",
-			args: ["open", "--config", "build/fontello.json"],
-			opts: {stdio: "inherit"}
-		}, this.async());
-	});
+	grunt.registerTask("fontello-open",
+		"Open fontello configuration in browser",
+		function() {
+			var child = grunt.util.spawn({
+				cmd: "fontello-cli",
+				args: ["open", "--config", "build/fontello.json"],
+				opts: {stdio: "inherit"}
+			}, this.async());
+		}
+	);
 	
 	/* generate-favicons
 	 * - - - - - - - - - - - - - - - - - */

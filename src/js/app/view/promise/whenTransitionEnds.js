@@ -4,10 +4,12 @@
 
 /** @type {Function} */
 var transitionEnd = require("../../../utils/event/transitionEnd");
-/** @type {module:app/view/base/ViewError} */
-var ViewError = require("../base/ViewError");
 /** @type {module:utils/css/prefixedProperty} */
 var prefixedProperty = require("../../../utils/css/prefixedProperty");
+/** @type {module:utils/css/prefixedProperty} */
+var prefixedStyleName = require("../../../utils/css/prefixedStyleName");
+/** @type {module:app/view/base/ViewError} */
+var ViewError = require("../base/ViewError");
 
 var getComputedTimeout = function(v, t, p) {
 	var sProp, sDelay, sDur;
@@ -33,7 +35,8 @@ module.exports = function(view, target, prop, timeout) {
 		var resolveOnEvent, rejectOnRemove, timeoutId, cleanup;
 		var tt = timeout || getComputedTimeout(view, target, prop);
 		var pid = view.cid + " " + view.model.cid + " id:" + idSeed++;
-		prop = view.getPrefixedStyle(prop);
+		// prop = view.getPrefixedStyle(prop);
+		prop = prefixedStyleName(prop);
 		
 		if (tt === 0) {
 			// transition is 0s, resolve immediately

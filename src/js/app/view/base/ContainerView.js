@@ -38,11 +38,6 @@ module.exports = View.extend({
 		this.transforms = new TransformHelper();
 		this.touch = TouchManager.getInstance();
 
-		this.listenTo(controller, {
-			"change:before": this._beforeChange,
-			"change:after": this._afterChange
-		});
-
 		this.listenTo(this, "collapsed:change", this._onCollapseChange);
 	},
 
@@ -69,12 +64,12 @@ module.exports = View.extend({
 	 * Router -> Model change
 	 * ------------------------------- */
 
-	_beforeChange: function(bundle,media) {
+	_beforeChange: function(bundle, media) {
 		// console.log(">>>> ContainerView._beforeChange");
 		// this.transforms.captureAll();
 	},
 
-	_afterChange: function(bundle,media) {
+	_afterChange: function(bundle, media) {
 		// console.log("<<<< ContainerView._afterChange");
 		// this.setCollapsed(bundle !== void 0);
 		// this.transforms.validate();

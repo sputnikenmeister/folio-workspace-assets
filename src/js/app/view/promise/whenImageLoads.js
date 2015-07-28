@@ -15,7 +15,7 @@ var whenImageLoadedDOM = function(url, image) {
 			resolve(url);
 		} else {
 			image.onload = function(ev) {
-				console.log("resolve", url, ev);
+				// console.log("resolve", url, ev);
 				cleanup();
 				resolve(url);
 			};
@@ -58,8 +58,12 @@ var whenImageLoadedXHR = function (url, image, progressFn) {
 				// If successful, resolve the promise by passing back a reference url
 				var objUrl = URL.createObjectURL(request.response);
 				// an image element was passed, defer resolution to allow the element to update itself
-				image.src = objUrl;
-				_.defer(resolve, objUrl);
+				if (image) {
+					image.src = objUrl;
+					_.defer(resolve, objUrl);
+				} else {
+					resolve(objUrl);
+				}
 			} else {
 				// If it fails, reject the promise with a error message
 				reject(Error("Failed to load image from: " + url + " (" + request.statusText + ")"));

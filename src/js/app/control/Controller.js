@@ -9,9 +9,7 @@ var Backbone = require("backbone");
 /** @type {module:jquery} */
 var $ = Backbone.$;
 /** @type {Function} */
-var Color = $.Color;
-/** @type {Function} */
-var Deferred = $.Deferred;
+var Color = require("color");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("./Globals");
@@ -86,22 +84,17 @@ var Controller = Backbone.Router.extend({
 	/* --------------------------- */
 
 	selectMedia: function (media) {
-		var bundle = media.get("bundle");
-		//this._goToLocation(bundle, media);
-		this._changeSelection(bundle, media);
+		this._changeSelection(media.get("bundle"), media);
 		this._updateLocation();
 	},
 
 	selectBundle: function (bundle) {
-		//var media = bundle.get("media").selected;
-		var media = void 0;
-		this._changeSelection(bundle, media);
+		this._changeSelection(bundle);
 		this._updateLocation();
 	},
 	
 	deselectMedia: function () {
-		var bundle = bundles.selected;
-		this._changeSelection(bundle);
+		this._changeSelection(bundles.selected);
 		this._updateLocation();
 	},
 	
@@ -178,11 +171,6 @@ var Controller = Backbone.Router.extend({
 	/*/
 	/* Select Bundle/media */
 	_changeSelection: function (bundle, media) {
-		// this._lastBundle = this._currentBundle;
-		// this._lastMedia = this._currentMedia;
-		// this._currentBundle = bundle;
-		// this._currentMedia = media;
-		
 		var lastBundle = bundles.selected;
 		var lastMedia = lastBundle? lastBundle.get("media").selected : void 0;
 		console.log("---- ");
@@ -193,24 +181,13 @@ var Controller = Backbone.Router.extend({
 			" => " + (media? media.cid : "none") +
 			"]"
 		);
-		
 		this.trigger("change:before", bundle, media);
-		// this._applyClassProviders(bundle, media);
 		
-		// if (_.isUndefined(bundle)) {
-		// 	bundles.deselect();
-		// } else {
-		// 	if (_.isUndefined(media)) {
-		// 		bundle.get("media").deselect();
-		// 	} else {
-		// 		bundle.get("media").select(media);
-		// 	}
-		// 	bundles.select(bundle);
-		// }
 		bundle && bundle.get("media").select(media);
 		bundles.select(bundle);
 		
 		this._applyClassProviders(bundle, media);
+		
 		this.trigger("change:after", bundle, media);
 	},
 	
@@ -228,11 +205,7 @@ var Controller = Backbone.Router.extend({
 			},
 		};
 		this.listenTo(bundles, handlers);
-		if (bundles.selected) {
-			handlers["select:one"].call(this, bundles.selected);
-		} else {
-			handlers["select:none"].call(this);
-		}
+		handlers[(bundles.selected? "select:one" : "select:none")].call(this, bundles.selected);
 	},
 
 	/* --------------------------- *
@@ -240,12 +213,12 @@ var Controller = Backbone.Router.extend({
 	/* --------------------------- */
 
 	initializeBundleStyles: function() {
-		var toBodyClass = function (bundle) {
+		var toBundleClass = function (bundle) {
 			return "bundle-" + bundle.id;
 		};
 
 		var classProvider = function(classes, bundle, media) {
-			bundle && classes.push(toBodyClass(bundle));
+			bundle && classes.push(toBundleClass(bundle));
 		};
 		this.addClassProvider(classProvider);
 
@@ -257,24 +230,25 @@ var Controller = Backbone.Router.extend({
 			var revSelector, revFgColorHex, revBgColorHex;
 			var carouselSelector, carouselMediaStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
 			
-			bgDefault = new Color(Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
-			fgDefault = new Color(Styles.getCSSProperty("body", "color") || "hsl(47, 5%, 15%)");
+			fgDefault = new Color(Globals.DEFAULT_COLORS["color"]);
+			bgDefault = new Color(Globals.DEFAULT_COLORS["background-color"]);
+			// fgDefault = new Color(Styles.getCSSProperty("body", "color") || "hsl(47, 5%, 15%)");
+			// bgDefault = new Color(Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
 			
 			bundles.each(function (bundle) {
 				attrs = bundle.attrs();//get("attrs");
 				fgColor = attrs["color"]? new Color(attrs["color"]) : fgDefault;
 				bgColor = attrs["background-color"]? new Color(attrs["background-color"]) : bgDefault;
-				//bgColor = bgDefault; fgColor = fgDefault;
-				fgColorHex = fgColor.toHexString();
-				bgColorHex = bgColor.toHexString();
-				bgLum = bgColor.lightness();
-				fgLum = fgColor.lightness();
-				isLightOverDark = bgLum < fgLum;
+				fgColorHex = fgColor.hexString();
+				bgColorHex = bgColor.hexString();
+				fgLum = fgColor.luminosity();
+				bgLum = bgColor.luminosity();
+				isLightOverDark = fgLum > bgLum;
 				
 				// - - - - - - - - - - - - - - - - 
 				// per-bundle body rules
 				// - - - - - - - - - - - - - - - - 
-				bodySelector = "body." + toBodyClass(bundle);
+				bodySelector = "body." + toBundleClass(bundle);
 				s = _.pick(attrs, bodyStyles);
 				s["-webkit-font-smoothing"] = (isLightOverDark? "antialiased" : "auto");
 				/* NOTE: In Firefox 'body { -moz-osx-font-smoothing: grayscale; }'
@@ -283,14 +257,14 @@ var Controller = Backbone.Router.extend({
 				Styles.createCSSRule(bodySelector, s);
 				
 				s = {};
-				s["color"] = fgColor.lightness(fgLum * 0.5 + bgLum * 0.5).toHexString();
-				s["border-color"] = fgColor.lightness(fgLum * 0.3 + bgLum * 0.7).toHexString();
+				s["color"] = fgColor.clone().mix(bgColor, 0.5).hexString();
+				s["border-color"] = fgColor.clone().mix(bgColor, 0.7).hexString();
 				Styles.createCSSRule(bodySelector + " .mutable-faded", s);
 				
 				// inverted fg/bg colors (slightly muted)
-				revFgColorHex = bgColor.lightness(bgLum * 0.9 + fgLum * 0.1).toHexString();
-				revBgColorHex = fgColor.lightness(fgLum * 0.9 + bgLum * 0.1).toHexString();
-				// var lineColorHex = bgColor.lightness(bgLum * 0.7 + fgLum * 0.3).toHexString();
+				revFgColorHex = bgColor.clone().mix(fgColor, 0.1).hexString();
+				revBgColorHex = fgColor.clone().mix(bgColor, 0.1).hexString();
+				// var lineColorHex = bgColor.clone().mix(fgColor, 0.3).hexString();
 				revSelector = bodySelector + " .color-reverse";
 				
 				// .color-fg .color-bg
@@ -328,11 +302,11 @@ var Controller = Backbone.Router.extend({
 				s = {};
 				// Darken if dark, lighten if light, then clamp value to 0-1
 				tmpVal = Math.min(Math.max(bgLum * (isLightOverDark? 0.95 : 1.05), 0), 1); 
-				s["background-color"] = bgColor.lightness(tmpVal).alpha(0.5).toRgbaString();
+				s["background-color"] = bgColor.clone().lighten(tmpVal).alpha(0.5).rgbaString();
 				Styles.createCSSRule(bodySelector + " .color-overclip", s);
 				s = {};
 				tmpVal = Math.min(Math.max(fgLum * (isLightOverDark? 0.95 : 1.05), 0), 1); 
-				s["background-color"] = fgColor.lightness(tmpVal).alpha(0.5).toRgbaString();
+				s["background-color"] = fgColor.clone().lighten(tmpVal).alpha(0.5).rgbaString();
 				Styles.createCSSRule(revSelector + " .color-overclip", s);
 				Styles.createCSSRule(revSelector + ".color-overclip", s);
 				
@@ -341,29 +315,30 @@ var Controller = Backbone.Router.extend({
 				s = {};
 				s["background-color"] = "transparent";
 				s["background"] = "linear-gradient(to bottom, " +
-						bgColor.alpha(0.00).toRgbaString() + " 0%, " +
-						bgColor.alpha(0.11).toRgbaString() + " 100%)";
+						bgColor.clone().alpha(0.00).rgbaString() + " 0%, " +
+						bgColor.clone().alpha(0.11).rgbaString() + " 100%)";
 				Styles.createCSSRule(bodySelector + " .color-gradient", s);
 				s = {};
 				s["background-color"] = "transparent";
 				s["background"] = "linear-gradient(to bottom, " +
-						fgColor.alpha(0.00).toRgbaString() + " 0%, " +
-						fgColor.alpha(0.11).toRgbaString() + " 100%)";
+						fgColor.clone().alpha(0.00).rgbaString() + " 0%, " +
+						fgColor.clone().alpha(0.11).rgbaString() + " 100%)";
 				Styles.createCSSRule(revSelector + " .color-gradient", s);
 				Styles.createCSSRule(revSelector + ".color-gradient", s);
 				
 				// - - - - - - - - - - - - - - - - 
 				// per-bundle .carousel .media-item rules
 				// - - - - - - - - - - - - - - - - 
-				carouselSelector = ".carousel." + bundle.get("handle");
+				carouselSelector = ".carousel." + toBundleClass(bundle);
 				s = _.pick(attrs, carouselMediaStyles);//, "background-color"]);
 				Styles.createCSSRule(carouselSelector + " .media-item .content", s);
 				
 				// text color luminosity is inverse from body, apply oposite rendering mode
 				s = {};
 				s["-webkit-font-smoothing"] = (isLightOverDark? "auto" : "antialiased");
-				s["background-color"] = bgColor.lightness(fgLum * 0.050 + bgLum * 0.950).toHexString();
-				s["color"] = bgColor.lightness(fgLum * 0.005 + bgLum * 0.995).toHexString();
+				s["background-color"] = bgColor.clone().mix(fgColor, 0.95).hexString();
+				// s["color"] = bgColor.clone().mix(fgColor, 0.995).hexString();
+				s["color"] = bgColor.hexString();
 				("border-radius" in attrs) && (s["border-radius"] = attrs["border-radius"]);
 				Styles.createCSSRule(carouselSelector + " .media-item .placeholder", s);
 			});

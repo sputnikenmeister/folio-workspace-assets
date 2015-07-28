@@ -41,15 +41,22 @@
 // - - - - - - - - - - - - - - - - - -
 // Overlays: ImageRenderer/SequenceRenderer
 // - - - - - - - - - - - - - - - - - -
+
+.video-renderer,
 .sequence-renderer,
 .image-renderer {
+	// content images
+	// - - - - - - - - - - - - - - - - -
+	.content img, img.content {
+		// @include image-optimize-contrast;
+	}
 	// .placeholder:before
 	// - - - - - - - - - - - - - - - - -
 	.placeholder:before {
 		// Top-left corner
 		position: absolute;
 		top: 0; left: 0;
-		margin: 1em 1em;
+		margin: 1em 1.2em;
 		font-size: 2rem;
 		line-height: 1.2;
 		font-weight: 600;
@@ -62,7 +69,7 @@
 	//&.idle .placeholder:before { content: "Waiting"; }
 	&.pending .placeholder:before { content: "Loading"; }
 	&.error .placeholder:before { content: "Error";	}
-	&.done .placeholder:before { content: "Done"; }
+	&.done .placeholder:before { content: "Ready"; }
 	// &.selected, .empty-item.selected + & {
 	&.selected, &.candidate, .empty-item.selected + & {
 		&.pending .placeholder[data-progress]:before {
@@ -70,24 +77,28 @@
 			font-style: normal;
 		}
 	}
-	.placeholder:before {
-		transition: opacity $duration $ease $delay + 0.001s;
-		opacity: 0;
-	}
-	&.selected, &.candidate, .empty-item.selected + & {
-		&.pending .placeholder:before {
-			opacity: 1;
-		}
-		&.error .placeholder:before {
-			opacity: 1;
-		}
-	}
+	// .placeholder:before {
+	// 	transition: opacity $duration $ease $delay + 0.001s;
+	// 	opacity: 0;
+	// }
+	// &.selected, &.candidate, .empty-item.selected + & {
+	// 	&.pending .placeholder:before {
+	// 		opacity: 1;
+	// 	}
+	// 	&.error .placeholder:before {
+	// 		opacity: 1;
+	// 	}
+	// }
+}
+
+.image-renderer {
 }
 
 // - - - - - - - - - - - - - - - - - -
 // Overlays: VideoRenderer/SequenceRenderer
 // - - - - - - - - - - - - - - - - - -
-.video-renderer, .sequence-renderer {
+.video-renderer,
+.sequence-renderer {
 	// .overlay
 	// - - - - - - - - - - - - - - - - -
 	.content > .overlay {
@@ -95,14 +106,20 @@
 		top: 0; left: 0; width: 100%; height: 100%;
 	}
 	.overlay {
-		transition: background-color $duration $ease 0.001s;
-		background-color: transparent;
+		// transition: background-color $duration $ease 0.001s;
+		// background-color: transparent;
+		transition: opacity $duration $ease 0.001s;
+		opacity: 1;
 	}
-	&.selected[data-state="user"] .overlay {}
+	&.selected[data-state="user"] .overlay {
+		opacity: 1;
+	}
 	&.selected[data-state="network"] .overlay {
+		opacity: 0;
 		background: transparent none !important;
 	}
 	&.selected[data-state="media"] .overlay {
+		opacity: 0;
 		background: transparent none !important;
 	}
 		
@@ -129,14 +146,30 @@
 		overflow: hidden;
 		white-space: nowrap;
 	}
-	.overlay .label { visibility: hidden; }
-	&.selected[data-state="user"] .overlay .label { visibility: visible; }
-	&.selected[data-state="network"] .overlay .label {}
-	&.selected[data-state="media"] .overlay .label {}
+	// .overlay .label { visibility: hidden; }
+	// &.selected[data-state="user"] .overlay .label { visibility: visible; }
+	// &.selected[data-state="network"] .overlay .label {}
+	// &.selected[data-state="media"] .overlay .label {}
+	
+	.overlay .label:after { 
+		@include fontello_icon_after;
+		content: '\e805'; // icon-play
+	}
+	// &.selected[data-state="user"] .overlay .label:after {
+	// 	content: '\e805'; // icon-play
+	// }
+	// &.selected[data-state="media"] .overlay .label:after {
+	// 	content: '\e80e'; // icon-pause
+	// }
+	// .icon-pause:before { content: '\e80e'; } /* 'icon-pause' */
+	// .icon-ccw:before { content: '\e80f'; } /* 'icon-ccw' */
+	// .icon-to-end:before { content: '\e810'; } /* 'icon-to-end' */
+	// .icon-to-start:before { content: '\e811'; } /* 'icon-to-start' */
 	
 	// .progress-meter
 	// - - - - - - - - - - - - - - - - -
 	.content > .progress-meter {
+		// font-family: $font_webfont_serif;
 		text-align: center;
 		position: absolute;
 		top: 0px;
@@ -155,6 +188,15 @@
 	&[data-state="user"] .progress-meter {
 		#step-label { visibility: hidden; }
 		#pause-symbol { visibility: visible; }
+	}
+	
+	.overlay > img,
+	.overlay > canvas {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
 	}
 }
 
@@ -176,16 +218,6 @@
 	&.selected[data-state="network"] .overlay:after
 			{ content: "Waiting for Network"; visibility: visible; }
 	
-}
-
-@mixin image-optimize-contrast {
-	image-rendering: optimizeSpeed;             /* STOP SMOOTHING, GIVE ME SPEED  */
-	image-rendering: -moz-crisp-edges;          /* Firefox                        */
-	image-rendering: -o-crisp-edges;            /* Opera                          */
-	image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
-	image-rendering: pixelated;                 /* Chrome */
-	image-rendering: optimize-contrast;         /* CSS3 Proposed                  */
-	-ms-interpolation-mode: nearest-neighbor;   /* IE8+                           */
 }
 
 // SequenceRenderer

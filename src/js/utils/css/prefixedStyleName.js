@@ -1,25 +1,53 @@
-/** @type {module:app/utils/strings/camelToDashed} */
+/** @type {module:utils/strings/camelToDashed} */
 var camelToDashed = require("../strings/camelToDashed");
 
-var CSS_VENDOR_PREFIXES = ["", "-webkit-", "-moz-", "-ms-", "-o-"];
+// /** @type {module:utils/css/prefixedProperty} */
+// var prefixedProperty = require("./prefixedProperty");
+// /** @type {module:utils/strings/dashedToCamel} */
+// var dashedToCamel = require("../strings/dashedToCamel");
+// 
+// var _prefixedStyleName_reverse = function (style, styleObj) {
+// 	var camelProp, prefixedProp;
+// 	camelProp = dashedToCamel(style);
+// 	prefixedProp = prefixedProperty(camelProp, styleObj);
+// 	return prefixedProp? (camelProp === prefixedProp? "" : "-") + camelToDashed(prefixedProp) : null;
+// };
 
-/**
- * get the prefixed property
- * @param {Object} style
- * @param {String} property
- * @returns {String|Undefined} prefixed
- */
-module.exports = function(style, property) {
-	var prefixed;
-	var normalized = (property.indexOf("-") == -1)? camelToDashed(property): property;
+var PREFIXES = ["-webkit-", "-moz-", "-ms-", "-o-"];
+var PREFIXES_NUM = PREFIXES.length;
 
-	for (var i = 0; i < CSS_VENDOR_PREFIXES.length; i++) {
-		prefixed = CSS_VENDOR_PREFIXES[i] + normalized;
-		if (prefixed in style) {
-			console.log("Prefixed style name '" + property + "' is '" + prefixed + "'");
-			return prefixed;
+var _prefixedStyleName = function(style, styleObj) {
+	var prefixedStyle;
+	var normStyle = style.indexOf("-")? camelToDashed(style) : style;
+	styleObj || (styleObj = document.body.style);
+	
+	if (normStyle in styleObj) {
+		return normStyle;
+	}
+	for (var i = 0; i < PREFIXES_NUM; i++) {
+		prefixedStyle = PREFIXES[i] + normStyle;
+		if (prefixedStyle in styleObj) {
+			// console.log("CSS style '" + style + "' found as '" + prefixedStyle + "'");
+			return prefixedStyle;
 		}
 	}
-	console.log("Prefixed style name '" + property + "' not found");
-	return void 0;
+	console.error("CSS style '" + style + "' not found");
+	return null;
+};
+
+/* cached values */
+var _cache = {};
+
+/**
+ * get the prefixed style name
+ * @param {String} style name
+ * @param {Object} look-up style object
+ * @returns {String|Undefined} prefixed
+ */
+module.exports = function (style, styleObj) {
+	if (!_cache.hasOwnProperty(style)) {
+		_cache[style] = _prefixedStyleName(style, styleObj);
+		console.log("CSS style '" + style + "' found as '" + _cache[style] + "'");
+	}
+	return _cache[style];
 };

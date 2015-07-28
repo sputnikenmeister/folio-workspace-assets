@@ -28,6 +28,12 @@ var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
 /** @type {module:app/view/promise/whenDefaultImageLoads} */
 var whenDefaultImageLoads = require("../promise/whenDefaultImageLoads");
 
+// /** @type {module:app/utils/net/loadImage} */
+// var loadImage = require("../../../utils/net/loadImage");
+// var loadImageXHR = require("../../../utils/net/loadImageXHR");
+// var loadImageDOM = require("../../../utils/net/loadImageDOM");
+
+
 /** @type {Function} */
 var viewTemplate = require( "./MediaRenderer.tpl" );
 
@@ -48,7 +54,7 @@ module.exports = View.extend({
 	
 	// /** @override */
 	constructor: function(options) {
-		_.bindAll(this, "_onContentClick");
+		_.bindAll(this, "_onToggleEvent");
 		View.apply(this, arguments);
 	},
 	
@@ -151,26 +157,31 @@ module.exports = View.extend({
 	
 	/* model selection
 	/* --------------------------- */
+	
+	/** @type {String} */
+	_toggleEvent: "mouseup",
+	
 	_onModelSelected: function() {
 		// this.toggleMediaPlayback(true);
-		this.playToggle.addEventListener("click", this._onContentClick, false);
+		this.playToggle.addEventListener(this._toggleEvent, this._onToggleEvent, false);
 		this.listenTo(this, "view:remove", this._removeClickHandler);
 	},
 	
 	_onModelDeselected: function() {
 		this.toggleMediaPlayback(false);
-		this.playToggle.removeEventListener("click", this._onContentClick, false);
+		this.playToggle.removeEventListener(this._toggleEvent, this._onToggleEvent, false);
 		this.stopListening(this, "view:remove", this._removeClickHandler);
 	},
 	
 	_removeClickHandler: function() {
-		this.playToggle.removeEventListener("click", this._onContentClick, false);
+		this.playToggle.removeEventListener(this._toggleEvent, this._onToggleEvent, false);
 	},
 	
 	/* click dom event
 	/* --------------------------- */
-	_onContentClick: function(ev) {
-		ev.defaultPrevented || this.toggleMediaPlayback();
+	_onToggleEvent: function(domev) {
+		domev.defaultPrevented || this.toggleMediaPlayback();
+		console.log("XXX-C MediaRenderer._onToggleEvent", domev.type, "defaultPrevented: " + domev.defaultPrevented);
 	},
 	
 	/* --------------------------- *
@@ -184,55 +195,6 @@ module.exports = View.extend({
 	whenSelectionIsContiguous: whenSelectionIsContiguous,
 	whenSelectTransitionEnds: whenSelectTransitionEnds,
 	whenDefaultImageLoads: whenDefaultImageLoads, 
-	// whenSelectTransitionEnds: function(view) {
-	// 	if (view.model.selected) {
-	// 		return Promise.resolve(view);
-	// 	} else {
-	// 		return whenTransitionEnds(view, view.el, "transform");
-	// 	}
-	// },
-	// whenDefaultImageLoads: function(view) {
-	// 	if (view.model.has("prefetched")) {
-	// 		console.log(view.cid, view.model.cid, "image is prefetched");
-	// 		view.el.classList.remove("idle");
-	// 		view.el.classList.add("done");
-	// 		view.image.src = view.model.get("prefetched");
-	// 		return view;
-	// 	} else {
-	// 		return new Promise(function(resolve, reject) {
-	// 			view.el.classList.remove("idle");
-	// 			view.el.classList.add("pending");
-	// 			whenImageLoads(view.model.getImageUrl(), view.image,
-	// 				function (progress) {
-	// 					console.log(view.cid, view.model.cid, "MediaRenderer.whenDefaultImageLoads progress", progress);
-	// 					view.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-	// 				}
-	// 			).then(
-	// 				function(url) {
-	// 					console.log(view.cid, view.model.cid, "MediaRenderer.whenDefaultImageLoads resolved", url);
-	// 					view.placeholder.removeAttribute("data-progress");
-	// 					view.el.classList.remove("pending");
-	// 					view.el.classList.add("done");
-	// 					if (/^blob\:.*/.test(url)) {
-	// 						view.model.set({"prefetched": url});
-	// 						// view.on("view:remove", function() {
-	// 						// 	window.URL.revokeObjectURL(url);
-	// 						// });
-	// 					}
-	// 					resolve(view);
-	// 				},
-	// 				function(err) {
-	// 					console.log(view.cid, view.model.cid, "MediaRenderer.whenDefaultImageLoads rejected", err.message);
-	// 					view.placeholder.removeAttribute("data-progress");
-	// 					view.el.classList.remove("pending");
-	// 					view.el.classList.add("error");
-	// 					reject(err);
-	// 				}
-	// 			);
-	// 		});
-	// 		// return view.createDeferredImage(view.model.getImageUrl(), view.image).promise();
-	// 	}
-	// }
 });
 
 /*

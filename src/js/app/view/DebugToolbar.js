@@ -19,6 +19,8 @@ var Cookies = require("cookies-js");
 /** @type {string} */
 // var viewTemplate = require("./template/DebugToolbar.tpl");
 
+var mediaInfoTemplate = _.template("<%= w %> \u00D7 <%= h %>");
+
 var DebugToolbar = Backbone.View.extend({
 	/** @override */
 	tagName: "ul",
@@ -55,13 +57,26 @@ var DebugToolbar = Backbone.View.extend({
 		this.initializeToggle("debug-grid", $showGridEl, $container);
 		this.initializeToggle("debug-blocks", $showBlocksEl, $container);
 		
+		var $mediaInfoEl = this.$("#media-info");
 		var $backendEl = this.$("#edit-backend");
+		var updateMediaInfo = function(media) {
+			$mediaInfoEl.text(media? mediaInfoTemplate(media.attributes) : "");
+			$mediaInfoEl.css("display", media? "" : "none");
+		};
 		this.listenTo(this.collection, {
-			"select:one": function(model) {
+			"select:one": function(model) {	
 				$backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/edit/" + model.id);
+			
+				var media = model.get("media");
+				this.listenTo(media, "select:one select:none", updateMediaInfo);
+				updateMediaInfo(media.selected);
 			},
 			"select:none": function() {
 				$backendEl.attr("href", Globals.APP_ROOT + "symphony/publish/bundles/");
+				updateMediaInfo();
+			},
+			"deselect:one": function(model) {
+				this.stopListening(model.get("media"), "select:one select:none", updateMediaInfo);
 			}
 		});
 		
