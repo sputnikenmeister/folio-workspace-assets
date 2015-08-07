@@ -1,1 +1,1 @@
-<a href="#<%= href %>"><span class="label"><%= name %></span></a>
+<a href="#<%= domid %>"><span class="label"><%= name %></span></a>
