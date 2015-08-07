@@ -18,7 +18,7 @@ module.exports = Backbone.View.extend({
 			this.trigger("renderer:click", this.model);
 		},
 		"click a": function (ev) {
-			ev.preventDefault();
+			ev.defaultPrevented || ev.preventDefault();
 		}
 	},
 });

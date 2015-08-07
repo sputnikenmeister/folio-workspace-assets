@@ -14,8 +14,11 @@
 		"clearInterval": false,
 		"setTimeout": false,
 		"clearTimeout": false,
+		"getComputedStyle": true,
 		"module": true,
 		"Promise": true,
+		"Image": true,
+		"URL": true,
 		"$": true,
 		"_": true,
 		"DEBUG": true

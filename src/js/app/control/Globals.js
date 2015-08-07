@@ -4,6 +4,9 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 
+var transitionTemplate = function(o) {
+	return o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
+};
 
 module.exports = (function () {
 	var obj; // reusable var
@@ -46,23 +49,28 @@ module.exports = (function () {
 	globals.TRANSIT_ENTERING = _.clone(obj);
 	globals.TRANSIT_ENTERING.delay = globals.ENTERING_DELAY;
 	globals.TRANSIT_ENTERING.className = "transform-entering";
+	globals.TRANSIT_ENTERING.cssText = transitionTemplate(globals.TRANSIT_ENTERING);
 
 	globals.TRANSIT_EXITING = _.clone(obj);
 	globals.TRANSIT_EXITING.delay = globals.EXITING_DELAY;
 	globals.TRANSIT_EXITING.className = "transform-exiting";
+	globals.TRANSIT_EXITING.cssText = transitionTemplate(globals.TRANSIT_EXITING);
 
 	globals.TRANSIT_IMMEDIATE = _.clone(obj);
 	globals.TRANSIT_IMMEDIATE.delay = globals.NO_DELAY;
 	globals.TRANSIT_IMMEDIATE.duration = globals.TRANSITION_DURATION;
 	globals.TRANSIT_IMMEDIATE.className = "transform-immediate";
+	globals.TRANSIT_IMMEDIATE.cssText = transitionTemplate(globals.TRANSIT_IMMEDIATE);
 
 	globals.TRANSIT_CHANGING = _.clone(obj);
 	globals.TRANSIT_CHANGING.delay = globals.CHANGING_DELAY;
 	globals.TRANSIT_CHANGING.className = "transform-changing";
+	globals.TRANSIT_CHANGING.cssText = transitionTemplate(globals.TRANSIT_CHANGING);
 
 	globals.TRANSIT_PARENT = _.clone(globals.TRANSIT_CHANGING);
 	// globals.TRANSIT_PARENT.delay = globals.CHANGING_DELAY;
 	// globals.TRANSIT_PARENT.className = "transform-changing";
+	globals.TRANSIT_ENTERING.cssText = transitionTemplate(globals.TRANSIT_ENTERING);
 
 	globals.H_PANOUT_DRAG	=	0.4; // factor
 	globals.V_PANOUT_DRAG	=	0.1; // factor

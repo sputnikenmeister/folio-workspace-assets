@@ -6,6 +6,8 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {Function} */
+var Color = require("color");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
@@ -17,10 +19,6 @@ var View = require("../base/View");
 /** @type {module:app/view/base/ViewError} */
 var ViewError = require("../base/ViewError");
 
-/** @type {module:app/view/promise/whenTransitionEnds} */
-var whenTransitionEnds = require("../promise/whenTransitionEnds");
-/** @type {module:app/view/promise/whenImageLoads} */
-var whenImageLoads = require("../promise/whenImageLoads");
 /** @type {module:app/view/promise/whenSelectTransitionEnds} */
 var whenSelectTransitionEnds = require("../promise/whenSelectTransitionEnds");
 /** @type {module:app/view/promise/whenSelectionIsContiguous} */
@@ -28,14 +26,23 @@ var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
 /** @type {module:app/view/promise/whenDefaultImageLoads} */
 var whenDefaultImageLoads = require("../promise/whenDefaultImageLoads");
 
-// /** @type {module:app/utils/net/loadImage} */
-// var loadImage = require("../../../utils/net/loadImage");
-// var loadImageXHR = require("../../../utils/net/loadImageXHR");
-// var loadImageDOM = require("../../../utils/net/loadImageDOM");
+var duotone = require("../../../utils/canvas/bitmap/duotone");
+var stackBlurRGB = require("../../../utils/canvas/bitmap/stackBlurRGB");
+var stackBlurMono = require("../../../utils/canvas/bitmap/stackBlurMono");
+var getAverageRGB = require("../../../utils/canvas/bitmap/getAverageRGB");
+// var getAverageRGBA = require("../../../utils/canvas/bitmap/getAverageRGBA");
+
+var _sharedCanvas = null;
+var getSharedCanvas =  function() {
+	if (_sharedCanvas === null) {
+		_sharedCanvas = document.createElement("canvas");
+	}
+	return _sharedCanvas;
+};
 
 
 /** @type {Function} */
-var viewTemplate = require( "./MediaRenderer.tpl" );
+var viewTemplate = require( "./MediaRenderer.hbs" );
 
 /**
  * @constructor
@@ -52,7 +59,7 @@ module.exports = View.extend({
 	/** @type {Function} */
 	template: viewTemplate,
 	
-	// /** @override */
+	/** @override */
 	constructor: function(options) {
 		_.bindAll(this, "_onToggleEvent");
 		View.apply(this, arguments);
@@ -60,6 +67,7 @@ module.exports = View.extend({
 	
 	// /** @override */
 	// initialize: function (opts) {
+	// 	View.prototype.initialize.apply(this, arguments);
 	// 	// this.createChildren();
 	// },
 	
@@ -109,11 +117,8 @@ module.exports = View.extend({
 			cW = Math.round((cH / sH) * sW);
 		}
 		
-		// crop video 1px top
-		this.video.style.marginTop = "-1px";
-		this.video.setAttribute("width", cW);
-		this.video.setAttribute("height", cH);
-		cH--; // NOTE: other elements must use video's CROPPED height 
+		this.contentWidth = cW;
+		this.contentHeight = cH;
 		
 		content.style.left = cX + "px";
 		content.style.top = cY + "px";
@@ -122,10 +127,10 @@ module.exports = View.extend({
 		
 		// sizing.style.maxWidth = (cW + (poW - pcW)) + "px";
 		// sizing.style.maxHeight = (cH + (poH - pcH)) + "px";
-		// sizing.style.maxWidth = cW + "px";
-		// sizing.style.maxHeight = cH + "px";
-		sizing.style.maxWidth = content.offsetWidth + "px";
-		sizing.style.maxHeight = content.offsetHeight + "px";
+		// sizing.style.maxWidth = content.offsetWidth + "px";
+		// sizing.style.maxHeight = content.offsetHeight + "px";
+		sizing.style.maxWidth = cW + "px";
+		sizing.style.maxHeight = cH + "px";
 		
 		return this;
 	},
@@ -180,8 +185,13 @@ module.exports = View.extend({
 	/* click dom event
 	/* --------------------------- */
 	_onToggleEvent: function(domev) {
-		domev.defaultPrevented || this.toggleMediaPlayback();
-		console.log("XXX-C MediaRenderer._onToggleEvent", domev.type, "defaultPrevented: " + domev.defaultPrevented);
+		// console.log("MediaRenderer._onToggleEvent", domev.type, "defaultPrevented: " + domev.defaultPrevented);
+		
+		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
+		if (!domev.defaultPrevented && !domev.button) {
+			this.toggleMediaPlayback();
+			domev.preventDefault();
+		}
 	},
 	
 	/* --------------------------- *
@@ -190,6 +200,89 @@ module.exports = View.extend({
 	
 	toggleMediaPlayback: function(newPlayState) {
 		// abstract
+	},
+	
+	setMediaState: function(key) {
+		this.content.classList.toggle("pending-network", key === "network");
+		this.content.classList.toggle("pending-user", key === "user");
+		this.content.classList.toggle("pending-media", key === "media");
+	},
+	
+	/* --------------------------- *
+	/* util
+	/* --------------------------- */
+	
+	updateOverlayBackground: function(targetEl, contentEl) {
+		// src/dest rects
+		// ------------------------------
+		var tX = targetEl.offsetLeft,
+			tY = targetEl.offsetTop + 1,
+			tW = targetEl.offsetWidth,
+			tH = targetEl.offsetHeight;
+			
+		// rendered size
+		var rW = this.contentWidth;
+		var rH = this.contentHeight + 1;
+		// source size
+		var sW = this.model.get("w");
+		var sH = this.model.get("h");
+		// source/rendered scale
+		var rsX = sW/rW;
+		var rsY = sH/rH;
+		// Copy image to canvas
+		// ------------------------------
+		var canvas, context, imageData;
+		
+		canvas = getSharedCanvas();
+		// canvas = document.createElement("canvas");
+		canvas.style.width  = tW + "px";
+		canvas.style.height = tH + "px";
+		canvas.width = tW;
+		canvas.height = tH;
+		context = canvas.getContext("2d");
+		context.clearRect(0, 0, tW, tH);
+		context.drawImage(contentEl, tX*rsX, tY*rsY, tW*rsX, tH*rsY, 0, 0, tW, tH);
+		imageData = context.getImageData(0, 0, tW, tH);
+		
+		// Color, filter opts
+		// ------------------------------
+		
+		// this.fgColor || (this.fgColor = new Color(this.model.attrs()["color"]));
+		// this.bgColor || (this.bgColor = new Color(this.model.attrs()["background-color"]));
+		
+		// var opts, isFgDark;
+		// opts = {};
+		// isFgDark = this.fgColor.luminosity() < this.bgColor.luminosity();
+		// opts.x00 = isFgDark? this.fgColor.clone().lighten(0.5) : this.bgColor.clone().darken(0.5);
+		// opts.xFF = isFgDark? this.bgColor.clone().lighten(0.5) : this.fgColor.clone().darken(0.5);
+		
+		// opts.radius = 20;
+		// stackBlurMono(imageData, opts);
+		// opts.radius = 50;
+		// stackBlurRGB(imageData, opts);
+		// duotone(imageData, opts);
+		
+		// context.putImageData(imageData, 0, 0);
+		// targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
+		
+		var avgColor = Color().rgb(getAverageRGB(imageData));
+		targetEl.classList.toggle("over-dark", !avgColor.dark());
+		
+		// var fgContrast, bgContrast;
+		// fgContrast = avgColor.contrast(this.fgColor);
+		// bgContrast = avgColor.contrast(this.bgColor);
+		// console.log("isFgDark", isFgDark, avgColor.hexString(), "fgContrast", fgContrast, "bgContrast", bgContrast);
+		
+		// targetEl.style.color = (fgContrast >= bgContrast? this.fgColor : this.bgColor).rgbString();
+		
+		// targetEl.style.color = avgColor.dark()?
+		// 		"rgb(255,255,255)" : "rgb(0,0,0)";
+		// targetEl.style.backgroundColor = avgColor.dark()?
+		// 		"rgba(0,0,0,0.75)" : "rgba(255,255,255,0.75)";
+		// targetEl.style.boxShadow = "0 0 2px -1px " + (avgColor.dark()?
+		// 		"rgb(255,255,255)" : "rgb(0,0,0)");
+			// avgColor.rgbString();
+			
 	},
 },{
 	whenSelectionIsContiguous: whenSelectionIsContiguous,
@@ -258,7 +351,7 @@ createDeferredImage: function(url, target) {
 	).then(function(url) {
 		// this.model.set({"prefetched": url});
 		o.isXhr && this.on("view:remove", function() {
-			window.URL.revokeObjectURL(url);
+			URL.revokeObjectURL(url);
 		});
 	});
 	this.on("view:remove", o.cancel);

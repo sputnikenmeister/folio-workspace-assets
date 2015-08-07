@@ -18,7 +18,7 @@ var PREFIXES_NUM = PREFIXES.length;
 
 var _prefixedStyleName = function(style, styleObj) {
 	var prefixedStyle;
-	var normStyle = style.indexOf("-")? camelToDashed(style) : style;
+	var normStyle = style; //.indexOf("-")? camelToDashed(style) : style;
 	styleObj || (styleObj = document.body.style);
 	
 	if (normStyle in styleObj) {
@@ -47,6 +47,7 @@ var _cache = {};
 module.exports = function (style, styleObj) {
 	if (!_cache.hasOwnProperty(style)) {
 		_cache[style] = _prefixedStyleName(style, styleObj);
+		// _cache[style] = _prefixedStyleName_reverse(style, styleObj);
 		console.log("CSS style '" + style + "' found as '" + _cache[style] + "'");
 	}
 	return _cache[style];

@@ -32,6 +32,9 @@ module.exports = Backbone.Model.extend({
 	},
 	
 	mutators: {
+		domid: function() {
+			return "m" + this.id;
+		},
 		name: function () {
 			return this.get("text") || this.get("src");
 		},
@@ -46,11 +49,15 @@ module.exports = Backbone.Model.extend({
 				if (_.isArray(value)) {
 					var attrs = {};
 					_.each(value, function (attr) {
-						var idx = attr.indexOf(":");
-						if (idx > 0) {
-							attrs[attr.substring(0, idx)] = parseSymAttrs(attr.substring(idx + 1));
+						if (_.isString(attr)) {
+							var idx = attr.indexOf(":");
+							if (idx > 0) {
+								attrs[attr.substring(0, idx)] = parseSymAttrs(attr.substring(idx + 1));
+							} else {
+								attrs[attr] = attr; // to match HTML5<>XHTML valueless attributes
+							}
 						} else {
-							attrs[attr] = "";
+							console.warn("MediaItem.attrs.item", "value set is not a String", (typeof value), value);
 						}
 					});
 					value = attrs;
@@ -58,7 +65,7 @@ module.exports = Backbone.Model.extend({
 				if (_.isObject(value)) {
 					_.extend(this.attrs(), value);
 				} else {
-					console.warn("MediaItem.attrs", "value set is not an object: " + (typeof value));
+					console.warn("MediaItem.attrs", "value set is not an Object or parseable Array", (typeof value), value);
 					value = {};//void 0;
 				} 
 				set(key, value, options);

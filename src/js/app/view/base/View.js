@@ -11,10 +11,6 @@ var _ = require("underscore");
 var prefixedProperty = require("../../../utils/css/prefixedProperty");
 /** @type {module:utils/css/prefixedStyleName} */
 var prefixedStyleName = require("../../../utils/css/prefixedStyleName");
-// /** @type {module:utils/strings/dashedToCamel} */
-// var dashedToCamel = require("../../../utils/strings/dashedToCamel");
-// /** @type {module:utils/strings/camelToDashed} */
-// var camelToDashed = require("../../../utils/strings/camelToDashed");
 
 /** @type {module:utils/event/addTransitionCallback} */
 var addTransitionCallback = require("../../../utils/event/addTransitionCallback");
@@ -26,40 +22,46 @@ var transitionEnd = require("../../../utils/event/transitionEnd");
 var _viewsByCid = {};
 
 /**
- * @constructor
- * @type {module:app/view/base/View}
- */
+* @constructor
+* @type {module:app/view/base/View}
+*/
 var View = Backbone.View.extend({
-	
-	// bindAll: "boundFn1",
 	
 	constructor: function(options) {
 		if (options && options.className && this.className) {
 			options.className += " " + _.result(this, "className");
+		}
+		if ("transitionend" !== transitionEnd) for (var selector in this.events) {
+			if (this.events.hasOwnProperty(selector) && /^transitionend(\s.+)?$/i.test(selector)) {
+				this.events[selector.toLowerCase().replace("transitionend", transitionEnd)] = this.events[selector];
+				delete this.events[selector];
+			}
 		}
 		Backbone.View.apply(this, arguments);
 	},
 	
 	remove: function() {
 		this.trigger("view:remove", this);
+		Backbone.View.prototype.remove.apply(this, arguments);
 		delete _viewsByCid[this.cid];
-		return Backbone.View.prototype.remove.apply(this, arguments);
+		return this;
 	},
 	
 	setElement: function(element, delegate) {
 		// setElement always initializes this.el,
 		// so this.el has to be checked before calling super
-		if (this.el) {
+		if (this.el && this.className) {
 			Backbone.View.prototype.setElement.apply(this, arguments);
-			this.$el.addClass(_.result(this, "className"));
+			_.result(this, "className").split(" ").forEach(function (item) {
+				this.el.classList.add(item);
+			}, this);
 		} else {
 			Backbone.View.prototype.setElement.apply(this, arguments);
-			// this.$el.addClass(_.result(this, "className"));
 		}
 		if (this.el === void 0) {
 			console.warn("Backbone view has no element");
 		} else {
-			this.$el.attr("data-cid", this.cid);
+			this.el.setAttribute("data-cid", this.cid);
 			this.el.cid = this.cid;
 		}
 		_viewsByCid[this.cid] = this;

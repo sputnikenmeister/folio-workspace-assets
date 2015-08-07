@@ -17,16 +17,17 @@ module.exports = function(view) {
 		};
 		
 		if (check(collection.selectedIndex)) {
+			console.log(view.cid, view.model.cid, "whenSelectionIsContiguous: sync resolve");
 			resolve(view);
 		} else {
 			var cleanupOnSettle = function() {
-				console.log(view.cid, view.model.cid, "whenSelectionIsContiguous: cleanup");
+				// console.log(view.cid, view.model.cid, "whenSelectionIsContiguous: cleanup");
 				collection.off("select:one select:none", resolveOnSelect);
 				view.off("view:remove", rejectOnRemove);
 			};
 			var resolveOnSelect = function(model) {
 				if (check(collection.selectedIndex)) {
-					console.log(view.cid, view.model.cid, "whenSelectionIsContiguous: resolving");
+					console.log(view.cid, view.model.cid, "whenSelectionIsContiguous: async resolve");
 					cleanupOnSettle();
 					resolve(view);
 				}

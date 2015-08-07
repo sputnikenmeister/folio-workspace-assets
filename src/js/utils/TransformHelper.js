@@ -1,14 +1,17 @@
 /* -------------------------------
- * Imports
- * ------------------------------- */
- 
+/* Imports
+/* ------------------------------- */
+
 require("../shims/requestAnimationFrame");
- 
+
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {module:app/helper/TransformItem} */
+/** @type {module:utils/TransformItem} */
 var TransformItem = require("./TransformItem");
+
+// /** @type {module:utils/setImmediate} */
+// var setImmediate = require("./setImmediate");
 
 var idSeed = 0;
 var cidSeed = 100;
@@ -137,6 +140,11 @@ TransformHelper.prototype = {
 	runTransition: function(transition) {
 		this._invoke("runTransition", arguments, 1);
 	},
+	runAllTransitions: function(transition) {
+		for (var i in this._items) {
+			this._items[i].runTransition(transition);
+		}
+	},
 	
 	clearTransitions: function() {
 		this._invoke("clearTransitions", arguments);
@@ -187,6 +195,14 @@ TransformHelper.prototype = {
 	/* ------------------------------- */
 	
 	validate: function () {
+		// if (!this._pending) {
+		// 	this._pending = true;
+		// 	setImmediate(function() {
+		// 		this._validate();
+		// 		this._pending = false;
+		// 	}.bind(this));
+		// }
+		
 		if (this._validateCallbackId !== -1) {
 			window.cancelTimeout(this._validateCallbackId);
 			this._validateCallbackId = -1;
@@ -199,6 +215,7 @@ TransformHelper.prototype = {
 			// console.warn("TransformHelper._invalidate");
 			this._validateCallbackId = window.setTimeout(this._validateCallback, 100);
 			// this._validateCallbackId = window.requestAnimationFrame(this._validateCallback);
+			
 			console.log("TransformHelper.invalidate", this._validateCallbackId);
 		}
 	},

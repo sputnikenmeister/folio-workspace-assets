@@ -164,6 +164,8 @@ $nav_collapse_extra: 28rem;
 	}
 }
 
+
+
 // ///////////////////////////////////
 // media query : Default
 // ///////////////////////////////////
@@ -273,7 +275,21 @@ $nav_collapse_extra: 28rem;
 	// height: calc(100% - #{$footer_height});
 	// padding-top: $nav_height_portrait + $header_height;
 	// padding-bottom: $footer_height;
+	// transition: opacity $duration $ease #{$delay*0 + 0.001s};
+	// opacity: 1;
 }
+
+// #content > * {
+// 	// transition: opacity $duration $ease #{$delay*0 + 0.001s};
+// 	&.removing-child {
+// 		transition: opacity $duration $ease #{$delay*0 + 0.001s};
+// 		opacity: 0;
+// 	}
+// 	&.adding-child {
+// 		transition: opacity $duration $ease #{$delay*2 + 0.001s};
+// 		opacity: 1;
+// 	}
+// }
 
 // image-carousel
 // - - - - - - - - - - - - - - - - - -
@@ -304,8 +320,8 @@ $nav_collapse_extra: 28rem;
 .container-expanded .media-carousel {
 	@include nav_translate(0, $nav_collapse_extra);
 }
-.removing.media-carousel .empty-item .content,
-.removing.media-carousel .media-item img {
+.removing-child.media-carousel .empty-item .content,
+.removing-child.media-carousel .media-item img {
 	// NOTE: do not fade-in images when removing carousel:
 	// Set delay longer than `.removing.media-carousel`'s fade-out duration,
 	transition-delay: $delay * 5;

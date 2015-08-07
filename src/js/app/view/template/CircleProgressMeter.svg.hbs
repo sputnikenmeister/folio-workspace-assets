@@ -1,0 +1,28 @@
+<div class="progress-meter color-bg" style="width: {{w}}px; height: {{h}}px">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" class="color-bg" 
+	width="{{w}}" height="{{h}}" viewPort="0 0 {{w}} {{h}}">
+	<symbol id="pause-symbol" viewBox="0 0 90 90">
+		<rect class="color-reverse color-fill"
+			x="30" y="30" width="10" height="30"></rect>
+		<rect class="color-reverse color-fill"
+			x="50" y="30" width="10" height="30"></rect>
+	</symbol>
+	<g transform="translate({{divide w 2}} {{divide h 2}})">
+		<g transform="rotate({{sr}} 0 0)">
+			<circle id="steps" class="color-stroke"
+				cx="0" cy="0" r="{{r2}}"
+				stroke-width="{{s2}}"
+				fill="transparent"></circle>
+			<circle id="amount" class="color-stroke"
+				cx="0" cy="0" r="{{r1}}"
+				stroke-width="{{s1}}"
+				fill="transparent"></circle>
+		</g>
+		<text id="step-label" class="color-reverse color-fill"
+			font-weight="600"
+			text-anchor="middle"
+			font-size="{{divide w 2}}" dy="{{divide w 6}}"></text>
+	</g>
+	<use id="pause" xlink:href="#pause-symbol" width="100%" height="100%"/>
+</svg>
+</div>

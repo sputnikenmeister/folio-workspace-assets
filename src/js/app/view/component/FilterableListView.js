@@ -6,8 +6,6 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {module:jquery} */
-var $ = Backbone.$;
 
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
@@ -41,7 +39,6 @@ var FilterableListView = DeferredView.extend({
 		this.setCollapsed((_.isBoolean(options.collapsed)? options.collapsed : false));
 
 		this.skipTransitions = true;
-		// this.$el.addClass("skip-transitions");
 		this.el.classList.add("skip-transitions");
 		this.collection.each(this.assignChildView, this);
 
@@ -61,11 +58,9 @@ var FilterableListView = DeferredView.extend({
 	renderLater: function () {
 		if (this.skipTransitions) {
 			this.el.classList.add("skip-transitions");
-			// this.$el.addClass("skip-transitions");
 			this.requestAnimationFrame(function() {
 				this.skipTransitions = false;
 				this.el.classList.remove("skip-transitions");
-				// this.$el.removeClass("skip-transitions");
 			});
 		}
 		this.el.classList.toggle("collapsed-changed", this.needsRender("collapsed"));
@@ -117,7 +112,7 @@ var FilterableListView = DeferredView.extend({
 	assignChildView: function (item, index) {
 		var view = new this.renderer({
 			model: item,
-			el: this.$(".list-item[data-id=" + item.id + "]")
+			el: this.el.querySelector(".list-item[data-id=\"" + item.id + "\"]")
 		});
 		this.children.add(view);//, item.id);
 		this.listenTo(view, "renderer:click", this.onChildClick);
@@ -161,7 +156,6 @@ var FilterableListView = DeferredView.extend({
 	/** @private */
 	renderCollapsed: function (collapsed) {
 		this.el.classList.toggle("collapsed", collapsed);
-		// this.$el.toggleClass("collapsed", collapsed);
 	},
 
 	/* --------------------------- *

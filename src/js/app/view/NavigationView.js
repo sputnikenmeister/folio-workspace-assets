@@ -2,12 +2,10 @@
  * @module app/view/NavigationView
  */
 
-/** @type {module:backbone} */
-var Backbone = require("backbone");
-/** @type {module:jquery} */
-var $ = Backbone.$;
 /** @type {module:underscore} */
 var _ = require("underscore");
+/** @type {module:backbone} */
+var Backbone = require("backbone");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
 
@@ -26,7 +24,7 @@ var keywords = require("../model/collection/KeywordCollection");
 var bundles = require("../model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
-// var View = require("./base/View");
+var View = require("./base/View");
 /** @type {module:app/view/base/ContainerView} */
 var ContainerView = require("./base/ContainerView");
 /** @type {module:app/view/component/FilterableListView} */
@@ -42,8 +40,8 @@ var CollectionPager = require("./component/CollectionPager");
  */
 module.exports = ContainerView.extend({
 
-	/** @override */
-	className: "navigation",
+	// /** @override */
+	// className: ContainerView.prototype.className + " navigation",
 
 	/** @override */
 	initialize: function (options) {
@@ -95,10 +93,9 @@ module.exports = ContainerView.extend({
 	render: function () {
 		// console.log(".... NavigationView.render()");
 		// this.transforms.clearAllCaptures();
-		this.transforms.stopAllTransitions();
 		// this.transforms.clearAllTransitions();
+		this.transforms.stopAllTransitions();
 		this.transforms.validate();
-		
 		_.each(this.children, function(view) {
 			view.skipTransitions = true;
 			view.render();
@@ -111,30 +108,11 @@ module.exports = ContainerView.extend({
 	 * ------------------------------- */
 	
 	_beforeChange: function(bundle, media) {
-		// var lastHadBundle = !!this._hasBundle;
-		// var lastHadMedia = !!this._hasMedia;
-		// this._hasBundle = !!bundle;
-		// this._hasMedia = !!media;
-		// var bundleStateChanged = lastHadBundle !== this._hasBundle;
-		// var mediaStateChanged = lastHadMedia !== this._hasMedia;
-		// 
-		// this._lastBundle = this._currentBundle;
-		// this._currentBundle = bundle? bundle : void 0;
-		// this._bundleChanged = (this._lastBundle !== this._currentBundle);
-		// this._lastMedia = this._currentMedia;
-		// this._currentMedia = media? media : void 0;
-		// this._mediaChanged = (this._lastMedia !== this._currentMedia);
-		// 
-		// console.log(">>>> NavigationView._beforeChange",
-		// 		"bundle changed: " + this._bundleChanged, "media changed: " + this._mediaChanged);
-		// 
 		console.log(">>>> NavigationView._beforeChange", arguments);
 		this._bundleChanging = (bundle !== bundles.selected);
-		// // var lastMedia = lastBundle? lastBundle.get("media").selected : void 0;
 	},
 	
 	_afterChange: function(bundle, media) {
-		// console.log("<<<< NavigationView._afterChange", arguments);
 	},
 
 	/* --------------------------- *
@@ -279,12 +257,6 @@ module.exports = ContainerView.extend({
 	 * DOM event handlers
 	 * --------------------------- */
 
-	/** @override */
-	_onSitenameClick: function (domev) {
-		domev.defaultPrevented || domev.preventDefault();
-		controller.deselectBundle();
-	},
-
 	/* -------------------------------
 	 * Horizontal touch/move (_onHPan*)
 	 * ------------------------------- */
@@ -405,23 +377,21 @@ module.exports = ContainerView.extend({
 	/* -------------------------------
 	 * Components
 	 * ------------------------------- */
-
+	
 	assignSitenameButton: function() {
-		_.bindAll(this, "_onSitenameClick");
-		
-		var pseudo = {};
-		pseudo.$el = this.$("#site-name");
-		pseudo.$el.wrap("<div id=\"site-name-wrapper\" class=\"transform-wrapper\"></div>");
-		pseudo.el = pseudo.$el[0];
-		pseudo.wrapper = pseudo.el.parentElement;
-		
-		pseudo.el.addEventListener("click", this._onSitenameClick, false);
-		this.listenTo(this, "view:remove", function () {
-			pseudo.el.removeEventListener("click", this._onSitenameClick, false);
+		var view = new View({
+			el: "#site-name",
+			events: {
+				"click a": function (domev) {
+					domev.defaultPrevented || domev.preventDefault();
+					controller.deselectBundle();
+				}
+			}
 		});
-		return pseudo;
+		view.wrapper = view.el.parentElement;
+		return view;
 	},
-
+	
 	/**
 	 * bundle-list
 	 */
@@ -438,12 +408,10 @@ module.exports = ContainerView.extend({
 		});
 		controller.listenTo(view, {
 			"view:select:one": controller.selectBundle,
-			"view:select:none": controller.deselectBundle
+			"view:select:none": controller.deselectBundle,
+			"view:remove": controller.stopListening
 		});
-		// view.wrapper = this.el.querySelector("#bundle-list-wrapper") || view.$el.wrap(
-		// 	"<div id=\"bundle-list-wrapper\" class=\"transform-wrapper\"></div>")[0].parentElement;
 		view.wrapper = view.el.parentElement;
-		// view.$wrapper = view.$el.parent();
 		return view;
 	},
 
@@ -468,20 +436,15 @@ module.exports = ContainerView.extend({
 				// },
 			},
 		});
-		
-		this.listenTo(view, "view:select:one view:select:none", this._onKeywordListSelect);
-
-		// view.wrapper = this.el.querySelector("#keyword-list-wrapper") || view.$el.wrap(
-		// 	"<div id=\"keyword-list-wrapper\" class=\"transform-wrapper\"></div>")[0].parentElement;
 		view.wrapper = view.el.parentElement;
-		// view.$wrapper = view.$el.parent();
+		this.listenTo(view, "view:select:one view:select:none", this._onKeywordListSelect);
 		return view;
 	},
-
+	
 	/**
 	 * bundle-pager
 	 */
-	createBundlePager: function() {
+	/*createBundlePager: function() {
 		// Component: bundle pager
 		var view = new CollectionPager({
 			id: "bundle-pager",
@@ -491,9 +454,9 @@ module.exports = ContainerView.extend({
 		});
 		controller.listenTo(view, {
 			"view:select:one": controller.selectBundle,
-			"view:select:none": controller.deselectBundle
+			"view:select:none": controller.deselectBundle,
+			"view:remove": controller.stopListening
 		});
-		view.render().$el.appendTo(this.el);
 		return view;
-	},
+	},*/
 });

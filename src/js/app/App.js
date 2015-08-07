@@ -22,24 +22,23 @@ require("../shims/matchesSelector");
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:jquery} */
-var $ = require("jquery");
+
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-
-global.jQuery = Backbone.$ = $;
-require("hammerjs");
-require("jquery.transit");
+Backbone.$ = require("backbone.native");
 require("backbone.babysitter");
 require("Backbone.Mutators");
 
-//global._ = _;
-//global.$ = $;
+require("hammerjs");
 
-$(window).load(function(ev) {
-// 	console.log("window.load()", document.readyState, arguments.length, arguments);
-// $(document).ready(function($) {
-// 	console.log("document.ready()", document.readyState, arguments.length, arguments);
+/** @type {module:jquery} */
+// var $ = require("jquery");
+// global.jQuery = Backbone.$ = $;
+
+
+window.addEventListener("load", function(ev) {
+// $(window).load(function(ev) {
+// document.addEventListener('DOMContentLoaded', function() {
 
 	if (window.bootstrap === void 0) {
 		console.error("bootstrap data missing");
@@ -50,8 +49,8 @@ $(window).load(function(ev) {
 	}
 
 	/** @type {module:app/control/Globals} */
-	var Globals = require("./control/Globals");
-	$.fx.speeds._default = Globals.TRANSITION_DURATION;
+	// var Globals = require("./control/Globals");
+	// $.fx.speeds._default = Globals.TRANSITION_DURATION;
 
 	/** @type {module:app/model/collection/TypeCollection} */
 	var typeList = require("./model/collection/TypeCollection");
@@ -90,11 +89,6 @@ $(window).load(function(ev) {
 	bundleList.reset(bundles);
 
 	delete window.bootstrap;
-// });
-//
-// $(window).load(function() {
-// 	"use strict";
-// 	console.log("window.load()", document.readyState, arguments.length, arguments);
 
 	/** @type {module:app/view/AppView} */
 	var AppView = require("./view/AppView");

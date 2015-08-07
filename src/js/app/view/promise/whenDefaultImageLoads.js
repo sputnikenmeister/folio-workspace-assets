@@ -1,46 +1,78 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:app/view/promise/whenImageLoads} */
-var whenImageLoads = require("./whenImageLoads");
+
+/** @type {module:app/view/promise/_whenImageLoads} */
+var _whenImageLoads = require("./_whenImageLoads");
+/** @type {module:app/view/promise/_loadImageAsObjectURL} */
+var _loadImageAsObjectURL = require("./_loadImageAsObjectURL");
+
+var isBlobRE = /^blob\:.*/;
+
+// var _preloadImage = function (url, image, progressFn) {
+// 	return _loadImageAsObjectURL(url, progressFn)
+// 		.then(function(url) {
+// 			image.src = url;
+// 			return image;
+// 		})
+// 		.then(_whenImageLoads)
+// 		.then(function(img) {
+// 			return img.src;
+// 		});
+// };
 
 module.exports = function(view) {
-	if (view.model.has("prefetched")) {
-		console.log(view.cid, view.model.cid, "image is prefetched");
-		view.el.classList.remove("idle");
-		view.el.classList.add("done");
-		view.image.src = view.model.get("prefetched");
-		return view;
-	} else {
-		return new Promise(function(resolve, reject) {
+	return new Promise(function(resolve, reject) {
+		var defaultImageEl = view.defaultImage = view.el.querySelector("img.default");
+		
+		if (view.model.has("prefetched")) {
+			defaultImageEl.src = view.model.get("prefetched");
+			_whenImageLoads(defaultImageEl)
+				.then(
+					function(targetEl) {
+						console.log(view.cid, view.model.cid, "whenDefaultImageLoads resolved", "prefetched");
+						view.el.classList.remove("idle");
+						view.el.classList.add("done");
+						resolve(view);
+					});
+		} else {
 			view.el.classList.remove("idle");
 			view.el.classList.add("pending");
-			whenImageLoads(view.model.getImageUrl(), view.image,
-				_.throttle(function (progress) {
-					console.log(view.cid, view.model.cid, "whenDefaultImageLoads progress", progress);
-					view.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-				}, 100, {leading: true, trailing: false})
-			).then(
-				function(url) {
-					console.log(view.cid, view.model.cid, "whenDefaultImageLoads resolved", url);
-					view.placeholder.removeAttribute("data-progress");
-					view.el.classList.remove("pending");
-					view.el.classList.add("done");
-					if (/^blob\:.*/.test(url)) {
-						view.model.set({"prefetched": url});
-						// view.on("view:remove", function() {
-						// 	window.URL.revokeObjectURL(url);
-						// });
-					}
-					resolve(view);
-				},
-				function(err) {
-					console.log(view.cid, view.model.cid, "whenDefaultImageLoads rejected", err.message);
-					view.placeholder.removeAttribute("data-progress");
-					view.el.classList.remove("pending");
-					view.el.classList.add("error");
-					reject(err);
-				}
-			);
-		});
-	}
+			
+			var progressFn = function (progress) {
+				console.log(view.cid, view.model.cid, "whenDefaultImageLoads progress", progress);
+				view.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
+			};
+			progressFn = _.throttle(progressFn, 100, {leading: true, trailing: false});
+			
+			// _preloadImage(view.model.getImageUrl(), defaultImageEl, progressFn)
+			_loadImageAsObjectURL(view.model.getImageUrl(), progressFn)
+				.then(
+					function(url) {
+						if (isBlobRE.test(url))
+							view.model.set({"prefetched": url});
+						defaultImageEl.src = url;
+						return defaultImageEl;
+					})
+				.then(_whenImageLoads)
+				.then(
+					function(targetEl) {
+						// view.on("view:remove", function() { URL.revokeObjectURL(url); });
+						console.log(view.cid, view.model.cid, "whenDefaultImageLoads resolved", targetEl.src);
+						view.placeholder.removeAttribute("data-progress");
+						view.el.classList.remove("pending");
+						view.el.classList.add("done");
+						resolve(view);
+					})
+				.catch(
+					function(err) {
+						console.log(view.cid, view.model.cid, "whenDefaultImageLoads rejected", err.message);
+						view.placeholder.style.color = "inherit";
+						view.placeholder.textContent = err.message;
+						view.placeholder.removeAttribute("data-progress");
+						view.el.classList.remove("pending");
+						view.el.classList.add("error");
+						reject(err);
+					});
+		}
+	});
 };

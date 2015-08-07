@@ -16,8 +16,13 @@ module.exports = Backbone.Model.extend({
 	defaults: {
 		name: "",
 		handle: "",
-		attrs: [],
-		excluded: false,
+		attrs: null,
+	},
+	
+	mutators: {
+		domid: function() {
+			return "t" + this.id;
+		},
 	},
 	
 	attrs: function() {

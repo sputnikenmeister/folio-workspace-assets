@@ -12,7 +12,6 @@ var _prefixedProperty = function(prop, styleObj) {
 	for (var i = 0; i < PREFIXES_NUM; i++) {
 		prefixedProp = PREFIXES[i] + camelProp;
 		if (prefixedProp in styleObj) {
-			// console.log("CSS property '" + prop + "' found as '" + prefixedProp + "'");
 			return prefixedProp;
 		}
 	}

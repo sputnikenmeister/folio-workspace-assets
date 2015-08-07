@@ -10,8 +10,8 @@ var Backbone = require("backbone");
 var View = require("../base/View");
 
 /** @type {Function} */
-var viewTemplate = require("./CollectionPager.tpl");
-//var viewTemplate = require("./CollectionPager.withClose.tpl");
+var viewTemplate = require("./CollectionPager.hbs");
+//var viewTemplate = require("./CollectionPager.withClose.hbs");
 
 /**
  * @constructor
@@ -56,7 +56,7 @@ module.exports = View.extend({
 		if (this.collection.length > 1 && this.collection.selected) {
 			var preceding = this.collection.precedingOrLast();
 			var following = this.collection.followingOrFirst();
-			this.$el.html(this.template({
+			this.el.innerHTML = this.template({
 				"preceding_label": this.getLabel(preceding),
 				"preceding_href": preceding.get("handle"),
 				"following_label": this.getLabel(following),
@@ -64,9 +64,9 @@ module.exports = View.extend({
 //				"close_label": "Close",
 //				"close_href": "#close",
 
-			}));
+			});
 		} else {
-			this.$el.empty();
+			this.el.innerHTML = "";
 		}
 		return this;
 	},

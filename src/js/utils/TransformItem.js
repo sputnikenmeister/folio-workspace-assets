@@ -7,14 +7,10 @@ var _ = require("underscore");
 
 /** @type {String} */
 var transitionEnd = require("./event/transitionEnd");
-/** @type {module:utils/strings/camelToDashed} */
-var camelToDashed = require("./strings/camelToDashed");
 /** @type {module:utils/css/prefixedProperty} */
 var prefixedProperty = require("./css/prefixedProperty");
 /** @type {module:utils/css/prefixedStyleName} */
-// var prefixedStyleName = require("./css/prefixedStyleName");
-/** @type {module:utils/css/prefixedProperty} */
-// var parseTransformMatrix = require("../css/parseTransformMatrix");
+var prefixedStyleName = require("./css/prefixedStyleName");
 
 /** @type {module:utils/debug/traceElement} */
 var traceElt = require("./debug/traceElement");
@@ -37,44 +33,47 @@ var log = function() {
 };
 
 /* -------------------------------
- * Private static
- * ------------------------------- */
-
-var computedDefaults = {
-	"transform": "matrix(1, 0, 0, 1, 0, 0)",
-	"transformStyle": "",
-	"transition": "",
-	"transitionDuration": "0s",
-	"transitionDelay": "0s",
-	"transitionProperty": "none",
-	"transitionTimingFunction": "ease"
-};
-var transformProps = ["transform", "transformStyle"];
-var transitionProps = ["transition", "transitionDuration", "transitionDelay",
-	"transitionProperty", "transitionTimingFunction"];
-	
-var _styleProps = {}, _styleNames = {};
-(function() {
-	var p, pp, ps;
-	var props = transformProps.concat(transitionProps);
-	for (var i = 0; i < props.length; ++i) {
-		p = props[i];
-		pp = prefixedProperty(p);//, window.getComputedStyle(document.body));
-		if (pp) {
-			_styleProps[p] = pp;
-			_styleNames[p] = p != pp? "-" + camelToDashed(pp): camelToDashed(p);
-		} else {
-			// console.warn("Property '" + p + "' is not available");
-			_styleProps[p] = p;
-			_styleNames[p] = camelToDashed(p);
-		}
-	}
-}());
+/* Private static
+/* ------------------------------- */
 
 var transitionTemplate = function(o) {
 	return o.property + " " + o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
 };
 // var transitionTemplate = _.template("<%= property %> <% duration/1000 %>s <%= easing %> <% delay/1000 %>s");
+
+// var computedDefaults = {
+// 	"transform": "matrix(1, 0, 0, 1, 0, 0)",
+// 	"transformStyle": "",
+// 	"transition": "",
+// 	"transitionDuration": "0s",
+// 	"transitionDelay": "0s",
+// 	"transitionProperty": "none",
+// 	"transitionTimingFunction": "ease"
+// };
+
+var NO_TRANSITION = "none 0s ease 0s";
+
+var _styleProps = {}; 
+var _styleNames = {};
+
+(function() {
+	var _transformProps = ["transform", "transformStyle"];
+	var _transitionProps = ["transition", "transitionDuration", "transitionDelay", "transitionProperty", "transitionTimingFunction"];
+	var _transformStyleNames = ["transform", "transform-style"];
+	var _transitionStyleNames = ["transition", "transition-duration", "transition-delay", "transition-property", "transition-timing-function"];
+	var i, p, props;
+	
+	props = _transformProps.concat(_transitionProps);
+	for (i = 0; i < props.length; ++i) {
+		p = props[i];
+		_styleProps[p] = prefixedProperty(p);
+	}
+	props = _transformStyleNames.concat(_transitionStyleNames);
+	for (i = 0; i < props.length; ++i) {
+		p = props[i];
+		_styleNames[p] = prefixedStyleName(p);
+	}
+}());
 
 /* -------------------------------
  * TransformItem
@@ -95,8 +94,8 @@ function TransformItem(el, immediate) {
 	this._captureInvalid = false;
 	this._capturedX = null;
 	this._capturedY = null;
-	this._currCapturedValues = {};
-	this._lastCapturedValues = {};
+	this._currCapture = {};
+	this._lastCapture = {};
 	this._capturedValuesChanged = false;
 	
 	this._offsetInvalid = false;
@@ -111,7 +110,6 @@ function TransformItem(el, immediate) {
 
 	this._renderedX = null;
 	this._renderedY = null;
-	// this._renderedChanged = false;
 
 	this.enableTransitions = this.clearTransitions;
 	this.disableTransitions = this.stopTransitions;
@@ -140,11 +138,7 @@ TransformItem.prototype = {
 
 	capture: function() {
 		log(traceElt(this.el), "TransformItem.capture");
-		
-		// this._captureInvalid = true;
 		this._validateCapture();
-		// log(traceElt(this.el), this._capturedX, this._capturedY);
-		// log(traceElt(this.el), this._capturedValuesChanged, this._lastCapturedValues.transform, this._currCapturedValues.transform);
 		return this;
 	},
 	
@@ -196,14 +190,12 @@ TransformItem.prototype = {
 	/* ------------------------------- */
 	
 	runTransition: function(transition, immediate) {
-		// log(traceElt(this.el), "TransformItem.runTransition");
-		
 		this._transition.property = _styleNames["transform"];
 		for (var prop in transition) {
 			this._transition[prop] = transition[prop];
 		}
 		if (this._transitionInvalid) {
-			log("error", traceElt(this.el), "TransformItem.runTransition changed twice",
+			log("warn", traceElt(this.el), "TransformItem.runTransition changed twice",
 				this._transitionValue, transitionTemplate(this._transition));
 		}
 		this._transitionValue = transitionTemplate(this._transition);
@@ -217,10 +209,8 @@ TransformItem.prototype = {
 	},
 	
 	clearTransitions: function(immediate) {
-		// log(traceElt(this.el), "TransformItem.clearTransitions");
-		
 		this._transition.property = "none";
-		this._transitionValue =  "none 0s 0s";
+		this._transitionValue = NO_TRANSITION;
 		
 		this._hasTransition = false;
 		this._transitionInvalid = true;
@@ -231,11 +221,9 @@ TransformItem.prototype = {
 	},
 	
 	stopTransitions: function(immediate) {
-		// log(traceElt(this.el), "TransformItem.stopTransitions");
-		
 		this._transition.property = "none";
-		this._transitionValue =  "none 0s 0s";
-
+		this._transitionValue =  NO_TRANSITION;
+		
 		this._hasTransition = false;
 		this._transitionInvalid = true;
 		if (this.immediate && immediate !== false) {
@@ -255,7 +243,6 @@ TransformItem.prototype = {
 		this.el.addEventListener(transitionEnd, this._handleTransitionEnd, false);
 		
 		this._capturedValuesChanged = false;
-		// this._captureInvalid = true;
 		return this;
 	},
 	
@@ -264,36 +251,24 @@ TransformItem.prototype = {
 			return;
 		}
 		var computed, capturedValues;
-		var eltTransformValue = null;
+		var transformValue = null;
 		
-		// log("info", traceElt(this.el), "TransformItem._validateCapture", {
-		// 	"transition invalid": this._transitionInvalid,
-		// 	"offset invalid": this._offsetInvalid,
-		// });
-		
-		// this is an explicit call to capture() instead of a subcall from _validateOffset()
 		if (this._hasOffset && !this._offsetInvalid) {
-			eltTransformValue = this.el.style[_styleProps["transform"]];
-			if (eltTransformValue === "") {
-				log("error", traceElt(this.el), "TransformItem._capture", "has valid offset but eltTransformValue=\"\" ?", this._offsetX, this._offsetY);
-			} else {
-				// log(traceElt(this.el), "TransformItem._capture", "clearing before capture");
+			// this is an explicit call to capture() instead of a subcall from _validateOffset()
+			transformValue = this._getCSSProp("transform");
+			if (transformValue === "") {
+				log("error", traceElt(this.el), "TransformItem._capture", "has valid offset but transformValue=\"\" ?", this._offsetX, this._offsetY);
 			}
-			this.el.style[_styleProps["transform"]] = "";
+			this._removeCSSProp("transform");
 		}
 
 		// NOTE: reusing object, all props will be overwritten
-		capturedValues = {};//this._lastCapturedValues;
-		this._lastCapturedValues = this._currCapturedValues;
-		computed = window.getComputedStyle(this.el);
-		for (var p in _styleNames) {
-			capturedValues[p] = computed.getPropertyValue(_styleNames[p]);
-		}
-		this._currCapturedValues = capturedValues;
+		this._lastCapture = this._currCapture;
+		this._currCapture = this._getComputedCSSProps();
 		
-		if (this._currCapturedValues.transform !== this._lastCapturedValues.transform) {
+		if (this._currCapture.transform !== this._lastCapture.transform) {
 			var m, mm, ret = {};
-			mm = this._currCapturedValues.transform.match(/(matrix|matrix3d)\(([^\)]+)\)/);
+			mm = this._currCapture.transform.match(/(matrix|matrix3d)\(([^\)]+)\)/);
 			if (mm) {
 				m = mm[2].split(",");
 				if (mm[1] === "matrix") {
@@ -309,106 +284,80 @@ TransformItem.prototype = {
 			}
 			this._capturedValuesChanged = true;
 		}
-		if (eltTransformValue !== null) {
-			log(traceElt(this.el), "TransformItem._capture", "reapplying after capture", eltTransformValue);
-			this.el.style[_styleProps["transform"]] = eltTransformValue;
+		if (transformValue !== null) {
+			log(traceElt(this.el), "TransformItem._capture", "reapplying after capture", transformValue);
+			this._setCSSProp("transform", transformValue);
 		}
 		this._captureInvalid = false;
 	},
 
 	_validateTransition: function() {
-		// log(traceElt(this.el), "TransformItem._validateTransition", "invalid: "+this._transitionInvalid, "hasTx: "+this._hasTransition);
-		
 		if (this._transitionInvalid) {
-			var capturing = this._captureInvalid;
-			// if (this._captureInvalid) {
-				// log(traceElt(this.el), "TransformItem._validateOffset", "lazy capture");
-				this._validateCapture();
-			// }
-			// if (this._capturedValuesChanged && !this._hasOffset) {}
-			log(traceElt(this.el), "TransformItem._validateTransition", logObj);
-			var logObj = {
-				"capture invalid": capturing,
-				"capture changed": this._capturedValuesChanged,
-				"has transition": this._hasTransition,
-				"has offset": this._hasOffset,
-			};
-			
-			// if (!this._transitionRunning) {
-			// }
-			if (this._hasTransition) {
-				this._transitionRunning = true;
-				// this.el.addEventListener(transitionEnd, this._handleTransitionEnd, false);
-			} else {
-				this._transitionRunning = false;
-				// 	this.el.removeEventListener(transitionEnd, this._handleTransitionEnd, false);
-			}
-			
-			// this._assertNoTransition = false;
-			// if (this._hasTransition) {
-			// 	if (this._offsetInvalid) {
-			// 		// offset is being cleared/changed, transition will ocurr
-			// 		this.el.style.backgroundColor = "hsla(120,100%,25%,0.1)";
-			// 	} else
-			// 	if (this._capturedValuesChanged) {
-			// 		// captured changed, transition will ocurr;
-			// 		this.el.style.backgroundColor = "hsla(120,100%,25%,0.1)";
-			// 	} else
-			// 	{
-			// 		// transition not expected
-			// 		this.el.style.backgroundColor = "hsla(0,50%,50%,0.1)";
-			// 		this._assertNoTransition = true;
-			// 	}
-			// } else {
-			// 	this.el.style.backgroundColor = "";//hsla(0,25%,50%,0.1)";
-			// }
-			this.el.style[_styleProps["transition"]] = this._transitionValue;
+			this._validateCapture();
+			this._transitionRunning = this._hasTransition;
+			this._setCSSProp("transition", this._transitionValue);
 			this._transitionInvalid = false;
 		}
 	},
 
 	_handleTransitionEnd: function(ev) {
-		// if (this._transitionInvalid) {}
-		if (this._transitionRunning && (this.el === ev.target) && (this._transition.property === ev.propertyName)) {
+		if (this._transitionRunning && (this.el === ev.target) &&
+				(this._transition.property === ev.propertyName)) {
 			this._transitionRunning = false;
-			// this.el.removeEventListener(transitionEnd, this._handleTransitionEnd, false);
-			this.el.style[_styleProps["transition"]] = "none 0s 0s";
-			this.el.style.backgroundColor = "";//hsla(0,25%,50%,0.1)";
-			
-			// if (!this._hasTransition) {
-			// 	log("error", traceElt(this.el), "TransformItem._hasTransition == false");//, this);
-			// }
-			// if (this._assertNoTransition) {
-			// 	log("error", traceElt(this.el), "TransformItem._assertNoTransition == true");//, this);
-			// 	this._assertNoTransition = false;
-			// }
+			this._setCSSProp("transition", NO_TRANSITION);
 		}
 	},
 	
 	_validateOffset: function() {
 		if (this._offsetInvalid) {
-			// log(traceElt(this.el), "TransformItem._validateOffset");
-			// if (this._captureInvalid) {
-				// log(traceElt(this.el), "TransformItem._validateOffset", "lazy capture");
-				this._validateCapture();
-			// }
+			this._validateCapture();
 			if (this._hasOffset) {
 				var tx = this._offsetX + this._capturedX;
 				var ty = this._offsetY + this._capturedY;
 				if (tx !== this._renderedX || ty !== this._renderedY) {
 					this._renderedX = tx;
 					this._renderedY = ty;
-					this.el.style[_styleProps["transform"]] = "translate3d(" + this._renderedX + "px, " + this._renderedY + "px, 0px)";
-					// this.el.style.outline = "2px solid blue";
+					this._setCSSProp("transform", "translate3d(" + this._renderedX + "px, " + this._renderedY + "px, 0px)");
 				}
 			} else {
 				this._renderedX = null;
 				this._renderedY = null;
-				this.el.style[_styleProps["transform"]] = "";
-				// this.el.style.outline = "";
+				this._removeCSSProp("transform");
 			}
 			this._offsetInvalid = false;
 		}
+	},
+	
+	/* -------------------------------
+	/* CSS
+	/* ------------------------------- */
+	
+	_getCSSProp: function(prop) {
+		return this.el.style[_styleProps[prop]];
+		// return this.el.style.getPropertyValue(_styleNames[prop]);
+	},
+	
+	_setCSSProp: function(prop, value) {
+		if (prop === "transition" && value === NO_TRANSITION) {
+			this._removeCSSProp(prop);
+		} else {
+			this.el.style[_styleProps[prop]] = value;
+			// this.el.style.setProperty(_styleNames[prop], value);
+		}
+	},
+	
+	_removeCSSProp: function(prop) {
+		this.el.style[_styleProps[prop]] = "";
+		// this.el.style.removeProperty(_styleNames[prop]);
+	},
+	
+	_getComputedCSSProps: function() {
+		var values = {};
+		var computed = window.getComputedStyle(this.el);
+		for (var p in _styleProps) {
+			values[p] = computed[_styleProps[p]];
+		}
+		return values;
 	},
 };
 

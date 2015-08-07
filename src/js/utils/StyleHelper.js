@@ -3,16 +3,15 @@
  * @module app/helper/StyleHelper
  */
 
-/** @type {module:jquery} */
-var jQuery = require("jquery");
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/**
- * @param [propName]
- * @return {String}
- */
-var camelCase = jQuery.camelCase;
+/** @type {module:utils/strings/camelToDashed} */
+// var camelToDashed = require("./strings/camelToDashed");
+
+// /** @type {module:utils/strings/dashedToCamel} */
+var camelCase = require("./strings/dashedToCamel");
+// var camelCase = jQuery.camelCase;
 
 var _rules = {};
 var _aliases = {};

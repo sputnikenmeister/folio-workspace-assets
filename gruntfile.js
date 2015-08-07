@@ -72,28 +72,34 @@ module.exports = function (grunt) {
 			"./src/js/app/**/*.js"
 		]
 	});
-	
-	var vendor_requires = [
-		"backbone.babysitter", "backbone", "Backbone.Mutators",
-		"jquery.transit", "hammerjs", "jquery", "underscore",
-		"color", "es6-promise", "classlist-polyfill", "cookies-js"
-	];
-	var browserify_aliases = [];
-	// browserify_aliases.push("./bower_components/jquery-color/jquery.color.js:jquery-color");
-	// vendor_requires = ["jquery-color"].concat(vendor_requires);
 
 	/* browserify */
 	grunt.loadNpmTasks("grunt-browserify");
+	grunt.config("browserify.options", {
+		browserifyOptions: {
+			fullPaths: false,
+			debug: true
+		},
+	});
+	
+	/* browserify:vendor */
 	grunt.config("browserify.vendor", {
 		dest: "./js/<%= DEBUG_VENDOR_JS %>.js",
 		src: [],
 		options: {
-			browserifyOptions: {
-				fullPaths: false,
-				debug: true
-			},
-			require: vendor_requires,
-			alias: browserify_aliases
+			require: [
+				// "jquery",
+				"underscore",
+				"backbone",
+				"backbone.native",
+				"Backbone.Mutators",
+				"backbone.babysitter",
+				"hammerjs",
+				"color",
+				"es6-promise",
+				"classlist-polyfill",
+				"cookies-js"
+			]
 		},
 	});
 
@@ -104,14 +110,18 @@ module.exports = function (grunt) {
 			"./src/js/app/App.js"
 		],
 		options: {
-			browserifyOptions: {
-				fullPaths: false,
-				debug: true
-			},
+			external: grunt.config("browserify.vendor.options.require"),
+			alias: [],
+			require: [],
 			transform: [
-				"node-underscorify"
-			],
-			external: vendor_requires
+				"decomponentify",
+				["node-underscorify", {
+					extensions: ["tpl"]
+				}],
+				["hbsfy", {
+					extensions: ["hbs"]
+				}]
+			]
 		}
 	});
 
@@ -254,10 +264,9 @@ module.exports = function (grunt) {
 				fullPaths: false,
 				debug: false
 			},
-			transform: [
-				"node-underscorify"
-			],
-			alias: browserify_aliases
+			alias: grunt.config("browserify.client.options.alias"),
+			require: grunt.config("browserify.client.options.require"),
+			transform: grunt.config("browserify.client.options.transform"),
 		}
 	});
 

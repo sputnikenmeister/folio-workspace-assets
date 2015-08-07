@@ -83,7 +83,7 @@ $darkolivegreen:	darkolivegreen;
 		}
 	}
 	#content {
-//		background-color: transparentize($lightblue, 0.9);
+		background-color: transparentize($lightblue, 0.9);
 		.carousel {
 			// @include debug_outline_thick($color: $deepskyblue);
 			@include debug_outline($width: 1rem, $style: solid, $color: transparentize($deepskyblue, 0.8));
@@ -137,8 +137,18 @@ $darkolivegreen:	darkolivegreen;
 	
 	z-index: 999;
 	position: fixed;
-	bottom: 0;
 	width: 100%;
+	bottom: 0;
+	
+	&.show-info .debug-links {
+		display: none;
+	}
+	&:not(.show-info) .debug-info {
+		display: none;
+	}
+}
+
+#debug-toolbar dl {
 	padding: 1rem 0.5rem;
 	display: flex;
 	flex-direction: row;
@@ -158,21 +168,21 @@ $darkolivegreen:	darkolivegreen;
 		margin: auto 0;
 		padding: 0 0.75em;
 	}
-	dd {
-		border-left: currentColor solid thin;
-	}
 	dt + dd {
 		padding-left: 0;
 		border-left: none;
 	}
-	dt, dd.debug-group {
-		margin-bottom: -0.1rem;
+	dd {
+		border-left: currentColor solid thin;
+	}
+	
+	dt {
 		@include small_caps($lead: 1rem);
 	}
-	// dt {
-	// 	font-weight: 300;
-	// }
-	dd.classes-group {
+	&.debug-links dd {
+		@include small_caps($lead: 1rem);
+	}
+	&.debug-info dd {
 		line-height: 1rem;
 		font-weight: 300;
 	}

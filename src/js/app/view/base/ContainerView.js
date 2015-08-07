@@ -4,8 +4,6 @@
 
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {module:jquery} */
-var $ = Backbone.$;
 /** @type {module:underscore} */
 var _ = require("underscore");
 
@@ -27,7 +25,7 @@ var controller = require("../../control/Controller");
  */
 module.exports = View.extend({
 
-	className: "container-expanded",
+	className: "container container-expanded",
 
 	/** @override */
 	constructor: function(options) {

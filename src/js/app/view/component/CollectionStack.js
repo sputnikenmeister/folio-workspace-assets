@@ -6,8 +6,6 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {module:jquery} */
-var $ = Backbone.$;
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
@@ -19,7 +17,7 @@ var transitionEnd = require("../../../utils/event/transitionEnd");
 var setImmediate = require("../../../utils/setImmediate");
 
 /** @type {string} */
-var viewTemplate = require("./CollectionStack.tpl");
+var viewTemplate = require("./CollectionStack.hbs");
 
 /**
  * @constructor

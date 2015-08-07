@@ -1,49 +1,48 @@
-var stackBlurCanvasRGBA = require("./blur/stackBlurCanvasRGBA");
-var stackBlurCanvasRGB = require("./blur/stackBlurCanvasRGB");
-var stackBlurCanvasMono = require("./blur/stackBlurCanvasMono");
+var stackBlurRGBA = require("./bitmap/stackBlurRGBA");
+var stackBlurRGB = require("./bitmap/stackBlurRGB");
+var stackBlurMono = require("./bitmap/stackBlurMono");
+var duotone = require("./bitmap/duotone");
 
-module.exports = function ( img, canvas, radius, width, height, opts ) {
+module.exports = function ( src, canvas, width, height, opts ) {
 	opts || (opts = {});
 	
-	var w = width || img.naturalWidth;
-	var h = height || img.naturalHeight;
+	var w = width || src.naturalWidth || src.videoWidth || src.width;
+	var h = height || src.naturalHeight || src.videoHeight || src.height;
 	
 	canvas.style.width  = w + "px";
 	canvas.style.height = h + "px";
 	canvas.width = w;
 	canvas.height = h;
 	
-	var context = canvas.getContext("2d");
+	var top_x = 0, top_y = 0;
+	var context, imageData;
+	
+	context = canvas.getContext("2d");
 	context.clearRect( 0, 0, w, h );
-	context.drawImage( img, 0, 0, w, h );
+	context.drawImage( src, 0, 0, w, h );
 	
-	if ( isNaN(radius) || radius < 1 ) return;
+	imageData = context.getImageData(top_x, top_y, w, h);
+	// imageData = duotone(imageData, opts);
 	
-	switch (opts.channels) {
+	switch (opts.filter) {
+		case "duo":
+			imageData = duotone(imageData, opts);
+			break;
 		case "rgba":
-			stackBlurCanvasRGBA( canvas, 0, 0, w, h, radius, opts );
+			imageData = stackBlurRGBA(imageData, opts);
+			break;
+		case "rgb":
+			imageData = stackBlurRGB(imageData, opts);
 			break;
 		case "mono":
-			stackBlurCanvasMono( canvas, 0, 0, w, h, radius, opts );
-			break;
-		default:
-			stackBlurCanvasRGB( canvas, 0, 0, w, h, radius, opts );
+			imageData = stackBlurMono(imageData, opts);
 			break;
 	}
+	
+	context.putImageData(imageData, top_x, top_y);
 };
 
 /*
-
-// if ( opts.channels == "rgba" )
-// 	stackBlurCanvasRGBA( canvas, 0, 0, w, h, radius );
-// if ( opts.channels == "mono" )
-// 	stackBlurCanvasMono( canvas, 0, 0, w, h, radius );
-// else 
-// 	stackBlurCanvasRGB( canvas, 0, 0, w, h, radius );
-
-// canvas.style.width = (width > 0? Math.min(w, width) : w) + "px";
-// canvas.style.height = (height > 0? Math.min(h, height) : h) + "px";
-
 try {
 	try {
 		imageData = context.getImageData( top_x, top_y, width, height );

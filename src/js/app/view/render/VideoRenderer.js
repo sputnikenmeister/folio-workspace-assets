@@ -1,6 +1,6 @@
 /**
- * @module app/view/render/VideoRenderer
- */
+* @module app/view/render/VideoRenderer
+*/
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -15,153 +15,32 @@ var Globals = require("../../control/Globals");
 var ViewError = require("../base/ViewError");
 /** @type {module:app/view/render/MediaRenderer} */
 var MediaRenderer = require("./MediaRenderer");
-/** @type {module:app/view/promise/whenImageLoads} */
-var whenImageLoads = require("../promise/whenImageLoads");
-
-/** @type {module:app/utils/css/parseColor} */
-// var parseColor = require("../../../utils/css/parseColor");
-/** @type {module:utils/StyleHelper} */
-// var Styles = require("../../../utils/StyleHelper");
 
 /** @type {Function} */
-var viewTemplate = require("./VideoRenderer.tpl");
+var viewTemplate = require("./VideoRenderer.hbs");
 
-// var StackBlur = require("../../../vendor/StackBlur");
-var stackBlurImage = require("../../../utils/canvas/stackBlurImage");
+// var stackBlurRGB = require("../../../utils/canvas//bitmap/stackBlurRGB");
+// var stackBlurMono = require("../../../utils/canvas//bitmap/stackBlurMono");
+// var duotone = require("../../../utils/canvas//bitmap/duotone");
+
+/*
+https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Using_HTML5_audio_and_video
+https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video
+https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement
+https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Media_events
+*/
 
 var mediaEvents = [
 	"loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled",
 	"loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting",
-	"seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause",
+	"seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "paused",
 	/*"ratechange",*/ "resize", /*"volumechange"*/
 	];
 
-var whenPosterImageLoads = function (view) {
-	return new Promise(function(resolve, reject) {
-		view.el.classList.remove("idle");
-		view.el.classList.add("pending");
-		
-		var doError = function(err) {
-			console.log(view.cid, view.model.cid, "whenPosterImageLoads rejected", err.message);
-			view.placeholder.style.color = "inherit";
-			view.placeholder.textContent = err.message;
-			view.placeholder.removeAttribute("data-progress");
-			view.el.classList.remove("pending");
-			view.el.classList.add("error");
-			reject(err);
-		};
-		
-		whenImageLoads(view.model.getImageUrl(), void 0,
-			_.throttle(function (progress) {
-				console.log(view.cid, view.model.cid, "whenPosterImageLoads progress", progress);
-				view.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-			}, 100, {leading: true, trailing: false})
-		).then(
-			function(url) {
-				console.log(view.cid, view.model.cid, "whenPosterImageLoads resolved", url);
-				
-				var img = new window.Image();
-				var canvas = document.createElement("canvas");
-				var onloadFn = null;
-				
-				var doResolve = function() {
-					view.placeholder.removeAttribute("data-progress");
-					view.el.classList.remove("pending");
-					view.el.classList.add("done");
-					resolve(view);
-				};
-				
-				// if (/^blob\:.*/.test(url)) {
-				// 	view.model.set({"prefetched": url});
-				// 	// view.on("view:remove", function() { window.URL.revokeObjectURL(url); });
-				// }
-				// view.video.setAttribute("poster", url);
-				
-				onloadFn = function(ev) {
-					img.onload = void 0;
-					/^blob\:.*/.test(url) && window.URL.revokeObjectURL(url);
-					
-					// view.overlay.insertBefore(img, view.overlayLabel);
-					// doResolve(view);
-					
-					var w = parseInt(view.content.style.width);
-					var h = parseInt(view.content.style.height);
-					var fgColor = new Color(view.model.attrs()["color"] || Globals.DEFAULT_COLORS["color"]);
-					var bgColor = new Color(view.model.attrs()["background-color"] || Globals.DEFAULT_COLORS["background-color"]);
-					
-					console.log(view.model.id, view.model.get("handle"),
-							fgColor.hslString(),
-							bgColor.hslString()
-					);
-					
-					var isLightOverDark = fgColor.luminosity() > bgColor.luminosity();
-					var blurOpts = (isLightOverDark)?
-						{ x00: bgColor.lighten(0.1), xFF: fgColor.darken(0.1) }:
-						{ x00: fgColor.lighten(0.3), xFF: bgColor.lighten(0.1) };
-					blurOpts.channels = "mono";
-						
-					try {
-						stackBlurImage(img, canvas, 15, w, h, blurOpts);
-						
-						// canvas.toBlob(function(blob) {
-						// 	var blurredUrl = window.URL.createObjectURL(blob);
-						// 	img.onload = function(ev) {
-						// 		window.URL.revokeObjectURL(blurredUrl);
-						// 		doResolve(view);
-						// 	};
-						// 	img.src = blurredUrl;
-						// 	view.overlay.insertBefore(img, view.overlayLabel);
-						// });
-						
-						onloadFn = function() {
-							img.onload = void 0;
-							view.overlay.insertBefore(img, view.overlayLabel);
-							doResolve();
-						};
-						
-						img.src = canvas.toDataURL();
-						if (img.complete) {
-							onloadFn();
-						} else {
-							img.onload = onloadFn;
-						}
-						
-						// view.overlay.insertBefore(canvas, view.overlayLabel);
-						// view.overlay.appendChild(canvas);
-						// doResolve(view);
-						
-						// canvas.toBlob(function(blob) {
-						// 	var blurredUrl = window.URL.createObjectURL(blob);
-						// 	view.on("view:remove", function() { 
-						// 		window.URL.revokeObjectURL(blurredUrl);
-						// 	});
-						// 	view.video.setAttribute("poster", blurredUrl);
-						// 	doResolve(view);
-						// });
-						
-						// view.video.setAttribute("poster", canvas.toDataURL());
-						// doResolve(view);
-						
-					} catch (err) {
-						doError(err);
-					}
-				};
-				img.src = url;
-				if (img.complete) {
-					onloadFn();
-				} else {
-					img.onload = onloadFn;
-				}
-			},
-			doError
-		);
-	});
-};
-
 /**
- * @constructor
- * @type {module:app/view/render/VideoRenderer}
- */
+* @constructor
+* @type {module:app/view/render/VideoRenderer}
+*/
 module.exports = MediaRenderer.extend({
 	
 	/** @type {string} */
@@ -173,6 +52,7 @@ module.exports = MediaRenderer.extend({
 	
 	/** @override */
 	initialize: function (opts) {
+		// MediaRenderer.prototype.initialize.apply(this, arguments);
 		_.bindAll(this, "_onMediaEvent");
 		this.createChildren();
 		
@@ -184,34 +64,32 @@ module.exports = MediaRenderer.extend({
 	/* children/layout
 	/* --------------------------- */
 	
-	/*
-	/* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video
-	/* https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement
-	/* https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Media_events
-	/* https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Using_HTML5_audio_and_video
-	/*/
 	createChildren: function() {
 		// var buffer =  document.createDocumentFragment();
 		// buffer.appendChild(document.createElement("div"));
 		// buffer.firstElementChild.innerHTML = this.template(this.model.toJSON());
 		
-		this.el.setAttribute("data-state", "user");
+		// this.el.setAttribute("data-state", "initial");
 		this.el.innerHTML = this.template(this.model.toJSON());
 		
 		this.placeholder = this.el.querySelector(".placeholder");
 		this.playToggle = this.el.querySelector(".play-toggle");
 		this.content = this.el.querySelector(".content");
 		this.video = this.content.querySelector("video");
+		this.poster = this.content.querySelector("img.poster");
 		this.overlay = this.content.querySelector(".overlay");
-		this.overlayLabel = this.overlay.querySelector(".label");
+		this.overlayLabel = this.overlay.querySelector(".play-button");
 		
-		this.video.parentElement.style.overflow = "hidden";
-		this.video.setAttribute("preload", "none");
-		// this.video.setAttribute("poster", this.model.getImageUrl());
 		// this.overlay.firstElementChild.textContent = this.video.readyState > 3? "Play":"Wait";
+		// this.video.parentElement.style.overflow = "hidden";
+		// this.video.setAttribute("preload", "none");
+		
+		// this.video.setAttribute("poster", this.model.getImageUrl());
+		this.video.poster = this.model.getImageUrl();
 		
 		if (this.model.attrs()["@video-loop"]) {
-			this.video.setAttribute("loop", "loop");
+			// this.video.setAttribute("loop", "loop");
+			this.video.loop = true;
 		}
 		
 		if (this.model.has("srcset")) {
@@ -221,26 +99,6 @@ module.exports = MediaRenderer.extend({
 			}
 			this.video.innerHTML = html;
 		}
-		
-		// don't wait for any async op
-		this.el.classList.remove("idle");
-		this.el.classList.add("done");
-		
-		// console.log(this.model.id,
-		// 	this.model.attrs()["color"],
-		// 	this.model.attrs()["background-color"]);
-			
-		// var pColor = parseColor(this.model.attrs()["color"]);
-		// var pColor = parseColor(this.model.attrs()["background-color"]);
-		// if (pColor) {
-		// 	var c1, c2, cssGrad;
-		// 	pColor.a = 0.0;
-		// 	c1 = pColor.toColorString();
-		// 	pColor.a = 0.75;
-		// 	c2 = pColor.toColorString();
-		// 	this.overlay.style.backgroundColor = "transparent";
-		// 	this.overlay.style.background = "linear-gradient(to bottom, " + c1 + " 0%, " + c2 + " 100%)";
-		// }
 	},
 	
 	/** @return {this} */
@@ -283,17 +141,16 @@ module.exports = MediaRenderer.extend({
 		this.video.setAttribute("height", cH);
 		cH--; // NOTE: other elements must use video's CROPPED height 
 		
+		this.contentWidth = cW;
+		this.contentHeight = cH;
+		
 		content.style.left = cX + "px";
 		content.style.top = cY + "px";
 		content.style.width = cW + "px";
 		content.style.height = cH + "px";
 		
-		// sizing.style.maxWidth = (cW + (poW - pcW)) + "px";
-		// sizing.style.maxHeight = (cH + (poH - pcH)) + "px";
 		sizing.style.maxWidth = cW + "px";
 		sizing.style.maxHeight = cH + "px";
-		// sizing.style.maxWidth = content.offsetWidth + "px";
-		// sizing.style.maxHeight = content.offsetHeight + "px";
 		
 		return this;
 	},
@@ -305,12 +162,26 @@ module.exports = MediaRenderer.extend({
 	initializeAsync: function() {
 		MediaRenderer.whenSelectionIsContiguous(this)
 			.then(MediaRenderer.whenSelectTransitionEnds)
-			.then(whenPosterImageLoads)
-			.then(function(view) {
-					this.addSelectionListeners();
-					this.video.removeAttribute("preload");
-				}.bind(this))
-			.catch(function(err) {
+			.then(
+				function(view) {
+					// view.video.setAttribute("preload", "auto");
+					view.video.preload = "auto";
+					return view;
+				}
+			)
+			.then(MediaRenderer.whenDefaultImageLoads)
+			.then(
+				function(view) {
+					view.addSelectionListeners();
+					// view.video.setAttribute("poster", view.defaultImage.src);
+					try {
+						view.updateOverlayBackground(view.overlayLabel, view.defaultImage);
+					} catch (err) {
+						return Promise.reject(err);
+					}
+				})
+			.catch(
+				function(err) {
 					if (err instanceof ViewError) {
 						console.log(err.view.cid, err.view.model.cid, "VideoRenderer: " + err.message);
 					} else {
@@ -325,6 +196,17 @@ module.exports = MediaRenderer.extend({
 	
 	/** @override */
 	setEnabled: function(enabled) {
+		// if (enabled) {
+		// 	if (this._lastPlayState) {
+		// 		this.video.play();
+		// 	}
+		// 	this._lastPlayState = void 0;
+		// } else {
+		// 	this._lastPlayState = !this.video.paused;
+		// 	if (this._lastPlayState) {
+		// 		this.video.pause();
+		// 	}
+		// }
 		!enabled && !this.video.paused && this.video.pause();
 		// this.toggleMediaPlayback(enabled);
 	},
@@ -338,7 +220,9 @@ module.exports = MediaRenderer.extend({
 		}
 		// changing to what?
 		if (newPlayState) {
-			this.video.ended && (this.video.currentTime = 0.0);
+			if (this.video.ended) {
+				this.video.currentTime = 0.0;
+			}
 			this.video.play();
 		} else {
 			this.video.pause();
@@ -351,39 +235,41 @@ module.exports = MediaRenderer.extend({
 	
 	addMediaListeners: function() {
 		for (var i = 0; i < mediaEvents.length; i++) {
-			this.video.addEventListener(mediaEvents[i], this._onMediaEvent);
+			this.video.addEventListener(mediaEvents[i], this._onMediaEvent, false);
 		}
 	},
 	
 	removeMediaListeners: function() {
 		for (var i = 0; i < mediaEvents.length; i++) {
-			this.video.removeEventListener(mediaEvents[i], this._onMediaEvent);
+			this.video.removeEventListener(mediaEvents[i], this._onMediaEvent, false);
 		}
 	},
 	
 	_onMediaEvent: function(ev) {
-		// console.log(this.model.id, ev.type, _.pick(this.video, "readyState", "paused", "ended"));
-		//{ readyState: this.video.readyState, paused: this.video.paused, ended: this.video.ended});
-		// this.overlay.classList.toggle("playing", ev.type == "timeupdate" || ev.type == "playing");
+		// console.log(this.cid, this.model.cid, ev.type, this.video.readyState, this.video.currentTime);//, ev);//_.pick(this.video, "readyState", "paused", "ended"), ev.type);
 		
 		switch (ev.type) {
-			case "timeupdate":
+			case "playing":
+				this.content.classList.remove("not-played");
+				// this.poster.style.visibility = "hidden";
+				// this.video.style.visibility = "visible";
+				this.video.removeEventListener("playing", this._onMediaEvent, false);
 				break;
 			case "canplay":
-			case "canplaythrough":
-				this.overlayLabel.textContent = "Play";
+				// this.overlayLabel.textContent = "\uE805";
+				// this.updateOverlayFromVideo(this.overlayLabel);
 				break;
 			case "pause":
-				this.overlayLabel.textContent = "Resume";
+				// this.overlayLabel.textContent = "\uE805";
+				// this.updateOverlayFromVideo(this.overlayLabel);
 				break;
 			case "ended":
 				// NOTE: "ended" event is not triggered when the "loop" property is set
-				this.overlayLabel.textContent = "Replay";
-				// this.toggleMediaPlayback(false);
+				// this.overlayLabel.textContent = "\uE80F";
+				// this.updateOverlayFromVideo(this.overlayLabel);
 				break;
 			default:
 		}
-		
 		var stateAttrVal = "network";
 		if (this.video.paused) {
 			stateAttrVal = "user";
@@ -391,6 +277,15 @@ module.exports = MediaRenderer.extend({
 			stateAttrVal = "media";
 		} else {
 		}
-		this.el.setAttribute("data-state", stateAttrVal);
+		this.setMediaState(stateAttrVal);
+		// this.el.setAttribute("data-state", stateAttrVal);
 	},
+	
+	updateOverlayFromVideo: function(target) {
+		if (this.video.readyState > 2) {
+			// var currentTime = this.video.currentTime;
+			this.updateOverlayBackground(target, this.video);
+			// this.video.currentTime = currentTime;
+		}
+	}
 });

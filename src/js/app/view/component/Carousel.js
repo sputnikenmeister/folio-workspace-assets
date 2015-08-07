@@ -2,12 +2,10 @@
  * @module app/view/component/Carousel
  */
 
-/** @type {module:backbone} */
-var Backbone = require("backbone");
-/** @type {module:jquery} */
-var $ = Backbone.$;
 /** @type {module:underscore} */
 var _ = require("underscore");
+/** @type {module:backbone} */
+var Backbone = require("backbone");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
 /** @type {module:backbone.babysitter} */
@@ -195,7 +193,7 @@ var Carousel = DeferredView.extend({
 				buffer.appendChild(this.createChildView(
 					this._getRenderer(item, index, arr), {model: item}, index, sIndex).el);
 			}, this);
-			this.$el.append(buffer);
+			this.el.appendChild(buffer);
 		}
 	},
 	

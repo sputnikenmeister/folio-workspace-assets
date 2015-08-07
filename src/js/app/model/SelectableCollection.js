@@ -37,8 +37,13 @@ var SelectableCollection = Backbone.Collection.extend({
 		if (this.selected === newModel) {
 			return;
 		}
-		var oldModel = this.selected;
 		var triggerEvents = !(options && options.silent);
+		var oldModel = this.selected;
+		
+		this.lastSelected = this.selected;
+		this.lastSelectedIndex = this.selectedIndex;
+		this.selected = newModel;
+		this.selectedIndex = this.indexOf(newModel);
 		
 		if (oldModel) {
 			if (_.isFunction(oldModel.deselect)) {
@@ -49,11 +54,8 @@ var SelectableCollection = Backbone.Collection.extend({
 			}
 			if (triggerEvents) this.trigger("deselect:one", oldModel);
 		} else {
-			if (triggerEvents) this.trigger("deselect:none", oldModel);
+			if (triggerEvents) this.trigger("deselect:none");
 		}
-		
-		this.selected = newModel;
-		this.selectedIndex = this.indexOf(newModel);
 		
 		if (newModel) {
 			if (_.isFunction(newModel.select)) {
@@ -64,7 +66,7 @@ var SelectableCollection = Backbone.Collection.extend({
 			}
 			if (triggerEvents) this.trigger("select:one", newModel);
 		} else {
-			if (triggerEvents) this.trigger("select:none", newModel);
+			if (triggerEvents) this.trigger("select:none");
 		}
 	},
 	

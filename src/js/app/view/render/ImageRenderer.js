@@ -25,7 +25,7 @@ var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
 var whenDefaultImageLoads = require("../promise/whenDefaultImageLoads");
 
 /** @type {Function} */
-var viewTemplate = require( "./ImageRenderer.tpl" );
+var viewTemplate = require( "./ImageRenderer.hbs" );
 
 /**
  * @constructor
@@ -94,16 +94,14 @@ module.exports = View.extend({
 			cW = Math.round((cH / sH) * sW);
 		}
 
-		// this.$content.attr({width: cW, height: cH});
 		img.setAttribute("width", cW);
 		img.setAttribute("height", cH);
 		
-		// this.$content.css({left: cX, top: cY});
 		img.style.left = cX + "px";
 		img.style.top = cY + "px";
 		
-		// this.$placeholder.css({maxWidth: cW + (poW - pcW), maxHeight: cH + (poH - pcH)});
-		// this.$placeholder.css({maxWidth: cW, maxHeight: cH});
+		// p.style.maxWidth = (cW + (poW - pcW)) + "px";
+		// p.style.maxHeight = (cH + (poH - pcH)) + "px";
 		// p.style.maxWidth = img.offsetWidth + "px";
 		// p.style.maxHeight = img.offsetHeight + "px";
 		p.style.maxWidth = cW + "px";

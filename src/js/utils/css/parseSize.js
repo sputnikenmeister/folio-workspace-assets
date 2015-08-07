@@ -4,14 +4,14 @@
 // 	"paddingTop","paddingBottom",//"paddingLeft","paddingRight",
 // 	"marginTop","marginBottom",//"marginLeft","marginRight"
 // ];
-// 
-// var documentFontSize;
+
+// var _documentFontSize;
 // function getDocumentFontSize() {
-//     // Returns a number of the computed font-size, so in px
-//     return documentFontSize || (documentFontSize = parseFloat(
+// 	// Returns a number of the computed font-size, so it is guaranteed to be in px
+// 	return _documentFontSize || (_documentFontSize = parseFloat(
 // 		window.getComputedStyle(document.documentElement).fontSize));
 // }
-// 
+
 // function measure(el)
 // {
 // 	var prop, val, ret = {}, styles = window.getComputedStyle(el);
@@ -45,5 +45,15 @@
 // }
 
 module.exports = function(val, el) {
-	return parseFloat(val);
+	//val = val.match(/^(-?[\d\.]+)(px|em|rem)?$/);
+	if (val.indexOf("px")) {
+		return parseFloat(val);
+	} else if (/rem$/.test(val)) {
+		return parseFloat(val) * window.getComputedStyle(document.documentElement).fontSize;
+	} else if (/em$/.test(val) && el) {
+		return parseFloat(val) * window.getComputedStyle(el).fontSize;
+	} else {
+		console.warn("unit not recognized in " + val);
+		return NaN;
+	}
 };

@@ -18,9 +18,9 @@ var ViewError = require("../base/ViewError");
 var MediaRenderer = require("./MediaRenderer");
 
 /** @type {Function} */
-var viewTemplate = require( "./SequenceRenderer.tpl" );
+var viewTemplate = require( "./SequenceRenderer.hbs" );
 /** @type {Function} */
-var progressTemplate = require( "../template/CircleProgressMeter.svg.tpl" );
+var progressTemplate = require( "../template/CircleProgressMeter.svg.hbs" );
 
 /**
  * @constructor
@@ -37,6 +37,7 @@ module.exports = MediaRenderer.extend({
 	
 	/** @override */
 	initialize: function (opts) {
+		// MediaRenderer.prototype.initialize.apply(this, arguments);
 		_.bindAll(this,
 			"createSequenceChildren",
 			"startSequence",
@@ -75,9 +76,10 @@ module.exports = MediaRenderer.extend({
 		this.playToggle = o.querySelector(".play-toggle");
 		
 		o = this.content = o.querySelector(".content");
-		// this.overlay = o.querySelector(".overlay");
 		this.sequence = o.querySelector(".sequence");
 		this.image = o.querySelector("img.current");
+		// this.overlay = o.querySelector(".overlay");
+		this.overlayLabel = o.querySelector(".overlay .play-button"),
 		
 		this._isSequenceRunning = false;
 		this._sequenceIntervalId = -1;
@@ -121,6 +123,8 @@ module.exports = MediaRenderer.extend({
 			cW = Math.round((cH / sH) * sW);
 		}
 		
+		this.contentWidth = cW;
+		this.contentHeight = cH;
 		
 		// NOTE: image elements are given 100% w/h in CSS (.sequence-renderer .content img);
 		// actual dimensions are set to the parent element (.sequence-renderer .content)
@@ -214,7 +218,7 @@ module.exports = MediaRenderer.extend({
 		if (!this._isSequenceRunning) {
 			this._isSequenceRunning = true;
 			this.listenTo(this, "view:remove", this.stopSequence);
-			this.el.setAttribute("data-state", "media");
+			this.setMediaState("media");
 			
 			this._startSequenceStep();
 			console.log(this.cid, "SequenceRenderer.startSequence", this._sequenceIntervalId);
@@ -225,9 +229,14 @@ module.exports = MediaRenderer.extend({
 		if (this._isSequenceRunning) {
 			this._isSequenceRunning = false;
 			this.stopListening(this, "view:remove", this.stopSequence);
-			this.el.setAttribute("data-state", "user");
+			this.model.selected && this.updateOverlayBackground(
+				this.overlayLabel,
+				this.sequence.querySelector(".current")
+			);
 			
 			this._cancelSequenceStep();
+			this.setMediaState("user");
+			
 			console.log(this.cid, "SequenceRenderer.stopSequence", this._sequenceIntervalId);
 		}
 	},
@@ -263,11 +272,14 @@ module.exports = MediaRenderer.extend({
 		}).then(function () {
 			// view._sequenceIntervalId = -1;
 			if (view._isSequenceRunning) {
-				console.log("SequenceRenderer.applySequenceStep", view._sequenceIdx, view.getNextSequenceIndex());
-				var nextIdx = view.getNextSequenceIndex();
+				console.log("SequenceRenderer.applySequenceStep",
+						view._sequenceIdx, view.getNextSequenceIndex());
+						
 				view._sequenceEls[view._sequenceIdx].className = "";
-				view._sequenceEls[nextIdx].className = "current";
-				view._sequenceIdx = nextIdx;
+				view._sequenceIdx = view.getNextSequenceIndex();
+				
+				// view.image = view._sequenceEls[view._sequenceIdx];
+				view._sequenceEls[view._sequenceIdx].className = "current";
 				view._startSequenceStep();
 			} else {
 				console.log("SequenceRenderer.applySequenceStep", view._sequenceIdx, "[sequence not running]");
