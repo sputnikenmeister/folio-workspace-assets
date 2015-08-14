@@ -48,7 +48,7 @@ module.exports = function() {
 		s = {};
 		s["color"] = fgColor.clone().mix(bgColor, 0.5).hexString();
 		s["border-color"] = fgColor.clone().mix(bgColor, 0.7).hexString();
-		Styles.createCSSRule(bodySelector + " .mutable-faded", s);
+		Styles.createCSSRule(bodySelector + " .color-fg05", s);
 		
 		// inverted fg/bg colors (slightly muted)
 		revFgColorHex = bgColor.clone().mix(fgColor, 0.1).hexString();

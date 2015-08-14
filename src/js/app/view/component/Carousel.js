@@ -18,6 +18,9 @@ var View = require("../base/View");
 /** @type {module:app/view/base/DeferredView} */
 var DeferredView = require("../base/DeferredView");
 
+/** @type {Function} */
+var setImmediate = require("../../../utils/setImmediate");
+
 /**
  * @constructor
  * @type {module:app/view/base/View}
@@ -32,8 +35,6 @@ var DefaultRenderer = View.extend({
 		this.el.innerHTML = this.template(this.model.toJSON()); // = this.template(this.model.attributes);
 	},
 });
-
-
 
 /**
  * @constructor

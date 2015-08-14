@@ -35,6 +35,11 @@ module.exports = View.extend({
 	initialize: function (options) {
 		this.transforms = new TransformHelper();
 		this.touch = TouchManager.getInstance();
+		
+		this.listenTo(controller, {
+			"change:before": this._beforeChange,
+			"change:after": this._afterChange
+		});
 
 		this.listenTo(this, "collapsed:change", this._onCollapseChange);
 	},

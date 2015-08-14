@@ -65,11 +65,6 @@ module.exports = MediaRenderer.extend({
 	/* --------------------------- */
 	
 	createChildren: function() {
-		// var buffer =  document.createDocumentFragment();
-		// buffer.appendChild(document.createElement("div"));
-		// buffer.firstElementChild.innerHTML = this.template(this.model.toJSON());
-		
-		// this.el.setAttribute("data-state", "initial");
 		this.el.innerHTML = this.template(this.model.toJSON());
 		
 		this.placeholder = this.el.querySelector(".placeholder");
@@ -80,25 +75,7 @@ module.exports = MediaRenderer.extend({
 		this.overlay = this.content.querySelector(".overlay");
 		this.overlayLabel = this.overlay.querySelector(".play-button");
 		
-		// this.overlay.firstElementChild.textContent = this.video.readyState > 3? "Play":"Wait";
-		// this.video.parentElement.style.overflow = "hidden";
-		// this.video.setAttribute("preload", "none");
-		
-		// this.video.setAttribute("poster", this.model.getImageUrl());
-		this.video.poster = this.model.getImageUrl();
-		
-		if (this.model.attrs()["@video-loop"]) {
-			// this.video.setAttribute("loop", "loop");
-			this.video.loop = true;
-		}
-		
-		if (this.model.has("srcset")) {
-			var html = "", srcset = this.model.get("srcset");
-			for (var i = 0, ii = srcset.length; i < ii; i++) {
-				html += "<source src=\"" + Globals.MEDIA_DIR + "/" + srcset[i]["src"] + "\" type=\"" + srcset[i]["mime"] + "\"></source>";
-			}
-			this.video.innerHTML = html;
-		}
+		this.video.loop = this.model.attrs().hasOwnProperty("@video-loop");
 	},
 	
 	/** @return {this} */
@@ -173,7 +150,6 @@ module.exports = MediaRenderer.extend({
 			.then(
 				function(view) {
 					view.addSelectionListeners();
-					// view.video.setAttribute("poster", view.defaultImage.src);
 					try {
 						view.updateOverlayBackground(view.overlayLabel, view.defaultImage);
 					} catch (err) {
@@ -256,16 +232,16 @@ module.exports = MediaRenderer.extend({
 				this.video.removeEventListener("playing", this._onMediaEvent, false);
 				break;
 			case "canplay":
-				// this.overlayLabel.textContent = "\uE805";
+				// this.overlayLabel.textContent = "\uE80D";
 				// this.updateOverlayFromVideo(this.overlayLabel);
 				break;
 			case "pause":
-				// this.overlayLabel.textContent = "\uE805";
+				// this.overlayLabel.textContent = "\uE80F";
 				// this.updateOverlayFromVideo(this.overlayLabel);
 				break;
 			case "ended":
 				// NOTE: "ended" event is not triggered when the "loop" property is set
-				// this.overlayLabel.textContent = "\uE80F";
+				// this.overlayLabel.textContent = "\uE80C";
 				// this.updateOverlayFromVideo(this.overlayLabel);
 				break;
 			default:

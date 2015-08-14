@@ -1,5 +1,6 @@
 // var Handlebars = require("handlebars")["default"];
 var Handlebars = require("hbsfy/runtime");
+var Globals = require("../../control/Globals");
 
 // The module to be exported
 var helpers = {
@@ -24,12 +25,17 @@ var helpers = {
 	round: function(value) {
 		return Math.round(value);
 	},
+	global: function(value) {
+		return Globals[value];
+	},
 };
 
-for (var helper in helpers) {
-	if (helpers.hasOwnProperty(helper)) {
-		Handlebars.registerHelper(helper, helpers[helper]);
+module.exports = (function() {
+	for (var helper in helpers) {
+		if (helpers.hasOwnProperty(helper)) {
+			Handlebars.registerHelper(helper, helpers[helper]);
+		}
 	}
-}
+})();
 
 // module.exports = null;

@@ -50,11 +50,6 @@ module.exports = ContainerView.extend({
 		_.bindAll(this, "_onHPanStart", "_onHPanMove", "_onHPanFinal");
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
 		
-		this.listenTo(controller, {
-			"change:before": this._beforeChange,
-			"change:after": this._afterChange
-		});
-		
 		this.bundleListeners = {
 			"select:one": this._onSelectOneBundle,
 			"select:none": this._onSelectNoBundle,
@@ -84,11 +79,11 @@ module.exports = ContainerView.extend({
 			this.sitename.el, this.hGroupings
 		);
 	},
-
+	
 	/* --------------------------- *
 	 * Render
 	 * --------------------------- */
-
+	 
 	/** @override */
 	render: function () {
 		// console.log(".... NavigationView.render()");
@@ -102,23 +97,23 @@ module.exports = ContainerView.extend({
 		}, this);
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
-
+	
 	/* -------------------------------
 	 * Router -> before model change
 	 * ------------------------------- */
 	
 	_beforeChange: function(bundle, media) {
-		console.log(">>>> NavigationView._beforeChange", arguments);
 		this._bundleChanging = (bundle !== bundles.selected);
 	},
 	
 	_afterChange: function(bundle, media) {
+		this._bundleChanging = false;
 	},
-
+	
 	/* --------------------------- *
 	 * Deselect event handlers
 	 * --------------------------- */
-
+	 
 	_onDeselectOneBundle: function(bundle) {
 		this.stopListening(bundle.get("media"), this.mediaListeners);
 		

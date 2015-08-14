@@ -9,10 +9,58 @@ var Backbone = require("backbone");
 /** @type {module:app/view/base/View} */
 var View = require("./View");
 
-require("../../../shims/requestAnimationFrame");
+// require("../../../shims/requestAnimationFrame");
 
-var requestRenderImpl = window.requestAnimationFrame;
-var cancelRenderImpl = window.cancelAnimationFrame;
+var _queue = [];
+var _queueRafId = null;
+var _queuedViewsIndex = {};
+var _isExecuting = false;
+
+var _callQueuedAF = function() {
+	console.log("View._callQueuedAF (%d items): %s", _queue.length, Object.keys(_queuedViewsIndex).join(", "));
+	var queue = _queue;
+	_queue = [];
+	_queueRafId = null;
+	_queuedViewsIndex = {};
+	_isExecuting = true;
+	queue.forEach(function(fn) {
+		fn && fn.call();
+	});
+	_isExecuting = false;
+};
+var requestQueuedAF = function(view) {
+	_isExecuting && console.warn("View.requestQueuedAF", "queue running", view.cid);
+	var viewIndex = _queuedViewsIndex[view.cid] || (_queuedViewsIndex[view.cid] = _queue.length);
+	_queue[viewIndex] = view._applyRender;
+	if (_queueRafId === null) {
+		_queueRafId = window.requestAnimationFrame(_callQueuedAF);
+	}
+};
+var cancelQueuedAF = function(view) {
+	_isExecuting && console.warn("View.cancelQueuedAF", "queue running", view.cid);
+	if (_queuedViewsIndex.hasOwnProperty(view.cid)) {
+		_queue[_queuedViewsIndex[view.cid]] = null;
+	}
+};
+
+var requestRenderImpl = requestQueuedAF;
+var cancelRenderImpl = cancelQueuedAF;
+
+// var _pendingRafIds = {};
+// var requestAF = function(view) {
+// 	if (!_pendingRafIds.hasOwnProperty(view.cid)) {
+// 		_pendingRafIds[view.cid] = window.requestAnimationFrame(view._applyRender);
+// 	}
+// };
+// var cancelAF = function(view) {
+// 	if (_pendingRafIds.hasOwnProperty(view.cid)) {
+// 		window.cancelAnimationFrame(_pendingRafIds[view.cid]);
+// 		delete _pendingRafIds[view.cid];
+// 	}
+// };
+// var requestRenderImpl = requestAF;
+// var cancelRenderImpl = cancelAF;
+
 // var requestRenderImpl = window.setTimeout;
 // var cancelRenderImpl = window.clearTimeout;
 
@@ -28,15 +76,15 @@ var DeferredView = View.extend({
 	
 	constructor: function(options) {
 		_.bindAll(this, "_applyRender");
-		this._renderRequestId = 0;
 		this._renderJobs = {};
 		View.apply(this, arguments);
+		// View.prototype.constructor.apply(this, arguments);
 	},
 	
 	/** @override */
 	remove: function () {
-		this._cancelPendingRender();
-		return View.prototype.remove.apply(this);
+		cancelRenderImpl(this);
+		return View.prototype.remove.apply(this, arguments);
 	},
 	
 	/* -------------------------------
@@ -54,11 +102,11 @@ var DeferredView = View.extend({
 			}
 			this._renderJobs[key] = value ? value : true;
 		}
-		this._requestRender();
+		requestRenderImpl(this);
 	},
 	
 	renderNow: function () {
-		this._cancelPendingRender();
+		cancelRenderImpl(this);
 		this._applyRender();
 	},
 
@@ -89,23 +137,9 @@ var DeferredView = View.extend({
 	/* -------------------------------
 	 * private
 	 * ------------------------------- */
-	
-	_requestRender: function() {
-		if (this._renderRequestId == 0) {
-			this._renderRequestId = requestRenderImpl(this._applyRender);
-		}
-	},
-	
-	_cancelPendingRender: function() {
-		if (this._renderRequestId != 0) {
-			cancelRenderImpl(this._renderRequestId);
-			this._renderRequestId = 0;
-		}
-	},
 
 	/** @private */
 	_applyRender: function () {
-		this._renderRequestId = 0;
 		this.renderLater();
 		for (var key in this._renderJobs) {
 			if (this._renderJobs.hasOwnProperty(key)) {

@@ -4,7 +4,7 @@
 		"vu_px": "12"
 	},
 	"transitions": {
-		"delay_interval_ms": "50",
+		"delay_interval_ms": "75",
 		"duration_ms": "400",
 		"ease": "ease"
 	},
@@ -23,6 +23,7 @@
 	},
 	"default_colors": {
 		"color": "hsl(47, 5%, 15%)",
-		"background-color": "hsl(47, 5%, 95%)"
+		"background-color": "hsl(47, 5%, 95%)",
+		"link-color": "hsl(10, 80%, 50%)"
 	}
 }

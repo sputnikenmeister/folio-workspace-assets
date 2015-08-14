@@ -63,7 +63,8 @@ module.exports = Backbone.Model.extend({
 				// 	model: MediaItem,
 				// 	comparator: "o"
 				// }), options);
-			}
+			},
+			transient: true
 		},
 		attrs: {
 			set: function (key, value, options, set) {

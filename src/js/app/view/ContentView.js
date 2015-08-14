@@ -17,12 +17,13 @@ var ContainerView = require("./base/ContainerView");
 
 /** @type {module:app/view/component/CollectionStack} */
 var CollectionStack = require("./component/CollectionStack");
-/** @type {module:app/view/render/DotNavigationRenderer} */
-//var DotNavigationRenderer = require("./render/DotNavigationRenderer");
-/** @type {Function} */
-var bundleDescTemplate = require("./template/CollectionStack.Bundle.hbs");
 /** @type {Function} */
 var mediaCaptionTemplate = require("./template/CollectionStack.Media.hbs");
+
+/** @type {module:app/view/component/CollectionStack} */
+var SelectableListView = require("./component/SelectableListView");
+/** @type {module:app/view/render/DotNavigationRenderer} */
+var DotNavigationRenderer = require("./render/DotNavigationRenderer");
 
 /** @type {module:app/view/component/Carousel} */
 var Carousel = require("./component/Carousel");
@@ -32,6 +33,8 @@ var ImageRenderer = require("./render/ImageRenderer");
 var SequenceRenderer = require("./render/SequenceRenderer");
 /** @type {module:app/view/render/VideoRenderer} */
 var VideoRenderer = require("./render/VideoRenderer");
+/** @type {Function} */
+var bundleDescTemplate = require("./template/CollectionStack.Bundle.hbs");
 
 /** @type {Function} */
 var transitionEnd = require("../../utils/event/transitionEnd");
@@ -42,26 +45,12 @@ var transitionEnd = require("../../utils/event/transitionEnd");
  * @type {module:app/view/ContentView}
  */
 var ContentView = ContainerView.extend({
-
-	// /** @override */
-	// className: ContainerView.prototype.className + " content",
-	
-	// events: {
-	// 	"transitionend .carousel": function(ev) {
-	// 		console.log("ContentView.events.transitionend:carousel", ev.target.className, ev.propertyName);
-	// 	},
-	// 	"transitionend": function(ev) {
-	// 		console.log("ContentView.events.transitionend", ev.target.className, ev.propertyName);
-	// 	},
-	// },
 	
 	initialize: function (options) {
 		ContainerView.prototype.initialize.apply(this, arguments);
 		
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
-		this._currentChildren = [];
-		this._previousChildren = [];
-		
+		this.childViews = [];
 		this.bundleListeners = {
 			"select:one": this._onSelectOne,
 			"select:none": this._onSelectNone,
@@ -74,31 +63,14 @@ var ContentView = ContainerView.extend({
 			"deselect:one": this._onDeselectMedia,
 			"deselect:none": this._onDeselectMedia,
 		};
-		
 		this.listenTo(bundles, this.bundleListeners);
-		
-		// _.bindAll(this, "_onTransitionEnd");
-		// this.el.addEventListener(transitionEnd, this._onTransitionEnd, false);
-		// this.listenTo(this, "view:remove", function() {
-		// 	this.el.removeEventListener(transitionEnd, this._onTransitionEnd, false);
-		// });
-		
-		// if (bundles.selected) {
-		// 	this.touch.on("vpanstart", this._onVPanStart);
-		// 	this.createChildren(bundles.selected, true);
-		// 	this.setCollapsed(true);
-		// } else {
-		// 	this.setCollapsed(false);
-		// }
 	},
 	
 	/** @override */
 	render: function () {
-		// this.transforms.clearAllCaptures();
-		// this.transforms.clearAllTransitions();
 		this.transforms.stopAllTransitions();
 		this.transforms.validate();
-		this._currentChildren.forEach(function(view) {
+		this.childViews.forEach(function(view) {
 			view.skipTransitions = true;
 			view.render();
 		}, this);
@@ -110,7 +82,7 @@ var ContentView = ContainerView.extend({
 	 * ------------------------------- */
 	
 	_onCollapseChange: function(collapsed) {
-		this._currentChildren.forEach(function(view) {
+		this.childViews.forEach(function(view) {
 			view.setEnabled(collapsed);
 		});
 	},
@@ -154,7 +126,19 @@ var ContentView = ContainerView.extend({
 	},
 	
 	_onSelectMedia: function(media) {
-		this.setCollapsed(true);
+		this._bundleChanging || this.setCollapsed(true);
+	},
+
+	/* -------------------------------
+	 * Router -> before model change
+	 * ------------------------------- */
+	 
+ 	_beforeChange: function(bundle, media) {
+ 		this._bundleChanging = (bundle !== bundles.selected);
+ 	},
+	
+	_afterChange: function(bundle, media) {
+		this._bundleChanging = false;
 	},
 	
 	/* -------------------------------
@@ -163,29 +147,34 @@ var ContentView = ContainerView.extend({
 	
 	/** Create children on bundle select */
 	createChildren: function (bundle) {
-		//this._currentChildren.push(this.createMediaCaptionCarousel(bundle, media));
+		//this.childViews.push();
 		var transitionProp = this.getPrefixedProperty("transition");
 		
-		this._currentChildren.push(this.createMediaCaptionStack(bundle));
-		this._currentChildren.push(this.createMediaCarousel(bundle));
-		// Show views
-		this._currentChildren.forEach(function(view, index, childViews) {
-			this.transforms.add(view.el);
+		this.captionStack = this.createMediaCaptionStack(bundle);
+		this.carousel = this.createMediaCarousel(bundle);
+		this.dotNavigation = this.createMediaDotNavigation(bundle);
+		
+		this.childViews.push(
+			this.captionStack,
+			this.carousel,
+			this.dotNavigation
+		);
+		this.transforms.add(this.carousel.el, this.captionStack.el);
+		this.childViews.forEach(function(view, index, childViews) {
 			if (!this.skipTransitions) {
 				var rafHandler = function() {
 					var transitionHandler = function(ev) {
 						if (ev.target === view.el) {
 							view.el.removeEventListener(transitionEnd, transitionHandler, false);
 							view.el.style.removeProperty(transitionProp);
-							console.log("ContentView", "TX IN", view.cid);
+							// console.log("ContentView", "TX IN", view.cid);
 						}
 					};
 					view.el.addEventListener(transitionEnd, transitionHandler, false);
+					view.el.style[transitionProp] = "opacity " + Globals.TRANSIT_ENTERING.cssText;
 					view.el.style.removeProperty("opacity");
 				};
 				this.requestAnimationFrame(rafHandler);
-				view.el.style[transitionProp] = "opacity " + Globals.TRANSIT_ENTERING.cssText;
-				// view.el.style[transitionProp] = "opacity 0.4s ease 0.81s"; 
 				view.el.style.opacity = 0;
 			}
 			this.el.appendChild(view.el);
@@ -197,48 +186,42 @@ var ContentView = ContainerView.extend({
 		var transformProp = this.getPrefixedProperty("transform");
 		var transitionProp = this.getPrefixedProperty("transition");
 		
-		this._currentChildren.forEach(function(view, index, childViews) {
-			this.transforms.remove(view.el);
+		this.transforms.remove(this.carousel.el, this.captionStack.el);
+		this.childViews.forEach(function(view, index, childViews) {
 			view.stopListening(view.collection);
 			controller.stopListening(view);
 			if (this.skipTransitions) {
 				view.remove();
 			} else {
-				var transitionHandler = function(ev) {
-					if (ev.target === view.el) {
-						view.el.removeEventListener(transitionEnd, transitionHandler, false);
-						view.remove();
-						console.log("ContentView", "TX OUT", view.cid);
-					}
-				};
-				view.el.addEventListener(transitionEnd, transitionHandler, false);
-				
-				view.el.classList.add("removing-child");
-				view.el.style[transformProp] = getComputedStyle(view.el)[transformProp];
-				// view.el.style[transitionProp] = "opacity 0.4s ease 0.01s";
-				view.el.style[transitionProp] = "opacity " + Globals.TRANSIT_EXITING.cssText;
-				view.el.style.opacity = 0;
+				var computedStyle = getComputedStyle(view.el);
+				if (computedStyle.opacity == "0" || computedStyle.visibility == "hidden") {
+					console.log("ContentView.removeChildren", "item invisible (removed)", view.cid);
+					view.remove();
+				} else {
+					var transitionHandler = function(ev) {
+						console.log("ContentView.removeChildren", "transitionEnd (ignored)");
+						if (ev.target === view.el) {
+							console.log("ContentView.removeChildren", "transitionEnd", view.cid);
+							view.el.removeEventListener(transitionEnd, transitionHandler, false);
+							view.remove();
+						}
+					};
+					view.el.addEventListener(transitionEnd, transitionHandler, false);
+					view.el.classList.add("removing-child");
+					view.el.style[transformProp] = computedStyle[transformProp];
+					view.el.style[transitionProp] = "opacity " + Globals.TRANSIT_EXITING.cssText;
+					view.el.style.opacity = 0;
+				}
+				// console.log("ContentView.removeChildren", "transitionEnd", view.cid);
 			}
 		}, this);
-		this._currentChildren.length = 0;
+		this.childViews.length = 0;
 	},
-	
-	// _purgeChildren: function () {
-	// 	if (this._exitingChildren !== null) {
-	// 		this._exitingChildren.forEach(function(view, index, childViews) {
-	// 			view.remove();
-	// 			childViews.splice(index, 1);
-	// 			// childViews[index] = null;
-	// 		});
-	// 		// this._exitingChildren = null;
-	// 	}
-	// },
 	
 	purgeChildren: function () {
 		var view, i, ii, el, els = [];
 		for (i = 0, ii = this.el.children.length; i < ii; i++) {
 			el = this.el.children.item(i);
-			console.log("yay removing-child:", el.classList.contains("removing-child"));
 			if (el.classList.contains("removing-child")) {
 				els.push(el);
 			}
@@ -247,46 +230,30 @@ var ContentView = ContainerView.extend({
 			el = els[i];
 			try {
 				view = ContainerView.findByElement(el).remove();
-				console.log("ContentView", "PURGE", view.cid);
+				console.warn("ContentView.purgeChildren", view.cid);
 			} catch (err) {
-				console.warn("ContentView", err);
+				console.error("ContentView.purgeChildren", "orphaned element", err);
 				this.el.removeChild(el);
 			}
 		}
-		console.log("ContentView", this.el.children.length, this._currentChildren.length);
+		if (ii > 0) console.log("ContentView.purgeChildren", this.el.children.length, this.childViews.length);
 	},
 	
-	// _onTransitionEnd: function(ev) {
-	// 	console.log("ContentView._onTransitionEnd",
-	// 		(ev.target.parentElement === this.el && ev.propertyName === "opacity"),
-	// 		ev.target.getAttribute("data-cid"), ev.target.tagName, ev.target.className);
-	// 		
-	// 	var el = ev.target;
-	// 	if (el.parentElement === this.el && ev.propertyName === "opacity") {
-	// 		// for (var i = 0, ii = this.el.children.length; i < ii; i++) {
-	// 			if (el.classList.contains("removing-child")) {
-	// 				ContainerView.findByElement(el).remove();
-	// 			} else {
-	// 				// el.style.removeProperty(this.getPrefixedProperty("transition"));
-	// 			}
-	// 		// }
-	// 	}
-	// },
-
 	/* -------------------------------
 	 * Vertical touch/move (_onVPan*)
 	 * ------------------------------- */
-
+	
+	PAN_MOVE_FACTOR: 0.05,
+	_collapsedOffsetY: 300,
+	
 	_onVPanStart: function (ev) {
 		this.touch.on("vpanmove", this._onVPanMove);
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
 		this.transforms.stopAllTransitions();
 		this.transforms.clearAllCaptures();
+		this.el.classList.add("container-changing");
 		this._onVPanMove(ev);
 	},
-
-	PAN_MOVE_FACTOR: 0.05,
-	_collapsedOffsetY: 300,
 
 	_onVPanMove: function (ev) {
 		var delta = ev.thresholdDeltaY;
@@ -294,11 +261,11 @@ var ContentView = ContainerView.extend({
 		// check if direction is aligned with collapse/expand
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		var moveFactor = this.isCollapsed()? 1 - this.PAN_MOVE_FACTOR : this.PAN_MOVE_FACTOR;
-
+		
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
 		maxDelta *= moveFactor;
-
+		
 		if (isDirAllowed) {
 			if (delta > maxDelta) { // overshooting
 				delta = ((delta - maxDelta) * Globals.V_PANOUT_DRAG) + maxDelta;
@@ -328,6 +295,7 @@ var ContentView = ContainerView.extend({
 			this.transforms.runAllTransitions(Globals.TRANSIT_IMMEDIATE);
 			this.transforms.validate();
 		}
+		this.el.classList.remove("container-changing");
 	},
 
 	willCollapseChange: function(ev) {
@@ -346,21 +314,19 @@ var ContentView = ContainerView.extend({
 	 */
 	createMediaCarousel: function(bundle) {
 		// Create carousel
-		var media = bundle.get("media");
 		var classname = "media-carousel " + bundle.get("domid"); 
 		if (bundle.attrs().hasOwnProperty("@classname")) {
 			classname += " " + bundle.attrs()["@classname"];
 		}
-		var emptyRenderer = Carousel.defaultRenderer.extend({
+		var EmptyRenderer = Carousel.defaultRenderer.extend({
 			className: "carousel-item empty-item",
 			model: bundle,
 			template: bundleDescTemplate,
 		});
 		var rendererFunction = function(item, index, arr) {
-			if (index == -1) {
-				return emptyRenderer;
+			if (index === -1) {
+				return EmptyRenderer;
 			}
-			// var rendererKey = item.has("attrs") && item.get("attrs")["@renderer"];
 			switch (item.attrs()["@renderer"]) {
 				case "video": return VideoRenderer;
 				case "sequence": return SequenceRenderer;
@@ -370,18 +336,18 @@ var ContentView = ContainerView.extend({
 		};
 		var view = new Carousel({
 			className: classname,
-			collection: media,
+			collection: bundle.get("media"),
 			rendererFunction: rendererFunction,
 			// renderer: ImageRenderer,
-			emptyRenderer: emptyRenderer,
+			emptyRenderer: EmptyRenderer,
 			direction: Carousel.DIRECTION_HORIZONTAL,
 			hammer: this.touch,
 		});
 		controller.listenTo(view, {
 			"view:select:one": controller.selectMedia,
 			"view:select:none": controller.deselectMedia,
+			"view:remove": controller.stopListening
 		});
-		// controller.listenToOnce(view, "view:remove", controller.stopListening);
 		return view;
 	},
 
@@ -389,47 +355,46 @@ var ContentView = ContainerView.extend({
 	 * media-caption-stack
 	 */
 	createMediaCaptionStack: function(bundle) {
-		var media = bundle.get("media");
 		var view = new CollectionStack({
-			collection: media,
-			template: mediaCaptionTemplate,
-			className: "media-caption-stack"
+			className: "media-caption-stack",
+			collection: bundle.get("media"),
+			template: mediaCaptionTemplate
 		});
 		return view;
 	},
 
-//	/**
-//	 * media-pager
-//	 */
-//	createMediaPager: function(bundle, media) {
-//		var view = new SelectableCollectionView({
-//			collection: media,
-//			renderer: DotNavigationRenderer,
-//			className: "media-pager dots-fontello mutable-faded"
-//		});
-//		controller.listenTo(view, {
-//			"view:select:one": controller.selectMedia,
-//			"view:select:none": controller.deselectMedia,
-//			"view:remove": controller.stopListening
-//		});
-//		return view;
-//	},
+	/**
+	 * media-dotnav
+	 */
+	createMediaDotNavigation: function(bundle, media) {
+		var view = new SelectableListView({
+			className: "media-dotnav dots-fontello color-fg05",
+			collection: bundle.get("media"),
+			renderer: DotNavigationRenderer
+		});
+		controller.listenTo(view, {
+			"view:select:one": controller.selectMedia,
+			"view:select:none": controller.deselectMedia,
+			"view:remove": controller.stopListening
+		});
+		return view;
+	},
 
-//	/**
-//	 * label-carousel
-//	 */
-//	createMediaCaptionCarousel: function(bundle, media) {
-//		var view = new Carousel({
-//			className: "label-carousel",
-//			collection: media,
-//			hammer: this.touch,
-//		});
-////		controller.listenTo(view, {
-////			"view:select:one": controller.selectMedia,
-////			"view:select:none": controller.deselectMedia
-////		});
-//		return view;
-//	},
+	/**
+	 * label-carousel
+	 */
+	// createMediaCaptionCarousel: function(bundle, media) {
+	// 	var view = new Carousel({
+	// 		className: "label-carousel",
+	// 		collection: media,
+	// 		hammer: this.touch,
+	// 	});
+	// 	// controller.listenTo(view, {
+	// 	// 	"view:select:one": controller.selectMedia,
+	// 	// 	"view:select:none": controller.deselectMedia
+	// 	// });
+	// 	return view;
+	// },
 
 });
 

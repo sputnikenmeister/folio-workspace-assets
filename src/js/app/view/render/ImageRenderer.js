@@ -56,7 +56,8 @@ module.exports = View.extend({
 		this.el.innerHTML = this.template(this.model.toJSON());
 		
 		this.placeholder = this.el.querySelector(".placeholder");
-		this.image = this.content = this.el.querySelector(".content");
+		this.content = this.el.querySelector(".content");
+		this.image = this.content.querySelector("img.default");
 	},
 	
 	/** @return {this} */
@@ -64,19 +65,17 @@ module.exports = View.extend({
 		var sW, sH; // source dimensions
 		var pcW, pcH; // measured values
 		var cX, cY, cW, cH; // computed values
-		var pA, sA;
 		
-		var img = this.content;
-		var p = this.placeholder;
+		var content = this.content;
+		var sizing = this.placeholder;
 		
-		// clear placeholder size
-		p.style.maxWidth = "";
-		p.style.maxHeight = "";
+		sizing.style.maxWidth = "";
+		sizing.style.maxHeight = "";
 		
-		cX = p.offsetLeft + p.clientLeft;
-		cY = p.offsetTop + p.clientTop;
-		pcW = p.clientWidth;
-		pcH = p.clientHeight;
+		cX = sizing.offsetLeft + sizing.clientLeft;
+		cY = sizing.offsetTop + sizing.clientTop;
+		pcW = sizing.clientWidth;
+		pcH = sizing.clientHeight;
 		
 		sW = this.model.get("w");
 		sH = this.model.get("h");
@@ -93,19 +92,24 @@ module.exports = View.extend({
 			cH = pcH;
 			cW = Math.round((cH / sH) * sW);
 		}
-
-		img.setAttribute("width", cW);
-		img.setAttribute("height", cH);
 		
-		img.style.left = cX + "px";
-		img.style.top = cY + "px";
+		this.contentWidth = cW;
+		this.contentHeight = cH;
 		
-		// p.style.maxWidth = (cW + (poW - pcW)) + "px";
-		// p.style.maxHeight = (cH + (poH - pcH)) + "px";
-		// p.style.maxWidth = img.offsetWidth + "px";
-		// p.style.maxHeight = img.offsetHeight + "px";
-		p.style.maxWidth = cW + "px";
-		p.style.maxHeight = cH + "px";
+		this.image.setAttribute("width", cW);
+		this.image.setAttribute("height", cH);
+		
+		content.style.left = cX + "px";
+		content.style.top = cY + "px";
+		content.style.width = cW + "px";
+		content.style.height = cH + "px";
+		
+		// sizing.style.maxWidth = (cW + (poW - pcW)) + "px";
+		// sizing.style.maxHeight = (cH + (poH - pcH)) + "px";
+		sizing.style.maxWidth = cW + "px";
+		sizing.style.maxHeight = cH + "px";
+		// sizing.style.maxWidth = content.offsetWidth + "px";
+		// sizing.style.maxHeight = content.offsetHeight + "px";
 		
 		return this;
 	},

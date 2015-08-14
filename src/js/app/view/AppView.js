@@ -27,6 +27,9 @@ var ContentView = require("./ContentView");
 
 /** @type {module:app/view/helper/createBundleStyles} */
 var createBundleStyles = require("./helper/createBundleStyles");
+
+// var Handlebars = require("handlebars")["default"];
+// Handlebars.registerPartial("mediadir", Globals.MEDIA_DIR);
 /** */
 require("./helper/registerHandlebarsHelpers");
 

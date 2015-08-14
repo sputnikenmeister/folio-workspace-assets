@@ -76,6 +76,7 @@ module.exports = Backbone.Model.extend({
 				_.defaults(this.attrs(), value.get("attrs"));
 				set(key, value, options);
 			},
+			transient: true
 		},
 	},
 	

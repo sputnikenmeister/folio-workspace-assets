@@ -1,5 +1,5 @@
 /**
- * @module app/view/component/GroupingListView
+ * @module app/view/component/SelectableListView
  */
 
 /** @type {module:underscore} */
@@ -15,7 +15,7 @@ var DefaultSelectableRenderer = require("../render/DefaultSelectableRenderer");
 /** @type {module:app/view/component/ClickableRenderer} */
 var ClickableRenderer = require("../render/ClickableRenderer");
 
-var SelectableCollectionView = View.extend({
+var SelectableListView = View.extend({
 	/** @override */
 	tagName: "ul",
 	/** @override */
@@ -24,14 +24,41 @@ var SelectableCollectionView = View.extend({
 	renderer: DefaultSelectableRenderer,
 
 	initialize: function (options) {
+		this._enabled = true;
+		this._childrenInvalid = true;
+		
 		options.renderer && (this.renderer = options.renderer);
-		this.listenTo(this.collection, "add remove reset", this.render);
-//		this.listenTo(this.collection, "add remove reset", this.updateCollectionListeners);
-//		this.onCollectionChange();
+		this.showEmpty = !!options.showEmpty;
 		this.children = new Container();
+		
+		this.listenTo(this.collection, "add remove reset", this._onCollectionChange);
+	},
+	
+	_onCollectionChange: function(ev) {
+		this._childrenInvalid = true;
+		this.render();
 	},
 	
 	render: function () {
+		if (this._childrenInvalid) {
+			this._childrenInvalid = false;
+			this.createChildren();
+		}
+		return this;
+	},
+	
+	setEnabled: function(enabled) {
+		if (this._enabled !== enabled) {
+			this._enabled = enabled;
+			this.el.classList.toggle("disabled", !this._enabled);
+		}
+	},
+	
+	/* --------------------------- *
+	 * Child views
+	 * --------------------------- */
+	
+	createChildren: function() {
 		var eltBuffer, view;
 		
 		this.removeChildren();
@@ -39,21 +66,17 @@ var SelectableCollectionView = View.extend({
 		
 		if (this.collection.length) {
 			eltBuffer = document.createDocumentFragment();
-			view = this.createNullView();
-			eltBuffer.appendChild(view.render().el);
-			
+			if (this.showEmpty) {
+				view = this.createEmptyView();
+				eltBuffer.appendChild(view.render().el);
+			}
 			this.collection.each(function (model, index, arr) {
 				view = this.createChildView(model, index);
 				eltBuffer.appendChild(view.render().el);
 			}, this);
 			this.el.appendChild(eltBuffer);
 		}
-		return this;
 	},
-	
-	/* --------------------------- *
-	 * Child views
-	 * --------------------------- */
 	
 	createChildView: function (model, index) {
 		var view = new (this.renderer)({
@@ -81,47 +104,50 @@ var SelectableCollectionView = View.extend({
 	
 	/** @private */
 	onChildViewClick: function (item) {
-		if (this.collection.selected !== item) {
+		if (this.collection.selected !== item && this._enabled) {
 			this.trigger("view:select:one", item);
 		}
 	},
 	
 	/* --------------------------- *
-	 * Null child view
+	 * Empty view
 	 * --------------------------- */
 	
-	createNullView: function () {
-		var view = new SelectableCollectionView.NullRenderer({
+	createEmptyView: function () {
+		var view = new SelectableListView.EmptyRenderer({
 			model: this.collection
 		});
 		this.children.add(view);
 		this.listenTo(view, "renderer:click", function() {
-			this.trigger("view:select:none");
+			this._enabled && this.trigger("view:select:none");
 		});
 		return view;
 	},
 }, {
-	NullRenderer: ClickableRenderer.extend({
+	EmptyRenderer: ClickableRenderer.extend({
 		
 		/** @override */
 		tagName: "li",
 		/** @override */
-		className: "list-item null-item",
+		className: "list-item empty-item",
 		
 		/** @override */
 		initialize: function (options) {
-			this.listenTo(this.collection, "deselect:none select:none", function() {
-				this.el.classList.toggle("selected", !this.model.selected);
-			});
-			this.el.classList.toggle("selected", !this.model.selected);
+			this.listenTo(this.model, "selected deselected", this.renderClassList);
+			this.renderClassList();
 		},
 		
 		/** @override */
 		render: function() {
 			this.el.innerHTML = "<a href=\"#clear\"><b> </b></a>";
+			this.renderClassList();
 			return this;
+		},
+		
+		renderClassList: function () {
+			this.el.classList.toggle("selected", this.model.selectedIndex === -1);
 		},
 	})
 });
 
-module.exports = SelectableCollectionView;
+module.exports = SelectableListView;

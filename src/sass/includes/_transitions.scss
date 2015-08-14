@@ -2,6 +2,16 @@
 // Transition definitions
 // -----------------------------------
 
+@mixin skip_transitions {
+	transition: none 0s 0s !important;
+	// transition: all 0s ease 0s !important;
+	// transition: none 0s step-start 0s !important;
+	// transition: all 0s step-start 0s !important;
+	// transition-property: none !important;
+	// transition-duration: 0s !important;
+	// transition-delay: 0s !important;
+}
+
 @mixin nav_transition($delay_count: null) {
 }
 
@@ -18,15 +28,26 @@
 		transition: transform $duration $ease 0s;
 	}
 }
-.transform-exiting {
-	@include nav_transition_short(exiting);
-}
-.transform-changing {
-	@include nav_transition_short(changing);
-}
-.transform-entering {
-	@include nav_transition_short(entering);
-}
-.transform-immediate {
-	@include nav_transition_short();
-}
+
+// -----------------------------------
+// Transition classes
+// -----------------------------------
+
+// .transform-exiting {
+// 	@include nav_transition_short(exiting);
+// }
+// .transform-changing {
+// 	@include nav_transition_short(changing);
+// }
+// .transform-entering {
+// 	@include nav_transition_short(entering);
+// }
+// .transform-immediate {
+// 	@include nav_transition_short();
+// }
+// .skip-transitions {
+// 	@include skip_transitions;
+// 	* {
+// 		@include skip_transitions;
+// 	}
+// }

@@ -1,12 +1,12 @@
 <div class="placeholder sizing"></div>
-<div class="content play-toggle not-played handlebars">
-	<video preload="none">
+<div class="content play-toggle not-played">
+	<video preload="none" poster="{{global "MEDIA_DIR"}}/{{src}}">
 		{{#each srcset}}
-			<source src="{{src}}" type="{{mime}}"></source> 
+			<source src="{{global "MEDIA_DIR"}}/{{src}}" type="{{mime}}"></source> 
 		{{/each}}
 	</video>
 	<img class="poster default current" alt="{{name}}"/>
 	<div class="overlay">
-		<span class="play-button">&#xe805;</span>
+		<span class="play-button">&#xe80d;</span>
 	</div>
 </div>

@@ -9,9 +9,9 @@
 $hu: 					map-get($units, hu_px) * 1px;
 $vu: 					map-get($units, vu_px) * 1px;
 // Time base units (transitions/animations)
-$delay_interval:	map-get($transitions, delay_interval_ms) * 0.001s;
-$duration: 			map-get($transitions, duration_ms) * 0.001s;
-$ease:				map-get($transitions, ease);
+$delay_interval:		map-get($transitions, delay_interval_ms) * 0.001s;
+$duration: 				map-get($transitions, duration_ms) * 0.001s;
+$ease:					map-get($transitions, ease);
 // transition/animation timing function
 $delay: 				$duration + $delay_interval;
 
@@ -19,45 +19,28 @@ $delay: 				$duration + $delay_interval;
 // Layout
 // ------------------------------------
 
-$breakpoint_large:		1024px;
-$gutter: 					2 * $hu;
+$gutter: 				2 * $hu;
 $page_margin_left: 		2 * $hu;
 $page_margin_right:		2 * $hu;
 
 $page_width: 				34 * $hu;//700px;
-$page_width_large: 		47 * $hu;//940px;
+$page_width_large: 			47 * $hu;//940px;
 $aside_width:				10 * $hu;
 $aside_width_large: 		11 * $hu;
 $main_width:				$page_width - $aside_width;
-$main_width_large:		$page_width_large - $aside_width_large;
+$main_width_large:			$page_width_large - $aside_width_large;
 
 // ------------------------------------
-// Colors: private (not to be used directly)
-// ------------------------------------
-
-// $light_fgcolor: 		hsl(47, 5%, 15%);
-// $light_bgcolor: 		hsl(47, 5%, 95%);
-// 
-// $dark_fgcolor: 		hsl(47, 5%, 95%);
-// $dark_bgcolor: 		hsl(47, 5%, 25%);
-// 
-// // main colors
-// $color: $light_fgcolor;
-// $background_color: $light_bgcolor;
-// 
-// $inverse_color: $dark_fgcolor;
-// $inverse_background_color: $dark_bgcolor;
-
-// - - - - - - - - - - - - - - - - - -
 // Colors: public
-// - - - - - - - - - - - - - - - - - -
+// ------------------------------------
 
 // main colors
 $color: map-get($default_colors, color);
 $background_color: map-get($default_colors, background-color);
 
 // link-colors
-$link_color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
+$link_color: map-get($default_colors, link-color);
+// $link_color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
 $link_hover_color: scale_color($link_color, $lightness: 15%);//hsl(10, 95%, 60%);
 $link_down_color: scale_color($link_color, $lightness: -15%);//hsl(10, 95%, 30%);
 
@@ -193,23 +176,12 @@ $base_font: $font_webfont_sans;
 // transitions
 // ------------------------------------
 
-@mixin skip_transitions {
-	transition: none 0s 0s !important;
-	// transition-property: none !important;
-	// transition-duration: 0s !important;
-	// transition-delay: 0s !important;
-}
-
-//%skip_transitions {
-//	@include skip_transitions;
-//}
-
 // ------------------------------------
 // misc
 // ------------------------------------
 
 @mixin image-optimize-contrast {
-	image-rendering: optimizeSpeed;             /* STOP SMOOTHING, GIVE ME SPEED  */
+	image-rendering: optimizeSpeed;             /*   */
 	image-rendering: -moz-crisp-edges;          /* Firefox                        */
 	image-rendering: -o-crisp-edges;            /* Opera                          */
 	image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */

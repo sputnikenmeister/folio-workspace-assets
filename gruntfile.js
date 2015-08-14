@@ -3,12 +3,15 @@ module.exports = function (grunt) {
 	"use strict";
 
 	grunt.config("pkg", grunt.file.readJSON("package.json"));
-
+	
+	
 	grunt.config("DEBUG_CLIENT_JS", "folio-debug-client");
 	grunt.config("DEBUG_VENDOR_JS", "folio-debug-vendor");
 	grunt.config("DEBUG_STYLES", "folio-debug");
 	grunt.config("DIST_JS", "folio");
 	grunt.config("DIST_STYLES", "folio");
+	
+	grunt.config("FONTELLO_DIR", "fonts/fontello-27278fbd");
 
 	/* ---------------------------------
 	 * Style Sheets
@@ -62,17 +65,6 @@ module.exports = function (grunt) {
 	 * Javascript
 	 * -------------------------------- */
 
-	/* JSHint */
-	grunt.loadNpmTasks("grunt-contrib-jshint");
-	grunt.config("jshint", {
-		options: {
-			jshintrc: "./src/js/.jshintrc"
-		},
-		files: [
-			"./src/js/app/**/*.js"
-		]
-	});
-
 	/* browserify */
 	grunt.loadNpmTasks("grunt-browserify");
 	grunt.config("browserify.options", {
@@ -115,12 +107,8 @@ module.exports = function (grunt) {
 			require: [],
 			transform: [
 				"decomponentify",
-				["node-underscorify", {
-					extensions: ["tpl"]
-				}],
-				["hbsfy", {
-					extensions: ["hbs"]
-				}]
+				["node-underscorify", { extensions: ["tpl"] }],
+				["hbsfy", { extensions: ["hbs"] }]
 			]
 		}
 	});
@@ -229,10 +217,6 @@ module.exports = function (grunt) {
 	// grunt.config("watch.build-styles-svg", {
 	// 	tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
 	// 	files: ["images/**/*.svg"] });
-		
-	// grunt.config("watch.process-sources", {
-	// 	tasks: ["jshint"],
-	// 	files: ["src/js/**/*.js"] });
 
 
 	/* --------------------------------
@@ -353,7 +337,7 @@ module.exports = function (grunt) {
 		function() {
 			var child = grunt.util.spawn({
 				cmd: "fontello-cli",
-				args: ["open", "--config", "build/fontello.json"],
+				args: ["open", "--config", "<%= FONTELLO_DIR %>/config.json"],
 				opts: {stdio: "inherit"}
 			}, this.async());
 		}

@@ -18,7 +18,7 @@
 	text-align: center;
 	width: 1em;
 	/* fix buttons height, for twitter bootstrap */
-	//line-height: 1em; vertical-align: middle;
+	// line-height: 1em; vertical-align: middle;
 }
 @mixin fontello_icon_after() {
 	@include fontello_icon_pseudo();

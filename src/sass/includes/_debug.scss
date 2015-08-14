@@ -35,9 +35,6 @@ $darkolivegreen:	darkolivegreen;
 }
 
 @mixin debug_outline($width: 1px, $style: dashed, $color: inherit) {
-//	outline-color: $color;
-//	outline-style: $style;
-//	outline-width: $width;
 	outline: $width $style $color;
 	outline-offset: -$width;
 }
@@ -77,13 +74,22 @@ $darkolivegreen:	darkolivegreen;
 			// @include debug_outline($color: $lightcoral);
 //			@include debug_outline($color: transparentize($lightcoral, 0.9), $style: solid);
 		}
-		#site-name a, .list .name {
-			background-color: transparentize($lightcoral, 0.6);
+		#site-name a,
+		.list .name {
+			background-color: transparentize($lightcoral, 0.5);
 			// @include debug_outline($color: $lightcoral);
 		}
 	}
 	#content {
 		background-color: transparentize($lightblue, 0.9);
+		.stack {
+			.content {
+				background-color: transparentize($lightblue, 0.7);
+				& > * {
+					@include debug_outline($color: $deepskyblue);
+				}
+			}
+		}
 		.carousel {
 			// @include debug_outline_thick($color: $deepskyblue);
 			@include debug_outline($width: 1rem, $style: solid, $color: transparentize($deepskyblue, 0.8));
@@ -113,19 +119,6 @@ $darkolivegreen:	darkolivegreen;
 //				}
 //			}
 //		}
-		.nested-carousel-item {
-//			@include debug_outline($width: 0.5rem, $style: dashed, $color: transparentize($deepskyblue, 0.25));
-			outline: 0 none;
-			background-color: transparent;
-		}
-		.stack {
-			.content {
-				background-color: transparentize($lightblue, 0.7);
-				& > * {
-					@include debug_outline($color: $deepskyblue);
-				}
-			}
-		}
 	}
 }
 
@@ -152,6 +145,7 @@ $darkolivegreen:	darkolivegreen;
 	padding: 1rem 0.5rem;
 	display: flex;
 	flex-direction: row;
+	align-items: center;
 	& > * {
 		-webkit-flex: 0 1 auto;
 		flex: 0 1 auto;
@@ -175,7 +169,6 @@ $darkolivegreen:	darkolivegreen;
 	dd {
 		border-left: currentColor solid thin;
 	}
-	
 	dt {
 		@include small_caps($lead: 1rem);
 	}
@@ -185,5 +178,8 @@ $darkolivegreen:	darkolivegreen;
 	&.debug-info dd {
 		line-height: 1rem;
 		font-weight: 300;
+		& > * {
+			margin-top: -0.1rem;
+		}
 	}
 }

@@ -41,7 +41,9 @@ var transitionTemplate = function(o) {
 };
 // var transitionTemplate = _.template("<%= property %> <% duration/1000 %>s <%= easing %> <% delay/1000 %>s");
 
-// var computedDefaults = {
+// var _propDefaults = {
+// 	"opacity": "1",
+// 	"visibility": "visible",
 // 	"transform": "matrix(1, 0, 0, 1, 0, 0)",
 // 	"transformStyle": "",
 // 	"transition": "",
@@ -50,28 +52,31 @@ var transitionTemplate = function(o) {
 // 	"transitionProperty": "none",
 // 	"transitionTimingFunction": "ease"
 // };
+// var _propList = Object.keys(_propDefaults);
 
 var NO_TRANSITION = "none 0s ease 0s";
 
-var _styleProps = {}; 
-var _styleNames = {};
+var _prefixedProperty = {}; 
+var _prefixedStyleName = {};
 
 (function() {
+	var _visibilityProps = ["opacity", "visibility"];
 	var _transformProps = ["transform", "transformStyle"];
 	var _transitionProps = ["transition", "transitionDuration", "transitionDelay", "transitionProperty", "transitionTimingFunction"];
 	var _transformStyleNames = ["transform", "transform-style"];
 	var _transitionStyleNames = ["transition", "transition-duration", "transition-delay", "transition-property", "transition-timing-function"];
 	var i, p, props;
 	
-	props = _transformProps.concat(_transitionProps);
+	props = _transformProps.concat(_transitionProps).concat(_visibilityProps);
 	for (i = 0; i < props.length; ++i) {
 		p = props[i];
-		_styleProps[p] = prefixedProperty(p);
+		_prefixedProperty[p] = prefixedProperty(p);
 	}
-	props = _transformStyleNames.concat(_transitionStyleNames);
+	
+	props = _transformStyleNames.concat(_transitionStyleNames).concat(_visibilityProps);
 	for (i = 0; i < props.length; ++i) {
 		p = props[i];
-		_styleNames[p] = prefixedStyleName(p);
+		_prefixedStyleName[p] = prefixedStyleName(p);
 	}
 }());
 
@@ -113,8 +118,6 @@ function TransformItem(el, immediate) {
 
 	this.enableTransitions = this.clearTransitions;
 	this.disableTransitions = this.stopTransitions;
-	
-	this._assertNoTransition = false;
 }
 
 TransformItem.prototype = {
@@ -190,14 +193,14 @@ TransformItem.prototype = {
 	/* ------------------------------- */
 	
 	runTransition: function(transition, immediate) {
-		this._transition.property = _styleNames["transform"];
-		for (var prop in transition) {
-			this._transition[prop] = transition[prop];
-		}
+		this._transition.property = _prefixedStyleName["transform"];
+		this._transition = _.extend(this._transition, transition);
+		
 		if (this._transitionInvalid) {
 			log("warn", traceElt(this.el), "TransformItem.runTransition changed twice",
 				this._transitionValue, transitionTemplate(this._transition));
 		}
+		
 		this._transitionValue = transitionTemplate(this._transition);
 		
 		this._hasTransition = true;
@@ -317,7 +320,8 @@ TransformItem.prototype = {
 				if (tx !== this._renderedX || ty !== this._renderedY) {
 					this._renderedX = tx;
 					this._renderedY = ty;
-					this._setCSSProp("transform", "translate3d(" + this._renderedX + "px, " + this._renderedY + "px, 0px)");
+					this._setCSSProp("transform", "translate(" + this._renderedX + "px, " + this._renderedY + "px)");
+					// this._setCSSProp("transform", "translate3d(" + this._renderedX + "px, " + this._renderedY + "px, 0px)");
 				}
 			} else {
 				this._renderedX = null;
@@ -333,29 +337,29 @@ TransformItem.prototype = {
 	/* ------------------------------- */
 	
 	_getCSSProp: function(prop) {
-		return this.el.style[_styleProps[prop]];
-		// return this.el.style.getPropertyValue(_styleNames[prop]);
+		return this.el.style[_prefixedProperty[prop]];
+		// return this.el.style.getPropertyValue(_prefixedStyleName[prop]);
 	},
 	
 	_setCSSProp: function(prop, value) {
 		if (prop === "transition" && value === NO_TRANSITION) {
 			this._removeCSSProp(prop);
 		} else {
-			this.el.style[_styleProps[prop]] = value;
-			// this.el.style.setProperty(_styleNames[prop], value);
+			this.el.style[_prefixedProperty[prop]] = value;
+			// this.el.style.setProperty(_prefixedStyleName[prop], value);
 		}
 	},
 	
 	_removeCSSProp: function(prop) {
-		this.el.style[_styleProps[prop]] = "";
-		// this.el.style.removeProperty(_styleNames[prop]);
+		this.el.style[_prefixedProperty[prop]] = "";
+		// this.el.style.removeProperty(_prefixedStyleName[prop]);
 	},
 	
 	_getComputedCSSProps: function() {
 		var values = {};
 		var computed = window.getComputedStyle(this.el);
-		for (var p in _styleProps) {
-			values[p] = computed[_styleProps[p]];
+		for (var p in _prefixedProperty) {
+			values[p] = computed[_prefixedProperty[p]];
 		}
 		return values;
 	},
