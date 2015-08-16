@@ -13,8 +13,8 @@ var Color = require("color");
 var Globals = require("../../control/Globals");
 /** @type {module:app/view/base/ViewError} */
 var ViewError = require("../base/ViewError");
-/** @type {module:app/view/render/MediaRenderer} */
-var MediaRenderer = require("./MediaRenderer");
+/** @type {module:app/view/render/PlayableRenderer} */
+var PlayableRenderer = require("./PlayableRenderer");
 
 /** @type {Function} */
 var viewTemplate = require("./VideoRenderer.hbs");
@@ -41,18 +41,18 @@ var mediaEvents = [
 * @constructor
 * @type {module:app/view/render/VideoRenderer}
 */
-module.exports = MediaRenderer.extend({
+module.exports = PlayableRenderer.extend({
 	
 	/** @type {string} */
 	className: function() { 
-		return MediaRenderer.prototype.className + " video-renderer";
+		return PlayableRenderer.prototype.className + " video-renderer";
 	},
 	/** @type {Function} */
 	template: viewTemplate,
 	
 	/** @override */
 	initialize: function (opts) {
-		// MediaRenderer.prototype.initialize.apply(this, arguments);
+		PlayableRenderer.prototype.initialize.apply(this, arguments);
 		_.bindAll(this, "_onMediaEvent");
 		this.createChildren();
 		
@@ -137,8 +137,8 @@ module.exports = MediaRenderer.extend({
 	/* --------------------------- */
 	
 	initializeAsync: function() {
-		MediaRenderer.whenSelectionIsContiguous(this)
-			.then(MediaRenderer.whenSelectTransitionEnds)
+		PlayableRenderer.whenSelectionIsContiguous(this)
+			.then(PlayableRenderer.whenSelectTransitionEnds)
 			.then(
 				function(view) {
 					// view.video.setAttribute("preload", "auto");
@@ -146,7 +146,7 @@ module.exports = MediaRenderer.extend({
 					return view;
 				}
 			)
-			.then(MediaRenderer.whenDefaultImageLoads)
+			.then(PlayableRenderer.whenDefaultImageLoads)
 			.then(
 				function(view) {
 					view.addSelectionListeners();
@@ -167,7 +167,7 @@ module.exports = MediaRenderer.extend({
 	},
 	
 	/* ---------------------------
-	/* MediaRenderer overrides
+	/* PlayableRenderer overrides
 	/* --------------------------- */
 	
 	/** @override */

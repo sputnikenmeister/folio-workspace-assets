@@ -14,8 +14,8 @@ var SelectableCollection = require("../../model/SelectableCollection");
 
 /** @type {module:app/view/base/ViewError} */
 var ViewError = require("../base/ViewError");
-/** @type {module:app/view/render/MediaRenderer} */
-var MediaRenderer = require("./MediaRenderer");
+/** @type {module:app/view/render/PlayableRenderer} */
+var PlayableRenderer = require("./PlayableRenderer");
 
 /** @type {Function} */
 var viewTemplate = require( "./SequenceRenderer.hbs" );
@@ -26,18 +26,18 @@ var progressTemplate = require( "../template/CircleProgressMeter.svg.hbs" );
  * @constructor
  * @type {module:app/view/render/SequenceRenderer}
  */
-module.exports = MediaRenderer.extend({
+module.exports = PlayableRenderer.extend({
 	
 	/** @type {string} */
 	className: function() { 
-		return MediaRenderer.prototype.className + " sequence-renderer";
+		return PlayableRenderer.prototype.className + " sequence-renderer";
 	},
 	/** @type {Function} */
 	template: viewTemplate,
 	
 	/** @override */
 	initialize: function (opts) {
-		// MediaRenderer.prototype.initialize.apply(this, arguments);
+		PlayableRenderer.prototype.initialize.apply(this, arguments);
 		_.bindAll(this,
 			"createSequenceChildren",
 			"startSequence",
@@ -151,9 +151,9 @@ module.exports = MediaRenderer.extend({
 	/* --------------------------- */
 	
 	initializeAsync: function() {
-		MediaRenderer.whenSelectionIsContiguous(this)
-			.then(MediaRenderer.whenSelectTransitionEnds)
-			.then(MediaRenderer.whenDefaultImageLoads)
+		PlayableRenderer.whenSelectionIsContiguous(this)
+			.then(PlayableRenderer.whenSelectTransitionEnds)
+			.then(PlayableRenderer.whenDefaultImageLoads)
 			.then(function(view) {
 					view.createSequenceChildren();
 					view.addSelectionListeners();
@@ -168,13 +168,13 @@ module.exports = MediaRenderer.extend({
 	},
 	
 	/* ---------------------------
-	/* MediaRenderer overrides
+	/* PlayableRenderer overrides
 	/* --------------------------- */
 	
 	/** @override */
 	_onModelSelected: function() {
 		this.toggleMediaPlayback(true);
-		return MediaRenderer.prototype._onModelSelected.apply(this, arguments);
+		return PlayableRenderer.prototype._onModelSelected.apply(this, arguments);
 		// this.content.addEventListener("click", this._onContentClick, false);
 		// this.listenTo(this, "view:remove", this._removeClickHandler);
 	},
@@ -304,7 +304,7 @@ module.exports = MediaRenderer.extend({
 			buffer.appendChild(img);
 		}
 		this.sequence.appendChild(buffer);
-		// From MediaRenderer
+		// From PlayableRenderer
 		// this.addSelectionListeners();
 	},
 	

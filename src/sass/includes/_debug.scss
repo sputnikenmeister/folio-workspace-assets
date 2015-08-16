@@ -27,7 +27,7 @@ $darkolivegreen:	darkolivegreen;
 //	background-image: image-url("debug-background.svg#bg720_g");
 //	background-size: 719px 1599px;
 	@include media(desktop-small) {
-		background-position: calc(50% - 9px)  1px;
+		background-position: calc(50% - 9px) calc(-1rem + 1px);
 		background-image: image-url("debug-background-960.svg");
 //		background-image: image-url("debug-background.svg#bg960_g");
 //		background-size: 959px 1599px;
@@ -81,7 +81,6 @@ $darkolivegreen:	darkolivegreen;
 		}
 	}
 	#content {
-		background-color: transparentize($lightblue, 0.9);
 		.stack {
 			.content {
 				background-color: transparentize($lightblue, 0.7);
@@ -94,9 +93,16 @@ $darkolivegreen:	darkolivegreen;
 			// @include debug_outline_thick($color: $deepskyblue);
 			@include debug_outline($width: 1rem, $style: solid, $color: transparentize($deepskyblue, 0.8));
 		}
-		.media-item, .leaf-carousel-item, .default-carousel-item, .empty-item {
+		.leaf-carousel-item, .default-carousel-item, .empty-item {
 			@include debug_outline($color: $deepskyblue);
 //			background-color: transparentize($lightblue, 0.7);
+		}
+		.media-item {
+			background-color: transparentize($lightblue, 0.9);
+			@include debug_outline($color: $deepskyblue);
+			.content {
+				background-color: $lightblue;
+			}
 		}
 		.leaf-carousel-item, .default-carousel-item {
 			.content {
@@ -130,18 +136,19 @@ $darkolivegreen:	darkolivegreen;
 	
 	z-index: 999;
 	position: fixed;
-	width: 100%;
+	// width: 100%;// prevents dotnav mouse events
 	bottom: 0;
 	
 	&.show-info .debug-links {
 		display: none;
 	}
-	&:not(.show-info) .debug-info {
+	&.show-links .debug-info {
 		display: none;
 	}
 }
 
 #debug-toolbar dl {
+	line-height: 1rem;
 	padding: 1rem 0.5rem;
 	display: flex;
 	flex-direction: row;
@@ -170,13 +177,20 @@ $darkolivegreen:	darkolivegreen;
 		border-left: currentColor solid thin;
 	}
 	dt {
-		@include small_caps($lead: 1rem);
+		-webkit-flex: 0 0 auto;
+		flex: 0 0 auto;
+		.icon {
+			@include fontello_icon_base();
+			width: 1em;
+			text-align: center;
+			display: inline-block;
+		}
+		// @include small_caps($lead: 1rem);
 	}
 	&.debug-links dd {
-		@include small_caps($lead: 1rem);
+		@include small_caps($lead: inherit);
 	}
 	&.debug-info dd {
-		line-height: 1rem;
 		font-weight: 300;
 		& > * {
 			margin-top: -0.1rem;

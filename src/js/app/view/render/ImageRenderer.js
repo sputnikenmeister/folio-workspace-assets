@@ -44,6 +44,9 @@ module.exports = View.extend({
 	
 	/** @override */
 	initialize: function (opts) {
+		if (this.model.attrs().hasOwnProperty("@classname")) {
+			this.el.className += " " + this.model.attrs()["@classname"];
+		}
 		this.createChildren();
 		this.initializeAsync();
 	},
@@ -57,7 +60,7 @@ module.exports = View.extend({
 		
 		this.placeholder = this.el.querySelector(".placeholder");
 		this.content = this.el.querySelector(".content");
-		this.image = this.content.querySelector("img.default");
+		this.image = this.el.querySelector("img.default");
 	},
 	
 	/** @return {this} */
@@ -69,8 +72,12 @@ module.exports = View.extend({
 		var content = this.content;
 		var sizing = this.placeholder;
 		
-		sizing.style.maxWidth = "";
-		sizing.style.maxHeight = "";
+		sizing.style.width = "";
+		sizing.style.height = "";
+		
+		// var o = _.pick(sizing, function(val) {
+		// 	return /^(offset|client)/.test(val);
+		// });
 		
 		cX = sizing.offsetLeft + sizing.clientLeft;
 		cY = sizing.offsetTop + sizing.clientTop;
@@ -106,10 +113,23 @@ module.exports = View.extend({
 		
 		// sizing.style.maxWidth = (cW + (poW - pcW)) + "px";
 		// sizing.style.maxHeight = (cH + (poH - pcH)) + "px";
-		sizing.style.maxWidth = cW + "px";
-		sizing.style.maxHeight = cH + "px";
-		// sizing.style.maxWidth = content.offsetWidth + "px";
-		// sizing.style.maxHeight = content.offsetHeight + "px";
+		// sizing.style.maxWidth = cW + "px";
+		// sizing.style.maxHeight = cH + "px";
+		console.log(this.cid, "client",
+			content.clientLeft,
+			content.clientTop,
+			content.clientWidth,
+			content.clientHeight
+		);
+		console.log(this.cid, "offset",
+			content.offsetLeft,
+			content.offsetTop,
+			content.offsetWidth,
+			content.offsetHeight
+		);
+		
+		sizing.style.width = content.offsetWidth + "px";
+		sizing.style.height = content.offsetHeight + "px";
 		
 		return this;
 	},

@@ -1,5 +1,5 @@
 /**
- * @module app/view/render/MediaRenderer
+ * @module app/view/render/PlayableRenderer
  */
 
 /** @type {module:underscore} */
@@ -26,9 +26,9 @@ var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
 /** @type {module:app/view/promise/whenDefaultImageLoads} */
 var whenDefaultImageLoads = require("../promise/whenDefaultImageLoads");
 
-var duotone = require("../../../utils/canvas/bitmap/duotone");
-var stackBlurRGB = require("../../../utils/canvas/bitmap/stackBlurRGB");
-var stackBlurMono = require("../../../utils/canvas/bitmap/stackBlurMono");
+// var duotone = require("../../../utils/canvas/bitmap/duotone");
+// var stackBlurRGB = require("../../../utils/canvas/bitmap/stackBlurRGB");
+// var stackBlurMono = require("../../../utils/canvas/bitmap/stackBlurMono");
 var getAverageRGB = require("../../../utils/canvas/bitmap/getAverageRGB");
 // var getAverageRGBA = require("../../../utils/canvas/bitmap/getAverageRGBA");
 
@@ -42,34 +42,45 @@ var getSharedCanvas =  function() {
 
 
 /** @type {Function} */
-var viewTemplate = require( "./MediaRenderer.hbs" );
+var viewTemplate = require( "./PlayableRenderer.hbs" );
 
 /**
  * @constructor
- * @type {module:app/view/render/MediaRenderer}
+ * @type {module:app/view/render/PlayableRenderer}
  */
 module.exports = View.extend({
 	
 	/** @type {string} */
 	tagName: "div",
 	/** @type {string} */
-	className: "carousel-item media-item idle",
+	className: "carousel-item idle media-item playable-renderer",
 	/** @type {module:app/model/MediaItem} */
 	model: MediaItem,
 	/** @type {Function} */
 	template: viewTemplate,
 	
-	/** @override */
-	constructor: function(options) {
-		_.bindAll(this, "_onToggleEvent");
-		View.apply(this, arguments);
-	},
-	
 	// /** @override */
-	// initialize: function (opts) {
-	// 	View.prototype.initialize.apply(this, arguments);
-	// 	// this.createChildren();
+	// constructor: function(options) {
+	// 	_.bindAll(this, "_onToggleEvent");
+	// 	if (options.model.attrs()["@classname"]) {
+	// 		options || (options = {});
+	// 		if (options.className) {
+	// 			options.className += " " + options.model.attrs()["@classname"];
+	// 		} else {
+	// 			options.className = options.model.attrs()["@classname"];
+	// 		}
+	// 	}
+	// 	View.call(this, options);
 	// },
+	
+	/** @override */
+	initialize: function (opts) {
+		View.prototype.initialize.apply(this, arguments);
+		_.bindAll(this, "_onToggleEvent");
+		if (this.model.attrs().hasOwnProperty("@classname")) {
+			this.el.className += " " + this.model.attrs()["@classname"];
+		}
+	},
 	
 	/* --------------------------- *
 	/* children/layout
@@ -185,7 +196,7 @@ module.exports = View.extend({
 	/* click dom event
 	/* --------------------------- */
 	_onToggleEvent: function(domev) {
-		// console.log("MediaRenderer._onToggleEvent", domev.type, "defaultPrevented: " + domev.defaultPrevented);
+		// console.log("PlayableRenderer._onToggleEvent", domev.type, "defaultPrevented: " + domev.defaultPrevented);
 		
 		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
 		if (!domev.defaultPrevented && !domev.button) {

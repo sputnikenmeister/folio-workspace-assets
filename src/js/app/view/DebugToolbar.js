@@ -23,7 +23,7 @@ var DebugToolbar = Backbone.View.extend({
 	/** @override */
 	tagName: "div",
 	/** @override */
-	className: "toolbar show-links",
+	className: "toolbar show-info color-fg05",
 	/** @override */
 	template: viewTemplate,
 	
@@ -57,16 +57,16 @@ var DebugToolbar = Backbone.View.extend({
 		
 		/* .classes-group
 		 * - - - - - - - - - - - - - - - - */
-		var documentClassesEl = this.el.querySelector("#document-classes");
-		var bodyClassesEl = this.el.querySelector("#body-classes");
-		var updateClassesGroup = function () {
-			documentClassesEl.textContent = document.documentElement.className;
-			bodyClassesEl.textContent = document.body.className;
-		};
-		this.listenTo(controller, "change:after", updateClassesGroup);
-		window.addEventListener("resize", updateClassesGroup, false);
-		window.addEventListener("orientationchange", updateClassesGroup, false);
-		updateClassesGroup();
+		// var documentClassesEl = this.el.querySelector("#document-classes");
+		// var bodyClassesEl = this.el.querySelector("#body-classes");
+		// var updateClassesGroup = function () {
+		// 	documentClassesEl.textContent = document.documentElement.className;
+		// 	bodyClassesEl.textContent = document.body.className;
+		// };
+		// this.listenTo(controller, "change:after", updateClassesGroup);
+		// window.addEventListener("resize", updateClassesGroup, false);
+		// window.addEventListener("orientationchange", updateClassesGroup, false);
+		// updateClassesGroup();
 		
 		/* show dt.debug-group | dt.classes-group
 		 * - - - - - - - - - - - - - - - - */

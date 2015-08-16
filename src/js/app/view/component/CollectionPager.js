@@ -37,10 +37,10 @@ module.exports = View.extend({
 			ev.isDefaultPrevented() || ev.preventDefault();
 			this.trigger("view:select:one", this.collection.followingOrFirst());
 		},
-//		"click .close-button": function (ev) {
-//			ev.isDefaultPrevented() || ev.preventDefault();
-//			this.trigger("view:select:none");
-//		}
+		"click .close-button": function (ev) {
+			ev.isDefaultPrevented() || ev.preventDefault();
+			this.trigger("view:select:none");
+		}
 	},
 
 	/** @override */
@@ -57,13 +57,14 @@ module.exports = View.extend({
 			var preceding = this.collection.precedingOrLast();
 			var following = this.collection.followingOrFirst();
 			this.el.innerHTML = this.template({
-				"preceding_label": this.getLabel(preceding),
-				"preceding_href": preceding.get("handle"),
-				"following_label": this.getLabel(following),
-				"following_href": following.get("handle"),
-//				"close_label": "Close",
-//				"close_href": "#close",
-
+				preceding: {
+					label: this.getLabel(preceding),
+					href: preceding.get("handle"),
+				},
+				following: {
+					label: this.getLabel(following),
+					href: following.get("handle"),
+				}
 			});
 		} else {
 			this.el.innerHTML = "";

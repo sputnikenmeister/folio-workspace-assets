@@ -315,9 +315,9 @@ var ContentView = ContainerView.extend({
 	createMediaCarousel: function(bundle) {
 		// Create carousel
 		var classname = "media-carousel " + bundle.get("domid"); 
-		if (bundle.attrs().hasOwnProperty("@classname")) {
-			classname += " " + bundle.attrs()["@classname"];
-		}
+		// if (bundle.attrs().hasOwnProperty("@classname")) {
+		// 	classname += " " + bundle.attrs()["@classname"];
+		// }
 		var EmptyRenderer = Carousel.defaultRenderer.extend({
 			className: "carousel-item empty-item",
 			model: bundle,

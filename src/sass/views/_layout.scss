@@ -332,7 +332,7 @@ $nav_collapse_extra: 28rem;
 // - - - - - - - - - - - - - - - - - -
 .media-dotnav {
 	@include nav_translate(0,0);
-	bottom: 3rem;
+	bottom: 0.75rem;
 	// top: $header_height_portrait;// + 2.5rem;
 	// top: $nav_height_portrait - 1.5rem;	
 	text-align: center;

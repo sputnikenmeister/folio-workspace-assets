@@ -1,7 +1,7 @@
 
-// - - - - - - - - - - - - - - - - - -
+// -----------------------------------
 // .media-item
-// - - - - - - - - - - - - - - - - - -
+// -----------------------------------
 .media-item {
 	.sizing {
 		position: relative;
@@ -36,25 +36,6 @@
 			opacity: 1;
 		}
 	}
-}
-
-// - - - - - - - - - - - - - - - - - -
-// Overlays: ImageRenderer/SequenceRenderer
-// - - - - - - - - - - - - - - - - - -
-
-.video-renderer,
-.sequence-renderer,
-.image-renderer {
-	// content images
-	// - - - - - - - - - - - - - - - - -
-	// .content img, img.content {
-	// 	@include image-optimize-contrast;
-	// }
-	// .content > * {
-	// 	position: absolute;
-	// 	top: 0; left: 0;
-	// 	width: 100%; height: 100%;
-	// }
 	// .placeholder:before
 	// - - - - - - - - - - - - - - - - -
 	.placeholder:before {
@@ -96,250 +77,118 @@
 	}
 }
 
-.media-item.image-renderer {
-	// .content > img.default {}
-	.content > .overlay {
-		display: none;
-	}
-}
-// VideoRenderer
-// - - - - - - - - - - - - - - - - - -
-.video-renderer {
-	.content {
-		overflow: hidden;
-	}
-	.poster {
-		position: absolute;
-		top: 0; left: 0;
-		width: 100%; height: 100%;
-		
-		// transition:
-		// 	opacity $duration $ease,
-		// 	visibility $duration step-end;
-		visibility: hidden;
-		// opacity: 0;
-	}
-	.not-played .poster {
-		visibility: visible;
-		// opacity: 1;
-	}
-	/** .overlay:after */
-	.overlay:after {
-		@include small_caps($lead: 1rem);
-		// color: black;
-		// background-color: white;
-		color: #333;
-		background-color: #eee;
-		position: absolute;
-		bottom: 0; right: 0;
-		// top: 0; left: 0;
-		padding: 0 0.25em;
-	}
-	.overlay:after { 
-		content: "Initializing";
-	}
-	.pending-network .overlay:after {
-		content: "Waiting for Network";
-	}
-	.pending-user .overlay:after {
-		content: "Waiting for User";
-		visibility: hidden;
-	}
-	.pending-media .overlay:after {
-		content: "Waiting for Media";
-		visibility: hidden;
-	}
-	
-	// &.selected {
-	// 	&[data-state="user"] .overlay:after { content: "Waiting for User"; }
-	// 	&[data-state="media"] .overlay:after { content: "Waiting for Media"; }
-	// 	&[data-state="network"] .overlay:after { content: "Waiting for Network"; }
-	// }
-}
+// -----------------------------------
+// Mockups
+// -----------------------------------
 
-// SequenceRenderer
-// - - - - - - - - - - - - - - - - - -
-.sequence-renderer {
-	// .content > .sequence {}
-	// .content > .sequence > img {
-	.sequence > img {
-		position: absolute;
-		top: 0; left: 0;
-		width: 100%; height: 100%;
-		
-		transition-duration: $duration * 3;
-		transition-delay: 0.001s;
-		transition-property: opacity, visibility;
-		
-		transition-timing-function: step-end;
-		opacity: 0;
-		visibility: hidden;
-		z-index: 0;
-		
-		&.current {
-			transition-timing-function: $ease, step-start;
-			opacity: 1;
-			visibility: visible;
-			z-index: 1;
-		}
-	}
-	.progress-meter {
-		z-index: 3;
-	}
-	.overlay {
-		z-index: 2;
-	}
-}
+// .image-renderer {
+// 	.content > .mockup {
+// 		display: none;
+// 	}
+// }
 
+// .browser
 // - - - - - - - - - - - - - - - - - -
-// Overlays: VideoRenderer/SequenceRenderer
-// - - - - - - - - - - - - - - - - - -
-.media-item {
-	// .overlay
-	// - - - - - - - - - - - - - - - - -
-	.content > .overlay {
-		position: absolute;
-		top: 0; left: 0;
-		width: 100%; height: 100%;
-	}
-	// .pending-user .overlay {}
-	// .pending-network .overlay {}
-	.pending-media .overlay {
-		visibility: hidden;
-	}
-		
-	// .overlay .label
-	// - - - - - - - - - - - - - - - - -
-	.overlay .play-button {
-		@include fontello_icon_base();
-		font-size: 3rem;
-		line-height: 1;
-		text-align: center;
-		padding: 0.5em 0 0.5em 0.2em;
-		
-		display: block;
-		position: absolute;
+// $mock_browser_height: 2rem;
+$mock_browser_height: 31.5px;
+
+.media-item.browser-safari,
+.media-item.browser-generic {
+	padding-bottom: $mock_browser_height;
+	.sizing {
 		box-sizing: border-box;
-		left: 50%; top: 50%;
-		height: 2em; width: 2em;
-		margin: -1em;
-		border-radius: 2em;
-		
-		&, &.over-light {
-			color: rgb(0,0,0);
-			background-color: rgba(255,255,255,0.8);
-			// background-color: rgb(255,255,255);
-			// box-shadow: 0 0 2px -1px rgb(0,0,0);
-			// border: 1px solid rgba(127,127,127,0.333);
-		}
-		&.over-dark {
-			color: rgb(255,255,255);
-			background-color: rgba(0,0,0,0.8);
-			// background-color: rgb(0,0,0);
-			// box-shadow: 0 0 2px -1px rgb(255,255,255);
-			// border: 1px solid rgba(127,127,127,0.333);
-		}
-	}
-}
-
-// .progress-meter
-// - - - - - - - - - - - - - - - - -
-.media-item {
-	.progress-meter {
-		text-align: center;
-		position: absolute;
-		top: 0px;
-		left: 100%;
-		margin-left: $hu/2;
-		// #base {} #steps-track {} #steps {} #amount {}
-		// #step-label {} #pause-symbol{}
-	}
-	&:not(.selected) .progress-meter {
-		display: none;
-	}
-	.progress-meter {
-		#step-label { visibility: visible; }
-		#pause { visibility: hidden; }
-	}
-	.pending-user .progress-meter {
-		#step-label { visibility: hidden; }
-		#pause { visibility: visible; }
-	}
-}
-
-// .browser .media-item
-// - - - - - - - - - - - - - - - - - -
-$mock_browser_height: 2rem;
-
-.browser .media-item, .media-item.browser {
-	padding-top: $mock_browser_height;
-	margin-top: -$mock_browser_height;
-	.sizing {
-		// box-sizing: content-box;
 		padding-top: $mock_browser_height;
-	}
-	.content .default {
-		padding-top: $mock_browser_height;
-		margin-top: -$mock_browser_height;
-		transform: translateY($mock_browser_height);
-		background-color: hsl(0,0%,75%) !important;
-		// background-color: hsla(0,0%,0%,0.15) !important;
-		// background-image: image-url("browser-safari.svg");
-		// background-size: cover;
-		// background-repeat: no-repeat;
-		box-shadow:
-			0px 1px 1px 0px hsl(0, 0%, 100%) inset,
-			0px 3em 0px -1.1em hsla(0,0%,100%,0.85) inset,
-			0px 0px 0px 1px hsla(0,0%,0%,0.15),
-			0px 1rem 1rem -0.5rem hsla(0,0%,0%,0.5);
-	}
-	.placeholder,
-	.content .default {
-		border-top-left-radius: $mock_browser_height * 0.15;
-		border-top-right-radius: $mock_browser_height * 0.15;
-	}
-}
-
-// .browser .media-item
-// - - - - - - - - - - - - - - - - - -
-$mock_browser2_height: 35px;
-
-.browser2 .media-item, .media-item.browser2 {
-	padding-top: $mock_browser2_height;
-	margin-top: -$mock_browser2_height;
-	.sizing {
-		// box-sizing: border-box;
-		padding-top: $mock_browser2_height;
 	}
 	.content {
-		// box-sizing: border-box;
-		// padding-top: $mock_browser_height2;
+		box-sizing: content-box;
+		padding-top: $mock_browser_height;
 		box-shadow:
-			// 0px 1px 1px 0px hsl(0, 0%, 100%) inset,
-			// 0px 3em 0px -1.1em hsla(0,0%,100%,0.85) inset,
-			// 0px 0px 0px 1px hsla(0,0%,0%,0.5) inset,
-			0px 1rem 1rem -0.5rem hsla(0,0%,0%,0.5);
+			// 0px 1px 1px 0px rgb(255,255,255) inset,
+			// 0px 3em 0px -1.1em rgba(255,255,255,0.85) inset,
+			0px 0px 0px 1px rgba(0,0,0,0.15),
+			0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		// background-image: image-url("browser-generic.svg");
+		background-size: 100% $mock_browser_height;
+		background-repeat: no-repeat;
 	}
-	.placeholder, .content {
-		border-top-left-radius: $mock_browser2_height * 0.15;
-		border-top-right-radius: $mock_browser2_height * 0.15;
+	// .content .default {}
+	.content, .placeholder {
+		border-top-left-radius: $mock_browser_height * 0.1;
+		border-top-right-radius: $mock_browser_height * 0.1;
+	}
+}
+
+.media-item.browser-generic .content {
+	background-image: image-url("browser-generic.svg");
+}
+.media-item.browser-safari .content {
+	background-image: image-url("browser-safari.svg");
+}
+/*
+<div class="content">
+	<img class="mockup" src="{{global "APP_ROOT"}}/workspace/assets/images/browser-generic.svg"/>
+	<img class="default" alt="{{name}}" longdesc="#desc_m{{id}}" />
+</div>
+*/
+
+// .browser-safari-1
+// - - - - - - - - - - - - - - - - - -
+/*
+// $browser_safari_1_top: 35px;
+// $browser_safari_1_top: 31.5px;
+$browser_safari_1_top: 38.5px;
+
+.browser-safari-1 .media-item,
+.media-item.browser-safari-1 {
+	padding-top: $browser_safari_1_top;
+	margin-top: -$browser_safari_1_top;
+	.sizing {
+		padding-top: $browser_safari_1_top;
+		// transform: translateY($browser_safari_1_top);
+		// box-sizing: content-box; //border-box;
+	}
+	.content {
+		padding-top: $browser_safari_1_top;
+		margin-top: -$browser_safari_1_top;
+		transform: translateY($browser_safari_1_top);
+	
+		// box-sizing: content-box; //border-box;
+		// box-sizing: border-box;
+		// padding-top: $browser_safari_1_top;
+		// margin-top: $browser_safari_1_top;
+		// transform: translateY($browser_safari_1_top);
 	}
 	
 	.content > .default {
-		box-sizing: border-box;
-		padding-top: $mock_browser2_height;
-		// box-shadow:	0px 0px 0px 1px hsla(0,0%,0%,0.5) inset;
-		// margin-top: $mock_browser2_height;
-		// transform: translateY($mock_browser2_height);
-		// padding-top: $mock_browser2_height - 1px;
-		// transform: translateY($mock_browser2_height);
+		// position: absolute;
+		// top: 0; left: 0;
+		// box-sizing: content-box;
+		// padding-top: $browser_safari_1_top;
+		// margin-top: $browser_safari_1_top;
+		// transform: translateY($browser_safari_1_top);
 	}
-	.content > .overlay {
-		display: block;
+	.content > .mockup {
+		display: inline-block;
 		position: absolute;
-		top: 0px; left: 0px;
-		width: 100%; height: 100%;
-		min-width: 0;
-		max-height: $mock_browser2_height;
+		// top: 0; left: 0;
+		width: 100%; 
+		// min-width: 155px;
+		height: $browser_safari_1_top;
+		// max-height: $browser_safari_1_top;
+		// height: 100%;
+		// box-shadow:	0px 0px 0px 1px hsla(0,0%,0%,0.5) inset;
+	}
+	.placeholder, .content,
+	.content > .mockup {
+		border-top-left-radius: 3px;//$browser_safari_1_top * 0.1;
+		border-top-right-radius: 3px;//$browser_safari_1_top * 0.1;
+	}
+	.content {
+		box-shadow:
+			// 0px 1px 1px 0px hsl(0, 0%, 100%) inset,
+			// 0px 3em 0px -1.1em hsla(0,0%,100%,0.85) inset,
+			0px 0px 0px 1px rgba(0,0,0,0.2),
+			0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
 	}
 }
+*/
