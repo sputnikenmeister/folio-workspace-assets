@@ -44,9 +44,7 @@ var mediaEvents = [
 module.exports = PlayableRenderer.extend({
 	
 	/** @type {string} */
-	className: function() { 
-		return PlayableRenderer.prototype.className + " video-renderer";
-	},
+	className: PlayableRenderer.prototype.className + " video-renderer",
 	/** @type {Function} */
 	template: viewTemplate,
 	

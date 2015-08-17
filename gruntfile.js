@@ -91,6 +91,10 @@ module.exports = function (grunt) {
 				"es6-promise",
 				"classlist-polyfill",
 				"cookies-js"
+			],
+			alias: [
+				"./src/js/shims/matchesSelector.js:matches-polyfill",
+				"./src/js/shims/requestAnimationFrame.js:raf-polyfill",
 			]
 		},
 	});
@@ -102,21 +106,33 @@ module.exports = function (grunt) {
 			"./src/js/app/App.js"
 		],
 		options: {
-			external: grunt.config("browserify.vendor.options.require"),
-			alias: [],
-			require: [],
 			transform: [
-				"decomponentify",
-				["node-underscorify", { extensions: ["tpl"] }],
-				["hbsfy", { extensions: ["hbs"] }]
+				["hbsfy", { extensions: ["hbs"] }],
+				// "decomponentify",
+				// ["node-underscorify", { extensions: ["tpl"] }],
 			]
 		}
 	});
-
+	/* NOTE: Add requires and aliased requires from vendor as externals in client */
+	grunt.config("browserify.client.options.external", (function() {
+		return grunt.config("browserify.vendor.options.require").concat(
+			grunt.config("browserify.vendor.options.alias").map(function(s) {
+				return s.split(":").pop();
+			})
+		);
+	}()));
+	grunt.log.verbose.subhead("Vendor Externals");
+	grunt.log.verbose.writeln(grunt.config("browserify.client.options.external").join(", "));
+	
 	/* browserify:watchable */
 	// Duplicate browserify.client task for watch
-	grunt.config("browserify.watchable", grunt.config("browserify.client"));
-	grunt.config("browserify.watchable.options.watch", true);
+	// grunt.config("browserify.watchable", grunt.config("browserify.client"));
+	// grunt.config("browserify.watchable.options.watch", true);
+	
+	grunt.config("browserify.watch-vendor", grunt.config("browserify.vendor"));
+	grunt.config("browserify.watch-vendor.options.watch", true);
+	grunt.config("browserify.watch-client", grunt.config("browserify.client"));
+	grunt.config("browserify.watch-client.options.watch", true);
 
 	/* Extract source maps from browserify */
 	grunt.loadNpmTasks("grunt-exorcise");
@@ -208,11 +224,13 @@ module.exports = function (grunt) {
 			options: {
 				spawn: true
 			},
-			files: ["gruntfile.js"],
-			tasks: ["compass:debug", "autoprefixer:debug",
-				"browserify:vendor", "browserify:client"],
+			files: ["gruntfile.js", "package.json"],
+			tasks: ["build-clean-all"]
+			// tasks: ["compass:debug", "autoprefixer:debug", "browserify:vendor", "browserify:client"],
 		}
 	});
+	grunt.registerTask("build-watch", ["browserify:watch-client", "browserify:watch-vendor", "watch"]);
+	// grunt.registerTask("build-watch", ["browserify:watchable", "watch"]);
 	
 	// grunt.config("watch.build-styles-svg", {
 	// 	tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
@@ -248,8 +266,8 @@ module.exports = function (grunt) {
 				fullPaths: false,
 				debug: false
 			},
-			alias: grunt.config("browserify.client.options.alias"),
-			require: grunt.config("browserify.client.options.require"),
+			alias: grunt.config("browserify.vendor.options.alias"),
+			require: grunt.config("browserify.vendor.options.require"),
 			transform: grunt.config("browserify.client.options.transform"),
 		}
 	});
@@ -285,8 +303,8 @@ module.exports = function (grunt) {
 		"browserify:dist", "uglify:dist"
 	]);
 	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
-	grunt.registerTask("build-all", ["clean-all", "build-debug", "build-dist"]);
-	grunt.registerTask("build-watch", ["browserify:watchable", "watch"]);
+	grunt.registerTask("build-all", ["build-debug", "build-dist"]);
+	grunt.registerTask("build-clean-all", ["clean-all", "build-all"]);
 	
 	// Default task
 	grunt.registerTask("default", ["build-debug"]);

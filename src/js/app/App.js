@@ -17,8 +17,8 @@ console.log("Strict mode", (function() {
 
 require("es6-promise").polyfill();
 require("classlist-polyfill");
-require("../shims/requestAnimationFrame");
-require("../shims/matchesSelector");
+require("raf-polyfill");
+require("matches-polyfill");
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -28,16 +28,9 @@ var Backbone = require("backbone");
 Backbone.$ = require("backbone.native");
 require("backbone.babysitter");
 require("Backbone.Mutators");
-
 require("hammerjs");
 
-/** @type {module:jquery} */
-// var $ = require("jquery");
-// global.jQuery = Backbone.$ = $;
-
-
 window.addEventListener("load", function(ev) {
-// $(window).load(function(ev) {
 // document.addEventListener('DOMContentLoaded', function() {
 
 	if (window.bootstrap === void 0) {

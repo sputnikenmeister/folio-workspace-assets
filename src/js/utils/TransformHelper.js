@@ -2,7 +2,6 @@
 /* Imports
 /* ------------------------------- */
 
-require("../shims/requestAnimationFrame");
 
 /** @type {module:underscore} */
 var _ = require("underscore");

@@ -9,28 +9,14 @@ var Backbone = require("backbone");
 /** @type {Function} */
 var Color = require("color");
 
-/** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
-/** @type {module:app/model/item/MediaItem} */
-var MediaItem = require("../../model/item/MediaItem");
-
-/** @type {module:app/view/base/View} */
-var View = require("../base/View");
-/** @type {module:app/view/base/ViewError} */
-var ViewError = require("../base/ViewError");
-
-/** @type {module:app/view/promise/whenSelectTransitionEnds} */
-var whenSelectTransitionEnds = require("../promise/whenSelectTransitionEnds");
-/** @type {module:app/view/promise/whenSelectionIsContiguous} */
-var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
-/** @type {module:app/view/promise/whenDefaultImageLoads} */
-var whenDefaultImageLoads = require("../promise/whenDefaultImageLoads");
+/** @type {module:app/view/MediaRenderer} */
+var MediaRenderer = require("./MediaRenderer");
 
 // var duotone = require("../../../utils/canvas/bitmap/duotone");
 // var stackBlurRGB = require("../../../utils/canvas/bitmap/stackBlurRGB");
 // var stackBlurMono = require("../../../utils/canvas/bitmap/stackBlurMono");
-var getAverageRGB = require("../../../utils/canvas/bitmap/getAverageRGB");
 // var getAverageRGBA = require("../../../utils/canvas/bitmap/getAverageRGBA");
+var getAverageRGB = require("../../../utils/canvas/bitmap/getAverageRGB");
 
 var _sharedCanvas = null;
 var getSharedCanvas =  function() {
@@ -40,46 +26,22 @@ var getSharedCanvas =  function() {
 	return _sharedCanvas;
 };
 
-
-/** @type {Function} */
-var viewTemplate = require( "./PlayableRenderer.hbs" );
-
 /**
  * @constructor
  * @type {module:app/view/render/PlayableRenderer}
  */
-module.exports = View.extend({
+module.exports = MediaRenderer.extend({
 	
-	/** @type {string} */
-	tagName: "div",
-	/** @type {string} */
-	className: "carousel-item idle media-item playable-renderer",
-	/** @type {module:app/model/MediaItem} */
-	model: MediaItem,
-	/** @type {Function} */
-	template: viewTemplate,
+	// /** @type {Function} */
+	// template: require( "./PlayableRenderer.hbs" ),
 	
-	// /** @override */
-	// constructor: function(options) {
-	// 	_.bindAll(this, "_onToggleEvent");
-	// 	if (options.model.attrs()["@classname"]) {
-	// 		options || (options = {});
-	// 		if (options.className) {
-	// 			options.className += " " + options.model.attrs()["@classname"];
-	// 		} else {
-	// 			options.className = options.model.attrs()["@classname"];
-	// 		}
-	// 	}
-	// 	View.call(this, options);
-	// },
+	/** @type {string|Function} */
+	className: MediaRenderer.prototype.className + " playable-renderer",
 	
 	/** @override */
 	initialize: function (opts) {
-		View.prototype.initialize.apply(this, arguments);
+		MediaRenderer.prototype.initialize.apply(this, arguments);
 		_.bindAll(this, "_onToggleEvent");
-		if (this.model.attrs().hasOwnProperty("@classname")) {
-			this.el.className += " " + this.model.attrs()["@classname"];
-		}
 	},
 	
 	/* --------------------------- *
@@ -94,68 +56,8 @@ module.exports = View.extend({
 	// 	this.playToggle = this.el.querySelector(".play-toggle");
 	// },
 	
-	/** @return {this} */
-	render: function () {
-		var sW, sH; // source dimensions
-		var pcW, pcH; // measured values
-		var cX, cY, cW, cH; // computed values
-		var pA, sA;
-		
-		var content = this.content;
-		var sizing = this.placeholder;
-		
-		sizing.style.maxWidth = "";
-		sizing.style.maxHeight = "";
-		
-		cX = sizing.offsetLeft + sizing.clientLeft;
-		cY = sizing.offsetTop + sizing.clientTop;
-		
-		pcW = sizing.clientWidth;
-		pcH = sizing.clientHeight;
-		sW = this.model.get("w");
-		sH = this.model.get("h");
-		
-		// Unless both client dimensions are larger than the source's
-		// choose constraint direction by aspect ratio
-		if (sW < pcW && sH < pcH) {
-			cW = sW;
-			cH = sH;
-		} else if ((pcW/pcH) < (sW/sH)) {
-			cW = pcW;
-			cH = Math.round((cW / sW) * sH);
-		} else {
-			cH = pcH;
-			cW = Math.round((cH / sH) * sW);
-		}
-		
-		this.contentWidth = cW;
-		this.contentHeight = cH;
-		
-		content.style.left = cX + "px";
-		content.style.top = cY + "px";
-		content.style.width = cW + "px";
-		content.style.height = cH + "px";
-		
-		// sizing.style.maxWidth = (cW + (poW - pcW)) + "px";
-		// sizing.style.maxHeight = (cH + (poH - pcH)) + "px";
-		// sizing.style.maxWidth = content.offsetWidth + "px";
-		// sizing.style.maxHeight = content.offsetHeight + "px";
-		sizing.style.maxWidth = cW + "px";
-		sizing.style.maxHeight = cH + "px";
-		
-		return this;
-	},
-	
 	setEnabled: function(enabled) {
 		this.model.selected && this.toggleMediaPlayback(enabled);
-	},
-	
-	/* --------------------------- *
-	/* utils
-	/* --------------------------- */
-	
-	_getSelectionDistance: function() {
-		return Math.abs(this.model.collection.indexOf(this.model) - this.model.collection.selectedIndex);
 	},
 	
 	/* ---------------------------
@@ -295,97 +197,8 @@ module.exports = View.extend({
 			// avgColor.rgbString();
 			
 	},
-},{
+}/*,{
 	whenSelectionIsContiguous: whenSelectionIsContiguous,
 	whenSelectTransitionEnds: whenSelectTransitionEnds,
 	whenDefaultImageLoads: whenDefaultImageLoads, 
-});
-
-/*
-addSiblingListener: function (handler) {
-	var owner = this.model.collection;
-	var m = owner.indexOf(this.model);
-	var check = function (n) {
-		// Check indices for contiguity
-		return (m === n) || (m + 1 === n) || (m - 1 === n);
-	};
-	
-	var transitionCallback, transitionProp, transitionCancellable;
-	var handleRemove, handleSelect;
-
-	transitionProp = this.getPrefixedStyle("transform");
-	transitionCallback = function(exec) {
-		this.off("view:remove", handleRemove);
-		exec && handler.call(this);
-	};
-	handleRemove = function() {
-		transitionCancellable(false);
-	};
-	handleSelect = function(model) {
-		if (check(owner.selectedIndex)) {
-			this.stopListening(owner, "select:one select:none", handleSelect);
-			this.on("view:remove", handleRemove);
-			transitionCancellable = this.onTransitionEnd(this.el, transitionProp, transitionCallback, 400);
-		}
-	};
-	if (check(owner.selectedIndex)) {
-		handler.call(this);
-	} else {
-		this.listenTo(owner, "select:one select:none", handleSelect);
-	}
-},
-
-_onSiblingSelect: function() {
-	if (this.model.has("prefetched")) {
-		this.image.src = this.model.get("prefetched");
-		this.el.classList.remove("idle");
-		this.el.classList.add("done");
-	} else {
-		this.createDeferredImage(this.model.getImageUrl(), this.image).promise();
-	}
-},
-*/
-
-/* --------------------------- *
-/* default image promise
-/* --------------------------- */
-/*
-createDeferredImage: function(url, target) {
-	var o = loadImage(url, target, this);
-	o.always(function() {
-		this.placeholder.removeAttribute("data-progress");
-		this.off("view:remove", o.cancel);
-	}).then(
-		this._onLoadImageDone,
-		this._onLoadImageError, 
-		this._onLoadImageProgress
-	).then(function(url) {
-		// this.model.set({"prefetched": url});
-		o.isXhr && this.on("view:remove", function() {
-			URL.revokeObjectURL(url);
-		});
-	});
-	this.on("view:remove", o.cancel);
-	return o;
-},
-
-_onLoadImageProgress: function (progress) {
-	if (progress == "loadstart") {
-		this.el.classList.remove("idle");
-		this.el.classList.add("pending");
-	} else {
-		this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-	}
-},
-
-_onLoadImageDone: function (url) {
-	this.el.classList.remove("pending");
-	this.el.classList.add("done");
-},
-
-_onLoadImageError: function (err) {
-	console.error("VideoRenderer.onError: " + err.message, err.ev);
-	this.el.classList.remove("pending");
-	this.el.classList.add("error");
-},
-*/
+}*/);

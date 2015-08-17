@@ -29,9 +29,7 @@ var progressTemplate = require( "../template/CircleProgressMeter.svg.hbs" );
 module.exports = PlayableRenderer.extend({
 	
 	/** @type {string} */
-	className: function() { 
-		return PlayableRenderer.prototype.className + " sequence-renderer";
-	},
+	className: PlayableRenderer.prototype.className + " sequence-renderer",
 	/** @type {Function} */
 	template: viewTemplate,
 	

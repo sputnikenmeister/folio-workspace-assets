@@ -90,7 +90,7 @@
 // .browser
 // - - - - - - - - - - - - - - - - - -
 // $mock_browser_height: 2rem;
-$mock_browser_height: 31.5px;
+$mock_browser_height: 31px;
 
 .media-item.browser-safari,
 .media-item.browser-generic {
@@ -108,7 +108,7 @@ $mock_browser_height: 31.5px;
 			0px 0px 0px 1px rgba(0,0,0,0.15),
 			0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
 		// background-image: image-url("browser-generic.svg");
-		background-size: 100% $mock_browser_height;
+		background-size: 100% $mock_browser_height + 0.5px;
 		background-repeat: no-repeat;
 	}
 	// .content .default {}
