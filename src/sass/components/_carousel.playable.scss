@@ -6,7 +6,7 @@
 	// - - - - - - - - - - - - - - - - -
 	.content > .overlay {
 		position: absolute;
-		top: 0; left: 0;
+		// top: 0; left: 0;
 		width: 100%; height: 100%;
 	}
 	// .pending-user .overlay {}
@@ -22,15 +22,19 @@
 		font-size: 3rem;
 		line-height: 1;
 		text-align: center;
-		padding: 0.5em 0 0.5em 0.2em;
 		
 		display: block;
 		position: absolute;
 		box-sizing: border-box;
+		background-origin: border-box;
 		left: 50%; top: 50%;
-		height: 2em; width: 2em;
-		margin: -1em;
-		border-radius: 2em;
+		height: 2.5em; width: 2.5em;
+		margin: -1.25em;
+		padding-top: 0.75em;
+		padding-left: 0.2em;
+		border-radius: 2.5em;
+		// border: 0.1em solid currentColor;
+		// box-shadow: 0 0 0 2px currentColor;
 		
 		&, &.over-light {
 			color: rgb(0,0,0);
@@ -55,10 +59,14 @@
 	.content {
 		overflow: hidden;
 	}
+	video {
+		position: absolute;
+	}
 	.poster {
 		position: absolute;
-		top: 0; left: 0;
-		width: 100%; height: 100%;
+		// top: 0; left: 0;
+		width: 100%;
+		// height: 100%;
 		
 		// transition:
 		// 	opacity $duration $ease,
@@ -107,7 +115,10 @@
 // SequenceRenderer
 // - - - - - - - - - - - - - - - - - -
 .sequence-renderer {
-	// .content > .sequence {}
+	.content > .sequence {
+		position: absolute;
+		width: 100%; height: 100%;
+	}
 	// .content > .sequence > img {
 	.sequence > img {
 		position: absolute;
@@ -138,24 +149,36 @@
 	}
 	// .progress-meter
 	// - - - - - - - - - - - - - - - - -
+	.circle-progress-meter {
+		width: 24px;
+		height: 24px;
+		& > svg {
+			width: 100%;
+			height: 100%;
+			display: block;
+		}
+	}
 	.progress-meter {
 		text-align: center;
 		position: absolute;
-		top: 0px;
-		left: 100%;
-		margin-left: $hu/2;
+		
 		// #base {} #steps-track {} #steps {} #amount {}
 		// #step-label {} #pause-symbol{}
+		
 	}
 	&:not(.selected) .progress-meter {
 		display: none;
 	}
-	.progress-meter {
-		#step-label { visibility: visible; }
-		#pause { visibility: hidden; }
+	.progress-meter #pause {
+		// visibility: hidden; 
+		// display: none;
 	}
-	.pending-user .progress-meter {
-		#step-label { visibility: hidden; }
-		#pause { visibility: visible; }
-	}
+	// .pending-media .progress-meter {
+	// 	#step-label { visibility: visible; }
+	// 	#pause { visibility: hidden; }
+	// }
+	// .pending-user .progress-meter {
+	// 	#step-label { visibility: hidden; }
+	// 	#pause { visibility: visible; }
+	// }
 }

@@ -27,7 +27,9 @@ var SelectableCollection = Backbone.Collection.extend({
 	reset: function (models, options) {
 		this.deselect(this.initialOptions);
 		Backbone.Collection.prototype.reset.apply(this, arguments);
-		if (this.initialSelection == "first" && this.length) this.select(models[0], this.initialOptions);
+		if (this.initialSelection === "first" && this.length) {
+			this.select(this.at(0), this.initialOptions);
+		}
 	},
 	
 	select: function (newModel, options) {

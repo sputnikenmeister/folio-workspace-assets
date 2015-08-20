@@ -4,8 +4,6 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
 /** @type {Function} */
 var Color = require("color");
 
@@ -32,9 +30,6 @@ var getSharedCanvas =  function() {
  */
 module.exports = MediaRenderer.extend({
 	
-	// /** @type {Function} */
-	// template: require( "./PlayableRenderer.hbs" ),
-	
 	/** @type {string|Function} */
 	className: MediaRenderer.prototype.className + " playable-renderer",
 	
@@ -57,7 +52,12 @@ module.exports = MediaRenderer.extend({
 	// },
 	
 	setEnabled: function(enabled) {
-		this.model.selected && this.toggleMediaPlayback(enabled);
+		if (enabled) {
+			// by default, do nothing
+		} else {
+			// if selected, pause media
+			this.model.selected && this.togglePlayback(false);
+		}
 	},
 	
 	/* ---------------------------
@@ -80,13 +80,13 @@ module.exports = MediaRenderer.extend({
 	_toggleEvent: "mouseup",
 	
 	_onModelSelected: function() {
-		// this.toggleMediaPlayback(true);
+		// this.togglePlayback(true);
 		this.playToggle.addEventListener(this._toggleEvent, this._onToggleEvent, false);
 		this.listenTo(this, "view:remove", this._removeClickHandler);
 	},
 	
 	_onModelDeselected: function() {
-		this.toggleMediaPlayback(false);
+		this.togglePlayback(false);
 		this.playToggle.removeEventListener(this._toggleEvent, this._onToggleEvent, false);
 		this.stopListening(this, "view:remove", this._removeClickHandler);
 	},
@@ -102,7 +102,7 @@ module.exports = MediaRenderer.extend({
 		
 		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
 		if (!domev.defaultPrevented && !domev.button) {
-			this.toggleMediaPlayback();
+			this.togglePlayback();
 			domev.preventDefault();
 		}
 	},
@@ -111,7 +111,7 @@ module.exports = MediaRenderer.extend({
 	/* abstract methods
 	/* --------------------------- */
 	
-	toggleMediaPlayback: function(newPlayState) {
+	togglePlayback: function(playback) {
 		// abstract
 	},
 	
@@ -128,11 +128,21 @@ module.exports = MediaRenderer.extend({
 	updateOverlayBackground: function(targetEl, contentEl) {
 		// src/dest rects
 		// ------------------------------
+			
+		// var tRect = targetEl.getBoundingClientRect();
+		// var cRect = this.content.getBoundingClientRect();
+		// var tX = tRect.left - cRect.left,
+		// 	tY = tRect.top - cRect.top,
+		// 	tW = tRect.width,
+		// 	tH = tRect.height;
+		// 	
+		// console.log(tRect, cRect);
+			
 		var tX = targetEl.offsetLeft,
 			tY = targetEl.offsetTop + 1,
 			tW = targetEl.offsetWidth,
 			tH = targetEl.offsetHeight;
-			
+		
 		// rendered size
 		var rW = this.contentWidth;
 		var rH = this.contentHeight + 1;
@@ -142,6 +152,7 @@ module.exports = MediaRenderer.extend({
 		// source/rendered scale
 		var rsX = sW/rW;
 		var rsY = sH/rH;
+		
 		// Copy image to canvas
 		// ------------------------------
 		var canvas, context, imageData;
@@ -154,8 +165,14 @@ module.exports = MediaRenderer.extend({
 		canvas.height = tH;
 		context = canvas.getContext("2d");
 		context.clearRect(0, 0, tW, tH);
-		context.drawImage(contentEl, tX*rsX, tY*rsY, tW*rsX, tH*rsY, 0, 0, tW, tH);
+		context.drawImage(contentEl, 
+			tX*rsX-20, tY*rsY-20, tW*rsX+40, tH*rsY+40, // source rect
+			0, 0, tW, tH // destination rect
+		);
 		imageData = context.getImageData(0, 0, tW, tH);
+		
+		var avgColor = Color().rgb(getAverageRGB(imageData));
+		targetEl.classList.toggle("over-dark", !avgColor.dark());
 		
 		// Color, filter opts
 		// ------------------------------
@@ -163,23 +180,19 @@ module.exports = MediaRenderer.extend({
 		// this.fgColor || (this.fgColor = new Color(this.model.attrs()["color"]));
 		// this.bgColor || (this.bgColor = new Color(this.model.attrs()["background-color"]));
 		
-		// var opts, isFgDark;
-		// opts = {};
-		// isFgDark = this.fgColor.luminosity() < this.bgColor.luminosity();
+		// var opts = {};
+		// var isFgDark = this.fgColor.luminosity() < this.bgColor.luminosity();
 		// opts.x00 = isFgDark? this.fgColor.clone().lighten(0.5) : this.bgColor.clone().darken(0.5);
 		// opts.xFF = isFgDark? this.bgColor.clone().lighten(0.5) : this.fgColor.clone().darken(0.5);
 		
 		// opts.radius = 20;
 		// stackBlurMono(imageData, opts);
-		// opts.radius = 50;
-		// stackBlurRGB(imageData, opts);
 		// duotone(imageData, opts);
 		
+		// stackBlurRGB(imageData, { radius: 20 });
+		// 
 		// context.putImageData(imageData, 0, 0);
 		// targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
-		
-		var avgColor = Color().rgb(getAverageRGB(imageData));
-		targetEl.classList.toggle("over-dark", !avgColor.dark());
 		
 		// var fgContrast, bgContrast;
 		// fgContrast = avgColor.contrast(this.fgColor);
@@ -196,9 +209,6 @@ module.exports = MediaRenderer.extend({
 		// 		"rgb(255,255,255)" : "rgb(0,0,0)");
 			// avgColor.rgbString();
 			
+		console.log(this.cid, this.model.cid, "PlayableRenderer.updateOverlayBackground");
 	},
-}/*,{
-	whenSelectionIsContiguous: whenSelectionIsContiguous,
-	whenSelectTransitionEnds: whenSelectTransitionEnds,
-	whenDefaultImageLoads: whenDefaultImageLoads, 
-}*/);
+});

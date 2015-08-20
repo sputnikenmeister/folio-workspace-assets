@@ -1,7 +1,7 @@
 /**
- * @module app/view/base/View
- */
- 
+* @module app/view/base/View
+*/
+
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 /** @type {module:underscore} */
@@ -31,10 +31,12 @@ var View = Backbone.View.extend({
 		if (options && options.className && this.className) {
 			options.className += " " + _.result(this, "className");
 		}
-		if ("transitionend" !== transitionEnd) for (var selector in this.events) {
-			if (this.events.hasOwnProperty(selector) && /^transitionend(\s.+)?$/i.test(selector)) {
-				this.events[selector.toLowerCase().replace("transitionend", transitionEnd)] = this.events[selector];
-				delete this.events[selector];
+		if ("transitionend" !== transitionEnd) {
+			for (var selector in this.events) {
+				if (this.events.hasOwnProperty(selector) && /^transitionend(\s.+)?$/i.test(selector)) {
+					this.events[selector.toLowerCase().replace("transitionend", transitionEnd)] = this.events[selector];
+					delete this.events[selector];
+				}
 			}
 		}
 		Backbone.View.apply(this, arguments);
@@ -119,11 +121,31 @@ var View = Backbone.View.extend({
 	cancelAnimationFrame: function(id) {
 		return window.cancelAnimationFrame(id);
 	},
-	
 },{
+	// extend: function(protoProps, staticProps) {
+	// 	var child = Backbone.View.extend.apply(this, arguments);
+	// 	var childClassName = child.prototype.className;
+	// 	var parentClassName = this.prototype.className;
+	// 	
+	// 	if (parentClassName && childClassName) {
+	// 		if (_.isFunction(childClassName) || _.isFunction(parentClassName)) {
+	// 			child.prototype.className = function () {
+	// 				return _.result(this, parentClassName) + " " + _.result(this, childClassName);
+	// 			};
+	// 		} else {
+	// 			child.prototype.className = parentClassName + " " + childClassName;
+	// 		}
+	// 		console.log("extend className: ", parentClassName, "|", childClassName);
+	// 	}
+	// 	
+	// 	return child;
+	// },
+	
 	findByElement: function(element) {
 		return _viewsByCid[element.cid];
 	},
+	
+	ViewError: require("./ViewError"),
 });
 
 module.exports = View;

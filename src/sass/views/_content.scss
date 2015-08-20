@@ -81,17 +81,17 @@
 	// height: 100%;
 	// height: calc(100% - 3rem);
 	bottom: 0;
-	padding-top: 1.5rem;
+	padding-top: 4.5rem;
 	padding-bottom: 3rem;//1.5rem;
 	.carousel-item {
 		// padding-top: 1.5rem;
 		// padding-bottom: 1.5rem;
-		height: calc(100% - 4.5rem);//3rem);
+		height: calc(100% - 7.5rem);//3rem);
 	}
 	.empty-item {
 		overflow: hidden;
 		height: auto;
-		max-height: calc(100% - 4.5rem);
+		max-height: calc(100% - 7.5rem);
 		.content p {
 			// height: 100%;
 			// overflow: hidden;

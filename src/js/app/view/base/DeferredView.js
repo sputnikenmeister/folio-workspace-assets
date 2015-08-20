@@ -17,7 +17,8 @@ var _queuedViewsIndex = {};
 var _isExecuting = false;
 
 var _callQueuedAF = function() {
-	console.log("View._callQueuedAF (%d items): %s", _queue.length, Object.keys(_queuedViewsIndex).join(", "));
+	console.log("DeferredView._callQueuedAF (%d items): %s", _queue.length - 1,
+		Object.keys(_queuedViewsIndex).join(", "));
 	var queue = _queue;
 	_queue = [];
 	_queueRafId = null;
@@ -29,7 +30,7 @@ var _callQueuedAF = function() {
 	_isExecuting = false;
 };
 var requestQueuedAF = function(view) {
-	_isExecuting && console.warn("View.requestQueuedAF", "queue running", view.cid);
+	_isExecuting && console.warn("DeferredView.requestQueuedAF", "queue running", view.cid);
 	var viewIndex = _queuedViewsIndex[view.cid] || (_queuedViewsIndex[view.cid] = _queue.length);
 	_queue[viewIndex] = view._applyRender;
 	if (_queueRafId === null) {
@@ -37,7 +38,7 @@ var requestQueuedAF = function(view) {
 	}
 };
 var cancelQueuedAF = function(view) {
-	_isExecuting && console.warn("View.cancelQueuedAF", "queue running", view.cid);
+	_isExecuting && console.warn("DeferredView.cancelQueuedAF", "queue running", view.cid);
 	if (_queuedViewsIndex.hasOwnProperty(view.cid)) {
 		_queue[_queuedViewsIndex[view.cid]] = null;
 	}

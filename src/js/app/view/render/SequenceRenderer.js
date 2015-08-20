@@ -6,32 +6,66 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {module:backbone.babysitter} */
+var Container = require("backbone.babysitter");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
-/** @type {module:app/model/SelectableCollection} */
-var SelectableCollection = require("../../model/SelectableCollection");
-
-/** @type {module:app/view/base/ViewError} */
-var ViewError = require("../base/ViewError");
 /** @type {module:app/view/render/PlayableRenderer} */
 var PlayableRenderer = require("./PlayableRenderer");
+/** @type {module:app/model/SelectableCollection} */
+var SelectableCollection = require("../../model/SelectableCollection");
+/** @type {module:app/view/component/CircleProgressMeter} */
+var ProgressMeter = require("../component/CircleProgressMeter");
 
 /** @type {Function} */
-var viewTemplate = require( "./SequenceRenderer.hbs" );
+var transitionEnd = require("../../../utils/event/transitionEnd");
+/** @type {Function} */
+var _whenImageLoads = require("../promise/_whenImageLoads");
+/** @type {module:utils/Timer} */
+var Timer = require("../../../utils/Timer");
+
 /** @type {Function} */
 var progressTemplate = require( "../template/CircleProgressMeter.svg.hbs" );
 
+var SequenceImageCollection = SelectableCollection.extend({
+	model: Backbone.Model
+});
+
+var SequenceImageRenderer = Backbone.View.extend({
+	/** @type {string} */
+	tagName: "img",
+	/** @type {Object|Function} */
+	attributes: function() {
+		return { src: Globals.MEDIA_DIR + "/" + this.model.get("src") };
+	},
+	/** @override */
+	initialize: function (options) {
+		// this.el.classList.toggle("current", this.model.hasOwnProperty("selected"));
+		this.listenTo(this.model, {
+			"selected": function () {
+				this.el.classList.add("current");
+			},
+			"deselected": function () {
+				this.el.classList.remove("current");
+			}
+		});
+		
+		// this.listenTo(this.model, "selected deselected", function() {
+		// 	this.el.classList.toggle("current", this.model.hasOwnProperty("selected"));
+		// });
+	},
+});
 /**
  * @constructor
  * @type {module:app/view/render/SequenceRenderer}
  */
 module.exports = PlayableRenderer.extend({
 	
+	/** @type {Function} */
+	template: require("./SequenceRenderer.hbs"),
 	/** @type {string} */
 	className: PlayableRenderer.prototype.className + " sequence-renderer",
-	/** @type {Function} */
-	template: viewTemplate,
 	
 	/** @override */
 	initialize: function (opts) {
@@ -44,20 +78,15 @@ module.exports = PlayableRenderer.extend({
 			"_cancelSequenceStep"
 		);
 		
-		// Prepare sequence model
-		var srcMapFn = function(item) {
-			return Globals.MEDIA_DIR + "/" + item.src;
-			// return { src: Globals.MEDIA_DIR + "/" + item.src };
-		};
-		var srcVal = this.model.get("srcset").map(srcMapFn);
-		srcVal.unshift(srcMapFn(this.model.attributes));
+		var srcVal = this.model.get("srcset").concat();
+		srcVal.unshift(_.pick(this.model.attributes, ["src"]));
 		
-		this._sequenceIdx = -1;
-		this._sequenceEls = [];
-		this._sequenceSrc = srcVal;
-		// this.sources = new SelectableCollection(srcVal);
+		this.sources = new SequenceImageCollection(srcVal, {initialSelection: "first"});
+		this.children = new Container();
+		
 		
 		this.createChildren();
+		this.initializeSequence();
 		this.initializeAsync();
 	},
 	
@@ -76,70 +105,35 @@ module.exports = PlayableRenderer.extend({
 		o = this.content = o.querySelector(".content");
 		this.sequence = o.querySelector(".sequence");
 		this.image = o.querySelector("img.current");
-		// this.overlay = o.querySelector(".overlay");
+		this.overlay = o.querySelector(".overlay");
 		this.overlayLabel = o.querySelector(".overlay .play-button"),
 		
-		this._isSequenceRunning = false;
-		this._sequenceIntervalId = -1;
-		this._sequenceInterval = 2500;
-		this._sequenceStepDelay = 200;
-		this._sequenceStepDur = (this._sequenceInterval - this._sequenceStepDelay - 1);
-		
-		this.progressMeter = this.createProgressMeter();
+		this.defaultImage = this.image;
 	},
 	
 	/** @return {this} */
 	render: function () {
-		var sW, sH; // source dimensions
-		var pcW, pcH; // measured values
-		var cX, cY, cW, cH; // computed values
-		
 		var content = this.content;
 		var sizing = this.placeholder;
 		
-		sizing.style.maxWidth = "";
-		sizing.style.maxHeight = "";
-		
-		cX = sizing.offsetLeft + sizing.clientLeft;
-		cY = sizing.offsetTop + sizing.clientTop;
-		pcW = sizing.clientWidth;
-		pcH = sizing.clientHeight;
-		
-		sW = this.model.get("w");
-		sH = this.model.get("h");
-		
-		// Unless both client dimensions are larger than the source's
-		// choose constraint direction by aspect ratio
-		if (sW < pcW && sH < pcH) {
-			cW = sW;
-			cH = sH;
-		} else if ((pcW/pcH) < (sW/sH)) {
-			cW = pcW;
-			cH = Math.round((cW / sW) * sH);
-		} else {
-			cH = pcH;
-			cW = Math.round((cH / sH) * sW);
-		}
-		
-		this.contentWidth = cW;
-		this.contentHeight = cH;
+		this.measure(sizing);
 		
 		// NOTE: image elements are given 100% w/h in CSS (.sequence-renderer .content img);
 		// actual dimensions are set to the parent element (.sequence-renderer .content)
 		// this.image.setAttribute("width", cW);
 		// this.image.setAttribute("height", cH);
 		
-		content.style.left = cX + "px";
-		content.style.top = cY + "px";
-		content.style.width = cW + "px";
-		content.style.height = cH + "px";
+		content.style.left = this.contentX + "px";
+		content.style.top = this.contentY + "px";
+		this.overlay.style.width = this.sequence.style.width = content.style.width = this.contentWidth + "px";
+		this.overlay.style.height = this.sequence.style.height = content.style.height = this.contentHeight + "px";
 		
 		// sizing.style.maxWidth = (cW + (poW - pcW)) + "px";
 		// sizing.style.maxHeight = (cH + (poH - pcH)) + "px";
-		sizing.style.maxWidth = cW + "px";
-		sizing.style.maxHeight = cH + "px";
-		// sizing.style.maxWidth = content.offsetWidth + "px";
-		// sizing.style.maxHeight = content.offsetHeight + "px";
+		// sizing.style.maxWidth = cW + "px";
+		// sizing.style.maxHeight = cH + "px";
+		sizing.style.maxWidth = content.offsetWidth + "px";
+		sizing.style.maxHeight = content.offsetHeight + "px";
 		
 		return this;
 	},
@@ -152,12 +146,18 @@ module.exports = PlayableRenderer.extend({
 		PlayableRenderer.whenSelectionIsContiguous(this)
 			.then(PlayableRenderer.whenSelectTransitionEnds)
 			.then(PlayableRenderer.whenDefaultImageLoads)
-			.then(function(view) {
+			.then(
+				function(view) {
 					view.createSequenceChildren();
 					view.addSelectionListeners();
+					try {
+						view.updateOverlayBackground(view.overlayLabel, view.defaultImage);
+					} catch (err) {
+						return Promise.reject(err);
+					}
 				})
 			.catch(function(err) {
-					if (err instanceof ViewError) {
+					if (err instanceof PlayableRenderer.ViewError) {
 						console.log(err.view.cid, err.view.model.cid, "SequenceRenderer: " + err.message);
 					} else {
 						console.error("SequenceRenderer promise error", err);
@@ -171,16 +171,15 @@ module.exports = PlayableRenderer.extend({
 	
 	/** @override */
 	_onModelSelected: function() {
-		this.toggleMediaPlayback(true);
+		// this.togglePlayback(true);
 		return PlayableRenderer.prototype._onModelSelected.apply(this, arguments);
 		// this.content.addEventListener("click", this._onContentClick, false);
 		// this.listenTo(this, "view:remove", this._removeClickHandler);
 	},
 	
 	/** @override */
-	toggleMediaPlayback: function(newPlayState) {
-		if (!this.isSequenceReady() ||
-				(_.isBoolean(newPlayState) && newPlayState === this.isSequenceRunning())) {
+	togglePlayback: function(newPlayState) {
+		if (_.isBoolean(newPlayState) && newPlayState === this.isSequenceRunning()) {
 			return; // requested state is current, do nothing
 		} else {
 			newPlayState = !this.isSequenceRunning();
@@ -196,16 +195,35 @@ module.exports = PlayableRenderer.extend({
 	/* sequence private
 	/* --------------------------- */
 	
-	isSequenceReady: function() {
-		return this._sequenceIdx != -1;
-	},
-	
-	getNextSequenceIndex: function () {
-		var nextIdx = this._sequenceIdx + 1;
-		if (nextIdx >= this._sequenceSrc.length) {
-			nextIdx = 0;
-		}
-		return nextIdx;
+	initializeSequence: function() {
+		this._isSequenceRunning = false;
+		this._sequenceInterval = 2500;
+		this.timer = new Timer();
+		this.listenTo(this, "view:remove", function () {
+			this.timer.stop();
+		});
+		
+		this.listenTo(this.timer, {
+			"start": function() {
+				var delta = this.timer.getDuration() / this._sequenceInterval;
+				this.updateProgress(
+					this.sources.selectedIndex + (1 - delta),
+					delta, this.timer.getDuration());
+			},
+			"pause": function () {
+				var delta = this.timer.getDuration() / this._sequenceInterval;
+				this.updateProgress(
+					this.sources.selectedIndex + (1 - delta),
+					0, 0);
+			},
+			"stop": function () {
+				// this.updateProgress(this.sources.selectedIndex, 0, true);
+			},
+			// "end": function () {}
+		});
+		this.listenTo(this.sources, "select:one", function () {
+			this.updateProgressLabel(this.sources.selectedIndex);
+		});
 	},
 	
 	isSequenceRunning: function() {
@@ -215,74 +233,87 @@ module.exports = PlayableRenderer.extend({
 	startSequence: function() {
 		if (!this._isSequenceRunning) {
 			this._isSequenceRunning = true;
-			this.listenTo(this, "view:remove", this.stopSequence);
-			this.setMediaState("media");
 			
-			this._startSequenceStep();
-			console.log(this.cid, "SequenceRenderer.startSequence", this._sequenceIntervalId);
+			this.setMediaState("media");
+			if (this.timer.getStatus() === "paused") {
+				this.timer.start();
+			} else {
+				this._startSequenceStep();
+			}
+			
+			console.log("(%s) SequenceRenderer.startSequence", this.cid);
 		}
 	},
 	
 	stopSequence: function() {
 		if (this._isSequenceRunning) {
 			this._isSequenceRunning = false;
-			this.stopListening(this, "view:remove", this.stopSequence);
-			this.model.selected && this.updateOverlayBackground(
-				this.overlayLabel,
-				this.sequence.querySelector(".current")
-			);
 			
-			this._cancelSequenceStep();
+			if (this.model.selected) {
+				this.updateOverlayBackground(
+					this.overlayLabel,
+					this.children.findByModel(this.sources.selected).el
+				);
+			}
+			// this.updateProgress(this.sources.selectedIndex);
+			// this._cancelSequenceStep();
+			if (this.timer.getStatus() === "started") {
+				this.timer.pause();
+			}
 			this.setMediaState("user");
 			
-			console.log(this.cid, "SequenceRenderer.stopSequence", this._sequenceIntervalId);
+			console.log("(%s) SequenceRenderer.stopSequence", this.cid);
 		}
 	},
 	
 	_cancelSequenceStep: function () {
-		this.updateProgress(this._sequenceIdx);
-		this._sequenceIntervalId && window.clearTimeout(this._sequenceIntervalId) || (this._sequenceIntervalId = -1);
+		// if (this.timer.getStatus() === "started") {
+		// 	this.timer.stop();
+		// }
 	},
 	
-	_startSequenceStep: function() {
+	_startSequenceStep: function () {
 		var view = this;
-		return new Promise(function(resolve, reject) {
-			var nextEl = view._sequenceEls[view.getNextSequenceIndex()];
-			view._sequenceIntervalId = window.setTimeout(function() {
-				view._sequenceIntervalId = -1;
-				if (nextEl.complete) {
-					console.log("resolved (sync)", nextEl.src);
-					resolve(view);
-				} else {
-					resolve(new Promise(function(resolve, reject) {
-						nextEl.onload = function(ev) {
-							console.log("resolved (async)", nextEl.src);
-							resolve(view);
-						};
-						nextEl.onerror = function(ev) {
-							console.log("rejected", ev);
-							reject(new Error("Failed to load image from " + nextEl.src));
-						};
-					}));
-				}
-			}, view._sequenceInterval);
-			view.updateProgress(view._sequenceIdx, view._sequenceIdx + 1);
-		}).then(function () {
-			// view._sequenceIntervalId = -1;
-			if (view._isSequenceRunning) {
-				console.log("SequenceRenderer.applySequenceStep",
-						view._sequenceIdx, view.getNextSequenceIndex());
-						
-				view._sequenceEls[view._sequenceIdx].className = "";
-				view._sequenceIdx = view.getNextSequenceIndex();
-				
-				// view.image = view._sequenceEls[view._sequenceIdx];
-				view._sequenceEls[view._sequenceIdx].className = "current";
-				view._startSequenceStep();
-			} else {
-				console.log("SequenceRenderer.applySequenceStep", view._sequenceIdx, "[sequence not running]");
+		var logSeq = function () {
+			console.log("(%s) SequenceRenderer::step(%i)::%s[%i] %s",
+				view.cid, view.sources.selectedIndex, view.timer.getStatus(), view.timer.getDuration(),
+				Array.prototype.join.call(arguments, " "));
+		};
+		
+		return new Promise(
+			function(resolve, reject) {
+				// view.updateProgress(view.sources.selectedIndex, view.sources.selectedIndex + 1);
+				view.timer.start(view._sequenceInterval)
+					.on("stop", reject).on("end", resolve);
+				logSeq("promise created");
 			}
-		});
+		).then(
+			function () {
+				logSeq("resolved:1 (timer ended, checking next image)", view.timer.getStatus(), view.timer.getDuration());
+				var nextSource = view.sources.followingOrFirst();
+				var nextView = view.children.findByModel(nextSource);
+				
+				return _whenImageLoads(nextView.el)
+					.then(
+						function() {
+							if (view._isSequenceRunning) {
+								logSeq("resolved:2 (calling next step)");
+								// NOTE: step increase done here
+								view.sources.select(view.sources.followingOrFirst());
+								view._startSequenceStep();
+							} else {
+								logSeq("resolved:2 (sequence not running)");
+							}
+						}
+					);
+			},
+			function (errmsg) {
+				logSeq("rejected:1 (timer stopped): ", view.timer.getStatus(), view.timer.getDuration());
+				// logSeq("rejected:1 (timeout cleared): ", errmsg);
+				// window.clearTimeout(timeoutId);
+				// timeoutId = null;
+			}
+		);
 	},
 	
 	/* --------------------------- *
@@ -290,18 +321,32 @@ module.exports = PlayableRenderer.extend({
 	/* --------------------------- */
 		
 	createSequenceChildren: function() {
-		// add first image, set it as selected idx
-		this._sequenceEls[0] = this.image;
-		this._sequenceIdx = 0;
-		
 		var buffer = document.createDocumentFragment();
-		for (var i = 1, img; i < this._sequenceSrc.length; i++) {
-			img = this._sequenceEls[i] = this.image.cloneNode();
-			img.className = "";
-			img.src = this._sequenceSrc[i];
-			buffer.appendChild(img);
-		}
+		
+		// add default image as renderer (already in DOM)
+		this.children.add(new SequenceImageRenderer({
+			el: this.el.querySelector("img.default"),
+			model: this.sources.selected
+		}));
+		
+		this.sources.each(function (item, index, arr) {
+			if (!item.selected) {
+				var view = new SequenceImageRenderer({ model: item });
+				this.children.add(view);
+				buffer.appendChild(view.render().el);
+			}
+		}, this);
 		this.sequence.appendChild(buffer);
+		
+		this.progressMeter = this.createProgressMeter();
+		
+		// for (var i = 1, img; i < this._sequenceSrc.length; i++) {
+		// 	img = this._sequenceEls[i] = this.image.cloneNode();
+		// 	img.className = "";
+		// 	img.src = this._sequenceSrc[i];
+		// 	buffer.appendChild(img);
+		// }
+		// this.sequence.appendChild(buffer);
 		// From PlayableRenderer
 		// this.addSelectionListeners();
 	},
@@ -309,10 +354,71 @@ module.exports = PlayableRenderer.extend({
 	/* --------------------------- *
 	/* progress meter
 	/* --------------------------- */
-	
 	createProgressMeter: function() {
+		var view = new ProgressMeter({
+			model: new ProgressMeter.Model({
+				value: 0,
+				total: this.sources.length
+			})
+		});
+		this.content.appendChild(view.render().el);
+		return view;
+	},
+	
+	updateProgress: function(valueFrom, valueDelta, duration) {
+		var valueTo = valueFrom + valueDelta;
+		var shape = this.progressMeter.amountShape;
+		var model = this.progressMeter.model;
+		var transitionProp = this.getPrefixedProperty("transition");
+		
+		// var cid = this.cid;
+		// console.log("-\n(%s) SequenceRenderer.updateProgress(%s)", cid,
+		// 	Array.prototype.join.call(arguments,", "));
+		// function logtx() {
+		// 	console.log("(%s) SequenceRenderer.updateProgress() %s " +
+		// 			"\n\tfrom:%i delta: %i value: %i prop: %s tx: %s",
+		// 		cid, Array.prototype.join.call(arguments,", "),
+		// 		
+		// 		valueFrom, valueDelta, model.get("value"),
+		// 		shape.style.strokeDashoffset,
+		// 		shape.style[transitionProp]
+		// 	);
+		// }
+		
+		if (duration > 0) {
+			// if (prevValue > valueTo) {
+			if (valueFrom === 0) {
+				// set to 0, then animate
+				var transitionFn = function(ev) {
+					shape.removeEventListener(transitionEnd, transitionFn, false);
+					shape.style[transitionProp] = "stroke-dashoffset " + duration + "ms linear 1ms";
+					model.set("value", valueTo);
+					// logtx("passthrough-zero-2");
+				};
+				shape.style[transitionProp] = "stroke-dashoffset 1ms linear 1ms";
+				shape.addEventListener(transitionEnd, transitionFn, false);
+				model.set("value", 0.00001);
+				// logtx("passthrough-zero-1");
+			} else {
+				// animate
+				shape.style[transitionProp] = "stroke-dashoffset " + duration + "ms linear 1ms";
+				model.set("value", valueTo);
+				// logtx("animated");
+			}
+		} else {
+			// update immediately
+			shape.style[transitionProp] = "stroke-dashoffset 1ms linear 1ms";
+			model.set("value", valueTo);
+			// logtx("immediate");
+		}
+	},
+	
+	updateProgressLabel: function(value) {
+		this.progressMeter.labelEl.textContent = (value | 0) + 1;
+	},
+	
+	createProgressMeter2: function() {
 		var p, el, shape;
-		var stepsNum = this._sequenceSrc.length;
 		
 		// TODO: all this should be static
 		// sw: step mark width in px
@@ -340,29 +446,36 @@ module.exports = PlayableRenderer.extend({
 		// rotate CCW ( 90 + half a step mark, in degrees ) so that:
 		// the arc starts from the top and step gaps appear centered
 		p.sr = ((p.sw / 2) / p.r1) * (180/Math.PI) - 90;
-		// store params for updates
-		this.amountShapeParams = p;
 		
 		// pass params to svg template, insert
 		this.content.insertAdjacentHTML("beforeend", progressTemplate(p));
 		// get new htmlelement
 		el = this.content.lastElementChild;
+		// not used in template
+		p.stepsNum = this.sources.length;
 		
-		shape = el.querySelector("#steps");
-		shape.style.strokeDasharray = [(p.c2 / stepsNum) - p.sw, p.sw];
+		// store params for updates
+		this._progress = {};
+		this._progress.params = p;
+		this._progress.updateDelay = 200;
+		
+		this._progress.el = el;
+		this._progress.labelEl = el.querySelector("#step-label");
+		this._progress.amountShape = el.querySelector("#amount");
+		this._progress.stepsShape = el.querySelector("#steps");
+		
+		shape = this._progress.stepsShape;
+		shape.style.strokeDasharray = [(p.c2 / p.stepsNum) - p.sw, p.sw];
 		shape.style.strokeOpacity = 0.3;
-		// shape.style.strokeDasharray = [p.sw, (p.c2 / stepsNum) - p.sw];
+		// shape.style.strokeDasharray = [p.sw, (p.c2 / p.stepsNum) - p.sw];
 		// shape.style.strokeDashoffset = p.sw;
 		
-		shape = el.querySelector("#amount");
+		shape = this._progress.amountShape;
 		shape.style.strokeDasharray = [p.c1 - p.sw, p.c1 + p.sw];
 		shape.style.strokeDashoffset = p.c1;
-		this.amountShape = shape;
 		
 		// shape = el.querySelector("#stepsnum-label");
-		// shape.textContent = stepsNum;
-		
-		this.progressLabel = el.querySelector("#step-label");
+		// shape.textContent = p.stepsNum;
 		
 		// this.amountShape.addEventListener(transitionEndEvent, function(ev) {
 		// 	console.log(ev.propertyName, ev);
@@ -373,39 +486,48 @@ module.exports = PlayableRenderer.extend({
 		return el;
 	},
 	
-	updateProgress: function(stepFrom, stepTo) {
-		console.log("SequenceRenderer.updateProgress", Array.prototype.join.call(arguments,","));
-		var s = this.amountShape.style;
-		var p = this.amountShapeParams;
-		var stepsNum = this._sequenceSrc.length;
-		var strokeTx = "stroke-dashoffset " + (this._sequenceStepDur / 1000) + "s linear 0s";
+	updateProgressLabel2: function(step) {
+		// this._progress.labelEl.textContent = this.sources.selectedIndex + 1;
+		this._progress.labelEl.textContent = (step | 0) + 1;
+	},
+	
+	updateProgress2: function(valueFrom, valueDelta, duration) {
+		console.log("(%s) SequenceRenderer.updateProgress(%s)", this.cid,
+			Array.prototype.join.call(arguments,","));
+		
+		var s = this._progress.amountShape.style;
+		var p = this._progress.params;
+		var valueTo = valueFrom + valueDelta;
+		
+		
+		var strokeTxDur = Math.max(0, (duration - this._progress.updateDelay - 1) / 1000);
+		var strokeTx = "stroke-dashoffset " + strokeTxDur + "s linear 0s";
 		
 		var updateImmediately = function () {
 			s.transition = "none 0s";//stroke-dashoffset 0s linear 0s";
-			s.strokeDashoffset = (1 - stepFrom/stepsNum) * p.c1;
+			s.strokeDashoffset = (1 - valueFrom/p.stepsNum) * p.c1;
 		};
 		var updateAnimated = function () {
 			s.transition = strokeTx;
-			s.strokeDashoffset = (1 - stepTo/stepsNum) * p.c1;
+			s.strokeDashoffset = (1 - valueTo/p.stepsNum) * p.c1;
 		};
 		
-		// updateImmediately();
-		// if (stepTo && stepTo > stepFrom) {
-		// 	// window.requestAnimationFrame(updateAnimated);
-		// 	// window.setTimeout(updateAnimated, this._sequenceStepDelay / 2);
-		// 	window.setTimeout(updateAnimated, 1);
-		// }
-		if (stepTo === void 0) {
-			updateImmediately();
-		} else if (stepFrom === 0) {
-			updateImmediately();
-			window.setTimeout(updateAnimated, this._sequenceStepDelay / 2);
-			// window.setTimeout(updateAnimated, 1);
-		} else {
-			updateAnimated();
+		if (this._progress.updateId) {
+			window.clearTimeout(this._progress.updateId);
+			delete this._progress.updateId;
 		}
 		
-		this.progressLabel.textContent = stepFrom + 1;
+		if (strokeTxDur === 0) {
+			updateImmediately();
+		} else {
+			if (valueFrom > 0) {
+				updateAnimated();
+			} else {
+				updateImmediately();
+				this._progress.updateId = window.setTimeout(updateAnimated, this._progress.updateDelay / 2);
+			}
+		}
+		
+		// this._progress.labelEl.textContent = (valueFrom | 0) + 1;
 	},
-	
 });

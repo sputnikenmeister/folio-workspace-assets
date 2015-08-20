@@ -1,5 +1,10 @@
 /**
 * @module app/view/render/VideoRenderer
+*
+* @see https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Using_HTML5_audio_and_video
+* @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video
+* @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement
+* @see https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Media_events
 */
 
 /** @type {module:underscore} */
@@ -11,25 +16,10 @@ var Color = require("color");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
-/** @type {module:app/view/base/ViewError} */
-var ViewError = require("../base/ViewError");
 /** @type {module:app/view/render/PlayableRenderer} */
 var PlayableRenderer = require("./PlayableRenderer");
 
-/** @type {Function} */
-var viewTemplate = require("./VideoRenderer.hbs");
-
-// var stackBlurRGB = require("../../../utils/canvas//bitmap/stackBlurRGB");
-// var stackBlurMono = require("../../../utils/canvas//bitmap/stackBlurMono");
-// var duotone = require("../../../utils/canvas//bitmap/duotone");
-
-/*
-https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Using_HTML5_audio_and_video
-https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video
-https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement
-https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Media_events
-*/
-
+/** @type {Array} */
 var mediaEvents = [
 	"loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled",
 	"loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting",
@@ -46,7 +36,7 @@ module.exports = PlayableRenderer.extend({
 	/** @type {string} */
 	className: PlayableRenderer.prototype.className + " video-renderer",
 	/** @type {Function} */
-	template: viewTemplate,
+	template: require("./VideoRenderer.hbs"),
 	
 	/** @override */
 	initialize: function (opts) {
@@ -121,11 +111,16 @@ module.exports = PlayableRenderer.extend({
 		
 		content.style.left = cX + "px";
 		content.style.top = cY + "px";
-		content.style.width = cW + "px";
-		content.style.height = cH + "px";
+		// content.style.width = cW + "px";
+		// content.style.height = cH + "px";
 		
-		sizing.style.maxWidth = cW + "px";
-		sizing.style.maxHeight = cH + "px";
+		this.poster.style.width = this.overlay.style.width = content.style.width = this.contentWidth + "px";
+		this.poster.style.height = this.overlay.style.height = content.style.height = this.contentHeight + "px";
+		
+		// sizing.style.maxWidth = cW + "px";
+		// sizing.style.maxHeight = cH + "px";
+		sizing.style.maxWidth = content.offsetWidth + "px";
+		sizing.style.maxHeight = content.offsetHeight + "px";
 		
 		return this;
 	},
@@ -156,7 +151,7 @@ module.exports = PlayableRenderer.extend({
 				})
 			.catch(
 				function(err) {
-					if (err instanceof ViewError) {
+					if (err instanceof PlayableRenderer.ViewError) {
 						console.log(err.view.cid, err.view.model.cid, "VideoRenderer: " + err.message);
 					} else {
 						console.error("VideoRenderer promise error", err);
@@ -182,10 +177,10 @@ module.exports = PlayableRenderer.extend({
 		// 	}
 		// }
 		!enabled && !this.video.paused && this.video.pause();
-		// this.toggleMediaPlayback(enabled);
+		// this.togglePlayback(enabled);
 	},
 	
-	toggleMediaPlayback: function(newPlayState) {
+	togglePlayback: function(newPlayState) {
 		// is playback changing?
 		if (_.isBoolean(newPlayState) && newPlayState !== this.video.paused) {
 			return; // requested state is current, do nothing

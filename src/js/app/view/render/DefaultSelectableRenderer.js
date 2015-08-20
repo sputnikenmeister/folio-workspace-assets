@@ -2,12 +2,6 @@
  * @module app/view/render/DefaultSelectableRenderer
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
-/** @type {string} */
-var viewTemplate = require("./DefaultSelectableRenderer.hbs");
 /** @type {module:app/view/component/ClickableRenderer} */
 var ClickableRenderer = require("./ClickableRenderer");
 
@@ -22,21 +16,21 @@ var DefaultSelectableRenderer = ClickableRenderer.extend({
 	/** @override */
 	className: "list-item",
 	/** @override */
-	template: viewTemplate,
+	template: require("./DefaultSelectableRenderer.hbs"),
 	
 	initialize: function (options) {
-		this.listenTo(this.model, "selected deselected", this.renderClassList);
-		this.renderClassList();
+		this.listenTo(this.model, "selected deselected", this._renderClassList);
+		this._renderClassList();
 	},
 	
 	/** @override */
 	render: function () {
 		this.el.innerHTML = this.template(this.model.toJSON());
-		this.renderClassList();
+		this._renderClassList();
 		return this;
 	},
 	
-	renderClassList: function () {
+	_renderClassList: function () {
 		this.el.classList.toggle("selected", this.model.selected);
 	},
 });

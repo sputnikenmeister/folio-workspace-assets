@@ -5,20 +5,10 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {module:app/model/item/MediaItem} */
-var MediaItem = require("../../model/item/MediaItem");
-
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
-/** @type {module:app/view/base/ViewError} */
-var ViewError = require("../base/ViewError");
-
-/** @type {module:app/view/promise/whenSelectTransitionEnds} */
-var whenSelectTransitionEnds = require("../promise/whenSelectTransitionEnds");
-/** @type {module:app/view/promise/whenSelectionIsContiguous} */
-var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
-/** @type {module:app/view/promise/whenDefaultImageLoads} */
-var whenDefaultImageLoads = require("../promise/whenDefaultImageLoads");
+/** @type {module:app/model/item/MediaItem} */
+var MediaItem = require("../../model/item/MediaItem");
 
 /**
  * @constructor
@@ -54,14 +44,13 @@ module.exports = View.extend({
 	// },
 	
 	/** @return {this} */
-	render: function () {
+	measure: function (sizing) {
 		var sW, sH; // source dimensions
 		var pcW, pcH; // measured values
 		var cX, cY, cW, cH; // computed values
 		var pA, sA;
 		
-		var content = this.content;
-		var sizing = this.placeholder;
+		sizing || (sizing = this.el.querySelector(".sizing"));
 		
 		sizing.style.maxWidth = "";
 		sizing.style.maxHeight = "";
@@ -87,25 +76,34 @@ module.exports = View.extend({
 			cW = Math.round((cH / sH) * sW);
 		}
 		
+		this.contentX = cX;
+		this.contentY = cY;
 		this.contentWidth = cW;
 		this.contentHeight = cH;
+	},
+	
+	render: function () {
+		/*
+		var content = this.content || this.el.querySelector(".content");
 		
-		content.style.left = cX + "px";
-		content.style.top = cY + "px";
-		content.style.width = cW + "px";
-		content.style.height = cH + "px";
+		content.style.left = this.contentX + "px";
+		content.style.top = this.contentY + "px";
+		content.style.width = this.contentWidth + "px";
+		content.style.height = this.contentHeight + "px";
 		
 		// sizing.style.maxWidth = (cW + (poW - pcW)) + "px";
 		// sizing.style.maxHeight = (cH + (poH - pcH)) + "px";
-		// sizing.style.maxWidth = content.offsetWidth + "px";
-		// sizing.style.maxHeight = content.offsetHeight + "px";
-		sizing.style.maxWidth = cW + "px";
-		sizing.style.maxHeight = cH + "px";
-		
+		sizing.style.maxWidth = content.offsetWidth + "px";
+		sizing.style.maxHeight = content.offsetHeight + "px";
+		// sizing.style.maxWidth = cW + "px";
+		// sizing.style.maxHeight = cH + "px";
+		*/
 		return this;
 	},
 },{
-	whenSelectionIsContiguous: whenSelectionIsContiguous,
-	whenSelectTransitionEnds: whenSelectTransitionEnds,
-	whenDefaultImageLoads: whenDefaultImageLoads, 
+	whenSelectionIsContiguous: require("../promise/whenSelectTransitionEnds"),
+	
+	whenSelectTransitionEnds: require("../promise/whenSelectTransitionEnds"),
+	
+	whenDefaultImageLoads: require("../promise/whenDefaultImageLoads"), 
 });
