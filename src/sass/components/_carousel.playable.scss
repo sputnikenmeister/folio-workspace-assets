@@ -149,30 +149,35 @@
 	}
 	// .progress-meter
 	// - - - - - - - - - - - - - - - - -
-	.circle-progress-meter {
-		width: 24px;
-		height: 24px;
-		& > svg {
-			width: 100%;
-			height: 100%;
-			display: block;
-		}
-	}
 	.progress-meter {
-		text-align: center;
 		position: absolute;
-		
-		// #base {} #steps-track {} #steps {} #amount {}
-		// #step-label {} #pause-symbol{}
-		
+		width: 2rem;
+		height: 2rem;
+		// & > svg {
+		// 	width: 100%;
+		// 	height: 100%;
+		// 	display: block;
+		// }
+		// #steps-track {}
+		// #steps {}
+		// #amount {}
+		// #step-label {}
+		// #pause-symbol{}
 	}
-	&:not(.selected) .progress-meter {
-		display: none;
-	}
-	.progress-meter #pause {
-		// visibility: hidden; 
-		// display: none;
-	}
+	// .progress-meter {
+	// 	text-align: center;
+	// 	position: absolute;
+	// 	
+	// 	// #base {}
+	// 	
+	// }
+	// &:not(.selected) .progress-meter {
+	// 	display: none;
+	// }
+	// .progress-meter #pause {
+	// 	// visibility: hidden; 
+	// 	// display: none;
+	// }
 	// .pending-media .progress-meter {
 	// 	#step-label { visibility: visible; }
 	// 	#pause { visibility: hidden; }

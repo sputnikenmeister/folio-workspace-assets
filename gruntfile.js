@@ -362,7 +362,13 @@ module.exports = function (grunt) {
 	);
 	
 	/* generate-favicons
-	 * - - - - - - - - - - - - - - - - - */
+	* - - - - - - - - - - - - - - - - - */
+	grunt.loadNpmTasks("grunt-svg2png");
+	grunt.config("svg2png.favicons", {
+		files: [{
+			cwd: "src/resources/favicon/", src: "*.svg"
+		}]
+	});
 	grunt.loadNpmTasks("grunt-favicons");
 	grunt.config("favicons", {
 		options: {
@@ -386,11 +392,12 @@ module.exports = function (grunt) {
 				// appleTouchBackgroundColor: "#FF00FF",
 				// tileColor: "#FF00FF",
 			},
-			src: "src/resources/favicon/IMG_0139.jpg",
+			src: "src/resources/favicon/IMG_0139.png",
 			dest: "images/favicon",
 		},
 	});
 	grunt.registerTask("generate-favicons", [
+		"svg2png:favicons",
 		"favicons:img_0139",
 		// "favicons:steampunk",
 	]);

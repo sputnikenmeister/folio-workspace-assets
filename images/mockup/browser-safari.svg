@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
-	width="100%" max-height="52px" preserveAspectRatio="xMidYMin meet">
+	width="100%" max-height="52px" preserveAspectRatio="xMidYMin meet" buffered-rendering="static">
 	<title>Browser Mockup: Safari / Mac OS X 10.9</title>
 	<defs>
 		<style type="text/css"><![CDATA[
 			.chrome-hightlight	{fill:#D0D0D0;}
-			.chrome-border			{fill:#888888;}
-			.chrome-shadow			{fill:#E7E7E7;}
-			.chrome-pad					{fill:url(#chrome-pad-grad);}
-			.icon-shape					{fill:url(#icon-shape-grad);}
-			.icon-shape.solid		{fill:#666666;}
-			.icon-shape.light		{fill:#888888;}
-			.icon-shadow				{fill:#E8E8E8;}
+			.chrome-border		{fill:#888888;}
+			.chrome-shadow		{fill:#E7E7E7;}
+			.chrome-pad			{fill:url(#chrome-pad-grad);}
+			.icon-shape			{fill:url(#icon-shape-grad);}
+			.icon-shape.solid	{fill:#666666;}
+			.icon-shape.light	{fill:#888888;}
+			.icon-shadow		{fill:#E8E8E8;}
 			.ui-text {
 				font-family: 'Lucida Grande', 'Lucida Sans', 'Apple SD Gothic Neo', Verdana, sans-serif;
 				font-weight: 500;
@@ -138,7 +138,7 @@
 	</svg>
 	<!-- ========== -->
 	<!-- left-items -->
-	<svg id="left-items" viewBox="0 1 155 52" preserveAspectRatio="xMinYMin meet">
+	<svg id="left-items" viewBox="0 1 155 52" preserveAspectRatio="xMinYMin meet" buffered-rendering="static">
 		<clipPath id="left-mask">
 			<rect x="0" y="0" width="97" height="53"/>
 		</clipPath>
@@ -222,7 +222,7 @@
 	</svg>
 	<!-- =========== -->
 	<!-- right-items -->
-	<svg id="right-items" viewBox="45 1 155 52" preserveAspectRatio="xMaxYMin meet">
+	<svg id="right-items" viewBox="45 1 155 52" preserveAspectRatio="xMaxYMin meet" buffered-rendering="static">
 		<clipPath id="right-mask">
 			<rect x="55" y="0" width="145" height="53"/>
 		</clipPath>
@@ -257,7 +257,7 @@
 	</svg>
 	<!-- ============ -->
 	<!-- center-items -->
-	<svg id="center-items" viewBox="-1000 0 2000 50" preserveAspectRatio="xMidYMin slice">
+	<svg id="center-items" viewBox="-1000 0 2000 50" preserveAspectRatio="xMidYMin slice" buffered-rendering="static">
 		<text id="title-text" class="ui-text" x="0" y="16" text-anchor="middle">Window Title</text>
 	</svg>
 </svg>

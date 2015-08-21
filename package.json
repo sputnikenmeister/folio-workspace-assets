@@ -26,6 +26,7 @@
     "grunt-fontello": "^0.1.3",
     "grunt-responsive-images": "^0.1.6",
     "grunt-spritesmith": "^4.5.2",
+    "grunt-svg2png": "^0.2.7",
     "hammerjs": "^2.0.4",
     "handlebars": "^3.0.3",
     "hbsfy": "^2.2.1",

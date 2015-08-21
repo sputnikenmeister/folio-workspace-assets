@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="100%" preserveAspectRatio="xMidYMin meet" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
+	width="100%" preserveAspectRatio="xMidYMin meet"
+	stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
 	<title>Browser Mockup: Generic</title>
 	<defs>
 		<style type="text/css"><![CDATA[
@@ -22,7 +24,7 @@
 		<rect x="0" width="85.1%" height="400%"/>
 	</clipPath>
 	<g clip-path="url(#window-mask-left)">
-		<svg id="left_items" viewBox="0 0 2000 50" preserveAspectRatio="xMinYMin slice">
+		<svg id="left_items" viewBox="0 0 2000 50" preserveAspectRatio="xMinYMin slice" buffered-rendering="static">
 			<rect class="window-chrome" x="0%" y="0" width="100%" height="54" rx="4" transform="translate(0.5 0.5)" fill="#E6F6F6"/>
 			<g id="window-ctl-group" transform="translate(16, 13)">
 				<circle id="window-ctl-close" cx="0" cy="0" r="5.5"/>
@@ -55,7 +57,7 @@
 		<rect x="85%" width="15%" height="400%"/>
 	</clipPath>
 	<g clip-path="url(#window-mask-right)">
-		<svg id="right_items" viewBox="-2000 0 2000 50" preserveAspectRatio="xMaxYMin slice">
+		<svg id="right_items" viewBox="-2000 0 2000 50" preserveAspectRatio="xMaxYMin slice" buffered-rendering="static">
 			<rect class="window-chrome" x="-100%" y="0" width="100%" height="54" rx="4" transform="translate(-0.5 0.5)" fill="#F6F6E6"/>
 			<rect class="input-chrome" x="-100%" y="25.5" width="100%" height="20" rx="4" transform="matrix(1 0 0 1 -12.5 0)"/>
 			<g id="full-screen-icon" class="icon-filled" fill-opacity="0.6" transform="translate(-19 6)">
@@ -67,7 +69,7 @@
 			</g>
 		</svg>
 	</g>
-	<svg viewBox="-1000 0 2000 50" preserveAspectRatio="xMidYMin slice">
+	<svg viewBox="-1000 0 2000 50" preserveAspectRatio="xMidYMin slice" buffered-rendering="static">
 		<text id="title-text" class="ui-text" x="0" y="18" text-anchor="middle">Window Title</text>
 	</svg>
 </svg>

@@ -90,106 +90,35 @@
 
 // .browser
 // - - - - - - - - - - - - - - - - - -
-// $mock_browser_height: 2rem;
-$mock_browser_height: 31px;
+// $browser_height: 2rem;
+$browser_height: 30px;
 
 .media-item.browser-safari,
 .media-item.browser-generic {
-	padding-bottom: $mock_browser_height;
+	padding-bottom: $browser_height;
 	.sizing {
 		box-sizing: border-box;
-		padding-top: $mock_browser_height;
+		padding-top: $browser_height;
 	}
 	.content {
 		box-sizing: content-box;
-		padding-top: $mock_browser_height;
+		padding-top: $browser_height;
 		box-shadow:
-			// 0px 1px 1px 0px rgb(255,255,255) inset,
-			// 0px 3em 0px -1.1em rgba(255,255,255,0.85) inset,
 			0px 0px 0px 1px rgba(0,0,0,0.15),
 			0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
-		// background-image: image-url("browser-generic.svg");
-		background-size: 100% $mock_browser_height + 0.5px;
+		background-size: 100% $browser_height;
 		background-repeat: no-repeat;
 	}
 	// .content .default {}
 	.content, .placeholder {
-		border-top-left-radius: $mock_browser_height * 0.1;
-		border-top-right-radius: $mock_browser_height * 0.1;
+		border-top-left-radius: $browser_height * 0.1;
+		border-top-right-radius: $browser_height * 0.1;
 	}
 }
 
 .media-item.browser-generic .content {
-	background-image: image-url("browser-generic.svg");
+	background-image: image-url("mockup/browser-generic.svg");
 }
 .media-item.browser-safari .content {
-	background-image: image-url("browser-safari.svg");
+	background-image: image-url("mockup/browser-safari.svg");
 }
-/*
-<div class="content">
-	<img class="mockup" src="{{global "APP_ROOT"}}/workspace/assets/images/browser-generic.svg"/>
-	<img class="default" alt="{{name}}" longdesc="#desc_m{{id}}" />
-</div>
-*/
-
-// .browser-safari-1
-// - - - - - - - - - - - - - - - - - -
-/*
-// $browser_safari_1_top: 35px;
-// $browser_safari_1_top: 31.5px;
-$browser_safari_1_top: 38.5px;
-
-.browser-safari-1 .media-item,
-.media-item.browser-safari-1 {
-	padding-top: $browser_safari_1_top;
-	margin-top: -$browser_safari_1_top;
-	.sizing {
-		padding-top: $browser_safari_1_top;
-		// transform: translateY($browser_safari_1_top);
-		// box-sizing: content-box; //border-box;
-	}
-	.content {
-		padding-top: $browser_safari_1_top;
-		margin-top: -$browser_safari_1_top;
-		transform: translateY($browser_safari_1_top);
-	
-		// box-sizing: content-box; //border-box;
-		// box-sizing: border-box;
-		// padding-top: $browser_safari_1_top;
-		// margin-top: $browser_safari_1_top;
-		// transform: translateY($browser_safari_1_top);
-	}
-	
-	.content > .default {
-		// position: absolute;
-		// top: 0; left: 0;
-		// box-sizing: content-box;
-		// padding-top: $browser_safari_1_top;
-		// margin-top: $browser_safari_1_top;
-		// transform: translateY($browser_safari_1_top);
-	}
-	.content > .mockup {
-		display: inline-block;
-		position: absolute;
-		// top: 0; left: 0;
-		width: 100%; 
-		// min-width: 155px;
-		height: $browser_safari_1_top;
-		// max-height: $browser_safari_1_top;
-		// height: 100%;
-		// box-shadow:	0px 0px 0px 1px hsla(0,0%,0%,0.5) inset;
-	}
-	.placeholder, .content,
-	.content > .mockup {
-		border-top-left-radius: 3px;//$browser_safari_1_top * 0.1;
-		border-top-right-radius: 3px;//$browser_safari_1_top * 0.1;
-	}
-	.content {
-		box-shadow:
-			// 0px 1px 1px 0px hsl(0, 0%, 100%) inset,
-			// 0px 3em 0px -1.1em hsla(0,0%,100%,0.85) inset,
-			0px 0px 0px 1px rgba(0,0,0,0.2),
-			0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
-	}
-}
-*/

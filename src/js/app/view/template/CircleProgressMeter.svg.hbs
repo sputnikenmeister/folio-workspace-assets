@@ -1,3 +1,14 @@
+<!-- 
+// sw: step mark width in px
+var p = { w: 24, h: 24, s1: 1.2, s2: 1.1, sw: 3 };
+p.r1 = p.r2 = ((Math.min(p.w, p.h) - Math.max(p.s1, p.s2)) / 2) - 1;
+// circumferences in px
+p.c1 = p.r1 * Math.PI * 2;
+p.c2 = p.r2 * Math.PI * 2;
+// rotate CCW ( 90 + half a step mark, in degrees ) so that
+// the arc starts from the top and step gaps appear centered
+p.sr = ((p.sw / 2) / p.r1) * (180/Math.PI) - 90;
+ -->
 <div class="progress-meter color-bg" style="width: {{w}}px; height: {{h}}px">
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" class="color-bg" 
 	width="{{w}}" height="{{h}}" viewPort="0 0 {{w}} {{h}}" preserveAspectRatio="xMidYMid meet">
