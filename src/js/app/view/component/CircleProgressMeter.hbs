@@ -1,14 +1,11 @@
 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" class="color-bg"
 		buffered-rendering="dynamic" shape-rendering="auto"
-		viewBox="-{{r}} -{{r}} {{multiply r 2}} {{multiply r 2}}" preserveAspectRatio="xMidYMid meet">
-	<clipPath id="circle-mask">
-		<circle r="{{r}}"></circle>
-	</clipPath>
-	<g id="cicle-group" class="color-stroke" transform="rotate({{sr}})" fill="none" clip-path="url(#circle-mask)">
+		viewBox="-{{divide d 2}} -{{divide d 2}} {{d}} {{d}}" preserveAspectRatio="xMidYMid meet">
+	<g id="cicle-group" class="color-stroke" transform="rotate({{sr}})" fill="none">
 		<circle id="steps" r="{{r}}" stroke-width="{{s2}}"></circle>
 		<circle id="amount"	r="{{r}}" stroke-width="{{s1}}"></circle>
 	</g>
 	<text id="step-label" class="color-reverse color-fill" 
-		font-size="{{r}}" font-weight="600"
-		dy="{{divide r 3}}" text-anchor="middle">1</text>
+		font-size="{{divide d 2}}" font-weight="600"
+		dy="{{divide d 6}}" text-anchor="middle">1</text>
 </svg>

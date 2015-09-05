@@ -8,21 +8,9 @@ var _loadImageAsObjectURL = require("./_loadImageAsObjectURL");
 
 var isBlobRE = /^blob\:.*/;
 
-// var _preloadImage = function (url, image, progressFn) {
-// 	return _loadImageAsObjectURL(url, progressFn)
-// 		.then(function(url) {
-// 			image.src = url;
-// 			return image;
-// 		})
-// 		.then(_whenImageLoads)
-// 		.then(function(img) {
-// 			return img.src;
-// 		});
-// };
-
 module.exports = function(view) {
 	return new Promise(function(resolve, reject) {
-		var defaultImageEl = view.defaultImage = view.el.querySelector("img.default");
+		var defaultImageEl = view.getDefaultImage();
 		
 		if (view.model.has("prefetched")) {
 			defaultImageEl.src = view.model.get("prefetched");
@@ -44,7 +32,6 @@ module.exports = function(view) {
 			};
 			progressFn = _.throttle(progressFn, 100, {leading: true, trailing: false});
 			
-			// _preloadImage(view.model.getImageUrl(), defaultImageEl, progressFn)
 			_loadImageAsObjectURL(view.model.getImageUrl(), progressFn)
 				.then(
 					function(url) {

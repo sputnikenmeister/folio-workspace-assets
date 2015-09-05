@@ -19,6 +19,7 @@ require("es6-promise").polyfill();
 require("classlist-polyfill");
 require("raf-polyfill");
 require("matches-polyfill");
+require("fullscreen-polyfill");
 
 /** @type {module:underscore} */
 var _ = require("underscore");

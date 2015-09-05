@@ -100,6 +100,10 @@ $browser_height: 30px;
 		box-sizing: border-box;
 		padding-top: $browser_height;
 	}
+	// .content, .content-size {
+	// 	box-sizing: content-box;
+	// 	padding-top: $browser_height;
+	// }
 	.content {
 		box-sizing: content-box;
 		padding-top: $browser_height;
@@ -116,9 +120,15 @@ $browser_height: 30px;
 	}
 }
 
-.media-item.browser-generic .content {
-	background-image: image-url("mockup/browser-generic.svg");
-}
 .media-item.browser-safari .content {
 	background-image: image-url("mockup/browser-safari.svg");
 }
+.media-item.browser-generic .content {
+	background-image: image-url("mockup/browser-generic.svg");
+}
+// .dark .media-item.browser-generic .content {
+// 	background-image: image-url("mockup/browser-generic-dark.svg");
+// }
+// .light .media-item.browser-generic .content {
+// 	background-image: image-url("mockup/browser-generic-light.svg");
+// }

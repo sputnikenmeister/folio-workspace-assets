@@ -21,20 +21,22 @@ var DeferredView = require("../base/DeferredView");
 /** @type {Function} */
 var setImmediate = require("../../../utils/setImmediate");
 
-/**
- * @constructor
- * @type {module:app/view/base/View}
- */
-var DefaultRenderer = View.extend({
-	/** @override */
-	className: "carousel-item",
-	/** @override */
-	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
-	/** @override */
-	initialize: function (options) {
-		this.el.innerHTML = this.template(this.model.toJSON()); // = this.template(this.model.attributes);
-	},
-});
+/** @type {module:app/view/render/CarouselRenderer} */
+var CarouselRenderer = require("../render/CarouselRenderer");
+// /**
+//  * @constructor
+//  * @type {module:app/view/base/View}
+//  */
+// var CarouselRenderer = View.extend({
+// 	/** @override */
+// 	className: "carousel-item",
+// 	/** @override */
+// 	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
+// 	/** @override */
+// 	initialize: function (options) {
+// 		this.el.innerHTML = this.template(this.model.toJSON()); // = this.template(this.model.attributes);
+// 	},
+// });
 
 /**
  * @constructor
@@ -42,12 +44,13 @@ var DefaultRenderer = View.extend({
  */
 var Carousel = DeferredView.extend({
 	
+	cidPrefix: "carousel-",
 	/** @override */
 	tagName: "div",
 	/** @override */
 	className: "carousel skip-transitions",
 	/** @type {int} In pixels */
-	tapAreaGrow: 50,
+	tapAreaGrow: 20,
 	/** @type {int} In pixels */
 	selectThreshold: 20,
 	/** @type {int} In pixels */
@@ -55,9 +58,9 @@ var Carousel = DeferredView.extend({
 	/** @type {int} */
 	direction: Hammer.DIRECTION_HORIZONTAL,
 	/** @type {Function} */
-	renderer: DefaultRenderer.extend({ className: "carousel-item default-renderer"}),
+	renderer: CarouselRenderer.extend({ className: "carousel-item default-renderer"}),
 	/** @type {Function} */
-	emptyRenderer: DefaultRenderer.extend({ className: "carousel-item empty-item"}),
+	emptyRenderer: CarouselRenderer.extend({ className: "carousel-item empty-item"}),
 	
 	/** @override */
 	initialize: function (options) {
@@ -706,7 +709,7 @@ var Carousel = DeferredView.extend({
 	/** used in crateEmptyChildView */
 	EMPTY_VIEW_OPTS: ["model", "collection", "template"],
 	
-	defaultRenderer: DefaultRenderer
+	defaultRenderer: CarouselRenderer
 
 });
 

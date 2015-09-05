@@ -93,6 +93,7 @@ module.exports = function (grunt) {
 				"cookies-js"
 			],
 			alias: [
+				"./src/js/shims/fullscreen.js:fullscreen-polyfill",
 				"./src/js/shims/matchesSelector.js:matches-polyfill",
 				"./src/js/shims/requestAnimationFrame.js:raf-polyfill",
 			]

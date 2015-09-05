@@ -1,12 +1,20 @@
 <div class="placeholder sizing"></div>
-<div class="content play-toggle not-played">
-	<video preload="none" poster="{{global "MEDIA_DIR"}}/{{src}}">
-		{{#each srcset}}
-			<source src="{{global "MEDIA_DIR"}}/{{src}}" type="{{mime}}"></source> 
-		{{/each}}
-	</video>
-	<img class="poster default current" alt="{{name}}"/>
-	<div class="overlay">
-		<span class="play-button">&#xe80d;</span>
+<div class="debug-log color-fg05"><pre></pre></div>
+<div class="content not-played">
+	<div class="controls content-size">
+		<a class="full-screen-toggle" href="javascript:(void 0)">Full Screen</a>
+	</div>
+	<div class="crop-box content-size">
+		<video preload="none" poster="{{global "MEDIA_DIR"}}/{{src}}">
+			{{#each srcset}}
+				{{#contains mime 'video'}}
+					<source src="{{global "MEDIA_DIR"}}/{{src}}" type="{{mime}}"></source>
+				{{/contains}}
+			{{/each}}
+		</video>
+		<img class="poster default" alt="{{name}}"/>
+	</div>
+	<div class="overlay content-size">
+		<div class="play-toggle-hitarea play-toggle"><!-- &#xe80d; --></div>
 	</div>
 </div>

@@ -34,6 +34,10 @@ module.exports = function() {
 		bgLum = bgColor.luminosity();
 		isLightOverDark = fgLum > bgLum;
 		
+		bundle.colors = {
+			fgColor: fgColor, bgColor: bgColor, dark: fgLum > bgLum
+		};
+		
 		// - - - - - - - - - - - - - - - - 
 		// per-bundle body rules
 		// - - - - - - - - - - - - - - - - 

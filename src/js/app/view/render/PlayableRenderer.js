@@ -37,6 +37,7 @@ module.exports = MediaRenderer.extend({
 	initialize: function (opts) {
 		MediaRenderer.prototype.initialize.apply(this, arguments);
 		_.bindAll(this, "_onToggleEvent");
+		this._lastMediaState = null;
 	},
 	
 	/* --------------------------- *
@@ -115,100 +116,113 @@ module.exports = MediaRenderer.extend({
 		// abstract
 	},
 	
+	_mediaStates: ["network", "media", "user-play", "user-resume", "user-replay"],
+	
 	setMediaState: function(key) {
-		this.content.classList.toggle("pending-network", key === "network");
-		this.content.classList.toggle("pending-user", key === "user");
-		this.content.classList.toggle("pending-media", key === "media");
+		if (this._mediaStates.indexOf(key) === -1) {
+			throw new Error("Argument " + key + " invalid. Must be one of: " + this._mediaStates.join(", "));
+		}
+		if (this._lastMediaState !== key) {
+			if (this._lastMediaState) {
+				this.content.classList.remove( "pending-" + this._lastMediaState);
+			}
+			this.content.classList.add("pending-" + key);
+			this._lastMediaState = key;
+		}
 	},
 	
 	/* --------------------------- *
 	/* util
 	/* --------------------------- */
 	
-	updateOverlayBackground: function(targetEl, contentEl) {
+	updateOverlay: function(mediaEl, targetEl, rectEl) {
 		// src/dest rects
 		// ------------------------------
-			
-		// var tRect = targetEl.getBoundingClientRect();
-		// var cRect = this.content.getBoundingClientRect();
-		// var tX = tRect.left - cRect.left,
-		// 	tY = tRect.top - cRect.top,
+		rectEl || (rectEl = targetEl);
+		
+		// NOTE: does not work with svg element
+		// var tRect = rectEl.getBoundingClientRect();
+		// var cRect = mediaEl.getBoundingClientRect();
+		// var tX = tRect.x - cRect.x,
+		// 	tY = tRect.y - cRect.y,
 		// 	tW = tRect.width,
 		// 	tH = tRect.height;
-		// 	
-		// console.log(tRect, cRect);
-			
-		var tX = targetEl.offsetLeft,
-			tY = targetEl.offsetTop + 1,
-			tW = targetEl.offsetWidth,
-			tH = targetEl.offsetHeight;
 		
-		// rendered size
-		var rW = this.contentWidth;
-		var rH = this.contentHeight + 1;
-		// source size
-		var sW = this.model.get("w");
-		var sH = this.model.get("h");
-		// source/rendered scale
-		var rsX = sW/rW;
-		var rsY = sH/rH;
+		// target bounds
+		var tX = rectEl.offsetLeft,
+			tY = rectEl.offsetTop,
+			tW = rectEl.offsetWidth,
+			tH = rectEl.offsetHeight;
+		
+		if (!(tX && tY && tW && tH)) {
+			return;
+		}
+			
+		// destination rect
+		var RECT_GROW = 20;
+		var destRect = {
+			x: tX - RECT_GROW,
+			y: tY - RECT_GROW,
+			width: tW + RECT_GROW * 2,
+			height: tH + RECT_GROW * 2
+		};
+			
+		// native/display scale
+		var sW = this.model.get("w"),
+			sH = this.model.get("h"),
+			rsX = sW/this.contentWidth,
+			rsY = sH/this.contentHeight;
+		
+		// destRect, scaled to native
+		var srcRect = {
+			x: Math.max(0, destRect.x * rsX),
+			y: Math.max(0, destRect.y * rsY),
+			width: Math.min(sW, destRect.width * rsX),
+			height: Math.min(sH, destRect.height * rsY)
+		};
 		
 		// Copy image to canvas
 		// ------------------------------
 		var canvas, context, imageData;
 		
-		canvas = getSharedCanvas();
 		// canvas = document.createElement("canvas");
-		canvas.style.width  = tW + "px";
-		canvas.style.height = tH + "px";
-		canvas.width = tW;
-		canvas.height = tH;
+		// canvas.style.width  = destRect.width + "px";
+		// canvas.style.height = destRect.height + "px";
+		
+		canvas = getSharedCanvas();
+		if (canvas.width !== destRect.width || canvas.height !== destRect.height) {
+			canvas.width = destRect.width;
+			canvas.height = destRect.height;
+		}
 		context = canvas.getContext("2d");
-		context.clearRect(0, 0, tW, tH);
-		context.drawImage(contentEl, 
-			tX*rsX-20, tY*rsY-20, tW*rsX+40, tH*rsY+40, // source rect
-			0, 0, tW, tH // destination rect
+		context.clearRect(0, 0, destRect.width, destRect.height);
+		context.drawImage(mediaEl, 
+			srcRect.x, srcRect.y, srcRect.width, srcRect.height,
+			0, 0, destRect.width, destRect.height // destination rect
 		);
-		imageData = context.getImageData(0, 0, tW, tH);
+		imageData = context.getImageData(0, 0, destRect.width, destRect.height);
 		
 		var avgColor = Color().rgb(getAverageRGB(imageData));
-		targetEl.classList.toggle("over-dark", !avgColor.dark());
-		
+		targetEl.classList.toggle("over-dark", avgColor.dark());
+			
 		// Color, filter opts
 		// ------------------------------
 		
 		// this.fgColor || (this.fgColor = new Color(this.model.attrs()["color"]));
 		// this.bgColor || (this.bgColor = new Color(this.model.attrs()["background-color"]));
-		
-		// var opts = {};
+		// 
+		// var opts = { radius: 20 };
 		// var isFgDark = this.fgColor.luminosity() < this.bgColor.luminosity();
 		// opts.x00 = isFgDark? this.fgColor.clone().lighten(0.5) : this.bgColor.clone().darken(0.5);
 		// opts.xFF = isFgDark? this.bgColor.clone().lighten(0.5) : this.fgColor.clone().darken(0.5);
-		
-		// opts.radius = 20;
+		// 
 		// stackBlurMono(imageData, opts);
 		// duotone(imageData, opts);
-		
 		// stackBlurRGB(imageData, { radius: 20 });
 		// 
 		// context.putImageData(imageData, 0, 0);
 		// targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
 		
-		// var fgContrast, bgContrast;
-		// fgContrast = avgColor.contrast(this.fgColor);
-		// bgContrast = avgColor.contrast(this.bgColor);
-		// console.log("isFgDark", isFgDark, avgColor.hexString(), "fgContrast", fgContrast, "bgContrast", bgContrast);
-		
-		// targetEl.style.color = (fgContrast >= bgContrast? this.fgColor : this.bgColor).rgbString();
-		
-		// targetEl.style.color = avgColor.dark()?
-		// 		"rgb(255,255,255)" : "rgb(0,0,0)";
-		// targetEl.style.backgroundColor = avgColor.dark()?
-		// 		"rgba(0,0,0,0.75)" : "rgba(255,255,255,0.75)";
-		// targetEl.style.boxShadow = "0 0 2px -1px " + (avgColor.dark()?
-		// 		"rgb(255,255,255)" : "rgb(0,0,0)");
-			// avgColor.rgbString();
-			
-		console.log(this.cid, this.model.cid, "PlayableRenderer.updateOverlayBackground");
-	},
+		console.log(this.cid, this.model.cid, "PlayableRenderer.updateOverlay");
+	}
 });

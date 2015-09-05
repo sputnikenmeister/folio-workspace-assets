@@ -28,6 +28,22 @@ var helpers = {
 	global: function(value) {
 		return Globals[value];
 	},
+	is: function(a, b, opts) {
+		return (a === b)? opts.fn(this) : opts.inverse(this);
+	},
+	isnot: function(a, b, opts) {
+		return (a !== b)? opts.fn(this) : opts.inverse(this);
+	},
+	isany: function(value) {
+		var i = 0, ii = arguments.length - 2, opts = arguments[ii+1];
+		do if (value === arguments[++i]) {
+			return opts.fn(this);
+		} while (i < ii);
+		return opts.inverse(this);
+	},
+	contains: function(a, b, opts) {
+		return (a.indexOf(b) !== -1)? opts.fn(this) : opts.inverse(this);
+	},
 };
 
 module.exports = (function() {

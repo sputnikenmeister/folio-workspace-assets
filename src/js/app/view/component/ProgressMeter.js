@@ -24,18 +24,25 @@ module.exports = Backbone.View.extend({
 	
 	/** @override */
 	initialize: function (options) {
-		this._valueInvalid = true;
+		this._value = options.value || this.model.get("value") || 0;
+		this._total = options.total || this.model.get("total") || 1;
+		this._valueChanged = true;
 		this.listenTo(this.model, "change", function() {
-			this._valueInvalid = true;
-			this.render();
+			this.valueTo(this.model.get("value"));
 		});
 	},
 	
+	valueTo: function (value, duration) {
+		this._valueChanged = true;
+		this.render();
+	},
+	
 	render: function () {
-		if (this._valueInvalid) {
-			this._valueInvalid = false;
-			var val = this.model.get("value") / this.model.get("total");
-			val = (val * 100) | 0; // make it base 100, then truncate decimals
+		if (this._valueChanged) {
+			this._valueChanged = false;
+			
+			// make it base 100, then truncate decimals
+			var val = (this._value / this._total * 100) | 0;
 			this.el.textContent = val + "%";
 		}
 		return this;

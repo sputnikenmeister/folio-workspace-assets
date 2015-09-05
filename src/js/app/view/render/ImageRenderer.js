@@ -33,6 +33,7 @@ var viewTemplate = require( "./ImageRenderer.hbs" );
  */
 module.exports = MediaRenderer.extend({
 	
+	cidPrefix: "image-renderer-",
 	/** @type {string} */
 	className: MediaRenderer.prototype.className + " image-renderer",
 	/** @type {Function} */
@@ -53,75 +54,23 @@ module.exports = MediaRenderer.extend({
 		this.el.innerHTML = this.template(this.model.toJSON());
 		
 		this.placeholder = this.el.querySelector(".placeholder");
-		this.content = this.el.querySelector(".content");
-		this.image = this.el.querySelector("img.default");
 	},
 	
 	/** @return {this} */
 	render: function () {
-		var sW, sH; // source dimensions
-		var pcW, pcH; // measured values
-		var cX, cY, cW, cH; // computed values
+		var img, sizing, content;
 		
-		var content = this.content;
-		var sizing = this.placeholder;
+		this.measure();
 		
-		sizing.style.width = "";
-		sizing.style.height = "";
+		img = this.getDefaultImage();
+		img.setAttribute("width", this.contentWidth);
+		img.setAttribute("height", this.contentHeight);
 		
-		// var o = _.pick(sizing, function(val) {
-		// 	return /^(offset|client)/.test(val);
-		// });
+		content = this.getContentEl();
+		content.style.left = this.contentX + "px";
+		content.style.top = this.contentY + "px";
 		
-		cX = sizing.offsetLeft + sizing.clientLeft;
-		cY = sizing.offsetTop + sizing.clientTop;
-		pcW = sizing.clientWidth;
-		pcH = sizing.clientHeight;
-		
-		sW = this.model.get("w");
-		sH = this.model.get("h");
-		
-		// Unless both client dimensions are larger than the source's
-		// choose constraint direction by aspect ratio
-		if (sW < pcW && sH < pcH) {
-			cW = sW;
-			cH = sH;
-		} else if ((pcW/pcH) < (sW/sH)) {
-			cW = pcW;
-			cH = Math.round((cW / sW) * sH);
-		} else {
-			cH = pcH;
-			cW = Math.round((cH / sH) * sW);
-		}
-		
-		this.contentWidth = cW;
-		this.contentHeight = cH;
-		
-		this.image.setAttribute("width", cW);
-		this.image.setAttribute("height", cH);
-		
-		content.style.left = cX + "px";
-		content.style.top = cY + "px";
-		// content.style.width = cW + "px";
-		// content.style.height = cH + "px";
-		
-		// console.log(this.cid, "client",
-		// 	content.clientLeft,
-		// 	content.clientTop,
-		// 	content.clientWidth,
-		// 	content.clientHeight
-		// );
-		// console.log(this.cid, "offset",
-		// 	content.offsetLeft,
-		// 	content.offsetTop,
-		// 	content.offsetWidth,
-		// 	content.offsetHeight
-		// );
-		
-		// sizing.style.maxWidth = (cW + (poW - pcW)) + "px";
-		// sizing.style.maxHeight = (cH + (poH - pcH)) + "px";
-		// sizing.style.maxWidth = cW + "px";
-		// sizing.style.maxHeight = cH + "px";
+		sizing = this.placeholder;
 		sizing.style.width = content.offsetWidth + "px";
 		sizing.style.height = content.offsetHeight + "px";
 		
@@ -138,7 +87,7 @@ module.exports = MediaRenderer.extend({
 			.then(MediaRenderer.whenDefaultImageLoads)
 			.catch(function(err) {
 					if (err instanceof ViewError) {
-						console.log(err.view.cid, err.view.model.cid, "ImageRenderer: " + err.message);
+						// console.log(err.view.cid, err.view.model.cid, "ImageRenderer: " + err.message);
 					} else {
 						console.error("ImageRenderer: " + err.name, err);
 						throw err;

@@ -2,7 +2,7 @@
 	.carousel-item {
 		display: block;
 		position: absolute;
-		* {
+		p, span, div {
 			user-select: none !important;
 		}
 //		.sizing {
@@ -13,17 +13,17 @@
 		cursor: grabbing;
 	}
 	&:not(.panning) .carousel-item {
-		.content, .content-decoration {
+		.content {
 			cursor: pointer;
 		}
 		&.selected {
-			.content, .content-decoration   {
+			.content   {
 				cursor: grab;
 			}
 		}
 	}
 	&.disabled .carousel-item {
-		.content, .content-decoration {
+		.content {
 			cursor: default !important;
 		}
 	}
@@ -102,28 +102,28 @@ $pan_ease: $ease;
 	// }
 }
 
-// - - - - - - - - - - - - - - - - - -
-// .default-renderer
-// - - - - - - - - - - - - - - - - - -
-.carousel-item.default-renderer {
-	.sizing {
-		display: inline-block;
-	}
-}
-
-// - - - - - - - - - - - - - - - - - -
-// .label-carousel
-// - - - - - - - - - - - - - - - - - -
-.label-carousel {
-	.carousel-item {
-		.content {
-			transition: opacity $duration $ease 0.001s;
-			opacity: 0.2;
-		}
-		&.selected, &.candidate {
-			.content {
-				opacity: 1;
-			}
-		}
-	}
-}
+// // - - - - - - - - - - - - - - - - - -
+// // .default-renderer
+// // - - - - - - - - - - - - - - - - - -
+// .carousel-item.default-renderer {
+// 	.sizing {
+// 		display: inline-block;
+// 	}
+// }
+// 
+// // - - - - - - - - - - - - - - - - - -
+// // .label-carousel
+// // - - - - - - - - - - - - - - - - - -
+// .label-carousel {
+// 	.carousel-item {
+// 		.content {
+// 			transition: opacity $duration $ease 0.001s;
+// 			opacity: 0.2;
+// 		}
+// 		&.selected, &.candidate {
+// 			.content {
+// 				opacity: 1;
+// 			}
+// 		}
+// 	}
+// }

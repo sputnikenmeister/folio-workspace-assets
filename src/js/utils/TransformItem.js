@@ -54,7 +54,8 @@ var transitionTemplate = function(o) {
 // };
 // var _propList = Object.keys(_propDefaults);
 
-var NO_TRANSITION = "none 0s ease 0s";
+var NO_TRANSITION = "none 0s step-start 0s";
+// var NO_TRANSITION = "all 0.001s step-start 0.001s";
 
 var _prefixedProperty = {}; 
 var _prefixedStyleName = {};

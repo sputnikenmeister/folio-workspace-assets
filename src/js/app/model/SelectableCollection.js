@@ -83,6 +83,12 @@ var SelectableCollection = Backbone.Collection.extend({
 		this.select(this.at(index), options);
 	},
 	
+	distance: function (a, b) {
+		throw new Error("not implemented");
+		// modelTo || (modelTo = this.selected);
+		// this.indexOf(model) - this.indexOf(modelTo)
+	},
+	
 	/* TODO: MOVE INTO MIXIN */
 	
 	/** @return boolean	 */

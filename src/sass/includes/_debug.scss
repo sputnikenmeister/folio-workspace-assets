@@ -19,20 +19,47 @@ $darkseagreen:		hsla(120, 25%, 65%, 1);
 /* darkolivegreen:	hsl(???) */
 $darkolivegreen:	darkolivegreen;
 
-.debug-grid {
+// -----------------------------------
+// .debug-grid
+// -----------------------------------
+
+#container.debug-grid-bg {
+	background-image: image-url("debug-background.svg");
 	background-color: transparent;
 	background-repeat: no-repeat;
 	background-position: calc(50% + 1px) 1px;
-	background-image: image-url("debug-background-720.svg");
-//	background-image: image-url("debug-background.svg#bg720_g");
-//	background-size: 719px 1599px;
+	background-size: $page_width auto;//1600px;
 	@include media(desktop-small) {
-		background-position: calc(50% - 9px) calc(-1rem + 1px);
-		background-image: image-url("debug-background-960.svg");
-//		background-image: image-url("debug-background.svg#bg960_g");
-//		background-size: 959px 1599px;
+		background-position: calc(50% + 1px) calc(-1rem + 1px);
+		background-size: $page_width_large auto;//1600px;
 	}
 }
+// img#debug-grid {
+// 	position: absolute;
+// 	width: $page_width;
+// 	left: calc(50% - #{$page_width/2});
+// 	height: 100%;
+// 	box-sizing: border-box;
+// 	padding-top: 1px;
+// 	padding-left: 1px;
+// 	@include media(desktop-small) {
+// 		// top: calc(1px - 1rem);
+// 		// height: calc(100% - 1px);
+// 		width: $page_width_large;
+// 		left: calc(50% - #{$page_width_large/2});
+// 		margin-top: -1rem;
+// 		.layout-guide {
+// 			stroke: hsl(60, 93%, 71%);
+// 		}
+// 	}
+// }
+// :not(.debug-grid-img) > img#debug-grid {
+// 	display: none;
+// }
+
+// -----------------------------------
+// .debug-blocks
+// -----------------------------------
 
 @mixin debug_outline($width: 1px, $style: dashed, $color: inherit) {
 	outline: $width $style $color;
@@ -127,6 +154,10 @@ $darkolivegreen:	darkolivegreen;
 //		}
 	}
 }
+
+// -----------------------------------
+// #debug-toolbar
+// -----------------------------------
 
 #debug-toolbar {
 	opacity: 0.4;

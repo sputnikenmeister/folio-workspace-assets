@@ -2,6 +2,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
 	width="100%" preserveAspectRatio="xMidYMin meet" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
 	<title>Browser Mockup: Generic</title>
+	<script><![CDATA[
+		function getParams() {
+			return location.search.substr(1).split('&').reduce(function(store, val) {
+				val = val.split('=');
+				store[val[0]] = val[1];
+				return store;
+			}, {});
+		}
+		function setStyle(style, value, query) {
+			var i, ii, el, els;
+			els = document.querySelectorAll(query);
+			for (i = 0, ii = els.length; i < ii; i++) {
+				el = els.item(i).style[style] = value;
+			}
+		}
+		function onSVGLoad(ev) {
+			var params = getParams();
+			fg = (params.fg == "none")? "none": "#" + params.fg;
+			bg = (params.bg == "none")? "none": "#" + params.bg;
+			setStyle("stroke", fg, ".input-chrome, .button-chrome, .separator-line, #window-ctl-group"); // fg as stroke
+			setStyle("fill", fg, ".ui-text, .input-text, .icon-filled"); // fg as fill
+			setStyle("stroke", bg, ".window-chrome"); // bg as stroke
+			setStyle("fill", bg, ".window-chrome, .input-chrome, .button-chrome, #window-ctl-group"); // bg as fill
+			document.getElementById("title-text").textContent = "Params (fg:"+fg+", bg:"+bg+ ")";
+		}
+		document.rootElement.addEventListener("SVGLoad", onSVGLoad);
+	]]></script>
 	<defs>
 		<style type="text/css"><![CDATA[
 			

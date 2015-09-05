@@ -7,12 +7,13 @@
 			
 			/* fg color #979797 */
 			.input-chrome, .button-chrome, .separator-line, #window-ctl-group { stroke: #979797 }
-			.ui-text, .input-text, .icon-filled { fill: #979797 }
+			.ui-text, .input-text, .icon-filled { fill: #979797; fill-opacity: 0.7 }
 			
 			/* bg color #F6F6F6 */
-			.window-chrome { stroke: #F6F6F6 }
-			.window-chrome, #window-ctl-group { fill: #F6F6F6 }
-			.input-chrome, .button-chrome { fill: #FFFFFF }
+			.window-chrome { stroke: none }
+			.window-chrome, #window-ctl-group { fill: none }
+			.input-chrome, .button-chrome { fill: none }
+			/*.input-chrome, .button-chrome { fill: #FFFFFF; fill-opacity: 0.1 }*/
 			
 			/* opacity */
 			.input-chrome, .button-chrome, .separator-line { stroke-opacity: 0.5 }

@@ -26,10 +26,4 @@ module.exports = View.extend({
 	initialize: function (options) {
 		this.el.innerHTML = this.template(this.model.toJSON());
 	},
-	
-	// /** @override */
-	// render: function() {
-	// 	this.el.innerHTML = this.template(this.model.attributes);
-	// 	return this;
-	// }
 });

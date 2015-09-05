@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1080px" height="648px" viewBox="0 0 1080 648" enable-background="new 0 0 1080 648" xml:space="preserve">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1080px" height="648px" viewBox="0 0 1080 648" enable-background="new 0 0 1080 648" xml:space="preserve">
 			<filter id="noise">
 				<feTurbulence type="fractalNoise" baseFrequency=".9" stitchTiles="noStitch"></feTurbulence>
 				<feComponentTransfer>

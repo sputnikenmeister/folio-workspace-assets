@@ -9,15 +9,12 @@ module.exports = function(view) {
 		/** @type {module:app/model/SelectableCollection} */
 		var collection = model.collection;
 		
-		var m = collection.indexOf(model);
 		var check = function(n) { // Check indices for contiguity
-			// return Math.abs(collection.indexOf(model) - collection.selectedIndex) < 2;
-			// return (m + 1 === n) || (m - 1 === n) || (m === n);
-			return Math.abs(m - n) < 2;
+			return Math.abs(collection.indexOf(model) - collection.selectedIndex) < 2;
 		};
 		
-		if (check(collection.selectedIndex)) {
-			console.log(view.cid, view.model.cid, "whenSelectionIsContiguous: sync resolve");
+		if (check()) {
+			// console.log(view.cid, view.model.cid, "whenSelectionIsContiguous: sync resolve");
 			resolve(view);
 		} else {
 			var cleanupOnSettle = function() {
@@ -26,8 +23,8 @@ module.exports = function(view) {
 				view.off("view:remove", rejectOnRemove);
 			};
 			var resolveOnSelect = function(model) {
-				if (check(collection.selectedIndex)) {
-					console.log(view.cid, view.model.cid, "whenSelectionIsContiguous: async resolve");
+				if (check()) {
+					// console.log(view.cid, view.model.cid, "whenSelectionIsContiguous: async resolve");
 					cleanupOnSettle();
 					resolve(view);
 				}

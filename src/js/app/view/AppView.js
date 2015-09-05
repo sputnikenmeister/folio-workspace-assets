@@ -6,6 +6,8 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
+/** @type {Function} */
+var Color = require("color");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../control/Globals");
@@ -128,6 +130,8 @@ var AppView = View.extend({
 		cls.toggle("without-bundle", !bundle);
 		cls.toggle("with-media", !!media);
 		cls.toggle("without-media", !media);
+		
+		bundle && cls.toggle("color-dark", bundle.colors.dark);
 		
 		// Set bundle class
 		if (this._lastBundle) {

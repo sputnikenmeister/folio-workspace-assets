@@ -16,10 +16,11 @@ var prefixedStyleName = require("../../../utils/css/prefixedStyleName");
 var addTransitionCallback = require("../../../utils/event/addTransitionCallback");
 /** @type {Function} */
 var transitionEnd = require("../../../utils/event/transitionEnd");
+/** @type {Function} */
+var getPrototypeChainValue = require("../../../utils/object/getPrototypeChainValue");
 
-// var _styleProps = {};
-// var _styleNames = {};
 var _viewsByCid = {};
+var _cidSeed = 1;
 
 /**
 * @constructor
@@ -27,7 +28,15 @@ var _viewsByCid = {};
 */
 var View = Backbone.View.extend({
 	
+	/** @type {string} */
+	cidPrefix: "view",
+	
 	constructor: function(options) {
+		Object.defineProperty(this, "cid", {
+			get: function() {
+				return this._cid || (this._cid = this.cidPrefix + _cidSeed++);
+			}
+		});
 		if (options && options.className && this.className) {
 			options.className += " " + _.result(this, "className");
 		}
@@ -50,6 +59,8 @@ var View = Backbone.View.extend({
 	},
 	
 	setElement: function(element, delegate) {
+		// If an element was supplied, merge classes specified
+		// by this view with the ones already in DOM:
 		// setElement always initializes this.el,
 		// so this.el has to be checked before calling super
 		if (this.el && this.className) {
@@ -100,15 +111,6 @@ var View = Backbone.View.extend({
 		// prop = this.getPrefixedStyle(prop)
 		return addTransitionCallback(target, prop, callback, this, timeout);
 	},
-	
-	// getTransitionPromise: function(target, prop, timeout) {
-	// 	var promise = getTransitionPromise(target, this.getPrefixedStyle(prop), this, timeout);
-	// 	promise.always(function() {
-	// 		this.off("view:remove", promise.cancel, promise);
-	// 	});
-	// 	this.on("view:remove", promise.cancel, promise);
-	// 	return promise;
-	// },
 	
 	/* -------------------------------
 	/* requestAnimationFrame
