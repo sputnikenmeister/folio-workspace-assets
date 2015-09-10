@@ -33,6 +33,7 @@ var viewTemplate = require( "./ImageRenderer.hbs" );
  */
 module.exports = MediaRenderer.extend({
 	
+	/** @type {string} */
 	cidPrefix: "image-renderer-",
 	/** @type {string} */
 	className: MediaRenderer.prototype.className + " image-renderer",
@@ -42,7 +43,7 @@ module.exports = MediaRenderer.extend({
 	/** @override */
 	initialize: function (opts) {
 		MediaRenderer.prototype.initialize.apply(this, arguments);
-		this.createChildren();
+		// this.createChildren();
 		this.initializeAsync();
 	},
 	
@@ -50,13 +51,13 @@ module.exports = MediaRenderer.extend({
 	/* children/layout
 	/* --------------------------- */
 	
+	/** @override */
 	createChildren: function() {
 		this.el.innerHTML = this.template(this.model.toJSON());
-		
 		this.placeholder = this.el.querySelector(".placeholder");
 	},
 	
-	/** @return {this} */
+	/** @override */
 	render: function () {
 		var img, sizing, content;
 		
@@ -73,6 +74,8 @@ module.exports = MediaRenderer.extend({
 		sizing = this.placeholder;
 		sizing.style.width = content.offsetWidth + "px";
 		sizing.style.height = content.offsetHeight + "px";
+		// sizing.style.width = "100%";
+		// sizing.style.height = "100%";
 		
 		return this;
 	},

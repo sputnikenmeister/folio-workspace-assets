@@ -9,88 +9,57 @@ var _ = require("underscore");
 var View = require("../base/View");
 /** @type {module:app/model/item/MediaItem} */
 var MediaItem = require("../../model/item/MediaItem");
+/** @type {module:app/view/CarouselRenderer} */
+var CarouselRenderer = require("./CarouselRenderer");
 
 /**
  * @constructor
  * @type {module:app/view/render/MediaRenderer}
  */
-module.exports = View.extend({
+module.exports = CarouselRenderer.extend({
 	
+	/** @type {string} */
 	cidPrefix: "media-renderer-",
 	/** @type {string} */
-	tagName: "div",
-	/** @type {string} */
-	className: "carousel-item idle media-item",
+	className: CarouselRenderer.prototype.className + " media-item idle",
 	/** @type {module:app/model/MediaItem} */
 	model: MediaItem,
 	
-	// constructor: function () {
-	// 	View.apply(this, arguments);
-	// 	
-	// 	// var _defaultImage;
-	// 	// Object.defineProperty(this, "defaultImage", {get: function() {
-	// 	// 	return _defaultImage || (_defaultImage = this.el.querySelector("img.default"));
-	// 	// }});
-	// 	// var _sizing;
-	// 	// Object.defineProperty(this, "sizing", {get: function() {
-	// 	// 	return _sizing || (_sizing = this.el.querySelector(".sizing"));
-	// 	// }});
-	// 	// var _content;
-	// 	// Object.defineProperty(this, "content", {get: function() {
-	// 	// 	return _content || (_content = this.el.querySelector(".content"));
-	// 	// }});
-	// 	
-	// 	var _defaultImage, _sizing, _content;
-	// 	Object.defineProperties(this, {
-	// 		"defaultImage": { get: this.getDefaultImage },
-	// 		"sizing": { get: this.getSizingEl },
-	// 		"content": { get: this.getContentEl },
-	// 	});
-	// },
-	
 	/** @override */
 	initialize: function (opts) {
-		View.prototype.initialize.apply(this, arguments);
+		CarouselRenderer.prototype.initialize.apply(this, arguments);
 		if (this.model.attrs().hasOwnProperty("@classname")) {
 			this.el.className += " " + this.model.attrs()["@classname"];
 		}
-		console.log(this.cid);
 	},
 	
 	/* --------------------------- *
 	/* child getters
 	/* --------------------------- */
 	
+	/** @return {HTMLElement} */
 	getDefaultImage: function () {
 		return this._defaultImage || (this._defaultImage = this.el.querySelector("img.default"));
-	},
-	
-	getSizingEl: function () {
-		return this._sizing || (this._sizing = this.el.querySelector(".sizing"));
-	},
-	
-	getContentEl: function () {
-		return this._content || (this._content = this.el.querySelector(".content"));
 	},
 	
 	/* --------------------------- *
 	/* children/layout
 	/* --------------------------- */
 	
-	createChildren: function() {
-		this.el.innerHTML = this.template(this.model.toJSON());
-	},
+	// createChildren: function() {
+	// 	this.el.innerHTML = this.template(this.model.toJSON());
+	// },
 	
-	/** @return {this} */
-	measure: function (sizingArg) {
+	/** @override */
+	measure: function () {
 		var sW, sH; // source dimensions
 		var pcW, pcH; // measured values
 		var cX, cY, cW, cH, cS; // computed values
 		var sizing = this.getSizingEl();
 		
-		if (sizing === sizingArg) {
-			console.warn("sizing element is different");
-			sizing = sizingArg;
+		if (sizing === arguments[0]) {
+			console.error("measure called with arg different than sizing element");
+			sizing = arguments[0];
 		}
 		
 		sizing.style.maxWidth = "";
@@ -140,6 +109,7 @@ module.exports = View.extend({
 		// 	content.offsetWidth,
 		// 	content.offsetHeight
 		// );
+		return this;
 	},
 	
 	render: function () {
@@ -160,6 +130,30 @@ module.exports = View.extend({
 		*/
 		return this;
 	},
+	
+	// constructor: function () {
+	// 	View.apply(this, arguments);
+	// 	
+	// 	// var _defaultImage;
+	// 	// Object.defineProperty(this, "defaultImage", {get: function() {
+	// 	// 	return _defaultImage || (_defaultImage = this.el.querySelector("img.default"));
+	// 	// }});
+	// 	// var _sizing;
+	// 	// Object.defineProperty(this, "sizing", {get: function() {
+	// 	// 	return _sizing || (_sizing = this.el.querySelector(".sizing"));
+	// 	// }});
+	// 	// var _content;
+	// 	// Object.defineProperty(this, "content", {get: function() {
+	// 	// 	return _content || (_content = this.el.querySelector(".content"));
+	// 	// }});
+	// 	
+	// 	var _defaultImage, _sizing, _content;
+	// 	Object.defineProperties(this, {
+	// 		"defaultImage": { get: this.getDefaultImage },
+	// 		"sizing": { get: this.getSizingEl },
+	// 		"content": { get: this.getContentEl },
+	// 	});
+	// },
 },{
 	/** @type {module:app/view/promise/whenSelectionIsContiguous} */
 	whenSelectionIsContiguous: require("../promise/whenSelectionIsContiguous"),

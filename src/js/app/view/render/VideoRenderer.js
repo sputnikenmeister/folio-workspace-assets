@@ -49,13 +49,15 @@ var mediaEvents = [
 	"volumechange",
 	"fullscreenchange",
 	"fullscreenerror",
+	"mozfullscreenchange",
+	"mozfullscreenerror",
 	"webkitendfullscreen",
 	"webkitbeginfullscreen"
 ];
 /** @type {Array} */
 var stateMediaEvents = [
 	"loadstart",
-	"progress",
+	// "progress",
 	// "suspend",
 	"abort",
 	"error",
@@ -77,11 +79,21 @@ var stateMediaEvents = [
 	// "paused",
 	// "resize",
 	// "ratechange",
-	// "volumechange",
-	// "fullscreenchange",
-	// "fullscreenerror",
-	// "webkitendfullscreen",
-	// "webkitbeginfullscreen"
+	// "volumechange"
+];
+
+var networkStateConstNames = [
+	"NETWORK_EMPTY",
+	"NETWORK_IDLE",
+	"NETWORK_LOADING",
+	"NETWORK_NO_SOURCE"
+];
+var readyStateConstNames = [
+	"HAVE_NOTHING",
+	"HAVE_METADATA",
+	"HAVE_CURRENT_DATA",
+	"HAVE_FUTURE_DATA",
+	"HAVE_ENOUGH_DATA"
 ];
 
 /**
@@ -90,6 +102,7 @@ var stateMediaEvents = [
 */
 module.exports = PlayableRenderer.extend({
 	
+	/** @type {string} */
 	cidPrefix: "video-renderer-",
 	/** @type {string} */
 	className: PlayableRenderer.prototype.className + " video-renderer",
@@ -97,7 +110,11 @@ module.exports = PlayableRenderer.extend({
 	template: require("./VideoRenderer.hbs"),
 	
 	events: {
-		"click .full-screen-toggle": function (ev) {
+		"mozfullscreenchange": function(ev) {
+			console.info(ev.type);
+			this.video.controls = document.fullscreenElement === this.video;
+		},
+		"mouseup .full-screen-toggle": function (ev) {
 			if (!ev.defaultPrevented && this.model.selected) {
 				console.log("click .full-screen-toggle");
 				try {
@@ -120,7 +137,7 @@ module.exports = PlayableRenderer.extend({
 	initialize: function (opts) {
 		PlayableRenderer.prototype.initialize.apply(this, arguments);
 		_.bindAll(this, "_onMediaEvent");
-		this.createChildren();
+		// this.createChildren();
 		
 		this.addMediaListeners();
 		this.initializeAsync();
@@ -130,6 +147,7 @@ module.exports = PlayableRenderer.extend({
 	/* children/layout
 	/* --------------------------- */
 	
+	/** @override */
 	createChildren: function() {
 		this.el.innerHTML = this.template(this.model.toJSON());
 		
@@ -196,10 +214,10 @@ module.exports = PlayableRenderer.extend({
 		
 		// this.fullScreenToggle.style.top = cssH;
 		
-		// sizing.style.maxWidth = content.offsetWidth + "px";
-		// sizing.style.maxHeight = content.offsetHeight + "px";
-		sizing.style.maxWidth = content.clientWidth + "px";
-		sizing.style.maxHeight = content.clientHeight + "px";
+		sizing.style.maxWidth = content.offsetWidth + "px";
+		sizing.style.maxHeight = content.offsetHeight + "px";
+		// sizing.style.maxWidth = content.clientWidth + "px";
+		// sizing.style.maxHeight = content.clientHeight + "px";
 		
 		return this;
 	},

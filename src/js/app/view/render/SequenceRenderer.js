@@ -82,20 +82,21 @@ var SequenceStepRenderer = View.extend({
 */
 module.exports = PlayableRenderer.extend({
 	
+	/** @type {string} */
 	cidPrefix: "sequence-renderer-",
-	/** @type {Function} */
-	template: require("./SequenceRenderer.hbs"),
 	/** @type {string} */
 	className: PlayableRenderer.prototype.className + " sequence-renderer",
+	/** @type {Function} */
+	template: require("./SequenceRenderer.hbs"),
 	
 	/** @override */
 	initialize: function (opts) {
 		PlayableRenderer.prototype.initialize.apply(this, arguments);
 		
-		this.createChildren();
 		this.initializeAsync();
 	},
 	
+	/** @override */
 	createChildren: function() {
 		this.el.innerHTML = this.template(this.model.toJSON());
 		this.placeholder = this.el.querySelector(".placeholder");
@@ -197,7 +198,7 @@ module.exports = PlayableRenderer.extend({
 	/* layout
 	/* --------------------------- */
 	
-	/** @return {this} */
+	/** @override */
 	render: function () {
 		var content = this.getContentEl();
 		var sizing = this.getSizingEl();

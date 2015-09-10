@@ -13,7 +13,7 @@
 		color: $background_color;
 		background-color: mix($color, $background_color, 7%);
 		// border: 1px solid transparent;
-		text-shadow: rgba(0,0,0,0.25) 1px 1px 0;
+		// text-shadow: rgba(0,0,0,0.25) 1px 1px 0;
 	}
 	.content {
 		// *** "mutable" properties: must be in the first matching rule

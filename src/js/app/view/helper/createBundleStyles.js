@@ -11,7 +11,7 @@ var bundles = require("../../model/collection/BundleCollection");
 
 module.exports = function() {
 	var s, attrs, tmpVal;
-	var fgColor, bgColor, bgLum, fgLum, isLightOverDark;
+	var fgColor, bgColor, bgLum, fgLum, hasDarkBg;
 	var bodySelector, bodyStyles = ["background", "background-color", "color"];
 	var bgDefault, fgDefault, fgColorHex, bgColorHex;
 	var revSelector, revFgColorHex, revBgColorHex;
@@ -30,7 +30,7 @@ module.exports = function() {
 		bgColorHex = bgColor.hexString();
 		fgLum = fgColor.luminosity();
 		bgLum = bgColor.luminosity();
-		isLightOverDark = fgLum > bgLum;
+		hasDarkBg = fgLum > bgLum;
 		
 		bundle.colors = {
 			fgColor: fgColor, bgColor: bgColor, dark: fgLum > bgLum
@@ -41,10 +41,10 @@ module.exports = function() {
 		// - - - - - - - - - - - - - - - - 
 		bodySelector = "body." + bundle.get("domid");
 		s = _.pick(attrs, bodyStyles);
-		s["-webkit-font-smoothing"] = (isLightOverDark? "antialiased" : "auto");
+		s["-webkit-font-smoothing"] = (hasDarkBg? "antialiased" : "auto");
 		/* NOTE: In Firefox 'body { -moz-osx-font-smoothing: grayscale; }'
 		/* works both in light over dark and dark over light, hardcoded in _base.scss */
-		//s["-moz-osx-font-smoothing"] = (isLightOverDark? "grayscale" : "auto");
+		//s["-moz-osx-font-smoothing"] = (hasDarkBg? "grayscale" : "auto");
 		Styles.createCSSRule(bodySelector, s);
 		
 		s = {};
@@ -67,7 +67,7 @@ module.exports = function() {
 		
 		// inverted html
 		s = { "color" : revFgColorHex };
-		s["-webkit-font-smoothing"] = (isLightOverDark? "auto" : "antialiased");
+		s["-webkit-font-smoothing"] = (hasDarkBg? "auto" : "antialiased");
 		Styles.createCSSRule(revSelector + " .color-fg", s);
 		Styles.createCSSRule(revSelector + ".color-fg", s);
 		s = { "background-color" : revBgColorHex };
@@ -92,11 +92,11 @@ module.exports = function() {
 		// - - - - - - - - - - - - - - - - 
 		s = {};
 		// Darken if dark, lighten if light, then clamp value to 0-1
-		tmpVal = Math.min(Math.max(bgLum * (isLightOverDark? 0.95 : 1.05), 0), 1); 
+		tmpVal = Math.min(Math.max(bgLum * (hasDarkBg? 0.95 : 1.05), 0), 1); 
 		s["background-color"] = bgColor.clone().lighten(tmpVal).alpha(0.5).rgbaString();
 		Styles.createCSSRule(bodySelector + " .color-overclip", s);
 		s = {};
-		tmpVal = Math.min(Math.max(fgLum * (isLightOverDark? 0.95 : 1.05), 0), 1); 
+		tmpVal = Math.min(Math.max(fgLum * (hasDarkBg? 0.95 : 1.05), 0), 1); 
 		s["background-color"] = fgColor.clone().lighten(tmpVal).alpha(0.5).rgbaString();
 		Styles.createCSSRule(revSelector + " .color-overclip", s);
 		Styles.createCSSRule(revSelector + ".color-overclip", s);
@@ -126,10 +126,12 @@ module.exports = function() {
 		
 		// text color luminosity is inverse from body, apply oposite rendering mode
 		s = {};
-		s["-webkit-font-smoothing"] = (isLightOverDark? "auto" : "antialiased");
+		s["-webkit-font-smoothing"] = (hasDarkBg? "auto" : "antialiased");
 		s["background-color"] = bgColor.clone().mix(fgColor, 0.95).hexString();
 		// s["color"] = bgColor.clone().mix(fgColor, 0.995).hexString();
-		s["color"] = bgColor.hexString();
+		// s["color"] = bgColor.hexString();
+		s["color"] = bgColor.clone()[hasDarkBg?"darken":"lighten"](0.1).hexString();
+		
 		("border-radius" in attrs) && (s["border-radius"] = attrs["border-radius"]);
 		Styles.createCSSRule(carouselSelector + " .media-item .placeholder", s);
 	});
