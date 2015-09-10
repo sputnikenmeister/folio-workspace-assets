@@ -154,7 +154,7 @@ module.exports = MediaRenderer.extend({
 			tW = rectEl.offsetWidth,
 			tH = rectEl.offsetHeight;
 		
-		if (!(tX && tY && tW && tH)) {
+		if (tX === void 0 || tY === void 0 || tW === void 0 || tH === void 0) {
 			return;
 		}
 			
@@ -203,6 +203,11 @@ module.exports = MediaRenderer.extend({
 		imageData = context.getImageData(0, 0, destRect.width, destRect.height);
 		
 		var avgColor = Color().rgb(getAverageRGB(imageData));
+		// var avgHex = avgColor.hexString();
+		// var els = this.el.querySelectorAll("img.current, img.poster");
+		// for (var i = 0; i < els.length; i++) {
+		// 	els.item(i).style.backgroundColor = avgHex;
+		// }
 		targetEl.classList.toggle("over-dark", avgColor.dark());
 			
 		// Color, filter opts
@@ -223,6 +228,6 @@ module.exports = MediaRenderer.extend({
 		// context.putImageData(imageData, 0, 0);
 		// targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
 		
-		console.log(this.cid, this.model.cid, "PlayableRenderer.updateOverlay");
+		// console.log(this.cid, this.model.cid, "PlayableRenderer.updateOverlay");
 	}
 });

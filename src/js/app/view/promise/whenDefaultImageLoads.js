@@ -27,7 +27,7 @@ module.exports = function(view) {
 			view.el.classList.add("pending");
 			
 			var progressFn = function (progress) {
-				console.log(view.cid, view.model.cid, "whenDefaultImageLoads progress", progress);
+				// console.log(view.cid, view.model.cid, "whenDefaultImageLoads progress", progress);
 				view.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
 			};
 			progressFn = _.throttle(progressFn, 100, {leading: true, trailing: false});

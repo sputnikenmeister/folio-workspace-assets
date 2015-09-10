@@ -80,7 +80,6 @@ module.exports = function (grunt) {
 		src: [],
 		options: {
 			require: [
-				// "jquery",
 				"underscore",
 				"backbone",
 				"backbone.native",
@@ -90,7 +89,7 @@ module.exports = function (grunt) {
 				"color",
 				"es6-promise",
 				"classlist-polyfill",
-				"cookies-js"
+				"cookies-js",
 			],
 			alias: [
 				"./src/js/shims/fullscreen.js:fullscreen-polyfill",
@@ -104,13 +103,13 @@ module.exports = function (grunt) {
 	grunt.config("browserify.client", {
 		dest: "./js/<%= DEBUG_CLIENT_JS %>.js",
 		src: [
-			"./src/js/app/App.js"
+			"./src/js/app/App.js",
 		],
 		options: {
 			transform: [
 				["hbsfy", { extensions: ["hbs"] }],
-				// "decomponentify",
 				// ["node-underscorify", { extensions: ["tpl"] }],
+				// "decomponentify",
 			]
 		}
 	});

@@ -1,5 +1,3 @@
-
-
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {Function} */

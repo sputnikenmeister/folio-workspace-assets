@@ -147,7 +147,7 @@ module.exports = PlayableRenderer.extend({
 		this.video.loop = this.model.attrs().hasOwnProperty("@video-loop");
 	},
 	
-	/** @return {this} */
+	/** @override */
 	render: function () {
 		var els, el, i;
 		var cssX, cssY, cssW, cssH;
@@ -159,14 +159,16 @@ module.exports = PlayableRenderer.extend({
 		
 		// crop video 1px top
 		// NOTE: other elements must use video's CROPPED height 
-		// this.video.style.marginTop = "-1px";
-		// this.video.style.marginBottom = "-1px";
 		this.video.setAttribute("width", this.contentWidth);
-		// this.video.setAttribute("height", this.contentHeight);
+		this.video.setAttribute("height", this.contentHeight);
 		img.setAttribute("width", this.contentWidth);
-		// img.setAttribute("height", this.contentHeight);
+		img.setAttribute("height", this.contentHeight);
 		
-		this.contentHeight -= 2; 
+		 // NOTE: CSS: video, img.poster { margin-top: -1px }
+		// this.video.style.marginTop = "-1px";
+		// img.style.marginTop = "-1px";
+		this.contentHeight -= 2;
+		// this.contentWidth -= 2;
 		
 		cssX = this.contentX + "px";
 		cssY = this.contentY + "px";
@@ -192,28 +194,12 @@ module.exports = PlayableRenderer.extend({
 			el.style.height = cssH;
 		}
 		
-		// this.overlay.style.left = cX + "px";//(this.contentWidth/2) + "px";
-		// this.overlay.style.top = cY + "px";//(this.contentHeight/2) + "px";
-		// this.overlay.style.width = this.contentWidth + "px";
-		// this.overlay.style.height = this.contentHeight + "px";
-		// if (_.isElement(this.overlaySymbol)) {
-		// 	var osx = (cW - this.overlaySymbol.width.baseVal.value)/2,
-		// 		osy = (cH - this.overlaySymbol.height.baseVal.value)/2;
-		// 	
-		// 	this.overlaySymbol.style.left = osx + "px";
-		// 	this.overlaySymbol.style.top = osy + "px";
-		// 	// var symbolStyle = window.getComputedStyle(this.overlaySymbol);
-		// 	// console.log( symbolStyle.width, symbolStyle.height,
-		// 	// 	this.overlaySymbol.width.baseVal.value, this.overlaySymbol.height.baseVal.value);;
-		// }
-		this.fullScreenToggle.style.top = cssH;
+		// this.fullScreenToggle.style.top = cssH;
 		
-		// sizing.style.maxWidth = cW + "px";
-		// sizing.style.maxHeight = cH + "px";
-		sizing.style.maxWidth = content.offsetWidth + "px";
-		sizing.style.maxHeight = content.offsetHeight + "px";
-		// sizing.style.maxWidth = content.clientWidth + "px";
-		// sizing.style.maxHeight = content.clientHeight + "px";
+		// sizing.style.maxWidth = content.offsetWidth + "px";
+		// sizing.style.maxHeight = content.offsetHeight + "px";
+		sizing.style.maxWidth = content.clientWidth + "px";
+		sizing.style.maxHeight = content.clientHeight + "px";
 		
 		return this;
 	},
@@ -340,22 +326,30 @@ module.exports = PlayableRenderer.extend({
 				}
 				break;
 			case "webkitbeginfullscreen":
+				// this.video.removeAttribute("controls");
 				this.video.controls = true;
 				break;
 			case "webkitendfullscreen":
+				// this.video.setAttribute("controls", "controls");
 				this.video.controls = false;
 				break;
 			case "fullscreenchange":
+				// if (document.fullscreenElement === this.video){
+				// 	this.video.setAttribute("controls", "controls");
+				// } else {
+				// 	this.video.removeAttribute("controls");
+				// }
 				this.video.controls = document.fullscreenElement === this.video;
 				break;
 			case "fullscreenerror":
+				// this.video.removeAttribute("controls");
 				this.video.controls = false;
 				break;
 			default:
 		}
-		// if (ev.type.toLowerCase().indexOf("fullscreen")) {
-		// 	console.log(ev.type, document.fullscreenElement);
-		// }
+		if (ev.type.toLowerCase().indexOf("fullscreen") !== -1) {
+			console.log(ev.type, document.fullscreenElement);
+		}
 		
 		this._logMediaEvents(ev, !isMediaStateEvent);
 	},
@@ -375,8 +369,9 @@ module.exports = PlayableRenderer.extend({
 		var logStr = [
 			entryDate.toISOString().substr(11, 12),
 			this.video.currentTime.toFixed(3),
-			this.video.readyState,
-			(this.video.ended? "ended" : (this.video.paused? "paused" : "playing")),
+			(this.video.ended? "ended" : (this.video.paused? "paused" : "playing")).toUpperCase(),
+			networkStateConstNames[this.video.networkState],
+			readyStateConstNames[this.video.readyState],
 			this._lastMediaState
 		].join("\t");
 		
@@ -388,7 +383,7 @@ module.exports = PlayableRenderer.extend({
 			this.lastEntry.textContent = logStr;
 			this.debugLog.appendChild(this.lastEntry);
 			this.debugLog.style.width = this.contentWidth + "px";
-			this.debugLog.style.height = "calc(100% - " + (this.contentHeight) + "px - 3rem)";
+			this.debugLog.style.height = "calc(100% - " + (this.contentHeight) + "px - 6rem)";
 			this.debugLog.scrollTop = this.debugLog.scrollHeight;
 		} else {
 			this.lastEntry.textContent = logStr;

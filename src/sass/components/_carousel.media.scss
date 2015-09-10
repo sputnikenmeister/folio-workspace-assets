@@ -13,6 +13,7 @@
 		color: $background_color;
 		background-color: mix($color, $background_color, 7%);
 		// border: 1px solid transparent;
+		text-shadow: rgba(0,0,0,0.25) 1px 1px 0;
 	}
 	.content {
 		// *** "mutable" properties: must be in the first matching rule
@@ -21,10 +22,6 @@
 		box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
 		position: absolute;
 		box-sizing: content-box;
-	}
-	.content {
-		// transition: opacity $duration $delay + 0.001s $ease;
-		transition: opacity $duration $ease 0.001s;
 		opacity: 0;
 	}
 	&.idle,	&.error {
@@ -37,6 +34,7 @@
 			opacity: 1;
 		}
 	}
+	
 	// .placeholder:before
 	// - - - - - - - - - - - - - - - - -
 	.placeholder:before {
@@ -111,6 +109,7 @@ $browser_height: 30px;
 			0px 0px 0px 1px rgba(0,0,0,0.15),
 			0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
 		background-size: 100% $browser_height;
+		background-position: top;
 		background-repeat: no-repeat;
 	}
 	// .content .default {}

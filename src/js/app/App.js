@@ -84,6 +84,10 @@ window.addEventListener("load", function(ev) {
 
 	delete window.bootstrap;
 
+
+	require("./view/template/_helpers");
+	require("./view/template/_partials");
+	
 	/** @type {module:app/view/AppView} */
 	var AppView = require("./view/AppView");
 

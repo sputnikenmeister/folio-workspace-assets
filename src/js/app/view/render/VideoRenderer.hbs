@@ -2,7 +2,11 @@
 <div class="debug-log color-fg05"><pre></pre></div>
 <div class="content not-played">
 	<div class="controls content-size">
-		<a class="full-screen-toggle" href="javascript:(void 0)">Full Screen</a>
+		<a class="full-screen-toggle" href="javascript:(void 0)">
+			<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid meet" viewBox="-21.5 -21.5 43 43" width="15" height="15">
+				<path d="M-5,5 L-20,20 M-7,20 L-20,20 L-20,7 M5,-5 L20,-20 M7,-20 L20,-20 L20,-7" class="color-stroke" style="stroke-width:3;fill:none"/>
+			</svg>
+		</a>
 	</div>
 	<div class="crop-box content-size">
 		<video preload="none" poster="{{global "MEDIA_DIR"}}/{{src}}">
@@ -14,7 +18,13 @@
 		</video>
 		<img class="poster default" alt="{{name}}"/>
 	</div>
+	<!-- <svg class="playback-symbols content-size" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-100 -100 200 200" style="" preserveAspectRatio="xMidYMid meet">
+		<rect class="symbol-box" x="-20" y="-20" width="40" height="40" rx="2" style="fill-opacity:0.8"/>
+		<path class="replay-symbol symbol-shape" d="M -6 -7 L 9 0 L -6 7 Z"/>
+		<path class="play-symbol symbol-shape" d="M -4 -5 L6.5 0 L -4 5 Z M -13.2 -1.6e-14 A 13.2 13.2 0 1 0 -9.333809511662416 -9.333809511662439 L -7.636753236814704 -7.636753236814722 A 10.8 10.8 0 1 1 -10.8 -1.3e-14 H -8.5 L -12 -4 L -15.5 13e-14 Z"/>
+	</svg> -->
 	<div class="overlay content-size">
+		<!-- <object class="playback-symbols" type="image/svg+xml" data="{{global "APP_ROOT"}}/workspace/assets/images/symbols/playback.svg"></object> -->
 		<div class="play-toggle-hitarea play-toggle"><!-- &#xe80d; --></div>
 	</div>
 </div>

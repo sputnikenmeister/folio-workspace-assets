@@ -33,6 +33,7 @@
 // Animation
 // - - - - - - - - - - - - - - - - - -
 $pan_ease: $ease;
+
 .carousel {
 	.carousel-item {
 		transform: translate3d(0,0,0);
@@ -41,6 +42,22 @@ $pan_ease: $ease;
 	}
 	&.skip-transitions .carousel-item {
 		@include skip_transitions;
+	}
+	
+	// Content opacity
+	.carousel-item .content {
+		// transition: opacity $duration $delay + 0.001s $ease;
+		// transition: opacity $duration $ease 0.001s;
+		transition-property: 		opacity;
+		transition-timing-function:	$ease;
+		transition-delay: 			$delay*0 + 0.001s;
+		transition-duration:		$duration*1 + 0.001s;
+	}
+	&:not(.scrolling) .carousel-item.selected .content {
+		transition-delay: 			$delay*2 + 0.001s;
+	}
+	&.disabled .carousel-item.selected .content {
+		transition-delay: 			$delay*0 + 0.001s;
 	}
 }
 
@@ -61,7 +78,7 @@ $pan_ease: $ease;
 }
 
 // - - - - - - - - - - - - - - - - - -
-// .empty-item
+// .media-carousel
 // - - - - - - - - - - - - - - - - - -
 
 .carousel.media-carousel {
