@@ -404,4 +404,51 @@ module.exports = function (grunt) {
 
 	// DEBUG: check config result
 	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
+	
+	/* generate-favicons
+	* - - - - - - - - - - - - - - - - - */
+	grunt.config("fontgen_src", "./src/resources/fonts");
+	grunt.config("fontgen_dest", "./fonts/fontgen");
+	grunt.config("fontgen_dest_scss", "./src/sass/fonts");
+	
+	grunt.loadNpmTasks("grunt-fontgen");
+	grunt.loadNpmTasks("grunt-contrib-concat");
+	
+	grunt.config("fontgen.numbers", {
+		options: {
+			path_prefix: "../fonts/fontgen/htf-numbers",
+			stylesheet: "<%= fontgen_dest %>/fonts.css",
+		},
+		files: [{
+			src: "<%= fontgen_src %>/htf-numbers/*.ttf",
+			dest: "<%= fontgen_dest %>/htf-numbers",
+		}]
+	});
+	grunt.config("concat.fontgen-numbers", {
+		src: [ "<%= fontgen_dest %>/htf-numbers/*.css" ],
+		dest: "<%= fontgen_dest_scss %>/_htf-numbers.scss",
+	});
+	
+	grunt.config("fontgen.franklin", {
+		options: {
+			path_prefix: "../fonts/fontgen/itc-franklin-gothic-std",
+			stylesheet: "<%= fontgen_dest %>/fonts.css",
+		},
+		files: [{
+			src: "<%= fontgen_src %>/itc-franklin-gothic-std/*.otf",
+			dest: "<%= fontgen_dest %>/itc-franklin-gothic-std",
+		}]
+	});
+	grunt.config("concat.fontgen-franklin", {
+		src: [ "<%= fontgen_dest %>/itc-franklin-gothic-std/*.css" ],
+		dest: "<%= fontgen_dest_scss %>/_itc-franklin-gothic-std.scss",
+	});
+	
+	grunt.registerTask("fontgen-all", [
+		"fontgen:numbers",
+		"concat:fontgen-numbers",
+		"fontgen:franklin",
+		"concat:fontgen-franklin",
+	]);
+
 };
