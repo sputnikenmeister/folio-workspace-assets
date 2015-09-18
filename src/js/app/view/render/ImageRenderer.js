@@ -59,23 +59,15 @@ module.exports = MediaRenderer.extend({
 	
 	/** @override */
 	render: function () {
-		var img, sizing, content;
-		
 		this.measure();
 		
-		img = this.getDefaultImage();
-		img.setAttribute("width", this.contentWidth);
-		img.setAttribute("height", this.contentHeight);
+		var img = this.getDefaultImage();
+		img.setAttribute("width", this.metrics.media.width);
+		img.setAttribute("height", this.metrics.media.height);
 		
-		content = this.getContentEl();
-		content.style.left = this.contentX + "px";
-		content.style.top = this.contentY + "px";
-		
-		sizing = this.placeholder;
-		sizing.style.width = content.offsetWidth + "px";
-		sizing.style.height = content.offsetHeight + "px";
-		// sizing.style.width = "100%";
-		// sizing.style.height = "100%";
+		var content = this.getContentEl();
+		content.style.left = this.metrics.content.x + "px";
+		content.style.top = this.metrics.content.y + "px";
 		
 		return this;
 	},

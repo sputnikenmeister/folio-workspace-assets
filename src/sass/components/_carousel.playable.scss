@@ -182,10 +182,12 @@
 // SequenceRenderer
 // - - - - - - - - - - - - - - - - - -
 .sequence-renderer {
-	// .sequence {
+	.sequence {
 	// 	position: absolute;
 	// 	width: 100%; height: 100%;
-	// }
+		border-radius: inherit;
+		overflow: hidden;
+	}
 	.sequence-step {
 		position: absolute;
 		top: 0; left: 0;
@@ -216,6 +218,16 @@
 	// .progress-meter
 	// - - - - - - - - - - - - - - - - -
 	.progress-meter {
+		// font-family: "NumbersClaimcheck";
+		// font-family: "NumbersIndicia";
+		// font-family: "NumbersRevenue";
+		// font-family: "NumbersPremium";
+		// font-family: "NumbersGreenback";
+		// font-family: "ITCFranklinGothicStd", $grotesque_fallback; font-weight: 800;
+		// font-family: "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
+		// font-family: "ITCFranklinGothicStd-Condensed", $grotesque_fallback;
+		font-weight: 600;
+		font-style: normal;
 		position: absolute;
 		width: 2rem;
 		height: 2rem;
@@ -230,25 +242,10 @@
 		// #step-label {}
 		// #pause-symbol{}
 	}
-	// .progress-meter {
-	// 	text-align: center;
-	// 	position: absolute;
-	// }
-	// &:not(.selected) .progress-meter {
-	// 	display: none;
-	// }
-	// .progress-meter #pause {
-	// 	// visibility: hidden; 
-	// 	// display: none;
-	// }
-	// .pending-media .progress-meter {
-	// 	#step-label { visibility: visible; }
-	// 	#pause { visibility: hidden; }
-	// }
-	// .pending-user .progress-meter {
-	// 	#step-label { visibility: hidden; }
-	// 	#pause { visibility: visible; }
-	// }
+	.circle-progress-meter {
+		overflow: hidden;
+		border-radius: 100%;
+	}
 }
 
 .video-renderer .debug-log {

@@ -170,8 +170,8 @@ module.exports = MediaRenderer.extend({
 		// native/display scale
 		var sW = this.model.get("w"),
 			sH = this.model.get("h"),
-			rsX = sW/this.contentWidth,
-			rsY = sH/this.contentHeight;
+			rsX = sW/this.metrics.media.width,
+			rsY = sH/this.metrics.media.height;
 		
 		// destRect, scaled to native
 		var srcRect = {

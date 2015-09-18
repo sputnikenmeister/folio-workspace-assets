@@ -177,33 +177,36 @@ module.exports = PlayableRenderer.extend({
 		
 		// crop video 1px top
 		// NOTE: other elements must use video's CROPPED height 
-		this.video.setAttribute("width", this.contentWidth);
-		this.video.setAttribute("height", this.contentHeight);
-		img.setAttribute("width", this.contentWidth);
-		img.setAttribute("height", this.contentHeight);
+		this.video.setAttribute("width", this.metrics.media.width);
+		this.video.setAttribute("height", this.metrics.media.height);
+		img.setAttribute("width", this.metrics.media.width);
+		img.setAttribute("height", this.metrics.media.height);
 		
 		 // NOTE: CSS: video, img.poster { margin-top: -1px }
 		// this.video.style.marginTop = "-1px";
 		// img.style.marginTop = "-1px";
-		this.contentHeight -= 2;
-		// this.contentWidth -= 2;
+		this.metrics.media.height -= 2;
+		// this.metrics.media.width -= 2;
 		
-		cssX = this.contentX + "px";
-		cssY = this.contentY + "px";
-		cssW = this.contentWidth + "px";
-		cssH = this.contentHeight + "px";
+		content.style.left = this.metrics.content.x + "px";
+		content.style.top = this.metrics.content.y + "px";
 		
-		// content.style.left = this.contentX + "px";
-		// content.style.top = this.contentY + "px";
+		// var m = this.contentMetrics;
+		// cssX = (this.metrics.content.x + m.paddingLeft + m.borderLeftWidth) + "px";
+		// cssY = (this.metrics.content.y + m.paddingTop + m.borderTopWidth) + "px";
+		
+		// els = this.el.querySelectorAll(".content, .content-pos");
+		// for (i = 0; i < els.length; i++) {
+		// 	el = els.item(i);
+		// 	el.style.left = cssX;
+		// 	el.style.top = cssY;
+		// }
+		
 		// content.style.width = cssW;
 		// content.style.height = cssH;
 		
-		els = this.el.querySelectorAll(".content, .content-pos");
-		for (i = 0; i < els.length; i++) {
-			el = els.item(i);
-			el.style.left = cssX;
-			el.style.top = cssY;
-		}
+		cssW = this.metrics.media.width + "px";
+		cssH = this.metrics.media.height + "px";
 		
 		els = this.el.querySelectorAll(".content, .content-size");
 		for (i = 0; i < els.length; i++) {
@@ -214,8 +217,8 @@ module.exports = PlayableRenderer.extend({
 		
 		// this.fullScreenToggle.style.top = cssH;
 		
-		sizing.style.maxWidth = content.offsetWidth + "px";
-		sizing.style.maxHeight = content.offsetHeight + "px";
+		// sizing.style.maxWidth = content.offsetWidth + "px";
+		// sizing.style.maxHeight = content.offsetHeight + "px";
 		// sizing.style.maxWidth = content.clientWidth + "px";
 		// sizing.style.maxHeight = content.clientHeight + "px";
 		
@@ -400,8 +403,8 @@ module.exports = PlayableRenderer.extend({
 			// this.lastEntry.style.color = logOnly? this.debugLogOnlyColor : this.debugLogColor;
 			this.lastEntry.textContent = logStr;
 			this.debugLog.appendChild(this.lastEntry);
-			this.debugLog.style.width = this.contentWidth + "px";
-			this.debugLog.style.height = "calc(100% - " + (this.contentHeight) + "px - 6rem)";
+			this.debugLog.style.width = this.metrics.media.width + "px";
+			this.debugLog.style.height = "calc(100% - " + (this.metrics.media.height) + "px - 6rem)";
 			this.debugLog.scrollTop = this.debugLog.scrollHeight;
 		} else {
 			this.lastEntry.textContent = logStr;

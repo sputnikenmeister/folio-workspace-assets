@@ -23,20 +23,10 @@ var setImmediate = require("../../../utils/setImmediate");
 
 /** @type {module:app/view/render/CarouselRenderer} */
 var CarouselRenderer = require("../render/CarouselRenderer");
-// /**
-//  * @constructor
-//  * @type {module:app/view/base/View}
-//  */
-// var CarouselRenderer = View.extend({
-// 	/** @override */
-// 	className: "carousel-item",
-// 	/** @override */
-// 	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
-// 	/** @override */
-// 	initialize: function (options) {
-// 		this.el.innerHTML = this.template(this.model.toJSON()); // = this.template(this.model.attributes);
-// 	},
-// });
+
+var cssToPx = function (cssVal, el) {
+	return parseInt(cssVal);
+};
 
 /**
  * @constructor
@@ -50,7 +40,7 @@ var Carousel = DeferredView.extend({
 	/** @override */
 	className: "carousel skip-transitions",
 	/** @type {int} In pixels */
-	tapAreaGrow: 20,
+	tapAreaGrow: 10,
 	/** @type {int} In pixels */
 	selectThreshold: 20,
 	/** @type {int} In pixels */
@@ -259,7 +249,7 @@ var Carousel = DeferredView.extend({
 	},
 	
 	_measure: function() {
-		var m, pos = 0, posInner = 0;
+		var m, mm, pos = 0, posInner = 0;
 		var maxAcross = 0, maxOuter = 0;
 		var maxView = this.emptyView || this.children.first();
 		
@@ -285,39 +275,68 @@ var Carousel = DeferredView.extend({
 			}
 		}, this);
 		
+		// get max child metrics
+		m = this.metrics[maxView.cid];
 		// measure self
-		m = this.metrics[this.cid] || (this.metrics[this.cid] = {});
-		m.across = maxAcross;
-		m.outer = this.el[this.dirProp("offsetWidth", "offsetHeight")];
-		m.inner = maxView.el[this.dirProp("offsetWidth", "offsetHeight")];
-		m.before = maxView.el[this.dirProp("offsetLeft", "offsetTop")];
-		m.after = m.outer - (m.inner + m.before);
+		mm = this.metrics[this.cid] || (this.metrics[this.cid] = {});
+		mm.across = maxAcross;
+		mm.outer = this.el[this.dirProp("offsetWidth", "offsetHeight")];
+		mm.before = maxView.el[this.dirProp("offsetLeft", "offsetTop")];
+		mm.inner = maxView.el[this.dirProp("offsetWidth", "offsetHeight")];
+		// mm.inner = m.inner;
+		mm.after = mm.outer - (mm.inner + mm.before);
 		
 		// tap area
-		this.tapAreaBefore = m.before + this.tapAreaGrow;
-		this.tapAreaAfter = m.before + m.inner - this.tapAreaGrow;
-		this.selectThreshold = Math.min(Carousel.MAX_SELECT_THRESHOLD, m.outer * 0.1);
+		this.tapAreaBefore = mm.before + this.tapAreaGrow;
+		this.tapAreaAfter = mm.before + mm.inner - this.tapAreaGrow;
+		this.selectThreshold = Math.min(Carousel.MAX_SELECT_THRESHOLD, mm.outer * 0.1);
 	},
 	
 	measureChildView: function (view) {
-		var m, viewEl, sizeEl;
+		var m, s, viewEl, sizeEl;
 		
 		viewEl = view.el;
-		sizeEl = viewEl.querySelector(".sizing") || viewEl.firstChild;
-		
 		m = this.metrics[view.cid] || (this.metrics[view.cid] = {});
-		m.outer = viewEl[this.dirProp("offsetWidth", "offsetHeight")];
+		
+		if (view.metrics) {
+			m.before = view.metrics[this.dirProp("marginLeft","marginTop")];
+			m.outer = view.metrics[this.dirProp("maxWidth","maxHeight")] ||
+				view.metrics[this.dirProp("width","height")] ||
+				viewEl[this.dirProp("offsetWidth", "offsetHeight")];
+			m.outer += m.before;
+			m.outer += view.metrics[this.dirProp("marginRight","marginBottom")];
+			m.inner = view.metrics.content[this.dirProp("width","height")];
+			m.before += view.metrics.content[this.dirProp("x","y")];
+		} else {
+			
+			s = getComputedStyle(viewEl);
+			m.before = cssToPx(s[this.dirProp("marginLeft","marginTop")]);
+			m.outer = cssToPx(s[this.dirProp("maxWidth","maxHeight")]) ||
+				cssToPx(s[this.dirProp("width","height")]) ||
+				viewEl[this.dirProp("offsetWidth", "offsetHeight")];
+			m.outer += m.before;
+			m.outer += cssToPx(s[this.dirProp("marginRight","marginBottom")]);
+			
+			sizeEl = viewEl.querySelector(".sizing") || viewEl.firstChild;
+			if (sizeEl) {
+				m.inner = sizeEl[this.dirProp("offsetWidth", "offsetHeight")];
+				m.before += sizeEl[this.dirProp("offsetLeft", "offsetTop")];
+			} else {
+				m.inner = m.outer;
+				m.before = 0;
+			}
+		}
+		m.after = m.outer - (m.inner + m.before);
 		m.across = viewEl[this.dirProp("offsetHeight", "offsetWidth")];
 		
-		if (sizeEl) {
-			m.inner = sizeEl[this.dirProp("offsetWidth", "offsetHeight")];
-			m.before = sizeEl[this.dirProp("offsetLeft", "offsetTop")];
-			m.after = m.outer - (m.inner + m.before);
-		} else {
-			m.inner = m.outer;
-			m.before = 0;
-			m.after = 0;
-		}
+		// m.before = cssToPx(s[this.dirProp("marginLeft","marginTop")]);
+		// m.after = cssToPx(s[this.dirProp("marginRight","marginBottom")]);
+		// m.inner =
+		// 	cssToPx(s[this.dirProp("maxWidth","maxHeight")]) ||
+		// 	cssToPx(s[this.dirProp("width","height")]) ||
+		// 	viewEl[this.dirProp("offsetWidth", "offsetHeight")];
+		// m.outer = m.before + m.inner + m.after;
+		
 		return m;
 	},
 	

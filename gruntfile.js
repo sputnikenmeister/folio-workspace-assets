@@ -4,14 +4,25 @@ module.exports = function (grunt) {
 
 	grunt.config("pkg", grunt.file.readJSON("package.json"));
 	
+	grunt.config("paths", {
+		src: {
+			sass:		"./src/sass",
+			resources:	"./src/resources",
+			fonts:		"./src/resources/fonts",
+		},
+		dest: {
+			fonts:		"./fonts",
+			css:		"./fonts",
+			js:			"./fonts",
+		},
+		fontello: "fonts/fontello-27278fbd"
+	});
 	
 	grunt.config("DEBUG_CLIENT_JS", "folio-debug-client");
 	grunt.config("DEBUG_VENDOR_JS", "folio-debug-vendor");
 	grunt.config("DEBUG_STYLES", "folio-debug");
 	grunt.config("DIST_JS", "folio");
 	grunt.config("DIST_STYLES", "folio");
-	
-	grunt.config("FONTELLO_DIR", "fonts/fontello-27278fbd");
 
 	/* ---------------------------------
 	 * Style Sheets
@@ -355,7 +366,7 @@ module.exports = function (grunt) {
 		function() {
 			var child = grunt.util.spawn({
 				cmd: "fontello-cli",
-				args: ["open", "--config", "<%= FONTELLO_DIR %>/config.json"],
+				args: ["open", "--config", "<%= paths.fontello %>/config.json"],
 				opts: {stdio: "inherit"}
 			}, this.async());
 		}
@@ -389,10 +400,8 @@ module.exports = function (grunt) {
 		img_0139: {
 			options: {
 				appleTouchPadding: 0,
-				// appleTouchBackgroundColor: "#FF00FF",
-				// tileColor: "#FF00FF",
 			},
-			src: "src/resources/favicon/IMG_0139.png",
+			src: "src/resources/favicon/IMG_0139_fav.png",
 			dest: "images/favicon",
 		},
 	});
@@ -405,50 +414,85 @@ module.exports = function (grunt) {
 	// DEBUG: check config result
 	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
 	
-	/* generate-favicons
-	* - - - - - - - - - - - - - - - - - */
-	grunt.config("fontgen_src", "./src/resources/fonts");
-	grunt.config("fontgen_dest", "./fonts/fontgen");
-	grunt.config("fontgen_dest_scss", "./src/sass/fonts");
+	/* --------------------------------
+	 * Fonts
+	 * -------------------------------- */
 	
 	grunt.loadNpmTasks("grunt-fontgen");
 	grunt.loadNpmTasks("grunt-contrib-concat");
+	grunt.loadNpmTasks("grunt-contrib-copy");
+	//https://github.com/gruntjs/grunt-contrib-copy
 	
-	grunt.config("fontgen.numbers", {
+	grunt.config("paths.src.fonts", "<%= paths.src.resources %>/fonts");
+	// grunt.config("fontgen_dest", "./fonts/fontgen");
+	// grunt.config("fontgen_dest_scss", "<%= paths.src.sass %>/fonts");
+	
+	/* fontgen-numbers-htf
+	* - - - - - - - - - - - - - - - - - */
+	grunt.config("fontgen.numbers-htf", {
 		options: {
-			path_prefix: "../fonts/fontgen/htf-numbers",
-			stylesheet: "<%= fontgen_dest %>/fonts.css",
+			path_prefix: "../fonts/fontgen/numbers-htf",
+			stylesheet: "<%= paths.dest.fonts %>/fontgen/numbers-htf.css",
 		},
 		files: [{
-			src: "<%= fontgen_src %>/htf-numbers/*.ttf",
-			dest: "<%= fontgen_dest %>/htf-numbers",
+			src: [
+				"<%= paths.src.fonts %>/numbers-htf/NumbersRevenue.ttf",
+				"<%= paths.src.fonts %>/numbers-htf/NumbersRedbird.ttf",
+				"<%= paths.src.fonts %>/numbers-htf/NumbersClaimcheck.ttf",
+				"<%= paths.src.fonts %>/numbers-htf/NumbersIndicia.ttf"
+			],
+			dest: "<%= paths.dest.fonts %>/fontgen/numbers-htf",
 		}]
 	});
-	grunt.config("concat.fontgen-numbers", {
-		src: [ "<%= fontgen_dest %>/htf-numbers/*.css" ],
-		dest: "<%= fontgen_dest_scss %>/_htf-numbers.scss",
+	grunt.config("concat.fontgen-numbers-htf", {
+		src: [ "<%= paths.dest.fonts %>/fontgen/numbers-htf/*.css" ],
+		dest: "<%= paths.src.sass %>/generated/_numbers-htf.scss",
 	});
-	
-	grunt.config("fontgen.franklin", {
-		options: {
-			path_prefix: "../fonts/fontgen/itc-franklin-gothic-std",
-			stylesheet: "<%= fontgen_dest %>/fonts.css",
-		},
-		files: [{
-			src: "<%= fontgen_src %>/itc-franklin-gothic-std/*.otf",
-			dest: "<%= fontgen_dest %>/itc-franklin-gothic-std",
-		}]
-	});
-	grunt.config("concat.fontgen-franklin", {
-		src: [ "<%= fontgen_dest %>/itc-franklin-gothic-std/*.css" ],
-		dest: "<%= fontgen_dest_scss %>/_itc-franklin-gothic-std.scss",
-	});
-	
-	grunt.registerTask("fontgen-all", [
-		"fontgen:numbers",
-		"concat:fontgen-numbers",
-		"fontgen:franklin",
-		"concat:fontgen-franklin",
+	grunt.registerTask("fontgen-numbers-htf", [
+		"fontgen:numbers-htf",
+		"concat:fontgen-numbers-htf",
 	]);
-
+	
+	var variantTasks,
+		allVariantsTasks = [],
+		franklinVariants = [
+			"franklin-gothic-itc",
+			"franklin-gothic-itc-cp",
+			"franklin-gothic-itc-cd",
+			"franklin-gothic-itc-xcp"
+		];
+	
+	franklinVariants.forEach(function(variantName) {
+		grunt.config("fontgen." + variantName, {
+			options: {
+				path_prefix: "../fonts/fontgen/" + variantName,
+				stylesheet: "<%= paths.dest.fonts %>/fontgen/" + variantName + ".css",
+			},
+			files: [{
+				src: "<%= paths.src.fonts %>/" + variantName + "/*.otf",
+				dest: "<%= paths.dest.fonts %>/fontgen/" + variantName,
+			}]
+		});
+		grunt.config("concat.fontgen-" + variantName, {
+			src: [ "<%= paths.dest.fonts %>/fontgen/" + variantName + "/*.css" ],
+			dest: "<%= paths.src.sass %>/generated/_" + variantName + ".scss",
+		});
+		variantTasks = ["fontgen:" + variantName, "concat:fontgen-" + variantName];
+		grunt.registerTask("fontgen-" + variantName, variantTasks);
+		allVariantsTasks = allVariantsTasks.concat(variantTasks);
+	});
+	grunt.registerTask("fontgen-franklin-gothic-itc-all", allVariantsTasks);
+	
+	// TODO: get all this font stuff out of here
+	
+	// grunt.registerMultiTask("fontgen-configure",
+	// 	"Generate grunt-fongen tasks by fontgen_dest folder",
+	// 	function() {
+	// 		var path = require("path");//grunt.log.write("Loaded dependencies...").ok();
+	// 		var done = this.async();//make grunt know this task is async.
+	// 		var i = 0;
+	// 		this.files.forEach(function(file) {
+	// 		});
+	// 	}
+	// );
 };

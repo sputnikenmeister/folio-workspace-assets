@@ -200,9 +200,6 @@ module.exports = PlayableRenderer.extend({
 	
 	/** @override */
 	render: function () {
-		var content = this.getContentEl();
-		var sizing = this.getSizingEl();
-		
 		this.measure();
 		
 		// NOTE: image elements are given 100% w/h in CSS (.sequence-renderer .content img);
@@ -210,19 +207,18 @@ module.exports = PlayableRenderer.extend({
 		// this.image.setAttribute("width", cW);
 		// this.image.setAttribute("height", cH);
 		
-		content.style.left = this.contentX + "px";
-		content.style.top = this.contentY + "px";
-		this.sequence.style.width = content.style.width = this.contentWidth + "px";
-		this.sequence.style.height = content.style.height = this.contentHeight + "px";
+		var content = this.getContentEl();
+		content.style.left = this.metrics.content.x + "px";
+		content.style.top = this.metrics.content.y + "px";
+		this.sequence.style.width = content.style.width = this.metrics.media.width + "px";
+		this.sequence.style.height = content.style.height = this.metrics.media.height + "px";
+		this.overlay.style.width = this.metrics.media.width + "px";
+		this.overlay.style.height = this.metrics.media.height + "px";
 		
-		this.overlay.style.width = this.contentWidth + "px";
-		this.overlay.style.height = this.contentHeight + "px";
-		// sizing.style.maxWidth = (cW + (poW - pcW)) + "px";
-		// sizing.style.maxHeight = (cH + (poH - pcH)) + "px";
-		// sizing.style.maxWidth = cW + "px";
-		// sizing.style.maxHeight = cH + "px";
-		sizing.style.maxWidth = content.offsetWidth + "px";
-		sizing.style.maxHeight = content.offsetHeight + "px";
+		// sizing.style.maxWidth = content.offsetWidth + "px";
+		// sizing.style.maxHeight = content.offsetHeight + "px";
+		// sizing.style.maxWidth = content.clientWidth + "px";
+		// sizing.style.maxHeight = content.clientHeight + "px";
 		
 		return this;
 	},

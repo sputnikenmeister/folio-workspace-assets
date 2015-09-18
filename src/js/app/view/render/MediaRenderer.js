@@ -4,6 +4,8 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
+/** @type {module:underscore} */
+var getBoxMetrics = require("../../../utils/css/getBoxMetrics");
 
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
@@ -28,6 +30,9 @@ module.exports = CarouselRenderer.extend({
 	/** @override */
 	initialize: function (opts) {
 		CarouselRenderer.prototype.initialize.apply(this, arguments);
+		
+		this.metrics.media = {};
+		
 		if (this.model.attrs().hasOwnProperty("@classname")) {
 			this.el.className += " " + this.model.attrs()["@classname"];
 		}
@@ -52,63 +57,73 @@ module.exports = CarouselRenderer.extend({
 	
 	/** @override */
 	measure: function () {
-		var sW, sH; // source dimensions
-		var pcW, pcH; // measured values
-		var cX, cY, cW, cH, cS; // computed values
-		var sizing = this.getSizingEl();
+		var sw, sh; // source dimensions
+		var pcw, pch; // measured values
+		var cx, cy, cw, ch, cs; // computed values
+		var ew, eh; // content edge totals
+		var cm; // content metrics
 		
-		if (sizing === arguments[0]) {
-			console.error("measure called with arg different than sizing element");
-			sizing = arguments[0];
-		}
+		CarouselRenderer.prototype.measure.apply(this, arguments);
 		
-		sizing.style.maxWidth = "";
-		sizing.style.maxHeight = "";
+		// sizing.style.maxWidth = "";
+		// sizing.style.maxHeight = "";
+		// cx = sizing.offsetLeft + sizing.clientLeft;
+		// cy = sizing.offsetTop + sizing.clientTop;
+		// pcw = sizing.clientWidth;
+		// pch = sizing.clientHeight;
+		// this.metrics.content.x = sizing.offsetLeft + sizing.clientLeft;
+		// this.metrics.content.y = sizing.offsetTop + sizing.clientTop;
+		// this.metrics.content.width = sizing.clientWidth;
+		// this.metrics.content.height = sizing.clientHeight;
 		
-		cX = sizing.offsetLeft + sizing.clientLeft;
-		cY = sizing.offsetTop + sizing.clientTop;
-		pcW = sizing.clientWidth;
-		pcH = sizing.clientHeight;
-		sW = this.model.get("w");
-		sH = this.model.get("h");
+		// m = getBoxMetrics(this.getContentEl());
+		
+		cm = this.metrics.content;
+		// cx = cm.x;
+		// cy = cm.y;
+		pcw = cm.width;
+		pch = cm.height;
+		
+		
+		ew = (cm.paddingLeft + cm.paddingRight + cm.borderLeftWidth + cm.borderRightWidth);
+		eh = (cm.paddingTop + cm.paddingBottom + cm.borderTopWidth + cm.borderBottomWidth);
+		pcw -= ew;
+		pch -= eh;
+		
+		sw = this.model.get("w");
+		sh = this.model.get("h");
 		
 		// Unless both client dimensions are larger than the source's
 		// choose constraint direction by aspect ratio
-		if (sW < pcW && sH < pcH) {
-			cS = 1;
-			cW = sW;
-			cH = sH;
-		} else if ((pcW/pcH) < (sW/sH)) {
-			cW = pcW;
-			cS = cW / sW;
-			cH = Math.round(cS * sH);
+		if (sw < pcw && sh < pch) {
+			cs = 1;
+			cw = sw;
+			ch = sh;
+		} else if ((pcw / pch) < (sw / sh)) {
+			cw = pcw;
+			cs = cw / sw;
+			ch = Math.round(cs * sh);
 		} else {
-			cH = pcH;
-			cS = cH / sH;
-			cW = Math.round(cS * sW);
+			ch = pch;
+			cs = ch / sh;
+			cw = Math.round(cs * sw);
 		}
 		
-		this.contentX = cX;
-		this.contentY = cY;
-		this.contentWidth = cW;
-		this.contentHeight = cH;
-		this.contentScale = cS;
+		// this.metrics.content.x = cx;
+		// this.metrics.content.y = cy;
+		// this.metrics.media.width = cw;// + ew;
+		// this.metrics.media.height = ch;// + eh;
+		// this.contentScale = cs;
 		
-		// var o = _.pick(content, function(val) {
-		// 	return /^(offset|client)(Left|Top|Width|Height)/.test(val);
-		// });
-		// console.log(this.cid, "client",
-		// 	content.clientLeft,
-		// 	content.clientTop,
-		// 	content.clientWidth,
-		// 	content.clientHeight
-		// );
-		// console.log(this.cid, "offset",
-		// 	content.offsetLeft,
-		// 	content.offsetTop,
-		// 	content.offsetWidth,
-		// 	content.offsetHeight
-		// );
+		this.metrics.media.width = cw;// + ew;
+		this.metrics.media.height = ch;// + eh;
+		this.metrics.media.scale = cs;
+		// this.metrics.media.aspectRatio = sw / sh;
+		
+		var sizing = this.getSizingEl();
+		sizing.style.maxWidth = (cw + ew) + "px";
+		sizing.style.maxHeight = (ch + eh) + "px";
+		
 		return this;
 	},
 	
@@ -116,17 +131,17 @@ module.exports = CarouselRenderer.extend({
 		/*
 		var content = this.getContentEl();
 		
-		content.style.left = this.contentX + "px";
-		content.style.top = this.contentY + "px";
-		content.style.width = this.contentWidth + "px";
-		content.style.height = this.contentHeight + "px";
+		content.style.left = this.metrics.content.x + "px";
+		content.style.top = this.metrics.content.y + "px";
+		content.style.width = this.metrics.media.width + "px";
+		content.style.height = this.metrics.media.height + "px";
 		
-		// sizing.style.maxWidth = (cW + (poW - pcW)) + "px";
-		// sizing.style.maxHeight = (cH + (poH - pcH)) + "px";
+		// sizing.style.maxWidth = (cW + (poW - pcw)) + "px";
+		// sizing.style.maxHeight = (cH + (poH - pch)) + "px";
 		sizing.style.maxWidth = content.offsetWidth + "px";
 		sizing.style.maxHeight = content.offsetHeight + "px";
-		// sizing.style.maxWidth = cW + "px";
-		// sizing.style.maxHeight = cH + "px";
+		// sizing.style.maxWidth = cw + "px";
+		// sizing.style.maxHeight = ch + "px";
 		*/
 		return this;
 	},

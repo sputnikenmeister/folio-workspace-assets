@@ -8,6 +8,8 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
+/** @type {module:underscore} */
+var getBoxMetrics = require("../../../utils/css/getBoxMetrics");
 
 /**
  * @constructor
@@ -26,6 +28,8 @@ module.exports = View.extend({
 	
 	/** @override */
 	initialize: function (options) {
+		this.metrics = {};
+		this.metrics.content = {};
 		this.createChildren();
 	},
 	
@@ -47,11 +51,17 @@ module.exports = View.extend({
 	measure: function () {
 		var sizing = this.getSizingEl();
 		
-		this.contentX = sizing.offsetLeft + sizing.clientLeft;
-		this.contentY = sizing.offsetTop + sizing.clientTop;
-		this.contentWidth = sizing.clientWidth;
-		this.contentHeight = sizing.clientHeight;
-		this.contentScale = 1;
+		sizing.style.maxWidth = "";
+		sizing.style.maxHeight = "";
+		
+		this.metrics.content.x = sizing.offsetLeft + sizing.clientLeft;
+		this.metrics.content.y = sizing.offsetTop + sizing.clientTop;
+		this.metrics.content.width = sizing.clientWidth;
+		this.metrics.content.height = sizing.clientHeight;
+		
+		this.metrics = getBoxMetrics(this.el, this.metrics);
+		this.metrics.content = getBoxMetrics(this.getContentEl(), this.metrics.content);
+		
 		return this;
 	},
 	

@@ -1,7 +1,44 @@
+%placeholder-numbers-htf {
+	margin: 2rem 2.5rem;
+	font-size: 4rem;
+	font-style: normal;
+	font-weight: 400;
+	
+	font-family: "NumbersRevenue";
+	letter-spacing: -0.06em;
+	word-spacing: -0.45em;
+	
+	// font-family: "NumbersClaimcheck";
+	// letter-spacing: 0;
+	// word-spacing: -0.45em;
+	//
+	// font-family: "NumbersIndicia";
+	// letter-spacing: -0.05em;
+	// word-spacing: -0.45em;
+	// 
+	// font-family: "NumbersRedbird";
+	// letter-spacing: 0;
+	// word-spacing: -0.23em;
+}
+%placeholder-franklin-itc-cp {
+	font: 600 normal 12rem/1.2 "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
+	letter-spacing: -0.01em;
+	margin: 2rem 3rem;
+}
+%placeholder-franklin-fs-cp {
+	margin: 2rem 2.5rem;
+	line-height: 1.2;
+	font-size: 2rem;
+	font-weight: 600;
+	letter-spacing: -0.05em;
+	font-style: italic;
+	text-transform: uppercase;
+}
 
 // -----------------------------------
 // .media-item
 // -----------------------------------
+
 .media-item {
 	.sizing {
 		position: relative;
@@ -38,23 +75,16 @@
 	// .placeholder:before
 	// - - - - - - - - - - - - - - - - -
 	.placeholder:before {
-		// Top-left corner
+		@extend %placeholder-franklin-itc-cp;
 		position: absolute;
 		top: 0; left: 0;
-		margin: 1em 1.2em;
-		font-size: 2rem;
-		line-height: 1.2;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: -0.05em;
-		font-style: italic;
 		content: "";
 		// text-shadow: -1px -1px 0 rgba(0, 0%, 50%, 0.2);
 	}
 	// &.idle .placeholder:before { content: "Waiting"; }
-	&.pending .placeholder:before { content: "Loading"; }
+	&.pending .placeholder:before { content: "0%"; }
 	&.error .placeholder:before { content: "Error";	}
-	&.done .placeholder:before { content: "Ready"; }
+	&.done .placeholder:before { content: "100%"; }
 	// &.selected, .empty-item.selected + & {
 	&.selected, &.candidate, .empty-item.selected + & {
 		&.pending .placeholder[data-progress]:before {
@@ -93,29 +123,29 @@ $browser_height: 30px;
 
 .media-item.browser-safari,
 .media-item.browser-generic {
-	padding-bottom: $browser_height;
+	// padding-bottom: $browser_height;
 	.sizing {
-		box-sizing: border-box;
-		padding-top: $browser_height;
+		// box-sizing: border-box;
+		// padding-top: $browser_height;
 	}
-	// .content, .content-size {
-	// 	box-sizing: content-box;
-	// 	padding-top: $browser_height;
-	// }
 	.content {
-		box-sizing: content-box;
+		// box-sizing: content-box;
+		// box-sizing: border-box;
 		padding-top: $browser_height;
-		box-shadow:
-			0px 0px 0px 1px rgba(0,0,0,0.15),
-			0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		background-origin: border-box;
 		background-size: 100% $browser_height;
 		background-position: top;
 		background-repeat: no-repeat;
+		box-shadow:
+			0px 0px 0px 1px rgba(0,0,0,0.15),
+			0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
 	}
 	// .content .default {}
 	.content, .placeholder {
-		border-top-left-radius: $browser_height * 0.1;
-		border-top-right-radius: $browser_height * 0.1;
+		border-radius: #{$browser_height * 0.1} #{$browser_height * 0.1} 0 0;
+	}
+	.content img {
+		border-radius: 0 0 0 0;
 	}
 }
 

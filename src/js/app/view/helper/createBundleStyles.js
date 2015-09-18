@@ -13,9 +13,10 @@ module.exports = function() {
 	var s, attrs, tmpVal;
 	var fgColor, bgColor, bgLum, fgLum, hasDarkBg;
 	var bodySelector, bodyStyles = ["background", "background-color", "color"];
-	var bgDefault, fgDefault, fgColorHex, bgColorHex;
-	var revSelector, revFgColorHex, revBgColorHex;
+	var bgDefault, fgDefault, fgColorVal, bgColorVal;
+	var revSelector, revFgColorVal, revBgColorVal;
 	var carouselSelector, carouselMediaStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
+	var intPerChannel = parseInt("010101", 16);
 	
 	fgDefault = new Color(Globals.DEFAULT_COLORS["color"]);
 	bgDefault = new Color(Globals.DEFAULT_COLORS["background-color"]);
@@ -26,8 +27,8 @@ module.exports = function() {
 		attrs = bundle.attrs();//get("attrs");
 		fgColor = attrs["color"]? new Color(attrs["color"]) : fgDefault;
 		bgColor = attrs["background-color"]? new Color(attrs["background-color"]) : bgDefault;
-		fgColorHex = fgColor.hexString();
-		bgColorHex = bgColor.hexString();
+		fgColorVal = fgColor.hslString();
+		bgColorVal = bgColor.hslString();
 		fgLum = fgColor.luminosity();
 		bgLum = bgColor.luminosity();
 		hasDarkBg = fgLum > bgLum;
@@ -48,43 +49,43 @@ module.exports = function() {
 		Styles.createCSSRule(bodySelector, s);
 		
 		s = {};
-		s["color"] = fgColor.clone().mix(bgColor, 0.5).hexString();
-		s["border-color"] = fgColor.clone().mix(bgColor, 0.7).hexString();
+		s["color"] = fgColor.clone().mix(bgColor, 0.5).hslString();
+		s["border-color"] = fgColor.clone().mix(bgColor, 0.7).hslString();
 		Styles.createCSSRule(bodySelector + " .color-fg05", s);
 		
 		// inverted fg/bg colors (slightly muted)
-		revFgColorHex = bgColor.clone().mix(fgColor, 0.1).hexString();
-		revBgColorHex = fgColor.clone().mix(bgColor, 0.1).hexString();
-		// var lineColorHex = bgColor.clone().mix(fgColor, 0.3).hexString();
+		revFgColorVal = bgColor.clone().mix(fgColor, 0.1).hslString();
+		revBgColorVal = fgColor.clone().mix(bgColor, 0.1).hslString();
+		// var lineColorVal = bgColor.clone().mix(fgColor, 0.3).hslString();
 		revSelector = bodySelector + " .color-reverse";
 		
 		// .color-fg .color-bg
 		// - - - - - - - - - - - - - - - - 
-		s = { "color" : fgColorHex };
+		s = { "color" : fgColorVal };
 		Styles.createCSSRule(bodySelector + " .color-fg", s);
-		s = { "background-color": bgColorHex };
+		s = { "background-color": bgColorVal };
 		Styles.createCSSRule(bodySelector + " .color-bg", s);
 		
 		// inverted html
-		s = { "color" : revFgColorHex };
+		s = { "color" : revFgColorVal };
 		s["-webkit-font-smoothing"] = (hasDarkBg? "auto" : "antialiased");
 		Styles.createCSSRule(revSelector + " .color-fg", s);
 		Styles.createCSSRule(revSelector + ".color-fg", s);
-		s = { "background-color" : revBgColorHex };
+		s = { "background-color" : revBgColorVal };
 		Styles.createCSSRule(revSelector + " .color-bg", s);
 		Styles.createCSSRule(revSelector + ".color-bg", s);
 		
 		// .color-stroke .color-fill (SVG)
 		// - - - - - - - - - - - - - - - - 
-		s = { "stroke": fgColorHex };
+		s = { "stroke": fgColorVal };
 		Styles.createCSSRule(bodySelector + " .color-stroke", s);
-		s = { "fill": bgColorHex };
+		s = { "fill": bgColorVal };
 		Styles.createCSSRule(bodySelector + " .color-fill", s);
 		// svg inverted fill/stroke
-		s = { "stroke": bgColorHex };
+		s = { "stroke": bgColorVal };
 		Styles.createCSSRule(revSelector + " .color-stroke", s);
 		Styles.createCSSRule(revSelector + ".color-stroke", s);
-		s = { "fill": fgColorHex };
+		s = { "fill": fgColorVal };
 		Styles.createCSSRule(revSelector + " .color-fill", s);
 		Styles.createCSSRule(revSelector + ".color-fill", s);
 		
@@ -124,13 +125,31 @@ module.exports = function() {
 		s = _.pick(attrs, carouselMediaStyles);//, "background-color"]);
 		Styles.createCSSRule(carouselSelector + " .media-item .content", s);
 		
-		// text color luminosity is inverse from body, apply oposite rendering mode
+		
 		s = {};
+		// text color luminosity is inverse from body, apply oposite rendering mode
 		s["-webkit-font-smoothing"] = (hasDarkBg? "auto" : "antialiased");
-		s["background-color"] = bgColor.clone().mix(fgColor, 0.95).hexString();
-		// s["color"] = bgColor.clone().mix(fgColor, 0.995).hexString();
-		// s["color"] = bgColor.hexString();
-		s["color"] = bgColor.clone()[hasDarkBg?"darken":"lighten"](0.1).hexString();
+		s["color"]				= bgColor.hslString();
+		// s["color"]				= bgColor.clone()[hasDarkBg?"darken":"lighten"](0.045).hslString();
+		s["background-color"]	= bgColor.clone().mix(fgColor, 0.95).hslString();
+		// s["background-color"]	= bgColor.clone()[hasDarkBg?"lighten":"darken"](0.03).hslString();
+		
+		// var rgb, bgLighter, bgDarker, b;
+		// 
+		// b = 6;
+		// rgb = bgColor.rgb();
+		// rgb.r+=b; rgb.g+=b; rgb.b+=b;
+		// bgLighter = new Color(rgb).rgbString();
+		// 
+		// b = -6;
+		// rgb = bgColor.rgb();
+		// rgb.r+=b; rgb.g+=b; rgb.b+=b;
+		// bgDarker = new Color(rgb).rgbString();
+		// 	
+		// console.log(bgColor.hexString(), bgDarker, bgLighter);
+		// 
+		// s["background-color"] = hasDarkBg? bgLighter : bgDarker;
+		// s["color"] = hasDarkBg? bgDarker : bgLighter;
 		
 		("border-radius" in attrs) && (s["border-radius"] = attrs["border-radius"]);
 		Styles.createCSSRule(carouselSelector + " .media-item .placeholder", s);

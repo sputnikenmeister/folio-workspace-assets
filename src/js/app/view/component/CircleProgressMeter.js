@@ -15,10 +15,6 @@ module.exports = View.extend({
 	/** @type {Function} */
 	template:  require("./CircleProgressMeter.hbs"),
 	
-	// events: {
-	// 	"transitionend": "_onTransitionEnd"
-	// },
-	
 	/** @override */
 	initialize: function (options) {
 		// ProgressMeter.prototype.initialize.apply(this, arguments);
@@ -35,10 +31,14 @@ module.exports = View.extend({
 		var s, p, total = this._total;
 		
 		// sw: step mark width in px
-		p = { d: 24, s1: 1.6, s2: 1.4, sw: 2.75 };
+		// p = { d: 24, s1: 1.6, s2: 1.4, sw: 2.75 };
 		// circumferences in px
-		p.r = ((p.d - Math.max(p.s1, p.s2)) / 2) - 1; // allow 1/2 pixel around circles
-		p.c = p.r * Math.PI * 2;
+		// p.r = ((p.d - Math.max(p.s1, p.s2)) / 2) - 1; // allow 1/2 pixel around circles
+		// p.c = p.r * Math.PI * 2;
+		
+		p = { d: 24, s1: 3.6, s2: 2.4, sw: 2.75 };
+		p.r = p.d / 2;
+		p.c = p.d * Math.PI;
 		
 		// rotate CCW ( 90 + half a step mark, in degrees ) so that
 		// the arc starts from the top and step gaps appear centered
@@ -51,12 +51,10 @@ module.exports = View.extend({
 		this.labelEl = this.el.querySelector("#step-label");
 		this.amountShape = this.el.querySelector("#amount");
 		this.stepsShape = this.el.querySelector("#steps");
-		// this.cicleGroup = this.el.querySelector("#cicle-group");
-		// p.c = this.amountShape.getTotalLength();
 		
 		s = this.stepsShape.style;
 		s.strokeDasharray = [(p.c / total) - p.sw, p.sw];
-		s.strokeOpacity = 0.3;
+		s.strokeOpacity = 0.5;
 		// this.stepsShape.style.strokeDasharray = [p.sw, (p.c / total) - p.sw];
 		// this.stepsShape.style.strokeDashoffset = p.sw;
 		
@@ -78,7 +76,6 @@ module.exports = View.extend({
 	render: function () {
 		if (this._valueChanged) {
 			// log.call(this, this._transitionStartTime > 0? "interrupt" : "render");
-			
 			var tx;
 			if (this._transitionDuration > 0) {
 				tx = "stroke-dashoffset " + this._transitionDuration + "ms linear 1ms";
@@ -93,23 +90,15 @@ module.exports = View.extend({
 		return this;
 	},
 	
+	// events: {
+	// 	"transitionend": "_onTransitionEnd"
+	// },
+	
 	// _onTransitionEnd: function (ev) {
 	// 	if (ev.target === this.amountShape) {
 	// 		log.call(this, "event", "elapsed:" + (ev.elapsedTime*1000) + "ms");
-	// 		
 	// 		this._transitionStartTime = -1;
 	// 		this._transitionDuration = 0;
 	// 	}
 	// },
 });
-
-// function log(key, msg) {
-// 	console.log(
-// 		"CircleProgressMeter.render[%s] duration:%ims estimate:%ims start:%ims",
-// 		key,
-// 		this._transitionDuration,
-// 		this._transitionStartTime > 0? Date.now() - this._transitionStartTime : 0,
-// 		this._transitionStartTime,
-// 		msg? msg: "-"
-// 	);
-// }
