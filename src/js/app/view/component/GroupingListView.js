@@ -18,7 +18,9 @@ var FilterableListView = require("./FilterableListView");
  * @type {module:app/view/component/GroupingListView}
  */
 var GroupingListView = FilterableListView.extend({
-
+	
+	/** @type {string} */
+	cidPrefix: "grouping-list-",
 	/** @override */
 	tagName: "dl",
 	/** @override */

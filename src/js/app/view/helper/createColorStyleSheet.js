@@ -11,31 +11,29 @@ var bundles = require("../../model/collection/BundleCollection");
 
 module.exports = function() {
 	var s, attrs, tmpVal;
-	var fgColor, bgColor, bgLum, fgLum, hasDarkBg;
-	var bodySelector, bodyStyles = ["background", "background-color", "color"];
-	var bgDefault, fgDefault, fgColorVal, bgColorVal;
+	var fgColor, bgColor, hasDarkBg;
+	var fgColorVal, bgColorVal;
 	var revSelector, revFgColorVal, revBgColorVal;
-	var carouselSelector, carouselMediaStyles = ["box-shadow", "border", "border-radius"];//, "background-color"];
-	var intPerChannel = parseInt("010101", 16);
+	var bodySelector, bodyStyles = ["background", "background-color", "color"];
+	var carouselSelector, carouselMediaStyles = ["box-shadow", "border", "border-radius"];
 	
-	fgDefault = new Color(Globals.DEFAULT_COLORS["color"]);
-	bgDefault = new Color(Globals.DEFAULT_COLORS["background-color"]);
-	// fgDefault = new Color(Styles.getCSSProperty("body", "color") || "hsl(47, 5%, 15%)");
-	// bgDefault = new Color(Styles.getCSSProperty("body", "background-color") || "hsl(47, 5%, 95%)");
+	// var fgDefault = new Color(Globals.DEFAULT_COLORS["color"]),
+	// 	bgDefault = new Color(Globals.DEFAULT_COLORS["background-color"]);
 	
 	bundles.each(function (bundle) {
 		attrs = bundle.attrs();//get("attrs");
-		fgColor = attrs["color"]? new Color(attrs["color"]) : fgDefault;
-		bgColor = attrs["background-color"]? new Color(attrs["background-color"]) : bgDefault;
-		fgColorVal = fgColor.hslString();
-		bgColorVal = bgColor.hslString();
-		fgLum = fgColor.luminosity();
-		bgLum = bgColor.luminosity();
-		hasDarkBg = fgLum > bgLum;
+		fgColor = bundle.colors.fgColor;
+		bgColor = bundle.colors.bgColor;
+		hasDarkBg = bundle.colors.hasDarkBg;
 		
-		bundle.colors = {
-			fgColor: fgColor, bgColor: bgColor, dark: fgLum > bgLum
-		};
+		// fgColor = attrs["color"]? new Color(attrs["color"]) : fgDefault;
+		// bgColor = attrs["background-color"]? new Color(attrs["background-color"]) : bgDefault;
+		// hasDarkBg = fgColor.luminosity() > bgColor.luminosity();
+		// bundle.colors = {
+		// 	fgColor: fgColor,
+		// 	bgColor: bgColor,
+		// 	hasDarkBg: hasDarkBg
+		// };
 		
 		// - - - - - - - - - - - - - - - - 
 		// per-bundle body rules
@@ -53,10 +51,11 @@ module.exports = function() {
 		s["border-color"] = fgColor.clone().mix(bgColor, 0.7).hslString();
 		Styles.createCSSRule(bodySelector + " .color-fg05", s);
 		
+		fgColorVal = fgColor.hslString();
+		bgColorVal = bgColor.hslString();
 		// inverted fg/bg colors (slightly muted)
 		revFgColorVal = bgColor.clone().mix(fgColor, 0.1).hslString();
 		revBgColorVal = fgColor.clone().mix(bgColor, 0.1).hslString();
-		// var lineColorVal = bgColor.clone().mix(fgColor, 0.3).hslString();
 		revSelector = bodySelector + " .color-reverse";
 		
 		// .color-fg .color-bg
@@ -89,43 +88,14 @@ module.exports = function() {
 		Styles.createCSSRule(revSelector + " .color-fill", s);
 		Styles.createCSSRule(revSelector + ".color-fill", s);
 		
-		// .color-overclip
-		// - - - - - - - - - - - - - - - - 
-		s = {};
-		// Darken if dark, lighten if light, then clamp value to 0-1
-		tmpVal = Math.min(Math.max(bgLum * (hasDarkBg? 0.95 : 1.05), 0), 1); 
-		s["background-color"] = bgColor.clone().lighten(tmpVal).alpha(0.5).rgbaString();
-		Styles.createCSSRule(bodySelector + " .color-overclip", s);
-		s = {};
-		tmpVal = Math.min(Math.max(fgLum * (hasDarkBg? 0.95 : 1.05), 0), 1); 
-		s["background-color"] = fgColor.clone().lighten(tmpVal).alpha(0.5).rgbaString();
-		Styles.createCSSRule(revSelector + " .color-overclip", s);
-		Styles.createCSSRule(revSelector + ".color-overclip", s);
-		
-		// .color-gradient
-		// - - - - - - - - - - - - - - - - 
-		s = {};
-		s["background-color"] = "transparent";
-		s["background"] = "linear-gradient(to bottom, " +
-				bgColor.clone().alpha(0.00).rgbaString() + " 0%, " +
-				bgColor.clone().alpha(0.11).rgbaString() + " 100%)";
-		Styles.createCSSRule(bodySelector + " .color-gradient", s);
-		s = {};
-		s["background-color"] = "transparent";
-		s["background"] = "linear-gradient(to bottom, " +
-				fgColor.clone().alpha(0.00).rgbaString() + " 0%, " +
-				fgColor.clone().alpha(0.11).rgbaString() + " 100%)";
-		Styles.createCSSRule(revSelector + " .color-gradient", s);
-		Styles.createCSSRule(revSelector + ".color-gradient", s);
-		
-		// - - - - - - - - - - - - - - - - 
-		// per-bundle .carousel .media-item rules
+		// .media-item .content
 		// - - - - - - - - - - - - - - - - 
 		carouselSelector = ".carousel." + bundle.get("domid");
 		s = _.pick(attrs, carouselMediaStyles);//, "background-color"]);
 		Styles.createCSSRule(carouselSelector + " .media-item .content", s);
 		
-		
+		// .media-item .placeholder
+		// - - - - - - - - - - - - - - - - 
 		s = {};
 		// text color luminosity is inverse from body, apply oposite rendering mode
 		s["-webkit-font-smoothing"] = (hasDarkBg? "auto" : "antialiased");
@@ -134,24 +104,23 @@ module.exports = function() {
 		s["background-color"]	= bgColor.clone().mix(fgColor, 0.95).hslString();
 		// s["background-color"]	= bgColor.clone()[hasDarkBg?"lighten":"darken"](0.03).hslString();
 		
-		// var rgb, bgLighter, bgDarker, b;
-		// 
-		// b = 6;
-		// rgb = bgColor.rgb();
-		// rgb.r+=b; rgb.g+=b; rgb.b+=b;
-		// bgLighter = new Color(rgb).rgbString();
-		// 
-		// b = -6;
-		// rgb = bgColor.rgb();
-		// rgb.r+=b; rgb.g+=b; rgb.b+=b;
-		// bgDarker = new Color(rgb).rgbString();
-		// 	
-		// console.log(bgColor.hexString(), bgDarker, bgLighter);
-		// 
-		// s["background-color"] = hasDarkBg? bgLighter : bgDarker;
-		// s["color"] = hasDarkBg? bgDarker : bgLighter;
-		
 		("border-radius" in attrs) && (s["border-radius"] = attrs["border-radius"]);
 		Styles.createCSSRule(carouselSelector + " .media-item .placeholder", s);
+		
+		// // .color-gradient
+		// // - - - - - - - - - - - - - - - - 
+		// s = {};
+		// s["background-color"] = "transparent";
+		// s["background"] = "linear-gradient(to bottom, " +
+		// 		bgColor.clone().alpha(0.00).rgbaString() + " 0%, " +
+		// 		bgColor.clone().alpha(0.11).rgbaString() + " 100%)";
+		// Styles.createCSSRule(bodySelector + " .color-gradient", s);
+		// s = {};
+		// s["background-color"] = "transparent";
+		// s["background"] = "linear-gradient(to bottom, " +
+		// 		fgColor.clone().alpha(0.00).rgbaString() + " 0%, " +
+		// 		fgColor.clone().alpha(0.11).rgbaString() + " 100%)";
+		// Styles.createCSSRule(revSelector + " .color-gradient", s);
+		// Styles.createCSSRule(revSelector + ".color-gradient", s);
 	});
 };

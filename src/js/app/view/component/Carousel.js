@@ -300,9 +300,10 @@ var Carousel = DeferredView.extend({
 		
 		if (view.metrics) {
 			m.before = view.metrics[this.dirProp("marginLeft","marginTop")];
-			m.outer = view.metrics[this.dirProp("maxWidth","maxHeight")] ||
-				view.metrics[this.dirProp("width","height")] ||
-				viewEl[this.dirProp("offsetWidth", "offsetHeight")];
+			// m.outer = view.metrics[this.dirProp("maxWidth","maxHeight")] ||
+			// 	view.metrics[this.dirProp("width","height")] ||
+			// 	viewEl[this.dirProp("offsetWidth", "offsetHeight")];
+			m.outer = viewEl[this.dirProp("offsetWidth", "offsetHeight")];
 			m.outer += m.before;
 			m.outer += view.metrics[this.dirProp("marginRight","marginBottom")];
 			m.inner = view.metrics.content[this.dirProp("width","height")];

@@ -18,13 +18,11 @@ module.exports = function(view) {
 				.then(
 					function(targetEl) {
 						console.log(view.cid, view.model.cid, "whenDefaultImageLoads resolved", "prefetched");
-						view.el.classList.remove("idle");
-						view.el.classList.add("done");
+						// view.setState("done");
 						resolve(view);
 					});
 		} else {
-			view.el.classList.remove("idle");
-			view.el.classList.add("pending");
+			view.setState("pending");
 			
 			var progressFn = function (progress) {
 				// console.log(view.cid, view.model.cid, "whenDefaultImageLoads progress", progress);
@@ -46,18 +44,14 @@ module.exports = function(view) {
 						// view.on("view:remove", function() { URL.revokeObjectURL(url); });
 						console.log(view.cid, view.model.cid, "whenDefaultImageLoads resolved", targetEl.src);
 						view.placeholder.removeAttribute("data-progress");
-						view.el.classList.remove("pending");
-						view.el.classList.add("done");
+						// view.setState("done");
 						resolve(view);
 					})
 				.catch(
 					function(err) {
 						console.log(view.cid, view.model.cid, "whenDefaultImageLoads rejected", err.message);
-						view.placeholder.style.color = "inherit";
-						view.placeholder.textContent = err.message;
 						view.placeholder.removeAttribute("data-progress");
-						view.el.classList.remove("pending");
-						view.el.classList.add("error");
+						// view.setState("error");
 						reject(err);
 					});
 		}

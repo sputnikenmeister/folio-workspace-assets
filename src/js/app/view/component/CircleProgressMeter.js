@@ -4,8 +4,8 @@
 
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
-/** @type {module:utils/css/prefixedProperty} */
-var prefixed = require("../../../utils/css/prefixedProperty");
+/** @type {module:utils/prefixedProperty} */
+var prefixed = require("../../../utils/prefixedProperty");
 
 module.exports = View.extend({
 	
@@ -90,15 +90,15 @@ module.exports = View.extend({
 		return this;
 	},
 	
-	// events: {
-	// 	"transitionend": "_onTransitionEnd"
-	// },
+	events: {
+		"transitionend": "_onTransitionEnd"
+	},
 	
-	// _onTransitionEnd: function (ev) {
-	// 	if (ev.target === this.amountShape) {
-	// 		log.call(this, "event", "elapsed:" + (ev.elapsedTime*1000) + "ms");
-	// 		this._transitionStartTime = -1;
-	// 		this._transitionDuration = 0;
-	// 	}
-	// },
+	_onTransitionEnd: function (ev) {
+		if (ev.target === this.amountShape) {
+			// log.call(this, "event", "elapsed:" + (ev.elapsedTime*1000) + "ms");
+			this._transitionStartTime = -1;
+			this._transitionDuration = 0;
+		}
+	},
 });

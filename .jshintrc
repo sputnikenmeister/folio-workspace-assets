@@ -43,5 +43,6 @@
 	"-W081": true,
 	"-W051": true,
 	"-W097": true,
-	"-W041": true
+	"-W041": true,
+	"-W086": true
 }

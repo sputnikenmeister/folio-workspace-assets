@@ -22,8 +22,8 @@ var ProgressMeter = require("../component/CircleProgressMeter");
 
 /** @type {Function} */
 var transitionEnd = require("../../../utils/event/transitionEnd");
-/** @type {module:utils/css/prefixedProperty} */
-var prefixed = require("../../../utils/css/prefixedProperty");
+/** @type {module:utils/prefixedProperty} */
+var prefixed = require("../../../utils/prefixedProperty");
 /** @type {Function} */
 var _whenImageLoads = require("../promise/_whenImageLoads");
 
@@ -93,7 +93,7 @@ module.exports = PlayableRenderer.extend({
 	initialize: function (opts) {
 		PlayableRenderer.prototype.initialize.apply(this, arguments);
 		
-		this.initializeAsync();
+		// this.initializeAsync();
 	},
 	
 	/** @override */
@@ -101,6 +101,34 @@ module.exports = PlayableRenderer.extend({
 		this.el.innerHTML = this.template(this.model.toJSON());
 		this.placeholder = this.el.querySelector(".placeholder");
 		this.content = this.el.querySelector(".content");
+		
+		var contentStyles = ["box-shadow", "border", "border-radius"];
+		var placeholderStyles = ["border-radius"];
+		var attrs = this.model.get("attrs");
+		// for (var s in attrs) {
+		// 	if (typeof attrs[s] != "string") {
+		// 		continue;
+		// 	}
+		// 	if (contentStyles.indexOf(s) != -1) {
+		// 		this.content.style[s] = attrs[s];
+		// 	}
+		// 	if (placeholderStyles.indexOf(s) != -1) {
+		// 		this.placeholder.style[s] = attrs[s];
+		// 	}
+		// }
+		var s, i, ii;
+		for (i = 0, ii = contentStyles.length; i < ii; i++) {
+			s = contentStyles[i];
+			if (typeof attrs[s] == "string") {
+				this.content.style[s] = attrs[s];
+			}
+		}
+		for (i = 0, ii = placeholderStyles.length; i < ii; i++) {
+			s = placeholderStyles[i];
+			if (typeof attrs[s] == "string") {
+				this.placeholder.style[s] = attrs[s];
+			}
+		}
 		
 		this.playToggle = this.el.querySelector(".play-toggle");
 		this.sequence = this.content.querySelector(".sequence");
@@ -172,26 +200,30 @@ module.exports = PlayableRenderer.extend({
 	/* --------------------------- */
 	
 	initializeAsync: function() {
-		Promise.resolve(this)
-			.then(PlayableRenderer.whenSelectionIsContiguous)
-			.then(PlayableRenderer.whenSelectTransitionEnds)
-			.then(PlayableRenderer.whenDefaultImageLoads)
+		return PlayableRenderer.prototype.initializeAsync.apply(this, arguments)
+		// return PlayableRenderer.whenSelectionIsContiguous(this)
+		// // return Promise.resolve(this)
+		// // 	.then(PlayableRenderer.whenSelectionIsContiguous)
+		// 	.then(PlayableRenderer.whenSelectTransitionEnds)
+		// 	.then(PlayableRenderer.whenDefaultImageLoads)
 			.then(function(view) {
 				view.initializeSequence();
 				view.addSelectionListeners();
 				try {
 					view.updateOverlay(view.getDefaultImage(), view.overlay);
+					return view;
 				} catch (err) {
 					return Promise.reject(err);
 				}
 			})
-			.catch(function(err) {
-				if (err instanceof PlayableRenderer.ViewError) {
-					// console.log(err.view.cid, err.view.model.cid, "SequenceRenderer: " + err.message);
-				} else {
-					console.error("SequenceRenderer promise error", err);
-				}
-			});
+			// .catch(function(err) {
+			// 	if (err instanceof PlayableRenderer.ViewError) {
+			// 		// console.log(err.view.cid, err.view.model.cid, "SequenceRenderer: " + err.message);
+			// 	} else {
+			// 		console.error("SequenceRenderer promise error", err);
+			// 	}
+			// })
+			;
 	},
 	
 	/* --------------------------- *
@@ -219,6 +251,10 @@ module.exports = PlayableRenderer.extend({
 		// sizing.style.maxHeight = content.offsetHeight + "px";
 		// sizing.style.maxWidth = content.clientWidth + "px";
 		// sizing.style.maxHeight = content.clientHeight + "px";
+		
+		var sizing = this.getSizingEl();
+		sizing.style.maxWidth = this.metrics.content.width + "px";
+		sizing.style.maxHeight = this.metrics.content.height + "px";
 		
 		return this;
 	},

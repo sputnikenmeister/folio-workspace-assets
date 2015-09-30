@@ -173,6 +173,10 @@
 	// - - - - - - - - - - - - - - - - - -
 	.media-caption-stack {
 		width: $page_width_large;
+		// & > .current, & > .not-current {
+		// 	bottom: auto;
+		// 	top: 0;
+		// }
 		.content {
 			margin-left: $aside_width_large;
 			width: $main_width_large;
@@ -190,8 +194,8 @@
 	// media-dotnav
 	// - - - - - - - - - - - - - - - - - -
 	.media-dotnav {
-		bottom: 0.75rem;
+		// bottom: 0.75rem;
 		width: $page_width_large;
-		padding-left: $aside_width_large + $hu;
+		// padding-left: $aside_width_large + $hu;
 	}
 }

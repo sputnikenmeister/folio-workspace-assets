@@ -23,7 +23,10 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 					resolve(URL.createObjectURL(request.response));
 				} else {
 					// If it fails, reject the promise with a error message
-					reject(Error("Failed to load image from: " + url + " (" + request.statusText + ")"));
+					// console.error(ev);
+					// reject(Error(JSON.stringify(request, null, "\t")));
+					// reject(Error("Failed to load image from: " + url + " (" + request.statusText + ")"));
+					reject(Error(request.statusText + " (" + request.status + "): " + url));
 				}
 			};
 			// reject/failure

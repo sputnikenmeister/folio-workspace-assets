@@ -46,10 +46,10 @@ var DebugToolbar = Backbone.View.extend({
 		/* .debug-group
 		 * - - - - - - - - - - - - - - - - */
  		var container = document.body.querySelector("#container");
-		var showGridEl = this.el.querySelector("#show-grid");
-		var showBlocksEl = this.el.querySelector("#show-blocks");
-		this.initializeToggle(showBlocksEl, "debug-blocks", container);
-		this.initializeToggle(showGridEl, "debug-grid-bg", container);
+		
+		this.initializeToggle(this.el.querySelector("#toggle-blocks a"), "debug-blocks", container);
+		this.initializeToggle(this.el.querySelector("#toggle-grid a"), "debug-grid-bg", container);
+		this.initializeToggle(this.el.querySelector("#toggle-logs a"), "debug-logs", container);
 		
 		// var debugImgEl = document.createElement("img");
 		// debugImgEl.id = "debug-grid";
@@ -64,10 +64,10 @@ var DebugToolbar = Backbone.View.extend({
 		
 		// this.el.querySelector("#toggle-full-screen").addEventListener("click", toggleFullScreen);
 		
-		this.backendEl = this.el.querySelector("#edit-backend");
+		this.backendEl = this.el.querySelector("#edit-backend a");
 		this.listenTo(this.collection, "select:one select:none", this._onSelectAnyBundle);
 		
-		this.mediaInfoEl = this.el.querySelector("#media-info");
+		this.mediaInfoEl = this.el.querySelector("#media-info span");
 		this.listenTo(this.collection, "select:one", this._onSelectOneBundle);
 		
 		/* .classes-group
@@ -90,6 +90,7 @@ var DebugToolbar = Backbone.View.extend({
 	
 	initializeToggle: function (toggleEl, className, targetEl) {
 		toggleEl.addEventListener("click", function (ev) {
+			if (ev.defaultPrevented) return; else ev.preventDefault();
 			targetEl.classList.toggle(className);
 			Cookies.set(className, targetEl.classList.contains(className)? "true": "");
 		}, false);

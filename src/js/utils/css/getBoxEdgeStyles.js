@@ -1,15 +1,12 @@
 // var parseSize = require("./parseSize");
+
+var CSS_BOX_PROPS = [ "boxSizing", "position", "objectFit" ];
+// var CSS_POS_PROPS = [ "top", "bottom", "left", "right"];
+// var CSS_SIZE_PROPS = [ "width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"];
 var CSS_EDGE_PROPS = [
-	"top", "bottom", "left", "right",
-	"paddingTop","paddingBottom","paddingLeft","paddingRight",
 	"marginTop","marginBottom","marginLeft","marginRight",
 	"borderTopWidth","borderBottomWidth","borderLeftWidth","borderRightWidth",
-];
-var CSS_SIZE_PROPS = [
-	"width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight",
-];
-var CSS_BOX_PROPS = [
-	"boxSizing", "objectFit"
+	"paddingTop","paddingBottom","paddingLeft","paddingRight",
 ];
 // var o = _.pick(element, function(val) {
 // 	return /^(offset|client)(Left|Top|Width|Height)/.test(val);
@@ -55,7 +52,7 @@ module.exports = function(el, m) {
 				console.warn("Ignoring value", p, v[1], v[2]);
 			}
 		} else {
-			console.warn("Ignoring unitless value", p, v);
+			// console.warn("Ignoring unitless value", p, v);
 		}
 	}
 	return m;

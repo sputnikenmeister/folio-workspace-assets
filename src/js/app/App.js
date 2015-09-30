@@ -15,6 +15,7 @@ console.log("Strict mode", (function() {
 	return false;
 })());
 
+require("Modernizr");
 require("es6-promise").polyfill();
 require("classlist-polyfill");
 require("raf-polyfill");
@@ -33,7 +34,7 @@ require("hammerjs");
 
 window.addEventListener("load", function(ev) {
 // document.addEventListener('DOMContentLoaded', function() {
-
+	
 	if (window.bootstrap === void 0) {
 		console.error("bootstrap data missing");
 		document.body.innerHTML = "<h1>Oops... </h1>";
@@ -41,7 +42,7 @@ window.addEventListener("load", function(ev) {
 		document.documentElement.classList.add("app-error");
 		return;
 	}
-
+	
 	/** @type {module:app/control/Globals} */
 	// var Globals = require("./control/Globals");
 	// $.fx.speeds._default = Globals.TRANSITION_DURATION;

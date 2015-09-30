@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
-	width="100%" max-height="52px" preserveAspectRatio="xMidYMin meet" buffered-rendering="static">
+	width="100%" preserveAspectRatio="xMidYMin meet" buffered-rendering="static">
 	<title>Browser Mockup: Safari / Mac OS X 10.9</title>
 	<defs>
 		<style type="text/css"><![CDATA[
@@ -15,13 +15,13 @@
 			.icon-shadow		{fill:#E8E8E8;}
 			.ui-text {
 				font-family: 'Lucida Grande', 'Lucida Sans', 'Apple SD Gothic Neo', Verdana, sans-serif;
-				font-weight: 500;
+				font-weight: normal;
 				font-size: 11px;
 			}
-			#search-text {fill:#888888;}
-			#domain-text {fill:#555555;}
-			#address-text {fill:#888888;}
-			#title-text {fill:#444444;}
+			#search-text		{fill:#888888;}
+			#domain-text		{fill:#555555;}
+			#address-text		{fill:#888888;}
+			#title-text			{fill:#444444;}
 		]]></style>
 		<linearGradient id="chrome-pad-grad" x1="0.5" y1="1" x2="0.5" y2="0" gradientUnits="objectBoundingBox">
 			<stop stop-color="#BFBFBF" offset="0"/>

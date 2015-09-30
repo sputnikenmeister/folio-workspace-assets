@@ -1,9 +1,9 @@
 /**
  * @module {module:utils/css/Transition}
  */
-/** @type {module:app/utils/css/prefixedProperty} */
+/** @type {module:app/utils/prefixedProperty} */
 var prefixedStyleName = require("./prefixedStyleName");
-/** @type {module:utils/css/prefixedProperty} */
+/** @type {module:utils/prefixedProperty} */
 var prefixedProperty = require("./prefixedProperty");
 
 var transitionStyles = [

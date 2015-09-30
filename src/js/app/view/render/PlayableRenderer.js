@@ -67,11 +67,15 @@ module.exports = MediaRenderer.extend({
 	/* --------------------------- */
 	
 	addSelectionListeners: function() {
-		this.listenTo(this.model, {
-			"selected": this._onModelSelected,
-			"deselected": this._onModelDeselected,
-		});
+		this.listenTo(this.model, "selected", this._onModelSelected);
+		this.listenTo(this.model, "deselected", this._onModelDeselected);
 		this.model.selected && this._onModelSelected();
+	},
+	
+	removeSelectionListeners: function() {
+		this.stopListening(this.model, "selected", this._onModelSelected);
+		this.stopListening(this.model, "deselected", this._onModelDeselected);
+		this.model.selected && this._onModelDeselected();
 	},
 	
 	/* model selection

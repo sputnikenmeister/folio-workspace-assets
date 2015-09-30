@@ -168,22 +168,33 @@ $darkolivegreen:	darkolivegreen;
 	z-index: 999;
 	position: fixed;
 	// width: 100%;// prevents dotnav mouse events
-	bottom: 0;
+	// bottom: 0;
 	
-	&.show-info .debug-links {
+	top: 0; right: 0; direction: rtl;
+	
+	// &.show-info .debug-links {
+	// 	display: none;
+	// }
+	// &.show-links .debug-info {
+	// 	display: none;
+	// }
+	&.show-info .debug-links > dd {
 		display: none;
 	}
-	&.show-links .debug-info {
-		display: none;
-	}
+	// &.show-links .debug-info {
+	// 	display: none;
+	// }
 }
 
 #debug-toolbar dl {
 	line-height: 1rem;
-	padding: 1rem 0.5rem;
+	padding: 0 0.25rem;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
+	&, * {
+		user-select: none !important;
+	}
 	& > * {
 		-webkit-flex: 0 1 auto;
 		flex: 0 1 auto;
@@ -193,28 +204,47 @@ $darkolivegreen:	darkolivegreen;
 		text-overflow: ellipsis;
 		cursor: pointer;
 	}
-	&, * {
-		user-select: none !important;
-	}
 	dt, dd {
 		margin: auto 0;
-		padding: 0 0.75em;
+		padding: 0;
+		a, span, svg {
+			padding: 1em 0.75em;
+			display: inline-block;
+			vertical-align: middle;
+		}
 	}
 	dt + dd {
-		padding-left: 0;
-		border-left: none;
+		// a, span, svg {
+		// 	padding-left: 0.25em;
+		// }
+		&:before {
+			border-left: none;
+		}
 	}
 	dd {
-		border-left: currentColor solid thin;
+		&:before {
+			content: ' ';
+			display: inline-block;
+			height: 1em;
+			margin: 1em 0;
+			border-left: currentColor solid thin;
+			vertical-align: middle;
+		}
 	}
 	dt {
 		-webkit-flex: 0 0 auto;
 		flex: 0 0 auto;
-		.icon {
+		span.icon {
 			@include fontello_icon_base();
 			width: 1em;
 			text-align: center;
 			display: inline-block;
+		}
+		svg.icon {
+			width: 1em;
+			height: 1em;
+			vertical-align: middle;
+			display: block;
 		}
 		// @include small_caps($lead: 1rem);
 	}
@@ -226,5 +256,11 @@ $darkolivegreen:	darkolivegreen;
 		& > * {
 			margin-top: -0.1rem;
 		}
+	}
+}
+
+.without-media #debug-toolbar {
+	#media-info, #toggle-logs {
+		display: none;
 	}
 }

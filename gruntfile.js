@@ -91,7 +91,9 @@ module.exports = function (grunt) {
 		src: [],
 		options: {
 			require: [
+				// "Modernizr",
 				"underscore",
+				// "underscore.string",
 				"backbone",
 				"backbone.native",
 				"Backbone.Mutators",
@@ -103,6 +105,7 @@ module.exports = function (grunt) {
 				"cookies-js",
 			],
 			alias: [
+				"./build/modernizr-dist.js:Modernizr",
 				"./src/js/shims/fullscreen.js:fullscreen-polyfill",
 				"./src/js/shims/matchesSelector.js:matches-polyfill",
 				"./src/js/shims/requestAnimationFrame.js:raf-polyfill",
@@ -118,6 +121,7 @@ module.exports = function (grunt) {
 		],
 		options: {
 			transform: [
+				// ["remapify", { src: "**/*.{js,json,hbs}", expose: "", cwd: "./src/js"}],
 				["hbsfy", { extensions: ["hbs"] }],
 				// ["node-underscorify", { extensions: ["tpl"] }],
 				// "decomponentify",
@@ -126,11 +130,15 @@ module.exports = function (grunt) {
 	});
 	/* NOTE: Add requires and aliased requires from vendor as externals in client */
 	grunt.config("browserify.client.options.external", (function() {
-		return grunt.config("browserify.vendor.options.require").concat(
-			grunt.config("browserify.vendor.options.alias").map(function(s) {
-				return s.split(":").pop();
-			})
-		);
+		// return grunt.config("browserify.vendor.options.require").concat(
+		// 	grunt.config("browserify.vendor.options.alias").map(function(s) {
+		// 		return s.split(":").pop();
+		// 	}));
+		// aliases first
+		return grunt.config("browserify.vendor.options.alias").map(function(s) {
+			return s.split(":").pop();
+		}).concat(grunt.config("browserify.vendor.options.require"));
+		
 	}()));
 	grunt.log.verbose.subhead("Vendor Externals");
 	grunt.log.verbose.writeln(grunt.config("browserify.client.options.external").join(", "));
@@ -266,7 +274,7 @@ module.exports = function (grunt) {
 			"css/<%= DIST_STYLES %>.css": "css/<%= DIST_STYLES %>.css"
 		}
 	});
-
+	
 	grunt.config("browserify.dist", {
 		src: [
 			"./src/js/app/App.js"
@@ -299,11 +307,11 @@ module.exports = function (grunt) {
 			"js/<%= DIST_JS %>.js": ["./js/<%= DIST_JS %>.js"]
 		}
 	});
-	
+
 	/* --------------------------------
 	 * Main Targets
 	 * -------------------------------- */
-	
+
 	grunt.registerTask("build-debug", [
 		"compass:debug", "autoprefixer:debug",
 		"browserify:vendor", "exorcise:vendor",
@@ -316,183 +324,87 @@ module.exports = function (grunt) {
 	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
 	grunt.registerTask("build-all", ["build-debug", "build-dist"]);
 	grunt.registerTask("build-clean-all", ["clean-all", "build-all"]);
-	
+
 	// Default task
 	grunt.registerTask("default", ["build-debug"]);
-
-	/* --------------------------------
-	 * Resources
-	 * -------------------------------- */
-	
-	/* generate-sprites
-	 * - - - - - - - - - - - - - - - - - */
-	var previewSize = "10%";
-	grunt.loadNpmTasks("grunt-responsive-images");
-	grunt.config("responsive_images.bundle-sprites", {
-		options: {
-			sizes: [{
-				width: previewSize,
-			}]
-		},
-		files: [{
-			expand: true,
-			src: ["../uploads/*.{jpg,gif,png}"],
-			custom_dest: "build/bundle-sprites/{%= width %}/"
-		}]
-	});
-	
-	grunt.loadNpmTasks("grunt-spritesmith");
-	grunt.config("sprite.bundle-sprites", {
-		algorithm: "binary-tree",
-		engine: "gmsmith",
-		imgOpts: {quality: 50},
-		src: "build/bundle-sprites/"+previewSize+"/*.{jpg,gif,png}",
-		dest: "images/bundle-sprites.png",
-		destCss: "src/sass/generated/_bundle-sprites-generated.scss"
-	});
-	
-	// grunt.config("compass.bundle-sprites.options", {
-	// 	specify: "src/sass/generated/_bundle-sprites.scss",
-	// 	sourcemap: false,
-	// });
-	
-	grunt.registerTask("generate-sprites",
-		["responsive_images:bundle-sprites", "sprite:bundle-sprites"]);
-
-	/* fontello-open (run CLI program)
-	 * - - - - - - - - - - - - - - - - - */
-	grunt.registerTask("fontello-open",
-		"Open fontello configuration in browser",
-		function() {
-			var child = grunt.util.spawn({
-				cmd: "fontello-cli",
-				args: ["open", "--config", "<%= paths.fontello %>/config.json"],
-				opts: {stdio: "inherit"}
-			}, this.async());
-		}
-	);
-	
-	/* generate-favicons
-	* - - - - - - - - - - - - - - - - - */
-	grunt.loadNpmTasks("grunt-svg2png");
-	grunt.config("svg2png.favicons", {
-		files: [{
-			cwd: "src/resources/favicon/", src: "*.svg"
-		}]
-	});
-	grunt.loadNpmTasks("grunt-favicons");
-	grunt.config("favicons", {
-		options: {
-			trueColor: true,
-			tileBlackWhite: false,
-			html: "html/static.xhtml",
-			HTMLPrefix: "/workspace/assets/images/favicon/"
-		},
-		steampunk: {
-			options: {
-				appleTouchPadding: 10,
-				appleTouchBackgroundColor: "#FEFCE7",
-				tileColor: "#FEFCE7",
-			},
-			src: "src/resources/favicon/steampunk.png",
-			dest: "images/favicon"
-		},
-		img_0139: {
-			options: {
-				appleTouchPadding: 0,
-			},
-			src: "src/resources/favicon/IMG_0139_fav.png",
-			dest: "images/favicon",
-		},
-	});
-	grunt.registerTask("generate-favicons", [
-		"svg2png:favicons",
-		"favicons:img_0139",
-		// "favicons:steampunk",
-	]);
-
-	// DEBUG: check config result
-	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
 	
 	/* --------------------------------
-	 * Fonts
+	 * build-deps
 	 * -------------------------------- */
 	
-	grunt.loadNpmTasks("grunt-fontgen");
-	grunt.loadNpmTasks("grunt-contrib-concat");
-	grunt.loadNpmTasks("grunt-contrib-copy");
-	//https://github.com/gruntjs/grunt-contrib-copy
-	
-	grunt.config("paths.src.fonts", "<%= paths.src.resources %>/fonts");
-	// grunt.config("fontgen_dest", "./fonts/fontgen");
-	// grunt.config("fontgen_dest_scss", "<%= paths.src.sass %>/fonts");
-	
-	/* fontgen-numbers-htf
-	* - - - - - - - - - - - - - - - - - */
-	grunt.config("fontgen.numbers-htf", {
-		options: {
-			path_prefix: "../fonts/fontgen/numbers-htf",
-			stylesheet: "<%= paths.dest.fonts %>/fontgen/numbers-htf.css",
-		},
-		files: [{
-			src: [
-				"<%= paths.src.fonts %>/numbers-htf/NumbersRevenue.ttf",
-				"<%= paths.src.fonts %>/numbers-htf/NumbersRedbird.ttf",
-				"<%= paths.src.fonts %>/numbers-htf/NumbersClaimcheck.ttf",
-				"<%= paths.src.fonts %>/numbers-htf/NumbersIndicia.ttf"
-			],
-			dest: "<%= paths.dest.fonts %>/fontgen/numbers-htf",
-		}]
+	grunt.loadNpmTasks("grunt-modernizr");
+	grunt.config("modernizr.dist", {
+		// "cache": false,
+		"crawl": false,
+		"uglify": false,
+		"devFile": "./build/modernizr-dev.js",
+		"dest": "./build/modernizr-dist.js",
+		
+		// "class-prefix": "mod_",
+		// "classprefix": "mod_",
+		// "class_prefix": "mod_",
+		
+		"options": [
+			// "atrule",
+			// "domprefixes",
+			"hasEvent",
+			"mq",
+			"prefixed",
+			"prefixedCSS",
+			"setClasses",
+			// "html5shiv",
+			// "testallprops",
+			// "testprop",
+			// "teststyles",
+		],
+		
+		"tests": [
+			"animation",
+			"backgroundcliptext",
+			"backgroundsize",
+			"bgpositionshorthand",
+			"bgpositionxy",
+			"bgsizecover",
+			"bloburls",
+			"boxshadow",
+			"boxsizing",
+			"canvas",
+			"canvastext",
+			"classlist",
+			"cookies",
+			"cssanimations",
+			"csscalc",
+			"csspositionsticky",
+			"csspseudoanimations",
+			"csspseudotransitions",
+			"csstransforms",
+			"csstransitions",
+			"devicemotion_deviceorientation",
+			"display_runin",
+			"documentfragment",
+			"ellipsis",
+			"fullscreen",
+			"hashchange",
+			"inlinesvg",
+			"matchmedia",
+			"objectfit",
+			"pagevisibility",
+			"promises",
+			"queryselector",
+			"requestanimationframe",
+			"smil",
+			"svg",
+			"svgasimg",
+			"userselect",
+			"video",
+			"videoautoplay",
+			"videoloop",
+			"videopreload",
+			"willchange",
+			"xhrresponsetype",
+			"xhrresponsetypeblob",
+		],
+		"excludeTests": [],
+		"customTests": [],
 	});
-	grunt.config("concat.fontgen-numbers-htf", {
-		src: [ "<%= paths.dest.fonts %>/fontgen/numbers-htf/*.css" ],
-		dest: "<%= paths.src.sass %>/generated/_numbers-htf.scss",
-	});
-	grunt.registerTask("fontgen-numbers-htf", [
-		"fontgen:numbers-htf",
-		"concat:fontgen-numbers-htf",
-	]);
-	
-	var variantTasks,
-		allVariantsTasks = [],
-		franklinVariants = [
-			"franklin-gothic-itc",
-			"franklin-gothic-itc-cp",
-			"franklin-gothic-itc-cd",
-			"franklin-gothic-itc-xcp"
-		];
-	
-	franklinVariants.forEach(function(variantName) {
-		grunt.config("fontgen." + variantName, {
-			options: {
-				path_prefix: "../fonts/fontgen/" + variantName,
-				stylesheet: "<%= paths.dest.fonts %>/fontgen/" + variantName + ".css",
-			},
-			files: [{
-				src: "<%= paths.src.fonts %>/" + variantName + "/*.otf",
-				dest: "<%= paths.dest.fonts %>/fontgen/" + variantName,
-			}]
-		});
-		grunt.config("concat.fontgen-" + variantName, {
-			src: [ "<%= paths.dest.fonts %>/fontgen/" + variantName + "/*.css" ],
-			dest: "<%= paths.src.sass %>/generated/_" + variantName + ".scss",
-		});
-		variantTasks = ["fontgen:" + variantName, "concat:fontgen-" + variantName];
-		grunt.registerTask("fontgen-" + variantName, variantTasks);
-		allVariantsTasks = allVariantsTasks.concat(variantTasks);
-	});
-	grunt.registerTask("fontgen-franklin-gothic-itc-all", allVariantsTasks);
-	
-	// TODO: get all this font stuff out of here
-	
-	// grunt.registerMultiTask("fontgen-configure",
-	// 	"Generate grunt-fongen tasks by fontgen_dest folder",
-	// 	function() {
-	// 		var path = require("path");//grunt.log.write("Loaded dependencies...").ok();
-	// 		var done = this.async();//make grunt know this task is async.
-	// 		var i = 0;
-	// 		this.files.forEach(function(file) {
-	// 		});
-	// 	}
-	// );
 };

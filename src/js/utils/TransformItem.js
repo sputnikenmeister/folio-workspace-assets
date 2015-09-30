@@ -7,10 +7,10 @@ var _ = require("underscore");
 
 /** @type {String} */
 var transitionEnd = require("./event/transitionEnd");
-/** @type {module:utils/css/prefixedProperty} */
-var prefixedProperty = require("./css/prefixedProperty");
-/** @type {module:utils/css/prefixedStyleName} */
-var prefixedStyleName = require("./css/prefixedStyleName");
+/** @type {module:utils/prefixedProperty} */
+var prefixedProperty = require("./prefixedProperty");
+/** @type {module:utils/prefixedStyleName} */
+var prefixedStyleName = require("./prefixedStyleName");
 
 /** @type {module:utils/debug/traceElement} */
 var traceElt = require("./debug/traceElement");

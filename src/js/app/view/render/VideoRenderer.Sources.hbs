@@ -1,0 +1,5 @@
+{{#each srcset}}
+	{{#contains mime 'video'}}
+		<source src="{{global "MEDIA_DIR"}}/{{src}}" type="{{mime}}"/>
+	{{/contains}}
+{{/each}}

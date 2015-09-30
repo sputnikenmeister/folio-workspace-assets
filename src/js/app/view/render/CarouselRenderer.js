@@ -9,7 +9,7 @@ var Backbone = require("backbone");
 /** @type {module:app/view/base/View} */
 var View = require("../base/View");
 /** @type {module:underscore} */
-var getBoxMetrics = require("../../../utils/css/getBoxMetrics");
+var getBoxEdgeStyles = require("../../../utils/css/getBoxEdgeStyles");
 
 /**
  * @constructor
@@ -51,6 +51,9 @@ module.exports = View.extend({
 	measure: function () {
 		var sizing = this.getSizingEl();
 		
+		this.metrics = getBoxEdgeStyles(this.el, this.metrics);
+		this.metrics.content = getBoxEdgeStyles(this.getContentEl(), this.metrics.content);
+		
 		sizing.style.maxWidth = "";
 		sizing.style.maxHeight = "";
 		
@@ -58,9 +61,6 @@ module.exports = View.extend({
 		this.metrics.content.y = sizing.offsetTop + sizing.clientTop;
 		this.metrics.content.width = sizing.clientWidth;
 		this.metrics.content.height = sizing.clientHeight;
-		
-		this.metrics = getBoxMetrics(this.el, this.metrics);
-		this.metrics.content = getBoxMetrics(this.getContentEl(), this.metrics.content);
 		
 		return this;
 	},

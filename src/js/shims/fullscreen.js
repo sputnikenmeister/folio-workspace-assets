@@ -21,8 +21,7 @@
 			},
 			webkit: {
 				enabled: "webkitIsFullScreen",
-				// enabled: "fullscreenEnabled",
-				element: "webkitFullscreenElement",
+				element: "webkitCurrentFullScreenElement",
 				request: "webkitRequestFullScreen",
 				exit:    "webkitCancelFullScreen",
 				events: {
@@ -49,17 +48,7 @@
 					change: "MSFullscreenChange",
 					error:  "MSFullscreenError"
 				}
-			},
-			// webkitMobile: {
-			// 	enabled: "webkitSupportsFullscreen"
-			// 	request: "webkitEnterFullScreen",
-			// 	exit:    "webkitExitFullScreen",
-			// 	enabled: "webkitDisplayingFullscreen",
-			// 	events: {
-			// 		change: "webkitfullscreenchange",
-			// 		error:  "webkitfullscreenerror"
-			// 	}
-			// }
+			}
 		},
 		w3 = apis.w3;
 
@@ -85,6 +74,7 @@
 		doc[w3.enabled] = doc[api.enabled];
 		doc[w3.element] = doc[api.element];
 
+		// console.log("fullscreen polyfill redispatch event", e);
 		dispatch( w3.events.change, e.target );
 	} // end of handleChange()
 
@@ -106,10 +96,9 @@
 		doc[w3.exit] = doc[api.exit];
 
 		// Add the request method to the Element's prototype
-		Element.prototype[w3.request] = Element.prototype[api.request];
-		// Element.prototype[w3.request] = function () {
-		// 	return this[api.request].apply( this, arguments );
-		// };
+		Element.prototype[w3.request] = function () {
+			return this[api.request].apply( this, arguments );
+		};
 	}
 
 	// Return the API found (or undefined if the Fullscreen API is unavailable)

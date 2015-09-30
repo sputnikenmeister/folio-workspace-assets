@@ -1,5 +1,7 @@
-var PREFIXES = ["webkit", "moz", "MS", "ms", "o"];
-var PREFIXES_NUM = PREFIXES.length;
+// var PREFIXES = ["webkit", "moz", "MS", "ms", "o"];
+// var PREFIXES_NUM = PREFIXES.length;
+/** @type {module:utils/prefixes} */
+var prefixes = require("./prefixes");
 
 var _prefixedProperty = function(prop, styleObj) {
 	var prefixedProp, camelProp;
@@ -9,8 +11,8 @@ var _prefixedProperty = function(prop, styleObj) {
 		return prop;
 	}
 	camelProp = prop[0].toUpperCase() + prop.slice(1);
-	for (var i = 0; i < PREFIXES_NUM; i++) {
-		prefixedProp = PREFIXES[i] + camelProp;
+	for (var i = 0; i < prefixes.length; i++) {
+		prefixedProp = prefixes[i] + camelProp;
 		if (prefixedProp in styleObj) {
 			return prefixedProp;
 		}

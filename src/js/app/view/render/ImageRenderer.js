@@ -44,7 +44,7 @@ module.exports = MediaRenderer.extend({
 	initialize: function (opts) {
 		MediaRenderer.prototype.initialize.apply(this, arguments);
 		// this.createChildren();
-		this.initializeAsync();
+		// this.initializeAsync();
 	},
 	
 	/* --------------------------- *
@@ -69,6 +69,10 @@ module.exports = MediaRenderer.extend({
 		content.style.left = this.metrics.content.x + "px";
 		content.style.top = this.metrics.content.y + "px";
 		
+		var sizing = this.getSizingEl();
+		sizing.style.maxWidth = this.metrics.content.width + "px";
+		sizing.style.maxHeight = this.metrics.content.height + "px";
+		
 		return this;
 	},
 	
@@ -77,16 +81,27 @@ module.exports = MediaRenderer.extend({
 	/* --------------------------- */
 	
 	initializeAsync: function() {
-		MediaRenderer.whenSelectionIsContiguous(this)
-			.then(MediaRenderer.whenSelectTransitionEnds)
-			.then(MediaRenderer.whenDefaultImageLoads)
-			.catch(function(err) {
-					if (err instanceof ViewError) {
-						// console.log(err.view.cid, err.view.model.cid, "ImageRenderer: " + err.message);
-					} else {
-						console.error("ImageRenderer: " + err.name, err);
-						throw err;
-					}
-				});
+		return MediaRenderer.prototype.initializeAsync.apply(this, arguments)
+		// return MediaRenderer.whenSelectionIsContiguous(this)
+		// // return Promise.resolve(this)
+		// // 	.then(MediaRenderer.whenSelectionIsContiguous)
+		// 	.then(MediaRenderer.whenSelectTransitionEnds)
+		// 	.then(MediaRenderer.whenDefaultImageLoads)
+			// .then(
+			// 	function(view) {
+			// 		view.setState("done");
+			// 	})
+			// .catch(
+			// 	function(err) {
+			// 		if (err instanceof ViewError) {
+			// 			// NOTE: ignore ViewError type
+			// 			// console.log(err.view.cid, err.view.model.cid, "ImageRenderer: " + err.message);
+			// 		} else {
+			// 			console.error(this.cid, err.name, err);
+			// 			this.placeholder.innerHTML = "<p class=\"color-fg\" style=\"position:absolute;bottom:0;padding:3rem;\"><strong>" + err.name + "</strong> " + err.message + "</p>";
+			// 			this.setState("error");
+			// 		}
+			// 	}.bind(this))
+			;
 	},
 });

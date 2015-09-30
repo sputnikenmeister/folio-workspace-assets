@@ -5,10 +5,10 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:underscore} */
-var getBoxMetrics = require("../../../utils/css/getBoxMetrics");
+var getBoxEdgeStyles = require("../../../utils/css/getBoxEdgeStyles");
 
-/** @type {module:app/view/base/View} */
-var View = require("../base/View");
+// /** @type {module:app/view/base/View} */
+// var View = require("../base/View");
 /** @type {module:app/model/item/MediaItem} */
 var MediaItem = require("../../model/item/MediaItem");
 /** @type {module:app/view/CarouselRenderer} */
@@ -18,24 +18,53 @@ var CarouselRenderer = require("./CarouselRenderer");
  * @constructor
  * @type {module:app/view/render/MediaRenderer}
  */
+// var MediaRenderer = CarouselRenderer.extend({
 module.exports = CarouselRenderer.extend({
 	
 	/** @type {string} */
 	cidPrefix: "media-renderer-",
 	/** @type {string} */
-	className: CarouselRenderer.prototype.className + " media-item idle",
+	className: CarouselRenderer.prototype.className + " media-item",
 	/** @type {module:app/model/MediaItem} */
 	model: MediaItem,
 	
 	/** @override */
 	initialize: function (opts) {
+		if (this.model.attrs().hasOwnProperty("@classname")) {
+			this.el.className += " " + this.model.attrs()["@classname"];
+		}
 		CarouselRenderer.prototype.initialize.apply(this, arguments);
 		
 		this.metrics.media = {};
 		
-		if (this.model.attrs().hasOwnProperty("@classname")) {
-			this.el.className += " " + this.model.attrs()["@classname"];
-		}
+		this.setState("idle");
+		this.initializeAsync()
+			.then(
+				function(view) {
+					console.log(view.cid, "initializeAsync resolved");
+					view.setState("done");
+				})
+			.catch(
+				function(err) {
+					if (err instanceof CarouselRenderer.ViewError) {
+						// NOTE: ignore ViewError type
+						// console.log(this.cid, err.name, err.message);
+						return;
+					}
+					// this.placeholder.innerHTML = "<p class=\"color-fg\" style=\"position:absolute;bottom:0;padding:3rem;\"><strong>" + err.name + "</strong> " + err.message + "</p>";
+					this.setState("error");
+					console.error(this.cid, err.name, err);
+				}.bind(this));
+	},
+	
+	initializeAsync: function() {
+		var MediaRenderer = Object.getPrototypeOf(this).constructor;
+		// return MediaRenderer.whenSelectionIsContiguous(this)
+		return Promise.resolve(this)
+			.then(MediaRenderer.whenSelectionIsContiguous)
+			.then(MediaRenderer.whenSelectTransitionEnds)
+			.then(MediaRenderer.whenDefaultImageLoads);
+		// return Promise.resolve(this);
 	},
 	
 	/* --------------------------- *
@@ -62,28 +91,24 @@ module.exports = CarouselRenderer.extend({
 		var cx, cy, cw, ch, cs; // computed values
 		var ew, eh; // content edge totals
 		var cm; // content metrics
+		var sizing = this.getSizingEl();
 		
 		CarouselRenderer.prototype.measure.apply(this, arguments);
+		cm = this.metrics.content;
+		cx = cm.x;
+		cy = cm.y;
+		pcw = cm.width;
+		pch = cm.height;
 		
+		// this.metrics = getBoxEdgeStyles(this.el, this.metrics);
+		// cm = this.metrics.content = getBoxEdgeStyles(this.getContentEl(), this.metrics.content);
+		// 
 		// sizing.style.maxWidth = "";
 		// sizing.style.maxHeight = "";
 		// cx = sizing.offsetLeft + sizing.clientLeft;
 		// cy = sizing.offsetTop + sizing.clientTop;
 		// pcw = sizing.clientWidth;
 		// pch = sizing.clientHeight;
-		// this.metrics.content.x = sizing.offsetLeft + sizing.clientLeft;
-		// this.metrics.content.y = sizing.offsetTop + sizing.clientTop;
-		// this.metrics.content.width = sizing.clientWidth;
-		// this.metrics.content.height = sizing.clientHeight;
-		
-		// m = getBoxMetrics(this.getContentEl());
-		
-		cm = this.metrics.content;
-		// cx = cm.x;
-		// cy = cm.y;
-		pcw = cm.width;
-		pch = cm.height;
-		
 		
 		ew = (cm.paddingLeft + cm.paddingRight + cm.borderLeftWidth + cm.borderRightWidth);
 		eh = (cm.paddingTop + cm.paddingBottom + cm.borderTopWidth + cm.borderBottomWidth);
@@ -109,20 +134,17 @@ module.exports = CarouselRenderer.extend({
 			cw = Math.round(cs * sw);
 		}
 		
-		// this.metrics.content.x = cx;
-		// this.metrics.content.y = cy;
-		// this.metrics.media.width = cw;// + ew;
-		// this.metrics.media.height = ch;// + eh;
-		// this.contentScale = cs;
+		this.metrics.content.x = cx;
+		this.metrics.content.y = cy;
+		this.metrics.content.width = cw + ew;
+		this.metrics.content.height = ch + eh;
 		
-		this.metrics.media.width = cw;// + ew;
-		this.metrics.media.height = ch;// + eh;
+		this.metrics.media.width = cw;
+		this.metrics.media.height = ch;
 		this.metrics.media.scale = cs;
-		// this.metrics.media.aspectRatio = sw / sh;
 		
-		var sizing = this.getSizingEl();
-		sizing.style.maxWidth = (cw + ew) + "px";
-		sizing.style.maxHeight = (ch + eh) + "px";
+		// sizing.style.maxWidth = (cw + ew) + "px";
+		// sizing.style.maxHeight = (ch + eh) + "px";
 		
 		return this;
 	},
@@ -143,7 +165,29 @@ module.exports = CarouselRenderer.extend({
 		// sizing.style.maxWidth = cw + "px";
 		// sizing.style.maxHeight = ch + "px";
 		*/
+		
+		this.measure();
+		
+		var sizing = this.getSizingEl();
+		sizing.style.maxWidth = this.metrics.content.width + "px";
+		sizing.style.maxHeight = this.metrics.content.height + "px";
+		
 		return this;
+	},
+	
+	_stateEnum: ["idle", "pending", "done", "error"],
+	
+	setState: function(key) {
+		if (this._stateEnum.indexOf(key) === -1) {
+			throw new Error("Argument " + key + " invalid. Must be one of: " + this._stateEnum.join(", "));
+		}
+		if (this._lastState !== key) {
+			if (this._lastState) {
+				this.el.classList.remove(this._lastState);
+			}
+			this.el.classList.add(key);
+			this._lastState = key;
+		}
 	},
 	
 	// constructor: function () {
@@ -177,3 +221,4 @@ module.exports = CarouselRenderer.extend({
 	/** @type {module:app/view/promise/whenDefaultImageLoads} */
 	whenDefaultImageLoads: require("../promise/whenDefaultImageLoads"), 
 });
+// module.exports = MediaRenderer;

@@ -7,6 +7,9 @@ var Globals = require("../../control/Globals");
 
 // (function() {
 	var helpers = {
+		/*
+		 * Arithmetic helpers
+		 */
 		add: function(value, addition) {
 			return value + addition;
 		},
@@ -31,6 +34,10 @@ var Globals = require("../../control/Globals");
 		global: function(value) {
 			return Globals[value];
 		},
+		
+		/*
+		 * Flow control helpers
+		 */
 		is: function(a, b, opts) {
 			return (a === b)? opts.fn(this) : opts.inverse(this);
 		},
@@ -47,6 +54,29 @@ var Globals = require("../../control/Globals");
 		contains: function(a, b, opts) {
 			return (a.indexOf(b) !== -1)? opts.fn(this) : opts.inverse(this);
 		},
+		
+		/*
+		 * Color helpers
+		 */
+		mix: function(colora, colorb, amount) {
+			return new Color(colora).mix(new Color(colorb), amount).rgbString();
+		},
+		lighten: function(color, amount) {
+			return new Color(color).lighten(amount).rgbString();
+		},
+		darken: function(color, amount) {
+			return new Color(color).darken(amount).rgbString();
+		},
+		// colorFormat: function(color, fmt) {
+		// 	switch (fmt) {
+		// 		case "rgb":
+		// 			return new Color(color).rgbString();
+		// 		case "hsl":
+		// 			return new Color(color).hslString();
+		// 		case "hex": default:
+		// 			return new Color(color).hexString();
+		// 	}
+		// },
 	};
 	for (var helper in helpers) {
 		if (helpers.hasOwnProperty(helper)) {

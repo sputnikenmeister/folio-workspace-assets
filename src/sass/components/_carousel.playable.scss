@@ -46,7 +46,7 @@
 	// }
 	
 	
-	.content-size, .content-pos {
+	.media-size, .content-size {
 		position: absolute;
 		display: inline-block;
 		// width: 100%; height: 100%;
@@ -99,19 +99,6 @@
 	:not(.pending-media) .play-toggle-hitarea {
 		// background-color: rgba(255,0,255,0.2);
 	}
-	.full-screen-toggle {
-		display: inline-block;
-		position: absolute;
-		// top: 100%; left: 0;
-		margin: 1rem #{-$hu};
-		padding: 1rem $hu;
-		@include small_caps($lead: 1rem);
-		top: -4.5rem; right: 0;
-		svg {
-			display: inline-block;
-			vertical-align: middle;
-		}
-	}
 	
 	// .playback-symbols
 	// - - - - - - - - - - - - - - - - -
@@ -149,15 +136,9 @@
 // VideoRenderer
 // - - - - - - - - - - - - - - - - - -
 .video-renderer {
-	.content {
-		// overflow: hidden;
-	}
 	.crop-box {
 		overflow: hidden;
 	}
-	// video {
-	// 	margin-top: -1px;
-	// }
 	video, img.poster {
 		position: absolute;
 		top: -1px; left: 0;
@@ -171,11 +152,46 @@
 	video:focus {
 		outline: 0 none;
 	}
-	video:fullscreen,
-	video:-webkit-full-screen,
-	video:-moz-full-screen,
-	video:-ms-fullscreen {
-		background-color: transparent;
+	// video:fullscreen,
+	// video:-webkit-full-screen,
+	// video:-moz-full-screen,
+	// video:-ms-fullscreen {
+	// 	background-color: transparent;
+	// }
+	
+	.content .controls {
+		position: absolute;
+		bottom: 100%;
+		right: 0;
+		height: 4.5rem;
+	}
+	.timecode-meter {
+		@include small_caps($lead: 1rem);
+		// font-variant-numeric: tabular-nums;
+		display: inline-block;
+		padding: 1rem 0.5rem;
+		.current-time, .duration {
+			display: block;
+			text-align: right;
+			&:after {
+				content: 's';
+				text-transform: lowercase;
+			}
+		}
+	}
+	.fullscreen-toggle {
+		display: inline-block;
+		margin: 0 -1rem 0 -0.5rem;
+		padding: 1rem 1rem;
+		// vertical-align: middle;
+		// position: absolute;
+		// top: 100%; left: 0;
+		// @include small_caps($lead: 1rem);
+		// top: -4.5rem; right: 0;
+		// svg {
+		// 	display: inline-block;
+		// 	vertical-align: middle;
+		// }
 	}
 }
 
@@ -248,93 +264,36 @@
 	}
 }
 
+	
 .video-renderer .debug-log {
-	display: none;
-	// visibility: hidden;
-}
-.video-renderer.selected .debug-log {
-	display: block;
-	// visibility: visible;
 	box-sizing: border-box;
 	font: 10px/11px monospace;
 	position: absolute;
 	width: 100%;
-	max-height: 100%;
-	overflow: auto;
-	margin: 4.5rem 20px 1.5rem;
+	// max-height: 100%;
+	bottom: -1.5rem;
+	margin: 1.5rem 20px;
 	padding: 0.5rem 10px;
+	overflow: auto;
 	& > pre {
-		display: inline-block;
-		float: left; clear: left;
-		padding: 0;
+		display: block;
 		&:first-child {
 			display: none;
 		}
 		&::before {
-			font-weight: bolder;
-			content: attr(data-ev);
+			content: attr(data-logtype);
+			@include ellipsis(inline-block);
 			width: 8em;
-			display: inline-block;
 			padding-right: 1rem;
+			font-weight: bolder;
+			vertical-align: bottom;
 		}
 	}
 }
-
-
-// .playable-renderer .play-button.fontello {
-// 	@include fontello_icon_base();
-// 	font-size: 2.5rem;
-// 	line-height: 1;
-// 	
-// 	display: block;
-// 	position: absolute;
-// 	box-sizing: border-box;
-// 	left: 50%; top: 50%;
-// 	height: 2.5em; width: 2.5em;
-// 	margin: -1.25em;
-// 	text-align: center;
-// 	padding-top: 0.75em;
-// 	padding-left: 0.2em; // some icons are a bit off
-// 	border-radius: 0.1em;
-// 	
-// 	color: rgb(0,0,0);
-// 	background-color: rgba(255,255,255,0.8);
-// 	box-shadow: 0 0 2px -1px currentColor;
-// 	@at-root .over-dark .playable-renderer .play-button.fontello {
-// 		color: rgb(255,255,255);
-// 		background-color: rgba(0,0,0,0.8);
-// 	}
-// }
-
-// /** .overlay:after */
-// .video-renderer {
-// 	.overlay:after {
-// 		@include small_caps($lead: 1rem);
-// 		// color: black;
-// 		// background-color: white;
-// 		// color: #333;
-// 		// background-color: #eee;
-// 		position: absolute;
-// 		bottom: 0; right: 0;
-// 		// top: 0; left: 0;
-// 		padding: 0 0.25em;
-// 	}
-// 	.overlay:after { 
-// 		content: "Idle";
-// 	}
-// 	.pending-network .overlay:after {
-// 		content: "Network";
-// 	}
-// 	.pending-media .overlay:after {
-// 		content: "Media";
-// 	}
-// 	.pending-user-replay .overlay:after {
-// 		content: "Replay";
-// 	}
-// 	.pending-user-resume .overlay:after {
-// 		content: "Resume";
-// 	}
-// 	.pending-user-play .overlay:after {
-// 		content: "Play";
-// 	}
-// }
+.video-renderer .debug-log {
+	display: none;
+	// visibility: hidden;
+}
+.debug-logs .video-renderer.selected .debug-log {
+	display: block;
+}

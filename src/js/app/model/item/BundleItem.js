@@ -7,6 +7,8 @@
 var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
+/** @type {Function} */
+var Color = require("color");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("../../control/Globals");
@@ -96,24 +98,18 @@ module.exports = Backbone.Model.extend({
 		}
 	},
 
-//	initialize: function (attrs, options) {},
-//
-//	parse: function (resp, options) {
-//		return resp;
-//	},
-//
-//	selector: function() {
-//		return "#" + this.domId();
-//	},
-//
-//	domId: function() {
-//		return "b" + this.id;
-//	},
-
+	initialize: function (attrs, options) {
+		this.colors = {
+			fgColor: new Color(this.attrs()["color"]),
+			bgColor: new Color(this.attrs()["background-color"])
+		};
+		this.colors.hasDarkBg = this.colors.fgColor.luminosity() > this.colors.bgColor.luminosity();
+	},
+	
 	attrs: function() {
 		return this.get("attrs");
 	},
-
+	
 	/** @override */
 	toString: function () {
 		return this.id;

@@ -21,7 +21,9 @@ var ClickableRenderer = require("../render/ClickableRenderer");
  * @type {module:app/view/component/SelectableCollectionView}
  */
 var FilterableListView = DeferredView.extend({
-
+	
+	/** @type {string} */
+	cidPrefix: "filterable-list-",
 	/** @override */
 	tagName: "ul",
 	/** @override */

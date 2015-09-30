@@ -27,8 +27,10 @@ var ContentView = require("./ContentView");
 /** @type {module:app/view/FooterView} */
 // var FooterView = require("./FooterView");
 
-/** @type {module:app/view/helper/createBundleStyles} */
-var createBundleStyles = require("./helper/createBundleStyles");
+/** @type {module:app/view/helper/createColorStyleSheet} */
+var createColorStyleSheet = require("./helper/createColorStyleSheet");
+/** @type {module:app/view/helper/ColorStyleSheet} */
+// var ColorStyleSheet = require("./helper/ColorStyleSheet");
 
 /** @type {module:app/utils/debug/traceArgs} */
 var stripTags = require("../../utils/strings/stripTags");
@@ -47,6 +49,8 @@ var AppView = View.extend({
 	
 	/** @override */
 	el: "body",
+	/** @override */
+	className: "without-bundle without-media",
 	
 	/** @override */
 	initialize: function (options) {
@@ -61,11 +65,13 @@ var AppView = View.extend({
 			"change:after": this._afterChange
 		});
 		
-		if (document.readyState == "complete") {
-			createBundleStyles();
+		// document.head.appendChild(new ColorStyleSheet().render().el);
+		
+		if (document.readyState === "complete") {
+			createColorStyleSheet();
 		} else {
-			document.addEventListener("load", createBundleStyles);
-			console.warn("Controller.initializeBundleStyles: document.readyState is '" +
+			document.addEventListener("load", createColorStyleSheet);
+			console.warn("Controller.createColorStyleSheet: document.readyState is '" +
 				document.readyState + "', will wait for 'load' event.");
 		}
 		
@@ -126,7 +132,7 @@ var AppView = View.extend({
 		cls.toggle("with-media", !!media);
 		cls.toggle("without-media", !media);
 		
-		bundle && cls.toggle("color-dark", bundle.colors.dark);
+		bundle && cls.toggle("color-dark", bundle.colors.hasDarkBg);
 		
 		// Set bundle class
 		if (this._lastBundle) {

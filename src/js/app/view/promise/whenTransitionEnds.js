@@ -4,10 +4,10 @@
 
 /** @type {Function} */
 var transitionEnd = require("../../../utils/event/transitionEnd");
-/** @type {module:utils/css/prefixedProperty} */
-var prefixedProperty = require("../../../utils/css/prefixedProperty");
-/** @type {module:utils/css/prefixedProperty} */
-var prefixedStyleName = require("../../../utils/css/prefixedStyleName");
+/** @type {module:utils/prefixedProperty} */
+var prefixedProperty = require("../../../utils/prefixedProperty");
+/** @type {module:utils/prefixedProperty} */
+var prefixedStyleName = require("../../../utils/prefixedStyleName");
 /** @type {module:app/view/base/ViewError} */
 var ViewError = require("../base/ViewError");
 

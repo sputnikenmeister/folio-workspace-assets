@@ -7,10 +7,10 @@ var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {module:utils/css/prefixedProperty} */
-var prefixedProperty = require("../../../utils/css/prefixedProperty");
-/** @type {module:utils/css/prefixedStyleName} */
-var prefixedStyleName = require("../../../utils/css/prefixedStyleName");
+/** @type {module:utils/prefixedProperty} */
+var prefixedProperty = require("../../../utils/prefixedProperty");
+/** @type {module:utils/prefixedStyleName} */
+var prefixedStyleName = require("../../../utils/prefixedStyleName");
 
 /** @type {module:utils/event/addTransitionCallback} */
 var addTransitionCallback = require("../../../utils/event/addTransitionCallback");
