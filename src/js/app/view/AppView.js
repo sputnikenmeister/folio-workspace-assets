@@ -10,35 +10,35 @@ var Backbone = require("backbone");
 var Color = require("color");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/control/TouchManager} */
-var TouchManager = require("../control/TouchManager");
+var TouchManager = require("app/control/TouchManager");
 /** @type {module:app/control/Controller} */
-var controller = require("../control/Controller");
+var controller = require("app/control/Controller");
 /** @type {module:app/model/collection/BundleCollection} */
-var bundles = require("../model/collection/BundleCollection");
+var bundles = require("app/model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
-var View = require("./base/View");
+var View = require("app/view/base/View");
 /** @type {module:app/view/NavigationView} */
-var NavigationView = require("./NavigationView");
+var NavigationView = require("app/view/NavigationView");
 /** @type {module:app/view/ContentView} */
-var ContentView = require("./ContentView");
+var ContentView = require("app/view/ContentView");
 /** @type {module:app/view/FooterView} */
-// var FooterView = require("./FooterView");
+// var FooterView = require("app/view/FooterView");
 
 /** @type {module:app/view/helper/createColorStyleSheet} */
-var createColorStyleSheet = require("./helper/createColorStyleSheet");
+var createColorStyleSheet = require("app/view/helper/createColorStyleSheet");
 /** @type {module:app/view/helper/ColorStyleSheet} */
-// var ColorStyleSheet = require("./helper/ColorStyleSheet");
+// var ColorStyleSheet = require("app/view/helper/ColorStyleSheet");
 
 /** @type {module:app/utils/debug/traceArgs} */
-var stripTags = require("../../utils/strings/stripTags");
+var stripTags = require("utils/strings/stripTags");
 
 
 if (DEBUG) {
 	/** @type {module:app/view/DebugToolbar} */
-	var DebugToolbar = require("./DebugToolbar");
+	var DebugToolbar = require("app/view/DebugToolbar");
 }
 
 /**

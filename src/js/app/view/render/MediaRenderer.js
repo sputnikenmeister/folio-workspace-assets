@@ -5,14 +5,14 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:underscore} */
-var getBoxEdgeStyles = require("../../../utils/css/getBoxEdgeStyles");
+var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
 // /** @type {module:app/view/base/View} */
-// var View = require("../base/View");
+// var View = require("app/view/base/View");
 /** @type {module:app/model/item/MediaItem} */
-var MediaItem = require("../../model/item/MediaItem");
+var MediaItem = require("app/model/item/MediaItem");
 /** @type {module:app/view/CarouselRenderer} */
-var CarouselRenderer = require("./CarouselRenderer");
+var CarouselRenderer = require("app/view/render/CarouselRenderer");
 
 /**
  * @constructor
@@ -215,10 +215,10 @@ module.exports = CarouselRenderer.extend({
 	// },
 },{
 	/** @type {module:app/view/promise/whenSelectionIsContiguous} */
-	whenSelectionIsContiguous: require("../promise/whenSelectionIsContiguous"),
+	whenSelectionIsContiguous: require("app/view/promise/whenSelectionIsContiguous"),
 	/** @type {module:app/view/promise/whenSelectTransitionEnds} */
-	whenSelectTransitionEnds: require("../promise/whenSelectTransitionEnds"),
+	whenSelectTransitionEnds: require("app/view/promise/whenSelectTransitionEnds"),
 	/** @type {module:app/view/promise/whenDefaultImageLoads} */
-	whenDefaultImageLoads: require("../promise/whenDefaultImageLoads"), 
+	whenDefaultImageLoads: require("app/view/promise/whenDefaultImageLoads"), 
 });
 // module.exports = MediaRenderer;

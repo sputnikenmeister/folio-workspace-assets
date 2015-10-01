@@ -11,15 +11,15 @@ var _ = require("underscore");
 var Color = require("color");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/model/SelectableCollection} */
-var SelectableCollection = require("../../model/SelectableCollection");
+var SelectableCollection = require("app/model/SelectableCollection");
 /** @type {module:app/model/item/MediaItem} */
-var MediaItem = require("../item/MediaItem");
+var MediaItem = require("app/model/item/MediaItem");
 /** @type {module:app/utils/strings/stripTags} */
-var stripTags = require("../../../utils/strings/stripTags");
+var stripTags = require("utils/strings/stripTags");
 /** @type {module:app/utils/strings/parseTaglist} */
-var parseSymAttrs = require("../parseSymAttrs");
+var parseSymAttrs = require("app/model/parseSymAttrs");
 
 /** @private */
 var BundleMediaCollection = SelectableCollection.extend({

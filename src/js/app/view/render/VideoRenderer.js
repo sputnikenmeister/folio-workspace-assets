@@ -25,25 +25,29 @@ var rpad = require("underscore.string/rpad");
 var Modernizr = global.Modernizr || (require("Modernizr") && global.Modernizr);
 
 /** @type {module:utils/toggleFullScreen} */
-// var toggleFullScreen = require("../../../utils/toggleFullScreen");
+// var toggleFullScreen = require("utils/toggleFullScreen");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/view/render/PlayableRenderer} */
-var PlayableRenderer = require("./PlayableRenderer");
+var PlayableRenderer = require("app/view/render/PlayableRenderer");
 
 
 /** @type {Array} */
-var prefixedEvent = require("../../../utils/prefixedEvent");
+var prefixedEvent = require("utils/prefixedEvent");
+
+var fullscreenChangeEvent = prefixedEvent("fullscreenchange", document);
+var fullscreenErrorEvent = prefixedEvent("fullscreenerror", document);
 
 /** @type {Array} */
-var mediaEvents = require("../../../utils/event/MediaEventsEnum.json");
-mediaEvents.concat([
-	"webkitbeginfullscreen","webkitendfullscreen",
-	// "fullscreenchange","fullscreenerror",
-	// "mozfullscreenchange","mozfullscreenerror",
-	// "webkitfullscreenchange","webkitfullscreenerror",
-]);
+var mediaEvents = require("utils/event/mediaEventsEnum")
+	.concat([
+		"webkitbeginfullscreen","webkitendfullscreen",
+		fullscreenChangeEvent, fullscreenErrorEvent
+		// "fullscreenchange", "fullscreenerror",
+		// "mozfullscreenchange", "mozfullscreenerror",
+		// "webkitfullscreenchange", "webkitfullscreenerror",
+	]);
 
 /** @type {Array} */
 var stateMediaEvents = [
@@ -105,31 +109,31 @@ var readyStateSymbols = createTraceEnum(HTMLMediaElement, [
 ]);
 var mediaErrorSymbols = createTraceEnum(MediaError, _.keys(MediaError));
 
-var visibilityHiddenProp, visibilityStateProp, visibilityChangeEvent; 
-if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
-	visibilityHiddenProp = "hidden";
-	visibilityChangeEvent = "visibilitychange";
-	visibilityStateProp = "visibilityState";
-	console.log("Found page visibility API: '%s', 'document.%s', 'document.%s' (unprefixed) ", visibilityChangeEvent, visibilityStateProp, visibilityHiddenProp);
-} else {
-	if (typeof document.mozHidden !== "undefined") {
-		visibilityHiddenProp = "mozHidden";
-		visibilityChangeEvent = "mozvisibilitychange";
-		visibilityStateProp = "mozVisibilityState";
-	} else if (typeof document.msHidden !== "undefined") {
-		visibilityHiddenProp = "msHidden";
-		visibilityChangeEvent = "msvisibilitychange";
-		visibilityStateProp = "msVisibilityState";
-	} else if (typeof document.webkitHidden !== "undefined") {
-		visibilityHiddenProp = "webkitHidden";
-		visibilityChangeEvent = "webkitvisibilitychange";
-		visibilityStateProp = "webkitVisibilityState";
-	}
-	console.warn("Found page visibility API: '%s', '%document.%s', 'document.%s' (prefixed) ", visibilityChangeEvent, visibilityStateProp, visibilityHiddenProp);
-}
+// var visibilityHiddenProp, visibilityStateProp, visibilityChangeEvent; 
+// if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
+// 	visibilityHiddenProp = "hidden";
+// 	visibilityChangeEvent = "visibilitychange";
+// 	visibilityStateProp = "visibilityState";
+// 	console.log("Found page visibility API: '%s', 'document.%s', 'document.%s' (unprefixed) ", visibilityChangeEvent, visibilityStateProp, visibilityHiddenProp);
+// } else {
+// 	if (typeof document.mozHidden !== "undefined") {
+// 		visibilityHiddenProp = "mozHidden";
+// 		visibilityChangeEvent = "mozvisibilitychange";
+// 		visibilityStateProp = "mozVisibilityState";
+// 	} else if (typeof document.msHidden !== "undefined") {
+// 		visibilityHiddenProp = "msHidden";
+// 		visibilityChangeEvent = "msvisibilitychange";
+// 		visibilityStateProp = "msVisibilityState";
+// 	} else if (typeof document.webkitHidden !== "undefined") {
+// 		visibilityHiddenProp = "webkitHidden";
+// 		visibilityChangeEvent = "webkitvisibilitychange";
+// 		visibilityStateProp = "webkitVisibilityState";
+// 	}
+// 	console.warn("Found page visibility API: '%s', '%document.%s', 'document.%s' (prefixed) ", visibilityChangeEvent, visibilityStateProp, visibilityHiddenProp);
+// }
 
 var viewTemplate = require("./VideoRenderer.hbs");
-var videoSourcesTemplate = require("./VideoRenderer.Sources.hbs");
+// var videoSourcesTemplate = require("./VideoRenderer.Sources.hbs");
 
 /**
 * @constructor
@@ -160,10 +164,11 @@ module.exports = PlayableRenderer.extend({
 		_.extend(this, _logMixin);
 		this._logInit();
 		
-		var evtarget = document, evname = prefixedEvent("fullscreenchange", document);
-		evtarget.addEventListener(evname, this._onFullscreenChange, false);
+		// this.listenTo(document, fullscreenChangeEvent, this._onFullscreenChange);
+		
+		document.addEventListener(fullscreenChangeEvent, this._onFullscreenChange, false);
 		this.once("view:remove", function() {
-			evtarget.removeEventListener(evname, this._onFullscreenChange, false);
+			document.removeEventListener(fullscreenChangeEvent, this._onFullscreenChange, false);
 		}, this);
 	},
 	
@@ -430,6 +435,10 @@ module.exports = PlayableRenderer.extend({
 			try {
 				if (document.hasOwnProperty("fullscreenElement") &&
 						document.fullscreenElement !== this.video) {
+							
+							
+					// var evtarget = document, evname = prefixedEvent("fullscreenchange", document);
+							
 					this.video.requestFullscreen();
 				} else
 				if (this.video.webkitSupportsFullscreen && !this.video.webkitDisplayingFullscreen) {

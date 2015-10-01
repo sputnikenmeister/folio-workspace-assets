@@ -10,11 +10,11 @@ var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 /** @type {module:app/view/base/View} */
-var View = require("../base/View");
+var View = require("app/view/base/View");
 /** @type {module:app/view/base/DeferredView} */
-var DeferredView = require("../base/DeferredView");
+var DeferredView = require("app/view/base/DeferredView");
 /** @type {module:app/view/component/ClickableRenderer} */
-var ClickableRenderer = require("../render/ClickableRenderer");
+var ClickableRenderer = require("app/view/render/ClickableRenderer");
 
 /**
  * @constructor

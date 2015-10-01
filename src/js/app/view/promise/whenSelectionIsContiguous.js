@@ -1,5 +1,5 @@
 /** @type {module:app/view/base/ViewError} */
-var ViewError = require("../base/ViewError");
+var ViewError = require("app/view/base/ViewError");
 
 /** @param {module:app/view/base/View} */
 module.exports = function(view) {

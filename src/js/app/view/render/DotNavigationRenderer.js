@@ -9,7 +9,7 @@ var Backbone = require("backbone");
 /** @type {string} */
 var viewTemplate = require("./DotNavigationRenderer.hbs");
 /** @type {module:app/view/component/ClickableRenderer} */
-var ClickableRenderer = require("./ClickableRenderer");
+var ClickableRenderer = require("app/view/render/ClickableRenderer");
 
 /**
  * @constructor

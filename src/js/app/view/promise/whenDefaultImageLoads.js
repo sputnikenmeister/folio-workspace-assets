@@ -2,9 +2,9 @@
 var _ = require("underscore");
 
 /** @type {module:app/view/promise/_whenImageLoads} */
-var _whenImageLoads = require("./_whenImageLoads");
+var _whenImageLoads = require("app/view/promise/_whenImageLoads");
 /** @type {module:app/view/promise/_loadImageAsObjectURL} */
-var _loadImageAsObjectURL = require("./_loadImageAsObjectURL");
+var _loadImageAsObjectURL = require("app/view/promise/_loadImageAsObjectURL");
 
 var isBlobRE = /^blob\:.*/;
 

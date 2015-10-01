@@ -12,17 +12,17 @@ var Hammer = require("hammerjs");
 var Container = require("backbone.babysitter");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/view/base/View} */
-var View = require("../base/View");
+var View = require("app/view/base/View");
 /** @type {module:app/view/base/DeferredView} */
-var DeferredView = require("../base/DeferredView");
+var DeferredView = require("app/view/base/DeferredView");
 
 /** @type {Function} */
-var setImmediate = require("../../../utils/setImmediate");
+var setImmediate = require("utils/setImmediate");
 
 /** @type {module:app/view/render/CarouselRenderer} */
-var CarouselRenderer = require("../render/CarouselRenderer");
+var CarouselRenderer = require("app/view/render/CarouselRenderer");
 
 var cssToPx = function (cssVal, el) {
 	return parseInt(cssVal);

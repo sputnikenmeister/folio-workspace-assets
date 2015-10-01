@@ -10,12 +10,14 @@ var Backbone = require("backbone");
 var Cookies = require("cookies-js");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/control/Controller} */
-var controller = require("../control/Controller");
+var controller = require("app/control/Controller");
 
 /** @type {Function} */
 var viewTemplate = require("./template/DebugToolbar.hbs");
+// var viewTemplate = require("app/view/template/DebugToolbar.hbs");
+
 /** @type {Function} */
 var mediaInfoTemplate = _.template("<%= w %> \u00D7 <%= h %>");
 

@@ -3,7 +3,7 @@
  */
 
 /** @type {module:app/view/component/ClickableRenderer} */
-var ClickableRenderer = require("./ClickableRenderer");
+var ClickableRenderer = require("app/view/render/ClickableRenderer");
 
 /**
  * @constructor

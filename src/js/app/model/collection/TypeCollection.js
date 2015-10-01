@@ -4,10 +4,10 @@
 */
 
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
 
 /** @type {module:app/model/item/TypeItem} */
-var TypeItem = require( "../item/TypeItem" );
+var TypeItem = require("app/model/item/TypeItem");
 
 /**
  * @constructor

@@ -3,7 +3,7 @@ var Handlebars = require("hbsfy/runtime");
 /** @type {Function} */
 var Color = require("color");
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 
 // (function() {
 	var helpers = {

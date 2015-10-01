@@ -91,7 +91,6 @@ module.exports = function (grunt) {
 		src: [],
 		options: {
 			require: [
-				// "Modernizr",
 				"underscore",
 				// "underscore.string",
 				"backbone",
@@ -103,6 +102,7 @@ module.exports = function (grunt) {
 				"es6-promise",
 				"classlist-polyfill",
 				"cookies-js",
+				// "handlebars",
 			],
 			alias: [
 				"./build/modernizr-dist.js:Modernizr",
@@ -112,20 +112,51 @@ module.exports = function (grunt) {
 			]
 		},
 	});
-
+	
+	// var remapify = require("remapify");
+	
 	/* browserify:client */
 	grunt.config("browserify.client", {
 		dest: "./js/<%= DEBUG_CLIENT_JS %>.js",
 		src: [
 			"./src/js/app/App.js",
+			// "./src/js/app/**/*.js",
 		],
 		options: {
+			// browserifyOptions: {
+			// 	extensions: [".js", ".hbs", ".json"],
+			// 	fullPaths: true,
+			// 	debug: true
+			// },
 			transform: [
-				// ["remapify", { src: "**/*.{js,json,hbs}", expose: "", cwd: "./src/js"}],
-				["hbsfy", { extensions: ["hbs"] }],
+				["hbsfy", { 
+					extensions: ["hbs"]
+				}],
 				// ["node-underscorify", { extensions: ["tpl"] }],
 				// "decomponentify",
-			]
+			],
+			plugin: [
+				["remapify", [
+					{
+						src: "./**/*.js",
+						expose: "app",
+						cwd: "./src/js/app",
+					},
+					{
+						// src: "**/*.js",
+						src: "./**/*.js",
+						expose: "utils",
+						cwd: "./src/js/utils",
+					},
+				]]
+			],
+			// preBundleCB: function (b) {
+			// 	b.plugin(remapify, [{
+			// 		src: "**/*.js",
+			// 		expose: "",
+			// 		cwd: "./src/js",
+			// 	}]);
+			// }
 		}
 	});
 	/* NOTE: Add requires and aliased requires from vendor as externals in client */
@@ -140,8 +171,8 @@ module.exports = function (grunt) {
 		}).concat(grunt.config("browserify.vendor.options.require"));
 		
 	}()));
-	grunt.log.verbose.subhead("Vendor Externals");
-	grunt.log.verbose.writeln(grunt.config("browserify.client.options.external").join(", "));
+	// grunt.log.verbose.subhead("Vendor Externals");
+	// grunt.log.verbose.writeln(grunt.config("browserify.client.options.external").join(", "));
 	
 	/* browserify:watchable */
 	// Duplicate browserify.client task for watch
@@ -288,6 +319,7 @@ module.exports = function (grunt) {
 			alias: grunt.config("browserify.vendor.options.alias"),
 			require: grunt.config("browserify.vendor.options.require"),
 			transform: grunt.config("browserify.client.options.transform"),
+			plugin: grunt.config("browserify.client.options.plugin"),
 		}
 	});
 

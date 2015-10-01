@@ -1,4 +1,4 @@
-[
+module.exports = [
 	"loadstart",
 	"progress",
 	"suspend",
@@ -23,4 +23,4 @@
 	"resize",
 	"ratechange",
 	"volumechange",
-]
+];

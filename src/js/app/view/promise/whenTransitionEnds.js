@@ -3,13 +3,13 @@
  */
 
 /** @type {Function} */
-var transitionEnd = require("../../../utils/event/transitionEnd");
+var transitionEnd = require("utils/event/transitionEnd");
 /** @type {module:utils/prefixedProperty} */
-var prefixedProperty = require("../../../utils/prefixedProperty");
+var prefixedProperty = require("utils/prefixedProperty");
 /** @type {module:utils/prefixedProperty} */
-var prefixedStyleName = require("../../../utils/prefixedStyleName");
+var prefixedStyleName = require("utils/prefixedStyleName");
 /** @type {module:app/view/base/ViewError} */
-var ViewError = require("../base/ViewError");
+var ViewError = require("app/view/base/ViewError");
 
 var getComputedTimeout = function(v, t, p) {
 	var sProp, sDelay, sDur;

@@ -8,13 +8,13 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/view/base/View} */
-var View = require("../base/View");
+var View = require("app/view/base/View");
 /** @type {Function} */
-var transitionEnd = require("../../../utils/event/transitionEnd");
+var transitionEnd = require("utils/event/transitionEnd");
 /** @type {Function} */
-var setImmediate = require("../../../utils/setImmediate");
+var setImmediate = require("utils/setImmediate");
 
 /** @type {string} */
 var viewTemplate = require("./CollectionStack.hbs");

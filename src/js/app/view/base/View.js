@@ -8,16 +8,16 @@ var Backbone = require("backbone");
 var _ = require("underscore");
 
 /** @type {module:utils/prefixedProperty} */
-var prefixedProperty = require("../../../utils/prefixedProperty");
+var prefixedProperty = require("utils/prefixedProperty");
 /** @type {module:utils/prefixedStyleName} */
-var prefixedStyleName = require("../../../utils/prefixedStyleName");
+var prefixedStyleName = require("utils/prefixedStyleName");
 
 /** @type {module:utils/event/addTransitionCallback} */
-var addTransitionCallback = require("../../../utils/event/addTransitionCallback");
+var addTransitionCallback = require("utils/event/addTransitionCallback");
 /** @type {Function} */
-var transitionEnd = require("../../../utils/event/transitionEnd");
+var transitionEnd = require("utils/event/transitionEnd");
 /** @type {Function} */
-var getPrototypeChainValue = require("../../../utils/object/getPrototypeChainValue");
+var getPrototypeChainValue = require("utils/object/getPrototypeChainValue");
 
 var _viewsByCid = {};
 var _cidSeed = 1;
@@ -147,7 +147,7 @@ var View = Backbone.View.extend({
 		return _viewsByCid[element.cid];
 	},
 	
-	ViewError: require("./ViewError"),
+	ViewError: require("app/view/base/ViewError"),
 });
 
 module.exports = View;

@@ -7,9 +7,9 @@ var _ = require("underscore");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
 /** @type {module:app/utils/debug/traceElement} */
-var SmoothPan = require("../../utils/touch/SmoothPanRecognizer");
+var SmoothPan = require("utils/touch/SmoothPanRecognizer");
 /** @type {module:app/control/Globals} */
-var Globals = require("./Globals");
+var Globals = require("app/control/Globals");
 
 /* -------------------------------
 /* Static private

@@ -3,9 +3,9 @@
 */
 
 /** @type {module:app/view/base/View} */
-var View = require("../base/View");
+var View = require("app/view/base/View");
 /** @type {module:utils/prefixedProperty} */
-var prefixed = require("../../../utils/prefixedProperty");
+var prefixed = require("utils/prefixedProperty");
 
 module.exports = View.extend({
 	

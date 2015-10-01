@@ -8,24 +8,24 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/model/item/MediaItem} */
-var MediaItem = require("../../model/item/MediaItem");
+var MediaItem = require("app/model/item/MediaItem");
 
 /** @type {module:app/view/MediaRenderer} */
 var MediaRenderer = require("./MediaRenderer");
 /** @type {module:app/view/base/ViewError} */
-var ViewError = require("../base/ViewError");
+var ViewError = require("app/view/base/ViewError");
 
 // /** @type {module:app/view/promise/whenSelectTransitionEnds} */
-// var whenSelectTransitionEnds = require("../promise/whenSelectTransitionEnds");
+// var whenSelectTransitionEnds = require("app/view/promise/whenSelectTransitionEnds");
 // /** @type {module:app/view/promise/whenSelectionIsContiguous} */
-// var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
+// var whenSelectionIsContiguous = require("app/view/promise/whenSelectionIsContiguous");
 // /** @type {module:app/view/promise/whenDefaultImageLoads} */
-// var whenDefaultImageLoads = require("../promise/whenDefaultImageLoads");
+// var whenDefaultImageLoads = require("app/view/promise/whenDefaultImageLoads");
 
 /** @type {Function} */
-var viewTemplate = require( "./ImageRenderer.hbs" );
+var viewTemplate = require("./ImageRenderer.hbs");
 
 /**
  * @constructor

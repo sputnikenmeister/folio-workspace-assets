@@ -10,29 +10,29 @@ var Backbone = require("backbone");
 var Hammer = require("hammerjs");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/control/TouchManager} */
-var TouchManager = require("../control/TouchManager");
+var TouchManager = require("app/control/TouchManager");
 /** @type {module:app/control/Controller} */
-var controller = require("../control/Controller");
+var controller = require("app/control/Controller");
 
 /** @type {module:app/model/collection/TypeCollection} */
-var types = require("../model/collection/TypeCollection");
+var types = require("app/model/collection/TypeCollection");
 /** @type {module:app/model/collection/KeywordCollection} */
-var keywords = require("../model/collection/KeywordCollection");
+var keywords = require("app/model/collection/KeywordCollection");
 /** @type {module:app/model/collection/BundleCollection} */
-var bundles = require("../model/collection/BundleCollection");
+var bundles = require("app/model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
-var View = require("./base/View");
+var View = require("app/view/base/View");
 /** @type {module:app/view/base/ContainerView} */
-var ContainerView = require("./base/ContainerView");
+var ContainerView = require("app/view/base/ContainerView");
 /** @type {module:app/view/component/FilterableListView} */
-var FilterableListView = require("./component/FilterableListView");
+var FilterableListView = require("app/view/component/FilterableListView");
 /** @type {module:app/view/component/GroupingListView} */
-var GroupingListView = require("./component/GroupingListView");
+var GroupingListView = require("app/view/component/GroupingListView");
 /** @type {module:app/view/component/CollectionPager} */
-var CollectionPager = require("./component/CollectionPager");
+var CollectionPager = require("app/view/component/CollectionPager");
 
 /**
  * @constructor

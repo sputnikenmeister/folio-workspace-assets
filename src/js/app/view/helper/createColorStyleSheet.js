@@ -3,11 +3,11 @@ var _ = require("underscore");
 /** @type {Function} */
 var Color = require("color");
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:utils/StyleHelper} */
-var Styles = require("../../../utils/StyleHelper");
+var Styles = require("utils/StyleHelper");
 /** @type {module:app/model/collection/BundleCollection} */
-var bundles = require("../../model/collection/BundleCollection");
+var bundles = require("app/model/collection/BundleCollection");
 
 module.exports = function() {
 	var s, attrs, tmpVal;

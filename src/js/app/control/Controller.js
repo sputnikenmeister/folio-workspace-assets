@@ -8,11 +8,11 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 
 /** @type {module:app/model/collection/TypeCollection} */
-var types = require("../model/collection/TypeCollection");
+var types = require("app/model/collection/TypeCollection");
 /** @type {module:app/model/collection/KeywordCollection} */
-var keywords = require("../model/collection/KeywordCollection");
+var keywords = require("app/model/collection/KeywordCollection");
 /** @type {module:app/model/collection/BundleCollection} */
-var bundles = require("../model/collection/BundleCollection");
+var bundles = require("app/model/collection/BundleCollection");
 
 /* --------------------------- *
  * Static private

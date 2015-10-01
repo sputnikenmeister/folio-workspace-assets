@@ -9,9 +9,9 @@ var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 /** @type {module:app/view/base/View} */
-var View = require("../base/View");
+var View = require("app/view/base/View");
 /** @type {module:app/view/component/FilterableListView} */
-var FilterableListView = require("./FilterableListView");
+var FilterableListView = require("app/view/component/FilterableListView");
 
 /**
  * @constructor

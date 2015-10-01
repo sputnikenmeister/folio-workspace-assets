@@ -10,31 +10,31 @@ var Backbone = require("backbone");
 var Container = require("backbone.babysitter");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/view/render/PlayableRenderer} */
-var PlayableRenderer = require("./PlayableRenderer");
+var PlayableRenderer = require("app/view/render/PlayableRenderer");
 /** @type {module:app/view/base/View} */
-var View = require("../base/View");
+var View = require("app/view/base/View");
 /** @type {module:app/model/SelectableCollection} */
-var SelectableCollection = require("../../model/SelectableCollection");
+var SelectableCollection = require("app/model/SelectableCollection");
 /** @type {module:app/view/component/CircleProgressMeter} */
-var ProgressMeter = require("../component/CircleProgressMeter");
+var ProgressMeter = require("app/view/component/CircleProgressMeter");
 
 /** @type {Function} */
-var transitionEnd = require("../../../utils/event/transitionEnd");
+var transitionEnd = require("utils/event/transitionEnd");
 /** @type {module:utils/prefixedProperty} */
-var prefixed = require("../../../utils/prefixedProperty");
+var prefixed = require("utils/prefixedProperty");
 /** @type {Function} */
-var _whenImageLoads = require("../promise/_whenImageLoads");
+var _whenImageLoads = require("app/view/promise/_whenImageLoads");
 
 /** @type {Function} */
-// var whenSelectionIsContiguous = require("../promise/whenSelectionIsContiguous");
-// var whenSelectTransitionEnds = require("../promise/whenSelectTransitionEnds");
-// var whenDefaultImageLoads = require("../promise/whenDefaultImageLoads");
+// var whenSelectionIsContiguous = require("app/view/promise/whenSelectionIsContiguous");
+// var whenSelectTransitionEnds = require("app/view/promise/whenSelectTransitionEnds");
+// var whenDefaultImageLoads = require("app/view/promise/whenDefaultImageLoads");
 
 
 /** @type {module:utils/Timer} */
-var Timer = require("../../../utils/Timer");
+var Timer = require("utils/Timer");
 
 /**
 * @constructor

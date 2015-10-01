@@ -44,15 +44,15 @@ window.addEventListener("load", function(ev) {
 	}
 	
 	/** @type {module:app/control/Globals} */
-	// var Globals = require("./control/Globals");
+	// var Globals = require("app/control/Globals");
 	// $.fx.speeds._default = Globals.TRANSITION_DURATION;
 
 	/** @type {module:app/model/collection/TypeCollection} */
-	var typeList = require("./model/collection/TypeCollection");
+	var typeList = require("app/model/collection/TypeCollection");
 	/** @type {module:app/model/collection/KeywordCollection} */
-	var keywordList = require("./model/collection/KeywordCollection");
+	var keywordList = require("app/model/collection/KeywordCollection");
 	/** @type {module:app/model/collection/BundleCollection} */
-	var bundleList = require("./model/collection/BundleCollection");
+	var bundleList = require("app/model/collection/BundleCollection");
 
 	var types = window.bootstrap["types-all"];
 	var keywords = window.bootstrap["keywords-all"];
@@ -86,11 +86,11 @@ window.addEventListener("load", function(ev) {
 	delete window.bootstrap;
 
 
-	require("./view/template/_helpers");
-	require("./view/template/_partials");
+	require("app/view/template/_helpers");
+	require("app/view/template/_partials");
 	
 	/** @type {module:app/view/AppView} */
-	var AppView = require("./view/AppView");
+	var AppView = require("app/view/AppView");
 
 	window.app = new AppView();
 });

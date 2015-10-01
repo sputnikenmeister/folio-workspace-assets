@@ -6,38 +6,39 @@
 var _ = require("underscore");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/control/Controller} */
-var controller = require("../control/Controller");
+var controller = require("app/control/Controller");
 /** @type {module:app/model/collection/BundleCollection} */
-var bundles = require("../model/collection/BundleCollection");
+var bundles = require("app/model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
-var ContainerView = require("./base/ContainerView");
+var ContainerView = require("app/view/base/ContainerView");
 
 /** @type {module:app/view/component/CollectionStack} */
-var CollectionStack = require("./component/CollectionStack");
+var CollectionStack = require("app/view/component/CollectionStack");
+
+/** @type {module:app/view/component/CollectionStack} */
+var SelectableListView = require("app/view/component/SelectableListView");
+/** @type {module:app/view/render/DotNavigationRenderer} */
+var DotNavigationRenderer = require("app/view/render/DotNavigationRenderer");
+
+/** @type {module:app/view/component/Carousel} */
+var Carousel = require("app/view/component/Carousel");
+/** @type {module:app/view/render/ImageRenderer} */
+var ImageRenderer = require("app/view/render/ImageRenderer");
+/** @type {module:app/view/render/SequenceRenderer} */
+var SequenceRenderer = require("app/view/render/SequenceRenderer");
+/** @type {module:app/view/render/VideoRenderer} */
+var VideoRenderer = require("app/view/render/VideoRenderer");
+
+/** @type {Function} */
+var bundleDescTemplate = require("./template/CollectionStack.Bundle.hbs");
 /** @type {Function} */
 var mediaCaptionTemplate = require("./template/CollectionStack.Media.hbs");
 
-/** @type {module:app/view/component/CollectionStack} */
-var SelectableListView = require("./component/SelectableListView");
-/** @type {module:app/view/render/DotNavigationRenderer} */
-var DotNavigationRenderer = require("./render/DotNavigationRenderer");
-
-/** @type {module:app/view/component/Carousel} */
-var Carousel = require("./component/Carousel");
-/** @type {module:app/view/render/ImageRenderer} */
-var ImageRenderer = require("./render/ImageRenderer");
-/** @type {module:app/view/render/SequenceRenderer} */
-var SequenceRenderer = require("./render/SequenceRenderer");
-/** @type {module:app/view/render/VideoRenderer} */
-var VideoRenderer = require("./render/VideoRenderer");
 /** @type {Function} */
-var bundleDescTemplate = require("./template/CollectionStack.Bundle.hbs");
-
-/** @type {Function} */
-var transitionEnd = require("../../utils/event/transitionEnd");
+var transitionEnd = require("utils/event/transitionEnd");
 
 
 /**

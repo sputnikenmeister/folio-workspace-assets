@@ -8,16 +8,16 @@ var Backbone = require("backbone");
 var _ = require("underscore");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/view/base/View} */
-var View = require("./View");
+var View = require("app/view/base/View");
 /** @type {module:utils/TransformHelper} */
-var TransformHelper = require("../../../utils/TransformHelper");
+var TransformHelper = require("utils/TransformHelper");
 /** @type {module:app/control/TouchManager} */
-var TouchManager = require("../../control/TouchManager");
+var TouchManager = require("app/control/TouchManager");
 
 /** @type {module:app/control/Controller} */
-var controller = require("../../control/Controller");
+var controller = require("app/control/Controller");
 
 /**
  * @constructor

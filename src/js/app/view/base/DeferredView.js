@@ -7,9 +7,7 @@ var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 /** @type {module:app/view/base/View} */
-var View = require("./View");
-
-// require("../../../shims/requestAnimationFrame");
+var View = require("app/view/base/View");
 
 var _queue = [];
 var _queueRafId = null;

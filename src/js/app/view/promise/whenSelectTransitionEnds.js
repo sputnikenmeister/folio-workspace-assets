@@ -1,5 +1,5 @@
 /** @type {module:app/view/promise/whenTransitionEnds} */
-var whenTransitionEnds = require("./whenTransitionEnds");
+var whenTransitionEnds = require("app/view/promise/whenTransitionEnds");
 
 module.exports = function(view) {
 	if (view.model.selected) {

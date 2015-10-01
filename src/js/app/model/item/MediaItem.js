@@ -3,15 +3,15 @@
 */
 
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:app/utils/strings/stripTags} */
-var stripTags = require("../../../utils/strings/stripTags");
-/** @type {module:app/utils/strings/parseTaglist} */
-var parseSymAttrs = require("../parseSymAttrs");
+var stripTags = require("utils/strings/stripTags");
+/** @type {module:app/model/parseSymAttrs} */
+var parseSymAttrs = require("app/model/parseSymAttrs");
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 
 /**
  * @constructor

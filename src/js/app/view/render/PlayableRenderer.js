@@ -8,19 +8,19 @@ var _ = require("underscore");
 var Color = require("color");
 
 /** @type {module:app/view/MediaRenderer} */
-var MediaRenderer = require("./MediaRenderer");
+var MediaRenderer = require("app/view/render/MediaRenderer");
 
 /** @type {Function} */
-var prefixedProperty = require("../../../utils/prefixedProperty");
+var prefixedProperty = require("utils/prefixedProperty");
 /** @type {Function} */
-var prefixedEvent = require("../../../utils/prefixedEvent");
+var prefixedEvent = require("utils/prefixedEvent");
 
 /** @type {Function} */
-// var duotone = require("../../../utils/canvas/bitmap/duotone");
-// var stackBlurRGB = require("../../../utils/canvas/bitmap/stackBlurRGB");
-// var stackBlurMono = require("../../../utils/canvas/bitmap/stackBlurMono");
-// var getAverageRGBA = require("../../../utils/canvas/bitmap/getAverageRGBA");
-var getAverageRGB = require("../../../utils/canvas/bitmap/getAverageRGB");
+// var duotone = require("utils/canvas/bitmap/duotone");
+// var stackBlurRGB = require("utils/canvas/bitmap/stackBlurRGB");
+// var stackBlurMono = require("utils/canvas/bitmap/stackBlurMono");
+// var getAverageRGBA = require("utils/canvas/bitmap/getAverageRGBA");
+var getAverageRGB = require("utils/canvas/bitmap/getAverageRGB");
 
 var _sharedCanvas = null;
 var getSharedCanvas =  function() {
