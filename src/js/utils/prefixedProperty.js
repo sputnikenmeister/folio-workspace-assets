@@ -3,21 +3,21 @@
 /** @type {module:utils/prefixes} */
 var prefixes = require("./prefixes");
 
-var _prefixedProperty = function(prop, styleObj) {
+var _prefixedProperty = function(prop, obj) {
 	var prefixedProp, camelProp;
-	styleObj || (styleObj = document.body.style);
+	obj || (obj = document.body.style);
 	
-	if (prop in styleObj) {
+	if (prop in obj) {
 		return prop;
 	}
 	camelProp = prop[0].toUpperCase() + prop.slice(1);
 	for (var i = 0; i < prefixes.length; i++) {
 		prefixedProp = prefixes[i] + camelProp;
-		if (prefixedProp in styleObj) {
+		if (prefixedProp in obj) {
 			return prefixedProp;
 		}
 	}
-	console.error("CSS property '" + prop + "' not found");
+	console.error("Property '" + prop + "' not found");
 	return null;
 };
 
@@ -30,10 +30,10 @@ var _cache = {};
  * @param {Object} look-up style object
  * @returns {String|Undefined} prefixed
  */
-module.exports = function (prop, styleObj) {
-	if (!_cache.hasOwnProperty(prop)) {
-		_cache[prop] = _prefixedProperty(prop, styleObj);
-		console.log("CSS property '" + prop + "' found as '" + _cache[prop] + "'");
+module.exports = function (prop, obj) {
+	if (_cache[prop] === void 0) {
+		_cache[prop] = _prefixedProperty(prop, obj);
+		console.log("Property '" + prop + "' found as '" + _cache[prop] + "'");
 	}
 	return _cache[prop];
 };

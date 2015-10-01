@@ -21,6 +21,7 @@
 		"URL": true,
 		"$": true,
 		"_": true,
+		"Modernizr": true,
 		"DEBUG": true
 	},
 	"boss": true,

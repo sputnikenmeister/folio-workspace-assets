@@ -13,16 +13,13 @@
 		</a>
 	</div>
 	<div class="crop-box media-size">
-		<!-- poster="{{global "MEDIA_DIR"}}/{{src}}" -->
-		<video preload="none"></video>
-		<!-- <video preload="none" poster="{{global "MEDIA_DIR"}}/{{src}}"></video> -->
-		<!-- <video preload="none">
+		<video preload="none">
 		{{#each srcset}}
 			{{#contains mime 'video'}}
 			<source src="{{global "MEDIA_DIR"}}/{{src}}" type="{{mime}}"/>
 			{{/contains}}
 		{{/each}}
-		</video> -->
+		</video>
 		<img class="poster default" alt="{{name}}"/>
 	</div>
 	<div class="overlay media-size">

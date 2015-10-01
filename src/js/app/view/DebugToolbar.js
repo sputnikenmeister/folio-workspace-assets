@@ -9,8 +9,6 @@ var Backbone = require("backbone");
 /** @type {module:cookies-js} */
 var Cookies = require("cookies-js");
 
-/** @type {module:utils/toggleFullScreen} */
-// var toggleFullScreen = require("../../utils/toggleFullScreen");
 /** @type {module:app/control/Globals} */
 var Globals = require("../control/Globals");
 /** @type {module:app/control/Controller} */
@@ -25,77 +23,46 @@ var DebugToolbar = Backbone.View.extend({
 	/** @override */
 	tagName: "div",
 	/** @override */
-	className: "toolbar show-info color-fg05",
+	className: "toolbar color-fg05",
 	/** @override */
 	template: viewTemplate,
-	
-	events: {
-		"click dt": function(ev) {
-			this.el.classList.toggle("show-info");
-			this.el.classList.toggle("show-links");
-		},
-	},
 	
 	initialize: function (options) {
 		Cookies.defaults = {
 			domain: String(window.location).match(/^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1]
 		};
 		
-		this.el.innerHTML = this.template({approot: Globals.APP_ROOT});
+		this.el.innerHTML = this.template();
 		
-		/* .debug-group
+		/* toggle visibility
+		 * - - - - - - - - - - - - - - - - */
+		this.initializeToggle(this.el.querySelector(".debug-links dt"), "show-links", this.el);
+		
+		/* container toggles
 		 * - - - - - - - - - - - - - - - - */
  		var container = document.body.querySelector("#container");
 		
+		this.initializeToggle(this.el.querySelector("#toggle-grid-bg a"), "debug-grid-bg", container);
 		this.initializeToggle(this.el.querySelector("#toggle-blocks a"), "debug-blocks", container);
-		this.initializeToggle(this.el.querySelector("#toggle-grid a"), "debug-grid-bg", container);
 		this.initializeToggle(this.el.querySelector("#toggle-logs a"), "debug-logs", container);
-		
-		// var debugImgEl = document.createElement("img");
-		// debugImgEl.id = "debug-grid";
-		// debugImgEl.src = Globals.APP_ROOT + "/workspace/assets/images/debug-background.svg";
-		// this.initializeToggleFn(showGridEl, "debug-grid-img", function(toggleValue) {
-		// 		if (toggleValue && debugImgEl.parentElement !== container) {
-		// 			container.insertBefore(debugImgEl, container.firstElementChild);
-		// 		} else if (debugImgEl.parentElement === container) {
-		// 			container.removeChild(debugImgEl);
-		// 		}
-		// 	});
-		
-		// this.el.querySelector("#toggle-full-screen").addEventListener("click", toggleFullScreen);
 		
 		this.backendEl = this.el.querySelector("#edit-backend a");
 		this.listenTo(this.collection, "select:one select:none", this._onSelectAnyBundle);
 		
 		this.mediaInfoEl = this.el.querySelector("#media-info span");
 		this.listenTo(this.collection, "select:one", this._onSelectOneBundle);
-		
-		/* .classes-group
-		 * - - - - - - - - - - - - - - - - */
-		// var documentClassesEl = this.el.querySelector("#document-classes");
-		// var bodyClassesEl = this.el.querySelector("#body-classes");
-		// var updateClassesGroup = function () {
-		// 	documentClassesEl.textContent = document.documentElement.className;
-		// 	bodyClassesEl.textContent = document.body.className;
-		// };
-		// this.listenTo(controller, "change:after", updateClassesGroup);
-		// window.addEventListener("resize", updateClassesGroup, false);
-		// window.addEventListener("orientationchange", updateClassesGroup, false);
-		// updateClassesGroup();
-		
-		/* show dt.debug-group | dt.classes-group
-		 * - - - - - - - - - - - - - - - - */
-		// this.events["click dt.classes-group"].call(this, void 0);
 	},
 	
 	initializeToggle: function (toggleEl, className, targetEl) {
 		toggleEl.addEventListener("click", function (ev) {
 			if (ev.defaultPrevented) return; else ev.preventDefault();
 			targetEl.classList.toggle(className);
+			toggleEl.classList.toggle("toggle-enabled");
 			Cookies.set(className, targetEl.classList.contains(className)? "true": "");
 		}, false);
 		if (Cookies.get(className)) {
 			targetEl.classList.add(className);
+			toggleEl.classList.add("toggle-enabled");
 		}
 	},
 	

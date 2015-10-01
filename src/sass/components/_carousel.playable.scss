@@ -273,7 +273,7 @@
 	// max-height: 100%;
 	bottom: -1.5rem;
 	margin: 1.5rem 20px;
-	padding: 0.5rem 10px;
+	// padding: 0.5rem 10px;
 	overflow: auto;
 	& > pre {
 		display: block;
@@ -281,12 +281,17 @@
 			display: none;
 		}
 		&::before {
-			content: attr(data-logtype);
 			@include ellipsis(inline-block);
-			width: 8em;
+			width: 12em;
 			padding-right: 1rem;
 			font-weight: bolder;
 			vertical-align: bottom;
+		}
+		&::before {
+			content: attr(data-logtype);
+		}
+		&[data-logrepeat]::before {
+			content: "(" attr(data-logrepeat) ")" attr(data-logtype);
 		}
 	}
 }

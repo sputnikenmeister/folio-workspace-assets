@@ -160,8 +160,8 @@ $darkolivegreen:	darkolivegreen;
 // -----------------------------------
 
 #debug-toolbar {
-	opacity: 0.4;
-	color: inherit;
+	// opacity: 0.4;
+	// color: inherit;
 	// color: hsl(245, 2%, 50%);
 	// border-color: hsl(245, 2%, 50%);
 	
@@ -178,7 +178,7 @@ $darkolivegreen:	darkolivegreen;
 	// &.show-links .debug-info {
 	// 	display: none;
 	// }
-	&.show-info .debug-links > dd {
+	&:not(.show-links) .debug-links > dd {
 		display: none;
 	}
 	// &.show-links .debug-info {
@@ -256,6 +256,10 @@ $darkolivegreen:	darkolivegreen;
 		& > * {
 			margin-top: -0.1rem;
 		}
+	}
+	a.toggle-enabled {
+		// color: red;
+		text-decoration: underline;
 	}
 }
 

@@ -10,6 +10,12 @@ var Color = require("color");
 /** @type {module:app/view/MediaRenderer} */
 var MediaRenderer = require("./MediaRenderer");
 
+/** @type {Function} */
+var prefixedProperty = require("../../../utils/prefixedProperty");
+/** @type {Function} */
+var prefixedEvent = require("../../../utils/prefixedEvent");
+
+/** @type {Function} */
 // var duotone = require("../../../utils/canvas/bitmap/duotone");
 // var stackBlurRGB = require("../../../utils/canvas/bitmap/stackBlurRGB");
 // var stackBlurMono = require("../../../utils/canvas/bitmap/stackBlurMono");
@@ -24,6 +30,10 @@ var getSharedCanvas =  function() {
 	return _sharedCanvas;
 };
 
+var visibilityHiddenProp = prefixedProperty("hidden", document);
+var visibilityStateProp = prefixedProperty("visibilityState", document);
+var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden");
+
 /**
  * @constructor
  * @type {module:app/view/render/PlayableRenderer}
@@ -36,7 +46,7 @@ module.exports = MediaRenderer.extend({
 	/** @override */
 	initialize: function (opts) {
 		MediaRenderer.prototype.initialize.apply(this, arguments);
-		_.bindAll(this, "_onToggleEvent");
+		_.bindAll(this, "_onToggleEvent", "_onVisibilityChange");
 		this._lastMediaState = null;
 	},
 	
@@ -86,25 +96,43 @@ module.exports = MediaRenderer.extend({
 	
 	_onModelSelected: function() {
 		// this.togglePlayback(true);
-		this.playToggle.addEventListener(this._toggleEvent, this._onToggleEvent, false);
-		this.listenTo(this, "view:remove", this._removeClickHandler);
+		// document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
+		// this.playToggle.addEventListener(this._toggleEvent, this._onToggleEvent, false);
+		// this.listenTo(this, "view:remove", this._removeSelectionHandlers);
+		this.addSelectedHandlers();
 	},
 	
 	_onModelDeselected: function() {
 		this.togglePlayback(false);
-		this.playToggle.removeEventListener(this._toggleEvent, this._onToggleEvent, false);
-		this.stopListening(this, "view:remove", this._removeClickHandler);
+		// document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
+		// this.playToggle.removeEventListener(this._toggleEvent, this._onToggleEvent, false);
+		// this.stopListening(this, "view:remove", this._removeSelectionHandlers);
+		this.removeSelectedHandlers();
 	},
 	
-	_removeClickHandler: function() {
-		this.playToggle.removeEventListener(this._toggleEvent, this._onToggleEvent, false);
+	addSelectedHandlers: function() {
+		document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
+		this.playToggle.addEventListener(this._toggleEvent, this._onToggleEvent, false);
+		this.listenTo(this, "view:remove", this.removeSelectionHandlers);
 	},
 	
-	/* click dom event
+	removeSelectedHandlers: function() {
+		document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
+		this.playToggle.removeEventListener(this._toggleEvent, this._onToggleEvent, false);
+		this.stopListening(this, "view:remove", this.removeSelectionHandlers);
+	},
+	
+	/* dom events
 	/* --------------------------- */
+	
+	_onVisibilityChange: function(ev) {
+		if (document[visibilityStateProp] !== "visible"){
+			this.togglePlayback(false);
+		}
+	},
+	
 	_onToggleEvent: function(domev) {
 		// console.log("PlayableRenderer._onToggleEvent", domev.type, "defaultPrevented: " + domev.defaultPrevented);
-		
 		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
 		if (!domev.defaultPrevented && !domev.button) {
 			this.togglePlayback();

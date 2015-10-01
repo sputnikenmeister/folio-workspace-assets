@@ -105,27 +105,27 @@ var readyStateSymbols = createTraceEnum(HTMLMediaElement, [
 ]);
 var mediaErrorSymbols = createTraceEnum(MediaError, _.keys(MediaError));
 
-var hiddenPropName, visibilityStatePropName, visibilityChangeEventName; 
+var visibilityHiddenProp, visibilityStateProp, visibilityChangeEvent; 
 if (typeof document.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
-	hiddenPropName = "hidden";
-	visibilityChangeEventName = "visibilitychange";
-	visibilityStatePropName = "visibilityState";
-	console.log("Found page visibility API: '%s', 'document.%s', 'document.%s' (unprefixed) ", visibilityChangeEventName, visibilityStatePropName, hiddenPropName);
+	visibilityHiddenProp = "hidden";
+	visibilityChangeEvent = "visibilitychange";
+	visibilityStateProp = "visibilityState";
+	console.log("Found page visibility API: '%s', 'document.%s', 'document.%s' (unprefixed) ", visibilityChangeEvent, visibilityStateProp, visibilityHiddenProp);
 } else {
 	if (typeof document.mozHidden !== "undefined") {
-		hiddenPropName = "mozHidden";
-		visibilityChangeEventName = "mozvisibilitychange";
-		visibilityStatePropName = "mozVisibilityState";
+		visibilityHiddenProp = "mozHidden";
+		visibilityChangeEvent = "mozvisibilitychange";
+		visibilityStateProp = "mozVisibilityState";
 	} else if (typeof document.msHidden !== "undefined") {
-		hiddenPropName = "msHidden";
-		visibilityChangeEventName = "msvisibilitychange";
-		visibilityStatePropName = "msVisibilityState";
+		visibilityHiddenProp = "msHidden";
+		visibilityChangeEvent = "msvisibilitychange";
+		visibilityStateProp = "msVisibilityState";
 	} else if (typeof document.webkitHidden !== "undefined") {
-		hiddenPropName = "webkitHidden";
-		visibilityChangeEventName = "webkitvisibilitychange";
-		visibilityStatePropName = "webkitVisibilityState";
+		visibilityHiddenProp = "webkitHidden";
+		visibilityChangeEvent = "webkitvisibilitychange";
+		visibilityStateProp = "webkitVisibilityState";
 	}
-	console.warn("Found page visibility API: '%s', '%document.%s', 'document.%s' (prefixed) ", visibilityChangeEventName, visibilityStatePropName, hiddenPropName);
+	console.warn("Found page visibility API: '%s', '%document.%s', 'document.%s' (prefixed) ", visibilityChangeEvent, visibilityStateProp, visibilityHiddenProp);
 }
 
 var viewTemplate = require("./VideoRenderer.hbs");
@@ -154,7 +154,7 @@ module.exports = PlayableRenderer.extend({
 	/** @override */
 	initialize: function (opts) {
 		PlayableRenderer.prototype.initialize.apply(this, arguments);
-		_.bindAll(this, "_onMediaEvent", "_onPollInterval", "_onVisibilityChange", "_onFullscreenChange", "_onFullscreenToggleClick");
+		_.bindAll(this, "_onMediaEvent", "_onPollInterval", "_onFullscreenChange", "_onFullscreenToggleClick");
 		// this.createChildren();
 		
 		_.extend(this, _logMixin);
@@ -305,8 +305,8 @@ module.exports = PlayableRenderer.extend({
 					view.addSelectionListeners();
 					
 					view.video.preload = "auto";
-					view.video.innerHTML = videoSourcesTemplate(view.model.toJSON());
-					view.video.load();
+					// view.video.innerHTML = videoSourcesTemplate(view.model.toJSON());
+					// view.video.load();
 					return view;
 				})
 			.then(
@@ -377,7 +377,7 @@ module.exports = PlayableRenderer.extend({
 	/* --------------------------- */
 	
 	addMediaListeners: function() {
-		document.addEventListener(visibilityChangeEventName, this._onVisibilityChange, false);
+		// document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
 		// this.video.addEventListener("error", this._onMediaEvent, true);
 		for (var i = 0; i < mediaEvents.length; i++) {
 			// this.video.addEventListener(mediaEvents[i], this._onMediaEvent, false);
@@ -386,7 +386,7 @@ module.exports = PlayableRenderer.extend({
 	},
 	
 	removeMediaListeners: function() {
-		document.removeEventListener(visibilityChangeEventName, this._onVisibilityChange, false);
+		// document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
 		// this.video.removeEventListener("error", this._onMediaEvent, true);
 		for (var i = 0; i < mediaEvents.length; i++) {
 			// this.video.removeEventListener(mediaEvents[i], this._onMediaEvent, false);
@@ -394,41 +394,39 @@ module.exports = PlayableRenderer.extend({
 		}
 	},
 	
-	updateOverlayFromVideo: function(targetEl) {
-		if (this.video.readyState > 2) {
-			// var currentTime = this.video.currentTime;
-			this.updateOverlay(this.video, targetEl);
-			// this.video.currentTime = currentTime;
-		}
-	},
+	// updateOverlayFromVideo: function(targetEl) {
+	// 	if (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+	// 		this.updateOverlay(this.video, targetEl);
+	// 	}
+	// },
 	
+	// /** @override */
 	_onVisibilityChange: function(ev) {
-		this._logEvent([
-			hiddenPropName, document[hiddenPropName],
-			visibilityStatePropName, document[visibilityStatePropName],
-		].join("\t"), visibilityChangeEventName + ":" + document[visibilityStatePropName]);
+		var stateVal = Modernizr.prefixed("visibilityState", document);
+		this._logEvent("visibilityState:" + stateVal, ev.type +":"+ stateVal);
 		
-		this.togglePlayback(false);
+		PlayableRenderer.prototype._onVisibilityChange.apply(this, arguments);
+		// this.togglePlayback(false);
 	},
 	
 	_onFullscreenChange: function(ev) {
-		console.log(this.cid, "_onFullscreenChange", ev.type, ev);
-		
 		var isOwnEv = document.fullscreenElement === this.video;
-		this._logEvent(isOwnEv, ev.type);
-		
+		this.video.controls = isOwnEv;
 		// if (isOwnEv) {
 		// 	this.video.setAttribute("controls", "controls");
 		// } else {
 		// 	this.video.removeAttribute("controls");
 		// }
-		this.video.controls = isOwnEv;
+		
+		this._logEvent("document.fullscreenElement: " + this.cid,
+			(document.fullscreenElement? "enter:":"exit:") + ev.type);
+		console.log(this.cid, "_onFullscreenChange", ev.type, ev);
 	},
 	
 	_onFullscreenToggleClick: function (ev) {
 		if (!ev.defaultPrevented && this.model.selected) {
 			this._logEvent("fullscreen-toggle", ev.type);
-			console.log("click .fullscreen-toggle", prefixedEvent("fullscreenchange", this.video));
+			// console.log("click .fullscreen-toggle", prefixedEvent("fullscreenchange", this.video));
 			try {
 				if (document.hasOwnProperty("fullscreenElement") &&
 						document.fullscreenElement !== this.video) {
@@ -579,6 +577,7 @@ var _logMixin = (function(){
 				this._logElement.style.marginTop = "3rem";
 				this._logElement.style.maxHeight = "calc(100% - " + (this.metrics.media.height) + "px - 3rem)";
 				this._logElement.style.width = this.metrics.media.width + "px";
+				this._logElement.scrollTop = this._logElement.scrollHeight;
 			},
 			
 			_logMessage: function(msg, type, color) {
@@ -590,14 +589,17 @@ var _logMixin = (function(){
 				this._logElement.scrollTop = this._logElement.scrollHeight;
 			},
 			
-			_logEvent: function(logStr, logtype, dim) {
-				if ((typeof logtype !== "string") || (this._logElement.lastElementChild.getAttribute("data-logtype") == logtype)) {
-					this._logElement.lastElementChild.textContent = logStr;
+			_logEvent: function(msg, evtype, dim) {
+				var logRepeatVal, logEntryEl = this._logElement.lastElementChild;
+				if ((typeof evtype !== "string") || (logEntryEl.getAttribute("data-logtype") == evtype)) {
+					logRepeatVal = parseInt(logEntryEl.getAttribute("data-logrepeat"));
+					logEntryEl.setAttribute("data-logrepeat", isNaN(logRepeatVal)? 2 : ++logRepeatVal);
+					logEntryEl.textContent = msg;
 				} else {
-					var logEntryEl = document.createElement("pre");
-					logEntryEl.textContent = logStr;
-					logEntryEl.setAttribute("data-logtype", logtype);
-					logEntryEl.style.opacity = ignoredMediaEvents.indexOf(logtype) == -1? 1 : 0.3;
+					logEntryEl = document.createElement("pre");
+					logEntryEl.textContent = msg;
+					logEntryEl.setAttribute("data-logtype", evtype);
+					logEntryEl.style.opacity = ignoredMediaEvents.indexOf(evtype) == -1? 1 : 0.3;
 					this._logElement.appendChild(logEntryEl);
 					this._logElement.scrollTop = this._logElement.scrollHeight;
 				} 
