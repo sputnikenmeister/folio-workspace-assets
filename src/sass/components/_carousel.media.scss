@@ -1,0 +1,174 @@
+%placeholder-numbers {
+	margin: 2rem 2.5rem;
+	font-size: 4rem;
+	font-style: normal;
+	font-weight: 400;
+}
+%placeholder-NumbersRevenue {
+	@extend %placeholder-numbers;
+	font-family: "NumbersRevenue";
+	letter-spacing: -0.06em;
+	word-spacing: -0.45em;
+}
+%placeholder-NumbersClaimcheck {
+	@extend %placeholder-numbers;
+	font-family: "NumbersClaimcheck";
+	letter-spacing: 0;
+	word-spacing: -0.45em;
+}
+%placeholder-NumbersIndicia {
+	@extend %placeholder-numbers;
+	font-family: "NumbersIndicia";
+	letter-spacing: -0.05em;
+	word-spacing: -0.45em;
+}
+%placeholder-NumbersRedbird {
+	@extend %placeholder-numbers;
+	font-family: "NumbersRedbird";
+	letter-spacing: 0;
+	word-spacing: -0.23em;
+}
+%placeholder-franklin-itc-cp {
+	font: 600 normal 12rem/1.2 "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
+	letter-spacing: -0.01em;
+	margin: 2rem 3rem;
+}
+%placeholder-franklin-fs-cp {
+	margin: 2rem 2.5rem;
+	line-height: 1.2;
+	font-size: 2rem;
+	font-weight: 600;
+	letter-spacing: -0.05em;
+	font-style: italic;
+	text-transform: uppercase;
+}
+
+// -----------------------------------
+// .media-item
+// -----------------------------------
+
+.media-item {
+	.sizing {
+		position: relative;
+		height: 100%;
+		box-sizing: border-box;
+	}
+	.placeholder {
+		// *** "mutable" properties: must be in the first matching rule
+		color: $background_color;
+		background-color: mix($color, $background_color, 7%);
+		// border: 1px solid transparent;
+		// text-shadow: rgba(0,0,0,0.25) 1px 1px 0;
+	}
+	.content {
+		// *** "mutable" properties: must be in the first matching rule
+		border: 0 none;
+		// background-color: $background_color;
+		box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		position: absolute;
+		box-sizing: content-box;
+		opacity: 0;
+	}
+	&.idle,	&.error {
+		.content {
+			visibility: hidden;
+		}
+	}
+	&.selected, &.candidate, .empty-item.selected + & {
+		&.done .content {
+			opacity: 1;
+		}
+	}
+	
+	// .placeholder:before
+	// - - - - - - - - - - - - - - - - -
+	.placeholder:before {
+		// @extend %placeholder-franklin-itc-cp;
+		font: 600 normal 12rem/1.2 "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
+		letter-spacing: -0.01em;
+		margin: 2rem 3rem;
+		position: absolute;
+		top: 0; left: 0;
+		content: "";
+		// text-shadow: -1px -1px 0 rgba(0, 0%, 50%, 0.2);
+	}
+	// &.idle .placeholder:before { content: "Waiting"; }
+	&.pending .placeholder:before { content: "0%"; }
+	&.error .placeholder:before { content: "Error";	}
+	&.done .placeholder:before { content: "100%"; }
+	// &.selected, .empty-item.selected + & {
+	&.selected, &.candidate, .empty-item.selected + & {
+		&.pending .placeholder[data-progress]:before {
+			content: attr(data-progress) "%";
+			font-style: normal;
+		}
+	}
+	.placeholder:before {
+		transition: opacity $duration $ease $delay + 0.001s;
+		opacity: 0;
+	}
+	&.selected, &.candidate, .empty-item.selected + & {
+		&.pending .placeholder:before {
+			opacity: 1;
+		}
+		&.error .placeholder:before {
+			opacity: 1;
+		}
+	}
+}
+
+// -----------------------------------
+// Mockups
+// -----------------------------------
+
+// .image-renderer {
+// 	.content > .mockup {
+// 		display: none;
+// 	}
+// }
+
+// .browser
+// - - - - - - - - - - - - - - - - - -
+// $browser_height: 2rem;
+$browser_height: 30px;
+
+.media-item.browser-safari,
+.media-item.browser-generic {
+	// padding-bottom: $browser_height;
+	.sizing {
+		// box-sizing: border-box;
+		// padding-top: $browser_height;
+	}
+	.content {
+		// box-sizing: content-box;
+		// box-sizing: border-box;
+		padding-top: $browser_height;
+		background-origin: border-box;
+		background-size: 100% $browser_height;
+		background-position: top;
+		background-repeat: no-repeat;
+		box-shadow:
+			0px 0px 0px 1px rgba(0,0,0,0.15),
+			0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+	}
+	// .content .default {}
+	.content, .placeholder {
+		border-radius: #{$browser_height * 0.1} #{$browser_height * 0.1} 0 0;
+	}
+	.content img {
+		border-radius: 0 0 0 0;
+	}
+}
+
+.media-item.browser-safari .content {
+	background-image: image-url("mockup/browser-safari.svg");
+}
+.media-item.browser-generic .content {
+	background-image: image-url("mockup/browser-generic.svg");
+}
+// .dark .media-item.browser-generic .content {
+// 	background-image: image-url("mockup/browser-generic-dark.svg");
+// }
+// .light .media-item.browser-generic .content {
+// 	background-image: image-url("mockup/browser-generic-light.svg");
+// }

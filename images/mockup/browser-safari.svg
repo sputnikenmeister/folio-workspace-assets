@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
+	width="100%" preserveAspectRatio="xMidYMin meet" buffered-rendering="static">
+	<title>Browser Mockup: Safari / Mac OS X 10.9</title>
+	<defs>
+		<style type="text/css"><![CDATA[
+			.chrome-hightlight	{fill:#D0D0D0;}
+			.chrome-border		{fill:#888888;}
+			.chrome-shadow		{fill:#E7E7E7;}
+			.chrome-pad			{fill:url(#chrome-pad-grad);}
+			.icon-shape			{fill:url(#icon-shape-grad);}
+			.icon-shape.solid	{fill:#666666;}
+			.icon-shape.light	{fill:#888888;}
+			.icon-shadow		{fill:#E8E8E8;}
+			.ui-text {
+				font-family: 'Lucida Grande', 'Lucida Sans', 'Apple SD Gothic Neo', Verdana, sans-serif;
+				font-weight: normal;
+				font-size: 11px;
+			}
+			#search-text		{fill:#888888;}
+			#domain-text		{fill:#555555;}
+			#address-text		{fill:#888888;}
+			#title-text			{fill:#444444;}
+		]]></style>
+		<linearGradient id="chrome-pad-grad" x1="0.5" y1="1" x2="0.5" y2="0" gradientUnits="objectBoundingBox">
+			<stop stop-color="#BFBFBF" offset="0"/>
+			<stop stop-color="#F3F3F3" offset="1"/>
+		</linearGradient>
+		<linearGradient id="window-light-grad" x1="0.5" y1="1" x2="0.5" y2="0" gradientUnits="objectBoundingBox">
+			<stop stop-color="#B3B3B3" offset="0"/>
+			<stop stop-color="#EBEBEB" offset="1"/>
+		</linearGradient>
+		<linearGradient id="window-dark-grad" x1="0.5" y1="1" x2="0.5" y2="0" gradientUnits="objectBoundingBox">
+			<stop offset="0" stop-color="#909090"/>
+			<stop offset="1" stop-color="#707070"/>
+		</linearGradient>
+		<linearGradient id="icon-shape-grad" gradientUnits="objectBoundingBox" x1="0.5" x2="0.5" y1="0" y2="1">
+			<stop offset="0.0" stop-color="#333333"/>
+			<stop offset="0.8" stop-color="#888888"/>
+		</linearGradient>
+		<!-- window-ctl-grad -->
+		<linearGradient id="window-ctl-grad-bevel" x1="0.5" y1="0" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+			<stop offset="0.5" stop-color="hsl(0,0%,100%)" stop-opacity="0.0"/>
+			<stop offset="1.0" stop-color="hsl(0,0%,100%)" stop-opacity="0.7"/>
+		</linearGradient>
+		<linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="window-ctl-grad-1">
+			<stop stop-color="#73BF4C" offset="0%"/>
+			<stop stop-color="#E5FFBF" offset="100%"/>
+		</linearGradient>
+		<radialGradient cx="50%" cy="87.5090577%" fx="50%" fy="87.5090577%" r="32.2948784%" id="window-ctl-grad-2">
+			<stop stop-color="#FFFFFF" stop-opacity="0.5" offset="0%"/>
+			<stop stop-color="#FFFFFF" stop-opacity="0" offset="100%"/>
+		</radialGradient>
+		<radialGradient cx="50%" cy="10.3350105%" fx="50%" fy="10.3350105%" r="34.9164658%" id="window-ctl-grad-3">
+			<stop stop-color="#FFFFFF" offset="0%"/>
+			<stop stop-color="#FFFFFF" stop-opacity="0" offset="100%"/>
+		</radialGradient>
+		<radialGradient cx="50.9808362%" cy="14.6960449%" fx="50.9808362%" fy="14.6960449%" r="5.87768555%" id="window-ctl-grad-4">
+			<stop stop-color="#FFFFFF" offset="0%"/>
+			<stop stop-color="#FFFFFF" stop-opacity="0.45" offset="95%"/>
+			<stop stop-color="#FFFFFF" stop-opacity="0" offset="100%"/>
+		</radialGradient>
+		<linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="window-ctl-grad-5">
+			<stop stop-color="#314C1E" offset="0%"/>
+			<stop stop-color="#82996B" offset="100%"/>
+		</linearGradient>
+		<linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="window-ctl-grad-7">
+			<stop stop-color="#FFBF00" offset="0%"/>
+			<stop stop-color="#FFF9DA" offset="100%"/>
+		</linearGradient>
+		<linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="window-ctl-grad-9">
+			<stop stop-color="#4B2F07" offset="0%"/>
+			<stop stop-color="#A69853" offset="100%"/>
+		</linearGradient>
+		<linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="window-ctl-grad-11">
+			<stop stop-color="#E61717" offset="0%"/>
+			<stop stop-color="#FFB3B3" offset="100%"/>
+		</linearGradient>
+		<linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="window-ctl-grad-12">
+			<stop stop-color="#662323" offset="0%"/>
+			<stop stop-color="#A67474" offset="100%"/>
+		</linearGradient>
+		<!-- window-chrome -->
+		<symbol id="window-chrome-rounded" viewBox="0 0 220 53">
+			<rect x="0" y="0" width="220" height="59" rx="5.5" ry="5.5" fill="url(#window-dark-grad)"/>
+			<rect x="1" y="1" width="218" height="58" rx="5" ry="5" fill="url(#window-light-grad)"/>
+			<rect x="1" y="52" width="218" height="1" fill="#777777"/>
+		</symbol>
+		<symbol id="window-chrome" viewBox="0 0 220 53">
+			<rect x="0" y="0" width="220" height="53" fill="url(#window-light-grad)"/>
+			<rect x="0" y="52" width="220" height="1" fill="#999999"/>
+		</symbol>
+		<!-- nav-arrow -->
+		<symbol id="nav-arrow-left" viewBox="-4 -5.5 8 11">
+			<polygon class="icon-shadow" points="4,4.944 4,-4.057 -4,0.401"/>
+			<polygon class="icon-shape" points="4,4.057 4,-4.945 -4,-0.486"/>
+		</symbol>
+		<symbol id="nav-arrow-right" viewBox="-4 -5.5 8 11">
+			<polygon class="icon-shadow" points="-4,4.944 -4,-4.057 4,0.401"/>
+			<polygon class="icon-shape" points="-4,4.057 -4,-4.945 4,-0.486"/>
+		</symbol>
+		<!-- bookmark -->
+		<symbol id="bookmark-symbol" viewBox="-5 -5.5 10 11">
+			<polyline class="icon-shadow" points="1.021,-5.5 1.021,-1.521 5,-1.521 5,0.521 1.021,0.521 1.021,4.5 -1.021,4.5 -1.021,0.521 -5,0.521 -5,-1.521 -1.021,-1.521 -1.021,-5.5 "/>
+			<polygon class="icon-shape solid" points="5,1.521 1.02,1.521 1.02,5.5 -1.02,5.5 -1.02,1.521 -5,1.521 -5,-0.521 -1,-0.5 -1.02,-4.5 1.02,-4.5 1.02,-0.521 5,-0.521 "/>
+		</symbol>
+		<!-- search-selector -->
+		<symbol id="search-selector" viewBox="-8.705 -6.283 17.41 12.566">
+			<g class="icon-shape light">
+				<path stroke="#888888" stroke-width="0.5" d="M3.754-4.946l-3.775,3.595 C0.534-0.585,0.87,0.351,0.87,1.369c0,2.576-2.088,4.664-4.663,4.664c-2.574,0-4.662-2.088-4.662-4.664 c0-2.575,2.088-4.663,4.662-4.663c1.052,0,2.01,0.36,2.791,0.947l3.77-3.587L3.754-4.946z M-7.291,1.368 c0,1.929,1.566,3.498,3.495,3.498c1.93,0,3.498-1.568,3.498-3.498c0-1.928-1.568-3.497-3.498-3.497 C-5.725-2.129-7.291-0.56-7.291,1.368z"/>
+				<polygon class="icon-shape light" points="2.705,2.438 8.705,2.438 5.705,-0.562 "/>
+			</g>
+		</symbol>
+		<!-- url-refresh -->
+		<symbol id="url-refresh" viewBox="-5 -5.973 10 11.945">
+			<path class="icon-shape light" d="M5-0.973H4l0,0H3.5c0-1.931-1.57-3.5-3.5-3.5s-3.5,1.569-3.5,3.5c0,1.932,1.57,3.5,3.5,3.5 v-2.684l4.289,3.184L0,5.973V4.027c-2.762,0-5-2.237-5-5l0,0c0-0.196,0.036-0.388,0.059-0.578c0.018-0.144,0.016-0.291,0.043-0.428 c0.01-0.041,0.027-0.078,0.036-0.119c0.31-1.336,1.152-2.455,2.293-3.145C-1.814-5.696-0.943-5.973,0-5.973 C2.761-5.973,5-3.734,5-0.973L5-0.973L5-0.973z"/>
+		</symbol>
+		<!-- full-screen -->
+		<path id="path-full-screen" d="M4.68934,13.1893398 L6.50014,11.3785435 C6.89335,10.9853279 7.52336,10.987825 7.91348,11.3779418 L8.62206,12.0865243 C9.01542,12.4798851 9.01191,13.1094148 8.62146,13.4998639 L6.81066,15.3106602 L9.5,18 L2,18 L2,10.5 L4.68934,13.1893398 Z M13.31066,8.81066017 L11.49986,10.6214565 C11.10665,11.0146721 10.47664,11.012175 10.08652,10.6220582 L9.37794,9.91347574 C8.98458,9.5201149 8.98809,8.89058524 9.37854,8.50013612 L11.18934,6.68933983 L8.5,4 L16,4 L16,11.5 L13.31066,8.81066017 L13.31066,8.81066017 Z"/>
+		
+	</defs>
+	<!-- ============= -->
+	<!-- stretch-items -->
+	<svg id="stretch-items" viewBox="0 1 200 52" preserveAspectRatio="none" x="5%" y="0" width="90%" height="100%">
+		<clipPath id="stretch-mask">
+			<rect x="0" y="0" width="200" height="53"/>
+		</clipPath>
+		<g clip-path="url(#stretch-mask)">
+			<use xlink:href="#window-chrome" width="220" height="53" transform="matrix(1 0 0 1 -10 0)" overflow="hidden"/>
+			<g id="address-field-stretch" transform="translate(0 24)">
+				<rect x="-10" y="1" width="220" height="22" class="chrome-hightlight"/>
+				<rect x="-10" y="0" width="220" height="22" class="chrome-border"/>
+				<rect x="-10" y="1" width="220" height="20" class="chrome-shadow"/>
+				<rect x="-10" y="2" width="220" height="19" fill="#FFFFFF"/>
+			</g>
+		</g>
+	</svg>
+	<!-- ========== -->
+	<!-- left-items -->
+	<svg id="left-items" viewBox="0 1 155 52" preserveAspectRatio="xMinYMin meet" buffered-rendering="static">
+		<clipPath id="left-mask">
+			<rect x="0" y="0" width="97" height="53"/>
+		</clipPath>
+		<g clip-path="url(#left-mask)">
+			<use xlink:href="#window-chrome" width="220" height="53" transform="matrix(1 0 0 1 0 0)" overflow="hidden"/>
+			<g id="window-ctl-group" transform="translate(14, 12)">
+				<g id="window-ctl-expand" transform="matrix(1 0 0 1 40 0)" >
+					<circle cx="0" cy="0.5" r="6.75" fill="url(#window-ctl-grad-bevel)" />
+					<circle cx="0" cy="0" r="5.25" fill="url(#window-ctl-grad-1)" stroke="url(#window-ctl-grad-5)" stroke-width="1.25"/>
+					<circle cx="0" cy="0" r="5" fill="url(#window-ctl-grad-2)" />
+					<circle cx="0" cy="0" r="4.5" fill="url(#window-ctl-grad-3)" />
+					<circle cx="0" cy="0" r="5" fill="url(#window-ctl-grad-4)" />
+				</g>
+				<g id="window-ctl-minimize" transform="matrix(1 0 0 1 20 0)" >
+					<circle cx="0" cy="0.5" r="6.75" fill="url(#window-ctl-grad-bevel)" />
+					<circle cx="0" cy="0" r="5.25" fill="url(#window-ctl-grad-7)" stroke="url(#window-ctl-grad-9)" stroke-width="1.25"/>
+					<circle cx="0" cy="0" r="5" fill="url(#window-ctl-grad-2)" />
+					<circle cx="0" cy="0" r="4.5" fill="url(#window-ctl-grad-3)" />
+					<circle cx="0" cy="0" r="5" fill="url(#window-ctl-grad-4)" />
+				</g>
+				<g id="window-ctl-hide" transform="matrix(1 0 0 1 0 0)" >
+					<circle cx="0" cy="0.5" r="6.75" fill="url(#window-ctl-grad-bevel)" />
+					<circle cx="0" cy="0" r="5.25" fill="url(#window-ctl-grad-11)" stroke="url(#window-ctl-grad-12)" stroke-width="1.25"/>
+					<circle cx="0" cy="0" r="5" fill="url(#window-ctl-grad-2)" />
+					<circle cx="0" cy="0" r="4.5" fill="url(#window-ctl-grad-3)" />
+					<circle cx="0" cy="0" r="5" fill="url(#window-ctl-grad-4)" />
+				</g>
+			</g>
+			<g id="nav-buttons" transform="translate(9 24)">
+				<rect x="0" y="1" width="53" height="22" rx="4" ry="4" class="chrome-hightlight"/>
+				<rect x="0" y="0" width="53" height="22" rx="4" ry="4" class="chrome-border"/>
+				<rect x="1" y="1" width="51" height="20" rx="3" ry="3" class="chrome-pad"/>
+				<rect x="26" y="3" width="1" height="16" fill="#777777" fill-opacity="0.7"/>
+				<use xlink:href="#nav-arrow-left" width="8" height="11" x="10" y="6"/>
+				<use xlink:href="#nav-arrow-right" width="8" height="11" x="35" y="6"/>
+			</g>
+			<g id="bookmark-buttons" transform="translate(69 24)">
+				<rect x="0" y="1" width="53" height="22" rx="4" ry="4" class="chrome-hightlight"/>
+				<rect x="0" y="0" width="53" height="22" rx="4" ry="4" class="chrome-border"/>
+				<rect x="1" y="1" width="51" height="20" rx="3" ry="3" class="chrome-pad"/>
+				<rect x="27" y="0" width="1" height="22" class="chrome-border"/>
+				<use xlink:href="#bookmark-symbol" width="10" height="11" x="-5" y="-5.5" transform="matrix(1 0 0 -1 14 11.5)" overflow="visible"/>
+			</g>
+		</g>
+		<g id="favicon" transform="matrix(1 0 0 -1 109 35.5)">
+			<linearGradient id="favicon-grad3" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="0" y2="1" gradientTransform="matrix(1 0 0 1 0 0)">
+				<stop offset="0.0" stop-color="hsl(215,0%,100%)"/>
+				<stop offset="1.0" stop-color="hsl(215,25%,60%)"/>
+			</linearGradient>
+			<path fill="url(#favicon-grad3)" d="M7-5.479c0-2.487-3.133-1.979-7-1.979 s-7-0.366-7,1.979C-7-4.938-3.867-4.5,0-4.5C3.865-4.5,7-4.938,7-5.479z"/>
+			<linearGradient id="favicon-grad2" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="0" y2="1" gradientTransform="matrix(1 0 0 1 0 0)">
+				<stop offset="0.2" stop-color="hsl(211,63%,53%)"/>
+				<stop offset="0.5" stop-color="hsl(217,80%,30%)"/>
+				<stop offset="0.8" stop-color="hsl(215,80%,30%)"/>
+				<stop offset="1.0" stop-color="hsl(206,80%,31%)"/>
+			</linearGradient>
+			<circle fill="url(#favicon-grad2)" cx="0" cy="0.5" r="7"/>
+			<linearGradient id="favicon-grad1" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="0" y2="1" gradientTransform="matrix(1 0 0 1 0 0)">
+				<stop offset="0.2" stop-color="hsl(211,73%,75%)"/>
+				<stop offset="0.8" stop-color="hsl(217,70%,38%)"/>
+				<stop offset="0.9" stop-color="hsl(215,70%,45%)"/>
+				<stop offset="1.0" stop-color="hsl(206,70%,46%)"/>
+			</linearGradient>
+			<circle fill="url(#favicon-grad1)" cx="0" cy="0.5" r="6"/>
+			<linearGradient id="favicon-grad3" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="0" y2="1" gradientTransform="matrix(1 0 0 2 0 0)">
+				<stop offset="0.20" stop-color="hsl(211,73%,99%)"/>
+				<stop offset="0.50" stop-color="hsl(217,60%,90%)"/>
+				<stop offset="0.85" stop-color="hsl(215,60%,80%)"/>
+				<stop offset="0.95" stop-color="hsl(206,60%,99%)"/>
+			</linearGradient>
+			<linearGradient id="favicon-grad0" gradientUnits="objectBoundingBox" x1="0" y1="0" x2="0" y2="1" gradientTransform="matrix(1 0 0 2 0 0.25)">
+				<stop offset="0.20" stop-color="hsl(211,73%,99%)"/>
+				<stop offset="0.50" stop-color="hsl(217,60%,90%)"/>
+				<stop offset="0.85" stop-color="hsl(215,60%,80%)"/>
+				<stop offset="0.95" stop-color="hsl(206,60%,99%)"/>
+			</linearGradient>
+			<path fill="url(#favicon-grad3)" d="M-3.11,5.721c-1.062-2.508,0.56-4.429,2.964-5.26c-0.941,1.6-1.119,3.094,1.025,2.63 C3.977,6.982-0.726,7.307-3.11,5.721"/>
+			<path fill="url(#favicon-grad0)" d="M-0.146,0.461c0,0,0.746,0.281,1.393,0.281c1.594,0,1.965-1.016,1.939-2.443 C3.151-3.656,0.561-5.043,0.561-5.043l-0.588-0.582c0.131,0.129,0.169,0.65,0.219,0.83c0.229,0.831,0.645,1.645,0.77,2.498     c0.08,0.549-0.793,0.852-1.127,1.193C-0.62-0.635-0.987,0.145-0.146,0.461z"/>
+		</g>
+		<text id="address-text" x="121" y="40" class="ui-text">http://<tspan id="domain-text">domain.tld</tspan>/</text>
+	</svg>
+	<!-- =========== -->
+	<!-- right-items -->
+	<svg id="right-items" viewBox="45 1 155 52" preserveAspectRatio="xMaxYMin meet" buffered-rendering="static">
+		<clipPath id="right-mask">
+			<rect x="55" y="0" width="145" height="53"/>
+		</clipPath>
+		<g clip-path="url(#right-mask)">
+			<use xlink:href="#window-chrome" width="220" height="53" transform="matrix(1 0 0 1 -20 0)" overflow="hidden"/>
+			<g id="address-field-right" transform="translate(-44 24)">
+				<rect x="0" y="1" width="103" height="22" rx="4" ry="4" class="chrome-hightlight"/>
+				<rect x="0" y="0" width="103" height="22" rx="4" ry="4" class="chrome-border"/>
+				<rect x="1" y="1" width="101" height="20" rx="3" ry="3" class="chrome-shadow"/>
+				<rect x="1" y="2" width="101" height="19" rx="3" ry="3" fill="#FFFFFF"/>
+			</g>
+			<g id="search-field" transform="translate(69 24)">
+				<rect x="0" y="1" width="123" height="22" rx="11" ry="11" class="chrome-hightlight"/>
+				<rect x="0" y="0" width="123" height="22" rx="11" ry="11" class="chrome-border"/>
+				<rect x="1" y="1" width="121" height="20" rx="11" ry="11" class="chrome-shadow"/>
+				<rect x="1" y="2" width="121" height="19" rx="11" ry="11" fill="#FFFFFF"/>
+				<text id="search-text" transform="matrix(1 0 0 1 28 16)" class="ui-text">Search</text>
+			</g>
+			<use xlink:href="#search-selector" width="17.5" height="12.5" x="-8.5" y="-6.5" transform="matrix(1 0 0 -1 83.8145 35)" overflow="visible"/>
+		</g>
+		<g id="full-screen" transform="translate(182, 5)">
+			<use xlink:href="#path-full-screen" transform="translate(-2, -3)" fill="#DDDDDD"/>
+			<clipPath id="mask-full-screen" transform="translate(-2, -4)">
+				<use xlink:href="#path-full-screen"/>
+			</clipPath>
+			<g clip-path="url(#mask-full-screen)">
+				<rect width="20" height="20" fill="#808080"/>
+				<use xlink:href="#path-full-screen" transform="translate(-2, -3)" fill="#a0a0a0"/>
+			</g>
+		</g>
+		<use xlink:href="#url-refresh" width="10.00" height="11.945" x="-5.000" y="-6.0" transform="matrix(1 0 0 -1 47.2070 35)" overflow="visible"/>
+	</svg>
+	<!-- ============ -->
+	<!-- center-items -->
+	<svg id="center-items" viewBox="-1000 0 2000 50" preserveAspectRatio="xMidYMin slice" buffered-rendering="static">
+		<text id="title-text" class="ui-text" x="0" y="16" text-anchor="middle">Window Title</text>
+	</svg>
+</svg>

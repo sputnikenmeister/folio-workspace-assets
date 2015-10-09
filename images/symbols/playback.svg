@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-200 -200 400 400" preserveAspectRatio="xMidYMid meet">
+	
+	<!-- <rect class="symbol-box" x="-200" y="-200" width="400" height="400" rx="10"/> -->
+	
+	<g id="wait-symbol" class="filled-symbol">
+		<rect id="wait-repeat-item" x="50" y="-7" width="40" height="14" rx="7"/>
+		<!-- <use xlink:href="#wait-repeat-item" transform="rotate(  0 0 0)"/> -->
+		<use xlink:href="#wait-repeat-item" transform="rotate( 30 0 0)"/>
+		<use xlink:href="#wait-repeat-item" transform="rotate( 60 0 0)"/>
+		<use xlink:href="#wait-repeat-item" transform="rotate( 90 0 0)"/>
+		<use xlink:href="#wait-repeat-item" transform="rotate(120 0 0)"/>
+		<use xlink:href="#wait-repeat-item" transform="rotate(150 0 0)"/>
+		<use xlink:href="#wait-repeat-item" transform="rotate(180 0 0)"/>
+		<use xlink:href="#wait-repeat-item" transform="rotate(210 0 0)"/>
+		<use xlink:href="#wait-repeat-item" transform="rotate(240 0 0)"/>
+		<use xlink:href="#wait-repeat-item" transform="rotate(270 0 0)"/>
+		<use xlink:href="#wait-repeat-item" transform="rotate(300 0 0)"/>
+		<use xlink:href="#wait-repeat-item" transform="rotate(330 0 0)"/>
+		<!-- <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" begin="0s" dur="3s" repeatCount="indefinite" /> -->
+	</g>
+	
+	<g id="replay-symbol" class="filled-symbol">
+		<path d="M-40 -50 L65 0 L-40 50 Z"/>
+		<path d="M -132 -1.6e-14 A 132 132 0 1 0 -93.33809511662416 -93.33809511662439 L -76.36753236814704 -76.36753236814722 A 108 108 0 1 1 -108 -1.3e-14 H-85 L -120 -40 L -155 13e-14 Z"/>
+	</g>
+	
+	<g id="play-symbol" class="filled-symbol">
+		<path d="M-60 -70 L90 0 L-60 70 Z"/>
+	</g>
+</svg>

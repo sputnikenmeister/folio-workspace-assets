@@ -3,25 +3,59 @@ module.exports = function (grunt) {
 	"use strict";
 
 	grunt.config("pkg", grunt.file.readJSON("package.json"));
-
+	
+	grunt.config("paths", {
+		src: {
+			sass:		"./src/sass",
+			resources:	"./src/resources",
+			fonts:		"./src/resources/fonts",
+		},
+		dest: {
+			fonts:		"./fonts",
+			css:		"./fonts",
+			js:			"./fonts",
+		},
+		fontello: "fonts/fontello-27278fbd"
+	});
+	
 	grunt.config("DEBUG_CLIENT_JS", "folio-debug-client");
 	grunt.config("DEBUG_VENDOR_JS", "folio-debug-vendor");
 	grunt.config("DEBUG_STYLES", "folio-debug");
 	grunt.config("DIST_JS", "folio");
 	grunt.config("DIST_STYLES", "folio");
-
+	
+	/* --------------------------------
+	/* Main Targets
+	/* -------------------------------- */
+	
+	
+	grunt.registerTask("build-debug-client", ["browserify:client", "exorcise:client"]);
+	grunt.registerTask("build-debug-vendor", ["browserify:vendor", "exorcise:vendor"]);
+	grunt.registerTask("build-debug-sass", ["compass:debug", "autoprefixer:debug"]);
+	
+	grunt.registerTask("build-debug", ["build-debug-client", "build-debug-vendor", "build-debug-sass"]);
+	grunt.registerTask("build-dist", ["compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
+	grunt.registerTask("build-watch", ["browserify:watch-client", "browserify:watch-vendor", "watch"]);
+	
+	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
+	grunt.registerTask("build-all", ["build-debug", "build-dist"]);
+	grunt.registerTask("build-clean-all", ["clean-all", "build-all"]);
+	
+	// Default task
+	grunt.registerTask("default", ["build-debug"]);
+	
 	/* ---------------------------------
-	 * Style Sheets
-	 * --------------------------------- */
+	/* Style Sheets
+	/* --------------------------------- */
 	// NOTE: `gem install compass sass-json-vars`
-
+	
 	/* Task defaults
-	 * - - - - - - - - - - - - - - - - - */
+	/* - - - - - - - - - - - - - - - - - */
 	grunt.loadNpmTasks("grunt-contrib-compass");
 	grunt.config("compass.options", {
 		require: [
 			"sass-json-vars",
-			// "./build/compass-encode.rb",
+			"./build/compass-encode.rb", // alternative to compass inline-image()
 		],
 		sassDir: "src/sass",
 		cssDir: "css",
@@ -38,7 +72,7 @@ module.exports = function (grunt) {
 	});
 
 	/* Targets
-	 * - - - - - - - - - - - - - - - - - */
+	/* - - - - - - - - - - - - - - - - - */
 	grunt.config("compass.clean.options", {
 		clean: true
 	});
@@ -51,7 +85,7 @@ module.exports = function (grunt) {
 	});
 
 	/* Discrete fonts SASS stylesheet
-	 * - - - - - - - - - - - - - - - - - */
+	/* - - - - - - - - - - - - - - - - - */
 	grunt.config("compass.fonts.options", {
 		specify: "src/sass/fonts.scss",
 		sourcemap: false,
@@ -59,62 +93,108 @@ module.exports = function (grunt) {
 	});
 
 	/* --------------------------------
-	 * Javascript
-	 * -------------------------------- */
-
-	/* JSHint */
-	grunt.loadNpmTasks("grunt-contrib-jshint");
-	grunt.config("jshint", {
-		options: {
-			jshintrc: "./src/js/.jshintrc"
-		},
-		files: [
-			"./src/js/app/**/*.js"
-		]
-	});
+	/* Javascript
+	/* -------------------------------- */
 
 	/* browserify */
 	grunt.loadNpmTasks("grunt-browserify");
+	grunt.config("browserify.options", {
+		browserifyOptions: {
+			fullPaths: false,
+			debug: true
+		},
+	});
+	
+	/* browserify:vendor */
 	grunt.config("browserify.vendor", {
 		dest: "./js/<%= DEBUG_VENDOR_JS %>.js",
 		src: [],
 		options: {
-			browserifyOptions: {
-				fullPaths: false,
-				debug: true
-			},
 			require: [
-				"backbone.babysitter", "backbone", "Backbone.Mutators",
-				"jquery.transit", "hammerjs", "jquery", "underscore"
+				"underscore",
+				// "underscore.string",
+				"backbone",
+				"backbone.native",
+				"Backbone.Mutators",
+				"backbone.babysitter",
+				"hammerjs",
+				"color",
+				"es6-promise",
+				"classlist-polyfill",
+				"cookies-js",
+				// "handlebars",
 			],
 			alias: [
-				"./bower_components/jquery-color/jquery.color.js:jquery-color"
+				"./build/modernizr-dist.js:Modernizr",
+				"./src/js/shims/fullscreen.js:fullscreen-polyfill",
+				"./src/js/shims/matchesSelector.js:matches-polyfill",
+				"./src/js/shims/requestAnimationFrame.js:raf-polyfill",
 			]
 		},
 	});
-
+	
+	// var remapify = require("remapify");
+	
 	/* browserify:client */
 	grunt.config("browserify.client", {
 		dest: "./js/<%= DEBUG_CLIENT_JS %>.js",
 		src: [
-			"./src/js/app/App.js"
+			"./src/js/app/App.js",
 		],
 		options: {
-			browserifyOptions: {
-				fullPaths: false,
-				debug: true
-			},
 			transform: [
-				"node-underscorify"
+				["hbsfy", { extensions: ["hbs"] }],
+				// ["node-underscorify", { extensions: ["tpl"] }],
 			],
-			external: ["jquery-color"].concat(grunt.config("browserify.vendor.options.require"))
+			plugin: [
+				["remapify", [
+					{
+						src: "./**/*.js",
+						expose: "app",
+						cwd: "./src/js/app",
+					},
+					{
+						// src: "**/*.js",
+						src: "./**/*.js",
+						expose: "utils",
+						cwd: "./src/js/utils",
+					},
+				]]
+			],
+			// preBundleCB: function (b) {
+			// 	b.plugin(remapify, [{
+			// 		src: "**/*.js",
+			// 		expose: "",
+			// 		cwd: "./src/js",
+			// 		// cwd: __dirname + "./src/js",
+			// 	}]);
+			// }
 		}
 	});
-
+	/* NOTE: Add requires and aliased requires from vendor as externals in client */
+	grunt.config("browserify.client.options.external", (function() {
+		// return grunt.config("browserify.vendor.options.require").concat(
+		// 	grunt.config("browserify.vendor.options.alias").map(function(s) {
+		// 		return s.split(":").pop();
+		// 	}));
+		// aliases first
+		return grunt.config("browserify.vendor.options.alias").map(function(s) {
+			return s.split(":").pop();
+		}).concat(grunt.config("browserify.vendor.options.require"));
+		
+	}()));
+	// grunt.log.verbose.subhead("Vendor Externals");
+	// grunt.log.verbose.writeln(grunt.config("browserify.client.options.external").join(", "));
+	
 	/* browserify:watchable */
 	// Duplicate browserify.client task for watch
-	grunt.config("browserify.watchable", grunt.config("browserify.client"));
-	grunt.config("browserify.watchable.options.watch", true);
+	// grunt.config("browserify.watchable", grunt.config("browserify.client"));
+	// grunt.config("browserify.watchable.options.watch", true);
+	
+	grunt.config("browserify.watch-vendor", grunt.config("browserify.vendor"));
+	grunt.config("browserify.watch-vendor.options.watch", true);
+	grunt.config("browserify.watch-client", grunt.config("browserify.client"));
+	grunt.config("browserify.watch-client.options.watch", true);
 
 	/* Extract source maps from browserify */
 	grunt.loadNpmTasks("grunt-exorcise");
@@ -172,8 +252,8 @@ module.exports = function (grunt) {
 	});
 
 	/* --------------------------------
-	 * clean
-	 * -------------------------------- */
+	/* clean
+	/* -------------------------------- */
 
 	grunt.loadNpmTasks("grunt-contrib-clean");
 	grunt.config("clean", {
@@ -182,13 +262,14 @@ module.exports = function (grunt) {
 
 
 	/* --------------------------------
-	 * watch
-	 * -------------------------------- */
+	/* watch
+	/* -------------------------------- */
 
 	grunt.loadNpmTasks("grunt-contrib-watch");
 	grunt.config("watch", {
 		options: {
-			spawn: false
+			spawn: false,
+			// forever: true
 		},
 		"build-styles": {
 			tasks: ["compass:debug", "autoprefixer:debug"],
@@ -206,26 +287,21 @@ module.exports = function (grunt) {
 			options: {
 				spawn: true
 			},
-			files: ["gruntfile.js"],
-			tasks: ["compass:debug", "autoprefixer:debug",
-				"browserify:vendor", "browserify:client"],
-			// tasks: ["clean-all", "compass:debug", "autoprefixer:debug",
-			// 	"browserify:vendor", "browserify:client", "build-dist"],
-		},
-		// "build-styles-svg": {
-		// 	tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
-		// 	files: ["images/**/*.svg"],
-		// },
-		// "process-sources": {
-		// 	tasks: ["jshint"],
-		// 	files: ["src/js/**/*.js"],
-		// },
+			tasks: ["build-clean-all"],
+			files: ["gruntfile.js", "package.json"],
+			// tasks: ["compass:debug", "autoprefixer:debug", "browserify:vendor", "browserify:client"],
+		}
 	});
+	// grunt.registerTask("build-watch", ["browserify:watchable", "watch"]);
+	
+	// grunt.config("watch.build-styles-svg", {
+	// 	tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
+	// 	files: ["images/**/*.svg"] });
 
 
 	/* --------------------------------
-	 * dist
-	 * -------------------------------- */
+	/* dist
+	/* -------------------------------- */
 
 	grunt.config("compass.dist.options", {
 		specify: "src/sass/<%= DIST_STYLES %>.scss",
@@ -241,7 +317,7 @@ module.exports = function (grunt) {
 			"css/<%= DIST_STYLES %>.css": "css/<%= DIST_STYLES %>.css"
 		}
 	});
-
+	
 	grunt.config("browserify.dist", {
 		src: [
 			"./src/js/app/App.js"
@@ -252,12 +328,10 @@ module.exports = function (grunt) {
 				fullPaths: false,
 				debug: false
 			},
-			transform: [
-				"node-underscorify"
-			],
-			alias: [
-				"./bower_components/jquery-color/jquery.color.js:jquery-color"
-			]
+			alias: grunt.config("browserify.vendor.options.alias"),
+			require: grunt.config("browserify.vendor.options.require"),
+			transform: grunt.config("browserify.client.options.transform"),
+			plugin: grunt.config("browserify.client.options.plugin"),
 		}
 	});
 
@@ -277,89 +351,84 @@ module.exports = function (grunt) {
 			"js/<%= DIST_JS %>.js": ["./js/<%= DIST_JS %>.js"]
 		}
 	});
-
+	
 	/* --------------------------------
-	 * Main Targets
-	 * -------------------------------- */
-
-	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
-	grunt.registerTask("build-debug", ["compass:debug", "autoprefixer:debug", "browserify:vendor",
-		"exorcise:vendor", "browserify:client", "exorcise:client"]);
-	grunt.registerTask("build-dist", ["compass:dist", "autoprefixer:dist", "browserify:dist",
-		"uglify:dist"]);
-	grunt.registerTask("build-watch", ["browserify:watchable", "watch"]);
-	grunt.registerTask("build-all", ["clean-all", "build-debug", "build-dist"]);
-	// Default task
-	grunt.registerTask("default", ["build-all"]);
-
-	/* --------------------------------
-	 * Resources
-	 * -------------------------------- */
-
-	/* generate-sprites
-	 * - - - - - - - - - - - - - - - - - */
-	var previewSize = "10%";
-	grunt.loadNpmTasks("grunt-responsive-images");
-	grunt.config("responsive_images.bundle-sprites", {
-		options: {
-			sizes: [{
-				width: previewSize,
-			}]
-		},
-		files: [{
-			expand: true,
-			src: ["../uploads/*.{jpg,gif,png}"],
-			custom_dest: "build/bundle-sprites/{%= width %}/"
-		}]
+	/* build-deps
+	/* -------------------------------- */
+	
+	grunt.loadNpmTasks("grunt-modernizr");
+	grunt.config("modernizr.dist", {
+		// "cache": false,
+		"crawl": false,
+		"uglify": false,
+		"devFile": "./build/modernizr-dev.js",
+		"dest": "./build/modernizr-dist.js",
+		
+		// "class-prefix": "mod_",
+		// "classprefix": "mod_",
+		// "class_prefix": "mod_",
+		
+		"options": [
+			// "atrule",
+			// "domprefixes",
+			"hasEvent",
+			"mq",
+			"prefixed",
+			"prefixedCSS",
+			"setClasses",
+			// "html5shiv",
+			// "testallprops",
+			// "testprop",
+			// "teststyles",
+		],
+		
+		"tests": [
+			"animation",
+			"backgroundcliptext",
+			"backgroundsize",
+			"bgpositionshorthand",
+			"bgpositionxy",
+			"bgsizecover",
+			"bloburls",
+			"boxshadow",
+			"boxsizing",
+			"canvas",
+			"canvastext",
+			"classlist",
+			"cookies",
+			"cssanimations",
+			"csscalc",
+			"csspositionsticky",
+			"csspseudoanimations",
+			"csspseudotransitions",
+			"csstransforms",
+			"csstransitions",
+			"devicemotion_deviceorientation",
+			"display_runin",
+			"documentfragment",
+			"ellipsis",
+			"fullscreen",
+			"hashchange",
+			"inlinesvg",
+			"matchmedia",
+			"objectfit",
+			"pagevisibility",
+			"promises",
+			"queryselector",
+			"requestanimationframe",
+			"smil",
+			"svg",
+			"svgasimg",
+			"userselect",
+			"video",
+			"videoautoplay",
+			"videoloop",
+			"videopreload",
+			"willchange",
+			"xhrresponsetype",
+			"xhrresponsetypeblob",
+		],
+		"excludeTests": [],
+		"customTests": [],
 	});
-
-	grunt.loadNpmTasks("grunt-spritesmith");
-	grunt.config("sprite.bundle-sprites", {
-		algorithm: "binary-tree",
-		engine: "gmsmith",
-		imgOpts: {quality: 50},
-		src: "build/bundle-sprites/"+previewSize+"/*.{jpg,gif,png}",
-		dest: "images/bundle-sprites.png",
-		destCss: "src/sass/generated/_bundle-sprites-generated.scss"
-	});
-
-	// grunt.config("compass.bundle-sprites.options", {
-	// 	specify: "src/sass/generated/_bundle-sprites.scss",
-	// 	sourcemap: false,
-	// });
-
-	grunt.registerTask("generate-sprites",
-		["responsive_images:bundle-sprites", "sprite:bundle-sprites"]);
-
-	/* fontello-open (run CLI program)
-	 * - - - - - - - - - - - - - - - - - */
-	grunt.registerTask("fontello-open", "Open fontello configuration in browser", function() {
-		var child = grunt.util.spawn({
-			cmd: "fontello-cli",
-			args: ["open", "--config", "build/fontello.json"],
-			opts: {stdio: "inherit"}
-		}, this.async());
-	});
-
-	/* generate-favicons
-	 * - - - - - - - - - - - - - - - - - */
-	grunt.loadNpmTasks("grunt-favicons");
-	grunt.config("favicons", {
-		options: {
-			trueColor: true,
-			appleTouchBackgroundColor: "#FEFCE7",
-			tileColor: "#FEFCE7",
-			tileBlackWhite: false,
-			html: "html/static.xhtml",
-			HTMLPrefix: "/workspace/assets/images/favicon/"
-		},
-		icons: {
-			src: "src/resources/favicon/favicon.png",
-			dest: "images/favicon"
-		}
-	});
-	grunt.registerTask("generate-favicon", ["favicons"]);
-
-	// DEBUG: check config result
-	// grunt.file.write("./.build/grunt-config.json", JSON.stringify(grunt.config.get()));
 };

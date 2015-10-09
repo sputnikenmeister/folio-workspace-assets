@@ -1,0 +1,110 @@
+// ///////////////////////////////////
+// media query : $desktop-small
+// ///////////////////////////////////
+
+@include media(desktop-small) { .right-layout {
+	
+	// -----------------------------------
+	// navigation
+	// -----------------------------------
+	// #navigation {}
+
+	// nav_list
+	// -----------------------------------
+	// %nav_list {}
+	// &.with-bundle %nav_list {}
+
+	// bundle-list
+	// - - - - - - - - - - - - - - - - - -
+	// #bundle-list {}
+	// &.with-bundle #bundle-list {}
+
+	// keyword-list
+	// - - - - - - - - - - - - - - - - - -
+	// #keyword-list {}
+	
+	&.with-bundle #keyword-list {
+		@include nav_translate(0, #{$nav_height_landscape_right - 0.5rem});
+	}
+	&.with-bundle .container-expanded #keyword-list {
+		@include nav_translate(0, 0);
+	}
+
+	// keyword-list list-group
+	// - - - - - - - - - - - - - - - - - -
+	// &.with-bundle .navigation:not(.container-expanded) #keyword-list .list-group {}
+
+	// NOTE: .container-expanded with empty-item alignment
+	$select_state: with-bundle;
+
+	// site-name
+	// - - - - - - - - - - - - - - - - - -
+	&.#{$select_state} .container-expanded #site-name {
+		@include nav_translate(-100%, 0);
+	}
+
+	// transform-wrappers
+	// -----------------------------------
+	// .transform-wrapper {}
+
+	// site-name-wrapper
+	// - - - - - - - - - - - - - - - - - -
+	//  #site-name-wrapper {
+	// 	height: $nav_height_landscape_right;
+	// }
+	
+	// bundle-list-wrapper
+	// - - - - - - - - - - - - - - - - - -
+	&.#{$select_state} .container-expanded #bundle-list-wrapper {
+		@include nav_translate(0, 0);
+	}
+	
+	// keyword-list-wrapper
+	// - - - - - - - - - - - - - - - - - -
+	// #keyword-list-wrapper {}
+	// &.with-media #keyword-list-wrapper {}
+	&.#{$select_state} #keyword-list-wrapper {
+		@include nav_translate(0, 0);
+	}
+	
+	// -----------------------------------
+	// content
+	// -----------------------------------
+	// #content {}
+	
+	// image-carousel
+	// - - - - - - - - - - - - - - - - - -
+	.media-carousel {
+		top: $nav_height_landscape_right + $header_height_landscape;
+		// .carousel-item {}
+		// .carousel-item.empty-item {}
+		.carousel-item.media-item {
+			padding-right: $aside_width_large;
+			padding-left: 0;
+		}
+	}
+	.sequence-renderer .progress-meter {}
+	
+	// media-caption-stack
+	// - - - - - - - - - - - - - - - - - -
+	.media-caption-stack {
+		top: $header_height_landscape + $nav_height_landscape_right;
+		margin-top: -2.5rem;
+		// .content {}
+	}
+	.container-expanded .media-caption-stack {
+		@include nav_translate(0, $nav_collapse_extra);
+	}
+	
+	// media-dotnav
+	// - - - - - - - - - - - - - - - - - -
+	.media-dotnav {}
+	
+	// - - - - - - - - - - - - - - - - - -
+	// NOTE: typeface overrides
+	// - - - - - - - - - - - - - - - - - -
+	.media-caption-stack .content > * {
+		@include small_caps($lead: 1.5rem);
+	}
+
+}}

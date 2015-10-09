@@ -2,7 +2,7 @@
 	.carousel-item {
 		display: block;
 		position: absolute;
-		.content {
+		p, span, div {
 			user-select: none !important;
 		}
 //		.sizing {
@@ -12,19 +12,18 @@
 	&.panning {
 		cursor: grabbing;
 	}
-	&:not(.panning) {
-//		cursor: pointer;
-		.carousel-item {
-			.content {
-				cursor: pointer;
-			}
-			&.selected .content {
+	&:not(.panning) .carousel-item {
+		.content {
+			cursor: pointer;
+		}
+		&.selected {
+			.content   {
 				cursor: grab;
 			}
 		}
 	}
-	&.disabled {
-		.carousel-item .content {
+	&.disabled .carousel-item {
+		.content {
 			cursor: default !important;
 		}
 	}
@@ -34,6 +33,7 @@
 // Animation
 // - - - - - - - - - - - - - - - - - -
 $pan_ease: $ease;
+
 .carousel {
 	.carousel-item {
 		transform: translate3d(0,0,0);
@@ -43,169 +43,50 @@ $pan_ease: $ease;
 	&.skip-transitions .carousel-item {
 		@include skip_transitions;
 	}
-}
-
-// - - - - - - - - - - - - - - - - - -
-// .image-item
-// - - - - - - - - - - - - - - - - - -
-.image-item {
-	.sizing {
-		position: relative;
-		height: 100%;
-	}
-	img {
-		// *** "mutable" properties: must be in the first matching rule
-		border: 0 none;
-		background-color: $background_color;
-		box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
-		position: absolute;
-//		box-sizing: border-box;
-	}
-	.placeholder {
-		// *** "mutable" properties: must be in the first matching rule
-		color: $background_color;
-		background-color: mix($color, $background_color, 7%);
-		// border: 1px solid transparent;
-	}
-
-	.placeholder:before
-	{	// Top-left corner
-		position: absolute;
-		top: 0; left: 0;
-		font-size: 2rem;
-		line-height: 1.2;
-		font-weight: 600;
-		margin: 1em 1em;
-		text-transform: uppercase;
-		letter-spacing: -0.05em;
-	}
-	/*{	// Centered
-		font-size: 5rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: -0.05em;
-		// Centering
-		text-align: center;
-		position: absolute;
-		line-height: 1;
-		top: 50%;
-		width: 100%;
-		margin-top: -0.5em;
-		// just in case
-		overflow: hidden;
-		white-space: nowrap;
-	}*/
-
-	img {
+	
+	// Content opacity
+	.carousel-item .content {
 		// transition: opacity $duration $delay + 0.001s $ease;
-		transition: opacity $duration $ease 0.001s;
-		opacity: 0;
-	}
-	&.idle,	&.error {
-		img {
-			visibility: hidden;
-		}
-	}
-	&.selected, &.candidate, .empty-item.selected + & {
-		&.done img {
-			opacity: 1;
-		}
-		// &.done .placeholder {
-		// 	// transition: visibility $duration * 2 step-end 0.001s;
-		// 	// transition: visibility $duration $ease 0.001s;
-		// 	transition-timing-function: step-end;
-		// 	visibility: hidden;
-		// }
-	}
-	.placeholder:before {
-		transition: opacity $duration $ease $delay + 0.001s;
 		// transition: opacity $duration $ease 0.001s;
-		// transition: opacity $duration $ease;
-		opacity: 0;
-		content: "";
-		font-style: italic;
+		transition-property: 		opacity;
+		transition-timing-function:	$ease;
+		transition-delay: 			$delay*0 + 0.001s;
+		transition-duration:		$duration*1 + 0.001s;
 	}
-	//&.idle .placeholder:before 		{ content: "Waiting"; }
-	&.pending .placeholder:before 	{ content: "Loading"; }
-	&.error .placeholder:before 	{ content: "Error";	}
-	&.done .placeholder:before 		{ content: "Done"; }
-
-	&.selected, &.candidate, .empty-item.selected + & {
-		&.pending .placeholder:before {
-			opacity: 1;
-			// background-color: crimson;
-		}
-		&.error .placeholder:before {
-			opacity: 1;
-		}
+	&:not(.scrolling) .carousel-item.selected .content {
+		transition-delay: 			$delay*2 + 0.001s;
 	}
-	// &.selected, .empty-item.selected + & {
-	&.selected, &.candidate, .empty-item.selected + & {
-		&.pending .placeholder[data-progress]:before {
-			content: attr(data-progress) "%";
-			font-style: normal;
-		}
+	&.disabled .carousel-item.selected .content {
+		transition-delay: 			$delay*0 + 0.001s;
 	}
 }
 
-// .disbaled .image-item
+// NOTE:
+@import "./_carousel.media";
+@import "./_carousel.playable";
+
+// .disabled .media-item
 // - - - - - - - - - - - - - - - - - -
-.carousel.image-carousel.disabled {
-	.image-item.selected,
-	.image-item.candidate,
-	.empty-item.selected + .image-item {
-		&.done img {
+.carousel.disabled {
+	.media-item.selected,
+	.media-item.candidate,
+	.empty-item.selected + .media-item {
+		&.done .content {
 			opacity: 0;
 		}
 	}
 }
 
-// .browser .image-item
 // - - - - - - - - - - - - - - - - - -
-$mock_browser_height: 2rem;
-.browser .image-item {
-	padding-top: $mock_browser_height;
-	margin-top: -$mock_browser_height;
-	.sizing {
-		// box-sizing: content-box;
-		padding-top: $mock_browser_height;
-	}
-	img {
-		padding-top: $mock_browser_height;
-		margin-top: -$mock_browser_height;
-		transform: translateY($mock_browser_height);
-		// background-color: hsla(0,0%,0%,0.15) !important;
-		background-color: hsl(0,0%,75%) !important;
-		box-shadow:
-			0px 1px 1px 0px hsl(0, 0%, 100%) inset,
-			0px 3em 0px -1.1em hsla(0,0%,100%,0.85) inset,
-			0px 0px 0px 1px hsla(0,0%,0%,0.15),
-			0px 1rem 1rem -0.5rem hsla(0,0%,0%,0.5);
-	}
-	.placeholder, img {
-		border-top-left-radius: $mock_browser_height * 0.15;
-		border-top-right-radius: $mock_browser_height * 0.15;
-	}
-	// img:after {
-	// 	content: 'ooo';
-	// 	position: absolute;
-	// 	display: block;
-	// 	top: $mock_browser_height;
-	// 	left: 1rem;
-	// 	margin: 0.25rem;
-	// }
-}
-
-
-// - - - - - - - - - - - - - - - - - -
-// .empty-item
+// .media-carousel
 // - - - - - - - - - - - - - - - - - -
 
-.carousel.image-carousel {
+.carousel.media-carousel {
 	.empty-item {
 		.content {
-			transition: opacity $duration $ease 0.001s;
-			opacity: 0.2;
+			// transition: opacity #{$duration - 0.001s} $ease #{$delay + 0.001s};
+			transition: opacity #{$duration - 0.001s} $ease 0.001s;
+			opacity: 0.25;
 		}
 		&.selected,	&.candidate {
 			.content {
@@ -216,41 +97,50 @@ $mock_browser_height: 2rem;
 	&.panning .empty-item {
 		&.selected,	&.candidate {
 			.content {
-				opacity: 0.3;
+				opacity: 0.5;
 			}
 		}
 	}
 	&.disabled .empty-item {
 		&.selected,	&.candidate {
 			.content {
-				opacity: 0.2;
+				opacity: 0.15;
 			}
 		}
 	}
+	// &:not(.disabled-changing) .empty-item .content {
+	// 	transition: opacity #{$duration - 0.001s} $ease 0.001s;
+	// }
+	// &.disabled-changing .empty-item .content {
+	// 	transition: opacity #{$duration - 0.001s} $ease #{$delay + 0.001s};
+	// }
+	// &.disabled-changing .empty-item {
+	// 	outline: 2px solid blue;
+	// }
 }
 
-// - - - - - - - - - - - - - - - - - -
-// .default-carousel-item
-// - - - - - - - - - - - - - - - - - -
-.default-carousel-item {
-	.sizing {
-		display: inline-block;
-	}
-}
-
-// - - - - - - - - - - - - - - - - - -
-// .label-carousel
-// - - - - - - - - - - - - - - - - - -
-.label-carousel {
-	.carousel-item {
-		.content {
-			transition: opacity $duration $ease 0.001s;
-			opacity: 0.2;
-		}
-		&.selected, &.candidate {
-			.content {
-				opacity: 1;
-			}
-		}
-	}
-}
+// // - - - - - - - - - - - - - - - - - -
+// // .default-renderer
+// // - - - - - - - - - - - - - - - - - -
+// .carousel-item.default-renderer {
+// 	.sizing {
+// 		display: inline-block;
+// 	}
+// }
+// 
+// // - - - - - - - - - - - - - - - - - -
+// // .label-carousel
+// // - - - - - - - - - - - - - - - - - -
+// .label-carousel {
+// 	.carousel-item {
+// 		.content {
+// 			transition: opacity $duration $ease 0.001s;
+// 			opacity: 0.2;
+// 		}
+// 		&.selected, &.candidate {
+// 			.content {
+// 				opacity: 1;
+// 			}
+// 		}
+// 	}
+// }

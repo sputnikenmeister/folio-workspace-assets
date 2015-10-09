@@ -1,0 +1,40 @@
+{
+	"cmd": "grunt",
+	"targets": {
+		"build-debug-client": {
+			"cmd": "grunt",
+			"args": ["build-debug-client"],
+			"keymap": "cmd-alt-1"
+		},
+		"build-debug-sass": {
+			"cmd": "grunt",
+			"args": ["build-debug-sass"],
+			"keymap": "cmd-alt-2"
+		},
+		"build-debug": {
+			"cmd": "grunt",
+			"args": ["build-debug"],
+			"keymap": "cmd-alt-1 cmd-alt-1"
+		},
+		"build-debug-all": {
+			"cmd": "grunt",
+			"args": ["build-debug-client", "build-debug-sass"],
+			"keymap": "cmd-alt-1 cmd-alt-2"
+		},
+		"build-dist": {
+			"cmd": "grunt",
+			"args": ["build-dist"],
+			"keymap": "cmd-alt-9"
+		},
+		"build-clean-all": {
+			"cmd": "grunt",
+			"args": ["build-clean-all"],
+			"keymap": "cmd-alt-9 cmd-alt-9"
+		},
+		"clean-all": {
+			"cmd": "grunt",
+			"args": ["clean-all"],
+			"keymap": "cmd-alt-0"
+		}
+	}
+}

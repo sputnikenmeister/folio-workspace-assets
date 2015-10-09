@@ -6,19 +6,17 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {module:jquery} */
-var $ = Backbone.$;
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 
 /** @type {module:app/view/base/View} */
-var View = require("../base/View");
+var View = require("app/view/base/View");
 /** @type {module:app/view/base/DeferredView} */
-var DeferredView = require("../base/DeferredView");
+var DeferredView = require("app/view/base/DeferredView");
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 
 /**
  * @constructor

@@ -4,7 +4,7 @@
 */
 
 /** @type {module:backbone} */
-var Backbone = require( "backbone" );
+var Backbone = require("backbone");
 
 /**
  * @constructor
@@ -16,19 +16,20 @@ module.exports = Backbone.Model.extend({
 	defaults: {
 		name: "",
 		handle: "",
-		attrs: [],
 		tId: 0,
-		excluded: false,
+		attrs: null,
 	},
-
-//	selector: function() {
-//		return "#" + this.domId();
-//	},
-//
-//	domId: function() {
-//		return "k" + this.id;
-//	},
-
+	
+	mutators: {
+		domid: function() {
+			return "k" + this.id;
+		},
+	},
+	
+	attrs: function() {
+		return this.get("attrs");
+	},
+	
 	/** @override */
 	toString: function() {
 		return this.id;

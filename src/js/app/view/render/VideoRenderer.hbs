@@ -1,0 +1,37 @@
+<div class="placeholder sizing"></div>
+<!-- <div class="debug-log color-fg05"><pre></pre></div> -->
+<div class="content not-played">
+	<div class="controls media-size">
+		<div class="progress-meter">
+			<span class="current-time">00:00</span>
+			<svg class="timeline" xmlns="http://www.w3.org/2000/svg" version="1.1" height="1px">
+				<rect class="base" x="0" y="0" width="100%" height="1" style="fill-opacity:0.0;fill:currentColor;stroke:none;"/>
+				<rect class="buffered" x="0" y="0" width="0%" height="1" style="fill-opacity:0.2;fill:currentColor;stroke:none;"/>
+				<rect class="played" x="0" y="0" width="0%" height="1" style="fill-opacity:1.0;fill:currentColor;stroke:none;"/>
+			</svg>
+			<span class="duration">00:00</span>
+		</div>
+		<!-- <div class="timecode-meter">
+		</div> -->
+		<a class="fullscreen-toggle" href="javascript:(void 0);">
+			<svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="-21 -21 42 42" width="14px" height="14px">
+				<path d="M-5,5 L-20,20 M-7,20 L-20,20 L-20,7 M5,-5 L20,-20 M7,-20 L20,-20 L20,-7" class="color-stroke" style="stroke-width:1.4;fill:none;" vector-effect="non-scaling-stroke"/>
+			</svg>
+		</a>
+	</div>
+	<div class="crop-box media-size">
+		<!-- <video poster="{{global "MEDIA_DIR"}}/{{src}}" /> -->
+		<video preload="none"></video>
+		<!-- <video preload="none">
+		{{#each srcset}}
+			{{#contains mime 'video'}}
+			<source src="{{global "MEDIA_DIR"}}/{{src}}" type="{{mime}}"/>
+			{{/contains}}
+		{{/each}}
+		</video> -->
+		<img class="poster default" alt="{{name}}"/>
+	</div>
+	<div class="overlay media-size">
+		<div class="play-toggle-hitarea play-toggle"><!-- &#xe80d; --></div>
+	</div>
+</div>

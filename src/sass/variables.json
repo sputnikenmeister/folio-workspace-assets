@@ -4,7 +4,7 @@
 		"vu_px": "12"
 	},
 	"transitions": {
-		"delay_interval_ms": "100",
+		"delay_interval_ms": "75",
 		"duration_ms": "400",
 		"ease": "ease"
 	},
@@ -20,5 +20,10 @@
 		"desktop-medium": "'only screen and (min-width : 1224px)'",
 		"desktop-large": "'only screen and (min-width : 1824px)'",
 		"iphone4": "'only screen and (min-device-pixel-ratio : 1.5)'"
+	},
+	"default_colors": {
+		"color": "hsl(47, 5%, 15%)",
+		"background-color": "hsl(47, 5%, 95%)",
+		"link-color": "hsl(10, 80%, 50%)"
 	}
 }

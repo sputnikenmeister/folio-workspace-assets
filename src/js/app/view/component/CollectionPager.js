@@ -7,17 +7,18 @@ var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 /** @type {module:app/view/base/View} */
-var View = require("../base/View");
+var View = require("app/view/base/View");
 
 /** @type {Function} */
-var viewTemplate = require("./CollectionPager.tpl");
-//var viewTemplate = require("./CollectionPager.withClose.tpl");
+var viewTemplate = require("./CollectionPager.hbs");
+//var viewTemplate = require("./CollectionPager.withClose.hbs");
 
 /**
  * @constructor
  * @type {module:app/view/component/CollectionPager}
  */
 module.exports = View.extend({
+	
 	/** @override */
 	tagName: "div",
 	/** @override */
@@ -37,10 +38,10 @@ module.exports = View.extend({
 			ev.isDefaultPrevented() || ev.preventDefault();
 			this.trigger("view:select:one", this.collection.followingOrFirst());
 		},
-//		"click .close-button": function (ev) {
-//			ev.isDefaultPrevented() || ev.preventDefault();
-//			this.trigger("view:select:none");
-//		}
+		"click .close-button": function (ev) {
+			ev.isDefaultPrevented() || ev.preventDefault();
+			this.trigger("view:select:none");
+		}
 	},
 
 	/** @override */
@@ -56,17 +57,18 @@ module.exports = View.extend({
 		if (this.collection.length > 1 && this.collection.selected) {
 			var preceding = this.collection.precedingOrLast();
 			var following = this.collection.followingOrFirst();
-			this.$el.html(this.template({
-				"preceding_label": this.getLabel(preceding),
-				"preceding_href": preceding.get("handle"),
-				"following_label": this.getLabel(following),
-				"following_href": following.get("handle"),
-//				"close_label": "Close",
-//				"close_href": "#close",
-
-			}));
+			this.el.innerHTML = this.template({
+				preceding: {
+					label: this.getLabel(preceding),
+					href: preceding.get("handle"),
+				},
+				following: {
+					label: this.getLabel(following),
+					href: following.get("handle"),
+				}
+			});
 		} else {
-			this.$el.empty();
+			this.el.innerHTML = "";
 		}
 		return this;
 	},

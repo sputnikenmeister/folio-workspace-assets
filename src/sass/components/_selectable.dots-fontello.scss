@@ -1,75 +1,76 @@
 // @import "../includes/_icons";
 
-.dots-fontello.list-item,
 .dots-fontello .list-item {
 	@include font_smoothing();
 	display: inline-block;
 	font-size: 0.85rem;
 	line-height: 1.5rem;
-
+	position: static;
 	padding: 0 0.5em;
+	
 //	margin-right: 0.5rem;
 	&:first-child { margin-left: -0.5em; }
 	&:last-child { margin-right: 1em; }
+	// hide if there is only one item;
 	&:first-child:last-child {
 		visibility: hidden;
 		width: 0; margin: 0; padding: 0;
 	}
+	
 	& a:before {
 		@include fontello_icon_base();
 		width: 1em;
 		display: inline-block;
 		text-align: center;
 	}
-	.label {
-		font-weight: 600;
-		letter-spacing: 1px;
-		text-transform: uppercase;
-		white-space: nowrap;
-		display: inline-block;
-		position: absolute;
-		left: 100%; //width: 0;
-//		transform: translateZ(0.1px);
-		transform: translate3d(0,0,0.1px);
-
-		transition: visibility $duration, opacity $duration;
-		visibility: hidden;
-		opacity: 0;
-	}
-	&:not(.selected):hover .label {
-		visibility: visible;
-		opacity: 1;
-	}
-//	&.selected .label {
-//		transition: visibility $duration $duration,
-//					opacity $duration $duration;
-//		visibility: visible;
-//		opacity: 1;
-//	}
-
-	& a:before 						{ content: '\e80c'; }
-	// &:link:after					{ content: '\e80c'; }
-	// &:visited:after				{ content: '\e80c'; }
-	&:hover a:before				{ content: '\e801'; }
-	// &:active:after				{ content: '\e803'; }
-	&.selected a:before				{ content: '\e80b'; }
-//	&.selected:hover a:before		{ content: '\e80b'; }
-
-	&.null-item a:before					{ content: '\e80d'; }
-	&.null-item.selected a:before			{ content: '\e80d'; }
-//	&.null-item.selected:hover a:before		{ content: '\e80e'; }
+	& a:before 							{ content: '\e805'; }
+	&:hover a:before					{ content: '\e801'; }
+	&.selected a:before					{ content: '\e806'; }
+	&.empty-item a:before				{ content: '\e814'; }
+	// &.empty-item.selected a:before	{ content: '\e807'; }
 
 	// show link cursor, except on selected
 	user-select: none;
 	cursor: pointer;
-	&.selected, &.selected a { cursor: default; }
-//
-//	.label.tooltip {
-//		position: absolute;
-//		top: -1.5em;
-//		// transform: translate(-50%, 0);
-//		display: block;
-//		left: 0; right: 0;
-//		text-align: center;
-//	}
+	&.selected, &.selected a {
+		cursor: default;
+	}
+	
+	.label { 
+		display: none; 
+	}
+	// .label {
+	// 	font-weight: 600;
+	// 	letter-spacing: 1px;
+	// 	text-transform: uppercase;
+	// 	white-space: nowrap;
+	// 	display: inline-block;
+	// 	position: absolute;
+	// 	left: 100%; //width: 0;
+	// 	transform: translate3d(0,0,0.1px);
+	// 
+	// 	transition: visibility $duration, opacity $duration;
+	// 	visibility: hidden;
+	// 	opacity: 0;
+	// }
+	// &:not(.selected):hover .label {
+	// 	visibility: visible;
+	// 	opacity: 1;
+	// }
+	
+	// &.selected .label {
+	// 	transition: visibility $duration $duration,
+	// 				opacity $duration $duration;
+	// 	visibility: visible;
+	// 	opacity: 1;
+	// }
+	
+	// .label.tooltip {
+	// 	position: absolute;
+	// 	top: -1.5em;
+	// 	// transform: translate(-50%, 0);
+	// 	display: block;
+	// 	left: 0; right: 0;
+	// 	text-align: center;
+	// }
 }

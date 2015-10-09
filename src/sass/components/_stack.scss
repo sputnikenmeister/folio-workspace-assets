@@ -1,0 +1,46 @@
+// -----------------------------------
+// .stack
+// -----------------------------------
+
+.stack {
+	& > .current, & > .not-current {
+	// & > * {
+		display: block;
+		position: absolute;
+		top: 0; left: 0;
+	}
+}
+
+.stack {
+	& > .current {
+		opacity: 1;
+		transition: opacity #{$duration - 0.001s} $ease 0.001s;
+	}
+	& > .not-current {
+		opacity: 0;
+		transition: opacity #{$duration - 0.001s} $ease 0.001s;
+	}
+	&.skip-transitions {
+		& > .current,
+		& > .not-current {
+			transition: none 0s ease 0s;
+		}
+	}
+}
+
+// :not(.skip-transitions) .stack.alt > div,
+// .stack.alt:not(.skip-transitions) > div {
+// 	transition: opacity #{$duration - 0.001s} $ease;// #{$delay*1 + 0.001s};
+// 	&.exiting {
+// 		transition: opacity #{$duration - 0.001s} $ease;// #{$delay*0 + 0.001s};
+// 	}
+// }
+// 
+// .stack.alt {
+// 	& > .entering {
+// 		opacity: 0;
+// 	}
+// 	& > .exiting {
+// 		opacity: 0;
+// 	}
+// }

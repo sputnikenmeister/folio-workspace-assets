@@ -19,24 +19,49 @@ $darkseagreen:		hsla(120, 25%, 65%, 1);
 /* darkolivegreen:	hsl(???) */
 $darkolivegreen:	darkolivegreen;
 
-.debug-grid {
+// -----------------------------------
+// .debug-grid
+// -----------------------------------
+
+#container.debug-grid-bg {
+	background-image: image-url("debug-background.svg");
 	background-color: transparent;
 	background-repeat: no-repeat;
 	background-position: calc(50% + 1px) 1px;
-	background-image: image-url("debug-background-720.svg");
-//	background-image: image-url("debug-background.svg#bg720_g");
-//	background-size: 719px 1599px;
+	background-size: $page_width auto;//1600px;
 	@include media(desktop-small) {
-		background-image: image-url("debug-background-960.svg");
-//		background-image: image-url("debug-background.svg#bg960_g");
-//		background-size: 959px 1599px;
+		background-position: calc(50% + 1px) calc(-1rem + 1px);
+		background-size: $page_width_large auto;//1600px;
 	}
 }
+// img#debug-grid {
+// 	position: absolute;
+// 	width: $page_width;
+// 	left: calc(50% - #{$page_width/2});
+// 	height: 100%;
+// 	box-sizing: border-box;
+// 	padding-top: 1px;
+// 	padding-left: 1px;
+// 	@include media(desktop-small) {
+// 		// top: calc(1px - 1rem);
+// 		// height: calc(100% - 1px);
+// 		width: $page_width_large;
+// 		left: calc(50% - #{$page_width_large/2});
+// 		margin-top: -1rem;
+// 		.layout-guide {
+// 			stroke: hsl(60, 93%, 71%);
+// 		}
+// 	}
+// }
+// :not(.debug-grid-img) > img#debug-grid {
+// 	display: none;
+// }
+
+// -----------------------------------
+// .debug-blocks
+// -----------------------------------
 
 @mixin debug_outline($width: 1px, $style: dashed, $color: inherit) {
-//	outline-color: $color;
-//	outline-style: $style;
-//	outline-width: $width;
 	outline: $width $style $color;
 	outline-offset: -$width;
 }
@@ -76,20 +101,35 @@ $darkolivegreen:	darkolivegreen;
 			// @include debug_outline($color: $lightcoral);
 //			@include debug_outline($color: transparentize($lightcoral, 0.9), $style: solid);
 		}
-		#site-name a, .list .name {
-			background-color: transparentize($lightcoral, 0.6);
+		#site-name a,
+		.list .name {
+			background-color: transparentize($lightcoral, 0.5);
 			// @include debug_outline($color: $lightcoral);
 		}
 	}
 	#content {
-//		background-color: transparentize($lightblue, 0.9);
+		.stack {
+			.content {
+				background-color: transparentize($lightblue, 0.7);
+				& > * {
+					@include debug_outline($color: $deepskyblue);
+				}
+			}
+		}
 		.carousel {
 			// @include debug_outline_thick($color: $deepskyblue);
 			@include debug_outline($width: 1rem, $style: solid, $color: transparentize($deepskyblue, 0.8));
 		}
-		.image-item, .leaf-carousel-item, .default-carousel-item, .empty-item {
+		.leaf-carousel-item, .default-carousel-item, .empty-item {
 			@include debug_outline($color: $deepskyblue);
 //			background-color: transparentize($lightblue, 0.7);
+		}
+		.media-item {
+			background-color: transparentize($lightblue, 0.9);
+			@include debug_outline($color: $deepskyblue);
+			.content {
+				background-color: $lightblue;
+			}
 		}
 		.leaf-carousel-item, .default-carousel-item {
 			.content {
@@ -102,7 +142,7 @@ $darkolivegreen:	darkolivegreen;
 			}
 		}
 //		.selected {
-//			&.image-item, &.leaf-carousel-item, &.default-carousel-item, &.empty-item {
+//			&.media-item, &.leaf-carousel-item, &.default-carousel-item, &.empty-item {
 //				@include debug_outline($color: $darkolivegreen);
 ////				background-color: transparentize($darkseagreen, 0.5);
 //			}
@@ -112,70 +152,119 @@ $darkolivegreen:	darkolivegreen;
 //				}
 //			}
 //		}
-		.nested-carousel-item {
-//			@include debug_outline($width: 0.5rem, $style: dashed, $color: transparentize($deepskyblue, 0.25));
-			outline: 0 none;
-			background-color: transparent;
-		}
-		.stack {
-			.content {
-				background-color: transparentize($lightblue, 0.7);
-				& > * {
-					@include debug_outline($color: $deepskyblue);
-				}
-			}
-		}
 	}
 }
 
+// -----------------------------------
+// #debug-toolbar
+// -----------------------------------
+
 #debug-toolbar {
-	opacity: 0.5;
-	color: hsl(245, 2%, 50%);
-	border-color: hsl(245, 2%, 50%);
-//	background-color: hsla(60, 4%, 5%, 1);
+	// opacity: 0.4;
+	// color: inherit;
+	// color: hsl(245, 2%, 50%);
+	// border-color: hsl(245, 2%, 50%);
+	
+	z-index: 999;
+	position: fixed;
+	// width: 100%;// prevents dotnav mouse events
+	// bottom: 0;
+	
+	top: 0; right: 0; direction: rtl;
+	
+	// &.show-info .debug-links {
+	// 	display: none;
+	// }
+	// &.show-links .debug-info {
+	// 	display: none;
+	// }
+	&:not(.show-links) .debug-links > dd {
+		display: none;
+	}
+	// &.show-links .debug-info {
+	// 	display: none;
+	// }
+}
+
+#debug-toolbar dl {
+	line-height: 1rem;
+	padding: 0 0.25rem;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
 	&, * {
 		user-select: none !important;
 	}
-	z-index: 999;
-	position: fixed;
-	bottom: 0;
-	width: 100%;
-	padding: 1rem 0.5rem;
-	dt, dd {
-		@include small_caps($lead: 1rem);
-		margin: -0.25em 0;
-	}
-	dt {
-		font-weight: 300;
-	}
-	dd {
-		@include font_smoothing();
-	}
-}
-
-#debug-toolbar.toolbar {
-	display: flex;
-	flex-direction: row;
 	& > * {
 		-webkit-flex: 0 1 auto;
-    	flex: 0 1 auto;
+		flex: 0 1 auto;
 		display: block;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		cursor: pointer;
-		user-select: none;
+	}
+	dt, dd {
 		margin: auto 0;
-		padding: 0 0.75em;
-		border-color: inherit;
-		border-right-style: solid;
-		border-right-width: thin;
-		&:first-child {
-			padding-right: 0;
-			border-right: 0 none;
+		padding: 0;
+		a, span, svg {
+			padding: 1em 0.75em;
+			display: inline-block;
+			vertical-align: middle;
 		}
-		&:last-child {
-			border-right: 0 none;
+	}
+	dt + dd {
+		// a, span, svg {
+		// 	padding-left: 0.25em;
+		// }
+		&:before {
+			border-left: none;
 		}
+	}
+	dd {
+		&:before {
+			content: ' ';
+			display: inline-block;
+			height: 1em;
+			margin: 1em 0;
+			border-left: currentColor solid thin;
+			vertical-align: middle;
+		}
+	}
+	dt {
+		-webkit-flex: 0 0 auto;
+		flex: 0 0 auto;
+		span.icon {
+			@include fontello_icon_base();
+			width: 1em;
+			text-align: center;
+			display: inline-block;
+		}
+		svg.icon {
+			width: 1em;
+			height: 1em;
+			vertical-align: middle;
+			display: block;
+		}
+		// @include small_caps($lead: 1rem);
+	}
+	&.debug-links dd {
+		@include small_caps($lead: inherit);
+	}
+	&.debug-info dd {
+		font-weight: 300;
+		& > * {
+			margin-top: -0.1rem;
+		}
+	}
+	a.toggle-enabled {
+		// color: red;
+		text-decoration: underline;
+	}
+}
+
+.without-media #debug-toolbar {
+	#media-info, #toggle-logs {
+		display: none;
 	}
 }

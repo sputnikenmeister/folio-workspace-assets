@@ -1,300 +1,335 @@
-/*jslint nomen: true, vars: true, undef: true, eqeq: true, bitwise: true, sloppy: true, white: true */
-/*global require, module*/
-
 /**
  * @module app/view/NavigationView
  */
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:hammerjs} */
-var Hammer = require("hammerjs");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../control/Globals");
-/** @type {module:app/control/TouchManager} */
-var TouchManager = require("../control/TouchManager");
+var Globals = require("app/control/Globals");
 /** @type {module:app/control/Controller} */
-var controller = require("../control/Controller");
+var controller = require("app/control/Controller");
 /** @type {module:app/model/collection/BundleCollection} */
-var bundles = require("../model/collection/BundleCollection");
+var bundles = require("app/model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
-var ContainerView = require("./base/ContainerView");
-/** @type {module:app/view/component/Carousel} */
-var Carousel = require("./component/Carousel");
-/** @type {module:app/view/render/ImageRenderer} */
-var ImageRenderer = require("./render/ImageRenderer");
-/** @type {module:app/view/render/CarouselEmptyRenderer} */
-var CarouselEmptyRenderer = require("./render/CarouselEmptyRenderer");
+var ContainerView = require("app/view/base/ContainerView");
+
 /** @type {module:app/view/component/CollectionStack} */
-var CollectionStack = require("./component/CollectionStack");
+var CollectionStack = require("app/view/component/CollectionStack");
+
+/** @type {module:app/view/component/CollectionStack} */
+var SelectableListView = require("app/view/component/SelectableListView");
 /** @type {module:app/view/render/DotNavigationRenderer} */
-//var DotNavigationRenderer = require("./render/DotNavigationRenderer");
+var DotNavigationRenderer = require("app/view/render/DotNavigationRenderer");
+
+/** @type {module:app/view/component/Carousel} */
+var Carousel = require("app/view/component/Carousel");
+/** @type {module:app/view/render/ImageRenderer} */
+var ImageRenderer = require("app/view/render/ImageRenderer");
+/** @type {module:app/view/render/SequenceRenderer} */
+var SequenceRenderer = require("app/view/render/SequenceRenderer");
+/** @type {module:app/view/render/VideoRenderer} */
+var VideoRenderer = require("app/view/render/VideoRenderer");
 
 /** @type {Function} */
-var bundleDescTemplate = require("./template/CollectionStack.Bundle.tpl");
+var bundleDescTemplate = require("./template/CollectionStack.Bundle.hbs");
 /** @type {Function} */
-var imageCaptionTemplate = require("./template/CollectionStack.Image.tpl");
+var mediaCaptionTemplate = require("./template/CollectionStack.Media.hbs");
+
+/** @type {Function} */
+var transitionEnd = require("utils/event/transitionEnd");
+/** @type {module:utils/prefixedProperty} */
+var prefixedProperty = require("utils/prefixedProperty");
+
 
 /**
  * @constructor
  * @type {module:app/view/ContentView}
  */
 var ContentView = ContainerView.extend({
-
+	
 	/** @override */
-	className: "expanded",
-
+	cidPrefix: "contentView",
+	
 	initialize: function (options) {
+		ContainerView.prototype.initialize.apply(this, arguments);
+		
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
-		this.children = [];
-		this.childrenEls = [];
-		this.touch = TouchManager.getInstance();
-
-		this.listenTo(bundles, {
+		
+		this.childViews = [];
+		this.bundleListeners = {
 			"select:one": this._onSelectOne,
 			"select:none": this._onSelectNone,
 			"deselect:one": this._onDeselectOne,
 			"deselect:none": this._onDeselectNone,
-		});
-
-		if (bundles.selected) {
-			this.touch.on("vpanstart", this._onVPanStart);
-			this.createChildren(bundles.selected, true);
-			this.setCollapsed(true);
-		} else {
-			this.setCollapsed(false);
-		}
+		};
+		this.mediaListeners = {
+			"select:one": this._onSelectMedia,
+			"select:none": this._onSelectMedia,
+			"deselect:one": this._onDeselectMedia,
+			"deselect:none": this._onDeselectMedia,
+		};
+		this.listenTo(bundles, this.bundleListeners);
 	},
-
-	// this view is, as of now, never removed, so this method is never called
+	
 	/** @override */
-	/*remove: function () {
-		if (bundles.selected) {
-			this.removeChildren(bundles.selected, true);
-		}
-		return View.prototype.remove.apply(this, arguments);
-	},*/
-
-	/** @override */
-	render: function (ev) {
-		// this.transforms.releaseAll();
-		_.each(this.children, function(view) {
-			this.transforms.release(view.el);
-			this.transforms.clearTransitions(view.el);
+	render: function () {
+		this.transforms.stopAllTransitions();
+		this.transforms.validate();
+		this.childViews.forEach(function(view) {
+			view.skipTransitions = true;
 			view.render();
 		}, this);
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
-
-	/* --------------------------- *
-	 * bundles event handlers
-	 * --------------------------- */
-
-	_onDeselectOne: function(bundle) {
-		this.removeChildren(bundle, false);
-		// this.setCollapsed(false);
-		this.stopListening(bundle.get("images"), "deselect:one deselect:none", this._onDeselectImage);
-		this.stopListening(bundle.get("images"), "select:one select:none", this._onSelectImage);
-	},
-
-	_onDeselectNone: function() {
-		// this.setCollapsed(true);
-		this.touch.on("vpanstart", this._onVPanStart);
-		// this.touch.on("vpanend", this._onVPanFinal);
-		// this.touch.on("panstart", this._onPanStart);
-	},
-
-	_onSelectOne: function(bundle) {
-		this.setCollapsed(true);
-		this.createChildren(bundle, false);
-		this.listenTo(bundle.get("images"), "deselect:one deselect:none", this._onDeselectImage);
-		this.listenTo(bundle.get("images"), "select:one select:none", this._onSelectImage);
-	},
-
-	_onSelectNone: function() {
-		this.setCollapsed(false);
-		this.touch.off("vpanstart", this._onVPanStart);
-		// this.touch.off("vpanend", this._onVPanFinal);
-		// this.touch.off("panstart", this._onPanStart);
-	},
-
-	/* --------------------------- *
-	 * bundle.images event handlers
-	 * --------------------------- */
-
-	_onDeselectImage: function() {
-		if (!this.isCollapsed()) {
-			this.transforms.clearAll();
-			this.transforms.runTransition(Globals.TRANSIT_ENTERING, this.childrenEls);
-		}
-	},
-
-	_onSelectImage: function() {
-		this.setCollapsed(true);
-	},
-
-	/* -------------------------------
-	 * create/remove children on bundle selection
-	 * ------------------------------- */
-
-	/** Create children on bundle select */
-	createChildren: function (bundle, skipAnimation) {
-		//this.children.push(this.createImageCaptionCarousel(bundle, images));
-		this.children.push(this.createImageCaptionStack(bundle));
-		this.children.push(this.createImageCarousel(bundle));
-
-		var startProps = {opacity: 0};
-		var endProps = {delay: Globals.ENTERING_DELAY, opacity: 1};
-		// Show views
-		_.each(this.children, function(view) {
-			this.transforms.add(view.el);
-			this.childrenEls.push(view.el);
-			this.listenToOnce(view, "view:remove", this.onChildRemove);
-			this.$el.append(view.el);
-			view.render();
-			// view.render().$el.appendTo(this.el);
-			if (!skipAnimation) {
-				view.$el.css(startProps).transit(endProps);
-			}
-		}, this);
-	},
-
-	removeChildren: function (bundle, skipAnimation) {
-		// var startProps = {position: "absolute"};
-		var endProps = {delay: Globals.EXITING_DELAY, opacity: 0};
-		var txPropName = this.getPrefixedProperty("transform");
-
-		_.each(this.children, function(view, index, children) {
-			if (skipAnimation) {
-				view.remove();
-			} else {
-				// startProps[txStyleName] = view.$el.css(txStyleName);
-				// startProps["top"] = view.el.offsetTop;
-				// startProps["left"] = view.el.offsetLeft;
-				view.el.style[txPropName] = window.getComputedStyle(view.el)[txPropName];
-				view.$el
-					// .css(startProps)
-					.addClass("removing")
-					.transit(endProps)
-					.queue(function(next) {
-						view.remove(); next();
-					});
-			}
-			this.childrenEls.splice(this.childrenEls.indexOf(view.el), 1);
-			this.transforms.remove(view.el);
-			children[index] = void 0;
-		}, this);
-		// clear child references immediately
-		this.children.length = 0;
-	},
-
-	onChildRemove: function(view) {
-		// this.childrenEls.splice(this.childrenEls.indexOf(view.el), 1);
-		// this.transforms.remove(view.el);
-	},
-
+	
 	/* -------------------------------
 	 * collapse
 	 * ------------------------------- */
-
-	_collapsed: false,
-
-	isCollapsed: function() {
-		return this._collapsed;
+	
+	_onCollapseChange: function(collapsed) {
+		this.childViews.forEach(function(view) {
+			view.setEnabled(collapsed);
+		});
 	},
-
-	setCollapsed: function(collapsed) {
-		if (this._collapsed !== collapsed) {
-			this._collapsed = collapsed;
-			// if (collapsed) {
-			// 	this.$el.addClass("collapsed").removeClass("expanded");
-			// } else {
-			// 	this.$el.addClass("expanded").removeClass("collapsed");
-			// }
-			_.each(this.children, function(view) {
-				view.setEnabled(collapsed);
-			});
-			// this.touch.get("pan").set({ enable: collapsed });
-			this.el.classList.toggle("collapsed", collapsed);
-			this.el.classList.toggle("expanded", !collapsed);
+	
+	/* --------------------------- *
+	 * bundle model handlers
+	 * --------------------------- */
+	
+	_onDeselectOne: function(bundle) {
+		this.stopListening(bundle.get("media"), this.mediaListeners);
+		this.purgeChildren();
+		this.removeChildren(bundle);
+	},
+	
+	_onDeselectNone: function() {
+		this.touch.on("vpanstart", this._onVPanStart);
+	},
+	
+	_onSelectOne: function(bundle) {
+		this.listenTo(bundle.get("media"), this.mediaListeners);
+		this.createChildren(bundle);
+		this.setCollapsed(true);
+		
+	},
+	
+	_onSelectNone: function() {
+		this.touch.off("vpanstart", this._onVPanStart);
+		this.setCollapsed(false);
+	},
+	
+	/* --------------------------- *
+	 * media model handlers
+	 * --------------------------- */
+	
+	_onDeselectMedia: function(media) {
+		if (!this.isCollapsed()) {
+			this.transforms.clearAllOffsets();
+			this.transforms.runAllTransitions(Globals.TRANSIT_ENTERING);
+			this.transforms.validate();
 		}
+	},
+	
+	_onSelectMedia: function(media) {
+		this._bundleChanging || this.setCollapsed(true);
 	},
 
 	/* -------------------------------
+	 * Router -> before model change
+	 * ------------------------------- */
+	 
+ 	_beforeChange: function(bundle, media) {
+ 		this._bundleChanging = (bundle !== bundles.selected);
+ 	},
+	
+	_afterChange: function(bundle, media) {
+		this._bundleChanging = false;
+	},
+	
+	/* -------------------------------
+	 * create/remove children on bundle selection
+	 * ------------------------------- */
+	
+	/** Create children on bundle select */
+	createChildren: function (bundle) {
+		//this.childViews.push();
+		var transitionProp = prefixedProperty("transition");
+		
+		this.captionStack = this.createMediaCaptionStack(bundle);
+		this.carousel = this.createMediaCarousel(bundle);
+		this.dotNavigation = this.createMediaDotNavigation(bundle);
+		
+		this.childViews.push(
+			this.captionStack,
+			this.carousel,
+			this.dotNavigation
+		);
+		this.transforms.add(this.carousel.el, this.captionStack.el);
+		this.childViews.forEach(function(view, index, childViews) {
+			if (!this.skipTransitions) {
+				var rafHandler = function() {
+					var transitionHandler = function(ev) {
+						if (ev.target === view.el) {
+							view.el.removeEventListener(transitionEnd, transitionHandler, false);
+							view.el.style.removeProperty(transitionProp);
+							// console.log("ContentView", "TX IN", view.cid);
+						}
+					};
+					view.el.addEventListener(transitionEnd, transitionHandler, false);
+					view.el.style[transitionProp] = "opacity " + Globals.TRANSIT_ENTERING.cssText;
+					view.el.style.removeProperty("opacity");
+				};
+				this.requestAnimationFrame(rafHandler);
+				view.el.style.opacity = 0;
+			}
+			this.el.appendChild(view.el);
+			view.render();
+		}, this);
+	},
+	
+	removeChildren: function (bundle) {
+		var transformProp = prefixedProperty("transform");
+		var transitionProp = prefixedProperty("transition");
+		
+		this.transforms.remove(this.carousel.el, this.captionStack.el);
+		this.childViews.forEach(function(view, index, childViews) {
+			view.stopListening(view.collection);
+			controller.stopListening(view);
+			if (this.skipTransitions) {
+				view.remove();
+			} else {
+				var computedStyle = getComputedStyle(view.el);
+				if (computedStyle.opacity == "0" || computedStyle.visibility == "hidden") {
+					console.log("ContentView.removeChildren", "item invisible (removed)", view.cid);
+					view.remove();
+				} else {
+					var transitionHandler = function(ev) {
+						if (ev.target === view.el) {
+							console.log("ContentView.removeChildren", "transitionEnd", view.cid);
+							view.el.removeEventListener(transitionEnd, transitionHandler, false);
+							view.remove();
+						} else {
+							console.log("ContentView.removeChildren", "transitionEnd (ignored)");
+						}
+					};
+					view.el.addEventListener(transitionEnd, transitionHandler, false);
+					view.el.classList.add("removing-child");
+					view.el.style[transformProp] = computedStyle[transformProp];
+					view.el.style[transitionProp] = "opacity " + Globals.TRANSIT_EXITING.cssText;
+					view.el.style.opacity = 0;
+				}
+				// console.log("ContentView.removeChildren", "transitionEnd", view.cid);
+			}
+		}, this);
+		this.childViews.length = 0;
+	},
+	
+	purgeChildren2: function () {
+		var view, i, ii, el, els = [];
+		for (i = 0, ii = this.el.children.length; i < ii; i++) {
+			el = this.el.children.item(i);
+			if (el.classList.contains("removing-child")) {
+				els.push(el);
+			}
+		}
+		for (i = 0, ii = els.length; i < ii; i++) {
+			el = els[i];
+			try {
+				view = ContainerView.findByElement(el).remove();
+				console.warn("ContentView.purgeChildren", view.cid);
+			} catch (err) {
+				this.el.removeChild(el);
+				console.error("ContentView.purgeChildren", "orphaned element", err);
+			}
+		}
+		if (ii > 0) console.log("ContentView.purgeChildren", this.el.children.length, this.childViews.length);
+	},
+	
+	purgeChildren: function() {
+		var i, el, els = this.el.querySelectorAll(".removing-child");
+		for (i = 0; i < els.length; i++) {
+			el = els.item(i);
+			if (el.parentElement === this.el) {
+				try {
+					console.warn("ContentView.purgeChildren", el.getAttribute("data-cid"));
+					ContainerView.findByElement(el).remove();
+				} catch (err) {
+					console.error("ContentView.purgeChildren", "orphaned element", err);
+					this.el.removeChild(el);
+				}
+			}
+		}
+		if (DEBUG) {
+			console.log("ContentView.purgeChildren %d purged (%d views, %d elements remain)",
+				i + 1, this.el.children.length, this.childViews.length);
+		}
+	},
+	
+	/* -------------------------------
 	 * Vertical touch/move (_onVPan*)
 	 * ------------------------------- */
-
+	
+	_collapsedOffsetY: 300,
+	
 	_onVPanStart: function (ev) {
-		_.each(this.children, function(view) {
-			this.transforms.disableTransitions(view.el);
-			this.transforms.capture(view.el);
-		}, this);
-		this._onVPanMove(ev);
-
 		this.touch.on("vpanmove", this._onVPanMove);
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
+		this.transforms.stopAllTransitions();
+		this.transforms.clearAllCaptures();
+		this.el.classList.add("container-changing");
+		this._onVPanMove(ev);
 	},
-
-	PAN_MOVE_FACTOR: 0.05,
-	_collapsedOffsetY: 300,
 
 	_onVPanMove: function (ev) {
 		var delta = ev.thresholdDeltaY;
-		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-		// check if direction is aligned with collapse/expand
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
-		var moveFactor = this.isCollapsed()? 1 - this.PAN_MOVE_FACTOR : this.PAN_MOVE_FACTOR;
-
+		// check if direction is aligned with collapse/expand
+		var isValidDir = this.isCollapsed()? (delta > 0) : (delta < 0);
+		var moveFactor = this.isCollapsed()?
+		 	1 - ContentView.PAN_MOVE_FACTOR : ContentView.PAN_MOVE_FACTOR;
+		
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
 		maxDelta *= moveFactor;
-
-		if (isDirAllowed) {
+		
+		if (isValidDir) {
 			if (delta > maxDelta) { // overshooting
 				delta = ((delta - maxDelta) * Globals.V_PANOUT_DRAG) + maxDelta;
 			} else { // no overshooting
 				delta = delta;
 			}
 		} else {
-			delta = delta * -Globals.V_PANOUT_DRAG; // delta is opposite
+			delta = (-delta) * Globals.V_PANOUT_DRAG; // delta is opposite
 		}
 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
 
-		// this.transforms.moveAll(void 0, delta);
-		_.each(this.children, function(view) {
-			this.transforms.move(void 0, delta, view.el);
-		}, this);
+		this.transforms.offsetAll(0, delta);
+		this.transforms.validate();
 	},
 
 	_onVPanFinal: function(ev) {
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
-
-		_.each(this.children, function(view) {
-			this.transforms.enableTransitions(view.el);
-		}, this);
-
+		
+		this.transforms.clearAllOffsets();
 		if (this.willCollapseChange(ev)) {
-			this.transforms.runTransition(
-				this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING, this.childrenEls);
+			this.transforms.runAllTransitions(this.isCollapsed()?
+					Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING);
+			this.transforms.validate();
 			this.setCollapsed(!this.isCollapsed());
 		} else {
-			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE, this.childrenEls);
+			this.transforms.runAllTransitions(Globals.TRANSIT_IMMEDIATE);
+			this.transforms.validate();
 		}
-		// this.transforms.clearAll();
-		_.each(this.children, function(view) {
-			this.transforms.clear(view.el);
-		}, this);
+		this.el.classList.remove("container-changing");
 	},
 
 	willCollapseChange: function(ev) {
 		return ev.type == "vpanend"? this.isCollapsed()?
 			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
-			ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
+			ev.thresholdDeltaY < (-Globals.COLLAPSE_THRESHOLD) :
 			false;
 	},
 
@@ -303,82 +338,94 @@ var ContentView = ContainerView.extend({
 	 * ------------------------------- */
 
 	/**
-	 * image-carousel
+	 * media-carousel
 	 */
-	createImageCarousel: function(bundle) {
+	createMediaCarousel: function(bundle) {
 		// Create carousel
-		var images = bundle.get("images");
-		var attrs = bundle.get("attrs");
-		var classname = "image-carousel " + bundle.get("handle");
-		if (attrs && ("@classname" in attrs)) {
-			classname += " " + attrs["@classname"];
-		}
-		var emptyRenderer = CarouselEmptyRenderer.extend({
+		var classname = "media-carousel " + bundle.get("domid"); 
+		// if (bundle.attrs().hasOwnProperty("@classname")) {
+		// 	classname += " " + bundle.attrs()["@classname"];
+		// }
+		var EmptyRenderer = Carousel.defaultRenderer.extend({
+			className: "carousel-item empty-item",
 			model: bundle,
 			template: bundleDescTemplate,
 		});
+		var rendererFunction = function(item, index, arr) {
+			if (index === -1) {
+				return EmptyRenderer;
+			}
+			switch (item.attrs()["@renderer"]) {
+				case "video": return VideoRenderer;
+				case "sequence": return SequenceRenderer;
+				case "image": return ImageRenderer;
+				default: return ImageRenderer;
+			}
+		};
 		var view = new Carousel({
 			className: classname,
-			collection: images,
-			renderer: ImageRenderer,
-			emptyRenderer: emptyRenderer,
+			collection: bundle.get("media"),
+			rendererFunction: rendererFunction,
+			// renderer: ImageRenderer,
+			emptyRenderer: EmptyRenderer,
 			direction: Carousel.DIRECTION_HORIZONTAL,
 			hammer: this.touch,
 		});
 		controller.listenTo(view, {
-			"view:select:one": controller.selectImage,
-			"view:select:none": controller.deselectImage,
+			"view:select:one": controller.selectMedia,
+			"view:select:none": controller.deselectMedia,
 			"view:remove": controller.stopListening
 		});
-		// controller.listenToOnce("view:remove", controller.stopListening);
 		return view;
 	},
 
 	/**
-	 * image-caption-stack
+	 * media-caption-stack
 	 */
-	createImageCaptionStack: function(bundle) {
-		var images = bundle.get("images");
+	createMediaCaptionStack: function(bundle) {
 		var view = new CollectionStack({
-			collection: images,
-			template: imageCaptionTemplate,
-			className: "image-caption-stack"
+			className: "media-caption-stack",
+			collection: bundle.get("media"),
+			template: mediaCaptionTemplate
 		});
 		return view;
 	},
 
-//	/**
-//	 * image-pager
-//	 */
-//	createImagePager: function(bundle, images) {
-//		var view = new SelectableCollectionView({
-//			collection: images,
-//			renderer: DotNavigationRenderer,
-//			className: "image-pager dots-fontello mutable-faded"
-//		});
-//		controller.listenTo(view, {
-//			"view:select:one": controller.selectImage,
-//			"view:select:none": controller.deselectImage
-//		});
-//		return view;
-//	},
+	/**
+	 * media-dotnav
+	 */
+	createMediaDotNavigation: function(bundle, media) {
+		var view = new SelectableListView({
+			className: "media-dotnav dots-fontello color-fg05",
+			collection: bundle.get("media"),
+			renderer: DotNavigationRenderer
+		});
+		controller.listenTo(view, {
+			"view:select:one": controller.selectMedia,
+			"view:select:none": controller.deselectMedia,
+			"view:remove": controller.stopListening
+		});
+		return view;
+	},
+	
+	/**
+	 * label-carousel
+	 */
+	// createMediaCaptionCarousel: function(bundle, media) {
+	// 	var view = new Carousel({
+	// 		className: "label-carousel",
+	// 		collection: media,
+	// 		hammer: this.touch,
+	// 	});
+	// 	// controller.listenTo(view, {
+	// 	// 	"view:select:one": controller.selectMedia,
+	// 	// 	"view:select:none": controller.deselectMedia
+	// 	// });
+	// 	return view;
+	// },
 
-//	/**
-//	 * label-carousel
-//	 */
-//	createImageCaptionCarousel: function(bundle, images) {
-//		var view = new Carousel({
-//			className: "label-carousel",
-//			collection: images,
-//			hammer: this.touch,
-//		});
-////		controller.listenTo(view, {
-////			"view:select:one": controller.selectImage,
-////			"view:select:none": controller.deselectImage
-////		});
-//		return view;
-//	},
-
+}, {
+	PAN_MOVE_FACTOR: 0.05,
 });
 
 module.exports = ContentView;

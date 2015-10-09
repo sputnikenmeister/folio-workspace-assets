@@ -6,168 +6,100 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {module:jquery} */
-var $ = Backbone.$;
 
 /** @type {module:app/control/Globals} */
-var Globals = require("../../control/Globals");
+var Globals = require("app/control/Globals");
 /** @type {module:app/view/base/View} */
-var View = require("../base/View");
+var View = require("app/view/base/View");
+/** @type {Function} */
+var transitionEnd = require("utils/event/transitionEnd");
+/** @type {Function} */
+var setImmediate = require("utils/setImmediate");
 
 /** @type {string} */
-var viewTemplate = require("./CollectionStack.tpl");
+var viewTemplate = require("./CollectionStack.hbs");
 
 /**
  * @constructor
  * @type {module:app/component/CollectionStack}
  */
 module.exports = View.extend({
-
+	
 	/** @override */
 	tagName: "div",
-
 	/** @override */
 	className: "stack",
-
 	/** @override */
 	template: viewTemplate,
-
-	initialize: function (options) {
-		_.bindAll(this, "renderLater");
-		// options
-		options.template && (this.template = options.template);
-		// listeners
-		this.listenTo(this.collection, {
-			"reset": this._onCollectionReset,
-			"select:one": this._onSelectOne,
-			"deselect:one": this._onDeselectOne,
-			// "select:none": this._onSelectNone,
-			// "deselect:none": this._onDeselectNone,
-		});
-
-		this.renderPending = true;
-		this.skipTransitions = true;
-		this._selectedItem = this.collection.selected;
-		if (this._selectedItem) {
-			this.listenTo(this._selectedItem, "change", this.requestRender);
+	
+	events: {
+		"transitionend": function(ev) {
+			// console.log("CollectionStack._onTransitionEnd");
+			this._renderContent();
 		}
 	},
-
-	/* --------------------------- *
-	 * create children
-	 * --------------------------- */
-
-	$createContentElement: function(item) {
-		return $(this._createContentElement(item));
+	
+	// _onTransitionEnd: function(ev) {
+	// 	if (this.content === ev.target && this.content.className == "not-current"
+	// 			&& ev.propertyName === "opacity") {
+	// 		this._renderContent();
+	// 		console.log("CollectionStack._onTransitionEnd");
+	// 	}
+	// },
+	
+	initialize: function (options) {
+		this._enabled = true;
+		this._skipTransitions = true;
+		this._contentInvalid = true;
+		
+		options.template && (this.template = options.template);
+		this.content = this.el.appendChild(document.createElement("div"));
+		
+		this.listenTo(this.collection, "select:one select:none", this._onSelectChange);
 	},
-
-	_createContentElement: function(item) {
-		var elt = document.createElement("div");
-		elt.innerHTML = this.template(item.toJSON());
-		return (elt.childElementCount == 1)? elt.children[0]: elt;
+	
+	setEnabled: function(enabled) {
+		if (this._enabled !== enabled) {
+			this._enabled = enabled;
+			this.el.classList.toggle("disabled", !this._enabled);
+		}
 	},
-
+	
+	_onSelectChange: function(item) {
+		if (this._renderedItem !== this.collection.selected) {
+			this._contentInvalid = true;
+			this.render();
+		}
+	},
+	
 	/* --------------------------- *
-	 * render
-	 * --------------------------- */
-
+	/* render
+	/* --------------------------- */
+	
 	render: function () {
-		if (this.renderPending) {
-			if (this.$content) {
-				if (this.skipTransitions) {
-					this.$el.removeAttr("style");
-					this.$content
-						.stop()
-						.clearQueue()
-						.remove();
-				} else {
-					var content = this.$content[0];		// Get content's size while still in the flow
-					var contentRect = {//_.extend({
-						top: content.offsetTop,
-						left: content.offsetLeft,
-						width: content.offsetWidth,
-						minHeight: content.offsetHeight,
-						position: "absolute",
-						display: "block",
-					};
-					//var contentRect = _.extend(contentRect, this.$content[0].getBoundingClientRect(),
-					//	this.$content.position());
-					this.$el.css({						// Have the parent keep it's previous size
-						minWidth: this.el.offsetWidth,
-						minHeight: this.el.offsetHeight,
-					});
-					this.$content						// Fade it out
-						.clearQueue()
-						.css(contentRect)
-						//.delay(Globals.TRANSITION_DELAY * 0).transit({opacity: 0, delay: 1})
-						.transit({opacity: 0, delay: Globals.TRANSITION_DELAY * 0 + 1})
-						.promise().always(function($content) {
-							$content.parent().removeAttr("style");
-							$content.remove();
-						});
-				}
-				delete this.$content;
+		if (this._skipTransitions) {
+			this._skipTransitions = false;
+			this.el.classList.add("skip-transitions");
+			setImmediate(function() {
+				this.el.classList.remove("skip-transitions");
+			}.bind(this));
+			this._renderContent();
+		} else {
+			if (this._contentInvalid) {
+				this.content.className = "not-current";
+				// console.log("CollectionStack.render", "transition start");
 			}
-			if (this._selectedItem) {
-				this.$content = this.$createContentElement(this._selectedItem);
-				if (this.skipTransitions) {
-					this.$content
-						.prependTo(this.$el);
-				} else {
-					this.$content
-						.css({opacity: 0})
-						.prependTo(this.el).transit({opacity: 1, delay: Globals.TRANSITION_DELAY * 1 + 1});
-						//.delay(Globals.TRANSITION_DELAY * 1).prependTo(this.el).transit({opacity: 1, delay: 1});
-				}
-			}
-
-			this.skipTransitions = false;
-			this.renderPending = false;
 		}
 		return this;
 	},
-
-	/* --------------------------- *
-	 * render once per frame
-	 * --------------------------- */
-
-	requestRender: function() {
-		if (!this.renderPending) {
-			this.renderPending = true;
-			_.defer(this.renderLater);
+	
+	_renderContent: function() {
+		if (this._contentInvalid) {
+			this._contentInvalid = false;
+			this._renderedItem = this.collection.selected;
+			this.content.innerHTML =
+				this._renderedItem? this.template(this._renderedItem.toJSON()): "";
+			this.content.className = "current";
 		}
 	},
-
-	renderLater: function () {
-		this.render();
-	},
-
-	/* --------------------------- *
-	 * collection event handlers
-	 * --------------------------- */
-
-	_onCollectionReset: function() {
-		this.skipTransitions = true;
-	},
-
-	_onDeselectOne: function (model) {
-		// clear only if a different model hasn't been set
-		if (this._selectedItem && this._selectedItem === model) {
-			this._selectedItem = null;
-			this.stopListening(model);
-			this.requestRender();
-		}
-	},
-
-	_onSelectOne: function(model) {
-		if (model && model !== this._selectedItem) {
-			this._selectedItem = model;
-			this.listenTo(model, "change", this.requestRender);
-			this.requestRender();
-		}
-	},
-
-	// _onDeselectNone: function() {},
-	// _onSelectNone: function() {},
-
 });

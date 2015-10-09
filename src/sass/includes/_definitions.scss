@@ -6,54 +6,41 @@
 @import "variables.json";
 
 // Size base units
-$hu: 				map-get($units, hu_px) * 1px;
-$vu: 				map-get($units, vu_px) * 1px;
+$hu: 					map-get($units, hu_px) * 1px;
+$vu: 					map-get($units, vu_px) * 1px;
 // Time base units (transitions/animations)
-$delay_interval:	map-get($transitions, delay_interval_ms) * 0.001s;
-$duration: 			map-get($transitions, duration_ms) * 0.001s;
-$ease:				map-get($transitions, ease);
+$delay_interval:		map-get($transitions, delay_interval_ms) * 0.001s;
+$duration: 				map-get($transitions, duration_ms) * 0.001s;
+$ease:					map-get($transitions, ease);
 // transition/animation timing function
-$delay: 			$duration + $delay_interval;
+$delay: 				$duration + $delay_interval;
 
 // ------------------------------------
 // Layout
 // ------------------------------------
 
-$breakpoint_large: 			1024px;
-$gutter: 					2 * $hu;
-$page_margin_left: 			1 * $hu;
-$page_margin_right: 		3 * $hu;
+$gutter: 				2 * $hu;
+$page_margin_left: 		2 * $hu;
+$page_margin_right:		2 * $hu;
 
 $page_width: 				34 * $hu;//700px;
-$page_width_large: 			48 * $hu;//940px;
+$page_width_large: 			47 * $hu;//940px;
 $aside_width:				10 * $hu;
-$aside_width_large: 		12 * $hu;
+$aside_width_large: 		11 * $hu;
 $main_width:				$page_width - $aside_width;
 $main_width_large:			$page_width_large - $aside_width_large;
 
 // ------------------------------------
-// Colors: private (not to be used directly)
+// Colors: public
 // ------------------------------------
 
-$light_fgcolor: 	hsl(47, 5%, 15%);
-$light_bgcolor: 	hsl(47, 5%, 95%);
-
-$dark_fgcolor: 		hsl(47, 5%, 95%);
-$dark_bgcolor: 		hsl(47, 5%, 25%);
-
-$inverse_color: $dark_fgcolor;
-$inverse_background_color: $dark_bgcolor;
-
-// - - - - - - - - - - - - - - - - - -
-// Colors: public
-// - - - - - - - - - - - - - - - - - -
-
 // main colors
-$color: $light_fgcolor;
-$background_color: $light_bgcolor;
+$color: map-get($default_colors, color);
+$background_color: map-get($default_colors, background-color);
 
 // link-colors
-$link_color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
+$link_color: map-get($default_colors, link-color);
+// $link_color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
 $link_hover_color: scale_color($link_color, $lightness: 15%);//hsl(10, 95%, 60%);
 $link_down_color: scale_color($link_color, $lightness: -15%);//hsl(10, 95%, 30%);
 
@@ -74,11 +61,12 @@ $humanist_fallback: "Lucida Grande","Lucida Sans", Calibri, Tahoma, Verdana, Kal
 $grotesque_fallback: "Helvetica", sans-serif;
 $modern_fallback: "georgia", sans-serif;
 
+// Webfonts are loaded in a separate CSS file
+// compiled from "fonts.scss"
+// - - - - - - - - - - - - - - - - - -
 // Webfonts included at compile-time
-//@import "fonts/_franklin-gothic-fs";
 $font_webfont_sans: "Franklin Gothic FS", $grotesque_fallback;
-//@import "fonts/_old-standard-tt";
-//$font_webfont_serif: "Old Standard TT", $modern_fallback;
+$font_webfont_serif: "Old Standard TT", $modern_fallback;
 
 // - - - - - - - - - - - - - - - - - -
 // Typefaces: public
@@ -173,17 +161,31 @@ $base_font: $font_webfont_sans;
 	}
 }
 
+@mixin text_outline($color: black, $radius: 1px) {
+	// PI/4=0.78539816339 1/(PI/2)=1.27323954474
+	$r1: $radius;// top, bottom, left, right
+	$r2: $radius;// top-left, top-right, bottom-left, bottom-right
+	text-shadow:
+		// $color 0 -#{$r1} 0, $color 0 #{$r1} 0,
+		$color -#{$r1} 0 0, $color #{$r1} 0 0,
+		$color -#{$r2} -#{$r2} 0, $color #{$r2} #{$r2} 0,
+		$color #{$r2} -#{$r2} 0, $color -#{$r2} #{$r2} 0;
+}
+
 // ------------------------------------
 // transitions
 // ------------------------------------
 
-@mixin skip_transitions {
-	transition: none 0s 0s !important;
-	transition-property: none !important;
-	transition-duration: 0s !important;
-	transition-delay: 0s !important;
-}
+// ------------------------------------
+// misc
+// ------------------------------------
 
-//%skip_transitions {
-//	@include skip_transitions;
-//}
+@mixin image-optimize-contrast {
+	image-rendering: optimizeSpeed;             /*   */
+	image-rendering: -moz-crisp-edges;          /* Firefox                        */
+	image-rendering: -o-crisp-edges;            /* Opera                          */
+	image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
+	image-rendering: pixelated;                 /* Chrome */
+	image-rendering: optimize-contrast;         /* CSS3 Proposed                  */
+	-ms-interpolation-mode: nearest-neighbor;   /* IE8+                           */
+}

@@ -9,16 +9,18 @@ var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 /** @type {module:app/view/base/View} */
-var View = require("../base/View");
+var View = require("app/view/base/View");
 /** @type {module:app/view/component/FilterableListView} */
-var FilterableListView = require("./FilterableListView");
+var FilterableListView = require("app/view/component/FilterableListView");
 
 /**
  * @constructor
  * @type {module:app/view/component/GroupingListView}
  */
 var GroupingListView = FilterableListView.extend({
-
+	
+	/** @type {string} */
+	cidPrefix: "groupingList",
 	/** @override */
 	tagName: "dl",
 	/** @override */
@@ -28,9 +30,9 @@ var GroupingListView = FilterableListView.extend({
 	initialize: function (options) {
 		FilterableListView.prototype.initialize.apply(this, arguments);
 		if (options.groupings) {
+			// options.filterFn && (this._filterFn = options.filterFn);
 			this.groupingKey = options.groupings.key;
 			this.groupingCollection = options.groupings.collection;
-			//this.groupingChildren = this.children;//new Container();
 			this.groupingRenderer = options.groupings.renderer || GroupingListView.defaultGroupRenderer;
 			this.groupingCollection.each(this.assignGroupingView, this);
 		}
@@ -46,15 +48,11 @@ var GroupingListView = FilterableListView.extend({
 	renderChildrenGroups: function (modelIds) {
 		if (modelIds) {
 			this.groupingCollection.each(function (model, index, arr) {
-				if (_.contains(modelIds, model.id)) {
-					this.children.findByModel(model).$el.removeClass("excluded");
-				} else {
-					this.children.findByModel(model).$el.addClass("excluded");
-				}
+				this.children.findByModel(model).el.classList.toggle("excluded", !_.contains(modelIds, model.id));
 			}, this);
 		} else {
 			this.children.each(function (view) {
-				view.$el.removeClass("excluded");
+				view.el.classList.remove("excluded");
 			});
 		}
 	},
@@ -67,10 +65,9 @@ var GroupingListView = FilterableListView.extend({
 	assignGroupingView: function (item) {
 		var view = new this.groupingRenderer({
 			model: item,
-			el: this.$(".list-group[data-id=" + item.id + "]")
+			el: this.el.querySelector(".list-group[data-id=\"" + item.id + "\"]")
 		});
 		this.children.add(view);//, item.id);
-		// this._groupingRendererInstance || (this._groupingRendererInstance = view);
 		return view;
 	},
 

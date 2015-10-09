@@ -1,5 +1,5 @@
 /**
- * @module app/view/render/DefaultSelectableRenderer
+ * @module app/view/render/DotNavigationRenderer
  */
 
 /** @type {module:underscore} */
@@ -7,13 +7,15 @@ var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 /** @type {string} */
-var viewTemplate = require("./DotNavigationRenderer.tpl");
+var viewTemplate = require("./DotNavigationRenderer.hbs");
+/** @type {module:app/view/component/ClickableRenderer} */
+var ClickableRenderer = require("app/view/render/ClickableRenderer");
 
 /**
  * @constructor
- * @type {module:app/view/render/DefaultSelectableRenderer}
+ * @type {module:app/view/render/DotNavigationRenderer}
  */
-var DotNavigationRenderer = Backbone.View.extend({
+var DotNavigationRenderer = ClickableRenderer.extend({
 
 	/** @override */
 	tagName: "li",
@@ -21,36 +23,22 @@ var DotNavigationRenderer = Backbone.View.extend({
 	className: "list-item",
 	/** @override */
 	template: viewTemplate,
-	/** @override */
-	events: {
-		"click": function (ev) {
-			ev.isDefaultPrevented() || ev.preventDefault();
-			this.trigger("renderer:click", this.model);
-		}
-	},
 
 	/** @override */
 	initialize: function (options) {
-		this.listenTo(this.model, "selected", function () {
-			this.$el.addClass("selected");
-		});
-		this.listenTo(this.model, "deselected", function () {
-			this.$el.removeClass("selected");
-		});
+		this.listenTo(this.model, "selected deselected", this.renderClassList);
+		this.renderClassList();
 	},
 
 	/** @override */
 	render: function () {
-		this.$el.html(this.template({
-			href: this.model.cid,
-			name: this.model.get("name")
-		}));
-		if (this.model.selected) {
-			this.$el.addClass("selected");
-		} else {
-			this.$el.removeClass("selected");
-		}
+		this.el.innerHTML = this.template(this.model.toJSON());
+		this.renderClassList();
 		return this;
+	},
+	
+	renderClassList: function () {
+		this.el.classList.toggle("selected", this.model.selected);
 	},
 });
 
