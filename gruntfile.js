@@ -23,19 +23,39 @@ module.exports = function (grunt) {
 	grunt.config("DEBUG_STYLES", "folio-debug");
 	grunt.config("DIST_JS", "folio");
 	grunt.config("DIST_STYLES", "folio");
-
+	
+	/* --------------------------------
+	/* Main Targets
+	/* -------------------------------- */
+	
+	
+	grunt.registerTask("build-debug-client", ["browserify:client", "exorcise:client"]);
+	grunt.registerTask("build-debug-vendor", ["browserify:vendor", "exorcise:vendor"]);
+	grunt.registerTask("build-debug-sass", ["compass:debug", "autoprefixer:debug"]);
+	
+	grunt.registerTask("build-debug", ["build-debug-client", "build-debug-vendor", "build-debug-sass"]);
+	grunt.registerTask("build-dist", ["compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
+	grunt.registerTask("build-watch", ["browserify:watch-client", "browserify:watch-vendor", "watch"]);
+	
+	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
+	grunt.registerTask("build-all", ["build-debug", "build-dist"]);
+	grunt.registerTask("build-clean-all", ["clean-all", "build-all"]);
+	
+	// Default task
+	grunt.registerTask("default", ["build-debug"]);
+	
 	/* ---------------------------------
-	 * Style Sheets
-	 * --------------------------------- */
+	/* Style Sheets
+	/* --------------------------------- */
 	// NOTE: `gem install compass sass-json-vars`
-
+	
 	/* Task defaults
-	 * - - - - - - - - - - - - - - - - - */
+	/* - - - - - - - - - - - - - - - - - */
 	grunt.loadNpmTasks("grunt-contrib-compass");
 	grunt.config("compass.options", {
 		require: [
 			"sass-json-vars",
-			// "./build/compass-encode.rb",
+			"./build/compass-encode.rb", // alternative to compass inline-image()
 		],
 		sassDir: "src/sass",
 		cssDir: "css",
@@ -52,7 +72,7 @@ module.exports = function (grunt) {
 	});
 
 	/* Targets
-	 * - - - - - - - - - - - - - - - - - */
+	/* - - - - - - - - - - - - - - - - - */
 	grunt.config("compass.clean.options", {
 		clean: true
 	});
@@ -65,7 +85,7 @@ module.exports = function (grunt) {
 	});
 
 	/* Discrete fonts SASS stylesheet
-	 * - - - - - - - - - - - - - - - - - */
+	/* - - - - - - - - - - - - - - - - - */
 	grunt.config("compass.fonts.options", {
 		specify: "src/sass/fonts.scss",
 		sourcemap: false,
@@ -73,8 +93,8 @@ module.exports = function (grunt) {
 	});
 
 	/* --------------------------------
-	 * Javascript
-	 * -------------------------------- */
+	/* Javascript
+	/* -------------------------------- */
 
 	/* browserify */
 	grunt.loadNpmTasks("grunt-browserify");
@@ -120,20 +140,11 @@ module.exports = function (grunt) {
 		dest: "./js/<%= DEBUG_CLIENT_JS %>.js",
 		src: [
 			"./src/js/app/App.js",
-			// "./src/js/app/**/*.js",
 		],
 		options: {
-			// browserifyOptions: {
-			// 	extensions: [".js", ".hbs", ".json"],
-			// 	fullPaths: true,
-			// 	debug: true
-			// },
 			transform: [
-				["hbsfy", { 
-					extensions: ["hbs"]
-				}],
+				["hbsfy", { extensions: ["hbs"] }],
 				// ["node-underscorify", { extensions: ["tpl"] }],
-				// "decomponentify",
 			],
 			plugin: [
 				["remapify", [
@@ -155,6 +166,7 @@ module.exports = function (grunt) {
 			// 		src: "**/*.js",
 			// 		expose: "",
 			// 		cwd: "./src/js",
+			// 		// cwd: __dirname + "./src/js",
 			// 	}]);
 			// }
 		}
@@ -240,8 +252,8 @@ module.exports = function (grunt) {
 	});
 
 	/* --------------------------------
-	 * clean
-	 * -------------------------------- */
+	/* clean
+	/* -------------------------------- */
 
 	grunt.loadNpmTasks("grunt-contrib-clean");
 	grunt.config("clean", {
@@ -250,13 +262,14 @@ module.exports = function (grunt) {
 
 
 	/* --------------------------------
-	 * watch
-	 * -------------------------------- */
+	/* watch
+	/* -------------------------------- */
 
 	grunt.loadNpmTasks("grunt-contrib-watch");
 	grunt.config("watch", {
 		options: {
-			spawn: false
+			spawn: false,
+			// forever: true
 		},
 		"build-styles": {
 			tasks: ["compass:debug", "autoprefixer:debug"],
@@ -274,12 +287,11 @@ module.exports = function (grunt) {
 			options: {
 				spawn: true
 			},
+			tasks: ["build-clean-all"],
 			files: ["gruntfile.js", "package.json"],
-			tasks: ["build-clean-all"]
 			// tasks: ["compass:debug", "autoprefixer:debug", "browserify:vendor", "browserify:client"],
 		}
 	});
-	grunt.registerTask("build-watch", ["browserify:watch-client", "browserify:watch-vendor", "watch"]);
 	// grunt.registerTask("build-watch", ["browserify:watchable", "watch"]);
 	
 	// grunt.config("watch.build-styles-svg", {
@@ -288,8 +300,8 @@ module.exports = function (grunt) {
 
 
 	/* --------------------------------
-	 * dist
-	 * -------------------------------- */
+	/* dist
+	/* -------------------------------- */
 
 	grunt.config("compass.dist.options", {
 		specify: "src/sass/<%= DIST_STYLES %>.scss",
@@ -339,30 +351,10 @@ module.exports = function (grunt) {
 			"js/<%= DIST_JS %>.js": ["./js/<%= DIST_JS %>.js"]
 		}
 	});
-
-	/* --------------------------------
-	 * Main Targets
-	 * -------------------------------- */
-
-	grunt.registerTask("build-debug", [
-		"compass:debug", "autoprefixer:debug",
-		"browserify:vendor", "exorcise:vendor",
-		"browserify:client", "exorcise:client"
-	]);
-	grunt.registerTask("build-dist", [
-		"compass:dist", "autoprefixer:dist",
-		"browserify:dist", "uglify:dist"
-	]);
-	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
-	grunt.registerTask("build-all", ["build-debug", "build-dist"]);
-	grunt.registerTask("build-clean-all", ["clean-all", "build-all"]);
-
-	// Default task
-	grunt.registerTask("default", ["build-debug"]);
 	
 	/* --------------------------------
-	 * build-deps
-	 * -------------------------------- */
+	/* build-deps
+	/* -------------------------------- */
 	
 	grunt.loadNpmTasks("grunt-modernizr");
 	grunt.config("modernizr.dist", {

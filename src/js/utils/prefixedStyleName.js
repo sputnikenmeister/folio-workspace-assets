@@ -1,45 +1,32 @@
-/** @type {module:utils/strings/camelToDashed} */
-var camelToDashed = require("./strings/camelToDashed");
+/**
+/* @module utils/prefixedStyleName
+/*/
+
 /** @type {module:utils/prefixes} */
-var prefixes = require("./prefixes");
-// prefixes.concat().forEach(function(prefix) { return "-" + prefix + "-"; });
-
-// /** @type {module:utils/prefixedProperty} */
-// var prefixedProperty = require("./prefixedProperty");
-// /** @type {module:utils/strings/dashedToCamel} */
-// var dashedToCamel = require("./strings/dashedToCamel");
-// 
-// var _prefixedStyleName_reverse = function (style, styleObj) {
-// 	var camelProp, prefixedProp;
-// 	camelProp = dashedToCamel(style);
-// 	prefixedProp = prefixedProperty(camelProp, styleObj);
-// 	return prefixedProp? (camelProp === prefixedProp? "" : "-") + camelToDashed(prefixedProp) : null;
-// };
-
-// var PREFIXES = ["-webkit-", "-moz-", "-ms-", "-o-"];
-// var PREFIXES_NUM = PREFIXES.length;
+var prefixes = require("./prefixes");//.map(function(prefix) { return "-" + prefix + "-"; });
+/** @type {Number} prefix count */
+var _prefixNum = prefixes.length;
+/** @type {Array} cached values */
+var _cache = {};
 
 var _prefixedStyleName = function(style, styleObj) {
 	var prefixedStyle;
-	var normStyle = style; //.indexOf("-")? camelToDashed(style) : style;
-	styleObj || (styleObj = document.body.style);
 	
-	if (normStyle in styleObj) {
-		return normStyle;
+	if (style in styleObj) {
+		console.log("CSS style '%s' found unprefixed", style);
+		return style;
 	}
-	for (var i = 0; i < prefixes.length; i++) {
-		prefixedStyle = "-" + prefixes[i] + "-" + normStyle;
-		if (prefixedStyle in styleObj) {
-			// console.log("CSS style '" + style + "' found as '" + prefixedStyle + "'");
+	for (var i = 0; i < _prefixNum; i++) {
+		prefixedStyle = "-" + prefixes[i] + "-" + style;
+		// prefixedStyle = prefixes[i] + style;
+		if (prefixedStyle in style) {
+			console.log("CSS style '%s' found as '%s'", style, prefixedStyle);
 			return prefixedStyle;
 		}
 	}
-	console.error("CSS style '" + style + "' not found");
+	console.error("CSS style '%s' not found", style);
 	return null;
 };
-
-/* cached values */
-var _cache = {};
 
 /**
  * get the prefixed style name
@@ -48,10 +35,20 @@ var _cache = {};
  * @returns {String|Undefined} prefixed
  */
 module.exports = function (style, styleObj) {
-	if (!_cache.hasOwnProperty(style)) {
-		_cache[style] = _prefixedStyleName(style, styleObj);
-		// _cache[style] = _prefixedStyleName_reverse(style, styleObj);
-		console.log("CSS style '" + style + "' found as '" + _cache[style] + "'");
-	}
-	return _cache[style];
+	// return _cache[style] || (_cache[style] = _prefixedStyleName_reverse(style, styleObj || document.body.style));
+	return _cache[style] || (_cache[style] = _prefixedStyleName(style, styleObj || document.body.style));
 };
+
+// /** @type {module:utils/strings/camelToDashed} */
+// var camelToDashed = require("./strings/camelToDashed");
+// /** @type {module:utils/prefixedProperty} */
+// var prefixedProperty = require("./prefixedProperty");
+// /** @type {module:utils/strings/dashedToCamel} */
+// var dashedToCamel = require("./strings/dashedToCamel");
+//
+// var _prefixedStyleName_reverse = function (style, styleObj) {
+// 	var camelProp, prefixedProp;
+// 	camelProp = dashedToCamel(style);
+// 	prefixedProp = prefixedProperty(camelProp, styleObj);
+// 	return prefixedProp? (camelProp === prefixedProp? "" : "-") + camelToDashed(prefixedProp) : null;
+// };

@@ -7,23 +7,24 @@ module Sass::Script::Functions
 		real_path = File.join(Compass.configuration.images_path, path.value)
 		svg = data(real_path)
 		encoded_svg = CGI::escape(svg).gsub('+', '%20')
-		Sass::Script::String.new(encoded_svg)
-#		data_url = "url('data:image/svg+xml;charset=utf-8," + encoded_svg + "')"
-#		Sass::Script::String.new(data_url)
+		# Sass::Script::String.new(encoded_svg)
+		# data_url = "url('data:image/svg+xml;charset=utf-8," + encoded_svg + "')"
+		# Sass::Script::String.new(data_url)
+		Sass::Script::String.new("url('data:image/svg+xml;charset=utf-8," + encoded_svg + "')")
 	end
-    declare :url_encode, :args => [:path]
+	declare :url_encode, :args => [:path]
 
-    def base64_encode(path)
-#		assert_type string, :string
+	def base64_encode(path)
 		real_path = File.join(Compass.configuration.images_path, path.value)
 		svg = data(real_path)
 		encoded_svg = Base64.encode64(svg)
-		Sass::Script::String.new(encoded_svg)
-    end
-    declare :base64_encode, :args => [:path]
+		# Sass::Script::String.new(encoded_svg)
+		# data_url = "url('data:image/svg+xml;base64," + encoded_svg + "')"
+		Sass::Script::String.new("url('data:image/svg+xml;base64," + encoded_svg + "')")
+	end
+	declare :base64_encode, :args => [:path]
 
 private
-
 	def data(real_path)
 		if File.readable?(real_path)
 			File.open(real_path, "rb") {|io| io.read}

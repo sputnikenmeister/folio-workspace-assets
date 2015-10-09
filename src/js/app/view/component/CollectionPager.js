@@ -18,6 +18,7 @@ var viewTemplate = require("./CollectionPager.hbs");
  * @type {module:app/view/component/CollectionPager}
  */
 module.exports = View.extend({
+	
 	/** @override */
 	tagName: "div",
 	/** @override */

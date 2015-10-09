@@ -39,6 +39,8 @@ var mediaCaptionTemplate = require("./template/CollectionStack.Media.hbs");
 
 /** @type {Function} */
 var transitionEnd = require("utils/event/transitionEnd");
+/** @type {module:utils/prefixedProperty} */
+var prefixedProperty = require("utils/prefixedProperty");
 
 
 /**
@@ -47,10 +49,14 @@ var transitionEnd = require("utils/event/transitionEnd");
  */
 var ContentView = ContainerView.extend({
 	
+	/** @override */
+	cidPrefix: "contentView",
+	
 	initialize: function (options) {
 		ContainerView.prototype.initialize.apply(this, arguments);
 		
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
+		
 		this.childViews = [];
 		this.bundleListeners = {
 			"select:one": this._onSelectOne,
@@ -149,7 +155,7 @@ var ContentView = ContainerView.extend({
 	/** Create children on bundle select */
 	createChildren: function (bundle) {
 		//this.childViews.push();
-		var transitionProp = this.getPrefixedProperty("transition");
+		var transitionProp = prefixedProperty("transition");
 		
 		this.captionStack = this.createMediaCaptionStack(bundle);
 		this.carousel = this.createMediaCarousel(bundle);
@@ -184,8 +190,8 @@ var ContentView = ContainerView.extend({
 	},
 	
 	removeChildren: function (bundle) {
-		var transformProp = this.getPrefixedProperty("transform");
-		var transitionProp = this.getPrefixedProperty("transition");
+		var transformProp = prefixedProperty("transform");
+		var transitionProp = prefixedProperty("transition");
 		
 		this.transforms.remove(this.carousel.el, this.captionStack.el);
 		this.childViews.forEach(function(view, index, childViews) {
@@ -200,11 +206,12 @@ var ContentView = ContainerView.extend({
 					view.remove();
 				} else {
 					var transitionHandler = function(ev) {
-						console.log("ContentView.removeChildren", "transitionEnd (ignored)");
 						if (ev.target === view.el) {
 							console.log("ContentView.removeChildren", "transitionEnd", view.cid);
 							view.el.removeEventListener(transitionEnd, transitionHandler, false);
 							view.remove();
+						} else {
+							console.log("ContentView.removeChildren", "transitionEnd (ignored)");
 						}
 					};
 					view.el.addEventListener(transitionEnd, transitionHandler, false);
@@ -219,7 +226,7 @@ var ContentView = ContainerView.extend({
 		this.childViews.length = 0;
 	},
 	
-	purgeChildren: function () {
+	purgeChildren2: function () {
 		var view, i, ii, el, els = [];
 		for (i = 0, ii = this.el.children.length; i < ii; i++) {
 			el = this.el.children.item(i);
@@ -233,18 +240,37 @@ var ContentView = ContainerView.extend({
 				view = ContainerView.findByElement(el).remove();
 				console.warn("ContentView.purgeChildren", view.cid);
 			} catch (err) {
-				console.error("ContentView.purgeChildren", "orphaned element", err);
 				this.el.removeChild(el);
+				console.error("ContentView.purgeChildren", "orphaned element", err);
 			}
 		}
 		if (ii > 0) console.log("ContentView.purgeChildren", this.el.children.length, this.childViews.length);
+	},
+	
+	purgeChildren: function() {
+		var i, el, els = this.el.querySelectorAll(".removing-child");
+		for (i = 0; i < els.length; i++) {
+			el = els.item(i);
+			if (el.parentElement === this.el) {
+				try {
+					console.warn("ContentView.purgeChildren", el.getAttribute("data-cid"));
+					ContainerView.findByElement(el).remove();
+				} catch (err) {
+					console.error("ContentView.purgeChildren", "orphaned element", err);
+					this.el.removeChild(el);
+				}
+			}
+		}
+		if (DEBUG) {
+			console.log("ContentView.purgeChildren %d purged (%d views, %d elements remain)",
+				i + 1, this.el.children.length, this.childViews.length);
+		}
 	},
 	
 	/* -------------------------------
 	 * Vertical touch/move (_onVPan*)
 	 * ------------------------------- */
 	
-	PAN_MOVE_FACTOR: 0.05,
 	_collapsedOffsetY: 300,
 	
 	_onVPanStart: function (ev) {
@@ -258,23 +284,24 @@ var ContentView = ContainerView.extend({
 
 	_onVPanMove: function (ev) {
 		var delta = ev.thresholdDeltaY;
-		var isDirAllowed = this.isCollapsed()? (delta > 0) : (delta < 0);
-		// check if direction is aligned with collapse/expand
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
-		var moveFactor = this.isCollapsed()? 1 - this.PAN_MOVE_FACTOR : this.PAN_MOVE_FACTOR;
+		// check if direction is aligned with collapse/expand
+		var isValidDir = this.isCollapsed()? (delta > 0) : (delta < 0);
+		var moveFactor = this.isCollapsed()?
+		 	1 - ContentView.PAN_MOVE_FACTOR : ContentView.PAN_MOVE_FACTOR;
 		
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
 		maxDelta *= moveFactor;
 		
-		if (isDirAllowed) {
+		if (isValidDir) {
 			if (delta > maxDelta) { // overshooting
 				delta = ((delta - maxDelta) * Globals.V_PANOUT_DRAG) + maxDelta;
 			} else { // no overshooting
 				delta = delta;
 			}
 		} else {
-			delta = delta * -Globals.V_PANOUT_DRAG; // delta is opposite
+			delta = (-delta) * Globals.V_PANOUT_DRAG; // delta is opposite
 		}
 		delta *= this.isCollapsed()? 1 : -1; // reapply sign
 
@@ -302,7 +329,7 @@ var ContentView = ContainerView.extend({
 	willCollapseChange: function(ev) {
 		return ev.type == "vpanend"? this.isCollapsed()?
 			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
-			ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
+			ev.thresholdDeltaY < (-Globals.COLLAPSE_THRESHOLD) :
 			false;
 	},
 
@@ -380,7 +407,7 @@ var ContentView = ContainerView.extend({
 		});
 		return view;
 	},
-
+	
 	/**
 	 * label-carousel
 	 */
@@ -397,6 +424,8 @@ var ContentView = ContainerView.extend({
 	// 	return view;
 	// },
 
+}, {
+	PAN_MOVE_FACTOR: 0.05,
 });
 
 module.exports = ContentView;

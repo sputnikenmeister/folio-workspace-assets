@@ -38,15 +38,18 @@ var CollectionPager = require("app/view/component/CollectionPager");
  * @constructor
  * @type {module:app/view/NavigationView}
  */
-module.exports = ContainerView.extend({
-
+var NavigationView = ContainerView.extend({
+	
+	/** @override */
+	cidPrefix: "navigationView",
+	
 	// /** @override */
 	// className: ContainerView.prototype.className + " navigation",
-
+	
 	/** @override */
 	initialize: function (options) {
 		ContainerView.prototype.initialize.apply(this, arguments);
-
+		
 		_.bindAll(this, "_onHPanStart", "_onHPanMove", "_onHPanFinal");
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
 		
@@ -312,7 +315,6 @@ module.exports = ContainerView.extend({
 		this._onVPanMove(ev);
 	},
 	
-	PAN_MOVE_FACTOR: 0.05,
 	_collapsedOffsetY: 300,
 	
 	_onVPanMove: function (ev) {
@@ -320,7 +322,8 @@ module.exports = ContainerView.extend({
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapse/expand
 		var isValidDir = this.isCollapsed()? (delta > 0) : (delta < 0);
-		var moveFactor = this.isCollapsed()? this.PAN_MOVE_FACTOR : 1 - this.PAN_MOVE_FACTOR;
+		var moveFactor = this.isCollapsed()?
+				NavigationView.PAN_MOVE_FACTOR : 1 - NavigationView.PAN_MOVE_FACTOR;
 		
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
@@ -333,7 +336,7 @@ module.exports = ContainerView.extend({
 				delta = delta;
 			}
 		} else {
-			delta = delta * -Globals.V_PANOUT_DRAG; // delta is opposite
+			delta = (-delta) * Globals.V_PANOUT_DRAG; // delta is opposite
 		}
 		delta *= this.isCollapsed()? 0.5 : -1; // reapply sign
 
@@ -454,4 +457,8 @@ module.exports = ContainerView.extend({
 		});
 		return view;
 	},*/
+}, {
+	PAN_MOVE_FACTOR: 0.05,
 });
+
+module.exports = NavigationView;

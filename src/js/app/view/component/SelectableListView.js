@@ -18,7 +18,7 @@ var ClickableRenderer = require("app/view/render/ClickableRenderer");
 var SelectableListView = View.extend({
 	
 	/** @type {string} */
-	cidPrefix: "selectable-list-",
+	cidPrefix: "selectableList",
 	/** @override */
 	tagName: "ul",
 	/** @override */

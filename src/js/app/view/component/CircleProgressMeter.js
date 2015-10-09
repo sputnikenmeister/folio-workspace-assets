@@ -9,7 +9,7 @@ var prefixed = require("utils/prefixedProperty");
 
 module.exports = View.extend({
 	
-	cidPrefix: "circle-progress-meter-",
+	cidPrefix: "circleProgressMeter",
 	/** @type {string} */
 	className: "progress-meter circle-progress-meter",
 	/** @type {Function} */

@@ -38,17 +38,49 @@ var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden"
  * @constructor
  * @type {module:app/view/render/PlayableRenderer}
  */
-module.exports = MediaRenderer.extend({
+var PlayableRenderer = MediaRenderer.extend({
 	
 	/** @type {string|Function} */
 	className: MediaRenderer.prototype.className + " playable-renderer",
+	
+	properties: {
+		paused: {
+			get: function() {
+				return true;
+			}
+		},
+		playbackState: {
+			get: function() {
+				return this._playbackState;
+			},
+			set: function(value) {
+				this.setPlaybackState(value);
+			}
+		}
+	},
 	
 	/** @override */
 	initialize: function (opts) {
 		MediaRenderer.prototype.initialize.apply(this, arguments);
 		_.bindAll(this, "_onToggleEvent", "_onVisibilityChange");
-		this._lastMediaState = null;
+		// this._playbackState = null;
+		this.playbackState = "user-play";
 	},
+	
+	/** @override */
+	setEnabled: function(enabled) {
+		if (enabled) {
+			// by default, do nothing
+		} else {
+			// if selected, pause media
+			this.model.selected && this.togglePlayback(false);
+		}
+	},
+	
+	// /** @override */
+	// remove: function() {
+	// 	MediaRenderer.prototype.remove.apply(this, arguments);
+	// }
 	
 	/* --------------------------- *
 	/* children/layout
@@ -59,17 +91,8 @@ module.exports = MediaRenderer.extend({
 	// 	this.placeholder = this.el.querySelector(".placeholder");
 	// 	this.content = this.el.querySelector(".content");
 	// 	this.image = this.content.querySelector("img.current");
-	// 	this.playToggle = this.el.querySelector(".play-toggle");
+	// 	this._playToggle = this.el.querySelector(".play-toggle");
 	// },
-	
-	setEnabled: function(enabled) {
-		if (enabled) {
-			// by default, do nothing
-		} else {
-			// if selected, pause media
-			this.model.selected && this.togglePlayback(false);
-		}
-	},
 	
 	/* ---------------------------
 	/* selection handlers
@@ -88,37 +111,26 @@ module.exports = MediaRenderer.extend({
 		this.model.selected && this._onModelDeselected();
 	},
 	
-	/* model selection
-	/* --------------------------- */
-	
-	/** @type {String} */
-	_toggleEvent: "mouseup",
-	
 	_onModelSelected: function() {
-		// this.togglePlayback(true);
-		// document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		// this.playToggle.addEventListener(this._toggleEvent, this._onToggleEvent, false);
-		// this.listenTo(this, "view:remove", this._removeSelectionHandlers);
-		this.addSelectedHandlers();
+		this._addSelectedHandlers();
 	},
 	
 	_onModelDeselected: function() {
 		this.togglePlayback(false);
-		// document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		// this.playToggle.removeEventListener(this._toggleEvent, this._onToggleEvent, false);
-		// this.stopListening(this, "view:remove", this._removeSelectionHandlers);
-		this.removeSelectedHandlers();
+		this._removeSelectedHandlers();
 	},
 	
-	addSelectedHandlers: function() {
+	_addSelectedHandlers: function() {
 		document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		this.playToggle.addEventListener(this._toggleEvent, this._onToggleEvent, false);
+		this.getPlayToggle().addEventListener(this._toggleEvent, this._onToggleEvent, false);
+		
 		this.listenTo(this, "view:remove", this.removeSelectionHandlers);
 	},
 	
-	removeSelectedHandlers: function() {
+	_removeSelectedHandlers: function() {
 		document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		this.playToggle.removeEventListener(this._toggleEvent, this._onToggleEvent, false);
+		this.getPlayToggle().removeEventListener(this._toggleEvent, this._onToggleEvent, false);
+		
 		this.stopListening(this, "view:remove", this.removeSelectionHandlers);
 	},
 	
@@ -131,35 +143,47 @@ module.exports = MediaRenderer.extend({
 		}
 	},
 	
-	_onToggleEvent: function(domev) {
-		// console.log("PlayableRenderer._onToggleEvent", domev.type, "defaultPrevented: " + domev.defaultPrevented);
+	/* --------------------------- *
+	/* play-toggle
+	/* --------------------------- */
+	
+	/** @type {String} */
+	_toggleEvent: "mouseup",
+	
+	_onToggleEvent: function(ev) {
+		// console.log("PlayableRenderer._onToggleEvent", ev.type, "defaultPrevented: " + ev.defaultPrevented);
 		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
-		if (!domev.defaultPrevented && !domev.button) {
+		if (!ev.defaultPrevented && !ev.button) {
 			this.togglePlayback();
-			domev.preventDefault();
+			ev.preventDefault();
 		}
 	},
 	
-	/* --------------------------- *
-	/* abstract methods
-	/* --------------------------- */
+	/** @return {HTMLElement} */
+	getPlayToggle: function () {
+		return this._playToggle || (this._playToggle = this.el.querySelector(".play-toggle"));
+	},
 	
 	togglePlayback: function(playback) {
 		// abstract
 	},
 	
-	_mediaStates: ["network", "media", "user-play", "user-resume", "user-replay"],
+	/* --------------------------- *
+	/* playbackState
+	/* --------------------------- */
 	
-	setMediaState: function(key) {
-		if (this._mediaStates.indexOf(key) === -1) {
-			throw new Error("Argument " + key + " invalid. Must be one of: " + this._mediaStates.join(", "));
-		}
-		if (this._lastMediaState !== key) {
-			if (this._lastMediaState) {
-				this.content.classList.remove( "pending-" + this._lastMediaState);
+	_validPlaybackStates: ["network", "media", "user-play", "user-resume", "user-replay"],
+	
+	setPlaybackState: function(key) {
+		if (this._playbackState !== key) {
+			if (this._validPlaybackStates.indexOf(key) === -1) {
+				throw new Error("Value '%s' is not valid. Must be one of: %s", key, this._playbackStates.join(", "));
 			}
-			this.content.classList.add("pending-" + key);
-			this._lastMediaState = key;
+			if (this._playbackState) {
+				this.getContentEl().classList.remove( "pending-" + this._playbackState);
+			}
+			this.getContentEl().classList.add("pending-" + key);
+			this._playbackState = key;
 		}
 	},
 	
@@ -168,6 +192,8 @@ module.exports = MediaRenderer.extend({
 	/* --------------------------- */
 	
 	updateOverlay: function(mediaEl, targetEl, rectEl) {
+		// this method is not critical, just catch and log all errors
+		try {
 		// src/dest rects
 		// ------------------------------
 		rectEl || (rectEl = targetEl);
@@ -260,6 +286,10 @@ module.exports = MediaRenderer.extend({
 		// context.putImageData(imageData, 0, 0);
 		// targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
 		
-		// console.log(this.cid, this.model.cid, "PlayableRenderer.updateOverlay");
+		} catch (err) {
+			console.error(this.cid, this.model.cid, "PlayableRenderer.updateOverlay", err);
+		}
 	}
 });
+
+module.exports = PlayableRenderer;

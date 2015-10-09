@@ -22,24 +22,23 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 					// If successful, resolve the promise by passing back a reference url
 					resolve(URL.createObjectURL(request.response));
 				} else {
-					// If it fails, reject the promise with a error message
-					// console.error(ev);
-					// reject(Error(JSON.stringify(request, null, "\t")));
-					// reject(Error("Failed to load image from: " + url + " (" + request.statusText + ")"));
-					reject(Error(request.statusText + " (" + request.status + "): " + url));
+					var err = new Error("Failed to load image from (" +
+						request.statusText + " " + request.status + "): " + url);
+					err.event = ev;
+					reject(err);
 				}
 			};
 			// reject/failure
 			// - - - - - - - - - - - - - - - - - -
 			request.onerror = function (ev) {
-				var err = new Error("Failed to load image from " + url + " (" + ev.type + ")");
+				var err = new Error("Failed to load image from (" + ev.type + "): " + url);
 				err.event = ev;
 				reject(err);
 			};
 			request.ontimeout = request.onerror;
 			request.onabort = function (ev) {
 				// console.log("reject", ev.type, url, ev);
-				var err = new Error("Aborted loading image from " + url + " (" + ev.type + ")");
+				var err = new Error("Aborted loading image from (" + ev.type + "): "+ url);
 				err.event = ev;
 				reject(err);
 			};

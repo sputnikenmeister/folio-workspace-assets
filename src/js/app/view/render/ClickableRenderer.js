@@ -11,7 +11,7 @@ var Backbone = require("backbone");
  * @constructor
  * @type {module:app/view/render/ClickableRenderer}
  */
-module.exports = Backbone.View.extend({
+var ClickableRenderer = Backbone.View.extend({
 	/** @override */
 	events: {
 		"click": function (ev) {
@@ -22,3 +22,5 @@ module.exports = Backbone.View.extend({
 		}
 	},
 });
+
+module.exports = ClickableRenderer;

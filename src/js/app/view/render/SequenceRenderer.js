@@ -28,7 +28,7 @@ var prefixed = require("utils/prefixedProperty");
 var _whenImageLoads = require("app/view/promise/_whenImageLoads");
 
 /** @type {Function} */
-// var whenSelectionIsContiguous = require("app/view/promise/whenSelectionIsContiguous");
+var whenSelectionDistanceIs = require("app/view/promise/whenSelectionDistanceIs");
 // var whenSelectTransitionEnds = require("app/view/promise/whenSelectTransitionEnds");
 // var whenDefaultImageLoads = require("app/view/promise/whenDefaultImageLoads");
 
@@ -50,7 +50,7 @@ var SourceCollection = SelectableCollection.extend({
 */
 var SequenceStepRenderer = View.extend({
 	
-	cidPrefix: "sequence-step-renderer-",
+	cidPrefix: "sequenceStepRenderer",
 	/** @type {string} */
 	tagName: "img",
 	/** @type {string} */
@@ -70,7 +70,8 @@ var SequenceStepRenderer = View.extend({
 				this.el.classList.remove("current");
 			}
 		});
-		PlayableRenderer.whenSelectionIsContiguous(this).then(function(view) {
+		// PlayableRenderer.whenSelectionIsContiguous(this).then(function(view) {
+		whenSelectionDistanceIs(this, 2).then(function(view) {
 			view.el.src = Globals.MEDIA_DIR + "/" + view.model.get("src");
 		});
 	},
@@ -80,10 +81,10 @@ var SequenceStepRenderer = View.extend({
 * @constructor
 * @type {module:app/view/render/SequenceRenderer}
 */
-module.exports = PlayableRenderer.extend({
+var SequenceRenderer = PlayableRenderer.extend({
 	
 	/** @type {string} */
-	cidPrefix: "sequence-renderer-",
+	cidPrefix: "sequenceRenderer",
 	/** @type {string} */
 	className: PlayableRenderer.prototype.className + " sequence-renderer",
 	/** @type {Function} */
@@ -92,13 +93,12 @@ module.exports = PlayableRenderer.extend({
 	/** @override */
 	initialize: function (opts) {
 		PlayableRenderer.prototype.initialize.apply(this, arguments);
-		
-		// this.initializeAsync();
 	},
 	
 	/** @override */
 	createChildren: function() {
-		this.el.innerHTML = this.template(this.model.toJSON());
+		PlayableRenderer.prototype.createChildren.apply(this, arguments);
+		
 		this.placeholder = this.el.querySelector(".placeholder");
 		this.content = this.el.querySelector(".content");
 		
@@ -201,11 +201,6 @@ module.exports = PlayableRenderer.extend({
 	
 	initializeAsync: function() {
 		return PlayableRenderer.prototype.initializeAsync.apply(this, arguments)
-		// return PlayableRenderer.whenSelectionIsContiguous(this)
-		// // return Promise.resolve(this)
-		// // 	.then(PlayableRenderer.whenSelectionIsContiguous)
-		// 	.then(PlayableRenderer.whenSelectTransitionEnds)
-		// 	.then(PlayableRenderer.whenDefaultImageLoads)
 			.then(function(view) {
 				view.initializeSequence();
 				view.addSelectionListeners();
@@ -215,15 +210,7 @@ module.exports = PlayableRenderer.extend({
 				} catch (err) {
 					return Promise.reject(err);
 				}
-			})
-			// .catch(function(err) {
-			// 	if (err instanceof PlayableRenderer.ViewError) {
-			// 		// console.log(err.view.cid, err.view.model.cid, "SequenceRenderer: " + err.message);
-			// 	} else {
-			// 		console.error("SequenceRenderer promise error", err);
-			// 	}
-			// })
-			;
+			});
 	},
 	
 	/* --------------------------- *
@@ -232,7 +219,8 @@ module.exports = PlayableRenderer.extend({
 	
 	/** @override */
 	render: function () {
-		this.measure();
+		PlayableRenderer.prototype.render.apply(this, arguments);
+		// this.measure();
 		
 		// NOTE: image elements are given 100% w/h in CSS (.sequence-renderer .content img);
 		// actual dimensions are set to the parent element (.sequence-renderer .content)
@@ -252,9 +240,9 @@ module.exports = PlayableRenderer.extend({
 		// sizing.style.maxWidth = content.clientWidth + "px";
 		// sizing.style.maxHeight = content.clientHeight + "px";
 		
-		var sizing = this.getSizingEl();
-		sizing.style.maxWidth = this.metrics.content.width + "px";
-		sizing.style.maxHeight = this.metrics.content.height + "px";
+		// var sizing = this.getSizingEl();
+		// sizing.style.maxWidth = this.metrics.content.width + "px";
+		// sizing.style.maxHeight = this.metrics.content.height + "px";
 		
 		return this;
 	},
@@ -297,7 +285,7 @@ module.exports = PlayableRenderer.extend({
 		if (!this._isSequenceRunning) {
 			this._isSequenceRunning = true;
 			
-			this.setMediaState("media");
+			this.setPlaybackState("media");
 			if (this.timer.getStatus() === "paused") {
 				this.timer.start(); // resume, actually
 			} else {
@@ -315,7 +303,7 @@ module.exports = PlayableRenderer.extend({
 			if (this.timer.getStatus() === "started") {
 				this.timer.pause();
 			}
-			this.setMediaState("user-resume");
+			this.setPlaybackState("user-resume");
 			console.log("(%s) SequenceRenderer.stopSequence", this.cid);
 		}
 	},
@@ -331,7 +319,7 @@ module.exports = PlayableRenderer.extend({
 		
 		var nextModel = view.sources.followingOrFirst();
 		var nextView = view.children.findByModel(nextModel);
-		// this.setMediaState("network");
+		// this.setPlaybackState("network");
 		_whenImageLoads(nextView.el).then(function() {
 			if (view._isSequenceRunning) {
 				logSeq("_whenImageLoads (calling next step)");
@@ -393,3 +381,5 @@ module.exports = PlayableRenderer.extend({
 		}
 	},
 });
+
+module.exports = SequenceRenderer;

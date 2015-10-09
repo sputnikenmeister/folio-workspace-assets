@@ -15,6 +15,8 @@ var View = require("app/view/base/View");
 var DeferredView = require("app/view/base/DeferredView");
 /** @type {module:app/view/component/ClickableRenderer} */
 var ClickableRenderer = require("app/view/render/ClickableRenderer");
+/** @type {module:utils/prefixedProperty} */
+var prefixedProperty = require("utils/prefixedProperty");
 
 /**
  * @constructor
@@ -23,7 +25,7 @@ var ClickableRenderer = require("app/view/render/ClickableRenderer");
 var FilterableListView = DeferredView.extend({
 	
 	/** @type {string} */
-	cidPrefix: "filterable-list-",
+	cidPrefix: "filterableList",
 	/** @override */
 	tagName: "ul",
 	/** @override */
@@ -74,7 +76,7 @@ var FilterableListView = DeferredView.extend({
 	},
 
 	renderLayout: function() {
-		var _transformProp = this.getPrefixedProperty("transform");
+		var _transformProp = prefixedProperty("transform");
 		var el = this.el.firstElementChild, isExcluded;
 		var style = window.getComputedStyle(this.el);
 		var posX = parseFloat(style.paddingLeft);

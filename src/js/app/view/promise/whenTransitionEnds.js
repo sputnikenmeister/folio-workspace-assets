@@ -29,6 +29,8 @@ var getComputedTimeout = function(v, t, p) {
 };
 
 // var idSeed = 0;
+var timeoutMargin = 200;// NOTE: ms delay timeout to catch late transitionend events
+var logMessage = "%s::whenTransitionEnds [%s]: %s";
 
 module.exports = function(view, target, prop, timeout) {
 	return new Promise(function(resolve, reject) {
@@ -36,34 +38,37 @@ module.exports = function(view, target, prop, timeout) {
 		var tt = timeout || getComputedTimeout(view, target, prop);
 		prop = prefixedStyleName(prop);
 		
+		// transition is 0s, resolve immediately
 		if (tt === 0) {
-			// transition is 0s, resolve immediately
-			console.log(view.cid, view.model.cid, "whenTransitionEnds: sync resolve");
+			// console.log(logMessage, view.cid, "resolved", "sync");
 			resolve(view);
 		} else {
-			console.log(view.cid, view.model.cid, "whenTransitionEnds: async init ("+tt+"s)");
+			// console.log(logMessage, view.cid, "init", prop, tt + "s");
 			cleanupOnSettle = function() {
-				console.log(view.cid, view.model.cid, "whenTransitionEnds: cleanup" + (timeoutId? "":" (timeout)"));
+				// console.log(logMessage, view.cid, "cleanup", timeoutId? transitionEnd : "timeout");
 				timeoutId && window.clearTimeout(timeoutId);
 				target.removeEventListener(transitionEnd, resolveOnEvent, false);
 				view.off("view:remove", rejectOnRemove);
 			};
+			
 			// resolve on event
 			resolveOnEvent = function(ev) {
 				if (ev.target === target && prop == ev.propertyName) {
-					console.log(view.cid, view.model.cid, "whenTransitionEnds: async resolve", transitionEnd, ev.propertyName);
+					// console.log(logMessage, view.cid, "resolved", ev.type, ev.propertyName);
 					cleanupOnSettle();
 					resolve(view);
 				}
 			};
 			target.addEventListener(transitionEnd, resolveOnEvent, false);
+			
 			// resolve on timeout
 			timeoutId = window.setTimeout(function () {
-				console.warn(view.cid, view.model.cid, "whenTransitionEnds: async resolve", "timeoutId: " + timeoutId);
+				console.warn(logMessage, view.cid, "resolved", "timeout", timeoutId);
 				timeoutId = null;
 				cleanupOnSettle();
 				resolve(view);
-			}, tt + 200);
+			}, tt + timeoutMargin);
+			
 			// resolve on view removal
 			rejectOnRemove = function() {
 				cleanupOnSettle();

@@ -18,7 +18,7 @@ var _modelImpl = Backbone.Model.extend({
 module.exports = Backbone.View.extend({
 	
 	/** @type {string} */
-	className: "progress-meter",
+	className: "progressMeter",
 	/** @type {Function} */
 	model: _modelImpl,
 	

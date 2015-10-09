@@ -15,10 +15,10 @@ var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
  * @constructor
  * @type {module:app/view/render/CarouselRenderer}
  */
-module.exports = View.extend({
+var CarouselRenderer = View.extend({
 	
 	/** @type {string} */
-	cidPrefix: "carousel-renderer-",
+	cidPrefix: "carouselRenderer",
 	/** @override */
 	tagName: "div",
 	/** @override */
@@ -69,5 +69,11 @@ module.exports = View.extend({
 	render: function() {
 		this.measure();
 		return this;
-	}
+	},
+	
+	getSelectionDistance: function() {
+		return Math.abs(this.model.collection.indexOf(this.model) - this.model.collection.selectedIndex);
+	},
 });
+
+module.exports = CarouselRenderer;

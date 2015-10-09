@@ -13,16 +13,16 @@ var Container = require("backbone.babysitter");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
-/** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
 /** @type {module:app/view/base/DeferredView} */
 var DeferredView = require("app/view/base/DeferredView");
 
-/** @type {Function} */
-var setImmediate = require("utils/setImmediate");
-
 /** @type {module:app/view/render/CarouselRenderer} */
 var CarouselRenderer = require("app/view/render/CarouselRenderer");
+
+/** @type {module:utils/prefixedProperty} */
+var prefixedProperty = require("utils/prefixedProperty");
+/** @type {module:utils/prefixedStyleName} */
+var prefixedStyleName = require("utils/prefixedStyleName");
 
 var cssToPx = function (cssVal, el) {
 	return parseInt(cssVal);
@@ -34,13 +34,11 @@ var cssToPx = function (cssVal, el) {
  */
 var Carousel = DeferredView.extend({
 	
-	cidPrefix: "carousel-",
+	cidPrefix: "carousel",
 	/** @override */
 	tagName: "div",
 	/** @override */
 	className: "carousel skip-transitions",
-	/** @type {int} In pixels */
-	tapAreaGrow: 10,
 	/** @type {int} In pixels */
 	selectThreshold: 20,
 	/** @type {int} In pixels */
@@ -250,8 +248,10 @@ var Carousel = DeferredView.extend({
 	
 	_measure: function() {
 		var m, mm, pos = 0, posInner = 0;
-		var maxAcross = 0, maxOuter = 0;
-		var maxView = this.emptyView || this.children.first();
+		var maxAcross = 0, maxOuter = 0,
+			maxOuterView, maxAcrossView;
+			
+		maxOuterView = maxAcrossView = this.emptyView || this.children.first();
 		
 		// chidren metrics
 		this.children.each(function(view) {
@@ -267,28 +267,32 @@ var Carousel = DeferredView.extend({
 			if (view !== this.emptyView) {
 				if (m.across > maxAcross) {
 					maxAcross = m.across;
+					maxAcrossView = view;
 				}
 				if (m.outer > maxOuter) {
 					maxOuter = m.outer;
-					maxView = view;
+					maxOuterView = view;
 				}
 			}
 		}, this);
 		
 		// get max child metrics
-		m = this.metrics[maxView.cid];
+		m = this.metrics[maxOuterView.cid];
 		// measure self
 		mm = this.metrics[this.cid] || (this.metrics[this.cid] = {});
 		mm.across = maxAcross;
 		mm.outer = this.el[this.dirProp("offsetWidth", "offsetHeight")];
-		mm.before = maxView.el[this.dirProp("offsetLeft", "offsetTop")];
-		mm.inner = maxView.el[this.dirProp("offsetWidth", "offsetHeight")];
+		mm.before = maxOuterView.el[this.dirProp("offsetLeft", "offsetTop")];
+		mm.inner = maxOuterView.el[this.dirProp("offsetWidth", "offsetHeight")];
 		// mm.inner = m.inner;
 		mm.after = mm.outer - (mm.inner + mm.before);
 		
 		// tap area
-		this.tapAreaBefore = mm.before + this.tapAreaGrow;
-		this.tapAreaAfter = mm.before + mm.inner - this.tapAreaGrow;
+		this._tapAcrossBefore = maxAcrossView.el[this.dirProp("offsetTop", "offsetLeft")];
+		this._tapAcrossAfter = this._tapAcrossBefore + maxAcross;
+		this._tapBefore = mm.before + this._tapGrow;
+		this._tapAfter = mm.before + mm.inner - this._tapGrow;
+		
 		this.selectThreshold = Math.min(Carousel.MAX_SELECT_THRESHOLD, mm.outer * 0.1);
 	},
 	
@@ -402,7 +406,7 @@ var Carousel = DeferredView.extend({
 	_scrollBy: function (delta, skipTransitions) {
 		var metrics, sView, sMetrics, cView, cMetrics, pos, txProp;
 		
-		txProp = this.getPrefixedProperty("transform");
+		txProp = prefixedProperty("transform");
 		sView = this._scrollCandidateView || this._selectedView;
 		cView = this._panCandidateView || this._selectedView;
 		sMetrics = this.metrics[sView.cid];
@@ -425,7 +429,7 @@ var Carousel = DeferredView.extend({
 			// }
 			this.el.classList.remove("skip-transitions");
 			this._scrollEndCancellable = this.onTransitionEnd(this._selectedView.el,
-					this.getPrefixedStyle("transform"), this._onScrollEnd, Globals.TRANSITION_DURATION * 2);
+					prefixedStyleName("transform", this._selectedView.el), this._onScrollEnd, Globals.TRANSITION_DURATION * 2);
 		}
 		
 		this.commitScrollSelection();
@@ -497,27 +501,49 @@ var Carousel = DeferredView.extend({
 	/* --------------------------- *
 	 * touch event: tap
 	 * --------------------------- */
+	 
+ 	/** @type {int} In pixels */
+ 	_tapGrow: 10,
 	
 	_onTap: function (ev) {
 		this.commitScrollSelection();
 		
-		var posX = this.dirProp(ev.center.x, ev.center.y);
-		var posY = this.dirProp(ev.center.y, ev.center.x);
-		if (posX < this.tapAreaBefore) {
-			this._scrollCandidateView = this._precedingView;
-		} else if (posX > this.tapAreaAfter) {
-			this._scrollCandidateView = this._followingView;
-		} else {
-			this._scrollCandidateView = void 0;
-		}
+		var bounds = this.el.getBoundingClientRect();
+		var tapX = ev.center.x - bounds.left;
+		var tapY = ev.center.y - bounds.top;
+		
+		// console.log("Carousel.getTapCandidateAt [main] pos(%d) bounds(%d) range(%d - %d)",
+		// 	pos, bounds[this.dirProp("left", "top")], this._tapBefore, this._tapAfter
+		// );
+		// var pp = posAcross - bounds[this.dirProp("top", "left")];
+		// console.log("Carousel.getTapCandidateAt [across] ev+bounds(%d + %d = %d) range(%d - %d) pass?",
+		// 	posAcross, bounds[this.dirProp("top", "left")], pp, 
+		// 	this._tapAcrossBefore, this._tapAcrossAfter,
+		// 	(this._tapAcrossBefore < pp && pp < this._tapAcrossAfter)
+		// );
+		
+		this._scrollCandidateView = this.getTapCandidateAt(
+			this.dirProp(tapX, tapY),
+			this.dirProp(tapY, tapX)
+		);
 		
 		if (this._scrollCandidateView) {
-			console.log("XXX-C Carousel._onTap", ev.type);
 			ev.preventDefault();
 			this._scrollCandidateView.el.classList.add("candidate");
 			this.el.classList.add("scrolling");
 			this.scrollByNow(0, Carousel.ANIMATED);
 		}
+	},
+	
+	getTapCandidateAt: function(pos, posAcross) {
+		if (this._tapAcrossBefore < posAcross && posAcross < this._tapAcrossAfter) {
+			if (pos < this._tapBefore) {
+				return this._precedingView;
+			} else if (pos > this._tapAfter) {
+				return this._followingView;
+			}
+		}
+		return void 0;
 	},
 	
 	/* --------------------------- *

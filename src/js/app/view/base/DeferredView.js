@@ -97,7 +97,7 @@ var DeferredView = View.extend({
 	requestRender: function (key, value) {
 		if (key) {
 			if (this._renderJobs.hasOwnProperty(key)) {
-				console.log("DeferredView.requestRender", "'" + key + "' overwritten", this.cid);
+				console.log("%s::requestRender [%s]: job overwritten", this.cid, key);
 			}
 			this._renderJobs[key] = value ? value : true;
 		}

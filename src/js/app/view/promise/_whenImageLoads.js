@@ -11,8 +11,7 @@ module.exports = function(image) {
 					resolve(image);
 				},
 				error: function(ev) {
-					// console.log("_whenImageLoads_dom reject", ev.type, image.src);
-					var err = new Error("Failed to load image from " + image.src + " [" + ev.type + "]");
+					var err = new Error("Failed to load image from (" + ev.type + "): " + image.src);
 					err.event = ev;
 					removeEventListeners();
 					reject(err);

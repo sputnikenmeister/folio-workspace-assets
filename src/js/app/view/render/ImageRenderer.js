@@ -14,15 +14,6 @@ var MediaItem = require("app/model/item/MediaItem");
 
 /** @type {module:app/view/MediaRenderer} */
 var MediaRenderer = require("./MediaRenderer");
-/** @type {module:app/view/base/ViewError} */
-var ViewError = require("app/view/base/ViewError");
-
-// /** @type {module:app/view/promise/whenSelectTransitionEnds} */
-// var whenSelectTransitionEnds = require("app/view/promise/whenSelectTransitionEnds");
-// /** @type {module:app/view/promise/whenSelectionIsContiguous} */
-// var whenSelectionIsContiguous = require("app/view/promise/whenSelectionIsContiguous");
-// /** @type {module:app/view/promise/whenDefaultImageLoads} */
-// var whenDefaultImageLoads = require("app/view/promise/whenDefaultImageLoads");
 
 /** @type {Function} */
 var viewTemplate = require("./ImageRenderer.hbs");
@@ -31,10 +22,10 @@ var viewTemplate = require("./ImageRenderer.hbs");
  * @constructor
  * @type {module:app/view/render/ImageRenderer}
  */
-module.exports = MediaRenderer.extend({
+var ImageRenderer = MediaRenderer.extend({
 	
 	/** @type {string} */
-	cidPrefix: "image-renderer-",
+	cidPrefix: "imageRenderer",
 	/** @type {string} */
 	className: MediaRenderer.prototype.className + " image-renderer",
 	/** @type {Function} */
@@ -53,13 +44,16 @@ module.exports = MediaRenderer.extend({
 	
 	/** @override */
 	createChildren: function() {
-		this.el.innerHTML = this.template(this.model.toJSON());
+		MediaRenderer.prototype.createChildren.apply(this, arguments);
+		// this.el.innerHTML = this.template(this.model.toJSON());
 		this.placeholder = this.el.querySelector(".placeholder");
 	},
 	
 	/** @override */
 	render: function () {
-		this.measure();
+		MediaRenderer.prototype.render.apply(this, arguments);
+		
+		// this.measure();
 		
 		var img = this.getDefaultImage();
 		img.setAttribute("width", this.metrics.media.width);
@@ -69,9 +63,9 @@ module.exports = MediaRenderer.extend({
 		content.style.left = this.metrics.content.x + "px";
 		content.style.top = this.metrics.content.y + "px";
 		
-		var sizing = this.getSizingEl();
-		sizing.style.maxWidth = this.metrics.content.width + "px";
-		sizing.style.maxHeight = this.metrics.content.height + "px";
+		// var sizing = this.getSizingEl();
+		// sizing.style.maxWidth = this.metrics.content.width + "px";
+		// sizing.style.maxHeight = this.metrics.content.height + "px";
 		
 		return this;
 	},
@@ -105,3 +99,5 @@ module.exports = MediaRenderer.extend({
 			;
 	},
 });
+
+module.exports = ImageRenderer;

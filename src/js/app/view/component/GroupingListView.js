@@ -20,7 +20,7 @@ var FilterableListView = require("app/view/component/FilterableListView");
 var GroupingListView = FilterableListView.extend({
 	
 	/** @type {string} */
-	cidPrefix: "grouping-list-",
+	cidPrefix: "groupingList",
 	/** @override */
 	tagName: "dl",
 	/** @override */

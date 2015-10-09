@@ -7,8 +7,6 @@ var _ = require("underscore");
 /** @type {module:underscore} */
 var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
-// /** @type {module:app/view/base/View} */
-// var View = require("app/view/base/View");
 /** @type {module:app/model/item/MediaItem} */
 var MediaItem = require("app/model/item/MediaItem");
 /** @type {module:app/view/CarouselRenderer} */
@@ -18,15 +16,22 @@ var CarouselRenderer = require("app/view/render/CarouselRenderer");
  * @constructor
  * @type {module:app/view/render/MediaRenderer}
  */
-// var MediaRenderer = CarouselRenderer.extend({
-module.exports = CarouselRenderer.extend({
+var MediaRenderer = CarouselRenderer.extend({
 	
 	/** @type {string} */
-	cidPrefix: "media-renderer-",
+	cidPrefix: "mediaRenderer",
 	/** @type {string} */
 	className: CarouselRenderer.prototype.className + " media-item",
 	/** @type {module:app/model/MediaItem} */
 	model: MediaItem,
+	
+	properties: {
+		defaultImage: {
+			get: function() {
+				return this._defaultImage || (this._defaultImage = this.el.querySelector("img.default"));
+			}
+		}
+	},
 	
 	/** @override */
 	initialize: function (opts) {
@@ -38,10 +43,11 @@ module.exports = CarouselRenderer.extend({
 		this.metrics.media = {};
 		
 		this.setState("idle");
+		
 		this.initializeAsync()
 			.then(
 				function(view) {
-					console.log(view.cid, "initializeAsync resolved");
+					console.log("%s initializeAsync resolved", view.cid);
 					view.setState("done");
 				})
 			.catch(
@@ -53,12 +59,13 @@ module.exports = CarouselRenderer.extend({
 					}
 					// this.placeholder.innerHTML = "<p class=\"color-fg\" style=\"position:absolute;bottom:0;padding:3rem;\"><strong>" + err.name + "</strong> " + err.message + "</p>";
 					this.setState("error");
-					console.error(this.cid, err.name, err);
+					console.error("%s initializeAsync %s: %s", this.cid, err.name, err.message);
+					err.event && console.log(err.event);
 				}.bind(this));
 	},
 	
 	initializeAsync: function() {
-		var MediaRenderer = Object.getPrototypeOf(this).constructor;
+		// var MediaRenderer = Object.getPrototypeOf(this).constructor;
 		// return MediaRenderer.whenSelectionIsContiguous(this)
 		return Promise.resolve(this)
 			.then(MediaRenderer.whenSelectionIsContiguous)
@@ -73,42 +80,33 @@ module.exports = CarouselRenderer.extend({
 	
 	/** @return {HTMLElement} */
 	getDefaultImage: function () {
-		return this._defaultImage || (this._defaultImage = this.el.querySelector("img.default"));
+		return this.defaultImage;
+		// return this._defaultImage || (this._defaultImage = this.el.querySelector("img.default"));
 	},
 	
 	/* --------------------------- *
 	/* children/layout
 	/* --------------------------- */
 	
-	// createChildren: function() {
-	// 	this.el.innerHTML = this.template(this.model.toJSON());
-	// },
+	createChildren: function() {
+		this.el.innerHTML = this.template(this.model.toJSON());
+	},
 	
 	/** @override */
 	measure: function () {
+		CarouselRenderer.prototype.measure.apply(this, arguments);
+		
 		var sw, sh; // source dimensions
 		var pcw, pch; // measured values
 		var cx, cy, cw, ch, cs; // computed values
 		var ew, eh; // content edge totals
 		var cm; // content metrics
-		var sizing = this.getSizingEl();
 		
-		CarouselRenderer.prototype.measure.apply(this, arguments);
 		cm = this.metrics.content;
 		cx = cm.x;
 		cy = cm.y;
 		pcw = cm.width;
 		pch = cm.height;
-		
-		// this.metrics = getBoxEdgeStyles(this.el, this.metrics);
-		// cm = this.metrics.content = getBoxEdgeStyles(this.getContentEl(), this.metrics.content);
-		// 
-		// sizing.style.maxWidth = "";
-		// sizing.style.maxHeight = "";
-		// cx = sizing.offsetLeft + sizing.clientLeft;
-		// cy = sizing.offsetTop + sizing.clientTop;
-		// pcw = sizing.clientWidth;
-		// pch = sizing.clientHeight;
 		
 		ew = (cm.paddingLeft + cm.paddingRight + cm.borderLeftWidth + cm.borderRightWidth);
 		eh = (cm.paddingTop + cm.paddingBottom + cm.borderTopWidth + cm.borderBottomWidth);
@@ -143,6 +141,7 @@ module.exports = CarouselRenderer.extend({
 		this.metrics.media.height = ch;
 		this.metrics.media.scale = cs;
 		
+		// var sizing = this.getSizingEl();
 		// sizing.style.maxWidth = (cw + ew) + "px";
 		// sizing.style.maxHeight = (ch + eh) + "px";
 		
@@ -150,22 +149,7 @@ module.exports = CarouselRenderer.extend({
 	},
 	
 	render: function () {
-		/*
-		var content = this.getContentEl();
-		
-		content.style.left = this.metrics.content.x + "px";
-		content.style.top = this.metrics.content.y + "px";
-		content.style.width = this.metrics.media.width + "px";
-		content.style.height = this.metrics.media.height + "px";
-		
-		// sizing.style.maxWidth = (cW + (poW - pcw)) + "px";
-		// sizing.style.maxHeight = (cH + (poH - pch)) + "px";
-		sizing.style.maxWidth = content.offsetWidth + "px";
-		sizing.style.maxHeight = content.offsetHeight + "px";
-		// sizing.style.maxWidth = cw + "px";
-		// sizing.style.maxHeight = ch + "px";
-		*/
-		
+		// NOTE: not calling super.render, calling measure ourselves
 		this.measure();
 		
 		var sizing = this.getSizingEl();
@@ -221,4 +205,86 @@ module.exports = CarouselRenderer.extend({
 	/** @type {module:app/view/promise/whenDefaultImageLoads} */
 	whenDefaultImageLoads: require("app/view/promise/whenDefaultImageLoads"), 
 });
-// module.exports = MediaRenderer;
+
+/* ---------------------------
+/* log to screen
+/* --------------------------- */
+if (DEBUG) {
+
+MediaRenderer = (function(MediaRenderer) {
+	
+	/** @type {Function} */
+	var Color = require("color");
+	/** @type {module:underscore.strings/lpad} */
+	var lpad = require("underscore.string/lpad");
+	/** @type {module:underscore.strings/rpad} */
+	var rpad = require("underscore.string/rpad");
+	
+	return MediaRenderer.extend({
+		
+		/** @override */
+		initialize: function() {
+			MediaRenderer.prototype.initialize.apply(this, arguments);
+			
+			var fgColor = this.model.attrs()["color"];
+			// var bgColor = this.model.attrs()["background-color"];
+			this.__logColors = {
+				normal: new Color(fgColor).alpha(0.75).rgbaString(),
+				ignored: new Color(fgColor).alpha(0.25).rgbaString(),
+				error: "brown",
+				abort: "orange"
+			};
+			this.__logStartTime = Date.now();
+		},
+		
+		initializeAsync: function() {
+			return MediaRenderer.prototype.initializeAsync.apply(this, arguments).catch(function(err) {
+				if (!(err instanceof MediaRenderer.ViewError)) {
+					this.__logMessage(err.message, err.name, this.__logColors["error"]);
+				}
+				return Promise.reject(err);
+			}.bind(this));
+		},
+		
+		/** @override */
+		createChildren: function() {
+			MediaRenderer.prototype.createChildren.apply(this, arguments);
+			
+			this.__logElement = document.createElement("div");
+			this.__logElement.className = "debug-log";
+			this.el.insertBefore(this.__logElement, this.el.firstElementChild);
+		},
+		
+		/** @override */
+		render: function() {
+			MediaRenderer.prototype.render.apply(this, arguments);
+			
+			this.__logElement.style.marginTop = "3rem";
+			this.__logElement.style.maxHeight = "calc(100% - " + (this.metrics.media.height) + "px - 3rem)";
+			this.__logElement.style.width = this.metrics.media.width + "px";
+			this.__logElement.scrollTop = this.__logElement.scrollHeight;
+			
+			return this;
+		},
+		
+		__getTStamp: function() {
+			// return new Date(Date.now() - this.__logStartTime).toISOString().substr(11, 12);
+			return lpad(((Date.now() - this.__logStartTime)/1000).toFixed(3), 8, "0");
+		},
+		
+		__logMessage: function(msg, logtype, color) {
+			var logEntryEl = document.createElement("pre");
+			
+			logEntryEl.textContent = this.__getTStamp() + " " + msg;
+			logEntryEl.setAttribute("data-logtype", logtype || "-");
+			logEntryEl.style.color = color || this.__logColors[logtype] || this.__logColors.normal;
+			
+			this.__logElement.appendChild(logEntryEl);
+			this.__logElement.scrollTop = this.__logElement.scrollHeight;
+		},
+	});
+})(MediaRenderer);
+
+} // end debug
+
+module.exports = MediaRenderer;
