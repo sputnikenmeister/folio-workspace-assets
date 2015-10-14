@@ -1,11 +1,7 @@
-//@import "fonts";
-//@import "compass/layout";
-//@import "compass/css3/box-sizing";
 @import "compass/reset";
 
 @import "includes/_definitions";
 @import "includes/_base";
 @import "includes/_icons";
+@import "components/_view";
 @import "views/_layout";
-
-//@import "generated/_uploads-sprites";

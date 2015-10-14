@@ -1,52 +1,6 @@
-%placeholder-numbers {
-	margin: 2rem 2.5rem;
-	font-size: 4rem;
-	font-style: normal;
-	font-weight: 400;
-}
-%placeholder-NumbersRevenue {
-	@extend %placeholder-numbers;
-	font-family: "NumbersRevenue";
-	letter-spacing: -0.06em;
-	word-spacing: -0.45em;
-}
-%placeholder-NumbersClaimcheck {
-	@extend %placeholder-numbers;
-	font-family: "NumbersClaimcheck";
-	letter-spacing: 0;
-	word-spacing: -0.45em;
-}
-%placeholder-NumbersIndicia {
-	@extend %placeholder-numbers;
-	font-family: "NumbersIndicia";
-	letter-spacing: -0.05em;
-	word-spacing: -0.45em;
-}
-%placeholder-NumbersRedbird {
-	@extend %placeholder-numbers;
-	font-family: "NumbersRedbird";
-	letter-spacing: 0;
-	word-spacing: -0.23em;
-}
-%placeholder-franklin-itc-cp {
-	font: 600 normal 12rem/1.2 "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
-	letter-spacing: -0.01em;
-	margin: 2rem 3rem;
-}
-%placeholder-franklin-fs-cp {
-	margin: 2rem 2.5rem;
-	line-height: 1.2;
-	font-size: 2rem;
-	font-weight: 600;
-	letter-spacing: -0.05em;
-	font-style: italic;
-	text-transform: uppercase;
-}
-
 // -----------------------------------
 // .media-item
 // -----------------------------------
-
 .media-item {
 	.sizing {
 		position: relative;

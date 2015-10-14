@@ -1,25 +1,30 @@
-// - - - - - - - - - - - - - - - - - -
-// Overlays: VideoRenderer/SequenceRenderer
-// - - - - - - - - - - - - - - - - - -
+// -----------------------------------
+// .playable-renderer
+// -----------------------------------
+
 .playable-renderer {
 	// .pending-user-resume {}
 	// .pending-user-replay {}
 	// .pending-network {}
 	// .pending-media  {}
-
-	// .overlay
-	// - - - - - - - - - - - - - - - - -
-	.overlay {
-		position: absolute;
-	}
 	
-	.media-size, .content-size {
+	.media-size,
+	.content-size {
 		position: absolute;
 		display: inline-block;
-		// width: 100%; height: 100%;
-		// top: 0; left: 0;
 	}
+	.content-size {
+		width: 100%; height: 100%;
+		top: 0; left: 0;
+	}
+	// // .overlay
+	// // - - - - - - - - - - - - - - - - -
+	// .overlay {
+	// 	position: absolute;
+	// }
 	
+	// .play-toggle
+	// - - - - - - - - - - - - - - - - -
 	$symbol-class: ".play-toggle";
 	#{$symbol-class} {
 		background-size: 3rem 3rem;
@@ -68,7 +73,6 @@
 		// 	opacity $duration $ease 0.001s,
 		// 	visibility $duration step-start 0.001s;
 	}
-	
 	.play-toggle-hitarea {
 		$size: 50%;//12em; 
 		display: block;
@@ -80,54 +84,160 @@
 		top: 1em; bottom: 1em; left: 1em; right: 1em;
 		cursor: pointer;
 	}
-	:not(.pending-media) .play-toggle-hitarea {
-		// background-color: rgba(255,0,255,0.2);
-	}
+	// :not(.pending-media) .play-toggle-hitarea {
+	// 	background-color: rgba(255,0,255,0.2);
+	// }
 	
-	// .playback-symbols
+	// .control-box
 	// - - - - - - - - - - - - - - - - -
-	// svg.playback-symbols {
-	// 	display: inline-block;
-	// 	position: absolute;
-	// 	box-sizing: border-box;
-	// 	border: 1px solid red
-	// 	// margin: 5rem;
-	// 	// top: 6rem; bottom: 6rem; left: 6rem; right: 6rem;
-	// 	// width: auto; height: auto;
-	// }
-	// .pending-media svg.playback-symbols {
-	// 	display: none;
-	// }
-	// 
-	// .symbol-shape { fill: rgb(255,255,255); }
-	// .symbol-box { fill: rgb(0,0,0); }
-	// .over-dark {
-	// 	.symbol-shape { fill: rgb(0,0,0); }
-	// 	.symbol-box { fill: rgb(255,255,255); }
-	// }
-	// .play-symbol, .pending-user-replay .replay-symbol {
-	// 	// visibility: visible;
-	// 	// opacity: 1;
-	// 	display: inline;
-	// }
-	// .replay-symbol, .pending-user-replay .play-symbol {
-	// 	// visibility: hidden;
-	// 	// opacity: 0;
-	// 	display: none;
-	// }
+	.controls {
+		position: absolute;
+		// top: 100%;
+		// right: 0;
+		// height: 4.5rem;
+	}
+	.control-box {
+		display: -webkit-flex;
+		display: -ms-flex;
+		display: flex;
+		-webkit-flex-direction: row;
+		-ms-flex-direction: row;
+		flex-direction: row;
+		// align-items: center;
+		
+		& > * {
+			-webkit-flex: 0 1 auto;
+			-ms-flex: 0 1 auto;
+			flex: 0 1 auto;
+			padding: 0.5rem;
+			align-self: center;
+		}
+	}
+	.top-bar, .bottom-bar {
+		position: absolute;
+		width: calc(100% + 1rem); height: auto;
+		margin: 1rem -0.5rem;
+	}
+	.bottom-bar {
+		top: 100%;
+		justify-content: space-between;
+	}
+	.top-bar {
+		bottom: 100%;// top: -3.5rem;
+		justify-content: flex-end;
+	}
 }
 
-// VideoRenderer
+@include media(desktop-small) {
+	.playable-renderer {
+		// .progress-meter {
+		// 	top: 0; right: -$hu*2;
+		// 	// &.dev { transform: translate(0, -3rem); }
+		// }
+		.top-bar.control-box {
+			-webkit-flex-direction: column;
+			-ms-flex-direction: column;
+			flex-direction: column;
+			top: 0; left: 100%; 
+			width: auto; height: calc(100% + 1rem);
+			justify-content: flex-start;
+			margin: -0.5rem 1rem;
+		}
+	}
+}
+
 // - - - - - - - - - - - - - - - - - -
+//  .playable-renderer .controls
+// - - - - - - - - - - - - - - - - - -
+.playable-renderer {
+	.progress-meter {
+		width: 2rem;
+		height: 2rem;
+		box-sizing: content-box;
+	}
+	.canvas-progress-meter {
+		overflow: hidden;
+		font-size: 110%;
+		color: rgb(0,0,255);
+	}
+	.svg-progress-meter {
+		color: rgb(255,0,0);
+		svg {
+			width: 100%;
+			height: 100%;
+			display: block;
+			overflow: hidden;
+			border-radius: 100%;
+		}
+		#amount, #steps {
+			stroke: currentColor;
+		}
+		#step-label {
+			fill: currentColor;
+			dominant-baseline: central;
+			// dominant-baseline: middle;
+			// dominant-baseline: text-after-edge;
+			// dominant-baseline: ideographic;
+			// dominant-baseline: mathematical;
+		}
+		// #steps-track {} #steps {} #amount {} #step-label {} #pause-symbol{}
+	}
+	&.video-renderer {
+		.progress-meter {
+			width: 2.5rem;
+			height: 2.5rem;
+		}
+		.canvas-progress-meter {
+			font-size: 90%;
+		}
+		.svg-progress-meter #step-label {
+			transform: scale(0.7);
+			// transform: scale(0.7) translateY(0.5em);
+		}
+	}
+	
+	.timecode {
+		font-size: 85%;
+		letter-spacing: 1px;
+		font-variant-numeric: tabular-nums;
+	}
+	.fullscreen-toggle {
+		line-height: 0;
+		cursor: pointer;
+		svg {
+			width: 1em;
+			height: 1em;
+		}
+	}
+	// .timeline {}
+	
+	// .control-box > *
+	// - - - - - - - - - - - - - - - - -
+	.control-box {
+		& > .timeline {
+			-webkit-flex: 1 0 auto;
+			flex: 1 0 auto;
+		}
+		// & > .svg-progress-meter {}
+	}
+}
+
+// -----------------------------------
+// VideoRenderer
+// -----------------------------------
 .video-renderer {
-	padding-bottom: 3rem; // space for .progres-meter (timeline)
+	padding-bottom: 3rem; // space for .bottom-bar (timeline)
 	
 	.crop-box {
 		overflow: hidden;
+		video, .poster {
+			position: absolute;
+			top: -1px;
+			left: 0;
+		}
 	}
-	video, img.poster {
-		position: absolute;
-		top: -1px; left: 0;
+	video:focus {
+		outline: 0 none;
 	}
 	.poster {
 		visibility: hidden;
@@ -135,101 +245,32 @@
 	.not-played .poster {
 		visibility: visible;
 	}
-	video:focus {
-		outline: 0 none;
-	}
-	// video:fullscreen,
-	// video:-webkit-full-screen,
-	// video:-moz-full-screen,
-	// video:-ms-fullscreen {
-	// 	background-color: transparent;
-	// }
 	
-	.content .controls {
-		position: absolute;
-		// top: 100%;
-		// right: 0;
-		// height: 4.5rem;
-	}
-	
-	.progress-meter {
-		position: absolute;
-		top: 100%;
-		width: 100%;
-		// left: 0; right: 0;
-		margin-top: 1rem;
-		.current-time, .duration {
-			font-size: 85%;
-			letter-spacing: 1px;
-			font-variant-numeric: tabular-nums;
-		}
-	}
-	.progress-meter {
-		display: -webkit-flex;
-		display: flex;
-		-webkit-flex-direction: row;
-		flex-direction: row;
-		// align-items: center;
-		.timeline {
-			-webkit-flex: 1 0 auto;
-			flex: 1 0 auto;
-			align-self: center;
-			padding: 0.5rem;
-		}
-		.current-time, .duration {
-			-webkit-flex: 0 1 auto;
-			flex: 0 1 auto;
-		}
-	}
-	// .progress-meter {
-	// 	display: block;
-	// 	.timeline {
-	// 		display: block;
-	// 	}
-	// 	.current-time {
-	// 		float: left;
-	// 		text-align: left;
-	// 	}
-	// 	.duration {
-	// 		float: right;
-	// 		text-align: right;
-	// 	}
-	// }
-	
-	// .timecode-meter {
-	// 	display: block;
-	// 	position: absolute;
-	// 	top: 100%;
-	// 	right: 0;
-	// 	height: 4.5rem;
-	// 	padding: $vu $hu;
-	// 	margin-right: -$hu;
-	// 		
-	// 	
-	// 	.current-time, .duration {
-	// 		display: block;
-	// 		text-align: right;
-	// 		// &:after {
-	// 		// 	content: 's';
-	// 		// 	text-transform: lowercase;
-	// 		// }
-	// 	}
-	// }
-	// .not-played .timecode-meter {
-	// 	display: none;
-	// }
-	.fullscreen-toggle {
+	/*.bottom-bar {
 		display: block;
 		position: absolute;
-		bottom: 100%; right: 0;
-		margin-right: -1rem;
-		padding: 1rem;
-		line-height: 0;
-	}
+		top: 100%;
+		right: 0;
+		height: 4.5rem;
+		padding: $vu $hu;
+		margin-right: -$hu;
+		.timeline {
+			display: block;
+		}
+		.current-time {
+			float: left;
+			text-align: left;
+		}
+		.duration {
+			float: right;
+			text-align: right;
+		}
+	}*/
 }
 
+// -----------------------------------
 // SequenceRenderer
-// - - - - - - - - - - - - - - - - - -
+// -----------------------------------
 .sequence-renderer {
 	.sequence {
 	// 	position: absolute;
@@ -264,80 +305,107 @@
 	.overlay {
 		z-index: 2;
 	}
-	// .progress-meter
-	// - - - - - - - - - - - - - - - - -
-	.progress-meter {
-		// font-family: "NumbersClaimcheck";
-		// font-family: "NumbersIndicia";
-		// font-family: "NumbersRevenue";
-		// font-family: "NumbersPremium";
-		// font-family: "NumbersGreenback";
-		// font-family: "ITCFranklinGothicStd", $grotesque_fallback; font-weight: 800;
-		// font-family: "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
-		// font-family: "ITCFranklinGothicStd-Condensed", $grotesque_fallback;
-		font-weight: 600;
-		font-style: normal;
-		position: absolute;
-		width: 2rem;
-		height: 2rem;
-		// & > svg {
-		// 	width: 100%;
-		// 	height: 100%;
-		// 	display: block;
-		// }
-		// #steps-track {}
-		// #steps {}
-		// #amount {}
-		// #step-label {}
-		// #pause-symbol{}
-	}
-	.circle-progress-meter {
-		overflow: hidden;
-		border-radius: 100%;
-	}
 }
 
+.playable-renderer .progress-meter {
+	// font-family: "NumbersClaimcheck";
+	font-family: "NumbersGreenback";
+	
+	// font-family: "NumbersIndicia";
+	// font-family: "NumbersRevenue";
+	// font-family: "NumbersPremium";
+	// font-family: "NumbersGreenback";
+	// font-family: "ITCFranklinGothicStd", $grotesque_fallback; font-weight: 800;
+	// font-family: "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
+	// font-family: "ITCFranklinGothicStd-Condensed", $grotesque_fallback;
+	// font-style: normal;
+	// font-weight: 600;
+}
 
-// - - - - - - - - - - - - - - - - - -
-// DEBUG
-// - - - - - - - - - - - - - - - - - -
+// -----------------------------------
+// JUNK
+// -----------------------------------
 
-.media-item .debug-log {
-	font-size: 10px;
-	line-height: 11px;
-	box-sizing: border-box;
-	position: absolute;
-	width: 100%;
-	bottom: -1.5rem;
-	margin: 1.5rem 20px;
-	overflow-y: auto;
-	overflow-x: hidden;
-	& > pre {
-		font-family: $mono_fallback;
-		display: block;
-		// &:first-child {
-		// 	display: none;
-		// }
-		&::before {
-			@include ellipsis(inline-block);
-			width: 8em;
-			padding-right: 0.5em;
-			font-weight: bold;
-			text-decoration: underline;
-			vertical-align: bottom;
-		}
-		&::before {
-			content: attr(data-logtype);
-		}
-		&[data-logrepeat]::before {
-			content: "[" attr(data-logrepeat) "]" attr(data-logtype);
-		}
-	}
-}
-.carousel .debug-log {
-	display: none;
-	// visibility: hidden;
-}
-.debug-logs .carousel:not(.scrolling) .selected .debug-log {
-	display: block;
-}
+// .playback-symbols
+// - - - - - - - - - - - - - - - - -
+// svg.playback-symbols {
+// 	display: inline-block;
+// 	position: absolute;
+// 	box-sizing: border-box;
+// 	border: 1px solid red
+// 	// margin: 5rem;
+// 	// top: 6rem; bottom: 6rem; left: 6rem; right: 6rem;
+// 	// width: auto; height: auto;
+// }
+// .pending-media svg.playback-symbols {
+// 	display: none;
+// }
+// 
+// .symbol-shape { fill: rgb(255,255,255); }
+// .symbol-box { fill: rgb(0,0,0); }
+// .over-dark {
+// 	.symbol-shape { fill: rgb(0,0,0); }
+// 	.symbol-box { fill: rgb(255,255,255); }
+// }
+// .play-symbol, .pending-user-replay .replay-symbol {
+// 	// visibility: visible;
+// 	// opacity: 1;
+// 	display: inline;
+// }
+// .replay-symbol, .pending-user-replay .play-symbol {
+// 	// visibility: hidden;
+// 	// opacity: 0;
+// 	display: none;
+// }
+
+// @extend %placeholder-NumbersClaimcheck;
+// @extend %placeholder-NumbersGreenback;
+// @extend %placeholder-NumbersPremium;
+// @extend %placeholder-NumbersRevenue;
+// @extend %placeholder-NumbersRedbird;
+// @extend %placeholder-NumbersRevenue;
+
+// %placeholder-numbers {
+// 	// margin: 2rem 2.5rem;
+// 	// font-size: 4rem;
+// 	font-style: normal;
+// 	font-weight: normal;
+// }
+// %placeholder-NumbersRevenue {
+// 	@extend %placeholder-numbers;
+// 	font-family: "NumbersRevenue", monospace;
+// 	letter-spacing: -0.06em;
+// 	word-spacing: -0.45em;
+// }
+// %placeholder-NumbersClaimcheck {
+// 	@extend %placeholder-numbers;
+// 	font-family: "NumbersClaimcheck", monospace;
+// 	letter-spacing: 0;
+// 	word-spacing: -0.45em;
+// }
+// %placeholder-NumbersIndicia {
+// 	@extend %placeholder-numbers;
+// 	font-family: "NumbersIndicia", monospace;
+// 	letter-spacing: -0.05em;
+// 	word-spacing: -0.45em;
+// }
+// %placeholder-NumbersRedbird {
+// 	@extend %placeholder-numbers;
+// 	font-family: "NumbersRedbird", monospace;
+// 	letter-spacing: 0;
+// 	word-spacing: -0.23em;
+// }
+// %placeholder-franklin-itc-cp {
+// 	font: 600 normal 12rem/1.2 "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
+// 	letter-spacing: -0.01em;
+// 	margin: 2rem 3rem;
+// }
+// %placeholder-franklin-fs-cp {
+// 	// margin: 2rem 2.5rem;
+// 	// font-size: 2rem;
+// 	line-height: 1.2;
+// 	font-weight: 600;
+// 	letter-spacing: -0.05em;
+// 	font-style: italic;
+// 	text-transform: uppercase;
+// }

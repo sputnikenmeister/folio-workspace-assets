@@ -3,32 +3,64 @@
 /**
 * @module app/view/render/VideoRenderer
 *
-* @see https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Using_HTML5_audio_and_video
 * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Element/video
 * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement
 * @see https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Media_events
+* @see https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Using_HTML5_audio_and_video
 */
+
+/* --------------------------- *
+/* Imports
+/* --------------------------- */
 
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
 /** @type {module:app/view/render/PlayableRenderer} */
 var PlayableRenderer = require("app/view/render/PlayableRenderer");
 
+/** @type {module:app/view/component/progress/CanvasProgressMeter} */
+var CanvasProgressMeter = require("app/view/component/progress/CanvasProgressMeter");
+/** @type {module:app/view/component/progress/SVGProgressMeter} */
+var SVGProgressMeter = require("app/view/component/progress/SVGCircleProgressMeter");
+
+/** @type {module:utils/prefixedStyleName} */
 var prefixedStyleName = require("utils/prefixedStyleName");
+/** @type {module:utils/prefixedEvent} */
 var prefixedEvent = require("utils/prefixedEvent");
+
+/* --------------------------- *
+/* private static
+/* --------------------------- */
+
 var fullscreenChangeEvent = prefixedEvent("fullscreenchange", document);
 var fullscreenErrorEvent = prefixedEvent("fullscreenerror", document);
 
-var formatTimecode = function (tcode) {
-	return new Date((isNaN(tcode)? 0 : tcode) * 1000).toISOString().substr(14, 5);
+var formatTimecode = function (value, total) {
+	return new Date((isNaN(value)? 0 : value) * 1000).toISOString().substr(14, 5);
 };
-
-var viewTemplate = require("./VideoRenderer.hbs");
+var formatTimecodeLeft = function (value, total) {
+	return formatTimecode(Math.max(0, total - value));
+};
+var formatTimeShort = function(value, total) {
+	value = isNaN(value)? total : total - value;
+	if (value > 3600)
+		return ((value / 3600) | 0) + "h";
+	if (value > 60)
+		return ((value / 60) | 0) + "m";
+	return (value | 0) + "s";
+};
+var formatTimeShortUnitless = function(value, total) {
+	value = isNaN(value)? total : total - value;
+	if (value > 3600)
+		return ((value / 3600) | 0);
+	if (value > 60)
+		return ((value / 60) | 0);
+	return (value | 0);
+};
 
 /**
 * @constructor
@@ -41,7 +73,7 @@ var VideoRenderer = PlayableRenderer.extend({
 	/** @type {string} */
 	className: PlayableRenderer.prototype.className + " video-renderer",
 	/** @type {Function} */
-	template: viewTemplate,
+	template: require("./VideoRenderer.hbs"),
 	
 	events: {
 		"transitionend": function(ev) {
@@ -98,13 +130,13 @@ var VideoRenderer = PlayableRenderer.extend({
 		
 		this.video = content.querySelector("video");
 		this.video.loop = this.model.attrs().hasOwnProperty("@video-loop");
-		// this.video.innerHTML = "";
 		this.video.src = this.findPlayableSource(this.video);
 		
-		this.currentTimeLabel = this.el.querySelector(".progress-meter .current-time");
-		this.durationLabel = this.el.querySelector(".progress-meter .duration");
-		this.bufferedRect = this.el.querySelector(".progress-meter .buffered");
-		this.playedRect = this.el.querySelector(".progress-meter .played");
+		this.currentTimeLabel = this.el.querySelector(".current-time");
+		this.durationLabel = this.el.querySelector(".duration");
+		this.bufferedRect = this.el.querySelector(".timeline .buffered");
+		this.playedRect = this.el.querySelector(".timeline .played");
+		
 	},
 	
 	measure: function() {
@@ -121,20 +153,15 @@ var VideoRenderer = PlayableRenderer.extend({
 	render: function () {
 		PlayableRenderer.prototype.render.apply(this, arguments);
 		
-		var els, el, i;
-		var mw, mh, cssW, cssH;
-		
-		// this.measure();
-		
+		var els, el, i, cssW, cssH;
 		var img = this.getDefaultImage();
 		var content = this.getContentEl();
 		
-		// NOTE: elements below must use video's UNCROPPED height 
+		// NOTE: elements below must use video's UNCROPPED height, so +2px
 		this.video.setAttribute("width", this.metrics.media.width);
 		this.video.setAttribute("height", this.metrics.media.height + 2);
 		img.setAttribute("width", this.metrics.media.width);
 		img.setAttribute("height", this.metrics.media.height + 2);
-		
 		
 		// media-size
 		// ---------------------------------
@@ -153,17 +180,17 @@ var VideoRenderer = PlayableRenderer.extend({
 		content.style.left = this.metrics.content.x + "px";
 		content.style.top = this.metrics.content.y + "px";
 		
-		// content-size
-		// ---------------------------------
-		cssW = this.metrics.content.width + "px";
-		cssH = this.metrics.content.height + "px";
-		
-		els = this.el.querySelectorAll(".content-size");
-		for (i = 0; i < els.length; i++) {
-			el = els.item(i);
-			el.style.width = cssW;
-			el.style.height = cssH;
-		}
+		// // content-size
+		// // ---------------------------------
+		// cssW = this.metrics.content.width + "px";
+		// cssH = this.metrics.content.height + "px";
+		// 
+		// els = this.el.querySelectorAll(".content-size");
+		// for (i = 0; i < els.length; i++) {
+		// 	el = els.item(i);
+		// 	el.style.width = cssW;
+		// 	el.style.height = cssH;
+		// }
 		
 		return this;
 	},
@@ -197,6 +224,26 @@ var VideoRenderer = PlayableRenderer.extend({
 					view.addSelectionListeners();
 					view.durationLabel.textContent = formatTimecode(view.video.duration);
 					view.updateOverlay(view.getDefaultImage(), view.el.querySelector(".overlay"));
+					
+					var progressEl;
+					if (progressEl = view.el.querySelector("canvas.progress-meter"))
+						view.canvasProgressMeter = new CanvasProgressMeter({
+							el: progressEl,
+							total: view.video.duration,
+							// color: view.model.attrs()["color"],
+							labelFn: formatTimeShortUnitless
+							// labelFn: formatTimecode
+						}).render();
+						
+					if (progressEl = view.el.querySelector("div.progress-meter"))
+						view.svgProgressMeter = new SVGProgressMeter({
+							el: progressEl,
+							total: view.video.duration,
+							// color: view.model.attrs()["color"],
+							labelFn: formatTimeShortUnitless
+							// labelFn: formatTimecode
+						}).render();
+					
 					return view;
 				});
 	},
@@ -403,12 +450,16 @@ var VideoRenderer = PlayableRenderer.extend({
 	/* --------------------------- */
 	
 	_updatePlayedTimeline: function(ev) {
-		this.durationLabel.textContent =
-			formatTimecode(Math.max(0, this.video.duration - this.video.currentTime));
-		this.currentTimeLabel.textContent =
-			formatTimecode(this.video.currentTime);
 		this.playedRect.setAttribute("width",
 			((this.video.currentTime / this.video.duration) * 100) + "%");
+			
+		this.durationLabel.textContent =
+			formatTimecodeLeft(this.video.currentTime, this.video.duration);
+		this.currentTimeLabel.textContent =
+			formatTimecode(this.video.currentTime, this.video.duration);
+			
+		this.canvasProgressMeter.valueTo(this.video.currentTime);
+		this.svgProgressMeter.valueTo(this.video.currentTime);
 	},
 	
 	_updateBufferedTimeline: function(ev) {

@@ -9,26 +9,87 @@ var transitionTemplate = function(o) {
 };
 
 module.exports = (function () {
+	// reusable var
+	var o; 
+	// SASS <--> JS shared hash
+	var sass = require("../../../sass/variables.json");
+	// global hash
 	var g = {};
-	var sass = require("../../../sass/variables.json"); // SASS <--> JS shared hash
-	var o; // reusable var
 	
-	o = {};
+	// JUNK FIRST: Some app-wide defaults
+	// - - - - - - - - - - - - - - - - -
+	g.H_PANOUT_DRAG			= 0.4; // factor
+	g.V_PANOUT_DRAG			= 0.1; // factor
+	g.PAN_THRESHOLD			= 15; // px
+	g.COLLAPSE_THRESHOLD	= 75; // px
+	
+	// breakpoints
+	// - - - - - - - - - - - - - - - - -
+	g.BREAKPOINTS = {};
 	for (var b in sass.breakpoints) {
 		// NOTE: breakpoints have to be enclosed in quotes for the sass-json-vars
 		// compass plug-in to work as expected, but hey have to be removed
-		o[b] = sass.breakpoints[b].slice(1, -1); // remove first and last char
+		g.BREAKPOINTS[b] = sass.breakpoints[b].slice(1, -1); // remove first and last char
 	}
-	g.BREAKPOINTS = o;
 	
-	g.DEFAULT_COLORS = _.clone(sass.default_colors);
-	
+	// base colors, dimensions
+	// - - - - - - - - - - - - - - - - -
+	g.DEFAULT_COLORS			=	_.clone(sass.default_colors);
 	g.HORIZONTAL_STEP			=	parseFloat(sass.units["hu_px"]);
 	g.VERTICAL_STEP				=	parseFloat(sass.units["vu_px"]);
 	
+	// timing, easing
+	// - - - - - - - - - - - - - - - - -
 	g.TRANSITION_GAP			=	parseFloat(sass.transitions["delay_interval_ms"]);
 	g.TRANSITION_DURATION		=	parseFloat(sass.transitions["duration_ms"]);
 	g.TRANSITION_EASE			=	sass.transitions["ease"];
+	
+	// paths, networking
+	// - - - - - - - - - - - - - - - - -
+	g.APP_ROOT		=	window.approot;
+	g.MEDIA_DIR		=	window.mediadir;
+	delete window.approot;
+	delete window.mediadir;
+	
+	// hardcoded font data
+	// - - - - - - - - - - - - - - - - -
+	g.FONT_METRICS = {
+		"Franklin Gothic FS" : {
+			"unitsPerEm": 1000,
+			"ascent": 827,
+			"descent": -173
+		},
+		"ITCFranklinGothicStd" : {
+			"unitsPerEm": 1000,
+			"ascent": 686,
+			"descent": -314
+		},
+		"Numbers": {
+			"unitsPerEm": 1024,
+			"ascent": 939,
+			"descent": -256
+		},
+		// "ITCFranklinGothicStd-Condensed": this.["ITCFranklinGothicStd"],
+		// "ITCFranklinGothicStd-Compressed": this.["ITCFranklinGothicStd"],
+		// "ITCFranklinGothicStd-ExtraCompressed": this.["ITCFranklinGothicStd"],
+		// "NumbersClaimcheck": this["Numbers"],
+		// "NumbersGreenback": this["Numbers"],
+		// "NumbersIndicia": this["Numbers"],
+		// "NumbersRevenue": this["Numbers"],
+		// "NumbersPremium": this["Numbers"],
+		// "NumbersRedbird": this["Numbers"],
+	};
+	o = g.FONT_METRICS["Numbers"];
+	g.FONT_METRICS["NumbersClaimcheck"] = o;
+	g.FONT_METRICS["NumbersGreenback"] = o;
+	g.FONT_METRICS["NumbersIndicia"] = o;
+	g.FONT_METRICS["NumbersPremium"] = o;
+	g.FONT_METRICS["NumbersRedbird"] = o;
+	g.FONT_METRICS["NumbersRevenue"] = o;
+	
+	// css transition presets
+	// TODO: get rid of this
+	// - - - - - - - - - - - - - - - - -
 	
 	g.NO_DELAY	 				=	0;
 	g.TRANSITION_DELAY			=	(g.TRANSITION_DURATION + g.TRANSITION_GAP);
@@ -70,15 +131,9 @@ module.exports = (function () {
 	// g.TRANSIT_PARENT.className = "transform-changing";
 	g.TRANSIT_ENTERING.cssText = transitionTemplate(g.TRANSIT_ENTERING);
 	
-	g.H_PANOUT_DRAG			= 0.4; // factor
-	g.V_PANOUT_DRAG			= 0.1; // factor
-	g.COLLAPSE_THRESHOLD	= 75; // px
-	g.PAN_THRESHOLD			= 15; // px
-	
-	g.APP_ROOT		=	window.approot;
-	g.MEDIA_DIR		=	window.mediadir;
-	
-	/** @type {Object} */
+	// Symphony CMS jit-image url templates
+	// TODO: get rid of this
+	// - - - - - - - - - - - - - - - - -
 	g.IMAGE_URL_TEMPLATES = {
 		"original" :
 			_.template(g.MEDIA_DIR + "/<%= src %>"),
@@ -87,9 +142,6 @@ module.exports = (function () {
 		"constrain-height" :
 			_.template(g.APP_ROOT + "image/1/0/<%= height %>/uploads/<%= src %>")
 	};
-	
-	delete window.approot;
-	delete window.mediadir;
 	
 	return g;
 }());

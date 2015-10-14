@@ -1,6 +1,10 @@
 /**
- * @module app/view/render/SequenceRenderer
- */
+* @module app/view/render/SequenceRenderer
+*/
+
+/* --------------------------- *
+/* Imports
+/* --------------------------- */
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -9,32 +13,36 @@ var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 
-/** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
-/** @type {module:app/view/render/PlayableRenderer} */
-var PlayableRenderer = require("app/view/render/PlayableRenderer");
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
+/** @type {module:app/view/render/PlayableRenderer} */
+var PlayableRenderer = require("app/view/render/PlayableRenderer");
 /** @type {module:app/model/SelectableCollection} */
 var SelectableCollection = require("app/model/SelectableCollection");
-/** @type {module:app/view/component/CircleProgressMeter} */
-var ProgressMeter = require("app/view/component/CircleProgressMeter");
+/** @type {module:app/control/Globals} */
+var Globals = require("app/control/Globals");
 
+/** @type {module:app/view/component/progress/CanvasProgressMeter} */
+var CanvasProgressMeter = require("app/view/component/progress/CanvasProgressMeter");
+/** @type {module:app/view/component/progress/SVGProgressMeter} */
+var SVGProgressMeter = require("app/view/component/progress/SVGCircleProgressMeter");
+
+/** @type {module:utils/Timer} */
+var Timer = require("utils/Timer");
 /** @type {Function} */
 var transitionEnd = require("utils/event/transitionEnd");
 /** @type {module:utils/prefixedProperty} */
 var prefixed = require("utils/prefixedProperty");
 /** @type {Function} */
 var _whenImageLoads = require("app/view/promise/_whenImageLoads");
-
 /** @type {Function} */
 var whenSelectionDistanceIs = require("app/view/promise/whenSelectionDistanceIs");
 // var whenSelectTransitionEnds = require("app/view/promise/whenSelectTransitionEnds");
 // var whenDefaultImageLoads = require("app/view/promise/whenDefaultImageLoads");
 
-
-/** @type {module:utils/Timer} */
-var Timer = require("utils/Timer");
+/* --------------------------- *
+/* Private classes
+/* --------------------------- */
 
 /**
 * @constructor
@@ -136,9 +144,9 @@ var SequenceRenderer = PlayableRenderer.extend({
 	},
 	
 	initializeSequence: function() {
-		//
+		
 		// Sequence model
-		//
+		// ---------------------------------
 		this._isSequenceRunning = false;
 		this._sequenceInterval = parseInt(this.model.attrs()["@sequence-interval"]) || 2500;
 		
@@ -154,9 +162,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 		this.sources.add(srcset, opts);
 		this.sources.selectAt(0);// select it
 		
-		//
 		// Sequence child views
-		//
+		// ---------------------------------
 		this.children = new Container();
 		// add default image as renderer (already in DOM)
 		this.children.add(new SequenceStepRenderer({
@@ -174,11 +181,35 @@ var SequenceRenderer = PlayableRenderer.extend({
 		}, this);
 		this.sequence.appendChild(buffer);
 		
-		this.progressMeter = this.createProgressMeter();
+		// progress-meter
+		// ---------------------------------
 		
-		//
+		// var stepFormatter = function(i, t, s) { return (((i/t)*s) | 0) + 1; };
+		var collectionFormatter = function(val) { return this.sources.selectedIndex + 1; }.bind(this);
+		this._progressFormatter = collectionFormatter;
+		
+		var progressEl;
+		if (progressEl = this.el.querySelector("canvas.progress-meter")) {
+			this.canvasProgressMeter = new CanvasProgressMeter({
+				el: progressEl,
+				total: this.sources.length,
+				steps: this.sources.length,
+				color: this.model.attrs()["color"],
+				labelFn: this._progressFormatter
+			}).render();
+		}
+		if (progressEl = this.el.querySelector("div.progress-meter")) {
+			this.svgProgressMeter = new SVGProgressMeter({
+				el: progressEl,
+				total: this.sources.length,
+				steps: this.sources.length,
+				color: this.model.attrs()["color"],
+				labelFn: this._progressFormatter
+			}).render();
+		}
+		
 		// Sequence timer and listeners
-		//
+		// ---------------------------------
 		this.timer = new Timer();
 		this.listenTo(this, "view:remove", function () {
 			this.timer.stop();
@@ -220,29 +251,38 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/** @override */
 	render: function () {
 		PlayableRenderer.prototype.render.apply(this, arguments);
-		// this.measure();
 		
-		// NOTE: image elements are given 100% w/h in CSS (.sequence-renderer .content img);
-		// actual dimensions are set to the parent element (.sequence-renderer .content)
-		// this.image.setAttribute("width", cW);
-		// this.image.setAttribute("height", cH);
-		
+		var els, el, i, cssW, cssH;
 		var content = this.getContentEl();
+		
+		// media-size
+		// ---------------------------------
+		cssW = this.metrics.media.width + "px";
+		cssH = this.metrics.media.height + "px";
+		
+		els = this.el.querySelectorAll(".media-size");
+		for (i = 0; i < els.length; i++) {
+			el = els.item(i);
+			el.style.width = cssW;
+			el.style.height = cssH;
+		}
+		
+		content.style.width = cssW;
+		content.style.height = cssH;
 		content.style.left = this.metrics.content.x + "px";
 		content.style.top = this.metrics.content.y + "px";
-		this.sequence.style.width = content.style.width = this.metrics.media.width + "px";
-		this.sequence.style.height = content.style.height = this.metrics.media.height + "px";
-		this.overlay.style.width = this.metrics.media.width + "px";
-		this.overlay.style.height = this.metrics.media.height + "px";
 		
-		// sizing.style.maxWidth = content.offsetWidth + "px";
-		// sizing.style.maxHeight = content.offsetHeight + "px";
-		// sizing.style.maxWidth = content.clientWidth + "px";
-		// sizing.style.maxHeight = content.clientHeight + "px";
-		
-		// var sizing = this.getSizingEl();
-		// sizing.style.maxWidth = this.metrics.content.width + "px";
-		// sizing.style.maxHeight = this.metrics.content.height + "px";
+		// // content-size
+		// // ---------------------------------
+		// cssW = this.metrics.content.width + "px";
+		// cssH = this.metrics.content.height + "px";
+		// 
+		// els = this.el.querySelectorAll(".content-size");
+		// for (i = 0; i < els.length; i++) {
+		// 	el = els.item(i);
+		// 	el.style.width = cssW;
+		// 	el.style.height = cssH;
+		// }
 		
 		return this;
 	},
@@ -351,34 +391,29 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/* progress meter
 	/* --------------------------- */
 	
-	createProgressMeter: function() {
-		var view = new ProgressMeter({
-			value: 0,
-			total: this.sources.length
-		});
-		this.content.appendChild(view.render().el);
-		return view;
-	},
-	
 	updateProgressLabel: function(value) {
-		this.progressMeter.labelEl.textContent = (value | 0) + 1;
+		this.svgProgressMeter.labelEl.textContent = this._progressFormatter(value);
+		// this.svgProgressMeter.labelEl.textContent = (value | 0) + 1;
 	},
 	
 	updateProgress: function(valueFrom, valueDelta, duration) {
 		var valueTo = valueFrom + valueDelta;
-		var meter = this.progressMeter;
-		var shape = this.progressMeter.amountShape;
+		// var meter = this.svgProgressMeter;
+		// var shape = this.svgProgressMeter.amountShape;
+		// 
+		// if (duration > 0) {
+		// 	var transitionFn = function(ev) {
+		// 		shape.removeEventListener(transitionEnd, transitionFn, false);
+		// 		meter.valueTo(valueTo, duration * 0.9);
+		// 	};
+		// 	shape.addEventListener(transitionEnd, transitionFn, false);
+		// 	meter.valueTo(valueFrom + 0.00001, 1);
+		// } else {
+		// 	meter.valueTo(valueTo);
+		// }
 		
-		if (duration > 0) {
-			var transitionFn = function(ev) {
-				shape.removeEventListener(transitionEnd, transitionFn, false);
-				meter.valueTo(valueTo, duration * 0.9);
-			};
-			shape.addEventListener(transitionEnd, transitionFn, false);
-			meter.valueTo(valueFrom + 0.00001, 1);
-		} else {
-			meter.valueTo(valueTo);
-		}
+		this.svgProgressMeter && this.svgProgressMeter.valueTo(valueTo, duration);
+		this.canvasProgressMeter && this.canvasProgressMeter.valueTo(valueTo, duration);
 	},
 });
 

@@ -78,6 +78,8 @@ var GroupingListView = FilterableListView.extend({
 	 */
 	defaultGroupRenderer: View.extend({
 		/** @override */
+		cidPrefix: "listGroup",
+		/** @override */
 		tagName: "dt",
 		/** @override */
 		className: "list-group",

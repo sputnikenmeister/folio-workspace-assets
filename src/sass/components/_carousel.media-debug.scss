@@ -1,0 +1,43 @@
+// - - - - - - - - - - - - - - - - - -
+// DEBUG
+// - - - - - - - - - - - - - - - - - -
+
+.media-item .debug-log {
+	font-size: 10px;
+	line-height: 11px;
+	box-sizing: border-box;
+	position: absolute;
+	width: 100%;
+	bottom: -1.5rem;
+	margin: 1.5rem 20px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	& > pre {
+		font-family: $mono_fallback;
+		display: block;
+		// &:first-child {
+		// 	display: none;
+		// }
+		&::before {
+			@include ellipsis(inline-block);
+			width: 8em;
+			padding-right: 0.5em;
+			font-weight: bold;
+			text-decoration: underline;
+			vertical-align: bottom;
+		}
+		&::before {
+			content: attr(data-logtype);
+		}
+		&[data-logrepeat]::before {
+			content: "[" attr(data-logrepeat) "]" attr(data-logtype);
+		}
+	}
+}
+.carousel .debug-log {
+	display: none;
+	// visibility: hidden;
+}
+.debug-logs .carousel:not(.scrolling) .selected .debug-log {
+	display: block;
+}

@@ -26,11 +26,43 @@ var getPrototypeChainValue = require("utils/object/getPrototypeChainValue");
 var _viewsByCid = {};
 var _cidSeed = 1;
 
+document.addEventListener(prefixedEvent("animationstart", window, "AnimationEvent"), function(ev) {
+	if (ev.animationName == "viewElementInserted") {
+		var view = _viewsByCid[ev.target.cid];
+		if (view = View.findByElement(ev.target)) {
+			console.log("View::[viewElementInserted]: %s", view.cid);
+			view._addedToDom();
+		}
+		// else if (view = View.findByDescendant(ev.target)) {
+		// 	console.log("View::[viewElementInserted]: %s > %s", view.cid, ev.target.cid);
+		// 	view.trigger("view:elementadd");
+		// }
+		// else {
+		// 	console.log("View::[viewElementInserted]: (orphan) %s", ev.target.getAttribute("data-cid"));
+		// }
+	}
+}, false);
+
+var View = {
+	ViewError: require("app/view/base/ViewError"),
+	
+	findByElement: function(el) {
+		return _viewsByCid[el.cid];
+	},
+	findByDescendant: function(el) {
+		do
+			if (_viewsByCid[el.cid])
+				return _viewsByCid[el.cid];
+		while (el = el.parentElement);
+		return null;
+	}
+};
+
 /**
 * @constructor
 * @type {module:app/view/base/View}
 */
-var View = Backbone.View.extend({
+var ViewProto = {
 	
 	/** @type {string} */
 	cidPrefix: "view",
@@ -44,6 +76,7 @@ var View = Backbone.View.extend({
 	},
 	
 	constructor: function(options) {
+		
 		Object.defineProperties(this, getPrototypeChainValue(this, "properties", Backbone.View));
 		
 		if (options && options.className && this.className) {
@@ -58,7 +91,21 @@ var View = Backbone.View.extend({
 				}
 			}
 		}
+		
+		this._initalizing = true;
 		Backbone.View.apply(this, arguments);
+		delete this._initalizing;
+		
+		if (this.inDomTree) {
+			this.trigger("view:add", this);
+		}
+	},
+	
+	_addedToDom: function() {
+		this.inDomTree = true;
+		if (!this._initalizing) {
+			this.trigger("view:add", this);
+		}
 	},
 	
 	remove: function() {
@@ -82,7 +129,7 @@ var View = Backbone.View.extend({
 			Backbone.View.prototype.setElement.apply(this, arguments);
 		}
 		if (this.el === void 0) {
-			console.warn("Backbone view has no element");
+			console.error("Backbone view has no element");
 		} else {
 			this.el.setAttribute("data-cid", this.cid);
 			this.el.cid = this.cid;
@@ -151,31 +198,6 @@ var View = Backbone.View.extend({
 	cancelAnimationFrame: function(id) {
 		return window.cancelAnimationFrame(id);
 	},
-},{
-	// extend: function(protoProps, staticProps) {
-	// 	var child = Backbone.View.extend.apply(this, arguments);
-	// 	var childClassName = child.prototype.className;
-	// 	var parentClassName = this.prototype.className;
-	// 	
-	// 	if (parentClassName && childClassName) {
-	// 		if (_.isFunction(childClassName) || _.isFunction(parentClassName)) {
-	// 			child.prototype.className = function () {
-	// 				return _.result(this, parentClassName) + " " + _.result(this, childClassName);
-	// 			};
-	// 		} else {
-	// 			child.prototype.className = parentClassName + " " + childClassName;
-	// 		}
-	// 		console.log("extend className: ", parentClassName, "|", childClassName);
-	// 	}
-	// 	
-	// 	return child;
-	// },
-	
-	findByElement: function(element) {
-		return _viewsByCid[element.cid];
-	},
-	
-	ViewError: require("app/view/base/ViewError"),
-});
+};
 
-module.exports = View;
+module.exports = Backbone.View.extend(ViewProto, View);

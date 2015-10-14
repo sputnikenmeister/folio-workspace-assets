@@ -1,5 +1,5 @@
 /**
-* @module app/view/component/CircleProgressMeter
+* @module app/view/component/progress/SVGCircleProgressMeter
 */
 
 /** @type {module:app/view/base/View} */
@@ -7,13 +7,25 @@ var View = require("app/view/base/View");
 /** @type {module:utils/prefixedProperty} */
 var prefixed = require("utils/prefixedProperty");
 
-module.exports = View.extend({
+var SVGCircleProgressMeter = View.extend({
 	
-	cidPrefix: "circleProgressMeter",
+	cidPrefix: "svgProgressMeter",
 	/** @type {string} */
-	className: "progress-meter circle-progress-meter",
+	className: "progress-meter svg-progress-meter",
 	/** @type {Function} */
-	template:  require("./CircleProgressMeter.hbs"),
+	template:  require("./SVGCircleProgressMeter.hbs"),
+	
+	events: {
+		"transitionend": "_onTransitionEnd"
+	},
+	
+	_onTransitionEnd: function (ev) {
+		if (ev.target === this.amountShape) {
+			// log.call(this, "event", "elapsed:" + (ev.elapsedTime*1000) + "ms");
+			this._transitionStartTime = -1;
+			this._transitionDuration = 0;
+		}
+	},
 	
 	/** @override */
 	initialize: function (options) {
@@ -25,42 +37,6 @@ module.exports = View.extend({
 		this._valueChanged = true;
 		
 		this.createChildren();
-	},
-	
-	createChildren: function() {
-		var s, p, total = this._total;
-		
-		// sw: step mark width in px
-		// p = { d: 24, s1: 1.6, s2: 1.4, sw: 2.75 };
-		// circumferences in px
-		// p.r = ((p.d - Math.max(p.s1, p.s2)) / 2) - 1; // allow 1/2 pixel around circles
-		// p.c = p.r * Math.PI * 2;
-		
-		p = { d: 24, s1: 3.6, s2: 2.4, sw: 2.75 };
-		p.r = p.d / 2;
-		p.c = p.d * Math.PI;
-		
-		// rotate CCW ( 90 + half a step mark, in degrees ) so that
-		// the arc starts from the top and step gaps appear centered
-		p.sr = ((p.sw / 2) / p.r) * (180/Math.PI) - 90;
-		// keep template params
-		this._params = p;
-		
-		this.el.innerHTML = this.template(p);
-		
-		this.labelEl = this.el.querySelector("#step-label");
-		this.amountShape = this.el.querySelector("#amount");
-		this.stepsShape = this.el.querySelector("#steps");
-		
-		s = this.stepsShape.style;
-		s.strokeDasharray = [(p.c / total) - p.sw, p.sw];
-		s.strokeOpacity = 0.5;
-		// this.stepsShape.style.strokeDasharray = [p.sw, (p.c / total) - p.sw];
-		// this.stepsShape.style.strokeDashoffset = p.sw;
-		
-		s = this.amountShape.style;
-		s.strokeDasharray = [p.c - p.sw, p.c + p.sw];
-		s.strokeDashoffset = p.c;
 	},
 	
 	valueTo: function (value, duration) {
@@ -90,15 +66,42 @@ module.exports = View.extend({
 		return this;
 	},
 	
-	events: {
-		"transitionend": "_onTransitionEnd"
-	},
-	
-	_onTransitionEnd: function (ev) {
-		if (ev.target === this.amountShape) {
-			// log.call(this, "event", "elapsed:" + (ev.elapsedTime*1000) + "ms");
-			this._transitionStartTime = -1;
-			this._transitionDuration = 0;
-		}
+	createChildren: function() {
+		var s, p, total = this._total;
+		
+		// sw: step mark width in px
+		// p = { d: 24, s1: 1.6, s2: 1.4, sw: 2.75 };
+		// circumferences in px
+		// p.r = ((p.d - Math.max(p.s1, p.s2)) / 2) - 1; // allow 1/2 pixel around circles
+		// p.c = p.r * Math.PI * 2;
+		
+		p = { d: 24, s1: 3.6, s2: 2.4, sw: 2.75 };
+		// p.r = p.d / 2;
+		p.r = ((p.d - Math.max(p.s1, p.s2)) / 2) - 1; // allow 1/2 pixel around circles
+		p.c = p.d * Math.PI;
+		
+		// rotate CCW ( 90 + half a step mark, in degrees ) so that
+		// the arc starts from the top and step gaps appear centered
+		p.sr = ((p.sw / 2) / p.r) * (180/Math.PI) - 90;
+		// keep template params
+		this._params = p;
+		
+		this.el.innerHTML = this.template(p);
+		
+		this.labelEl = this.el.querySelector("#step-label");
+		this.amountShape = this.el.querySelector("#amount");
+		this.stepsShape = this.el.querySelector("#steps");
+		
+		s = this.stepsShape.style;
+		s.strokeDasharray = [(p.c / total) - p.sw, p.sw];
+		s.strokeOpacity = 0.5;
+		// this.stepsShape.style.strokeDasharray = [p.sw, (p.c / total) - p.sw];
+		// this.stepsShape.style.strokeDashoffset = p.sw;
+		
+		s = this.amountShape.style;
+		s.strokeDasharray = [p.c - p.sw, p.c + p.sw];
+		s.strokeDashoffset = p.c;
 	},
 });
+
+module.exports = SVGCircleProgressMeter;

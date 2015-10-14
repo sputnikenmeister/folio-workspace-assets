@@ -255,7 +255,10 @@ var FilterableListView = DeferredView.extend({
 		}
 	},
 }, {
-	defaultRenderer: ClickableRenderer,
+	defaultRenderer: ClickableRenderer.extend({
+		/** @override */
+		cidPrefix: "listItem",
+	}),
 });
 
 module.exports = FilterableListView;

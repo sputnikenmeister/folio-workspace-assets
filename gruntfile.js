@@ -28,7 +28,6 @@ module.exports = function (grunt) {
 	/* Main Targets
 	/* -------------------------------- */
 	
-	
 	grunt.registerTask("build-debug-client", ["browserify:client", "exorcise:client"]);
 	grunt.registerTask("build-debug-vendor", ["browserify:vendor", "exorcise:vendor"]);
 	grunt.registerTask("build-debug-sass", ["compass:debug", "autoprefixer:debug"]);
@@ -45,6 +44,11 @@ module.exports = function (grunt) {
 	grunt.registerTask("default", ["build-debug"]);
 	
 	/* ---------------------------------
+	/* external gruntfile
+	/* --------------------------------- */
+	require("./build/grunt/grunt.resources.js")(grunt);
+	
+	/* ---------------------------------
 	/* Style Sheets
 	/* --------------------------------- */
 	// NOTE: `gem install compass sass-json-vars`
@@ -55,7 +59,7 @@ module.exports = function (grunt) {
 	grunt.config("compass.options", {
 		require: [
 			"sass-json-vars",
-			"./build/compass-encode.rb", // alternative to compass inline-image()
+			"./build/grunt/compass-encode.rb", // alternative to compass inline-image()
 		],
 		sassDir: "src/sass",
 		cssDir: "css",
@@ -125,7 +129,8 @@ module.exports = function (grunt) {
 				// "handlebars",
 			],
 			alias: [
-				"./build/modernizr-dist.js:Modernizr",
+				"./build/vendor/paper-core.js:paper",
+				"./build/vendor/modernizr-dist.js:Modernizr",
 				"./src/js/shims/fullscreen.js:fullscreen-polyfill",
 				"./src/js/shims/matchesSelector.js:matches-polyfill",
 				"./src/js/shims/requestAnimationFrame.js:raf-polyfill",
