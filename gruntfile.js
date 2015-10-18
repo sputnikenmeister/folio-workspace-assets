@@ -46,7 +46,7 @@ module.exports = function (grunt) {
 	/* ---------------------------------
 	/* external gruntfile
 	/* --------------------------------- */
-	require("./build/grunt/grunt.resources.js")(grunt);
+	require("./build/grunt/grunt.favicons.js")(grunt);
 	
 	/* ---------------------------------
 	/* Style Sheets
@@ -67,6 +67,9 @@ module.exports = function (grunt) {
 		fontsDir: "fonts",
 		javascriptsDir: "js",
 		relativeAssets: true,
+		importPath: [
+			"node_modules/folio-webfonts/build/sass"
+		]
 		//httpPath: "/workspace/assets",
 	});
 	grunt.loadNpmTasks("grunt-autoprefixer");
@@ -129,7 +132,7 @@ module.exports = function (grunt) {
 				// "handlebars",
 			],
 			alias: [
-				"./build/vendor/paper-core.js:paper",
+				// "./build/vendor/paper-core.js:paper",
 				"./build/vendor/modernizr-dist.js:Modernizr",
 				"./src/js/shims/fullscreen.js:fullscreen-polyfill",
 				"./src/js/shims/matchesSelector.js:matches-polyfill",

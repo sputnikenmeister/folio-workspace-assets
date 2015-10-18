@@ -16,3 +16,4 @@
 /src/sass/generated
 /src/js/generated
 /npm-debug.log
+build/sandbox

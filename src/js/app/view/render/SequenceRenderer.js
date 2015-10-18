@@ -25,7 +25,8 @@ var Globals = require("app/control/Globals");
 /** @type {module:app/view/component/progress/CanvasProgressMeter} */
 var CanvasProgressMeter = require("app/view/component/progress/CanvasProgressMeter");
 /** @type {module:app/view/component/progress/SVGProgressMeter} */
-var SVGProgressMeter = require("app/view/component/progress/SVGCircleProgressMeter");
+var SVGProgressMeter = require("app/view/component/progress/SVGPathProgressMeter");
+// var SVGProgressMeter = require("app/view/component/progress/SVGCircleProgressMeter");
 
 /** @type {module:utils/Timer} */
 var Timer = require("utils/Timer");
@@ -143,89 +144,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 		this.overlay = this.content.querySelector(".overlay");
 	},
 	
-	initializeSequence: function() {
-		
-		// Sequence model
-		// ---------------------------------
-		this._isSequenceRunning = false;
-		this._sequenceInterval = parseInt(this.model.attrs()["@sequence-interval"]) || 2500;
-		
-		var opts = { silent: true };
-		var srcset = this.model.get("srcset");
-		var defaultSrc = _.pick(this.model.attributes, ["src"]);
-		
-		this.sources = new SourceCollection();
-		// if not in srcset, create a model for defaultImage
-		if (!_.some(srcset, _.matcher(defaultSrc))) {
-			this.sources.add(defaultSrc, opts);
-		}
-		this.sources.add(srcset, opts);
-		this.sources.selectAt(0);// select it
-		
-		// Sequence child views
-		// ---------------------------------
-		this.children = new Container();
-		// add default image as renderer (already in DOM)
-		this.children.add(new SequenceStepRenderer({
-			el: this.getDefaultImage(),
-			model: this.sources.selected
-		}));
-		// create rest of views
-		var buffer = document.createDocumentFragment();
-		this.sources.each(function (item, index, arr) {
-			if (!this.children.findByModel(item)) {
-				var view = new SequenceStepRenderer({ model: item });
-				this.children.add(view);
-				buffer.appendChild(view.render().el);
-			}
-		}, this);
-		this.sequence.appendChild(buffer);
-		
-		// progress-meter
-		// ---------------------------------
-		
-		// var stepFormatter = function(i, t, s) { return (((i/t)*s) | 0) + 1; };
-		var collectionFormatter = function(val) { return this.sources.selectedIndex + 1; }.bind(this);
-		this._progressFormatter = collectionFormatter;
-		
-		var progressEl;
-		if (progressEl = this.el.querySelector("canvas.progress-meter")) {
-			this.canvasProgressMeter = new CanvasProgressMeter({
-				el: progressEl,
-				total: this.sources.length,
-				steps: this.sources.length,
-				color: this.model.attrs()["color"],
-				labelFn: this._progressFormatter
-			}).render();
-		}
-		if (progressEl = this.el.querySelector("div.progress-meter")) {
-			this.svgProgressMeter = new SVGProgressMeter({
-				el: progressEl,
-				total: this.sources.length,
-				steps: this.sources.length,
-				color: this.model.attrs()["color"],
-				labelFn: this._progressFormatter
-			}).render();
-		}
-		
-		// Sequence timer and listeners
-		// ---------------------------------
-		this.timer = new Timer();
-		this.listenTo(this, "view:remove", function () {
-			this.timer.stop();
-		});
-		this.listenTo(this.timer, {
-			"start": this._onTimerStart,
-			"pause": this._onTimerPause,
-			"end": this._onTimerEnd,
-			// "stop": function () { // stop is only called on view remove},
-		});
-		this.listenTo(this.sources, "select:one", function () {
-			this.updateProgressLabel(this.sources.selectedIndex);
-		});
-		
-	},
-	
 	/* --------------------------- *
 	/* initializeAsync
 	/* --------------------------- */
@@ -285,6 +203,99 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// }
 		
 		return this;
+	},
+	
+	initializeSequence: function() {
+		
+		// Sequence model
+		// ---------------------------------
+		this._isSequenceRunning = false;
+		this._sequenceInterval = parseInt(this.model.attrs()["@sequence-interval"]) || 2500;
+		
+		var opts = { silent: true };
+		var srcset = this.model.get("srcset");
+		var defaultSrc = _.pick(this.model.attributes, ["src"]);
+		
+		this.sources = new SourceCollection();
+		// if not in srcset, create a model for defaultImage
+		if (!_.some(srcset, _.matcher(defaultSrc))) {
+			this.sources.add(defaultSrc, opts);
+		}
+		this.sources.add(srcset, opts);
+		this.sources.selectAt(0);// select it
+		
+		// Sequence child views
+		// ---------------------------------
+		this.children = new Container();
+		// add default image as renderer (already in DOM)
+		this.children.add(new SequenceStepRenderer({
+			el: this.getDefaultImage(),
+			model: this.sources.selected
+		}));
+		// create rest of views
+		var buffer = document.createDocumentFragment();
+		this.sources.each(function (item, index, arr) {
+			if (!this.children.findByModel(item)) {
+				var view = new SequenceStepRenderer({ model: item });
+				this.children.add(view);
+				buffer.appendChild(view.render().el);
+			}
+		}, this);
+		this.sequence.appendChild(buffer);
+		
+		// progress-meter
+		// ---------------------------------
+		
+		// var collectionFormatter = function(val) { return this.sources.selectedIndex + 1; }.bind(this);
+		// var stepFormatter = function(i, t, s) { return (((i/t)*s) | 0) + 1; };
+		var fractionFormatter = function(i, t, s) { return ((((i/t)*s) | 0) + 1) +"/"+s; };
+		this._progressFormatter = fractionFormatter;
+		
+		// this.progressMeter = new CanvasProgressMeter({
+		this.progressMeter = new SVGProgressMeter({
+			total: this.sources.length,
+			steps: this.sources.length,
+			// color: this.model.attrs()["color"],
+			labelFn: this._progressFormatter
+		});
+		this.el.querySelector(".top-bar").appendChild(this.progressMeter.render().el);
+		
+		// var progressEl;
+		// if (progressEl = this.el.querySelector("canvas.progress-meter")) {
+		// 	this.canvasProgressMeter = new CanvasProgressMeter({
+		// 		el: progressEl,
+		// 		total: this.sources.length,
+		// 		steps: this.sources.length,
+		// 		// color: this.model.attrs()["color"],
+		// 		labelFn: this._progressFormatter
+		// 	}).render();
+		// }
+		// if (progressEl = this.el.querySelector("div.progress-meter")) {
+		// 	this.svgProgressMeter = new SVGProgressMeter({
+		// 		el: progressEl,
+		// 		total: this.sources.length,
+		// 		steps: this.sources.length,
+		// 		// color: this.model.attrs()["color"],
+		// 		labelFn: this._progressFormatter
+		// 	}).render();
+		// }
+		
+		// Sequence timer and listeners
+		// ---------------------------------
+		this.timer = new Timer();
+		this.listenTo(this, "view:remove", function () {
+			this.timer.stop();
+		});
+		this.listenTo(this.timer, {
+			"start": this._onTimerStart,
+			"pause": this._onTimerPause,
+			"end": this._onTimerEnd,
+			// "stop": function () { // stop is only called on view remove},
+		});
+		this.listenTo(this.sources, "select:one", function () {
+			this.updateProgressLabel(this.sources.selectedIndex);
+		});
+		
 	},
 	
 	/* ---------------------------
@@ -392,8 +403,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/* --------------------------- */
 	
 	updateProgressLabel: function(value) {
-		this.svgProgressMeter.labelEl.textContent = this._progressFormatter(value);
-		// this.svgProgressMeter.labelEl.textContent = (value | 0) + 1;
+		// this.svgProgressMeter.labelEl.textContent = this._progressFormatter(value);
 	},
 	
 	updateProgress: function(valueFrom, valueDelta, duration) {
@@ -412,8 +422,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// 	meter.valueTo(valueTo);
 		// }
 		
-		this.svgProgressMeter && this.svgProgressMeter.valueTo(valueTo, duration);
-		this.canvasProgressMeter && this.canvasProgressMeter.valueTo(valueTo, duration);
+		this.progressMeter && this.progressMeter.valueTo(valueTo, duration);
 	},
 });
 

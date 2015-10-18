@@ -261,12 +261,14 @@ var PlayableRenderer = MediaRenderer.extend({
 		imageData = context.getImageData(0, 0, destRect.width, destRect.height);
 		
 		var avgColor = Color().rgb(getAverageRGB(imageData));
-		// var avgHex = avgColor.hexString();
-		// var els = this.el.querySelectorAll("img.current, img.poster");
+		// var avgHex = avgColor.hexString(), els = this.el.querySelectorAll("img, video");
 		// for (var i = 0; i < els.length; i++) {
 		// 	els.item(i).style.backgroundColor = avgHex;
 		// }
+		
 		targetEl.classList.toggle("over-dark", avgColor.dark());
+		
+		console.log("%s::updateOverlay() avgColor:%s (%s)", this.cid, avgColor.rgbString(), avgColor.dark()?"dark":"light", targetEl);
 			
 		// Color, filter opts
 		// ------------------------------
@@ -287,7 +289,7 @@ var PlayableRenderer = MediaRenderer.extend({
 		// targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
 		
 		} catch (err) {
-			console.error(this.cid, this.model.cid, "PlayableRenderer.updateOverlay", err);
+			console.error("%s::updateOverlay", this.cid, err);
 		}
 	}
 });

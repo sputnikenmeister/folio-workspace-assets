@@ -8,9 +8,10 @@
 	position: static;
 	padding: 0 0.5em;
 	
-//	margin-right: 0.5rem;
-	&:first-child { margin-left: -0.5em; }
-	&:last-child { margin-right: 1em; }
+	// margin-right: 0.5rem;
+	// &:first-child { margin-left: -0.5em; }
+	// &:last-child { margin-right: 1em; }
+	
 	// hide if there is only one item;
 	&:first-child:last-child {
 		visibility: hidden;

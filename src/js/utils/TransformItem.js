@@ -94,7 +94,7 @@ function TransformItem(el, immediate) {
 	this.el = el;
 	this.immediate = immediate;
 	
-	this.id = el.cid;
+	this.id = el._txId;
 	this.el.addEventListener(transitionEnd, this._handleTransitionEnd, false);
 	
 	this._captureInvalid = false;

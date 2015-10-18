@@ -24,7 +24,7 @@ $darkolivegreen:	darkolivegreen;
 // -----------------------------------
 
 #container.debug-grid-bg {
-	background-image: image-url("debug-background.svg");
+	background-image: image-url("debug/debug-background.svg");
 	background-color: transparent;
 	background-repeat: no-repeat;
 	background-position: calc(50% + 1px) 1px;
@@ -71,36 +71,30 @@ $darkolivegreen:	darkolivegreen;
 }
 
 .debug-blocks {
-	// #header, #footer,
-	// #container-footer {
-	// 	background-color: transparentize($darkseagreen, 0.9);
-	// 	@include debug_outline($color: $darkseagreen);
-	// }
-	#bundle-pager {
-		.button {
-			@include debug_outline($color: $darkseagreen);
-			.name {
-				background-color: transparentize($darkseagreen, 0.7);
-			}
-		}
+	*[data-cid] {
+		@include debug_outline($color: $darkseagreen);
 	}
+	.list-item[data-cid] {
+		background-color: transparentize($darkseagreen, 0.7);
+	}
+	
 	#navigation {
-//		@include debug_outline($color: $lightcoral);
-//		@include debug_outline_thick($color: $lightcoral);
-//		.transform-wrapper > * {
-//			@include debug_outline_thick($color: $lightcoral);
-//			@include debug_outline($width: 1px, $style: solid, $color: $lightcoral);
-//		}
+		// @include debug_outline($color: $lightcoral);
+		// @include debug_outline_thick($color: $lightcoral);
+		// .transform-wrapper > * {
+		// 	@include debug_outline_thick($color: $lightcoral);
+		// 	@include debug_outline($width: 1px, $style: solid, $color: $lightcoral);
+		// }
 		#site-name-wrapper, .list {
-//			background-color: transparentize($lightcoral, 0.9);
-//			@include debug_outline($color: $lightcoral);
-			@include debug_outline_thick($color: $lightcoral);
-		}
-		#site-name, .list-group, .list-item {
 			// background-color: transparentize($lightcoral, 0.9);
 			// @include debug_outline($color: $lightcoral);
-//			@include debug_outline($color: transparentize($lightcoral, 0.9), $style: solid);
+			@include debug_outline_thick($color: $lightcoral);
 		}
+		// #site-name, .list-group, .list-item {
+		// 	// background-color: transparentize($lightcoral, 0.9);
+		// 	// @include debug_outline($color: $lightcoral);
+		// 	//// @include debug_outline($color: transparentize($lightcoral, 0.9), $style: solid);
+		// }
 		#site-name a,
 		.list .name {
 			background-color: transparentize($lightcoral, 0.5);
@@ -120,10 +114,19 @@ $darkolivegreen:	darkolivegreen;
 			// @include debug_outline_thick($color: $deepskyblue);
 			@include debug_outline($width: 1rem, $style: solid, $color: transparentize($deepskyblue, 0.8));
 		}
-		.leaf-carousel-item, .default-carousel-item, .empty-item {
+		.carousel-item, .empty-item {
 			@include debug_outline($color: $deepskyblue);
-//			background-color: transparentize($lightblue, 0.7);
+			// background-color: transparentize($lightblue, 0.7);
+			.content {
+				background-color: transparentize($lightblue, 0.7);
+				// background-color: $lightblue;
+			}
 		}
+		// .empty-item {
+		// 	.content {
+		// 		background-color: transparentize($lightblue, 0.7);
+		// 	}
+		// }
 		.media-item {
 			background-color: transparentize($lightblue, 0.9);
 			@include debug_outline($color: $deepskyblue);
@@ -131,27 +134,6 @@ $darkolivegreen:	darkolivegreen;
 				background-color: $lightblue;
 			}
 		}
-		.leaf-carousel-item, .default-carousel-item {
-			.content {
-				background-color: $lightblue;
-			}
-		}
-		.empty-item {
-			.content {
-				background-color: transparentize($lightblue, 0.7);
-			}
-		}
-//		.selected {
-//			&.media-item, &.leaf-carousel-item, &.default-carousel-item, &.empty-item {
-//				@include debug_outline($color: $darkolivegreen);
-////				background-color: transparentize($darkseagreen, 0.5);
-//			}
-//			&.leaf-carousel-item, &.default-carousel-item, &.empty-item {
-//				.content {
-//					background-color: $darkseagreen;
-//				}
-//			}
-//		}
 	}
 }
 

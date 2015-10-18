@@ -5,23 +5,16 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:underscore} */
-var Color = require("color");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
-/** @type {module:utils/prefixedProperty} */
-var prefixed = require("utils/prefixedProperty");
-/** @type {module:utils/svg/arcData} */
-var arcData = require("utils/svg/arcData");
-/** @type {module:utils/ease/linear} */
-var linear = require("utils/ease/linear");
-
-// /** @type {module:app/view/base/View} */
-// var View = require("app/view/base/View");
-/** @type {module:app/view/base/View} */
+/** @type {module:app/view/component/progress/AbstractProgressMeter} */
 var AbstractProgressMeter = require("app/view/component/progress/AbstractProgressMeter");
 
+/**
+* @constructor
+* @type {module:app/view/component/progress/SVGCircleProgressMeter}
+*/
 var SVGCircleProgressMeter = AbstractProgressMeter.extend({
 	
 	/** @type {string} */
@@ -50,20 +43,6 @@ var SVGCircleProgressMeter = AbstractProgressMeter.extend({
 	initialize: function (options) {
 		AbstractProgressMeter.prototype.initialize.apply(this, arguments);
 		
-		// this.setOptions(_.defaults(options, this.defaults));
-		// options = _.defaults(options, this.defaults);
-		
-		// // value total
-		// this._value = options.value;
-		// this._total = options.total;
-		// 
-		// this._startValue = this._value;
-		// this._renderedValue = null;
-		// this._valueDelta = 0;
-		// 
-		// // value change flag
-		// this._valueChanged = true;
-		
 		// steps
 		this._steps = options.steps;
 		this._arcGap = options.gap;
@@ -71,12 +50,6 @@ var SVGCircleProgressMeter = AbstractProgressMeter.extend({
 		
 		this._labelFn = options.labelFn;
 		this._arcOffset = 0;//Math.PI * 1.5;
-		
-		// // private easing state
-		// this._duration = 0;
-		// this._startTime = -1;
-		// this._nextRafId = -1;
-		// // this._lastRafId = -1;
 		
 		this.createChildren();
 	},
@@ -99,7 +72,9 @@ var SVGCircleProgressMeter = AbstractProgressMeter.extend({
 		
 		this.el.innerHTML = this.template(p);
 		
-		this.labelEl = this.el.querySelector("#step-label");
+		this.valueLabel = this.el.querySelector("#value-label");
+		this.symbolLabel = this.el.querySelector("#symbol-label");
+		
 		this.amountShape = this.el.querySelector("#amount");
 		this.stepsShape = this.el.querySelector("#steps");
 		
@@ -116,94 +91,34 @@ var SVGCircleProgressMeter = AbstractProgressMeter.extend({
 		s.strokeDashoffset = p.c - p.sw;
 	},
 	
-	// remove: function() {
-	// 	this._duration = 0;
-	// 	if (this._nextRafId !== -1) {
-	// 		this.cancelAnimationFrame(this._nextRafId);
-	// 	}
-	// 	return View.prototype.remove.apply(this, arguments);
-	// },
-	
-	/* --------------------------- *
-	/* public interface
-	/* --------------------------- */
-	
-	// valueTo: function (value, duration) {
-	// 	// console.log("%s::valueTo(%f, %i)", this.cid, value, duration);
-	// 	this._duration = duration || 0;
-	// 	this._setValue(value);
-	// },
-	// 
-	// _setValue: function(value) {
-	// 	var oldValue = this._value;
-	// 	
-	// 	this._value = value;
-	// 	this._valueDelta = value - oldValue;
-	// 	this._startValue = oldValue;
-	// 	
-	// 	this._valueChanged = true;
-	// 	this.render();
-	// },
-	
 	/* --------------------------- *
 	/* render
 	/* --------------------------- */
 	
 	// /** @override */
 	// render: function () {
-	// 	if (this._valueChanged) {
-	// 		this._valueChanged = false;
-	// 		
-	// 		this._startTime = -1;
-	// 		if (this._nextRafId === -1) {
-	// 			this._nextRafId = this.requestAnimationFrame(this.renderFrame);
-	// 		}
-	// 		// console.log("%s::render() [NEXT: %i]", this.cid, this._nextRafId);
-	// 	}
-	// 	return this;
+	// 	return AbstractProgressMeter.prototype.render.apply(this, arguments);
 	// },
 	
 	/* --------------------------- *
 	/* private
 	/* --------------------------- */
 	
-	// renderFrame: function(tstamp) {
-	// 	if (this._startTime < 0) {
-	// 		this._startTime = tstamp;
-	// 	}
-	// 	// var currRafId = this._nextRafId;
-	// 	var currTime = tstamp - this._startTime;
-	// 	
-	// 	if (currTime < this._duration) {
-	// 		if (this._valueDelta < 0) {
-	// 			this._renderedValue = linear(currTime, this._startValue,
-	// 				this._valueDelta + this._total, this._duration) - this._total;
-	// 		} else {
-	// 			this._renderedValue = linear(currTime, this._startValue,
-	// 				this._valueDelta, this._duration);
-	// 		}
-	// 		this.redraw();
-	// 		this._nextRafId = this.requestAnimationFrame(this.renderFrame);
-	// 		// console.log("%s::update(%f) [RAF: %i] [NEXT: %i] from/to: %f/%f, curr: %f",
-	// 		// 	this.cid, tstamp, currRafId, this._nextRafId,
-	// 		// 	this._startValue, this._value, this._renderedValue);
-	// 	} else {
-	// 		this._renderedValue = this._value;
-	// 		this.redraw();
-	// 		this._nextRafId = -1;
-	// 		// console.log("%s::update(%f) [RAF: %i] [LAST] from/to: %f/%f",
-	// 		// 	this.cid, tstamp, currRafId,
-	// 		// 	this._startValue, this._value );
-	// 	}
-	// },
-	
 	redraw: function(value) {
-		var labelValue = this._labelFn(this._renderedValue, this._total, this._steps);
-		if (this._labelValue != labelValue) {
-			this.labelEl.textContent = this._labelValue = labelValue;
+		var m, labelStr = this._labelFn(this._renderedValue, this._total, this._steps);
+		if (this._labelStr != labelStr) {
+			if (m = /^(\d+)([hms])$/.exec(labelStr)) {
+				this.valueLabel.textContent = m[1];
+				this.symbolLabel.textContent = m[2];
+			} else {
+				this.valueLabel.textContent = labelStr;
+			}
+			this._labelStr = labelStr;
 		}
 		this.amountShape.style.strokeDashoffset = 
 			(1 - this._renderedValue / this._total) * (this._params.c - this._params.sw);
+			
+		return this;
 	},
 });
 

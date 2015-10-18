@@ -36,18 +36,18 @@ TransformHelper.prototype = {
 	/* ------------------------------- */
 	
 	has: function(el) {
-		return el.cid && this._items[el.cid] !== void 0;
+		return el._txId && this._items[el._txId] !== void 0;
 	},
 	
 	get: function(el) {
 		if (this.has(el)) {
-			return this._items[el.cid];
+			return this._items[el._txId];
 		} else {
-			if (!el.cid) {
-				el.cid = "elt" + cidSeed++;
-				el.setAttribute("data-cid", el.cid);
+			if (!el._txId) {
+				el._txId = el.cid || ("elt" + cidSeed++);
+				// el.setAttribute("data-cid", el._txId);
 			}
-			return this._items[el.cid] = new TransformItem(el, this.immediate);
+			return this._items[el._txId] = new TransformItem(el, this.immediate);
 		}
 	},
 	
@@ -81,9 +81,9 @@ TransformHelper.prototype = {
 	
 	_remove: function(el) {
 		if (this.has(el)) {
-			var o = this._items[el.cid];
+			var o = this._items[el._txId];
 			o.destroy();
-			delete this._items[el.cid];
+			delete this._items[el._txId];
 		}	
 	},
 	

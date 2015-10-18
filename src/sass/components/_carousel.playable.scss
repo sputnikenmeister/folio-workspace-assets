@@ -3,10 +3,6 @@
 // -----------------------------------
 
 .playable-renderer {
-	// .pending-user-resume {}
-	// .pending-user-replay {}
-	// .pending-network {}
-	// .pending-media  {}
 	
 	.media-size,
 	.content-size {
@@ -19,11 +15,9 @@
 	}
 	// // .overlay
 	// // - - - - - - - - - - - - - - - - -
-	// .overlay {
-	// 	position: absolute;
-	// }
+	// .overlay {}
 	
-	// .play-toggle
+	// .overlay .play-toggle
 	// - - - - - - - - - - - - - - - - -
 	$symbol-class: ".play-toggle";
 	#{$symbol-class} {
@@ -35,32 +29,24 @@
 		background-size: 6rem 6rem;
 		background-position: center;
 	}
-	#{$symbol-class},
-	.pending-user-play #{$symbol-class},
-	.pending-user-resume #{$symbol-class} {
-		background-image: url_encode("symbols/playback-play.svg");
-		&.over-dark {
-			background-image: url_encode("symbols/playback-play-dark.svg");
-		}
+	
+	&, .pending-user-play, .pending-user-resume { 
+		#{$symbol-class} { background-image: url_encode("symbols/playback-play.svg"); }
+		.over-dark #{$symbol-class} { background-image: url_encode("symbols/playback-play-dark.svg"); }
 	}
-	.pending-user-replay #{$symbol-class} {
-		background-image: url_encode("symbols/playback-replay.svg");
-		&.over-dark {
-			background-image: url_encode("symbols/playback-replay-dark.svg");
-		}
+	.pending-user-replay {
+		#{$symbol-class} { background-image: url_encode("symbols/playback-replay.svg"); }
+		.over-dark #{$symbol-class} { background-image: url_encode("symbols/playback-replay-dark.svg");}
 	}
-	.pending-network #{$symbol-class} {
-		background-image: url_encode("symbols/playback-wait.svg");
-		&.over-dark {
-			background-image: url_encode("symbols/playback-wait-dark.svg");
-		}
+	.pending-network {
+		#{$symbol-class} { background-image: url_encode("symbols/playback-wait.svg");}
+		.over-dark #{$symbol-class} { background-image: url_encode("symbols/playback-wait-dark.svg");}
 	}
-	.pending-media #{$symbol-class}  {
-		background-image: none;
-		&.over-dark {
-			background-image: none;
-		}
+	.pending-media {
+		#{$symbol-class} {background-image: none;}
+		.over-dark #{$symbol-class} { background-image: none;}
 	}
+	
 	#{$symbol-class} {
 		opacity: 1;
 		visibility: visible;
@@ -73,6 +59,7 @@
 		// 	opacity $duration $ease 0.001s,
 		// 	visibility $duration step-start 0.001s;
 	}
+	
 	.play-toggle-hitarea {
 		$size: 50%;//12em; 
 		display: block;
@@ -150,57 +137,6 @@
 //  .playable-renderer .controls
 // - - - - - - - - - - - - - - - - - -
 .playable-renderer {
-	.progress-meter {
-		width: 2rem;
-		height: 2rem;
-		box-sizing: content-box;
-	}
-	.canvas-progress-meter {
-		overflow: hidden;
-		font-size: 110%;
-		color: rgb(0,0,255);
-	}
-	.svg-progress-meter {
-		color: rgb(255,0,0);
-		svg {
-			width: 100%;
-			height: 100%;
-			display: block;
-			overflow: hidden;
-			border-radius: 100%;
-		}
-		#amount, #steps {
-			stroke: currentColor;
-		}
-		#step-label {
-			fill: currentColor;
-			dominant-baseline: central;
-			// dominant-baseline: middle;
-			// dominant-baseline: text-after-edge;
-			// dominant-baseline: ideographic;
-			// dominant-baseline: mathematical;
-		}
-		// #steps-track {} #steps {} #amount {} #step-label {} #pause-symbol{}
-	}
-	&.video-renderer {
-		.progress-meter {
-			width: 2.5rem;
-			height: 2.5rem;
-		}
-		.canvas-progress-meter {
-			font-size: 90%;
-		}
-		.svg-progress-meter #step-label {
-			transform: scale(0.7);
-			// transform: scale(0.7) translateY(0.5em);
-		}
-	}
-	
-	.timecode {
-		font-size: 85%;
-		letter-spacing: 1px;
-		font-variant-numeric: tabular-nums;
-	}
 	.fullscreen-toggle {
 		line-height: 0;
 		cursor: pointer;
@@ -209,8 +145,80 @@
 			height: 1em;
 		}
 	}
-	// .timeline {}
+	.progress-meter {
+		// width: 2.1rem; height: 2.1rem;
+		width: 2.6rem; height: 2.6rem;
+		box-sizing: content-box;
+		// font-family: "NumbersClaimcheck";
+		font-family: "FolioClaimcheck-Figures";
+		font-size: normal;
+		font-weight: normal;
+	}
+	.canvas-progress-meter {
+		overflow: hidden;
+		font-size: 80%;
+	}
+	.svg-progress-meter {
+		svg {
+			width: 100%;
+			height: 100%;
+			display: block;
+			// overflow: hidden;
+			// border-radius: 100%;
+		}
+		
+		#label {
+			font-size: 145%;
+			// dominant-baseline: central;
+			// dominant-baseline: alphabetic;
+			// text-anchor: middle;
+		}
+		// #value-label {
+		// 	font-size: 100%;
+		// }
+		// #symbol-label {
+		// 	// font-size: 80%;
+		// 	// font-family: "Knockout-HTF29-JuniorLiteweight";
+		// }
+		// #amount, #steps { stroke: currentColor; }
+		// #steps-track {} #steps {} #amount {} #step-label {} #pause-symbol{}
+	}
+	// &.sequence-renderer {
+	// 	.progress-meter {
+	// 		// width: 2.3rem; height: 2.3rem;
+	// 		// width: 2.5rem; height: 2.5rem;
+	// 	}
+	// 	.svg-progress-meter {
+	// 		#label {
+	// 			font-size: 133%;
+	// 		}
+	// 	}
+	// 	.canvas-progress-meter {
+	// 		// font-size: 80%;
+	// 	}
+	// }
+	// &.video-renderer {
+	// 	.progress-meter {
+	// 		// width: 2.3rem; height: 2.3rem;
+	// 		// width: 2.5rem; height: 2.5rem;
+	// 	}
+	// 	.svg-progress-meter {
+	// 		#label {
+	// 			font-size: 133%;
+	// 			// 	transform: scale(0.7);
+	// 		}
+	// 	}
+	// 	.canvas-progress-meter {
+	// 		font-size: 90%;
+	// 	}
+	// }
 	
+	.timecode {
+		font-size: 85%;
+		letter-spacing: 1px;
+		font-variant-numeric: tabular-nums;
+	}
+	// .timeline {}
 	// .control-box > *
 	// - - - - - - - - - - - - - - - - -
 	.control-box {
@@ -226,14 +234,14 @@
 // VideoRenderer
 // -----------------------------------
 .video-renderer {
-	padding-bottom: 3rem; // space for .bottom-bar (timeline)
-	
 	.crop-box {
 		overflow: hidden;
 		video, .poster {
 			position: absolute;
 			top: -1px;
-			left: 0;
+			// left: 0;
+			// margin-top: -1px;
+			// margin-bottom: -1px;
 		}
 	}
 	video:focus {
@@ -245,6 +253,8 @@
 	.not-played .poster {
 		visibility: visible;
 	}
+	
+	// padding-bottom: 3rem; // space for .bottom-bar (timeline)
 	
 	/*.bottom-bar {
 		display: block;
@@ -283,15 +293,14 @@
 		top: 0; left: 0;
 		width: 100%; height: 100%;
 		
+		transition-property: opacity, visibility;
 		transition-duration: $duration * 2;
 		transition-delay: 0.001s;
-		transition-property: opacity, visibility;
 		
 		transition-timing-function: step-end;
 		opacity: 0;
 		visibility: hidden;
 		z-index: 0;
-		
 		&.current {
 			transition-timing-function: $ease, step-start;
 			opacity: 1;
@@ -299,27 +308,12 @@
 			z-index: 1;
 		}
 	}
-	.progress-meter {
-		z-index: 3;
-	}
 	.overlay {
 		z-index: 2;
 	}
-}
-
-.playable-renderer .progress-meter {
-	// font-family: "NumbersClaimcheck";
-	font-family: "NumbersGreenback";
-	
-	// font-family: "NumbersIndicia";
-	// font-family: "NumbersRevenue";
-	// font-family: "NumbersPremium";
-	// font-family: "NumbersGreenback";
-	// font-family: "ITCFranklinGothicStd", $grotesque_fallback; font-weight: 800;
-	// font-family: "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
-	// font-family: "ITCFranklinGothicStd-Condensed", $grotesque_fallback;
-	// font-style: normal;
-	// font-weight: 600;
+	// .progress-meter {
+	// 	z-index: 3;
+	// }
 }
 
 // -----------------------------------
@@ -408,4 +402,19 @@
 // 	letter-spacing: -0.05em;
 // 	font-style: italic;
 // 	text-transform: uppercase;
+// }
+
+
+// .playable-renderer .progress-meter {
+// 	font-family: "NumbersClaimcheck";
+// 	// font-family: "NumbersGreenback";
+// 	// font-family: "NumbersIndicia";
+// 	// font-family: "NumbersRevenue";
+// 	// font-family: "NumbersPremium";
+// 	// font-family: "NumbersGreenback";
+// 	// font-family: "ITCFranklinGothicStd", $grotesque_fallback; font-weight: 800;
+// 	// font-family: "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
+// 	// font-family: "ITCFranklinGothicStd-Condensed", $grotesque_fallback;
+// 	font-style: normal;
+// 	font-weight: normal;
 // }

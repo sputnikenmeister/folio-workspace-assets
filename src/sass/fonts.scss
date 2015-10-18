@@ -1,8 +1,13 @@
 @import "fonts/_fontello";
 @import "fonts/_franklin-gothic-fs";
-@import "generated/_numbers-htf";
-// @import "generated/_franklin-gothic-itc";
-// @import "generated/_franklin-gothic-itc-cd";
-@import "generated/_franklin-gothic-itc-cp";
-// @import "generated/_franklin-gothic-itc-xcp";
 // @import "fonts/_old-standard-tt";
+
+$folio-webfonts-fontdir: "../node_modules/folio-webfonts/build/fonts";
+
+@import "_folio";
+// @import "_numbers-htf";
+// @import "_knockout-htf";
+// @import "_franklin-gothic-itc";
+// @import "_franklin-gothic-itc-cd";
+@import "_franklin-gothic-itc-cp";
+// @import "_franklin-gothic-itc-xcp";

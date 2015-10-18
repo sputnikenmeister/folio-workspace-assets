@@ -137,6 +137,8 @@ var MediaRenderer = CarouselRenderer.extend({
 		this.metrics.content.width = cw + ew;
 		this.metrics.content.height = ch + eh;
 		
+		this.metrics.media.x = cx + cm.paddingLeft + cm.borderLeftWidth;
+		this.metrics.media.y = cy + cm.paddingTop + cm.borderTopWidth;
 		this.metrics.media.width = cw;
 		this.metrics.media.height = ch;
 		this.metrics.media.scale = cs;

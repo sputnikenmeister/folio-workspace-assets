@@ -25,12 +25,15 @@ var PlayableRenderer = require("app/view/render/PlayableRenderer");
 /** @type {module:app/view/component/progress/CanvasProgressMeter} */
 var CanvasProgressMeter = require("app/view/component/progress/CanvasProgressMeter");
 /** @type {module:app/view/component/progress/SVGProgressMeter} */
-var SVGProgressMeter = require("app/view/component/progress/SVGCircleProgressMeter");
+var SVGProgressMeter = require("app/view/component/progress/SVGPathProgressMeter");
+// var SVGProgressMeter = require("app/view/component/progress/SVGCircleProgressMeter");
 
 /** @type {module:utils/prefixedStyleName} */
 var prefixedStyleName = require("utils/prefixedStyleName");
 /** @type {module:utils/prefixedEvent} */
 var prefixedEvent = require("utils/prefixedEvent");
+/** @type {module:underscore.string/lpad} */
+var lpad = require("underscore.string/lpad");
 
 /* --------------------------- *
 /* private static
@@ -45,7 +48,7 @@ var formatTimecode = function (value, total) {
 var formatTimecodeLeft = function (value, total) {
 	return formatTimecode(Math.max(0, total - value));
 };
-var formatTimeShort = function(value, total) {
+var formatTimeShortUnit = function(value, total) {
 	value = isNaN(value)? total : total - value;
 	if (value > 3600)
 		return ((value / 3600) | 0) + "h";
@@ -61,6 +64,26 @@ var formatTimeShortUnitless = function(value, total) {
 		return ((value / 60) | 0);
 	return (value | 0);
 };
+var formatTimeShortPadded = function(value,total) {
+	value = isNaN(value)? total : total - value;
+	if (value > 3600) value /= 3600;
+	else if (value > 60) value /= 60;
+	return lpad(value | 0, 2, "0");
+};
+var formatTimeShortUnitPadded = function(value,total) {
+	var unit;
+	value = isNaN(value)? total : total - value;
+	if (value > 3600) {
+		value /= 3600; unit = "h";
+	} else if (value > 60) {
+		value /= 60; unit = "m";
+	} else {
+		unit = "s";
+	}
+	return lpad(value | 0, 2, "0") + unit;
+};
+
+var formatTimeShort = formatTimeShortUnit;
 
 /**
 * @constructor
@@ -101,8 +124,8 @@ var VideoRenderer = PlayableRenderer.extend({
 		PlayableRenderer.prototype.initialize.apply(this, arguments);
 		_.bindAll(this,
 			"_updatePlaybackState",
-			"_updatePlayedTimeline",
-			"_updateBufferedTimeline",
+			"_updatePlayedValue",
+			"_updateBufferedValue",
 			"_onMediaError",
 			"_onMediaEnded",
 			"_onMediaPlayingOnce",
@@ -132,10 +155,12 @@ var VideoRenderer = PlayableRenderer.extend({
 		this.video.loop = this.model.attrs().hasOwnProperty("@video-loop");
 		this.video.src = this.findPlayableSource(this.video);
 		
-		this.currentTimeLabel = this.el.querySelector(".current-time");
-		this.durationLabel = this.el.querySelector(".duration");
-		this.bufferedRect = this.el.querySelector(".timeline .buffered");
-		this.playedRect = this.el.querySelector(".timeline .played");
+		// this.currentTimeLabel = this.el.querySelector(".current-time");
+		// this.durationLabel = this.el.querySelector(".duration");
+		// this.bufferedRect = this.el.querySelector(".timeline .buffered");
+		// this.playedRect = this.el.querySelector(".timeline .played");
+		
+		// this.fullscreenToggle = this.el.querySelector(".fullscreen-toggle");
 		
 	},
 	
@@ -143,10 +168,11 @@ var VideoRenderer = PlayableRenderer.extend({
 		PlayableRenderer.prototype.measure.apply(this, arguments);
 		
 		// NOTE: Top/bottom 1px video crop
-		// - Cropped in CSS: video, img.poster { margin-top: -1px }
+		// - Cropped in CSS: video, .poster { margin-top: -1px; margin-bottom: -1px;}
 		// - Cropped height is adjusted in metrics obj
-		// - Crop amount added back to actual video on render
+		// - Crop amount added back to actual video on render()
 		this.metrics.media.height -= 2;
+		this.metrics.content.height -= 2;
 	},
 	
 	/** @override */
@@ -156,12 +182,6 @@ var VideoRenderer = PlayableRenderer.extend({
 		var els, el, i, cssW, cssH;
 		var img = this.getDefaultImage();
 		var content = this.getContentEl();
-		
-		// NOTE: elements below must use video's UNCROPPED height, so +2px
-		this.video.setAttribute("width", this.metrics.media.width);
-		this.video.setAttribute("height", this.metrics.media.height + 2);
-		img.setAttribute("width", this.metrics.media.width);
-		img.setAttribute("height", this.metrics.media.height + 2);
 		
 		// media-size
 		// ---------------------------------
@@ -191,6 +211,12 @@ var VideoRenderer = PlayableRenderer.extend({
 		// 	el.style.width = cssW;
 		// 	el.style.height = cssH;
 		// }
+		
+		// NOTE: elements below must use video's UNCROPPED height, so +2px
+		this.video.setAttribute("width", this.metrics.media.width);
+		this.video.setAttribute("height", this.metrics.media.height + 2);
+		img.setAttribute("width", this.metrics.media.width);
+		img.setAttribute("height", this.metrics.media.height + 2);
 		
 		return this;
 	},
@@ -222,27 +248,37 @@ var VideoRenderer = PlayableRenderer.extend({
 			.then(
 				function(view) {
 					view.addSelectionListeners();
-					view.durationLabel.textContent = formatTimecode(view.video.duration);
+					// view.durationLabel.textContent = formatTimecode(view.video.duration);
 					view.updateOverlay(view.getDefaultImage(), view.el.querySelector(".overlay"));
 					
-					var progressEl;
-					if (progressEl = view.el.querySelector("canvas.progress-meter"))
-						view.canvasProgressMeter = new CanvasProgressMeter({
-							el: progressEl,
-							total: view.video.duration,
-							// color: view.model.attrs()["color"],
-							labelFn: formatTimeShortUnitless
-							// labelFn: formatTimecode
-						}).render();
-						
-					if (progressEl = view.el.querySelector("div.progress-meter"))
-						view.svgProgressMeter = new SVGProgressMeter({
-							el: progressEl,
-							total: view.video.duration,
-							// color: view.model.attrs()["color"],
-							labelFn: formatTimeShortUnitless
-							// labelFn: formatTimecode
-						}).render();
+					// view.progressMeter = new CanvasProgressMeter({
+					view.progressMeter = new SVGProgressMeter({
+						total: view.video.duration,
+						labelFn: formatTimeShort
+						// labelFn: formatTimeShortPadded
+						// color: view.model.attrs()["color"],
+					});
+					var parentEl = view.el.querySelector(".top-bar");
+					parentEl.insertBefore(view.progressMeter.render().el, parentEl.firstChild);
+					
+					// var progressEl;
+					// if (progressEl = view.el.querySelector("canvas.progress-meter"))
+					// 	view.canvasProgressMeter = new CanvasProgressMeter({
+					// 		el: progressEl,
+					// 		total: view.video.duration,
+					// 		labelFn: formatTimeShortPadded
+					// 		// labelFn: formatTimeShortUnitless
+					// 		// labelFn: formatTimecode
+					// 		// color: view.model.attrs()["color"],
+					// 	}).render();
+					// if (progressEl = view.el.querySelector("div.progress-meter"))
+					// 	view.svgProgressMeter = new SVGProgressMeter({
+					// 		el: progressEl,
+					// 		total: view.video.duration,
+					// 		labelFn: formatTimeShortUnitless
+					// 		// labelFn: formatTimecode
+					// 		// color: view.model.attrs()["color"],
+					// 	}).render();
 					
 					return view;
 				});
@@ -266,53 +302,51 @@ var VideoRenderer = PlayableRenderer.extend({
 				// return view;
 				resolve(view);
 				return;
-			}
-			if (mediaEl.error) {
+			} else if (mediaEl.error) {
 				reject(new Error("whenVideoHasMetadata: error " + _.invert(MediaError)[mediaEl.error.code]));
 				return;
-			}
-			
-			var handlers = {
-				loadedmetadata: function(ev) {
-					console.log(view.cid, view.model.cid, "whenVideoHasMetadata: loadedmetadata");
-					removeEventListeners();
-					resolve(view);
-				},
-				abort: function(ev) {
-					removeEventListeners();
-					reject(new PlayableRenderer.ViewError(view, new Error("whenVideoHasMetadata: view was removed")));
-				},
-				error: function(ev) {
-					// var err = new Error("whenVideoHasMetadata: error " + classify(findMediaErrorName(mediaEl.error).toLowerCase()));
-					var err = new Error("whenVideoHasMetadata: error " +
-						(mediaEl.error? _.invert(MediaError)[mediaEl.error.code] : "not supplied"));
-					err.event = ev;
-					removeEventListeners();
-					reject(err);
-				},
-			};
-			
-			var sources = mediaEl.querySelectorAll("source");
-			var errTarget = sources.length > 0? sources.item(sources.length - 1) : mediaEl;
-			var errCapture = errTarget === mediaEl; // use capture with HTMLMediaElement
-			
-			var removeEventListeners = function () {
-				errTarget.removeEventListener("error", handlers.error, errCapture);
+			} else {
+				var handlers = {
+					loadedmetadata: function(ev) {
+						console.log(view.cid, view.model.cid, "whenVideoHasMetadata: loadedmetadata");
+						removeEventListeners();
+						resolve(view);
+					},
+					abort: function(ev) {
+						removeEventListeners();
+						reject(new PlayableRenderer.ViewError(view, new Error("whenVideoHasMetadata: view was removed")));
+					},
+					error: function(ev) {
+						// var err = new Error("whenVideoHasMetadata: error " + classify(findMediaErrorName(mediaEl.error).toLowerCase()));
+						var err = new Error("whenVideoHasMetadata: error " +
+							(mediaEl.error? _.invert(MediaError)[mediaEl.error.code] : "not supplied"));
+						err.event = ev;
+						removeEventListeners();
+						reject(err);
+					},
+				};
+				
+				var sources = mediaEl.querySelectorAll("source");
+				var errTarget = sources.length > 0? sources.item(sources.length - 1) : mediaEl;
+				var errCapture = errTarget === mediaEl; // use capture with HTMLMediaElement
+				
+				var removeEventListeners = function () {
+					errTarget.removeEventListener("error", handlers.error, errCapture);
+					for (var ev in handlers) {
+						if (ev !== "error" && handlers.hasOwnProperty(ev)) {
+							mediaEl.removeEventListener(ev, handlers[ev], false);
+						}
+					}
+				};
+				
+				errTarget.addEventListener("error", handlers.error, errCapture);
 				for (var ev in handlers) {
 					if (ev !== "error" && handlers.hasOwnProperty(ev)) {
-						mediaEl.removeEventListener(ev, handlers[ev], false);
+						mediaEl.addEventListener(ev, handlers[ev], false);
 					}
 				}
-			};
-			
-			errTarget.addEventListener("error", handlers.error, errCapture);
-			for (var ev in handlers) {
-				if (ev !== "error" && handlers.hasOwnProperty(ev)) {
-					mediaEl.addEventListener(ev, handlers[ev], false);
-				}
+				mediaEl.preload = "metadata";
 			}
-			
-			mediaEl.preload = "metadata";
 		});
 	},
 	
@@ -373,9 +407,9 @@ var VideoRenderer = PlayableRenderer.extend({
 	addMediaListeners: function() {
 		this.video.addEventListener("error", this._onMediaError, true);
 		
-		this.addListener(this.video, "loadeddata progress canplay canplaythrough", this._updateBufferedTimeline);
+		this.addListener(this.video, "loadeddata progress canplay canplaythrough", this._updateBufferedValue);
 		this.addListener(this.video, "playing waiting pause seeking", this._updatePlaybackState);
-		this.addListener(this.video, "timeupdate", this._updatePlayedTimeline);
+		this.addListener(this.video, "timeupdate", this._updatePlayedValue);
 		
 		this.video.addEventListener("playing", this._onMediaPlayingOnce, false);
 		this.video.addEventListener("ended", this._onMediaEnded, false);
@@ -384,9 +418,9 @@ var VideoRenderer = PlayableRenderer.extend({
 	removeMediaListeners: function() {
 		this.video.removeEventListener("error", this._onMediaError, true);
 		
-		this.removeListener(this.video, "loadeddata progress canplay canplaythrough", this._updateBufferedTimeline);
+		this.removeListener(this.video, "loadeddata progress canplay canplaythrough", this._updateBufferedValue);
 		this.removeListener(this.video, "playing waiting pause seeking", this._updatePlaybackState);
-		this.removeListener(this.video, "timeupdate", this._updatePlayedTimeline);
+		this.removeListener(this.video, "timeupdate", this._updatePlayedValue);
 		
 		this.video.removeEventListener("playing", this._onMediaPlayingOnce, false);
 		this.video.removeEventListener("ended", this._onMediaEnded, false);
@@ -449,26 +483,6 @@ var VideoRenderer = PlayableRenderer.extend({
 	/* timeline
 	/* --------------------------- */
 	
-	_updatePlayedTimeline: function(ev) {
-		this.playedRect.setAttribute("width",
-			((this.video.currentTime / this.video.duration) * 100) + "%");
-			
-		this.durationLabel.textContent =
-			formatTimecodeLeft(this.video.currentTime, this.video.duration);
-		this.currentTimeLabel.textContent =
-			formatTimecode(this.video.currentTime, this.video.duration);
-			
-		this.canvasProgressMeter.valueTo(this.video.currentTime);
-		this.svgProgressMeter.valueTo(this.video.currentTime);
-	},
-	
-	_updateBufferedTimeline: function(ev) {
-		var bRanges = this.video.buffered;
-		if (bRanges.length > 0) {
-			this.bufferedRect.setAttribute("width",
-				((bRanges.end(bRanges.length - 1) / this.video.duration) * 100) + "%");
-		}
-	},
 	
 	_onMediaError: function(ev) {
 		// if (this.video.error || this.video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
@@ -477,6 +491,39 @@ var VideoRenderer = PlayableRenderer.extend({
 			this.setState("error");
 		// }
 	},
+		
+	_updateBufferedValue: function(ev) {
+		// var bRanges = this.video.buffered;
+		// if (bRanges.length > 0) {
+		// 	this._bufferedValue = bRanges.end(bRanges.length - 1) / this.video.duration;
+		// }
+	},
+	
+	_updatePlayedValue: function(ev) {
+		if (this.progressMeter.lastRenderedValue &&
+				this.progressMeter.lastRenderedValue < this.video.currentTime) {
+			this.progressMeter.valueTo(this.video.currentTime, this.video.currentTime - this.progressMeter.lastRenderedValue);
+		} else {
+			this.progressMeter.valueTo(this.video.currentTime);
+		}
+	},
+	
+	// _updatePlayedValue_timeline: function(ev) {
+	// 	this.playedRect.setAttribute("width",
+	// 		((this.video.currentTime / this.video.duration) * 100) + "%");
+	// 	this.durationLabel.textContent =
+	// 		formatTimecodeLeft(this.video.currentTime, this.video.duration);
+	// 	this.currentTimeLabel.textContent =
+	// 		formatTimecode(this.video.currentTime, this.video.duration);
+	// },
+	// 
+	// _updateBufferedValue_timeline: function(ev) {
+	// 	var bRanges = this.video.buffered;
+	// 	if (bRanges.length > 0) {
+	// 		this.bufferedRect.setAttribute("width",
+	// 			((bRanges.end(bRanges.length - 1) / this.video.duration) * 100) + "%");
+	// 	}
+	// },
 	
 	/* ---------------------------
 	/* fullscreen api

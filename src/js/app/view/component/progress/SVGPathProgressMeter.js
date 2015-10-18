@@ -2,14 +2,22 @@
 * @module app/view/component/progress/SVGPathProgressMeter
 */
 
-/** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
-/** @type {module:utils/prefixedProperty} */
-var prefixed = require("utils/prefixedProperty");
+
+/** @type {module:underscore} */
+var _ = require("underscore");
+
+/** @type {module:app/control/Globals} */
+var Globals = require("app/control/Globals");
 /** @type {module:utils/svg/arcData} */
 var arcData = require("utils/svg/arcData");
+/** @type {module:app/view/component/progress/AbstractProgressMeter} */
+var AbstractProgressMeter = require("app/view/component/progress/AbstractProgressMeter");
 
-var SVGPathProgressMeter = View.extend({
+/**
+* @constructor
+* @type {module:app/view/component/progress/SVGPathProgressMeter}
+*/
+var SVGPathProgressMeter = AbstractProgressMeter.extend({
 	
 	cidPrefix: "svgProgressMeter",
 	/** @type {string} */
@@ -17,71 +25,69 @@ var SVGPathProgressMeter = View.extend({
 	/** @type {Function} */
 	template:  require("./SVGPathProgressMeter.hbs"),
 	
-	events: {
-		"transitionend": "_onTransitionEnd"
+	/** @override */
+	defaults: {
+		value: 0,
+		total: 1,
+		steps: 1,
+		gap: Math.PI/16,
+		// gap: 8 * (Math.PI/180), // x deg in radians
+		labelFn: function(value, total, steps) {
+			return ((value/total) * 100) | 0;
+		},
 	},
 	
-	_onTransitionEnd: function (ev) {
-		if (ev.target === this.amountShape) {
-			this._transitionStartTime = -1;
-			this._transitionDuration = 0;
-		}
-	},
+	/* --------------------------- *
+	/* children/layout
+	/* --------------------------- */
 	
 	/** @override */
 	initialize: function (options) {
-		// ProgressMeter.prototype.initialize.apply(this, arguments);
-		this._value = options.value || 0;
-		this._total = options.total || 1;
+		AbstractProgressMeter.prototype.initialize.apply(this, arguments);
 		
-		this._transitionStartTime = -1;
-		this._valueChanged = true;
+		// steps
+		this._steps = options.steps;
+		this._arcGap = options.gap;
+		this._arcStep = (1 / this._steps) * Math.PI * 2;
+		
+		this._labelFn = options.labelFn;
+		this._arcOffset = 0;//Math.PI * 1.5;
 		
 		this.createChildren();
 	},
 	
-	valueTo: function (value, duration) {
-		this._valueChanged = true;
-		
-		this._transitionDuration = duration || 0;
-		this._lastValue = this._value;
-		this._value = value;
-		
-		this.render();
-	},
-	
-	render: function () {
-		if (this._valueChanged) {
-			// log.call(this, this._transitionStartTime > 0? "interrupt" : "render");
-			var tx;
-			if (this._transitionDuration > 0) {
-				tx = "stroke-dashoffset " + (this._transitionDuration * 0.001) + "s linear 0.001s";
-				this._transitionStartTime = Date.now();
+	redraw: function(value) {
+		var m, labelStr = this._labelFn(this._renderedValue, this._total, this._steps);
+		if (this._labelStr != labelStr) {
+			if (m = /^(\d+)([hms])$/.exec(labelStr)) {
+				this.valueLabel.textContent = m[1];
+				this.symbolLabel.textContent = m[2];
 			} else {
-				tx = "stroke-dashoffset 0s linear 0s";
-				this._transitionStartTime = -1;
+				this.valueLabel.textContent = labelStr;
 			}
-			this.amountShape.style[prefixed("transition")] = tx;
-			this.amountShape.style.strokeDashoffset = (1 - (this._value/this._total)) * (this._params.c);
+			this._labelStr = labelStr;
 		}
+		this.amountShape.style.strokeDashoffset = 
+			(1 - (this._renderedValue/this._total)) * (this._params.c);
 		return this;
 	},
 	
 	createChildren: function() {
-		var p = { d: 24, s1: 2, s2: 1 };
+		var p = { d: 48, s1: 1.5, s2: 0.75, p1: "", p2: "" };
 		var total = this._total;
 		
-		var sa = Math.PI/16, // step gap angle in radians: 1/20 circumference
-			r1 = (p.d - p.s1)/2 - 0.1, // amount radius
-			r2 = (p.d - p.s2)/2 - 0.15; // steps radius
+		var r1 = (p.d - p.s1)/2 - 0.51, // amount radius
+			r2 = (p.d - p.s2)/2 - 0.55; // steps radius
 			
+		var sa = this._arcGap;
+		// var sa = Math.PI/16; // step gap angle in radians: 1/20 circumference
 		var sw1 = sa * r1, // step gap width in px
 			sw2 = sa * r2; // step gap width in px
 		
 		var a1 = (sa - Math.PI)/2, // start angle
 			a2 = Math.PI*2 - sa; // arc span angle
-		p.p1 = arcData(a1, a2, r1, void 0, 0, 0);
-		p.p2 = arcData(a1, a2, r2, void 0, 0, 0);
+		p.p1 = arcData([], a1, a2, r1, void 0, 0, 0).join(" ");
+		p.p2 = arcData([], a1, a2, r2, void 0, 0, 0).join(" ");
 		// p.c = (Math.PI*2 - sa) * (p.r);
 		
 		// keep template params
@@ -89,14 +95,19 @@ var SVGPathProgressMeter = View.extend({
 		
 		this.el.innerHTML = this.template(p);
 		
-		this.labelEl = this.el.querySelector("#step-label");
+		this.valueLabel = this.el.querySelector("#value-label");
+		this.symbolLabel = this.el.querySelector("#symbol-label");
+		
 		this.amountShape = this.el.querySelector("#amount");
 		this.stepsShape = this.el.querySelector("#steps");
 		
 		var s; // style
 		s = this.stepsShape.style;
-		s.strokeDasharray = [((r2 * Math.PI*2) / total) - sw2, sw2];
-		s.strokeOpacity = 0.5;
+		// s.strokeOpacity = 0.5;
+		
+		s.strokeDasharray = [(this._arcStep * r2) - sw2, sw2];
+		// s.strokeDasharray = [((r2 * Math.PI*2) / total) - sw2, sw2];
+		
 		// this.stepsShape.style.strokeDasharray = [p.sw2, (p.c / total) - p.sw2];
 		// this.stepsShape.style.strokeDashoffset = p.sw2;
 		

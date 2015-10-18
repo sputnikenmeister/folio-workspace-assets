@@ -4,10 +4,6 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-var transitionTemplate = function(o) {
-	return o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
-};
-
 module.exports = (function () {
 	// reusable var
 	var o; 
@@ -64,28 +60,25 @@ module.exports = (function () {
 			"ascent": 686,
 			"descent": -314
 		},
-		"Numbers": {
+		"FolioClaimcheck-Figures": {
 			"unitsPerEm": 1024,
 			"ascent": 939,
 			"descent": -256
 		},
-		// "ITCFranklinGothicStd-Condensed": this.["ITCFranklinGothicStd"],
-		// "ITCFranklinGothicStd-Compressed": this.["ITCFranklinGothicStd"],
-		// "ITCFranklinGothicStd-ExtraCompressed": this.["ITCFranklinGothicStd"],
-		// "NumbersClaimcheck": this["Numbers"],
-		// "NumbersGreenback": this["Numbers"],
-		// "NumbersIndicia": this["Numbers"],
-		// "NumbersRevenue": this["Numbers"],
-		// "NumbersPremium": this["Numbers"],
-		// "NumbersRedbird": this["Numbers"],
 	};
-	o = g.FONT_METRICS["Numbers"];
+	
+	o = g.FONT_METRICS["FolioClaimcheck-Figures"];
+	g.FONT_METRICS["Numbers"] = o;
 	g.FONT_METRICS["NumbersClaimcheck"] = o;
 	g.FONT_METRICS["NumbersGreenback"] = o;
-	g.FONT_METRICS["NumbersIndicia"] = o;
-	g.FONT_METRICS["NumbersPremium"] = o;
-	g.FONT_METRICS["NumbersRedbird"] = o;
-	g.FONT_METRICS["NumbersRevenue"] = o;
+	// g.FONT_METRICS["NumbersIndicia"] = o;
+	// g.FONT_METRICS["NumbersPremium"] = o;
+	// g.FONT_METRICS["NumbersRedbird"] = o;
+	// g.FONT_METRICS["NumbersRevenue"] = o;
+	// o = g.FONT_METRICS["ITCFranklinGothicStd"];
+	// g.FONT_METRICS["ITCFranklinGothicStd-Condensed"];
+	// g.FONT_METRICS["ITCFranklinGothicStd-Compressed"];
+	// g.FONT_METRICS["ITCFranklinGothicStd-ExtraCompressed"];
 	
 	// css transition presets
 	// TODO: get rid of this
@@ -100,6 +93,10 @@ module.exports = (function () {
 	/* Removing the gap would be more accutrate, but best to leave it for safety */
 	//g.TRANSITION_END_TIMEOUT	=	(g.TRANSITION_DELAY) * 3 - g.TRANSITION_GAP;
 	g.TRANSITION_END_TIMEOUT	=	(g.TRANSITION_DELAY) * 3;
+
+	var transitionTemplate = function(o) {
+		return o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
+	};
 	
 	o = {};
 	o.easing = g.TRANSITION_EASE;
