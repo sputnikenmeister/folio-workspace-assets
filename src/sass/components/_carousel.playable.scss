@@ -25,22 +25,23 @@
 		background-position: bottom left;
 		background-repeat: no-repeat;
 	}
-	.pending-user-play #{$symbol-class} {
+	// .pending-user-play #{$symbol-class} {
+	.not-played #{$symbol-class} {
 		background-size: 6rem 6rem;
 		background-position: center;
 	}
 	
 	&, .pending-user-play, .pending-user-resume { 
-		#{$symbol-class} { background-image: url_encode("symbols/playback-play.svg"); }
-		.over-dark #{$symbol-class} { background-image: url_encode("symbols/playback-play-dark.svg"); }
+		#{$symbol-class} { background-image: base64_encode("symbols/playback-play.svg"); }
+		.over-dark #{$symbol-class} { background-image: base64_encode("symbols/playback-play-dark.svg"); }
 	}
 	.pending-user-replay {
-		#{$symbol-class} { background-image: url_encode("symbols/playback-replay.svg"); }
-		.over-dark #{$symbol-class} { background-image: url_encode("symbols/playback-replay-dark.svg");}
+		#{$symbol-class} { background-image: base64_encode("symbols/playback-replay.svg"); }
+		.over-dark #{$symbol-class} { background-image: base64_encode("symbols/playback-replay-dark.svg");}
 	}
 	.pending-network {
-		#{$symbol-class} { background-image: url_encode("symbols/playback-wait.svg");}
-		.over-dark #{$symbol-class} { background-image: url_encode("symbols/playback-wait-dark.svg");}
+		#{$symbol-class} { background-image: base64_encode("symbols/playback-wait.svg");}
+		.over-dark #{$symbol-class} { background-image: base64_encode("symbols/playback-wait-dark.svg");}
 	}
 	.pending-media {
 		#{$symbol-class} {background-image: none;}
@@ -146,8 +147,9 @@
 		}
 	}
 	.progress-meter {
+		width: 2.3rem; height: 2.3rem;
 		// width: 2.1rem; height: 2.1rem;
-		width: 2.6rem; height: 2.6rem;
+		// width: 2.6rem; height: 2.6rem;
 		box-sizing: content-box;
 		// font-family: "NumbersClaimcheck";
 		font-family: "FolioClaimcheck-Figures";
@@ -168,7 +170,7 @@
 		}
 		
 		#label {
-			font-size: 145%;
+			font-size: 166%;
 			// dominant-baseline: central;
 			// dominant-baseline: alphabetic;
 			// text-anchor: middle;
@@ -183,20 +185,20 @@
 		// #amount, #steps { stroke: currentColor; }
 		// #steps-track {} #steps {} #amount {} #step-label {} #pause-symbol{}
 	}
-	// &.sequence-renderer {
+	&.sequence-renderer {
 	// 	.progress-meter {
 	// 		// width: 2.3rem; height: 2.3rem;
 	// 		// width: 2.5rem; height: 2.5rem;
 	// 	}
-	// 	.svg-progress-meter {
-	// 		#label {
-	// 			font-size: 133%;
-	// 		}
-	// 	}
+		.svg-progress-meter {
+			#label {
+				font-size: 150%;
+			}
+		}
 	// 	.canvas-progress-meter {
 	// 		// font-size: 80%;
 	// 	}
-	// }
+	}
 	// &.video-renderer {
 	// 	.progress-meter {
 	// 		// width: 2.3rem; height: 2.3rem;
@@ -238,10 +240,11 @@
 		overflow: hidden;
 		video, .poster {
 			position: absolute;
-			top: -1px;
-			// left: 0;
-			// margin-top: -1px;
+			// top: -1px;
+			margin-top: -1px;
 			// margin-bottom: -1px;
+			// left: 0;
+			// border-width: 0; margin: 0; padding: 0;
 		}
 	}
 	video:focus {

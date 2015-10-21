@@ -70,6 +70,10 @@ $darkolivegreen:	darkolivegreen;
 	background-color: transparentize($color, 0.8);
 }
 
+.carousel.scrolling {
+	@include debug_outline($width: 1rem, $style: solid, $color: transparentize($deepskyblue, 0.8));
+}
+
 .debug-blocks {
 	*[data-cid] {
 		@include debug_outline($color: $darkseagreen);
@@ -149,23 +153,60 @@ $darkolivegreen:	darkolivegreen;
 	
 	z-index: 999;
 	position: fixed;
+	top: 0; right: 0;
 	// width: 100%;// prevents dotnav mouse events
-	// bottom: 0;
 	
-	top: 0; right: 0; direction: rtl;
+	.debug-links {
+		direction: rtl;
+	}
+	.toggle-enabled {
+		text-decoration: underline;
+	}
+	&:not(.show-links) {
+		#test-results {
+			display: none;
+		}
+		.debug-links > dd {
+			display: none;
+		}
+	}
 	
-	// &.show-info .debug-links {
-	// 	display: none;
-	// }
-	// &.show-links .debug-info {
-	// 	display: none;
-	// }
-	&:not(.show-links) .debug-links > dd {
+	#test-results {
+		color: #333333;
+		background-color: white;
+		
+		max-height: 75vh;
+		overflow-y: scroll;
+		padding: 1rem 1.5rem; margin: 0 3rem;
+		box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		ul {
+			font: 12px/1 monospace;
+			h6 {
+				margin-bottom: 0.5em;
+				font-weight: bold;
+			}
+		}
+		li.failed {
+			color: #CC3333;
+			text-decoration: line-through;
+		}
+	}
+	&:not(.show-tests) #test-results {
 		display: none;
 	}
-	// &.show-links .debug-info {
-	// 	display: none;
-	// }
+	#toggle-tests-failed {
+		font-weight: normal;
+	}
+	&.show-tests-failed {
+		#test-results {
+			li.passed {
+				display: none;
+			}
+			li.failed {
+				text-decoration: none;
+			}
+		}
+	}
 }
 
 #debug-toolbar dl {
@@ -238,10 +279,6 @@ $darkolivegreen:	darkolivegreen;
 		& > * {
 			margin-top: -0.1rem;
 		}
-	}
-	a.toggle-enabled {
-		// color: red;
-		text-decoration: underline;
 	}
 }
 

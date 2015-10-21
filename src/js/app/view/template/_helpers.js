@@ -54,6 +54,9 @@ var Globals = require("app/control/Globals");
 		contains: function(a, b, opts) {
 			return (a.indexOf(b) !== -1)? opts.fn(this) : opts.inverse(this);
 		},
+		ignore: function() {
+			return "";
+		},
 		
 		/*
 		 * Color helpers

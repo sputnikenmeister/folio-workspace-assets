@@ -32,7 +32,7 @@ var SelectableListView = View.extend({
 		
 		options.renderer && (this.renderer = options.renderer);
 		this.showEmpty = !!options.showEmpty;
-		this.children = new Container();
+		this.itemViews = new Container();
 		
 		this.listenTo(this.collection, "add remove reset", this._onCollectionChange);
 	},
@@ -74,29 +74,29 @@ var SelectableListView = View.extend({
 				eltBuffer.appendChild(view.render().el);
 			}
 			this.collection.each(function (model, index, arr) {
-				view = this.createChildView(model, index);
+				view = this.createItemView(model, index);
 				eltBuffer.appendChild(view.render().el);
 			}, this);
 			this.el.appendChild(eltBuffer);
 		}
 	},
 	
-	createChildView: function (model, index) {
+	createItemView: function (model, index) {
 		var view = new (this.renderer)({
 			model: model
 		});
-		this.children.add(view);
-		this.listenTo(view, "renderer:click", this.onChildViewClick);
+		this.itemViews.add(view);
+		this.listenTo(view, "renderer:click", this.onItemViewClick);
 		return view;
 	},
 	
 	removeChildren: function () {
-		this.children.each(this.removeChildView, this);
+		this.itemViews.each(this.removeItemView, this);
 	},
 	
-	removeChildView: function (view) {
+	removeItemView: function (view) {
 		this.stopListening(view);
-		this.children.remove(view);
+		this.itemViews.remove(view);
 		view.remove();
 		return view;
 	},
@@ -106,7 +106,7 @@ var SelectableListView = View.extend({
 	 * --------------------------- */
 	
 	/** @private */
-	onChildViewClick: function (item) {
+	onItemViewClick: function (item) {
 		if (this.collection.selected !== item && this._enabled) {
 			this.trigger("view:select:one", item);
 		}
@@ -120,13 +120,14 @@ var SelectableListView = View.extend({
 		var view = new SelectableListView.EmptyRenderer({
 			model: this.collection
 		});
-		this.children.add(view);
+		this.itemViews.add(view);
 		this.listenTo(view, "renderer:click", function() {
 			this._enabled && this.trigger("view:select:none");
 		});
 		return view;
 	},
-}, {
+},
+{
 	EmptyRenderer: ClickableRenderer.extend({
 		
 		/** @override */

@@ -1,3 +1,4 @@
+/* global MutationObserver */
 /**
 * @module app/view/base/View
 */
@@ -15,37 +16,71 @@ var prefixedProperty = require("utils/prefixedProperty");
 var prefixedStyleName = require("utils/prefixedStyleName");
 /** @type {module:utils/prefixedEvent} */
 var prefixedEvent = require("utils/prefixedEvent");
+/** @type {Function} */
+var transitionEnd = require("utils/event/transitionEnd");
 
 /** @type {module:utils/event/addTransitionCallback} */
 var addTransitionCallback = require("utils/event/addTransitionCallback");
-/** @type {Function} */
-var transitionEnd = require("utils/event/transitionEnd");
 // /** @type {Function} */
 var getPrototypeChainValue = require("utils/object/getPrototypeChainValue");
 
-var _viewsByCid = {};
-var _cidSeed = 1;
+/* -------------------------------
+/* static private
+/* ------------------------------- */
 
-document.addEventListener(prefixedEvent("animationstart", window, "AnimationEvent"), function(ev) {
-	if (ev.animationName == "viewElementInserted") {
-		var view = _viewsByCid[ev.target.cid];
-		if (view = View.findByElement(ev.target)) {
-			console.log("View::[viewElementInserted]: %s", view.cid);
-			view._addedToDom();
+var _cidSeed = 1;
+var _viewsByCid = {};
+
+var observer = new MutationObserver(function(mm) {
+	// console.log("View::mutations %i", mm.length);
+	var i, ii, m;
+	var j, jj, e;
+	var view;
+	for (i = 0, ii = mm.length; i < ii; i++) {
+		m = mm[i];
+		if (m.type == "childList") {
+			for (j = 0, jj = m.addedNodes.length; j < jj; j++) {
+				e = m.addedNodes.item(j);
+				if (e.cid !== void 0) {
+					view = _viewsByCid[e.cid];
+					view._viewAdded();
+					// console.log("View::[viewElementAttached] %s", view.cid);
+				}
+			}
+			for (j = 0, jj = m.removedNodes.length; j < jj; j++) {
+				e = m.removedNodes.item(j);
+				if (e.cid !== void 0) {
+					view = _viewsByCid[e.cid];
+					view._viewRemoved();
+					// console.log("View::[viewElementRemoved] %s", e.cid);
+				}
+			}
+		} else if (m.type == "attributes") {
+			if (m.target.cid !== void 0) {
+				view = _viewsByCid[m.target.cid];
+				view._viewAdded();
+				// console.log("View::[viewAttachedToElement] %s", m.target.cid);
+			}
+			else {
+				console.warn("View::[attributes] target has no cid (%s='%s')", m.attributeName, m.target.getAttribute(m.attributeName), m);
+			}
 		}
-		// else if (view = View.findByDescendant(ev.target)) {
-		// 	console.log("View::[viewElementInserted]: %s > %s", view.cid, ev.target.cid);
-		// 	view.trigger("view:elementadd");
-		// }
-		// else {
-		// 	console.log("View::[viewElementInserted]: (orphan) %s", ev.target.getAttribute("data-cid"));
-		// }
 	}
-}, false);
+});
+
+observer.observe(document.body, {
+	attributes: true,
+	childList: true,
+	subtree: true,
+	attributeFilter: ["data-cid"]
+});
+
+/* -------------------------------
+/* static public
+/* ------------------------------- */
 
 var View = {
-	ViewError: require("app/view/base/ViewError"),
-	
+	// rootViews: {},
 	findByElement: function(el) {
 		return _viewsByCid[el.cid];
 	},
@@ -55,28 +90,44 @@ var View = {
 				return _viewsByCid[el.cid];
 		while (el = el.parentElement);
 		return null;
-	}
+	},
+	ViewError: require("app/view/base/ViewError"),
 };
 
-/**
-* @constructor
-* @type {module:app/view/base/View}
-*/
+/* -------------------------------
+/* prototype
+/* ------------------------------- */
+
 var ViewProto = {
 	
 	/** @type {string} */
 	cidPrefix: "view",
 	
+	/** @type {object} */
 	properties: {
 		cid: {
 			get: function() {
 				return this._cid || (this._cid = this.cidPrefix + _cidSeed++);
 			}
+		},
+		inDomTree: {
+			get: function() {
+				console.warn("[deprecated] %s::inDomTree", this.cid);
+				return this._domPhase === "added";
+			}
 		}
 	},
 	
+	parentView: null,
+	
+	_domPhase: "created",// created>added>removed
+	_viewPhase: "initializing",// initializing>initialized>disposing>disposed
+	
+	/**
+	* @constructor
+	* @type {module:app/view/base/View}
+	*/
 	constructor: function(options) {
-		
 		Object.defineProperties(this, getPrototypeChainValue(this, "properties", Backbone.View));
 		
 		if (options && options.className && this.className) {
@@ -92,29 +143,74 @@ var ViewProto = {
 			}
 		}
 		
-		this._initalizing = true;
-		Backbone.View.apply(this, arguments);
-		delete this._initalizing;
+		this.parentView = null;
+		this.childViews = {};
 		
-		if (this.inDomTree) {
-			this.trigger("view:add", this);
+		Backbone.View.apply(this, arguments);
+		
+		// console.log("%s::initialize viewPhase:[%s => initialized]", this.cid, this._viewPhase);
+		this._viewPhase = "initialized";
+		if (this._domPhase === "added") {
+			this.trigger("view:added", this);
 		}
 	},
 	
-	_addedToDom: function() {
-		this.inDomTree = true;
-		if (!this._initalizing) {
-			this.trigger("view:add", this);
-		}
-	},
-	
+	/** @override */
 	remove: function() {
-		this.trigger("view:remove", this);
+		// console.log("%s::remove viewPhase:[%s => disposing]", this.cid, this._viewPhase);
+		this._viewPhase = "disposing";
+		
+		this.trigger("view:removed", this);
+		for (var cid in this.childViews) {
+			this.childViews[cid].remove();
+		}
+		this._removeFromParentView();
+		
 		Backbone.View.prototype.remove.apply(this, arguments);
+		
 		delete _viewsByCid[this.cid];
+		delete this.el.cid;
+		
+		this._viewPhase = "disposed";
 		return this;
 	},
 	
+	_viewAdded: function() {
+		// console.log("%s::_viewAdded domPhase:[%s => added]", this.cid, this._domPhase);
+		this._domPhase = "added";
+		this._addToParentView();
+		
+		if (this._viewPhase = "initialized") {
+			this.trigger("view:added", this);
+		}
+	},
+	
+	_viewRemoved: function() {
+		// console.log("%s::_viewRemoved domPhase:[%s => removed]", this.cid, this._domPhase);
+		this._domPhase = "removed";
+		if (this._viewPhase === "initialized") {
+			this.remove();
+		}
+	},
+	
+	_addToParentView: function() {
+		this.parentView = View.findByDescendant(this.el.parentElement);
+		if (this.parentView) {
+			this.parentView.childViews[this.cid] = this;
+		}
+	},
+	
+	_removeFromParentView: function() {
+		if (this.parentView && (this.cid in this.parentView.childViews)) {
+			delete this.parentView.childViews[this.cid];
+		}
+	},
+	
+	/* -------------------------------
+	/* Backbone.View overrides
+	/* ------------------------------- */
+	
+	/** @override */
 	setElement: function(element, delegate) {
 		// If an element was supplied, merge classes specified
 		// by this view with the ones already in DOM:
@@ -129,12 +225,13 @@ var ViewProto = {
 			Backbone.View.prototype.setElement.apply(this, arguments);
 		}
 		if (this.el === void 0) {
-			console.error("Backbone view has no element");
-		} else {
-			this.el.setAttribute("data-cid", this.cid);
-			this.el.cid = this.cid;
+			throw new Error("Backbone view has no element");
 		}
 		_viewsByCid[this.cid] = this;
+		this.el.cid = this.cid;
+		// this.el._view = this;
+		this.el.setAttribute("data-cid", this.cid);
+		
 		return this;
 	},
 	
@@ -156,34 +253,12 @@ var ViewProto = {
 	// 	return this;
 	// },
 	
-	setEnabled: function(enable) {},
-	
-	// /* -------------------------------
-	// /* css prefix helpers
-	// /* ------------------------------- */
-	// 
-	// getPrefixedProperty: function(prop) {
-	// 	return prefixedProperty(prop, this.el.style);
-	// 	// return _styleProps[prop] || (_styleProps[prop] = prefixedProperty(prop, this.el.style));
-	// },
-	// 
-	// getPrefixedStyle: function(prop) {
-	// 	return prefixedStyleName(prop, this.el.style);
-	// 	// var p, pp;
-	// 	// if (_styleNames[prop] === void 0) {
-	// 	// 	p = dashedToCamel(prop);
-	// 	// 	pp = prefixedProperty(p);
-	// 	// 	_styleNames[prop] = (p === pp? "" : "-") + camelToDashed(pp);
-	// 	// }
-	// 	// return _styleNames[prop];
-	// },
-	
 	/* -------------------------------
 	/* transitionEnd helpers
 	/* ------------------------------- */
 	 
 	onTransitionEnd: function(target, prop, callback, timeout) {
-		// prop = this.getPrefixedStyle(prop)
+		console.warn("[deprecated] %s::onTransitionEnd", this.cid);
 		return addTransitionCallback(target, prop, callback, this, timeout);
 	},
 	
@@ -198,6 +273,12 @@ var ViewProto = {
 	cancelAnimationFrame: function(id) {
 		return window.cancelAnimationFrame(id);
 	},
+	
+	/* -------------------------------
+	/* common abstract
+	/* ------------------------------- */
+	
+	setEnabled: function(enable) {},
 };
 
 module.exports = Backbone.View.extend(ViewProto, View);

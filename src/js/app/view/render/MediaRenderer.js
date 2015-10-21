@@ -41,13 +41,12 @@ var MediaRenderer = CarouselRenderer.extend({
 		CarouselRenderer.prototype.initialize.apply(this, arguments);
 		
 		this.metrics.media = {};
-		
 		this.setState("idle");
 		
 		this.initializeAsync()
 			.then(
 				function(view) {
-					console.log("%s initializeAsync resolved", view.cid);
+					console.log("%s::initializeAsync [%s]", view.cid, "resolved");
 					view.setState("done");
 				})
 			.catch(
@@ -59,7 +58,7 @@ var MediaRenderer = CarouselRenderer.extend({
 					}
 					// this.placeholder.innerHTML = "<p class=\"color-fg\" style=\"position:absolute;bottom:0;padding:3rem;\"><strong>" + err.name + "</strong> " + err.message + "</p>";
 					this.setState("error");
-					console.error("%s initializeAsync %s: %s", this.cid, err.name, err.message);
+					console.error("%s::initializeAsync [%s]: %s", this.cid, err.name, err.message);
 					err.event && console.log(err.event);
 				}.bind(this));
 	},
@@ -125,11 +124,11 @@ var MediaRenderer = CarouselRenderer.extend({
 		} else if ((pcw / pch) < (sw / sh)) {
 			cw = pcw;
 			cs = cw / sw;
-			ch = Math.round(cs * sh);
+			ch = Math.floor(cs * sh);
 		} else {
 			ch = pch;
 			cs = ch / sh;
-			cw = Math.round(cs * sw);
+			cw = Math.floor(cs * sw);
 		}
 		
 		this.metrics.content.x = cx;

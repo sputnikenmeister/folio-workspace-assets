@@ -57,7 +57,7 @@ var ContentView = ContainerView.extend({
 		
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
 		
-		this.childViews = [];
+		this.contentViews = [];
 		this.bundleListeners = {
 			"select:one": this._onSelectOne,
 			"select:none": this._onSelectNone,
@@ -77,7 +77,7 @@ var ContentView = ContainerView.extend({
 	render: function () {
 		this.transforms.stopAllTransitions();
 		this.transforms.validate();
-		this.childViews.forEach(function(view) {
+		this.contentViews.forEach(function(view) {
 			view.skipTransitions = true;
 			view.render();
 		}, this);
@@ -89,7 +89,7 @@ var ContentView = ContainerView.extend({
 	 * ------------------------------- */
 	
 	_onCollapseChange: function(collapsed) {
-		this.childViews.forEach(function(view) {
+		this.contentViews.forEach(function(view) {
 			view.setEnabled(collapsed);
 		});
 	},
@@ -154,20 +154,20 @@ var ContentView = ContainerView.extend({
 	
 	/** Create children on bundle select */
 	createChildren: function (bundle) {
-		//this.childViews.push();
+		//this.contentViews.push();
 		var transitionProp = prefixedProperty("transition");
 		
 		this.captionStack = this.createMediaCaptionStack(bundle);
 		this.carousel = this.createMediaCarousel(bundle);
 		this.dotNavigation = this.createMediaDotNavigation(bundle);
 		
-		this.childViews.push(
+		this.contentViews.push(
 			this.captionStack,
 			this.carousel,
 			this.dotNavigation
 		);
 		this.transforms.add(this.carousel.el, this.captionStack.el);
-		this.childViews.forEach(function(view, index, childViews) {
+		this.contentViews.forEach(function(view, index, contentViews) {
 			if (!this.skipTransitions) {
 				var rafHandler = function() {
 					var transitionHandler = function(ev) {
@@ -194,7 +194,7 @@ var ContentView = ContainerView.extend({
 		var transitionProp = prefixedProperty("transition");
 		
 		this.transforms.remove(this.carousel.el, this.captionStack.el);
-		this.childViews.forEach(function(view, index, childViews) {
+		this.contentViews.forEach(function(view, index, contentViews) {
 			view.stopListening(view.collection);
 			controller.stopListening(view);
 			if (this.skipTransitions) {
@@ -202,18 +202,18 @@ var ContentView = ContainerView.extend({
 			} else {
 				var computedStyle = getComputedStyle(view.el);
 				if (computedStyle.opacity == "0" || computedStyle.visibility == "hidden") {
-					console.log("ContentView.removeChildren", "item invisible (removed)", view.cid);
+					console.log("%s::removeChildren", this.cid, "item invisible (removed)", view.cid);
 					view.remove();
 				} else {
 					var transitionHandler = function(ev) {
 						if (ev.target === view.el) {
-							console.log("ContentView.removeChildren", "transitionEnd", view.cid);
+							console.log("%s::removeChildren", this.cid, "transitionEnd", view.cid);
 							view.el.removeEventListener(transitionEnd, transitionHandler, false);
 							view.remove();
 						} else {
-							console.log("ContentView.removeChildren", "transitionEnd (ignored)");
+							console.log("%s::removeChildren", this.cid, "transitionEnd (ignored)", view.cid);
 						}
-					};
+					}.bind(this);
 					view.el.addEventListener(transitionEnd, transitionHandler, false);
 					view.el.classList.add("removing-child");
 					view.el.style[transformProp] = computedStyle[transformProp];
@@ -223,29 +223,29 @@ var ContentView = ContainerView.extend({
 				// console.log("ContentView.removeChildren", "transitionEnd", view.cid);
 			}
 		}, this);
-		this.childViews.length = 0;
+		this.contentViews.length = 0;
 	},
 	
-	purgeChildren2: function () {
-		var view, i, ii, el, els = [];
-		for (i = 0, ii = this.el.children.length; i < ii; i++) {
-			el = this.el.children.item(i);
-			if (el.classList.contains("removing-child")) {
-				els.push(el);
-			}
-		}
-		for (i = 0, ii = els.length; i < ii; i++) {
-			el = els[i];
-			try {
-				view = ContainerView.findByElement(el).remove();
-				console.warn("ContentView.purgeChildren", view.cid);
-			} catch (err) {
-				this.el.removeChild(el);
-				console.error("ContentView.purgeChildren", "orphaned element", err);
-			}
-		}
-		if (ii > 0) console.log("ContentView.purgeChildren", this.el.children.length, this.childViews.length);
-	},
+	// purgeChildren2: function () {
+	// 	var view, i, ii, el, els = [];
+	// 	for (i = 0, ii = this.el.children.length; i < ii; i++) {
+	// 		el = this.el.children.item(i);
+	// 		if (el.classList.contains("removing-child")) {
+	// 			els.push(el);
+	// 		}
+	// 	}
+	// 	for (i = 0, ii = els.length; i < ii; i++) {
+	// 		el = els[i];
+	// 		try {
+	// 			view = ContainerView.findByElement(el).remove();
+	// 			console.warn("ContentView.purgeChildren", view.cid);
+	// 		} catch (err) {
+	// 			this.el.removeChild(el);
+	// 			console.error("ContentView.purgeChildren", "orphaned element", err);
+	// 		}
+	// 	}
+	// 	if (ii > 0) console.log("ContentView.purgeChildren", this.el.children.length, this.contentViews.length);
+	// },
 	
 	purgeChildren: function() {
 		var i, el, els = this.el.querySelectorAll(".removing-child");
@@ -253,18 +253,18 @@ var ContentView = ContainerView.extend({
 			el = els.item(i);
 			if (el.parentElement === this.el) {
 				try {
-					console.warn("ContentView.purgeChildren", el.getAttribute("data-cid"));
+					console.warn("%s::purgeChildren", this.cid, el.getAttribute("data-cid"));
 					ContainerView.findByElement(el).remove();
 				} catch (err) {
-					console.error("ContentView.purgeChildren", "orphaned element", err);
+					console.error("s::purgeChildren", this.cid, "orphaned element", err);
 					this.el.removeChild(el);
 				}
 			}
 		}
-		if (DEBUG) {
-			console.log("ContentView.purgeChildren %d purged (%d views, %d elements remain)",
-				i + 1, this.el.children.length, this.childViews.length);
-		}
+		// if (DEBUG) {
+		// 	console.log("ContentView.purgeChildren %d purged (%d views, %d elements remain)",
+		// 		i + 1, this.el.children.length, this.contentViews.length);
+		// }
 	},
 	
 	/* -------------------------------
@@ -374,7 +374,7 @@ var ContentView = ContainerView.extend({
 		controller.listenTo(view, {
 			"view:select:one": controller.selectMedia,
 			"view:select:none": controller.deselectMedia,
-			"view:remove": controller.stopListening
+			"view:removed": controller.stopListening
 		});
 		return view;
 	},
@@ -403,7 +403,7 @@ var ContentView = ContainerView.extend({
 		controller.listenTo(view, {
 			"view:select:one": controller.selectMedia,
 			"view:select:none": controller.deselectMedia,
-			"view:remove": controller.stopListening
+			"view:removed": controller.stopListening
 		});
 		return view;
 	},

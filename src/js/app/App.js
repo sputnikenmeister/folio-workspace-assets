@@ -3,8 +3,7 @@
  */
 "use strict";
 
-console.log("App first statement");
-console.log("Strict mode", (function() {
+function testStrictMode() {
 	try {
 		/* jshint -W117 */
 		undeclaredVar = 1;
@@ -13,9 +12,25 @@ console.log("Strict mode", (function() {
 		return true;
 	}
 	return false;
-})());
+}
+
+function testWeakMap() {
+	return window.WeakMap !== void 0;
+}
+
+console.log("App first statement");
+console.log("Strict mode", testStrictMode());
 
 require("Modernizr");
+Modernizr._config.classPrefix = "has-";
+Modernizr._config.enableClasses = false;
+Modernizr.addTest("strictmode", testStrictMode);
+Modernizr.addTest("weakmap", testWeakMap);
+
+// Modernizr.promises || require("es6-promise").polyfill();
+// Modernizr.classlist || require("classlist-polyfill");
+// Modernizr.raf || require("raf-polyfill");
+
 require("es6-promise").polyfill();
 require("classlist-polyfill");
 require("raf-polyfill");

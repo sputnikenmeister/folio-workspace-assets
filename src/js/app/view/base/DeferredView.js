@@ -15,7 +15,7 @@ var _queuedViewsIndex = {};
 var _isExecuting = false;
 
 var _callQueuedAF = function() {
-	console.log("DeferredView._callQueuedAF (%d items): %s", _queue.length - 1,
+	console.log("DeferredView::callQueuedAF (%i): %s", _queue.length,
 		Object.keys(_queuedViewsIndex).join(", "));
 	var queue = _queue;
 	_queue = [];
@@ -28,7 +28,7 @@ var _callQueuedAF = function() {
 	_isExecuting = false;
 };
 var requestQueuedAF = function(view) {
-	_isExecuting && console.warn("DeferredView.requestQueuedAF", "queue running", view.cid);
+	_isExecuting && console.warn("DeferredView::requestQueuedAF", "queue running", view.cid);
 	var viewIndex = _queuedViewsIndex[view.cid] || (_queuedViewsIndex[view.cid] = _queue.length);
 	_queue[viewIndex] = view._applyRender;
 	if (_queueRafId === null) {
@@ -36,7 +36,7 @@ var requestQueuedAF = function(view) {
 	}
 };
 var cancelQueuedAF = function(view) {
-	_isExecuting && console.warn("DeferredView.cancelQueuedAF", "queue running", view.cid);
+	_isExecuting && console.warn("DeferredView::cancelQueuedAF", "queue running", view.cid);
 	if (_queuedViewsIndex.hasOwnProperty(view.cid)) {
 		_queue[_queuedViewsIndex[view.cid]] = null;
 	}
@@ -97,7 +97,7 @@ var DeferredView = View.extend({
 	requestRender: function (key, value) {
 		if (key) {
 			if (this._renderJobs.hasOwnProperty(key)) {
-				console.log("%s::requestRender [%s]: job overwritten", this.cid, key);
+				console.log("%s::requestRender [%s] '%s'", this.cid, "job overwritten", key);
 			}
 			this._renderJobs[key] = value ? value : true;
 		}

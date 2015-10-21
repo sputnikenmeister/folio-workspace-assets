@@ -9,6 +9,15 @@
 	<dd id="toggle-grid-bg"><a href="#toggle-grid-bg">Grid</a></dd>
 	<dd id="toggle-blocks"><a href="#toggle-blocks">Blocks</a></dd>
 	<dd id="toggle-logs"><a href="#toggle-logs">Logs</a></dd>
+	<dd id="toggle-tests"><a href="#toggle-tests">Tests</a></dd>
 	<dd id="media-info"><span></span></dd>
 </dl>
+<div id="test-results">
+<ul>
+<h6>Modernizr <a id="toggle-tests-failed" href="#toggle-tests-failed">Failed</a></h6>
+{{#each Modernizr}}
+	<li class="{{#if this}}passed{{else}}failed{{/if}}">{{@key}}</li>
+{{/each}}
+</ul>
+</div>
 <!-- <span style="font-family:'FolioClaimcheck-Figures'">x</span> -->

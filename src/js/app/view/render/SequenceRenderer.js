@@ -23,10 +23,11 @@ var SelectableCollection = require("app/model/SelectableCollection");
 var Globals = require("app/control/Globals");
 
 /** @type {module:app/view/component/progress/CanvasProgressMeter} */
-var CanvasProgressMeter = require("app/view/component/progress/CanvasProgressMeter");
-/** @type {module:app/view/component/progress/SVGProgressMeter} */
-var SVGProgressMeter = require("app/view/component/progress/SVGPathProgressMeter");
-// var SVGProgressMeter = require("app/view/component/progress/SVGCircleProgressMeter");
+// var ProgressMeter = require("app/view/component/progress/CanvasProgressMeter");
+/** @type {module:app/view/component/progress/SVGPathProgressMeter} */
+var ProgressMeter = require("app/view/component/progress/SVGPathProgressMeter");
+/** @type {module:app/view/component/progress/SVGCircleProgressMeter} */
+// var ProgressMeter = require("app/view/component/progress/SVGCircleProgressMeter");
 
 /** @type {module:utils/Timer} */
 var Timer = require("utils/Timer");
@@ -61,13 +62,17 @@ var SequenceStepRenderer = View.extend({
 	
 	cidPrefix: "sequenceStepRenderer",
 	/** @type {string} */
-	tagName: "img",
-	/** @type {string} */
 	className: "sequence-step",
+	/** @type {string} */
+	tagName: "img",
 	// /** @type {Object|Function} */
-	attributes: function() {
-		return { src: "" };//Globals.MEDIA_DIR + "/" + this.model.get("src") };
-	},
+	// attributes: {
+	// 	src: "", // mandatory attribute for IMG elements
+	// },
+	// attributes: function() {
+	// 	return { src: Globals.MEDIA_DIR + "/" + this.model.get("src") };
+	// },
+	
 	/** @override */
 	initialize: function (options) {
 		this.el.classList.toggle("current", this.model.hasOwnProperty("selected"));
@@ -79,9 +84,19 @@ var SequenceStepRenderer = View.extend({
 				this.el.classList.remove("current");
 			}
 		});
+		// this._src = Globals.MEDIA_DIR + "/" + this.model.get("src");
 		// PlayableRenderer.whenSelectionIsContiguous(this).then(function(view) {
-		whenSelectionDistanceIs(this, 2).then(function(view) {
-			view.el.src = Globals.MEDIA_DIR + "/" + view.model.get("src");
+		whenSelectionDistanceIs(this, 1).then(function(view) {
+			
+			// console.log("%s::whenSelectionDistanceIs(1) src='%s' (%s)", view.cid,
+			// 	(view.el.src === ""), (view.el.complete?"complete":"loading"),
+			// 	view._src, view.el.src
+			// );
+			
+			if (view.el.src === "")
+				view.el.src = Globals.MEDIA_DIR + "/" + view.model.get("src");
+		}, function(err) {
+			console.log("%s::whenSelectionDistanceIs [rejected]", err.view.cid, err.name, err.message);
 		});
 	},
 });
@@ -226,18 +241,18 @@ var SequenceRenderer = PlayableRenderer.extend({
 		
 		// Sequence child views
 		// ---------------------------------
-		this.children = new Container();
+		this.itemViews = new Container();
 		// add default image as renderer (already in DOM)
-		this.children.add(new SequenceStepRenderer({
+		this.itemViews.add(new SequenceStepRenderer({
 			el: this.getDefaultImage(),
 			model: this.sources.selected
 		}));
 		// create rest of views
 		var buffer = document.createDocumentFragment();
 		this.sources.each(function (item, index, arr) {
-			if (!this.children.findByModel(item)) {
+			if (!this.itemViews.findByModel(item)) {
 				var view = new SequenceStepRenderer({ model: item });
-				this.children.add(view);
+				this.itemViews.add(view);
 				buffer.appendChild(view.render().el);
 			}
 		}, this);
@@ -251,8 +266,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		var fractionFormatter = function(i, t, s) { return ((((i/t)*s) | 0) + 1) +"/"+s; };
 		this._progressFormatter = fractionFormatter;
 		
-		// this.progressMeter = new CanvasProgressMeter({
-		this.progressMeter = new SVGProgressMeter({
+		this.progressMeter = new ProgressMeter({
 			total: this.sources.length,
 			steps: this.sources.length,
 			// color: this.model.attrs()["color"],
@@ -283,7 +297,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// Sequence timer and listeners
 		// ---------------------------------
 		this.timer = new Timer();
-		this.listenTo(this, "view:remove", function () {
+		this.listenTo(this, "view:removed", function () {
 			this.timer.stop();
 		});
 		this.listenTo(this.timer, {
@@ -292,10 +306,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 			"end": this._onTimerEnd,
 			// "stop": function () { // stop is only called on view remove},
 		});
-		this.listenTo(this.sources, "select:one", function () {
-			this.updateProgressLabel(this.sources.selectedIndex);
-		});
-		
 	},
 	
 	/* ---------------------------
@@ -307,7 +317,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 	// 	// this.togglePlayback(true);
 	// 	return PlayableRenderer.prototype._onModelSelected.apply(this, arguments);
 	// 	// this.content.addEventListener("click", this._onContentClick, false);
-	// 	// this.listenTo(this, "view:remove", this._removeClickHandler);
+	// 	// this.listenTo(this, "view:removed", this._removeClickHandler);
 	// },
 	
 	/** @override */
@@ -369,42 +379,73 @@ var SequenceRenderer = PlayableRenderer.extend({
 		logSeq("_onTimerEnd (calling next step)");
 		
 		var nextModel = view.sources.followingOrFirst();
-		var nextView = view.children.findByModel(nextModel);
-		// this.setPlaybackState("network");
+		var nextView = view.itemViews.findByModel(nextModel);
+		if (!nextView.el.complete) {
+			this.setPlaybackState("network");
+		}
 		_whenImageLoads(nextView.el).then(function() {
 			if (view._isSequenceRunning) {
 				logSeq("_whenImageLoads (calling next step)");
 				// NOTE: step increase done here
 				view.sources.select(nextModel);
+				
 				view.updateOverlay(nextView.el, view.overlay);
+				view.setPlaybackState("media");
 				view.timer.start(view._sequenceInterval);
 			} else {
 				logSeq("_whenImageLoads (sequence not running)");
+				
+				view.setPlaybackState("user-resume");
 			}
 		});
 	},
 	
 	_onTimerStart: function() {
-		var delta = this.timer.getDuration() / this._sequenceInterval;
-		this.updateProgress(
-			this.sources.selectedIndex + (1 - delta),
-			delta, this.timer.getDuration());
+		// var delta = this.timer.getDuration() / this._sequenceInterval;
+		// this.updateProgress(
+		// 	this.sources.selectedIndex + (1 - delta),
+		// 	delta, this.timer.getDuration());
+			
+		this.progressMeter.valueTo(this.sources.selectedIndex + 1, this.timer.getDuration());
 	},
 	
 	_onTimerPause: function () {
-		var delta = this.timer.getDuration() / this._sequenceInterval;
-		this.updateProgress(
-			this.sources.selectedIndex + (1 - delta),
-			0, 0);
+		// var delta = this.timer.getDuration() / this._sequenceInterval;
+		// this.updateProgress(
+		// 	this.sources.selectedIndex + (1 - delta),
+		// 	0, 0);
+			
+		this.progressMeter.valueTo(this.progressMeter.renderedValue);
+	},
+	
+	/* --------------------------- *
+	/* sequence promises
+	/* --------------------------- */
+	
+	whenNextImageLoads: function(view) {
+		var nextModel = view.sources.followingOrFirst();
+		var nextView = view.itemViews.findByModel(nextModel);
+		return _whenImageLoads(nextView.el);
+	},
+	
+	whenCurrentTimerEnds: function(view) {
+		return new Promise(function(resolve, reject) {
+			view.timer.once("stop end", function() {
+				resolve(view);
+			});
+		});
+	},
+	
+	whenNextStepIsReady: function(view) {
+		return Promise.all([
+			view.whenNextImageLoads(view),
+			view.whenCurrentTimerEnds(view)
+		]);
 	},
 	
 	/* --------------------------- *
 	/* progress meter
 	/* --------------------------- */
-	
-	updateProgressLabel: function(value) {
-		// this.svgProgressMeter.labelEl.textContent = this._progressFormatter(value);
-	},
 	
 	updateProgress: function(valueFrom, valueDelta, duration) {
 		var valueTo = valueFrom + valueDelta;

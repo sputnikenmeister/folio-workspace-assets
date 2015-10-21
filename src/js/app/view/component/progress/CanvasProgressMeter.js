@@ -33,7 +33,7 @@ var CanvasProgressMeter = AbstractProgressMeter.extend({
 	/** @type {string} */
 	tagName: "canvas",
 	/** @type {string} */
-	className: "progress-meter canvas-progress-meter color-bg color-no-tx",
+	className: "progress-meter canvas-progress-meter color-bg",
 	
 	defaults: {
 		size: 24, // diameter in pixels
@@ -180,7 +180,7 @@ var CanvasProgressMeter = AbstractProgressMeter.extend({
 		if (!this.inDomTree) {
 			if (!this._renderPending) {
 				this._renderPending = true;
-				this.listenToOnce(this, "view:add", this.render);
+				this.listenToOnce(this, "view:added", this.render);
 			}
 			return this;
 		}
@@ -213,6 +213,7 @@ var CanvasProgressMeter = AbstractProgressMeter.extend({
 		var stepStart, stepLength;
 		var	arcStart, arcEnd;
 		var inRadius, outRadius;
+		
 		// steps
 		// --------------------------------
 		stepLength = this._arcStep - (this._arcGap * 2);

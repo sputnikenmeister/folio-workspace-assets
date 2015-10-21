@@ -23,10 +23,11 @@ var Globals = require("app/control/Globals");
 var PlayableRenderer = require("app/view/render/PlayableRenderer");
 
 /** @type {module:app/view/component/progress/CanvasProgressMeter} */
-var CanvasProgressMeter = require("app/view/component/progress/CanvasProgressMeter");
-/** @type {module:app/view/component/progress/SVGProgressMeter} */
-var SVGProgressMeter = require("app/view/component/progress/SVGPathProgressMeter");
-// var SVGProgressMeter = require("app/view/component/progress/SVGCircleProgressMeter");
+// var ProgressMeter = require("app/view/component/progress/CanvasProgressMeter");
+/** @type {module:app/view/component/progress/SVGPathProgressMeter} */
+var ProgressMeter = require("app/view/component/progress/SVGPathProgressMeter");
+/** @type {module:app/view/component/progress/SVGCircleProgressMeter} */
+// var ProgressMeter = require("app/view/component/progress/SVGCircleProgressMeter");
 
 /** @type {module:utils/prefixedStyleName} */
 var prefixedStyleName = require("utils/prefixedStyleName");
@@ -42,12 +43,12 @@ var lpad = require("underscore.string/lpad");
 var fullscreenChangeEvent = prefixedEvent("fullscreenchange", document);
 var fullscreenErrorEvent = prefixedEvent("fullscreenerror", document);
 
-var formatTimecode = function (value, total) {
-	return new Date((isNaN(value)? 0 : value) * 1000).toISOString().substr(14, 5);
-};
-var formatTimecodeLeft = function (value, total) {
-	return formatTimecode(Math.max(0, total - value));
-};
+// var formatTimecode = function (value, total) {
+// 	return new Date((isNaN(value)? 0 : value) * 1000).toISOString().substr(14, 5);
+// };
+// var formatTimecodeLeft = function (value, total) {
+// 	return formatTimecode(Math.max(0, total - value));
+// };
 var formatTimeShortUnit = function(value, total) {
 	value = isNaN(value)? total : total - value;
 	if (value > 3600)
@@ -56,32 +57,32 @@ var formatTimeShortUnit = function(value, total) {
 		return ((value / 60) | 0) + "m";
 	return (value | 0) + "s";
 };
-var formatTimeShortUnitless = function(value, total) {
-	value = isNaN(value)? total : total - value;
-	if (value > 3600)
-		return ((value / 3600) | 0);
-	if (value > 60)
-		return ((value / 60) | 0);
-	return (value | 0);
-};
-var formatTimeShortPadded = function(value,total) {
-	value = isNaN(value)? total : total - value;
-	if (value > 3600) value /= 3600;
-	else if (value > 60) value /= 60;
-	return lpad(value | 0, 2, "0");
-};
-var formatTimeShortUnitPadded = function(value,total) {
-	var unit;
-	value = isNaN(value)? total : total - value;
-	if (value > 3600) {
-		value /= 3600; unit = "h";
-	} else if (value > 60) {
-		value /= 60; unit = "m";
-	} else {
-		unit = "s";
-	}
-	return lpad(value | 0, 2, "0") + unit;
-};
+// var formatTimeShortUnitless = function(value, total) {
+// 	value = isNaN(value)? total : total - value;
+// 	if (value > 3600)
+// 		return ((value / 3600) | 0);
+// 	if (value > 60)
+// 		return ((value / 60) | 0);
+// 	return (value | 0);
+// };
+// var formatTimeShortPadded = function(value,total) {
+// 	value = isNaN(value)? total : total - value;
+// 	if (value > 3600) value /= 3600;
+// 	else if (value > 60) value /= 60;
+// 	return lpad(value | 0, 2, "0");
+// };
+// var formatTimeShortUnitPadded = function(value,total) {
+// 	var unit;
+// 	value = isNaN(value)? total : total - value;
+// 	if (value > 3600) {
+// 		value /= 3600; unit = "h";
+// 	} else if (value > 60) {
+// 		value /= 60; unit = "m";
+// 	} else {
+// 		unit = "s";
+// 	}
+// 	return lpad(value | 0, 2, "0") + unit;
+// };
 
 var formatTimeShort = formatTimeShortUnit;
 
@@ -104,7 +105,7 @@ var VideoRenderer = PlayableRenderer.extend({
 				var d = this.getSelectionDistance(),
 					s = this.getPlayToggle().style;
 				if (d < 2) {
-					console.log("%s::events ['%s']: property '%s'", this.cid, ev.type, ev.propertyName);
+					console.log("%s::events ['%s']: '%s'", this.cid, ev.type, ev.propertyName);
 					s.opacity = (d == 1? "0" : "");
 					s.visibility = (d == 1? "hidden" : "");
 				}
@@ -196,7 +197,7 @@ var VideoRenderer = PlayableRenderer.extend({
 		}
 		
 		content.style.width = cssW;
-		content.style.height = cssH;
+		content.style.height = (this.metrics.media.height - 1) + "px";
 		content.style.left = this.metrics.content.x + "px";
 		content.style.top = this.metrics.content.y + "px";
 		
@@ -232,7 +233,6 @@ var VideoRenderer = PlayableRenderer.extend({
 			.then(
 				function(view) {
 					view.addMediaListeners();
-					view.once("view:remove", view.removeMediaListeners, view);
 					return Promise.all([
 						view.whenVideoHasMetadata(view),
 						PlayableRenderer.whenDefaultImageLoads(view),
@@ -250,9 +250,7 @@ var VideoRenderer = PlayableRenderer.extend({
 					view.addSelectionListeners();
 					// view.durationLabel.textContent = formatTimecode(view.video.duration);
 					view.updateOverlay(view.getDefaultImage(), view.el.querySelector(".overlay"));
-					
-					// view.progressMeter = new CanvasProgressMeter({
-					view.progressMeter = new SVGProgressMeter({
+					view.progressMeter = new ProgressMeter({
 						total: view.video.duration,
 						labelFn: formatTimeShort
 						// labelFn: formatTimeShortPadded
@@ -300,6 +298,7 @@ var VideoRenderer = PlayableRenderer.extend({
 			// 	(mediaEl.preload === "metadata" && mediaEl.readyState >= HTMLMediaElement.HAVE_METADATA)) {
 			if (mediaEl.readyState >= HTMLMediaElement.HAVE_METADATA) {
 				// return view;
+				console.log("%s::whenVideoHasMetadata [%s] %s", view.cid, "resolved", "sync");
 				resolve(view);
 				return;
 			} else if (mediaEl.error) {
@@ -308,8 +307,8 @@ var VideoRenderer = PlayableRenderer.extend({
 			} else {
 				var handlers = {
 					loadedmetadata: function(ev) {
-						console.log(view.cid, view.model.cid, "whenVideoHasMetadata: loadedmetadata");
 						removeEventListeners();
+						console.log("%s::whenVideoHasMetadata [%s] %s", view.cid, "resolved", ev.type);
 						resolve(view);
 					},
 					abort: function(ev) {
@@ -406,22 +405,22 @@ var VideoRenderer = PlayableRenderer.extend({
 	
 	addMediaListeners: function() {
 		this.video.addEventListener("error", this._onMediaError, true);
-		
 		this.addListener(this.video, "loadeddata progress canplay canplaythrough", this._updateBufferedValue);
 		this.addListener(this.video, "playing waiting pause seeking", this._updatePlaybackState);
 		this.addListener(this.video, "timeupdate", this._updatePlayedValue);
-		
 		this.video.addEventListener("playing", this._onMediaPlayingOnce, false);
 		this.video.addEventListener("ended", this._onMediaEnded, false);
+		
+		this.on("view:removed", this.removeMediaListeners, this);
 	},
 	
 	removeMediaListeners: function() {
-		this.video.removeEventListener("error", this._onMediaError, true);
+		this.off("view:removed", this.removeMediaListeners, this);
 		
+		this.video.removeEventListener("error", this._onMediaError, true);
 		this.removeListener(this.video, "loadeddata progress canplay canplaythrough", this._updateBufferedValue);
 		this.removeListener(this.video, "playing waiting pause seeking", this._updatePlaybackState);
 		this.removeListener(this.video, "timeupdate", this._updatePlayedValue);
-		
 		this.video.removeEventListener("playing", this._onMediaPlayingOnce, false);
 		this.video.removeEventListener("ended", this._onMediaEnded, false);
 	},
@@ -500,12 +499,7 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 	
 	_updatePlayedValue: function(ev) {
-		if (this.progressMeter.lastRenderedValue &&
-				this.progressMeter.lastRenderedValue < this.video.currentTime) {
-			this.progressMeter.valueTo(this.video.currentTime, this.video.currentTime - this.progressMeter.lastRenderedValue);
-		} else {
-			this.progressMeter.valueTo(this.video.currentTime);
-		}
+		this.progressMeter.valueTo(this.video.currentTime);
 	},
 	
 	// _updatePlayedValue_timeline: function(ev) {

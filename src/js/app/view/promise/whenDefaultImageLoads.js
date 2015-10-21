@@ -43,7 +43,7 @@ module.exports = function(view) {
 				.then(
 					function(targetEl) {
 						console.log(logMessage, view.cid, "resolved", targetEl.src);
-						// view.on("view:remove", function() { URL.revokeObjectURL(url); });
+						// view.on("view:removed", function() { URL.revokeObjectURL(url); });
 						view.placeholder.removeAttribute("data-progress");
 						resolve(view);
 					})

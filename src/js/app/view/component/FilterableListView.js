@@ -33,7 +33,7 @@ var FilterableListView = DeferredView.extend({
 
 	/** @override */
 	initialize: function (options) {
-		this.children = new Container();
+		this.itemViews = new Container();
 		this.renderer = options.renderer || FilterableListView.defaultRenderer;
 		options.filterFn && (this._filterFn = options.filterFn);
 		
@@ -44,7 +44,7 @@ var FilterableListView = DeferredView.extend({
 
 		this.skipTransitions = true;
 		this.el.classList.add("skip-transitions");
-		this.collection.each(this.assignChildView, this);
+		this.collection.each(this.assignItemView, this);
 
 		this.listenTo(this.collection, "select:one select:none", this.setSelection);
 	},
@@ -113,12 +113,12 @@ var FilterableListView = DeferredView.extend({
 	 * --------------------------- */
 
 	/** @private */
-	assignChildView: function (item, index) {
+	assignItemView: function (item, index) {
 		var view = new this.renderer({
 			model: item,
 			el: this.el.querySelector(".list-item[data-id=\"" + item.id + "\"]")
 		});
-		this.children.add(view);//, item.id);
+		this.itemViews.add(view);//, item.id);
 		this.listenTo(view, "renderer:click", this.onChildClick);
 		// this._rendererInstance || (this._rendererInstance = view);
 		return view;
@@ -186,12 +186,12 @@ var FilterableListView = DeferredView.extend({
 		// 	els.item(i).classList.remove("selected");
 		// }
 		if (oldItem) {
-			// this.children.findByModel(oldItem).$el.removeClass("selected");
-			this.children.findByModel(oldItem).el.classList.remove("selected");
+			// this.itemViews.findByModel(oldItem).$el.removeClass("selected");
+			this.itemViews.findByModel(oldItem).el.classList.remove("selected");
 		}
 		if (newItem) {
-			// this.children.findByModel(newItem).$el.addClass("selected");
-			this.children.findByModel(newItem).el.classList.add("selected");
+			// this.itemViews.findByModel(newItem).$el.addClass("selected");
+			this.itemViews.findByModel(newItem).el.classList.add("selected");
 		}
 		this._selectedItem = newItem;
 	},
@@ -222,8 +222,8 @@ var FilterableListView = DeferredView.extend({
 		this.el.classList.toggle("has-excluded", !!newVal);
 		// if (this._filterFn) {
 		// 	this.collection.each(function(model) {
-		// 		this.children.findByModel(model).$el.toggleClass("excluded", !this._filterFn(model, newVal, oldVal));
-		// 		// this.children.findByModel(model).el.classList.toggle("excluded", !this._filterFn(model, newVal, oldVal));
+		// 		this.itemViews.findByModel(model).$el.toggleClass("excluded", !this._filterFn(model, newVal, oldVal));
+		// 		// this.itemViews.findByModel(model).el.classList.toggle("excluded", !this._filterFn(model, newVal, oldVal));
 		// 	}, this);
 		// } else {
 			this.renderFiltersById(
@@ -240,17 +240,17 @@ var FilterableListView = DeferredView.extend({
 		if (newIds) {
 			newExcludes = _.difference(oldIds || this.itemIds, newIds);
 			_.each(newExcludes, function (id) {
-				// this.children.findByCustom(id).$el.addClass("excluded");
-				// this.children.findByModel(this.collection.get(id)).$el.addClass("excluded");
-				this.children.findByModel(this.collection.get(id)).el.classList.add("excluded");
+				// this.itemViews.findByCustom(id).$el.addClass("excluded");
+				// this.itemViews.findByModel(this.collection.get(id)).$el.addClass("excluded");
+				this.itemViews.findByModel(this.collection.get(id)).el.classList.add("excluded");
 			}, this);
 		}
 		if (oldIds) {
 			newIncludes = _.difference(newIds || this.itemIds, oldIds);
 			_.each(newIncludes, function (id) {
-				// this.children.findByCustom(id).$el.removeClass("excluded");
-				// this.children.findByModel(this.collection.get(id)).$el.removeClass("excluded");
-				this.children.findByModel(this.collection.get(id)).el.classList.remove("excluded");
+				// this.itemViews.findByCustom(id).$el.removeClass("excluded");
+				// this.itemViews.findByModel(this.collection.get(id)).$el.removeClass("excluded");
+				this.itemViews.findByModel(this.collection.get(id)).el.classList.remove("excluded");
 			}, this);
 		}
 	},

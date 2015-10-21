@@ -48,6 +48,8 @@ if (DEBUG) {
 var AppView = View.extend({
 	
 	/** @override */
+	cidPrefix: "app",
+	/** @override */
 	el: "body",
 	/** @override */
 	className: "without-bundle without-media",

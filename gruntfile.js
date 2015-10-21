@@ -24,29 +24,82 @@ module.exports = function (grunt) {
 	grunt.config("DIST_JS", "folio");
 	grunt.config("DIST_STYLES", "folio");
 	
+	grunt.loadTasks("./build/grunt/tasks");
+	
 	/* --------------------------------
 	/* Main Targets
 	/* -------------------------------- */
 	
+	grunt.registerTask("build-deps", ["modernizr-build:dist"]);
+	grunt.registerTask("build-debug-vendor", ["build-deps","browserify:vendor", "exorcise:vendor"]);
 	grunt.registerTask("build-debug-client", ["browserify:client", "exorcise:client"]);
-	grunt.registerTask("build-debug-vendor", ["browserify:vendor", "exorcise:vendor"]);
-	grunt.registerTask("build-debug-sass", ["compass:debug", "autoprefixer:debug"]);
+	grunt.registerTask("build-debug-styles", ["compass:debug", "autoprefixer:debug"]);
 	
-	grunt.registerTask("build-debug", ["build-debug-client", "build-debug-vendor", "build-debug-sass"]);
-	grunt.registerTask("build-dist", ["compass:dist", "autoprefixer:dist", "browserify:dist", "uglify:dist"]);
-	grunt.registerTask("build-watch", ["browserify:watch-client", "browserify:watch-vendor", "watch"]);
+	grunt.registerTask("build-debug", ["build-debug-vendor", "build-debug-client","build-debug-styles"]);
+	grunt.registerTask("build-dist",  ["build-deps", "browserify:dist", "uglify:dist", "compass:dist", "autoprefixer:dist"]);
 	
 	grunt.registerTask("clean-all", ["clean", "compass:clean", "compass:fonts"]);
 	grunt.registerTask("build-all", ["build-debug", "build-dist"]);
 	grunt.registerTask("build-clean-all", ["clean-all", "build-all"]);
+	grunt.registerTask("build-watch", ["browserify:watch-client", "browserify:watch-vendor", "watch"]);
 	
 	// Default task
 	grunt.registerTask("default", ["build-debug"]);
 	
-	/* ---------------------------------
-	/* external gruntfile
-	/* --------------------------------- */
-	require("./build/grunt/grunt.favicons.js")(grunt);
+	/* --------------------------------
+	/* watch
+	/* -------------------------------- */
+
+	grunt.loadNpmTasks("grunt-contrib-watch");
+	grunt.config("watch", {
+		options: {
+			spawn: false,
+			forever: false
+		},
+		"build-styles": {
+			tasks: ["compass:debug", "autoprefixer:debug"],
+			files: ["src/sass/**/*.scss", "src/sass/**/*.json"],
+		},
+		"build-styles-svg":{
+			tasks: ["compass:clean", "compass:debug", "autoprefixer:debug"],
+			files: ["images/**/*.svg"]
+		},
+		"build-deps": {
+			tasts: ["build-deps", "browserify:vendor", "exorcise:vendor"],
+			files: ["build/grunt/modernizr-config.json"],
+		},
+		"process-vendor": {
+			tasks: ["exorcise:vendor"],
+			files: ["js/<%= DEBUG_VENDOR_JS %>.js"],
+		},
+		"process-client": {
+			tasks: ["exorcise:client"],
+			files: ["js/<%= DEBUG_CLIENT_JS %>.js"],
+		},
+		"reload-config": {
+			// options: { spawn: true },
+			files: ["gruntfile.js", "package.json"],
+			tasks: ["clean-all", 
+				"compass:debug", "autoprefixer:debug", 
+				"modernizr-build:dist", "browserify:vendor", "exorcise:vendor", 
+				"browserify:client", "exorcise:client"
+			],
+		}
+	});
+	// grunt.registerTask("build-watch", ["browserify:watchable", "watch"]);
+	
+	// grunt.config("watch.build-styles-svg", {
+	// 	tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
+	// 	files: ["images/**/*.svg"] });
+
+	/* --------------------------------
+	/* clean
+	/* -------------------------------- */
+
+	grunt.loadNpmTasks("grunt-contrib-clean");
+	grunt.config("clean", {
+		src: ["./js/*", "./css/*"]
+	});
 	
 	/* ---------------------------------
 	/* Style Sheets
@@ -98,6 +151,14 @@ module.exports = function (grunt) {
 		sourcemap: false,
 		outputStyle: "compressed"
 	});
+	
+	/* --------------------------------
+	/* Javascript dependencies
+	/* -------------------------------- */
+	
+	grunt.config("modernizr-build.dist", {
+		files: {"./build/generated-sources/modernizr-dist.js": ["./build/grunt/modernizr-config.json"] }
+	});
 
 	/* --------------------------------
 	/* Javascript
@@ -129,11 +190,10 @@ module.exports = function (grunt) {
 				"es6-promise",
 				"classlist-polyfill",
 				"cookies-js",
-				// "handlebars",
 			],
 			alias: [
-				// "./build/vendor/paper-core.js:paper",
-				"./build/vendor/modernizr-dist.js:Modernizr",
+				// "./node_modules/webcomponents.js/MutationObserver.js:mutationobserver-polyfill",
+				"./build/generated-sources/modernizr-dist.js:Modernizr",
 				"./src/js/shims/fullscreen.js:fullscreen-polyfill",
 				"./src/js/shims/matchesSelector.js:matches-polyfill",
 				"./src/js/shims/requestAnimationFrame.js:raf-polyfill",
@@ -226,86 +286,38 @@ module.exports = function (grunt) {
 
 	/* Uglify */
 	grunt.loadNpmTasks("grunt-contrib-uglify");
-	grunt.config("uglify", {
-		options: {},
-		vendor: {
-			options: {
-				mangle: false,
-				beautify: true,
-				sourceMap: true,
-				sourceMapIn: "./js/<%= DEBUG_VENDOR_JS %>.js.map",
-				sourceMapIncludeSources: false,
-			},
-			files: {
-				"./js/<%= DEBUG_VENDOR_JS %>.js": ["./js/<%= DEBUG_VENDOR_JS %>.js"]
-			}
-		},
-		client: {
-			options: {
-				mangle: false,
-				beautify: true,
-				sourceMap: true,
-				sourceMapIn: "./js/<%= DEBUG_CLIENT_JS %>.js.map",
-				sourceMapIncludeSources: false,
-				compress: {
-					global_defs: {
-						DEBUG: true
-					}
-				}
-			},
-			files: {
-				"./js/<%= DEBUG_CLIENT_JS %>.js": ["./js/<%= DEBUG_CLIENT_JS %>.js"]
-			}
-		},
-	});
-
-	/* --------------------------------
-	/* clean
-	/* -------------------------------- */
-
-	grunt.loadNpmTasks("grunt-contrib-clean");
-	grunt.config("clean", {
-		src: ["./js/*", "./css/*"]
-	});
-
-
-	/* --------------------------------
-	/* watch
-	/* -------------------------------- */
-
-	grunt.loadNpmTasks("grunt-contrib-watch");
-	grunt.config("watch", {
-		options: {
-			spawn: false,
-			// forever: true
-		},
-		"build-styles": {
-			tasks: ["compass:debug", "autoprefixer:debug"],
-			files: ["src/sass/**/*.scss", "src/sass/**/*.json"],
-		},
-		"process-vendor": {
-			tasks: ["exorcise:vendor"],
-			files: ["js/<%= DEBUG_VENDOR_JS %>.js"],
-		},
-		"process-client": {
-			tasks: ["exorcise:client"],
-			files: ["js/<%= DEBUG_CLIENT_JS %>.js"],
-		},
-		"reload-config": {
-			options: {
-				spawn: true
-			},
-			tasks: ["build-clean-all"],
-			files: ["gruntfile.js", "package.json"],
-			// tasks: ["compass:debug", "autoprefixer:debug", "browserify:vendor", "browserify:client"],
-		}
-	});
-	// grunt.registerTask("build-watch", ["browserify:watchable", "watch"]);
-	
-	// grunt.config("watch.build-styles-svg", {
-	// 	tasks: ["compass:clean", "compass:client", "autoprefixer:client"],
-	// 	files: ["images/**/*.svg"] });
-
+	// grunt.config("uglify", {
+	// 	options: {},
+	// 	vendor: {
+	// 		options: {
+	// 			mangle: false,
+	// 			beautify: true,
+	// 			sourceMap: true,
+	// 			sourceMapIn: "./js/<%= DEBUG_VENDOR_JS %>.js.map",
+	// 			sourceMapIncludeSources: false,
+	// 		},
+	// 		files: {
+	// 			"./js/<%= DEBUG_VENDOR_JS %>.js": ["./js/<%= DEBUG_VENDOR_JS %>.js"]
+	// 		}
+	// 	},
+	// 	client: {
+	// 		options: {
+	// 			mangle: false,
+	// 			beautify: true,
+	// 			sourceMap: true,
+	// 			sourceMapIn: "./js/<%= DEBUG_CLIENT_JS %>.js.map",
+	// 			sourceMapIncludeSources: false,
+	// 			compress: {
+	// 				global_defs: {
+	// 					DEBUG: true
+	// 				}
+	// 			}
+	// 		},
+	// 		files: {
+	// 			"./js/<%= DEBUG_CLIENT_JS %>.js": ["./js/<%= DEBUG_CLIENT_JS %>.js"]
+	// 		}
+	// 	},
+	// });
 
 	/* --------------------------------
 	/* dist
@@ -361,82 +373,45 @@ module.exports = function (grunt) {
 	});
 	
 	/* --------------------------------
-	/* build-deps
+	/* resources
 	/* -------------------------------- */
 	
-	grunt.loadNpmTasks("grunt-modernizr");
-	grunt.config("modernizr.dist", {
-		// "cache": false,
-		"crawl": false,
-		"uglify": false,
-		"devFile": "./build/modernizr-dev.js",
-		"dest": "./build/modernizr-dist.js",
-		
-		// "class-prefix": "mod_",
-		// "classprefix": "mod_",
-		// "class_prefix": "mod_",
-		
-		"options": [
-			// "atrule",
-			// "domprefixes",
-			"hasEvent",
-			"mq",
-			"prefixed",
-			"prefixedCSS",
-			"setClasses",
-			// "html5shiv",
-			// "testallprops",
-			// "testprop",
-			// "teststyles",
-		],
-		
-		"tests": [
-			"animation",
-			"backgroundcliptext",
-			"backgroundsize",
-			"bgpositionshorthand",
-			"bgpositionxy",
-			"bgsizecover",
-			"bloburls",
-			"boxshadow",
-			"boxsizing",
-			"canvas",
-			"canvastext",
-			"classlist",
-			"cookies",
-			"cssanimations",
-			"csscalc",
-			"csspositionsticky",
-			"csspseudoanimations",
-			"csspseudotransitions",
-			"csstransforms",
-			"csstransitions",
-			"devicemotion_deviceorientation",
-			"display_runin",
-			"documentfragment",
-			"ellipsis",
-			"fullscreen",
-			"hashchange",
-			"inlinesvg",
-			"matchmedia",
-			"objectfit",
-			"pagevisibility",
-			"promises",
-			"queryselector",
-			"requestanimationframe",
-			"smil",
-			"svg",
-			"svgasimg",
-			"userselect",
-			"video",
-			"videoautoplay",
-			"videoloop",
-			"videopreload",
-			"willchange",
-			"xhrresponsetype",
-			"xhrresponsetypeblob",
-		],
-		"excludeTests": [],
-		"customTests": [],
+	/* generate-favicons
+	* - - - - - - - - - - - - - - - - - */
+	grunt.loadNpmTasks("grunt-svg2png");
+	grunt.config("svg2png.favicons", {
+		files: [{
+			cwd: "src/resources/favicon/", src: "*.svg"
+		}]
 	});
+	grunt.loadNpmTasks("grunt-favicons");
+	grunt.config("favicons", {
+		options: {
+			trueColor: true,
+			tileBlackWhite: false,
+			html: "./build/sandbox/favicons.html",
+			HTMLPrefix: "/workspace/assets/images/favicon/"
+		},
+		steampunk: {
+			options: {
+				appleTouchPadding: 10,
+				appleTouchBackgroundColor: "#FEFCE7",
+				tileColor: "#FEFCE7",
+			},
+			src: "src/resources/favicon/steampunk.png",
+			dest: "images/favicon"
+		},
+		img_0139: {
+			options: {
+				appleTouchPadding: 0,
+			},
+			src: "src/resources/favicon/IMG_0139_fav.png",
+			dest: "images/favicon",
+		},
+	});
+	grunt.registerTask("generate-favicons", [
+		"svg2png:favicons",
+		"favicons:img_0139",
+		// "favicons:steampunk",
+	]);
 };

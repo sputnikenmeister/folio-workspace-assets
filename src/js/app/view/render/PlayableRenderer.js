@@ -9,7 +9,6 @@ var Color = require("color");
 
 /** @type {module:app/view/MediaRenderer} */
 var MediaRenderer = require("app/view/render/MediaRenderer");
-
 /** @type {Function} */
 var prefixedProperty = require("utils/prefixedProperty");
 /** @type {Function} */
@@ -124,14 +123,14 @@ var PlayableRenderer = MediaRenderer.extend({
 		document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
 		this.getPlayToggle().addEventListener(this._toggleEvent, this._onToggleEvent, false);
 		
-		this.listenTo(this, "view:remove", this.removeSelectionHandlers);
+		this.listenTo(this, "view:removed", this.removeSelectionHandlers);
 	},
 	
 	_removeSelectedHandlers: function() {
 		document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
 		this.getPlayToggle().removeEventListener(this._toggleEvent, this._onToggleEvent, false);
 		
-		this.stopListening(this, "view:remove", this.removeSelectionHandlers);
+		this.stopListening(this, "view:removed", this.removeSelectionHandlers);
 	},
 	
 	/* dom events
@@ -191,6 +190,10 @@ var PlayableRenderer = MediaRenderer.extend({
 	/* util
 	/* --------------------------- */
 	
+	updateOverlay: function(mediaEl, targetEl, rectEl) {
+	},
+	
+	/*
 	updateOverlay: function(mediaEl, targetEl, rectEl) {
 		// this method is not critical, just catch and log all errors
 		try {
@@ -268,7 +271,7 @@ var PlayableRenderer = MediaRenderer.extend({
 		
 		targetEl.classList.toggle("over-dark", avgColor.dark());
 		
-		console.log("%s::updateOverlay() avgColor:%s (%s)", this.cid, avgColor.rgbString(), avgColor.dark()?"dark":"light", targetEl);
+		// console.log("%s::updateOverlay() avgColor:%s (%s)", this.cid, avgColor.rgbString(), avgColor.dark()?"dark":"light", targetEl);
 			
 		// Color, filter opts
 		// ------------------------------
@@ -291,7 +294,7 @@ var PlayableRenderer = MediaRenderer.extend({
 		} catch (err) {
 			console.error("%s::updateOverlay", this.cid, err);
 		}
-	}
+	}*/
 });
 
 module.exports = PlayableRenderer;

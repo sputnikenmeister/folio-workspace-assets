@@ -39,7 +39,7 @@ module.exports = DeferredView.extend({
 		}
 
 		this.childSizes = {};
-		this.children = new Container();
+		this.itemViews = new Container();
 		this.skipTransitions = true;
 
 		_.bindAll(this, "_onTouch", "_onResize");

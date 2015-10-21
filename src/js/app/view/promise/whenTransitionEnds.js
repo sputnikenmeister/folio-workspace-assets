@@ -48,7 +48,7 @@ module.exports = function(view, target, prop, timeout) {
 				// console.log(logMessage, view.cid, "cleanup", timeoutId? transitionEnd : "timeout");
 				timeoutId && window.clearTimeout(timeoutId);
 				target.removeEventListener(transitionEnd, resolveOnEvent, false);
-				view.off("view:remove", rejectOnRemove);
+				view.off("view:removed", rejectOnRemove);
 			};
 			
 			// resolve on event
@@ -72,9 +72,9 @@ module.exports = function(view, target, prop, timeout) {
 			// resolve on view removal
 			rejectOnRemove = function() {
 				cleanupOnSettle();
-				reject(new ViewError(view, new Error("whenTransitionEnds: view was removed")));
+				reject(new ViewError(view, new Error("whenTransitionEnds:  view was removed ("+ view.cid +")")));
 			};
-			view.on("view:remove", rejectOnRemove);
+			view.on("view:removed", rejectOnRemove);
 		}
 	});
 };

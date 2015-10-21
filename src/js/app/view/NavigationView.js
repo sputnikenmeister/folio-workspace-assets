@@ -72,7 +72,7 @@ var NavigationView = ContainerView.extend({
 		this.keywordList = this.createKeywordList();
 		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group span");
 		// this.bundlePager = this.createBundlePager();
-		this.children = [this.bundleList, this.keywordList];
+		this.itemViews = [this.bundleList, this.keywordList];
 		// this.bundleList.renderNow();
 		// this.keywordList.renderNow();
 		
@@ -94,7 +94,7 @@ var NavigationView = ContainerView.extend({
 		// this.transforms.clearAllTransitions();
 		this.transforms.stopAllTransitions();
 		this.transforms.validate();
-		_.each(this.children, function(view) {
+		_.each(this.itemViews, function(view) {
 			view.skipTransitions = true;
 			view.render();
 		}, this);
@@ -224,8 +224,8 @@ var NavigationView = ContainerView.extend({
 	
 	_onKeywordListSelect: function(keyword) {
 		if (!this.isCollapsed()) {
-			keywords.select(keyword);
 			this.bundleList.filterBy(keyword);
+			keywords.select(keyword);
 			// this.setCollapsed(false);
 		}
 	},
@@ -241,8 +241,8 @@ var NavigationView = ContainerView.extend({
 
 	_onCollapseChange: function(collapsed) {
 		if (collapsed) {
-			keywords.deselect();
 			this.bundleList.clearFilter();
+			keywords.deselect();
 		// 	this.stopListening(this.keywordList, "view:select:one view:select:none", this._onKeywordListSelect_notCollapsed);
 		// } else {
 		// 	this.listenTo(this.keywordList, "view:select:one view:select:none", this._onKeywordListSelect_notCollapsed);
@@ -407,7 +407,7 @@ var NavigationView = ContainerView.extend({
 		controller.listenTo(view, {
 			"view:select:one": controller.selectBundle,
 			"view:select:none": controller.deselectBundle,
-			"view:remove": controller.stopListening
+			"view:removed": controller.stopListening
 		});
 		view.wrapper = view.el.parentElement;
 		return view;
@@ -453,7 +453,7 @@ var NavigationView = ContainerView.extend({
 		controller.listenTo(view, {
 			"view:select:one": controller.selectBundle,
 			"view:select:none": controller.deselectBundle,
-			"view:remove": controller.stopListening
+			"view:removed": controller.stopListening
 		});
 		return view;
 	},*/

@@ -48,10 +48,10 @@ var GroupingListView = FilterableListView.extend({
 	renderChildrenGroups: function (modelIds) {
 		if (modelIds) {
 			this.groupingCollection.each(function (model, index, arr) {
-				this.children.findByModel(model).el.classList.toggle("excluded", !_.contains(modelIds, model.id));
+				this.itemViews.findByModel(model).el.classList.toggle("excluded", !_.contains(modelIds, model.id));
 			}, this);
 		} else {
-			this.children.each(function (view) {
+			this.itemViews.each(function (view) {
 				view.el.classList.remove("excluded");
 			});
 		}
@@ -67,7 +67,7 @@ var GroupingListView = FilterableListView.extend({
 			model: item,
 			el: this.el.querySelector(".list-group[data-id=\"" + item.id + "\"]")
 		});
-		this.children.add(view);//, item.id);
+		this.itemViews.add(view);//, item.id);
 		return view;
 	},
 

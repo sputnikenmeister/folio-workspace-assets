@@ -1,6 +1,8 @@
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="-200 -200 400 400" preserveAspectRatio="xMidYMid meet">
-	<rect x="-200" y="-200" width="400" height="400" rx="10" style="stroke:none;fill:#fff;fill-opacity:0.8"/>
-	<g style="stroke:none;fill:#000">
-		<path d="M-60 -70 L90 0 L-60 70 Z"/>
-	</g>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-200 -200 400 400" preserveAspectRatio="xMidYMid meet" style="stroke:none">
+<defs>
+	<path id="rr" d="M-60 -70 L90 0 L-60 70 Z"/>
+</defs>
+<rect x="-200" y="-200" width="400" height="400" rx="10" style="fill:#fff;fill-opacity:0.8"/>
+<use xlink:href="#rr" style="fill:#fff" transform="translate(5 5)"/>
+<use xlink:href="#rr" style="fill:#000"/>
 </svg>

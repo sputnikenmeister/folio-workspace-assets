@@ -131,7 +131,7 @@ var Controller = Backbone.Router.extend({
 	_changeSelection: function (bundle, media) {
 		var lastBundle = bundles.selected;
 		var lastMedia = lastBundle? lastBundle.get("media").selected : void 0;
-		console.log("Controller._changeSelection [bundle: %s => %s] [media: %s => %s]",
+		console.log("Controller::_changeSelection bundle:[%s => %s] media:[ %s => %s]",
 			(lastBundle? lastBundle.cid : "none"), (bundle? bundle.cid : "none"),
 			(lastMedia? lastMedia.cid : "none"), (media? media.cid : "none")
 		);

@@ -34,12 +34,12 @@ var AbstractProgressMeterProto = {
 	},
 	
 	properties: {
-		lastValue: {
+		value: {
 			get: function() {
 				return this._value;
 			}
 		},
-		lastRenderedValue: {
+		renderedValue: {
 			get: function() {
 				return this._renderedValue;
 			}
@@ -52,9 +52,6 @@ var AbstractProgressMeterProto = {
 	
 	/** @override */
 	initialize: function (options) {
-		// ProgressMeter.prototype.initialize.apply(this, arguments);
-		
-		// this.setOptions(_.defaults(options, this.defaults));
 		options = _.defaults(options, this.defaults);
 		
 		// value total

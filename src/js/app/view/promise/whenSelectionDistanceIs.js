@@ -26,7 +26,7 @@ module.exports = function(view, distance) {
 			var cleanupOnSettle = function() {
 				// console.log(logMessage, view.cid, "cleanup", "async");
 				collection.off("select:one select:none", resolveOnSelect);
-				view.off("view:remove", rejectOnRemove);
+				view.off("view:removed", rejectOnRemove);
 			};
 			var resolveOnSelect = function(model) {
 				if (check()) {
@@ -37,10 +37,10 @@ module.exports = function(view, distance) {
 			};
 			var rejectOnRemove = function(view) {
 				cleanupOnSettle();
-				reject(new ViewError(view, new Error("whenSelectionDistanceIs: view was removed")));
+				reject(new ViewError(view, new Error("whenSelectionDistanceIs: view was removed ("+ view.cid +")")));
 			};
 			collection.on("select:one select:none", resolveOnSelect);
-			view.on("view:remove", rejectOnRemove);
+			view.on("view:removed", rejectOnRemove);
 		}
 	});
 };
