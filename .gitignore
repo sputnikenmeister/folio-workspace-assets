@@ -7,14 +7,10 @@
 /flash
 /css
 /js
-/lib
 /html
 /images/favicon
 /build/stash
-/build/bundle-sprites
 /build/generated
-/src/sass/generated
-/src/js/generated
 /npm-debug.log
 build/sandbox
-build/generated-sources
+/fonts

@@ -34,28 +34,6 @@ $darkolivegreen:	darkolivegreen;
 		background-size: $page_width_large auto;//1600px;
 	}
 }
-// img#debug-grid {
-// 	position: absolute;
-// 	width: $page_width;
-// 	left: calc(50% - #{$page_width/2});
-// 	height: 100%;
-// 	box-sizing: border-box;
-// 	padding-top: 1px;
-// 	padding-left: 1px;
-// 	@include media(desktop-small) {
-// 		// top: calc(1px - 1rem);
-// 		// height: calc(100% - 1px);
-// 		width: $page_width_large;
-// 		left: calc(50% - #{$page_width_large/2});
-// 		margin-top: -1rem;
-// 		.layout-guide {
-// 			stroke: hsl(60, 93%, 71%);
-// 		}
-// 	}
-// }
-// :not(.debug-grid-img) > img#debug-grid {
-// 	display: none;
-// }
 
 // -----------------------------------
 // .debug-blocks
@@ -70,9 +48,9 @@ $darkolivegreen:	darkolivegreen;
 	background-color: transparentize($color, 0.8);
 }
 
-.carousel.scrolling {
-	@include debug_outline($width: 1rem, $style: solid, $color: transparentize($deepskyblue, 0.8));
-}
+// .carousel.scrolling {
+// 	@include debug_outline($width: 1rem, $style: solid, $color: transparentize($deepskyblue, 0.8));
+// }
 
 .debug-blocks {
 	*[data-cid] {
@@ -83,22 +61,11 @@ $darkolivegreen:	darkolivegreen;
 	}
 	
 	#navigation {
-		// @include debug_outline($color: $lightcoral);
-		// @include debug_outline_thick($color: $lightcoral);
-		// .transform-wrapper > * {
-		// 	@include debug_outline_thick($color: $lightcoral);
-		// 	@include debug_outline($width: 1px, $style: solid, $color: $lightcoral);
-		// }
 		#site-name-wrapper, .list {
 			// background-color: transparentize($lightcoral, 0.9);
 			// @include debug_outline($color: $lightcoral);
 			@include debug_outline_thick($color: $lightcoral);
 		}
-		// #site-name, .list-group, .list-item {
-		// 	// background-color: transparentize($lightcoral, 0.9);
-		// 	// @include debug_outline($color: $lightcoral);
-		// 	//// @include debug_outline($color: transparentize($lightcoral, 0.9), $style: solid);
-		// }
 		#site-name a,
 		.list .name {
 			background-color: transparentize($lightcoral, 0.5);
@@ -146,16 +113,10 @@ $darkolivegreen:	darkolivegreen;
 // -----------------------------------
 
 #debug-toolbar {
-	// opacity: 0.4;
-	// color: inherit;
-	// color: hsl(245, 2%, 50%);
-	// border-color: hsl(245, 2%, 50%);
-	
 	z-index: 999;
 	position: fixed;
 	top: 0; right: 0;
 	// width: 100%;// prevents dotnav mouse events
-	
 	.debug-links {
 		direction: rtl;
 	}
@@ -172,19 +133,24 @@ $darkolivegreen:	darkolivegreen;
 	}
 	
 	#test-results {
+		font: normal 12px/1 monospace;
 		color: #333333;
 		background-color: white;
-		
-		max-height: 75vh;
-		overflow-y: scroll;
-		padding: 1rem 1.5rem; margin: 0 3rem;
 		box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		margin: 0 3rem;
+		max-height: 75vh;
+		overflow-y: auto;
+		
+		padding: 1rem 0;
+		& > * {
+			margin: 0.75em 0;
+			padding: 0 1.5em;
+		}
+		h6 {
+			font-weight: bold;
+		}
 		ul {
-			font: 12px/1 monospace;
-			h6 {
-				margin-bottom: 0.5em;
-				font-weight: bold;
-			}
+			column-width: 14em;
 		}
 		li.failed {
 			color: #CC3333;
@@ -194,10 +160,14 @@ $darkolivegreen:	darkolivegreen;
 	&:not(.show-tests) #test-results {
 		display: none;
 	}
-	#toggle-tests-failed {
-		font-weight: normal;
+	#toggle-passed {
+		// padding: 0 0.25em;
+		float: right;
+		// font-weight: normal;
+		&::before { content: "Hide "; }
+		&.toggle-enabled::before { content: "Show "; }
 	}
-	&.show-tests-failed {
+	&.hide-passed {
 		#test-results {
 			li.passed {
 				display: none;
@@ -237,9 +207,6 @@ $darkolivegreen:	darkolivegreen;
 		}
 	}
 	dt + dd {
-		// a, span, svg {
-		// 	padding-left: 0.25em;
-		// }
 		&:before {
 			border-left: none;
 		}
@@ -269,7 +236,6 @@ $darkolivegreen:	darkolivegreen;
 			vertical-align: middle;
 			display: block;
 		}
-		// @include small_caps($lead: 1rem);
 	}
 	&.debug-links dd {
 		@include small_caps($lead: inherit);
