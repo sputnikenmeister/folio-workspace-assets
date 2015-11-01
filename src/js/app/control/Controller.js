@@ -74,18 +74,19 @@ var Controller = Backbone.Router.extend({
 	},
 	
 	_getLocation: function(bundle, media) {
-		var mediaIndex, location;
-		location = "bundles";
+		var mediaIndex, location = [];
+		location.push("bundles");
 		if (bundle) {
-			location += "/" + bundle.get("handle");
+			location.push(bundle.get("handle"));
 			if (media) {
 				mediaIndex = bundle.get("media").indexOf(media);
 				if (mediaIndex >= 0) {
-					location += "/" + mediaIndex;
+					location.push(mediaIndex);
 				}
 			}
 		}
-		return location;
+		// location.push("");
+		return location.join("/");
 	},
 	
 	_goToLocation: function(bundle, media) {
@@ -131,7 +132,7 @@ var Controller = Backbone.Router.extend({
 	_changeSelection: function (bundle, media) {
 		var lastBundle = bundles.selected;
 		var lastMedia = lastBundle? lastBundle.get("media").selected : void 0;
-		console.log("Controller::_changeSelection bundle:[%s => %s] media:[ %s => %s]",
+		console.log("Controller::_changeSelection bundle:[%s => %s] media:[%s => %s]",
 			(lastBundle? lastBundle.cid : "none"), (bundle? bundle.cid : "none"),
 			(lastMedia? lastMedia.cid : "none"), (media? media.cid : "none")
 		);

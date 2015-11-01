@@ -100,23 +100,23 @@ var VideoRenderer = PlayableRenderer.extend({
 	template: require("./VideoRenderer.hbs"),
 	
 	events: {
-		"transitionend": function(ev) {
-			if (ev.target === this.el && ev.propertyName === prefixedStyleName("transform")) {
-				var d = this.getSelectionDistance(),
-					s = this.getPlayToggle().style;
-				if (d < 2) {
-					console.log("%s::events ['%s']: '%s'", this.cid, ev.type, ev.propertyName);
-					s.opacity = (d == 1? "0" : "");
-					s.visibility = (d == 1? "hidden" : "");
-				}
-				// console.log("%s::events ['%s']: property '%s'", this.cid, ev.type, ev.propertyName);
-				// this.getPlayToggle().style.opacity = this.model.selected? "1" : "";
-				// this.getPlayToggle().style.visibility = this.model.selected? "visible" : "";
-			} else {
-				// console.log("%s::events ['%s']: ignored (property '%s')", this.cid, ev.type, ev.propertyName);
-			}
-			// console.log(this.cid, ev.type, ev.propertyName, ev.target.tagName, ev.target.classList.item(0));
-		},
+		// "transitionend": function(ev) {
+		// 	if (ev.target === this.el && ev.propertyName === prefixedStyleName("transform")) {
+		// 		var d = this.getSelectionDistance(),
+		// 			s = this.getPlayToggle().style;
+		// 		if (d < 2) {
+		// 			console.log("%s::events ['%s']: '%s'", this.cid, ev.type, ev.propertyName);
+		// 			s.opacity = (d == 1? "0" : "");
+		// 			s.visibility = (d == 1? "hidden" : "");
+		// 		}
+		// 		// console.log("%s::events ['%s']: property '%s'", this.cid, ev.type, ev.propertyName);
+		// 		// this.getPlayToggle().style.opacity = this.model.selected? "1" : "";
+		// 		// this.getPlayToggle().style.visibility = this.model.selected? "visible" : "";
+		// 	} else {
+		// 		// console.log("%s::events ['%s']: ignored (property '%s')", this.cid, ev.type, ev.propertyName);
+		// 	}
+		// 	// console.log(this.cid, ev.type, ev.propertyName, ev.target.tagName, ev.target.classList.item(0));
+		// },
 		"mouseup .fullscreen-toggle": "_onFullscreenToggle",
 	},
 	
@@ -229,7 +229,8 @@ var VideoRenderer = PlayableRenderer.extend({
 	initializeAsync: function() {
 		return Promise.resolve(this)
 			.then(PlayableRenderer.whenSelectionIsContiguous)
-			.then(PlayableRenderer.whenSelectTransitionEnds)
+			// .then(PlayableRenderer.whenSelectTransitionEnds)
+			.then(PlayableRenderer.whenScrollingEnds)
 			.then(
 				function(view) {
 					view.addMediaListeners();
@@ -238,7 +239,7 @@ var VideoRenderer = PlayableRenderer.extend({
 						PlayableRenderer.whenDefaultImageLoads(view),
 					]).then(
 						function(arr) {
-							return Promise.resolve(arr[0]);
+							return Promise.resolve(view);
 						},
 						function(err) {
 							return Promise.reject(err);
@@ -360,22 +361,26 @@ var VideoRenderer = PlayableRenderer.extend({
 	/* PlayableRenderer overrides
 	/* --------------------------- */
 	
-	/** @override */
-	setEnabled: function(enabled) {
-		// if (enabled) {
-		// 	if (this._lastPlayState) {
-		// 		this.video.play();
-		// 	}
-		// 	this._lastPlayState = void 0;
-		// } else {
-		// 	this._lastPlayState = !this.video.paused;
-		// 	if (this._lastPlayState) {
-		// 		this.video.pause();
-		// 	}
-		// }
-		!enabled && !this.video.paused && this.video.pause();
-		// this.togglePlayback(enabled);
-	},
+	// /** @override */
+	// setEnabled: function(enabled) {
+	// 	PlayableRenderer.prototype.setEnabled.apply(this, arguments);
+	// 	
+	// 	// if (enabled) {
+	// 	// 	if (this._lastPlayState) {
+	// 	// 		this.video.play();
+	// 	// 	}
+	// 	// 	this._lastPlayState = void 0;
+	// 	// } else {
+	// 	// 	this._lastPlayState = !this.video.paused;
+	// 	// 	if (this._lastPlayState) {
+	// 	// 		this.video.pause();
+	// 	// 	}
+	// 	// }
+	// 	// this.togglePlayback(enabled);
+	// 	
+	// 	this._enabled = enabled;
+	// 	!enabled && !this.video.paused && this.video.pause();
+	// },
 	
 	togglePlayback: function(newPlayState) {
 		// is playback changing?
@@ -450,14 +455,16 @@ var VideoRenderer = PlayableRenderer.extend({
 	_updatePlaybackState: function(ev) {
 		if (this.video.paused) {
 			if (this.video.ended) {
-				this.setPlaybackState("user-replay");
+				this._userPlaybackRequested = false;
+				this.progressMeter.valueTo(0);
+				this.playbackState = "user-replay";
 			} else {
-				this.setPlaybackState("user-resume");
+				this.playbackState = "user-resume";
 			}
 		} else if (this.video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
-			this.setPlaybackState("media");
+			this.playbackState = "media";
 		} else {
-			this.setPlaybackState("network");
+			this.playbackState = "network";
 		}
 	},
 	
@@ -482,12 +489,11 @@ var VideoRenderer = PlayableRenderer.extend({
 	/* timeline
 	/* --------------------------- */
 	
-	
 	_onMediaError: function(ev) {
 		// if (this.video.error || this.video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
 			this.removeMediaListeners();
 			this.removeSelectionListeners();
-			this.setState("error");
+			this.mediaState = "error";
 		// }
 	},
 		

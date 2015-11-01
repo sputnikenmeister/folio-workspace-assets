@@ -35,7 +35,10 @@ var DebugToolbar = Backbone.View.extend({
 			domain: String(window.location).match(/^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1]
 		};
 		
-		this.el.innerHTML = this.template({ Modernizr:Modernizr });
+		this.el.innerHTML = this.template({
+			tests: Modernizr,
+			navigator: window.navigator
+		});
 		
 		/* toggle visibility
 		 * - - - - - - - - - - - - - - - - */
@@ -49,7 +52,7 @@ var DebugToolbar = Backbone.View.extend({
 		this.initializeToggle(this.el.querySelector("#toggle-blocks a"), "debug-blocks", container);
 		this.initializeToggle(this.el.querySelector("#toggle-logs a"), "debug-logs", container);
 		this.initializeToggle(this.el.querySelector("#toggle-tests a"), "show-tests", this.el);
-		this.initializeToggle(this.el.querySelector("#toggle-tests-failed"), "show-tests-failed", this.el);
+		this.initializeToggle(this.el.querySelector("#toggle-passed"), "hide-passed", this.el);
 		
 		this.backendEl = this.el.querySelector("#edit-backend a");
 		this.listenTo(this.collection, "select:one select:none", this._onSelectAnyBundle);

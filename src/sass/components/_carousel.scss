@@ -71,7 +71,7 @@ $pan_ease: $ease;
 	.media-item.selected,
 	.media-item.candidate,
 	.empty-item.selected + .media-item {
-		&.done .content {
+		&.ready .content {
 			opacity: 0;
 		}
 	}

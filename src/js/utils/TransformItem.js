@@ -321,8 +321,8 @@ TransformItem.prototype = {
 				if (tx !== this._renderedX || ty !== this._renderedY) {
 					this._renderedX = tx;
 					this._renderedY = ty;
-					this._setCSSProp("transform", "translate(" + this._renderedX + "px, " + this._renderedY + "px)");
-					// this._setCSSProp("transform", "translate3d(" + this._renderedX + "px, " + this._renderedY + "px, 0px)");
+					// this._setCSSProp("transform", "translate(" + this._renderedX + "px, " + this._renderedY + "px)");
+					this._setCSSProp("transform", "translate3d(" + this._renderedX + "px, " + this._renderedY + "px, 0px)");
 				}
 			} else {
 				this._renderedX = null;

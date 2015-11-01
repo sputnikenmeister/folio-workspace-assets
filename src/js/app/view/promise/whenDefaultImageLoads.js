@@ -12,45 +12,49 @@ var logMessage = "%s::whenDefaultImageLoads [%s]: %s";
 
 module.exports = function(view) {
 	return new Promise(function(resolve, reject) {
-		var defaultImageEl = view.getDefaultImage();
-		
 		if (view.model.has("prefetched")) {
-			defaultImageEl.src = view.model.get("prefetched");
-			_whenImageLoads(defaultImageEl)
+			view.defaultImage.src = view.model.get("prefetched");
+			_whenImageLoads(view.defaultImage)
 				.then(
 					function(targetEl) {
 						console.log(logMessage, view.cid, "resolved", "prefetched");
 						resolve(view);
 					});
 		} else {
-			view.setState("pending");
+			view.mediaState = "pending";
 			
+			var imageUrl = view.model.getImageUrl();
 			var progressFn = function (progress) {
 				// console.log(logMessage, view.cid, "progress", progress);
-				view.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
+				// view.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
+				view.updateMediaProgress(imageUrl, progress);
 			};
 			progressFn = _.throttle(progressFn, 100, {leading: true, trailing: false});
 			
-			_loadImageAsObjectURL(view.model.getImageUrl(), progressFn)
+			_loadImageAsObjectURL(imageUrl, progressFn)
 				.then(
 					function(url) {
 						if (isBlobRE.test(url))
 							view.model.set({"prefetched": url});
-						defaultImageEl.src = url;
-						return defaultImageEl;
+						view.defaultImage.src = url;
+						// URL.revokeObjectURL(url); 
+						return view.defaultImage;
 					})
 				.then(_whenImageLoads)
 				.then(
 					function(targetEl) {
 						console.log(logMessage, view.cid, "resolved", targetEl.src);
 						// view.on("view:removed", function() { URL.revokeObjectURL(url); });
-						view.placeholder.removeAttribute("data-progress");
+						// view.placeholder.removeAttribute("data-progress");
+						// view.updateMediaProgress(imageUrl, "complete");
 						resolve(view);
-					})
-				.catch(
+					},
+				// 	})
+				// .catch(
 					function(err) {
 						console.warn(logMessage, view.cid, "rejected", err.message);
-						view.placeholder.removeAttribute("data-progress");
+						// view.placeholder.removeAttribute("data-progress");
+						// view.updateMediaProgress(imageUrl, progress);
 						reject(err);
 					});
 		}

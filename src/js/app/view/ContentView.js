@@ -25,6 +25,8 @@ var DotNavigationRenderer = require("app/view/render/DotNavigationRenderer");
 
 /** @type {module:app/view/component/Carousel} */
 var Carousel = require("app/view/component/Carousel");
+/** @type {module:app/view/component/Carousel} */
+var CarouselRenderer = require("app/view/render/CarouselRenderer");
 /** @type {module:app/view/render/ImageRenderer} */
 var ImageRenderer = require("app/view/render/ImageRenderer");
 /** @type {module:app/view/render/SequenceRenderer} */
@@ -346,7 +348,7 @@ var ContentView = ContainerView.extend({
 		// if (bundle.attrs().hasOwnProperty("@classname")) {
 		// 	classname += " " + bundle.attrs()["@classname"];
 		// }
-		var EmptyRenderer = Carousel.defaultRenderer.extend({
+		var EmptyRenderer = CarouselRenderer.extend({
 			className: "carousel-item empty-item",
 			model: bundle,
 			template: bundleDescTemplate,
@@ -367,7 +369,8 @@ var ContentView = ContainerView.extend({
 			collection: bundle.get("media"),
 			rendererFunction: rendererFunction,
 			// renderer: ImageRenderer,
-			emptyRenderer: EmptyRenderer,
+			// emptyRenderer: EmptyRenderer,
+			requireSelection: false, 
 			direction: Carousel.DIRECTION_HORIZONTAL,
 			hammer: this.touch,
 		});

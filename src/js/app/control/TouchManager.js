@@ -48,6 +48,7 @@ function createInstance(el) {
 	tap.recognizeWith(hpan);
 	
 	manager.add(recognizers);
+	// manager.set({ domevents: true});
 	return manager;
 }
 

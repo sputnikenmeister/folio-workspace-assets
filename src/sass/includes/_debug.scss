@@ -48,28 +48,21 @@ $darkolivegreen:	darkolivegreen;
 	background-color: transparentize($color, 0.8);
 }
 
-// .carousel.scrolling {
-// 	@include debug_outline($width: 1rem, $style: solid, $color: transparentize($deepskyblue, 0.8));
-// }
-
 .debug-blocks {
 	*[data-cid] {
-		@include debug_outline($color: $darkseagreen);
+		@include debug_outline($width: 0.25rem, $style: solid, $color: transparentize($thistle, 0.5));
 	}
 	.list-item[data-cid] {
-		background-color: transparentize($darkseagreen, 0.7);
+		// @include debug_outline($width: 1px, $style: dashed, $color: transparentize($darkseagreen, 0.2));
+		background-color: transparentize($thistle, 0.8);
 	}
 	
 	#navigation {
 		#site-name-wrapper, .list {
-			// background-color: transparentize($lightcoral, 0.9);
-			// @include debug_outline($color: $lightcoral);
 			@include debug_outline_thick($color: $lightcoral);
 		}
-		#site-name a,
-		.list .name {
+		#site-name a, .list .name {
 			background-color: transparentize($lightcoral, 0.5);
-			// @include debug_outline($color: $lightcoral);
 		}
 	}
 	#content {
@@ -84,6 +77,9 @@ $darkolivegreen:	darkolivegreen;
 		.carousel {
 			// @include debug_outline_thick($color: $deepskyblue);
 			@include debug_outline($width: 1rem, $style: solid, $color: transparentize($deepskyblue, 0.8));
+			&.scrolling {
+				@include debug_outline($width: 1rem, $style: dashed, $color: transparentize($deepskyblue, 0.5));
+			}
 		}
 		.carousel-item, .empty-item {
 			@include debug_outline($color: $deepskyblue);
@@ -224,12 +220,12 @@ $darkolivegreen:	darkolivegreen;
 	dt {
 		-webkit-flex: 0 0 auto;
 		flex: 0 0 auto;
-		span.icon {
-			@include fontello_icon_base();
-			width: 1em;
-			text-align: center;
-			display: inline-block;
-		}
+		// span.icon {
+		// 	@include fontello_icon_base();
+		// 	width: 1em;
+		// 	text-align: center;
+		// 	display: inline-block;
+		// }
 		svg.icon {
 			width: 1em;
 			height: 1em;

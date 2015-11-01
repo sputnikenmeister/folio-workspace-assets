@@ -47,6 +47,13 @@ require("backbone.babysitter");
 require("Backbone.Mutators");
 require("hammerjs");
 
+window.addEventListener("error", function(ev) {
+	if (/iPad/.test(window.navigator.userAgent)) {
+		window.alert(ev.type + ": " + JSON.stringify(ev));
+	} else { 
+		console.error("uncaught error event", ev);
+	}
+});
 window.addEventListener("load", function(ev) {
 // document.addEventListener('DOMContentLoaded', function() {
 	

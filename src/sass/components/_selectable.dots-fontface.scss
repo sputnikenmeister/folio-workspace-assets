@@ -1,12 +1,14 @@
 // @import "../includes/_icons";
 
 .dots-fontello .list-item {
-	@include font_smoothing();
+	// @include font_smoothing();
 	display: inline-block;
-	font-size: 0.85rem;
-	line-height: 1.5rem;
 	position: static;
+	line-height: 1;
 	padding: 0 0.5em;
+	// font-size: 1.25rem;
+	// line-height: 1.5rem;
+	// padding: 0 0.25em;
 	
 	// margin-right: 0.5rem;
 	// &:first-child { margin-left: -0.5em; }
@@ -19,15 +21,29 @@
 	}
 	
 	& a:before {
-		@include fontello_icon_base();
+		// @include fontello_icon_base();
+		font: 85%/1 "FolioFigures-Regular", monospace;
 		width: 1em;
 		display: inline-block;
 		text-align: center;
 	}
-	& a:before 							{ content: '\e805'; }
-	&:hover a:before					{ content: '\e801'; }
-	&.selected a:before					{ content: '\e806'; }
-	&.empty-item a:before				{ content: '\e814'; }
+	/*
+	U+25A4 	SQUARE WITH HORIZONTAL FILL
+	U+25CB 	WHITE CIRCLE
+	U+25CC 	DOTTED CIRCLE
+	U+25CD 	CIRCLE WITH VERTICAL FILL
+	U+25CE 	BULLSEYE
+	U+25CF 	BLACK CIRCLE
+	*/
+	& a:before 							{ content: '\25CB'; }
+	&.selected a:before					{ content: '\25CF'; }
+	&.empty-item a:before				{ content: '\25A4'; }
+	
+	// & a:before 							{ content: '\e801'; }
+	// &:hover a:before					{ content: '\e802'; }
+	// &.selected a:before					{ content: '\e802'; }
+	// &.empty-item a:before				{ content: ' '; }
+	// &.empty-item a:before				{ content: '\e814'; }
 	// &.empty-item.selected a:before	{ content: '\e807'; }
 
 	// show link cursor, except on selected

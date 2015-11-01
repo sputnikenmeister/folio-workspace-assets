@@ -2,6 +2,12 @@
 // .media-item
 // -----------------------------------
 .media-item {
+	img, video {
+		object-fit: cover;
+		&:focus {
+			outline: 0 none;
+		}
+	}
 	.sizing {
 		position: relative;
 		height: 100%;
@@ -29,7 +35,7 @@
 		}
 	}
 	&.selected, &.candidate, .empty-item.selected + & {
-		&.done .content {
+		&.ready .content {
 			opacity: 1;
 		}
 	}
@@ -39,6 +45,7 @@
 	.placeholder:before {
 		// @extend %placeholder-franklin-itc-cp;
 		font: 600 normal 12rem/1.2 "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
+		// font-weight: 600; font-size: 12rem; line-height: 1.2;
 		letter-spacing: -0.01em;
 		margin: 2rem 3rem;
 		position: absolute;
@@ -46,10 +53,15 @@
 		content: "";
 		// text-shadow: -1px -1px 0 rgba(0, 0%, 50%, 0.2);
 	}
-	// &.idle .placeholder:before { content: "Waiting"; }
-	&.pending .placeholder:before { content: "0%"; }
+	&.pending, &.ready { 
+		.placeholder:before { 
+			font-family: "FolioFigures-Regular", monospace;
+		}
+	}
+	&.idle .placeholder:before { content: "Waiting"; }
 	&.error .placeholder:before { content: "Error";	}
-	&.done .placeholder:before { content: "100%"; }
+	&.pending .placeholder:before { content: "0%"; }
+	&.ready .placeholder:before { content: "100%"; }
 	// &.selected, .empty-item.selected + & {
 	&.selected, &.candidate, .empty-item.selected + & {
 		&.pending .placeholder[data-progress]:before {
@@ -75,12 +87,6 @@
 // Mockups
 // -----------------------------------
 
-// .image-renderer {
-// 	.content > .mockup {
-// 		display: none;
-// 	}
-// }
-
 // .browser
 // - - - - - - - - - - - - - - - - - -
 // $browser_height: 2rem;
@@ -88,14 +94,7 @@ $browser_height: 30px;
 
 .media-item.browser-safari,
 .media-item.browser-generic {
-	// padding-bottom: $browser_height;
-	.sizing {
-		// box-sizing: border-box;
-		// padding-top: $browser_height;
-	}
 	.content {
-		// box-sizing: content-box;
-		// box-sizing: border-box;
 		padding-top: $browser_height;
 		background-origin: border-box;
 		background-size: 100% $browser_height;
@@ -105,7 +104,6 @@ $browser_height: 30px;
 			0px 0px 0px 1px rgba(0,0,0,0.15),
 			0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
 	}
-	// .content .default {}
 	.content, .placeholder {
 		border-radius: #{$browser_height * 0.1} #{$browser_height * 0.1} 0 0;
 	}

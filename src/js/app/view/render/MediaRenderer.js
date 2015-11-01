@@ -12,10 +12,6 @@ var MediaItem = require("app/model/item/MediaItem");
 /** @type {module:app/view/CarouselRenderer} */
 var CarouselRenderer = require("app/view/render/CarouselRenderer");
 
-/**
- * @constructor
- * @type {module:app/view/render/MediaRenderer}
- */
 var MediaRenderer = CarouselRenderer.extend({
 	
 	/** @type {string} */
@@ -30,6 +26,14 @@ var MediaRenderer = CarouselRenderer.extend({
 			get: function() {
 				return this._defaultImage || (this._defaultImage = this.el.querySelector("img.default"));
 			}
+		},
+		mediaState: {
+			get: function() {
+				return this._mediaState;
+			},
+			set: function(state) {
+				this._setMediaState(state);
+			}
 		}
 	},
 	
@@ -41,14 +45,17 @@ var MediaRenderer = CarouselRenderer.extend({
 		CarouselRenderer.prototype.initialize.apply(this, arguments);
 		
 		this.metrics.media = {};
-		this.setState("idle");
+		this.mediaState = "idle";
 		
+		// this._initChain = 
 		this.initializeAsync()
-			.then(
-				function(view) {
-					console.log("%s::initializeAsync [%s]", view.cid, "resolved");
-					view.setState("done");
-				})
+			// .then(
+			// 	function(view) {
+			// 		console.log("%s::initializeAsync [%s]", view.cid, "resolved");
+			// 		view.mediaState = "ready";
+			// 		view.placeholder.removeAttribute("data-progress");
+			// 	})
+			.then(this.whenInitialized)
 			.catch(
 				function(err) {
 					if (err instanceof CarouselRenderer.ViewError) {
@@ -56,22 +63,50 @@ var MediaRenderer = CarouselRenderer.extend({
 						// console.log(this.cid, err.name, err.message);
 						return;
 					}
-					// this.placeholder.innerHTML = "<p class=\"color-fg\" style=\"position:absolute;bottom:0;padding:3rem;\"><strong>" + err.name + "</strong> " + err.message + "</p>";
-					this.setState("error");
-					console.error("%s::initializeAsync [%s]: %s", this.cid, err.name, err.message);
+					this.placeholder.innerHTML = "<p class=\"color-fg\" style=\"position:absolute;bottom:0;padding:3rem;\"><strong>" + err.name + "</strong> " + err.message + "</p>";
+					
+					this.mediaState = "error";
+					this.placeholder.removeAttribute("data-progress");
+					
+					console.error("%s::initializeAsync [%s (caught)]: %s", this.cid, err.name, err.message);
 					err.event && console.log(err.event);
 				}.bind(this));
 	},
 	
 	initializeAsync: function() {
 		// var MediaRenderer = Object.getPrototypeOf(this).constructor;
-		// return MediaRenderer.whenSelectionIsContiguous(this)
 		return Promise.resolve(this)
 			.then(MediaRenderer.whenSelectionIsContiguous)
-			.then(MediaRenderer.whenSelectTransitionEnds)
-			.then(MediaRenderer.whenDefaultImageLoads);
-		// return Promise.resolve(this);
+			// .then(MediaRenderer.whenSelectTransitionEnds)
+			.then(MediaRenderer.whenScrollingEnds)
+			.then(MediaRenderer.whenDefaultImageLoads)
+			// .then(this.whenMediaIsReady)
+		;
 	},
+	
+	// whenMediaIsReady: function(view) {
+	// 	return MediaRenderer.whenDefaultImageLoads(view);
+	// },
+	// 
+	whenInitialized: function(view) {
+		console.log("%s::whenInitialized [%s]", view.cid, "resolved");
+		view.mediaState = "ready";
+		view.placeholder.removeAttribute("data-progress");
+		return view;
+	},
+	
+	updateMediaProgress: function(id, progress) {
+		if (_.isNumber(progress)) {
+			this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
+		}
+		// else if (progress === "complete") {
+		// 	this.placeholder.removeAttribute("data-progress");
+		// }
+	},
+	
+	// whenMediaIsReady: function(view) {
+	// 	return MediaRenderer.whenDefaultImageLoads(this, this.updateMediaProgress.bind(this));
+	// },
 	
 	/* --------------------------- *
 	/* child getters
@@ -160,49 +195,33 @@ var MediaRenderer = CarouselRenderer.extend({
 		return this;
 	},
 	
-	_stateEnum: ["idle", "pending", "done", "error"],
+	/* --------------------------- *
+	/* mediaState
+	/* --------------------------- */
 	
-	setState: function(key) {
-		if (this._stateEnum.indexOf(key) === -1) {
-			throw new Error("Argument " + key + " invalid. Must be one of: " + this._stateEnum.join(", "));
+	_mediaStateEnum: ["idle", "pending", "ready", "error"],
+	
+	_setMediaState: function(key) {
+		if (this._mediaStateEnum.indexOf(key) === -1) {
+			throw new Error("Argument " + key + " invalid. Must be one of: " + this._mediaStateEnum.join(", "));
 		}
-		if (this._lastState !== key) {
-			if (this._lastState) {
-				this.el.classList.remove(this._lastState);
+		if (this._mediaState !== key) {
+			if (this._mediaState) {
+				this.el.classList.remove(this._mediaState);
 			}
 			this.el.classList.add(key);
-			this._lastState = key;
+			this._mediaState = key;
+			this.trigger("media:" + key);
 		}
 	},
-	
-	// constructor: function () {
-	// 	View.apply(this, arguments);
-	// 	
-	// 	// var _defaultImage;
-	// 	// Object.defineProperty(this, "defaultImage", {get: function() {
-	// 	// 	return _defaultImage || (_defaultImage = this.el.querySelector("img.default"));
-	// 	// }});
-	// 	// var _sizing;
-	// 	// Object.defineProperty(this, "sizing", {get: function() {
-	// 	// 	return _sizing || (_sizing = this.el.querySelector(".sizing"));
-	// 	// }});
-	// 	// var _content;
-	// 	// Object.defineProperty(this, "content", {get: function() {
-	// 	// 	return _content || (_content = this.el.querySelector(".content"));
-	// 	// }});
-	// 	
-	// 	var _defaultImage, _sizing, _content;
-	// 	Object.defineProperties(this, {
-	// 		"defaultImage": { get: this.getDefaultImage },
-	// 		"sizing": { get: this.getSizingEl },
-	// 		"content": { get: this.getContentEl },
-	// 	});
-	// },
 },{
+
 	/** @type {module:app/view/promise/whenSelectionIsContiguous} */
 	whenSelectionIsContiguous: require("app/view/promise/whenSelectionIsContiguous"),
-	/** @type {module:app/view/promise/whenSelectTransitionEnds} */
-	whenSelectTransitionEnds: require("app/view/promise/whenSelectTransitionEnds"),
+	// /** @type {module:app/view/promise/whenSelectTransitionEnds} */
+	// whenSelectTransitionEnds: require("app/view/promise/whenSelectTransitionEnds"),
+	/** @type {module:app/view/promise/whenScrollingEnds} */
+	whenScrollingEnds: require("app/view/promise/whenScrollingEnds"),
 	/** @type {module:app/view/promise/whenDefaultImageLoads} */
 	whenDefaultImageLoads: require("app/view/promise/whenDefaultImageLoads"), 
 });
@@ -288,4 +307,8 @@ MediaRenderer = (function(MediaRenderer) {
 
 } // end debug
 
+/**
+ * @constructor
+ * @type {module:app/view/render/MediaRenderer}
+ */
 module.exports = MediaRenderer;

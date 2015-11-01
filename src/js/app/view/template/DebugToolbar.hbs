@@ -6,18 +6,18 @@
 	</dt>
 	<dd id="edit-backend"><a href="{{global "APP_ROOT"}}/symphony/" target="_blank">Edit</a></dd>
 	<dd id="source"><a href="?debug=xml" target="_blank">Source</a></dd>
+	<dd id="toggle-tests"><a href="#toggle-tests">Tests</a></dd>
 	<dd id="toggle-grid-bg"><a href="#toggle-grid-bg">Grid</a></dd>
 	<dd id="toggle-blocks"><a href="#toggle-blocks">Blocks</a></dd>
 	<dd id="toggle-logs"><a href="#toggle-logs">Logs</a></dd>
-	<dd id="toggle-tests"><a href="#toggle-tests">Tests</a></dd>
 	<dd id="media-info"><span></span></dd>
 </dl>
 <div id="test-results">
+<h6>Tests <a id="toggle-passed" href="#toggle-passed">Passed</a></h6>
+<p>{{navigator.userAgent}}</p>
 <ul>
-<h6>Modernizr <a id="toggle-tests-failed" href="#toggle-tests-failed">Failed</a></h6>
-{{#each Modernizr}}
+{{#each tests}}
 	<li class="{{#if this}}passed{{else}}failed{{/if}}">{{@key}}</li>
 {{/each}}
 </ul>
 </div>
-<!-- <span style="font-family:'FolioClaimcheck-Figures'">x</span> -->

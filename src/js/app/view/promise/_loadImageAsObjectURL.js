@@ -1,4 +1,8 @@
 /*global XMLHttpRequest */
+var _ = require("underscore");
+
+var statusMsg = _.template("<%= status %> received from <%= url %> (<%= statusText %>)");
+var errMsg = _.template("'<%= errName %>' ocurred during request <%= url %>");
 
 if (window.XMLHttpRequest && window.URL && window.Blob) {
 	module.exports = function (url, progressFn) {
@@ -22,8 +26,10 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 					// If successful, resolve the promise by passing back a reference url
 					resolve(URL.createObjectURL(request.response));
 				} else {
-					var err = new Error("Failed to load image from (" +
-						request.statusText + " " + request.status + "): " + url);
+					var err = new Error(statusMsg({
+						statusText: request.statusText,
+						status: request.status, url: url
+					}));
 					err.event = ev;
 					reject(err);
 				}
@@ -31,17 +37,14 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 			// reject/failure
 			// - - - - - - - - - - - - - - - - - -
 			request.onerror = function (ev) {
-				var err = new Error("Failed to load image from (" + ev.type + "): " + url);
+				var err = new Error(errMsg({
+					errName: ev.type,
+					url: url
+				}));
 				err.event = ev;
 				reject(err);
 			};
-			request.ontimeout = request.onerror;
-			request.onabort = function (ev) {
-				// console.log("reject", ev.type, url, ev);
-				var err = new Error("Aborted loading image from (" + ev.type + "): "+ url);
-				err.event = ev;
-				reject(err);
-			};
+			request.onabort = request.ontimeout = request.onerror;
 			// finally
 			// - - - - - - - - - - - - - - - - - -
 			request.onloadend = function () {

@@ -1,5 +1,7 @@
 /** @type {module:app/view/promise/whenTransitionEnds} */
 var whenTransitionEnds = require("app/view/promise/whenTransitionEnds");
+// /** @type {module:app/view/promise/whenScrollingEnds} */
+// var whenScrollingEnds = require("app/view/promise/whenScrollingEnds");
 
 module.exports = function(view) {
 	if (view.model.selected) {

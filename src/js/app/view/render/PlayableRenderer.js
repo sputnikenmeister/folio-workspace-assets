@@ -53,7 +53,7 @@ var PlayableRenderer = MediaRenderer.extend({
 				return this._playbackState;
 			},
 			set: function(value) {
-				this.setPlaybackState(value);
+				this._setPlaybackState(value);
 			}
 		}
 	},
@@ -61,20 +61,20 @@ var PlayableRenderer = MediaRenderer.extend({
 	/** @override */
 	initialize: function (opts) {
 		MediaRenderer.prototype.initialize.apply(this, arguments);
-		_.bindAll(this, "_onToggleEvent", "_onVisibilityChange");
-		// this._playbackState = null;
+		_.bindAll(this, 
+			"_onUserPlaybackToggle",
+			"_onVisibilityChange"
+		);
 		this.playbackState = "user-play";
 	},
 	
-	/** @override */
-	setEnabled: function(enabled) {
-		if (enabled) {
-			// by default, do nothing
-		} else {
-			// if selected, pause media
-			this.model.selected && this.togglePlayback(false);
-		}
-	},
+	// initializeAsync: function() {
+	// 	// _.bindAll(this, "_onUserPlaybackToggle", "_onVisibilityChange");
+	// 	// this._userPlaybackRequested = false;
+	// 	// this.playbackState = "user-play";
+	// 	
+	// 	return MediaRenderer.prototype.initialize.initializeAsync.apply(this, arguments);
+	// },
 	
 	// /** @override */
 	// remove: function() {
@@ -93,6 +93,40 @@ var PlayableRenderer = MediaRenderer.extend({
 	// 	this._playToggle = this.el.querySelector(".play-toggle");
 	// },
 	
+	/* --------------------------- *
+	/* setEnabled
+	/* --------------------------- */
+	
+	/** @override */
+	setEnabled: function(enabled) {
+		MediaRenderer.prototype.setEnabled.apply(this, arguments);
+		if (enabled) {
+			this._validatePlayback();
+		} else {
+			// if selected, pause media
+			this.model.selected && this.togglePlayback(false);
+		}
+	},
+	
+	/* --------------------------- *
+	/* playbackState
+	/* --------------------------- */
+	
+	_validPlaybackStates: ["network", "media", "user-play", "user-resume", "user-replay"],
+	
+	_setPlaybackState: function(key) {
+		if (this._playbackState !== key) {
+			if (this._validPlaybackStates.indexOf(key) === -1) {
+				throw new Error("Value '%s' is not valid. Must be one of: %s", key, this._validPlaybackStates.join(", "));
+			}
+			if (this._playbackState) {
+				this.getContentEl().classList.remove( "pending-" + this._playbackState);
+			}
+			this.getContentEl().classList.add("pending-" + key);
+			this._playbackState = key;
+		}
+	},
+	
 	/* ---------------------------
 	/* selection handlers
 	/* when model is selected, click toggles playback
@@ -110,35 +144,52 @@ var PlayableRenderer = MediaRenderer.extend({
 		this.model.selected && this._onModelDeselected();
 	},
 	
+	/* model selected
+	/* --------------------------- */
+	
 	_onModelSelected: function() {
 		this._addSelectedHandlers();
+		this._validatePlayback();
 	},
-	
 	_onModelDeselected: function() {
-		this.togglePlayback(false);
 		this._removeSelectedHandlers();
+		this.togglePlayback(false);
 	},
 	
 	_addSelectedHandlers: function() {
 		document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		this.getPlayToggle().addEventListener(this._toggleEvent, this._onToggleEvent, false);
+		this.getPlayToggle().addEventListener(this._toggleEvent, this._onUserPlaybackToggle, false);
+		this.listenTo(this.parentView, "view:scrollstart", this._onScrollStart);
+		this.listenTo(this.parentView, "view:scrollend", this._onScrollEnd);
 		
 		this.listenTo(this, "view:removed", this.removeSelectionHandlers);
 	},
-	
 	_removeSelectedHandlers: function() {
 		document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		this.getPlayToggle().removeEventListener(this._toggleEvent, this._onToggleEvent, false);
+		this.getPlayToggle().removeEventListener(this._toggleEvent, this._onUserPlaybackToggle, false);
+		this.stopListening(this.parentView, "view:scrollstart", this._onScrollStart);
+		this.stopListening(this.parentView, "view:scrollend", this._onScrollEnd);
 		
 		this.stopListening(this, "view:removed", this.removeSelectionHandlers);
 	},
 	
+	/* _onScrollChange
+	/* --------------------------- */
+	_onScrollStart: function() {
+		this.togglePlayback(false);
+	},
+	
+	_onScrollEnd: function() {
+		this._validatePlayback();
+	},
+	
 	/* dom events
 	/* --------------------------- */
-	
 	_onVisibilityChange: function(ev) {
-		if (document[visibilityStateProp] !== "visible"){
+		if (document[visibilityStateProp] === "hidden") {
 			this.togglePlayback(false);
+		} else {
+			this._validatePlayback();
 		}
 	},
 	
@@ -147,20 +198,57 @@ var PlayableRenderer = MediaRenderer.extend({
 	/* --------------------------- */
 	
 	/** @type {String} */
-	_toggleEvent: "mouseup",
+	_userPlaybackRequested: false,
 	
-	_onToggleEvent: function(ev) {
-		// console.log("PlayableRenderer._onToggleEvent", ev.type, "defaultPrevented: " + ev.defaultPrevented);
-		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
-		if (!ev.defaultPrevented && !ev.button) {
-			this.togglePlayback();
-			ev.preventDefault();
-		}
-	},
+	/** @type {String} */
+	_toggleEvent: "mouseup",
 	
 	/** @return {HTMLElement} */
 	getPlayToggle: function () {
 		return this._playToggle || (this._playToggle = this.el.querySelector(".play-toggle"));
+	},
+	
+	_onUserPlaybackToggle: function(ev) {
+		// console.log("PlayableRenderer._onUserPlaybackToggle", ev.type, "defaultPrevented: " + ev.defaultPrevented);
+		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
+		if (!ev.defaultPrevented && !ev.button) {
+			ev.preventDefault();
+			this._userPlaybackRequested = !this._userPlaybackRequested;
+			
+			if (this._userPlaybackRequested) {
+				this._validatePlayback();
+			} else {
+				this.togglePlayback(false);
+			}
+		}
+	},
+	
+	/* --------------------------- *
+	/* togglePlayback
+	/* --------------------------- */
+	
+	_canResumePlayback: function() {
+		var retval = !!(this.enabled &&
+			this.model.selected &&
+			this._userPlaybackRequested &&
+			this.mediaState === "ready" &&
+			!this.parentView.scrolling &&
+			document[visibilityStateProp] !== "hidden");
+		console.log("%s::_canResumePlayback():", this.cid, retval, {
+			"enabled": this.enabled,
+			"selected": (!!this.model.selected),
+			"playback requested": this._userPlaybackRequested,
+			"not scrolling": !this.parentView.scrolling,
+			"mediaState": this.mediaState,
+			"doc visibility": document[visibilityStateProp]
+		});
+		return retval;
+	},
+	
+	_validatePlayback: function() {
+		if (this._canResumePlayback()) {
+			this.togglePlayback(true);
+		}
 	},
 	
 	togglePlayback: function(playback) {
@@ -168,35 +256,20 @@ var PlayableRenderer = MediaRenderer.extend({
 	},
 	
 	/* --------------------------- *
-	/* playbackState
-	/* --------------------------- */
-	
-	_validPlaybackStates: ["network", "media", "user-play", "user-resume", "user-replay"],
-	
-	setPlaybackState: function(key) {
-		if (this._playbackState !== key) {
-			if (this._validPlaybackStates.indexOf(key) === -1) {
-				throw new Error("Value '%s' is not valid. Must be one of: %s", key, this._playbackStates.join(", "));
-			}
-			if (this._playbackState) {
-				this.getContentEl().classList.remove( "pending-" + this._playbackState);
-			}
-			this.getContentEl().classList.add("pending-" + key);
-			this._playbackState = key;
-		}
-	},
-	
-	/* --------------------------- *
 	/* util
 	/* --------------------------- */
 	
 	updateOverlay: function(mediaEl, targetEl, rectEl) {
+		// // this method is not critical, just catch and log all errors
+		// try {
+		// 	this._updateOverlay(mediaEl, targetEl, rectEl)
+		// } catch (err) {
+		// 	console.error("%s::updateOverlay", this.cid, err);
+		// }
 	},
 	
 	/*
-	updateOverlay: function(mediaEl, targetEl, rectEl) {
-		// this method is not critical, just catch and log all errors
-		try {
+	_updateOverlay: function(mediaEl, targetEl, rectEl) {
 		// src/dest rects
 		// ------------------------------
 		rectEl || (rectEl = targetEl);
@@ -290,10 +363,6 @@ var PlayableRenderer = MediaRenderer.extend({
 		// 
 		// context.putImageData(imageData, 0, 0);
 		// targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
-		
-		} catch (err) {
-			console.error("%s::updateOverlay", this.cid, err);
-		}
 	}*/
 });
 

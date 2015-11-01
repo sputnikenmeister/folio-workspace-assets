@@ -83,7 +83,7 @@ var ImageRenderer = MediaRenderer.extend({
 		// 	.then(MediaRenderer.whenDefaultImageLoads)
 			// .then(
 			// 	function(view) {
-			// 		view.setState("done");
+			// 		view.mediaState = "ready";
 			// 	})
 			// .catch(
 			// 	function(err) {
@@ -93,7 +93,7 @@ var ImageRenderer = MediaRenderer.extend({
 			// 		} else {
 			// 			console.error(this.cid, err.name, err);
 			// 			this.placeholder.innerHTML = "<p class=\"color-fg\" style=\"position:absolute;bottom:0;padding:3rem;\"><strong>" + err.name + "</strong> " + err.message + "</p>";
-			// 			this.setState("error");
+			// 			this.mediaState = "error";
 			// 		}
 			// 	}.bind(this))
 			;

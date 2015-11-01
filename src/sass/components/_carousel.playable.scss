@@ -3,7 +3,6 @@
 // -----------------------------------
 
 .playable-renderer {
-	
 	.media-size,
 	.content-size {
 		position: absolute;
@@ -13,46 +12,69 @@
 		width: 100%; height: 100%;
 		top: 0; left: 0;
 	}
-	// // .overlay
-	// // - - - - - - - - - - - - - - - - -
-	// .overlay {}
-	
-	// .overlay .play-toggle
-	// - - - - - - - - - - - - - - - - -
+}
+
+// -----------------------------------
+// .playable-renderer .overlay
+// -----------------------------------
+
+// .overlay visibility
+// - - - - - - - - - - - - - - - - -
+.playable-renderer .overlay {
+	visibility: hidden;
+	opacity: 0;
+}
+.carousel.scrolling .playable-renderer .overlay {
+	transition-property: visibility, opacity;
+	transition-timing-function: step-end;
+	transition-duration: $duration * 3;
+}
+.carousel:not(.scrolling) .playable-renderer.selected .overlay {
+	visibility: visible;
+	opacity: 1;
+	transition-property: visibility, opacity;
+	transition-timing-function: step-start, $ease;
+	transition-duration: $duration;
+}
+
+// .overlay .play-toggle
+// - - - - - - - - - - - - - - - - -
+.playable-renderer {
 	$symbol-class: ".play-toggle";
-	#{$symbol-class} {
+	// layout
+	.play-toggle {
 		background-size: 3rem 3rem;
 		background-position: bottom left;
 		background-repeat: no-repeat;
 	}
-	// .pending-user-play #{$symbol-class} {
-	.not-played #{$symbol-class} {
+	// .pending-user-play .play-toggle {
+	.not-played .play-toggle {
 		background-size: 6rem 6rem;
 		background-position: center;
 	}
-	
+	// content
 	&, .pending-user-play, .pending-user-resume { 
-		#{$symbol-class} { background-image: base64_encode("symbols/playback-play.svg"); }
-		.over-dark #{$symbol-class} { background-image: base64_encode("symbols/playback-play-dark.svg"); }
+		.play-toggle { background-image: base64_encode("symbols/playback-play.svg"); }
+		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-play-dark.svg"); }
 	}
 	.pending-user-replay {
-		#{$symbol-class} { background-image: base64_encode("symbols/playback-replay.svg"); }
-		.over-dark #{$symbol-class} { background-image: base64_encode("symbols/playback-replay-dark.svg");}
+		.play-toggle { background-image: base64_encode("symbols/playback-replay.svg"); }
+		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-replay-dark.svg");}
 	}
 	.pending-network {
-		#{$symbol-class} { background-image: base64_encode("symbols/playback-wait.svg");}
-		.over-dark #{$symbol-class} { background-image: base64_encode("symbols/playback-wait-dark.svg");}
+		.play-toggle { background-image: base64_encode("symbols/playback-wait.svg");}
+		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-wait-dark.svg");}
 	}
 	.pending-media {
-		#{$symbol-class} {background-image: none;}
-		.over-dark #{$symbol-class} { background-image: none;}
+		.play-toggle {background-image: none;}
+		.over-dark .play-toggle { background-image: none;}
 	}
-	
-	#{$symbol-class} {
+	// visibility
+	.play-toggle {
 		opacity: 1;
 		visibility: visible;
 	}
-	&.selected #{$symbol-class} {
+	&.selected .play-toggle {
 		transition-property: visibility, opacity;
 		transition-timing-function: step-start, $ease;
 		transition-duration: $duration;
@@ -60,7 +82,7 @@
 		// 	opacity $duration $ease 0.001s,
 		// 	visibility $duration step-start 0.001s;
 	}
-	
+	// hit-area
 	.play-toggle-hitarea {
 		$size: 50%;//12em; 
 		display: block;
@@ -75,15 +97,20 @@
 	// :not(.pending-media) .play-toggle-hitarea {
 	// 	background-color: rgba(255,0,255,0.2);
 	// }
-	
-	// .control-box
-	// - - - - - - - - - - - - - - - - -
+}
+
+// - - - - - - - - - - - - - - - - - -
+//  .playable-renderer .controls
+// - - - - - - - - - - - - - - - - - -
+.playable-renderer {
 	.controls {
 		position: absolute;
 		// top: 100%;
 		// right: 0;
 		// height: 4.5rem;
 	}
+	// .control-box
+	// - - - - - - - - - - - - - - - - -
 	.control-box {
 		display: -webkit-flex;
 		display: -ms-flex;
@@ -126,18 +153,35 @@
 			-webkit-flex-direction: column;
 			-ms-flex-direction: column;
 			flex-direction: column;
+			justify-content: flex-start;
 			top: 0; left: 100%; 
 			width: auto; height: calc(100% + 1rem);
-			justify-content: flex-start;
 			margin: -0.5rem 1rem;
 		}
 	}
 }
 
 // - - - - - - - - - - - - - - - - - -
-//  .playable-renderer .controls
+//  .playable-renderer children
 // - - - - - - - - - - - - - - - - - -
 .playable-renderer {
+	// .timeline | .timecode
+	// - - - - - - - - - - - - - - - - -
+	.timecode {
+		font-size: 85%;
+		letter-spacing: 1px;
+		font-variant-numeric: tabular-nums;
+	}
+	.control-box {
+		& > .timeline {
+			-webkit-flex: 1 0 auto;
+			flex: 1 0 auto;
+		}
+		// & > .svg-progress-meter {}
+	}
+	
+	// .fullscreen-toggle
+	// - - - - - - - - - - - - - - - - -
 	.fullscreen-toggle {
 		line-height: 0;
 		cursor: pointer;
@@ -146,13 +190,17 @@
 			height: 1em;
 		}
 	}
+	
+	// .progress-meter
+	// - - - - - - - - - - - - - - - - -
 	.progress-meter {
 		width: 2.3rem; height: 2.3rem;
 		// width: 2.1rem; height: 2.1rem;
 		// width: 2.6rem; height: 2.6rem;
 		box-sizing: content-box;
 		// font-family: "NumbersClaimcheck";
-		font-family: "FolioClaimcheck-Figures";
+		// font-family: "FolioClaimcheck-Figures";
+		font-family: "FolioFigures-Regular", monospace;
 		font-size: normal;
 		font-weight: normal;
 	}
@@ -185,51 +233,29 @@
 		// #amount, #steps { stroke: currentColor; }
 		// #steps-track {} #steps {} #amount {} #step-label {} #pause-symbol{}
 	}
+	
+	// .progress-meter per-renderer adjustments
+	// - - - - - - - - - - - - - - - - -
 	&.sequence-renderer {
-	// 	.progress-meter {
-	// 		// width: 2.3rem; height: 2.3rem;
-	// 		// width: 2.5rem; height: 2.5rem;
-	// 	}
-		.svg-progress-meter {
-			#label {
-				font-size: 150%;
-			}
-		}
-	// 	.canvas-progress-meter {
-	// 		// font-size: 80%;
-	// 	}
+		// .progress-meter { width: 2.5rem; height: 2.5rem; }
+		// .canvas-progress-meter { font-size: 80%; }
+		// .svg-progress-meter {
+		// 	#label {
+		// 		font-size: 150%;
+		// 	}
+		// }
 	}
 	// &.video-renderer {
-	// 	.progress-meter {
-	// 		// width: 2.3rem; height: 2.3rem;
-	// 		// width: 2.5rem; height: 2.5rem;
-	// 	}
+	// 	.progress-meter { width: 2.3rem; height: 2.3rem; }
+	// 	.canvas-progress-meter { font-size: 90%; }
 	// 	.svg-progress-meter {
 	// 		#label {
 	// 			font-size: 133%;
 	// 			// 	transform: scale(0.7);
 	// 		}
 	// 	}
-	// 	.canvas-progress-meter {
-	// 		font-size: 90%;
-	// 	}
 	// }
 	
-	.timecode {
-		font-size: 85%;
-		letter-spacing: 1px;
-		font-variant-numeric: tabular-nums;
-	}
-	// .timeline {}
-	// .control-box > *
-	// - - - - - - - - - - - - - - - - -
-	.control-box {
-		& > .timeline {
-			-webkit-flex: 1 0 auto;
-			flex: 1 0 auto;
-		}
-		// & > .svg-progress-meter {}
-	}
 }
 
 // -----------------------------------
@@ -247,38 +273,12 @@
 			// border-width: 0; margin: 0; padding: 0;
 		}
 	}
-	video:focus {
-		outline: 0 none;
-	}
 	.poster {
 		visibility: hidden;
 	}
 	.not-played .poster {
 		visibility: visible;
 	}
-	
-	// padding-bottom: 3rem; // space for .bottom-bar (timeline)
-	
-	/*.bottom-bar {
-		display: block;
-		position: absolute;
-		top: 100%;
-		right: 0;
-		height: 4.5rem;
-		padding: $vu $hu;
-		margin-right: -$hu;
-		.timeline {
-			display: block;
-		}
-		.current-time {
-			float: left;
-			text-align: left;
-		}
-		.duration {
-			float: right;
-			text-align: right;
-		}
-	}*/
 }
 
 // -----------------------------------
@@ -296,128 +296,22 @@
 		top: 0; left: 0;
 		width: 100%; height: 100%;
 		
-		transition-property: opacity, visibility;
-		transition-duration: $duration * 2;
-		transition-delay: 0.001s;
-		
-		transition-timing-function: step-end;
+		z-index: 0;
 		opacity: 0;
 		visibility: hidden;
-		z-index: 0;
+		transition: 
+			visibility $duration*3 step-end,
+			opacity $duration*3 step-end;
 		&.current {
-			transition-timing-function: $ease, step-start;
+			z-index: 1;
 			opacity: 1;
 			visibility: visible;
-			z-index: 1;
+			transition: 
+				// visibility $duration * 2 step-start,
+				opacity $duration * 1.5 $ease $duration * 0.5;
 		}
 	}
 	.overlay {
 		z-index: 2;
 	}
-	// .progress-meter {
-	// 	z-index: 3;
-	// }
 }
-
-// -----------------------------------
-// JUNK
-// -----------------------------------
-
-// .playback-symbols
-// - - - - - - - - - - - - - - - - -
-// svg.playback-symbols {
-// 	display: inline-block;
-// 	position: absolute;
-// 	box-sizing: border-box;
-// 	border: 1px solid red
-// 	// margin: 5rem;
-// 	// top: 6rem; bottom: 6rem; left: 6rem; right: 6rem;
-// 	// width: auto; height: auto;
-// }
-// .pending-media svg.playback-symbols {
-// 	display: none;
-// }
-// 
-// .symbol-shape { fill: rgb(255,255,255); }
-// .symbol-box { fill: rgb(0,0,0); }
-// .over-dark {
-// 	.symbol-shape { fill: rgb(0,0,0); }
-// 	.symbol-box { fill: rgb(255,255,255); }
-// }
-// .play-symbol, .pending-user-replay .replay-symbol {
-// 	// visibility: visible;
-// 	// opacity: 1;
-// 	display: inline;
-// }
-// .replay-symbol, .pending-user-replay .play-symbol {
-// 	// visibility: hidden;
-// 	// opacity: 0;
-// 	display: none;
-// }
-
-// @extend %placeholder-NumbersClaimcheck;
-// @extend %placeholder-NumbersGreenback;
-// @extend %placeholder-NumbersPremium;
-// @extend %placeholder-NumbersRevenue;
-// @extend %placeholder-NumbersRedbird;
-// @extend %placeholder-NumbersRevenue;
-
-// %placeholder-numbers {
-// 	// margin: 2rem 2.5rem;
-// 	// font-size: 4rem;
-// 	font-style: normal;
-// 	font-weight: normal;
-// }
-// %placeholder-NumbersRevenue {
-// 	@extend %placeholder-numbers;
-// 	font-family: "NumbersRevenue", monospace;
-// 	letter-spacing: -0.06em;
-// 	word-spacing: -0.45em;
-// }
-// %placeholder-NumbersClaimcheck {
-// 	@extend %placeholder-numbers;
-// 	font-family: "NumbersClaimcheck", monospace;
-// 	letter-spacing: 0;
-// 	word-spacing: -0.45em;
-// }
-// %placeholder-NumbersIndicia {
-// 	@extend %placeholder-numbers;
-// 	font-family: "NumbersIndicia", monospace;
-// 	letter-spacing: -0.05em;
-// 	word-spacing: -0.45em;
-// }
-// %placeholder-NumbersRedbird {
-// 	@extend %placeholder-numbers;
-// 	font-family: "NumbersRedbird", monospace;
-// 	letter-spacing: 0;
-// 	word-spacing: -0.23em;
-// }
-// %placeholder-franklin-itc-cp {
-// 	font: 600 normal 12rem/1.2 "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
-// 	letter-spacing: -0.01em;
-// 	margin: 2rem 3rem;
-// }
-// %placeholder-franklin-fs-cp {
-// 	// margin: 2rem 2.5rem;
-// 	// font-size: 2rem;
-// 	line-height: 1.2;
-// 	font-weight: 600;
-// 	letter-spacing: -0.05em;
-// 	font-style: italic;
-// 	text-transform: uppercase;
-// }
-
-
-// .playable-renderer .progress-meter {
-// 	font-family: "NumbersClaimcheck";
-// 	// font-family: "NumbersGreenback";
-// 	// font-family: "NumbersIndicia";
-// 	// font-family: "NumbersRevenue";
-// 	// font-family: "NumbersPremium";
-// 	// font-family: "NumbersGreenback";
-// 	// font-family: "ITCFranklinGothicStd", $grotesque_fallback; font-weight: 800;
-// 	// font-family: "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
-// 	// font-family: "ITCFranklinGothicStd-Condensed", $grotesque_fallback;
-// 	font-style: normal;
-// 	font-weight: normal;
-// }

@@ -115,12 +115,18 @@ var ViewProto = {
 				console.warn("[deprecated] %s::inDomTree", this.cid);
 				return this._domPhase === "added";
 			}
+		},
+		enabled: {
+			get: function() {
+				return this._enabled;
+			}
 		}
 	},
 	
 	parentView: null,
 	
 	_domPhase: "created",// created>added>removed
+	
 	_viewPhase: "initializing",// initializing>initialized>disposing>disposed
 	
 	/**
@@ -278,7 +284,9 @@ var ViewProto = {
 	/* common abstract
 	/* ------------------------------- */
 	
-	setEnabled: function(enable) {},
+	setEnabled: function(enable) {
+		this._enabled = enable;
+	},
 };
 
 module.exports = Backbone.View.extend(ViewProto, View);

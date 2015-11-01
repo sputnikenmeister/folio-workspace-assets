@@ -65,13 +65,6 @@ var SequenceStepRenderer = View.extend({
 	className: "sequence-step",
 	/** @type {string} */
 	tagName: "img",
-	// /** @type {Object|Function} */
-	// attributes: {
-	// 	src: "", // mandatory attribute for IMG elements
-	// },
-	// attributes: function() {
-	// 	return { src: Globals.MEDIA_DIR + "/" + this.model.get("src") };
-	// },
 	
 	/** @override */
 	initialize: function (options) {
@@ -84,15 +77,7 @@ var SequenceStepRenderer = View.extend({
 				this.el.classList.remove("current");
 			}
 		});
-		// this._src = Globals.MEDIA_DIR + "/" + this.model.get("src");
-		// PlayableRenderer.whenSelectionIsContiguous(this).then(function(view) {
 		whenSelectionDistanceIs(this, 1).then(function(view) {
-			
-			// console.log("%s::whenSelectionDistanceIs(1) src='%s' (%s)", view.cid,
-			// 	(view.el.src === ""), (view.el.complete?"complete":"loading"),
-			// 	view._src, view.el.src
-			// );
-			
 			if (view.el.src === "")
 				view.el.src = Globals.MEDIA_DIR + "/" + view.model.get("src");
 		}, function(err) {
@@ -114,10 +99,68 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/** @type {Function} */
 	template: require("./SequenceRenderer.hbs"),
 	
-	/** @override */
-	initialize: function (opts) {
-		PlayableRenderer.prototype.initialize.apply(this, arguments);
+	// /** @override */
+	// initialize: function (opts) {
+	// 	PlayableRenderer.prototype.initialize.apply(this, arguments);
+	// 	
+	// 	// var autoplay = _.once(function() {
+	// 	// 	this._validatePlayback();
+	// 	// }.bind(this));
+	// 	
+	// 	// if (!this.model.selected) {
+	// 	// 	this.listenToOnce(this.model, "selected", function(model) {
+	// 	// 		if (this.parentView.scrolling) {
+	// 	// 			this.listenToOnce(this.parentView, "view:scrollend", function() {
+	// 	// 				this._validatePlayback();
+	// 	// 			});
+	// 	// 		} else {
+	// 	// 			this._validatePlayback();
+	// 	// 		}
+	// 	// 	});
+	// 	// } else {
+	// 	// 	this._validatePlayback();
+	// 	// }
+	// 	
+	// 	// var p = Promise.resolve(this);
+	// 	// p = p.then(function(view) {
+	// 	// 	console.warn("SEQUENCE INIT SYNC 1", view.cid);
+	// 	// 	return view;
+	// 	// });
+	// 	// p = p.then(function(view) {
+	// 	// 	console.warn("SEQUENCE INIT SYNC 2", view.cid);
+	// 	// 	return view;
+	// 	// });
+	// 	// this._initChain = this._initChain.then(function(view) {
+	// 	// 	console.warn("SEQUENCE INIT CHAIN", view.cid);
+	// 	// 	return view;
+	// 	// });
+	// },
+	
+	/* --------------------------- *
+	/* initialize
+	/* --------------------------- */
+	
+	_userPlaybackRequested: true,
+	
+	initializeAsync: function() {
+		return PlayableRenderer.prototype.initializeAsync.apply(this, arguments)
+			.then(function(view) {
+				view.initializeSequence();
+				view.updateOverlay(view.getDefaultImage(), view.overlay);
+				view.addSelectionListeners();
+				return view;
+			});
 	},
+	
+	whenInitialized: function(view) {
+		var retval = PlayableRenderer.prototype.whenInitialized.apply(this, arguments);
+		view._validatePlayback();
+		return retval;
+	},
+	
+	/* --------------------------- *
+	/* children
+	/* --------------------------- */
 	
 	/** @override */
 	createChildren: function() {
@@ -157,24 +200,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 		this.playToggle = this.el.querySelector(".play-toggle");
 		this.sequence = this.content.querySelector(".sequence");
 		this.overlay = this.content.querySelector(".overlay");
-	},
-	
-	/* --------------------------- *
-	/* initializeAsync
-	/* --------------------------- */
-	
-	initializeAsync: function() {
-		return PlayableRenderer.prototype.initializeAsync.apply(this, arguments)
-			.then(function(view) {
-				view.initializeSequence();
-				view.addSelectionListeners();
-				try {
-					view.updateOverlay(view.getDefaultImage(), view.overlay);
-					return view;
-				} catch (err) {
-					return Promise.reject(err);
-				}
-			});
 	},
 	
 	/* --------------------------- *
@@ -261,11 +286,12 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// progress-meter
 		// ---------------------------------
 		
-		// var collectionFormatter = function(val) { return this.sources.selectedIndex + 1; }.bind(this);
-		// var stepFormatter = function(i, t, s) { return (((i/t)*s) | 0) + 1; };
-		var fractionFormatter = function(i, t, s) { return ((((i/t)*s) | 0) + 1) +"/"+s; };
-		this._progressFormatter = fractionFormatter;
+		// this._progressFormatter = function(val) { return this.sources.selectedIndex + 1; }.bind(this);
+		// this._progressFormatter = function(i, t, s) { return (((i/t)*s) | 0) + 1; };
+		this._progressFormatter = function(i, t, s) { return ((((i/t)*s) | 0) + 1) +"/"+s; };
 		
+		// var progressEl;
+		// if (progressEl = this.el.querySelector("canvas.progress-meter")) {
 		this.progressMeter = new ProgressMeter({
 			total: this.sources.length,
 			steps: this.sources.length,
@@ -273,26 +299,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 			labelFn: this._progressFormatter
 		});
 		this.el.querySelector(".top-bar").appendChild(this.progressMeter.render().el);
-		
-		// var progressEl;
-		// if (progressEl = this.el.querySelector("canvas.progress-meter")) {
-		// 	this.canvasProgressMeter = new CanvasProgressMeter({
-		// 		el: progressEl,
-		// 		total: this.sources.length,
-		// 		steps: this.sources.length,
-		// 		// color: this.model.attrs()["color"],
-		// 		labelFn: this._progressFormatter
-		// 	}).render();
-		// }
-		// if (progressEl = this.el.querySelector("div.progress-meter")) {
-		// 	this.svgProgressMeter = new SVGProgressMeter({
-		// 		el: progressEl,
-		// 		total: this.sources.length,
-		// 		steps: this.sources.length,
-		// 		// color: this.model.attrs()["color"],
-		// 		labelFn: this._progressFormatter
-		// 	}).render();
-		// }
 		
 		// Sequence timer and listeners
 		// ---------------------------------
@@ -312,9 +318,9 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/* PlayableRenderer overrides
 	/* --------------------------- */
 	
-	// /** @override */
+	/** @override */
 	// _onModelSelected: function() {
-	// 	// this.togglePlayback(true);
+	// 	this.togglePlayback(true);
 	// 	return PlayableRenderer.prototype._onModelSelected.apply(this, arguments);
 	// 	// this.content.addEventListener("click", this._onContentClick, false);
 	// 	// this.listenTo(this, "view:removed", this._removeClickHandler);
@@ -346,7 +352,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		if (!this._isSequenceRunning) {
 			this._isSequenceRunning = true;
 			
-			this.setPlaybackState("media");
+			this.playbackState = "media";
 			if (this.timer.getStatus() === "paused") {
 				this.timer.start(); // resume, actually
 			} else {
@@ -364,7 +370,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 			if (this.timer.getStatus() === "started") {
 				this.timer.pause();
 			}
-			this.setPlaybackState("user-resume");
+			this.playbackState = "user-resume";
 			console.log("(%s) SequenceRenderer.stopSequence", this.cid);
 		}
 	},
@@ -381,40 +387,33 @@ var SequenceRenderer = PlayableRenderer.extend({
 		var nextModel = view.sources.followingOrFirst();
 		var nextView = view.itemViews.findByModel(nextModel);
 		if (!nextView.el.complete) {
-			this.setPlaybackState("network");
+			this.playbackState = "network";
 		}
 		_whenImageLoads(nextView.el).then(function() {
 			if (view._isSequenceRunning) {
-				logSeq("_whenImageLoads (calling next step)");
-				// NOTE: step increase done here
-				view.sources.select(nextModel);
-				
-				view.updateOverlay(nextView.el, view.overlay);
-				view.setPlaybackState("media");
-				view.timer.start(view._sequenceInterval);
+				// window.requestAnimationFrame(function() {
+					logSeq("_whenImageLoads (calling next step)");
+					// NOTE: step increase done here
+					view.sources.select(nextModel);
+					
+					view.updateOverlay(nextView.el, view.overlay);
+					view.timer.start(view._sequenceInterval);
+					view.playbackState = "media";
+				// });
 			} else {
 				logSeq("_whenImageLoads (sequence not running)");
-				
-				view.setPlaybackState("user-resume");
+				view.playbackState = "user-resume";
 			}
 		});
 	},
 	
 	_onTimerStart: function() {
 		// var delta = this.timer.getDuration() / this._sequenceInterval;
-		// this.updateProgress(
-		// 	this.sources.selectedIndex + (1 - delta),
-		// 	delta, this.timer.getDuration());
-			
 		this.progressMeter.valueTo(this.sources.selectedIndex + 1, this.timer.getDuration());
 	},
 	
 	_onTimerPause: function () {
 		// var delta = this.timer.getDuration() / this._sequenceInterval;
-		// this.updateProgress(
-		// 	this.sources.selectedIndex + (1 - delta),
-		// 	0, 0);
-			
 		this.progressMeter.valueTo(this.progressMeter.renderedValue);
 	},
 	
@@ -446,25 +445,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/* --------------------------- *
 	/* progress meter
 	/* --------------------------- */
-	
-	updateProgress: function(valueFrom, valueDelta, duration) {
-		var valueTo = valueFrom + valueDelta;
-		// var meter = this.svgProgressMeter;
-		// var shape = this.svgProgressMeter.amountShape;
-		// 
-		// if (duration > 0) {
-		// 	var transitionFn = function(ev) {
-		// 		shape.removeEventListener(transitionEnd, transitionFn, false);
-		// 		meter.valueTo(valueTo, duration * 0.9);
-		// 	};
-		// 	shape.addEventListener(transitionEnd, transitionFn, false);
-		// 	meter.valueTo(valueFrom + 0.00001, 1);
-		// } else {
-		// 	meter.valueTo(valueTo);
-		// }
-		
-		this.progressMeter && this.progressMeter.valueTo(valueTo, duration);
-	},
 });
 
 module.exports = SequenceRenderer;

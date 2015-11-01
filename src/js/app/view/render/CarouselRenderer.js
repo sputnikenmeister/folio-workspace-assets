@@ -28,6 +28,7 @@ var CarouselRenderer = View.extend({
 	
 	/** @override */
 	initialize: function (options) {
+		options.parentView && (this.parentView = options.parentView);
 		this.metrics = {};
 		this.metrics.content = {};
 		this.createChildren();

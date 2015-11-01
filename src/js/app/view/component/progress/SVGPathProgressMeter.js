@@ -59,12 +59,12 @@ var SVGPathProgressMeter = AbstractProgressMeter.extend({
 	redraw: function(value) {
 		var m, labelStr = this._labelFn(this._renderedValue, this._total, this._steps);
 		if (this._labelStr != labelStr) {
-			if (m = /^(\d+)([hms])$/.exec(labelStr)) {
-				this.valueLabel.textContent = m[1];
-				this.symbolLabel.textContent = m[2];
-			} else {
+			// if (m = /^(\d+)([hms])$/.exec(labelStr)) {
+			// 	this.valueLabel.textContent = m[1];
+			// 	this.symbolLabel.textContent = m[2];
+			// } else {
 				this.valueLabel.textContent = labelStr;
-			}
+			// }
 			this._labelStr = labelStr;
 		}
 		this.amountShape.style.strokeDashoffset = 
@@ -95,8 +95,7 @@ var SVGPathProgressMeter = AbstractProgressMeter.extend({
 		
 		this.el.innerHTML = this.template(p);
 		
-		this.valueLabel = this.el.querySelector("#value-label");
-		this.symbolLabel = this.el.querySelector("#symbol-label");
+		this.valueLabel = this.el.querySelector("#label");
 		
 		this.amountShape = this.el.querySelector("#amount");
 		this.stepsShape = this.el.querySelector("#steps");

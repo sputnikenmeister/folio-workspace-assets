@@ -32,7 +32,7 @@ module.exports = function (grunt) {
 	/* Main Targets
 	/* -------------------------------- */
 	
-	grunt.registerTask("build-deps", ["modernizr-build:dist"]);
+	grunt.registerTask("build-deps", ["modernizr-build:production"]);
 	grunt.registerTask("build-debug-vendor", ["build-deps","browserify:vendor", "exorcise:vendor"]);
 	grunt.registerTask("build-debug-client", ["browserify:client", "exorcise:client"]);
 	grunt.registerTask("build-debug-styles", ["compass:debug", "autoprefixer:debug"]);
@@ -56,18 +56,22 @@ module.exports = function (grunt) {
 	grunt.config("watch", {
 		options: {
 			spawn: false,
-			forever: false
+			forever: true
+		},
+		"reload-config": {
+			// options: { spawn: true },
+			files: ["gruntfile.js", "package.json"],
+			tasks: ["clean-all", 
+				"compass:debug", "autoprefixer:debug", 
+				"modernizr-build:production", "browserify:vendor", "browserify:client"
+			],
 		},
 		"build-styles": {
 			tasks: ["compass:debug", "autoprefixer:debug"],
 			files: ["src/sass/**/*.scss", "src/sass/**/*.json"],
 		},
-		// "build-styles-svg":{
-		// 	tasks: ["compass:clean", "compass:debug", "autoprefixer:debug"],
-		// 	files: ["images/**/*.svg"]
-		// },
 		"build-deps": {
-			tasts: ["build-deps", "browserify:vendor"],
+			tasks: ["modernizr-build:production"],
 			files: ["build/grunt/modernizr-config.json"],
 		},
 		"process-vendor": {
@@ -78,15 +82,17 @@ module.exports = function (grunt) {
 			tasks: ["exorcise:client"],
 			files: ["js/<%= DEBUG_CLIENT_JS %>.js"],
 		},
-		"reload-config": {
-			// options: { spawn: true },
-			files: ["gruntfile.js", "package.json"],
-			tasks: ["clean-all", 
-				"compass:debug", "autoprefixer:debug", 
-				"modernizr-build:dist", "browserify:vendor", "browserify:client"
-				// , "exorcise:vendor", "exorcise:client"
-			],
-		}
+		// "copy-module-resources": {
+		// 	tasks: ["copy:resources", "copy:sources"],
+		// 	files: [
+		// 		"node_modules/@folio/**/*.scss",
+		// 		"node_modules/@folio/**/<%= paths.ext.fonts %>"
+		// 	]
+		// },
+		// "build-styles-svg":{
+		// 	tasks: ["compass:clean", "compass:debug", "autoprefixer:debug"],
+		// 	files: ["images/**/*.svg"]
+		// },
 	});
 
 	/* --------------------------------
@@ -105,64 +111,36 @@ module.exports = function (grunt) {
 	/* copy
 	/* -------------------------------- */
 	
-	
 	grunt.loadNpmTasks("grunt-contrib-copy");
 	grunt.config("copy", {
-		options: {
-			process: function(content, srcpath) {
-				if (/\.scss$/.test(srcpath)) {
-					return content.replace(/(\s)url\((['"]).*?(?=[^\/]*['"])/g, "$1font-url($2");
-				}
-				return content;
-			}
-		},
 		resources: {
 			files: [{
 				flatten: true,
 				expand: true,
 				dest:"./fonts/",
 				src: [
-					"./node_modules/folio-webfonts/build/fonts/franklin-gothic-itc-cp/<%= paths.ext.fonts %>",
-					"./node_modules/folio-webfonts/build/fonts/folio/<%= paths.ext.fonts %>",
+					"./node_modules/@folio/webfonts/build/fonts/franklin-gothic-itc-cp/<%= paths.ext.fonts %>",
+					"./node_modules/@folio/webfonts/build/fonts/folio/<%= paths.ext.fonts %>",
 					"./src/resources/fonts/franklin-gothic-fs/<%= paths.ext.fonts %>",
 					"./src/resources/fonts/fontello*/**/<%= paths.ext.fonts %>",
 				]
 			}]
-			// files: [
-			// 	{
-			// 		expand: true,
-			// 		flatten: true,
-			// 		dest: "./fonts",
-			// 		cwd: "./node_modules/folio-webfonts/build/fonts/",
-			// 		src: [ 
-			// 			"franklin-gothic-itc-cp/<%= paths.ext.fonts %>",
-			// 			"folio/<%= paths.ext.fonts %>",
-			// 		]
-			// 	},
-			// 	{
-			// 		expand: true,
-			// 		flatten: true,
-			// 		dest: "./fonts",
-			// 		cwd: "./src/resources/fonts/",
-			// 		src: [
-			// 			"franklin-gothic-fs/<%= paths.ext.fonts %>",
-			// 			"fontello*/**/<%= paths.ext.fonts %>",
-			// 		]
-			// 	},
-			// ]
 		},
 		sources: {
-			files: [
-				{
-					expand: true,
-					dest: "./build/generated/sass/fonts",
-					cwd: "./node_modules/folio-webfonts/build/sass/",
-					src: [
-						"_folio.scss",
-						"_franklin-gothic-itc-cp.scss",
-					]
+			options: {
+				process: function(content, srcpath) {
+					return content.replace(/(\s)url\((['"]).*?(?=[^\/]*['"])/g, "$1font-url($2");
 				}
-			]
+			},
+			files: [{
+				expand: true,
+				dest: "./build/generated/sass/fonts",
+				cwd: "./node_modules/@folio/webfonts/build/sass/",
+				src: [
+					"_folio.scss",
+					"_franklin-gothic-itc-cp.scss",
+				]
+			}]
 		}
 	});
 	
@@ -186,7 +164,6 @@ module.exports = function (grunt) {
 		javascriptsDir: "js",
 		relativeAssets: true,
 		importPath: [
-			// "node_modules/folio-webfonts/build/sass"
 			"build/generated/sass"
 		]
 		//httpPath: "/workspace/assets",
@@ -196,6 +173,23 @@ module.exports = function (grunt) {
 		map: true, //{ inline: false },
 		//browsers: [ "ie > 8", "> 1%", "last 2 versions", "Firefox ESR", "Opera 12.1"]
 	});
+	
+	// grunt.loadNpmTasks("grunt-sass");
+	// grunt.config("sass", {
+	// 	options: {
+	// 		sourceMap: true,
+	// 		includePaths: [
+	// 			"/usr/local/lib/ruby/gems/2.2.0/gems/compass-core-1.0.3/stylesheets",
+	// 			"./src/sass"
+	// 		],
+	// 	},
+	// 	dist: {
+	// 		files: {
+	// 			"./css/folio.css": "./src/sass/folio.scss",
+	// 			"./css/fonts.css": "./src/sass/fonts.scss",
+	// 		}
+	// 	},
+	// });
 
 	/* Targets
 	/* - - - - - - - - - - - - - - - - - */
@@ -210,20 +204,24 @@ module.exports = function (grunt) {
 		"css/<%= DEBUG_STYLES %>.css": "css/<%= DEBUG_STYLES %>.css"
 	});
 
-	/* Discrete fonts SASS stylesheet
+	/* Separate fonts stylesheet
 	/* - - - - - - - - - - - - - - - - - */
 	grunt.config("compass.fonts.options", {
 		specify: "src/sass/fonts.scss",
+		outputStyle: "compressed",
 		sourcemap: false,
-		outputStyle: "compressed"
 	});
 	
 	/* --------------------------------
-	/* Javascript dependencies
+	/* Build JS dependencies
 	/* -------------------------------- */
 	
-	grunt.config("modernizr-build.dist", {
-		files: {"./build/generated/js/modernizr-dist.js": ["./build/grunt/modernizr-config.json"] }
+	grunt.config("modernizr-build.production", {
+		files: {
+			"./build/generated/js/modernizr-dist.js": [
+				"./build/grunt/modernizr-config.json"
+			]
+		}
 	});
 
 	/* --------------------------------
