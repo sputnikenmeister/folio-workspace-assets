@@ -1,5 +1,4 @@
 /*global HTMLMediaElement, MediaError*/
-
 /**
 * @module app/view/render/VideoRenderer
 *
@@ -21,20 +20,12 @@ var Backbone = require("backbone");
 var Globals = require("app/control/Globals");
 /** @type {module:app/view/render/PlayableRenderer} */
 var PlayableRenderer = require("app/view/render/PlayableRenderer");
-
-/** @type {module:app/view/component/progress/CanvasProgressMeter} */
-// var ProgressMeter = require("app/view/component/progress/CanvasProgressMeter");
-/** @type {module:app/view/component/progress/SVGPathProgressMeter} */
-var ProgressMeter = require("app/view/component/progress/SVGPathProgressMeter");
-/** @type {module:app/view/component/progress/SVGCircleProgressMeter} */
-// var ProgressMeter = require("app/view/component/progress/SVGCircleProgressMeter");
-
+/** @type {module:app/view/component/progress/ProgressMeter} */
+var ProgressMeter = require("app/view/component/progress/ProgressMeter");
 /** @type {module:utils/prefixedStyleName} */
 var prefixedStyleName = require("utils/prefixedStyleName");
 /** @type {module:utils/prefixedEvent} */
 var prefixedEvent = require("utils/prefixedEvent");
-/** @type {module:underscore.string/lpad} */
-var lpad = require("underscore.string/lpad");
 
 /* --------------------------- *
 /* private static
@@ -43,13 +34,7 @@ var lpad = require("underscore.string/lpad");
 var fullscreenChangeEvent = prefixedEvent("fullscreenchange", document);
 var fullscreenErrorEvent = prefixedEvent("fullscreenerror", document);
 
-// var formatTimecode = function (value, total) {
-// 	return new Date((isNaN(value)? 0 : value) * 1000).toISOString().substr(14, 5);
-// };
-// var formatTimecodeLeft = function (value, total) {
-// 	return formatTimecode(Math.max(0, total - value));
-// };
-var formatTimeShortUnit = function(value, total) {
+var progressLabelFn = function(value, total) {
 	value = isNaN(value)? total : total - value;
 	if (value > 3600)
 		return ((value / 3600) | 0) + "h";
@@ -57,34 +42,6 @@ var formatTimeShortUnit = function(value, total) {
 		return ((value / 60) | 0) + "m";
 	return (value | 0) + "s";
 };
-// var formatTimeShortUnitless = function(value, total) {
-// 	value = isNaN(value)? total : total - value;
-// 	if (value > 3600)
-// 		return ((value / 3600) | 0);
-// 	if (value > 60)
-// 		return ((value / 60) | 0);
-// 	return (value | 0);
-// };
-// var formatTimeShortPadded = function(value,total) {
-// 	value = isNaN(value)? total : total - value;
-// 	if (value > 3600) value /= 3600;
-// 	else if (value > 60) value /= 60;
-// 	return lpad(value | 0, 2, "0");
-// };
-// var formatTimeShortUnitPadded = function(value,total) {
-// 	var unit;
-// 	value = isNaN(value)? total : total - value;
-// 	if (value > 3600) {
-// 		value /= 3600; unit = "h";
-// 	} else if (value > 60) {
-// 		value /= 60; unit = "m";
-// 	} else {
-// 		unit = "s";
-// 	}
-// 	return lpad(value | 0, 2, "0") + unit;
-// };
-
-var formatTimeShort = formatTimeShortUnit;
 
 /**
 * @constructor
@@ -100,23 +57,6 @@ var VideoRenderer = PlayableRenderer.extend({
 	template: require("./VideoRenderer.hbs"),
 	
 	events: {
-		// "transitionend": function(ev) {
-		// 	if (ev.target === this.el && ev.propertyName === prefixedStyleName("transform")) {
-		// 		var d = this.getSelectionDistance(),
-		// 			s = this.getPlayToggle().style;
-		// 		if (d < 2) {
-		// 			console.log("%s::events ['%s']: '%s'", this.cid, ev.type, ev.propertyName);
-		// 			s.opacity = (d == 1? "0" : "");
-		// 			s.visibility = (d == 1? "hidden" : "");
-		// 		}
-		// 		// console.log("%s::events ['%s']: property '%s'", this.cid, ev.type, ev.propertyName);
-		// 		// this.getPlayToggle().style.opacity = this.model.selected? "1" : "";
-		// 		// this.getPlayToggle().style.visibility = this.model.selected? "visible" : "";
-		// 	} else {
-		// 		// console.log("%s::events ['%s']: ignored (property '%s')", this.cid, ev.type, ev.propertyName);
-		// 	}
-		// 	// console.log(this.cid, ev.type, ev.propertyName, ev.target.tagName, ev.target.classList.item(0));
-		// },
 		"mouseup .fullscreen-toggle": "_onFullscreenToggle",
 	},
 	
@@ -132,12 +72,11 @@ var VideoRenderer = PlayableRenderer.extend({
 			"_onMediaPlayingOnce",
 			"_onFullscreenChange"
 		);
-		// this.listenTo(this.model.collection, "select:one select:none", this._updateSelectionDistance);
-		// this._updateSelectionDistance();
-	},
-	
-	_updateSelectionDistance: function() {
-		this.getContentEl().style.display = (this.getSelectionDistance() > 1)? "none": "";
+		// var updateSelectionDistance = function() {
+		// 	this.getContentEl().style.display = (this.getSelectionDistance() > 1)? "none": "";
+		// };
+		// this.listenTo(this.model.collection, "select:one select:none", updateSelectionDistance);
+		// updateSelectionDistance();
 	},
 	
 	/* --------------------------- *
@@ -155,14 +94,6 @@ var VideoRenderer = PlayableRenderer.extend({
 		this.video = content.querySelector("video");
 		this.video.loop = this.model.attrs().hasOwnProperty("@video-loop");
 		this.video.src = this.findPlayableSource(this.video);
-		
-		// this.currentTimeLabel = this.el.querySelector(".current-time");
-		// this.durationLabel = this.el.querySelector(".duration");
-		// this.bufferedRect = this.el.querySelector(".timeline .buffered");
-		// this.playedRect = this.el.querySelector(".timeline .played");
-		
-		// this.fullscreenToggle = this.el.querySelector(".fullscreen-toggle");
-		
 	},
 	
 	measure: function() {
@@ -249,35 +180,17 @@ var VideoRenderer = PlayableRenderer.extend({
 			.then(
 				function(view) {
 					view.addSelectionListeners();
-					// view.durationLabel.textContent = formatTimecode(view.video.duration);
 					view.updateOverlay(view.getDefaultImage(), view.el.querySelector(".overlay"));
 					view.progressMeter = new ProgressMeter({
+						// value: view._currentTimeValue,
+						available: view._bufferedValue,
 						total: view.video.duration,
-						labelFn: formatTimeShort
-						// labelFn: formatTimeShortPadded
-						// color: view.model.attrs()["color"],
+						color: view.model.attrs()["color"],
+						backgroundColor: view.model.attrs()["background-color"],
+						labelFn: progressLabelFn
 					});
 					var parentEl = view.el.querySelector(".top-bar");
 					parentEl.insertBefore(view.progressMeter.render().el, parentEl.firstChild);
-					
-					// var progressEl;
-					// if (progressEl = view.el.querySelector("canvas.progress-meter"))
-					// 	view.canvasProgressMeter = new CanvasProgressMeter({
-					// 		el: progressEl,
-					// 		total: view.video.duration,
-					// 		labelFn: formatTimeShortPadded
-					// 		// labelFn: formatTimeShortUnitless
-					// 		// labelFn: formatTimecode
-					// 		// color: view.model.attrs()["color"],
-					// 	}).render();
-					// if (progressEl = view.el.querySelector("div.progress-meter"))
-					// 	view.svgProgressMeter = new SVGProgressMeter({
-					// 		el: progressEl,
-					// 		total: view.video.duration,
-					// 		labelFn: formatTimeShortUnitless
-					// 		// labelFn: formatTimecode
-					// 		// color: view.model.attrs()["color"],
-					// 	}).render();
 					
 					return view;
 				});
@@ -286,46 +199,36 @@ var VideoRenderer = PlayableRenderer.extend({
 	whenVideoHasMetadata: function(view) {
 		return new Promise(function(resolve, reject) {
 			var mediaEl = view.video;
-			// mediaEl.innerHTML = sourcesTemplate(view.model.toJSON());
-			// mediaEl.load();
 			
-			// var src = view.findPlayableSource(view.mediaEl);
-			// if (src == "") {
-			// 	reject(new Error("whenVideoHasMetadata: mediaEl.canPlayType rejected all types"));
-			// 	return;
-			// }
+			var handlers = {
+				loadedmetadata: function(ev) {
+					if (ev) removeEventListeners();
+					console.log("%s::whenVideoHasMetadata [%s] %s", view.cid, "resolved", ev? ev.type : "sync");
+					resolve(view);
+				},
+				abort: function(ev) {
+					if (ev) removeEventListeners();
+					reject(new PlayableRenderer.ViewError(view, new Error("whenVideoHasMetadata: view was removed")));
+				},
+				error: function(ev) {
+					if (ev) removeEventListeners();
+					
+					var err = new Error(mediaEl.error?_.invert(MediaError)[mediaEl.error.code]:"Unspecified error");
+					err.infoSrc = mediaEl.src;
+					err.infoCode = mediaEl.error? mediaEl.error.code: null;
+					err.logMessage = "whenVideoHasMetadata: " + err.name + " " + err.infoSrc;
+					err.logEvent = ev;
+					reject(err);
+				},
+			};
 			
 			// if ((mediaEl.preload === "auto" && mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) ||
 			// 	(mediaEl.preload === "metadata" && mediaEl.readyState >= HTMLMediaElement.HAVE_METADATA)) {
-			if (mediaEl.readyState >= HTMLMediaElement.HAVE_METADATA) {
-				// return view;
-				console.log("%s::whenVideoHasMetadata [%s] %s", view.cid, "resolved", "sync");
-				resolve(view);
-				return;
-			} else if (mediaEl.error) {
-				reject(new Error("whenVideoHasMetadata: error " + _.invert(MediaError)[mediaEl.error.code]));
-				return;
+			if (mediaEl.error) {
+				handlers.error();
+			} else if (mediaEl.readyState >= HTMLMediaElement.HAVE_METADATA) {
+				handlers.loadedmetadata();
 			} else {
-				var handlers = {
-					loadedmetadata: function(ev) {
-						removeEventListeners();
-						console.log("%s::whenVideoHasMetadata [%s] %s", view.cid, "resolved", ev.type);
-						resolve(view);
-					},
-					abort: function(ev) {
-						removeEventListeners();
-						reject(new PlayableRenderer.ViewError(view, new Error("whenVideoHasMetadata: view was removed")));
-					},
-					error: function(ev) {
-						// var err = new Error("whenVideoHasMetadata: error " + classify(findMediaErrorName(mediaEl.error).toLowerCase()));
-						var err = new Error("whenVideoHasMetadata: error " +
-							(mediaEl.error? _.invert(MediaError)[mediaEl.error.code] : "not supplied"));
-						err.event = ev;
-						removeEventListeners();
-						reject(err);
-					},
-				};
-				
 				var sources = mediaEl.querySelectorAll("source");
 				var errTarget = sources.length > 0? sources.item(sources.length - 1) : mediaEl;
 				var errCapture = errTarget === mediaEl; // use capture with HTMLMediaElement
@@ -338,7 +241,6 @@ var VideoRenderer = PlayableRenderer.extend({
 						}
 					}
 				};
-				
 				errTarget.addEventListener("error", handlers.error, errCapture);
 				for (var ev in handlers) {
 					if (ev !== "error" && handlers.hasOwnProperty(ev)) {
@@ -352,9 +254,9 @@ var VideoRenderer = PlayableRenderer.extend({
 	
 	findPlayableSource: function(video) {
 		var playable = _.find(this.model.get("srcset"), function(source) {
-			return video.canPlayType(source.mime) != "";
+			return /^video\//.test(source.mime) && video.canPlayType(source.mime) != "";
 		});
-		return playable !== void 0? Globals.MEDIA_DIR + "/" + playable.src : "";
+		return playable === void 0? "" : Globals.MEDIA_DIR + "/" + playable.src;// + "?" + Date.now(): "";
 	},
 	
 	/* ---------------------------
@@ -410,7 +312,8 @@ var VideoRenderer = PlayableRenderer.extend({
 	
 	addMediaListeners: function() {
 		this.video.addEventListener("error", this._onMediaError, true);
-		this.addListener(this.video, "loadeddata progress canplay canplaythrough", this._updateBufferedValue);
+		//loadeddata progress canplay canplaythrough
+		this.addListener(this.video, "progress canplay canplaythrough timeupdate", this._updateBufferedValue);
 		this.addListener(this.video, "playing waiting pause seeking", this._updatePlaybackState);
 		this.addListener(this.video, "timeupdate", this._updatePlayedValue);
 		this.video.addEventListener("playing", this._onMediaPlayingOnce, false);
@@ -423,7 +326,7 @@ var VideoRenderer = PlayableRenderer.extend({
 		this.off("view:removed", this.removeMediaListeners, this);
 		
 		this.video.removeEventListener("error", this._onMediaError, true);
-		this.removeListener(this.video, "loadeddata progress canplay canplaythrough", this._updateBufferedValue);
+		this.removeListener(this.video, "progress canplay canplaythrough timeupdate", this._updateBufferedValue);
 		this.removeListener(this.video, "playing waiting pause seeking", this._updatePlaybackState);
 		this.removeListener(this.video, "timeupdate", this._updatePlayedValue);
 		this.video.removeEventListener("playing", this._onMediaPlayingOnce, false);
@@ -498,14 +401,24 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 		
 	_updateBufferedValue: function(ev) {
-		// var bRanges = this.video.buffered;
-		// if (bRanges.length > 0) {
-		// 	this._bufferedValue = bRanges.end(bRanges.length - 1) / this.video.duration;
-		// }
+		var bRanges = this.video.buffered;
+		if (bRanges.length > 0) {
+			var lastValue = this._bufferedValue || 0;
+			this._bufferedValue = bRanges.end(bRanges.length - 1);
+			if (!this.video.paused && this.progressMeter) {
+				// var dur = Math.max(0, (this._bufferedValue - lastValue) * 1000);
+				// this.progressMeter.valueTo(this._bufferedValue, 200, "available");
+				this.progressMeter.valueTo(this._bufferedValue, 300, "available");
+			}
+		}
 	},
 	
 	_updatePlayedValue: function(ev) {
-		this.progressMeter.valueTo(this.video.currentTime);
+		var lastValue = this._currentTimeValue || 0;
+		this._currentTimeValue = this.video.currentTime;
+		if (this.progressMeter) {
+			this.progressMeter.valueTo(this._currentTimeValue);
+		}
 	},
 	
 	// _updatePlayedValue_timeline: function(ev) {

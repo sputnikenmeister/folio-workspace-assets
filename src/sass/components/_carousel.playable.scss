@@ -124,7 +124,7 @@
 			-webkit-flex: 0 1 auto;
 			-ms-flex: 0 1 auto;
 			flex: 0 1 auto;
-			padding: 0.5rem;
+			padding: 0 0.5rem;
 			align-self: center;
 		}
 	}
@@ -157,6 +157,9 @@
 			top: 0; left: 100%; 
 			width: auto; height: calc(100% + 1rem);
 			margin: -0.5rem 1rem;
+			& > * {
+				padding: 0.5rem 0;
+			}
 		}
 	}
 }
@@ -194,44 +197,29 @@
 	// .progress-meter
 	// - - - - - - - - - - - - - - - - -
 	.progress-meter {
-		width: 2.3rem; height: 2.3rem;
+		font-family: "FolioFigures-Regular", monospace;
+		font-weight: normal;
+		// font-family: "ITCFranklinGothicStd-Compressed", monospace;
+		// font-weight: bold;
+	
+		box-sizing: content-box;
 		// width: 2.1rem; height: 2.1rem;
 		// width: 2.6rem; height: 2.6rem;
-		box-sizing: content-box;
-		// font-family: "NumbersClaimcheck";
-		// font-family: "FolioClaimcheck-Figures";
-		font-family: "FolioFigures-Regular", monospace;
-		font-size: normal;
-		font-weight: normal;
+		// width: 2.3rem; height: 2.3rem;
+		// width: 4rem; height: 4rem;
+		width: 3rem; height: 3rem;
+		// flex-basis: 3rem;
 	}
 	.canvas-progress-meter {
 		overflow: hidden;
-		font-size: 80%;
+		transition: none 0s 0s;
+		// font-size: 80%;
 	}
 	.svg-progress-meter {
-		svg {
-			width: 100%;
-			height: 100%;
-			display: block;
-			// overflow: hidden;
-			// border-radius: 100%;
-		}
-		
 		#label {
-			font-size: 166%;
-			// dominant-baseline: central;
-			// dominant-baseline: alphabetic;
-			// text-anchor: middle;
+			font-size: 140%;
+			// font-size: 155%;
 		}
-		// #value-label {
-		// 	font-size: 100%;
-		// }
-		// #symbol-label {
-		// 	// font-size: 80%;
-		// 	// font-family: "Knockout-HTF29-JuniorLiteweight";
-		// }
-		// #amount, #steps { stroke: currentColor; }
-		// #steps-track {} #steps {} #amount {} #step-label {} #pause-symbol{}
 	}
 	
 	// .progress-meter per-renderer adjustments
@@ -241,7 +229,7 @@
 		// .canvas-progress-meter { font-size: 80%; }
 		// .svg-progress-meter {
 		// 	#label {
-		// 		font-size: 150%;
+		// 		font-size: 140%;
 		// 	}
 		// }
 	}
@@ -256,6 +244,16 @@
 	// 	}
 	// }
 	
+}
+
+.svg-progress-meter {
+	svg {
+		width: 100%;
+		height: 100%;
+		display: block;
+		// overflow: hidden;
+		// border-radius: 100%;
+	}
 }
 
 // -----------------------------------
@@ -309,6 +307,9 @@
 			transition: 
 				// visibility $duration * 2 step-start,
 				opacity $duration * 1.5 $ease $duration * 0.5;
+		}
+		&.error {
+			
 		}
 	}
 	.overlay {

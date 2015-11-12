@@ -1,1 +1,3 @@
-src/js/utils/blur/*.js
+js/**
+node_modules/**
+src/js/utils/blur/**/*.js

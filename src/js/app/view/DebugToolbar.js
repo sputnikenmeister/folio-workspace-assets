@@ -101,7 +101,7 @@ var DebugToolbar = Backbone.View.extend({
 	},
 	
 	_onSelectAnyMedia: function(media) {
-		this.mediaInfoEl.textContent = media? mediaInfoTemplate(media.attributes) : "";
+		this.mediaInfoEl.textContent = media? mediaInfoTemplate(media.toJSON()) : "";
 		this.mediaInfoEl.style.display = media? "" : "none";
 	},
 });

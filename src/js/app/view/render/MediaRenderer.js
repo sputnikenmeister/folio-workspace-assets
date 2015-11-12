@@ -1,3 +1,4 @@
+/*global XMLHttpRequest, HTMLMediaElement, MediaError*/
 /**
  * @module app/view/render/MediaRenderer
  */
@@ -11,6 +12,8 @@ var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 var MediaItem = require("app/model/item/MediaItem");
 /** @type {module:app/view/CarouselRenderer} */
 var CarouselRenderer = require("app/view/render/CarouselRenderer");
+
+var errorTemplate = require("../template/ErrorBlock.hbs");
 
 var MediaRenderer = CarouselRenderer.extend({
 	
@@ -47,47 +50,20 @@ var MediaRenderer = CarouselRenderer.extend({
 		this.metrics.media = {};
 		this.mediaState = "idle";
 		
-		// this._initChain = 
 		this.initializeAsync()
-			// .then(
-			// 	function(view) {
-			// 		console.log("%s::initializeAsync [%s]", view.cid, "resolved");
-			// 		view.mediaState = "ready";
-			// 		view.placeholder.removeAttribute("data-progress");
-			// 	})
 			.then(this.whenInitialized)
-			.catch(
-				function(err) {
-					if (err instanceof CarouselRenderer.ViewError) {
-						// NOTE: ignore ViewError type
-						// console.log(this.cid, err.name, err.message);
-						return;
-					}
-					this.placeholder.innerHTML = "<p class=\"color-fg\" style=\"position:absolute;bottom:0;padding:3rem;\"><strong>" + err.name + "</strong> " + err.message + "</p>";
-					
-					this.mediaState = "error";
-					this.placeholder.removeAttribute("data-progress");
-					
-					console.error("%s::initializeAsync [%s (caught)]: %s", this.cid, err.name, err.message);
-					err.event && console.log(err.event);
-				}.bind(this));
+			.catch(this.whenInitializeError.bind(this));
 	},
 	
 	initializeAsync: function() {
 		// var MediaRenderer = Object.getPrototypeOf(this).constructor;
 		return Promise.resolve(this)
 			.then(MediaRenderer.whenSelectionIsContiguous)
-			// .then(MediaRenderer.whenSelectTransitionEnds)
 			.then(MediaRenderer.whenScrollingEnds)
 			.then(MediaRenderer.whenDefaultImageLoads)
-			// .then(this.whenMediaIsReady)
 		;
 	},
 	
-	// whenMediaIsReady: function(view) {
-	// 	return MediaRenderer.whenDefaultImageLoads(view);
-	// },
-	// 
 	whenInitialized: function(view) {
 		console.log("%s::whenInitialized [%s]", view.cid, "resolved");
 		view.mediaState = "ready";
@@ -95,7 +71,29 @@ var MediaRenderer = CarouselRenderer.extend({
 		return view;
 	},
 	
-	updateMediaProgress: function(id, progress) {
+	whenInitializeError: function(err) {
+		if (err instanceof CarouselRenderer.ViewError) {
+			// NOTE: ignore ViewError type
+			// console.log(this.cid, err.name, err.message);
+			return;
+		}
+		this.renderMediaError(err);
+		this.placeholder.removeAttribute("data-progress");
+		this.mediaState = "error";
+		// this.placeholder.innerHTML = errorTemplate(err);
+		// this.placeholder.removeAttribute("data-progress");
+		// this.mediaState = "error";
+		
+		console.error("%s::initializeAsync [%s (caught)]: %s", this.cid, err.name,
+			(err.info && err.info.logMessage) || err.message);
+		err.logEvent && console.log(err.logEvent);
+	},
+	
+	renderMediaError: function(err) {
+		this.placeholder.innerHTML = err? errorTemplate(err): "";
+	},
+	
+	updateMediaProgress: function(progress, id) {
 		if (_.isNumber(progress)) {
 			this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
 		}

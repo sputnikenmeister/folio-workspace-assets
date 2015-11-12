@@ -1,4 +1,3 @@
-/* global Path2D */
 /**
 * @module app/view/component/progress/ModelProgressMeter
 */
@@ -27,6 +26,7 @@ var ModelProgressMeterProto = {
 	cidPrefix: "progressMeter",
 	/** @type {string} */
 	className: "progress-meter",
+	
 	/** @type {Object} */
 	defaults: {
 		value: 0,
@@ -34,17 +34,21 @@ var ModelProgressMeterProto = {
 	},
 	
 	properties: {
-		lastValue: {
+		value: {
 			get: function() {
-				return this._value;
+				return this._renderData[this.defaultKey]._value;
 			}
 		},
 		renderedValue: {
 			get: function() {
-				return this._renderedValue;
+				return this._renderData[this.defaultKey]._renderedValue;
 			}
 		},
 	},
+	
+	defaultKey: "value",
+	
+	interpolated: ["value"],
 	
 	/* --------------------------- *
 	/* children/layout
@@ -52,30 +56,34 @@ var ModelProgressMeterProto = {
 	
 	/** @override */
 	initialize: function (options) {
-		// ProgressMeter.prototype.initialize.apply(this, arguments);
+		this._renderData = {};
+		this._renderKeys = [];
 		
-		// this.setOptions(_.defaults(options, this.defaults));
 		options = _.defaults(options, this.defaults);
-		
-		// value total
-		this._value = options.value;
 		this._total = options.total;
 		
-		this._startValue = this._value;
-		this._renderedValue = null;
-		this._valueDelta = 0;
-		
-		// value change flag
-		this._valueChanged = true;
-		
-		// private easing state
-		this._duration = 0;
-		this._startTime = -1;
+		var key, value, dataObj;
+		var initValue = function(o, i, a) {
+			return this._initValue(o);
+		};
+		for (var i = 0; i < this.interpolated.length; i++) {
+			key = this.interpolated[i];
+			value = options[key];
+			if (value !== void 0) {
+				this._renderData[key] = Array.isArray(value)? 
+					value.map(initValue, this):
+					this._initValue(value);
+			}
+		}
+		this._renderKeys = this.interpolated.concat(); // render all keys
+		this._valuesChanged = true;
 		this._nextRafId = -1;
 	},
 	
 	remove: function() {
-		this._duration = 0;
+		this._renderKeys.length = 0;
+		// this._renderData = null;
+		// this._duration = 0;
 		if (this._nextRafId !== -1) {
 			this.cancelAnimationFrame(this._nextRafId);
 		}
@@ -86,21 +94,53 @@ var ModelProgressMeterProto = {
 	/* public interface
 	/* --------------------------- */
 	
-	valueTo: function (value, duration) {
-		// console.log("%s::valueTo(%f, %i)", this.cid, value, duration);
-		this._duration = duration || 0;
-		this._setValue(value);
+	valueTo: function (value, duration, key) {
+		key || (key = this.defaultKey);
+		var dataObj = this._renderData[key];
+		var changed = false;
+		
+		if (Array.isArray(dataObj)) {
+			changed = value.reduce(function(prevChanged, itemValue, i) {
+				if (dataObj[i]) {
+					dataObj[i] = this._initValue(itemValue, duration);
+					return true;
+				} else {
+					return this._setValue(itemValue, duration, dataObj[i]) || prevChanged;
+				}
+			}.bind(this), changed);
+		} else {
+			changed = this._setValue(value, duration, dataObj);
+		}
+		if (changed) {
+			this._valuesChanged = true;
+			this._renderKeys.indexOf(key) !== -1 || this._renderKeys.push(key);
+			this.render();
+		}
 	},
 	
-	_setValue: function(value) {
-		var oldValue = this._value;
+	_initValue: function(value, duration) {
+		var o = {};
+		o._value = value;
+		o._startValue = value;
+		o._valueDelta = 0;
+		o._renderedValue = null;
 		
-		this._value = value;
-		this._valueDelta = value - oldValue;
-		this._startValue = oldValue;
-		
-		this._valueChanged = true;
-		this.render();
+		o._duration = duration || 0;
+		o._startTime = -1;
+		o._total = this._total;// FIXME
+		return o;
+	},
+	
+	_setValue: function(value, duration, o) {
+		if (o._value != value) {
+			o._duration = duration || 0;
+			o._startTime = -1;
+			o._startValue = o._value;
+			o._valueDelta = value - o._value;
+			o._value = value;
+			return true;
+		}
+		return false;
 	},
 	
 	/* --------------------------- *
@@ -109,11 +149,9 @@ var ModelProgressMeterProto = {
 	
 	/** @override */
 	render: function () {
-		if (this._valueChanged) {
-			this._valueChanged = false;
-			this._startTime = -1;
-			
-			if (this._nextRafId === -1) {
+		if (!this._rendering && this._valuesChanged) {
+			this._valuesChanged = false;
+		 	if (this._nextRafId === -1) {
 				this._nextRafId = this.requestAnimationFrame(this.renderFrame);
 			}
 		}
@@ -125,36 +163,51 @@ var ModelProgressMeterProto = {
 	/* --------------------------- */
 	
 	renderFrame: function(tstamp) {
-		if (this._startTime < 0) {
-			this._startTime = tstamp;
+		if (this._rendering) {
+			throw new Error("nested renderFrame?");
 		}
-		// var currRafId = this._nextRafId;
-		var currTime = tstamp - this._startTime;
+		this._rendering = true;
 		
-		if (currTime < this._duration) {
-			if (this._valueDelta < 0) {
-				this._renderedValue = linear(currTime, this._startValue,
-					this._valueDelta + this._total, this._duration) - this._total;
+		var changedKeys = this._renderKeys;
+		this._renderKeys = changedKeys.filter(function(key) {
+			var dataObj = this._renderData[key];
+			if (Array.isArray(dataObj)) {
+				return dataObj.reduce(function(continueNext, o) {
+					return this.interpolateNumber(tstamp, o) || continueNext;
+				}.bind(this), false);
 			} else {
-				this._renderedValue = linear(currTime, this._startValue,
-					this._valueDelta, this._duration);
+				return this.interpolateNumber(tstamp, dataObj);
 			}
-			this.redraw(this._renderedValue);
-			this._nextRafId = this.requestAnimationFrame(this.renderFrame);
-			// console.log("%s::update(%f) [RAF: %i] [NEXT: %i] from/to: %f/%f, curr: %f",
-			// 	this.cid, tstamp, currRafId, this._nextRafId,
-			// 	this._startValue, this._value, this._renderedValue);
+		}, this);
+		this.redraw(changedKeys);
+		this._nextRafId = this._renderKeys.length?
+			this.requestAnimationFrame(this.renderFrame) : -1;
+		
+		this._rendering = false;
+	},
+	
+	interpolateNumber: function (tstamp, o) {
+		if (o._startTime < 0) {
+			o._startTime = tstamp;
+		}
+		var elapsed = tstamp - o._startTime;
+		if (elapsed < o._duration) {
+			o._lastRenderedValue = o._renderedValue;
+			if (o._total !== void 0 && o._valueDelta < 0) {
+				o._renderedValue = linear(elapsed, o._startValue,
+					o._valueDelta + o._total, o._duration) - o._total;
+			} else {
+				o._renderedValue = linear(elapsed, o._startValue,
+					o._valueDelta, o._duration);
+			}
+			return true;
 		} else {
-			this._renderedValue = this._value;
-			this.redraw(this._renderedValue);
-			this._nextRafId = -1;
-			// console.log("%s::update(%f) [RAF: %i] [LAST] from/to: %f/%f",
-			// 	this.cid, tstamp, currRafId,
-			// 	this._startValue, this._value );
+			o._renderedValue = o._value;
+			return false;
 		}
 	},
 	
-	redraw: function(value) {
+	redraw: function() {
 	},
 };
 

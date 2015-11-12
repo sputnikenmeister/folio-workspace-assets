@@ -1,6 +1,6 @@
 {
-  "name": "folio-workspace-assets",
-  "version": "0.1.0",
+  "name": "@folio/workspace-assets",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {},
   "devDependencies": {
@@ -24,6 +24,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-exorcise": "^2.1.0",
     "grunt-favicons": "^0.7.0",
+    "grunt-http": "^1.6.0",
     "grunt-svg2png": "^0.2.7",
     "hammerjs": "^2.0.4",
     "handlebars": "^4.0.3",
@@ -33,6 +34,7 @@
     "remapify": "^2.0.3",
     "underscore": "^1.4.4",
     "underscore.string": "^3.2.2",
-    "webcomponents.js": "^0.7.2"
+    "webcomponents.js": "^0.7.2",
+    "webfontloader": "^1.6.10"
   }
 }

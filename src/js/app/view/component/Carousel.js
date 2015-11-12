@@ -471,7 +471,7 @@ var CarouselProto = {
 	_scrolling: false,
 	
 	_setScrolling: function(scrolling) {
-		console.warn("_setScrolling current/requested", this._scrolling, scrolling);
+		// console.warn("_setScrolling current/requested", this._scrolling, scrolling);
 		if (this._scrolling != scrolling) {
 			this._scrolling = scrolling;
 			this.el.classList.toggle("scrolling", scrolling);

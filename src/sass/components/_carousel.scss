@@ -3,7 +3,7 @@
 		display: block;
 		position: absolute;
 		p, span, div {
-			user-select: none !important;
+			@include user-select(none);
 		}
 //		.sizing {
 //			box-sizing: border-box;

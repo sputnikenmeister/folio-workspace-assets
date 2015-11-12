@@ -137,7 +137,7 @@ $nav_collapse_extra: 28rem;
 	padding-left: $hu;
 	padding-right: $hu;
 	&, * {
-		user-select: none !important;
+		@include user-select(none);
 	}
 }
 

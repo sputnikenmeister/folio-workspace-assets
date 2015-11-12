@@ -149,6 +149,14 @@ var AppView = View.extend({
 		document.title = bundle? "Portfolio – " + stripTags(bundle.get("name")): "Portfolio";
 	},
 
+}, {
+	getInstance: function() {
+		// window.app instanceof AppView || (window.app = new AppView());
+		if (!(window.app instanceof AppView)) {
+			window.app = new AppView();
+		}
+		return window.app;
+	}
 });
 
 module.exports = AppView;

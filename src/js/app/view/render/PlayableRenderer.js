@@ -234,14 +234,14 @@ var PlayableRenderer = MediaRenderer.extend({
 			this.mediaState === "ready" &&
 			!this.parentView.scrolling &&
 			document[visibilityStateProp] !== "hidden");
-		console.log("%s::_canResumePlayback():", this.cid, retval, {
-			"enabled": this.enabled,
-			"selected": (!!this.model.selected),
-			"playback requested": this._userPlaybackRequested,
-			"not scrolling": !this.parentView.scrolling,
-			"mediaState": this.mediaState,
-			"doc visibility": document[visibilityStateProp]
-		});
+		// console.log("%s::_canResumePlayback():", this.cid, retval, {
+		// 	"enabled": this.enabled,
+		// 	"selected": (!!this.model.selected),
+		// 	"playback requested": this._userPlaybackRequested,
+		// 	"not scrolling": !this.parentView.scrolling,
+		// 	"mediaState": this.mediaState,
+		// 	"doc visibility": document[visibilityStateProp]
+		// });
 		return retval;
 	},
 	
@@ -266,6 +266,45 @@ var PlayableRenderer = MediaRenderer.extend({
 		// } catch (err) {
 		// 	console.error("%s::updateOverlay", this.cid, err);
 		// }
+	},
+	
+	_drawMediaElement: function(context, mediaEl, destRect) {
+		// destination rect
+		mediaEl || (mediaEl = this.defaultImage);
+		destRect || (destRect = {
+			x:0, y:0,
+			width: this.metrics.media.width,
+			height: this.metrics.media.height
+		});
+			
+		// native/display scale
+		var sW = this.model.get("w"),
+			sH = this.model.get("h"),
+			rsX = sW/this.metrics.media.width,
+			rsY = sH/this.metrics.media.height;
+		
+		// destRect, scaled to native
+		var srcRect = {
+			x: Math.max(0, destRect.x * rsX),
+			y: Math.max(0, destRect.y * rsY),
+			width: Math.min(sW, destRect.width * rsX),
+			height: Math.min(sH, destRect.height * rsY)
+		};
+		
+		// Copy image to canvas
+		// ------------------------------
+		var canvas = context.canvas;
+		if (canvas.width !== destRect.width || canvas.height !== destRect.height) {
+			canvas.width = destRect.width;
+			canvas.height = destRect.height;
+		}
+		context.clearRect(0, 0, destRect.width, destRect.height);
+		context.drawImage(mediaEl, 
+			srcRect.x, srcRect.y, srcRect.width, srcRect.height,
+			0, 0, destRect.width, destRect.height // destination rect
+		);
+		
+		return context;
 	},
 	
 	/*

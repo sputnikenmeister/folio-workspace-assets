@@ -31,7 +31,6 @@ var Timer = require("utils/Timer");
 var transitionEnd = require("utils/event/transitionEnd");
 /** @type {module:utils/prefixedProperty} */
 var prefixed = require("utils/prefixedProperty");
-
 /** @type {Function} */
 var _whenImageLoads = require("app/view/promise/_whenImageLoads");
 /** @type {module:app/view/promise/_loadImageAsObjectURL} */
@@ -40,13 +39,6 @@ var _loadImageAsObjectURL = require("app/view/promise/_loadImageAsObjectURL");
 var whenSelectionDistanceIs = require("app/view/promise/whenSelectionDistanceIs");
 // var whenSelectTransitionEnds = require("app/view/promise/whenSelectTransitionEnds");
 // var whenDefaultImageLoads = require("app/view/promise/whenDefaultImageLoads");
-
-/** @type {Function} */
-var Color = require("color");
-var duotone = require("utils/canvas/bitmap/duotone");
-var stackBlurRGB = require("utils/canvas/bitmap/stackBlurRGB");
-var stackBlurMono = require("utils/canvas/bitmap/stackBlurMono");
-var getAverageRGBA = require("utils/canvas/bitmap/getAverageRGBA");
 
 var errorTemplate = require("../template/ErrorBlock.hbs");
 
@@ -107,7 +99,7 @@ var SequenceStepRenderer = View.extend({
 	
 	_onModelPrefetched: function() {
 		this.el.src = this.model.get("prefetched");
-		console.log("%s::change:prefetched", this.cid, this.model.get("src"));
+		console.log("%s::change:prefetched", this.cid, this.model.get("prefetched"));
 	},
 	
 	_onModelError: function() {
@@ -283,8 +275,41 @@ var SequenceRenderer = PlayableRenderer.extend({
 		
 		// Sequence model
 		// ---------------------------------
+		
+		// var opts = { silent: true };
+		// var srcset = this.model.get("srcset");
+		// var defaultSrc = _.pick(this.model.attributes, ["src"]);
+		// 
+		// this.sources = new SourceCollection();
+		// // if not in srcset, create a model for defaultImage
+		// if (!_.some(srcset, _.matcher(defaultSrc))) {
+		// 	this.sources.add(defaultSrc, opts);
+		// }
+		// this.sources.add(srcset, opts);
+		// this.sources.selectAt(0);// select it
+		
+		// this.sources = this.model.getSources();
 		this.sources = this._createSourceCollection(this.model);
-		whenSelectionDistanceIs(this, 0).then(this._preloadAllSources);
+		this.listenTo(this.sources, {
+			"select:one": function(model) {
+				
+			},
+			"deselect:one": function(model) {
+				
+			}
+		});
+		
+		whenSelectionDistanceIs(this, 0)
+			.then(this._preloadAllSources)
+			.then(function() {
+				console.log("%s::_preloadAllSources resolved", this.cid);
+				// console.log("%s::_preloadAllSources", JSON.stringify(this._mediaProgress));
+			}.bind(this))
+			// .catch(function(err) {
+			// 	console.error("%s::_preloadAllSources rejected", this.cid, JSON.stringify(err));
+			// 	console.log("%s::_preloadAllSources", JSON.stringify(this._mediaProgress));
+			// }.bind(this))
+			;
 		
 		// timer
 		// ---------------------------------
@@ -323,14 +348,16 @@ var SequenceRenderer = PlayableRenderer.extend({
 		
 		// progress-meter
 		// ---------------------------------
-		this._sourceProgressByIdx = this.sources.map(function() { return 0; });
-		this._sourceProgressByIdx[0] = 1; // first item is already loaded
+		// var progressEl;
+		// if (progressEl = this.el.querySelector("canvas.progress-meter")) {
 		this.progressMeter = new ProgressMeter({
+			available: this.sources.length,
 			total: this.sources.length,
-			available: this._sourceProgressByIdx.concat(),
-			color: this.model.attrs()["color"],
-			backgroundColor: this.model.attrs()["background-color"],
-			labelFn: function() { 
+			steps: this.sources.length,
+			// color: this.model.attrs()["color"],
+			// labelFn: function(i, t, s) { return (((i/t)*s) | 0) + 1; },
+			// labelFn: function(i, t, s) { return ((((i/t)*s) | 0) + 1) +"/"+s; },
+			labelFn: function(val) { 
 				return (this.selectedIndex + 1) + "/" + this.length;
 			}.bind(this.sources)
 		});
@@ -338,19 +365,18 @@ var SequenceRenderer = PlayableRenderer.extend({
 	},
 	
 	_createSourceCollection: function(mediaItem) {
-		// var opts = { silent: true };
-		var sources = new SourceCollection(mediaItem.get("srcset"));
-		// var srcset = mediaItem.get("srcset");
-		
-		// var defaultSrc = _.pick(mediaItem.attributes, ["src"]);
-		// // if not in srcset, create a model for defaultImage
-		// if (!_.some(srcset, _.matcher(defaultSrc))) {
-		// 	sources.add(defaultSrc, opts);
-		// }
-		// sources.add(srcset, opts);
-		
-		// bind sources[0].prefetched to this.model.prefetched
-		var defaultModel = sources.at(0);
+		var opts = { silent: true };
+		var srcset = mediaItem.get("srcset");
+		var sources = new SourceCollection();
+		var defaultSrc = _.pick(mediaItem.attributes, ["src"]);
+		var defaultModel;
+		// if not in srcset, create a model for defaultImage
+		if (!_.some(srcset, _.matcher(defaultSrc))) {
+			sources.add(defaultSrc, opts);
+		}
+		sources.add(srcset, opts);
+		// sources[0].prefetched is bound to this.prefetched
+		defaultModel = sources.at(0);
 		if (mediaItem.has("prefetched")) {
 			defaultModel.set("prefetched", mediaItem.get("prefetched"));
 		} else {
@@ -406,6 +432,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		} else {
 			// this.listenToOnce(this.timer, "end", this._onTimerEnd);
 			this.timer.start(this._sequenceInterval);
+			// this._startSequenceStep();
 		}
 		console.log("%s::_play()", this.cid);
 	},
@@ -422,22 +449,27 @@ var SequenceRenderer = PlayableRenderer.extend({
 	},
 	
 	_onTimerEnd: function() {
-		console.log("%s::%_onTimerEnd [%s] idx: %i dur: %ims [%s]", this.cid,
-			this.timer.getStatus(),
-			this.sources.selectedIndex,
-			this.timer.getDuration(),
-			"step ended"
-		);
+		var view = this;
+		var logSeq = function (name, msg) {
+			console.log("%s::%s [%s] idx: %i dur: %ims [%s]", view.cid, name,
+				view.timer.getStatus(),
+				view.sources.selectedIndex,
+				view.timer.getDuration(),
+				msg
+			);
+		};
+		logSeq("_onTimerEnd", "step ended");
 		
-		var nextModel = this.sources.followingOrFirst();
+		var nextModel = view.sources.followingOrFirst();
+		
 		var showNextStep = function() {
-			if (this.paused) {
-				this.playbackState = "user-resume";
+			if (view.paused) {
+				view.playbackState = "user-resume";
 			} else {
-				this.sources.select(nextModel);// NOTE: step increase done here
+				view.sources.select(nextModel);// NOTE: step increase done here
 				// view.updateOverlay(view.itemViews.findByModel(nextModel).el, view.overlay);
-				this.timer.start(this._sequenceInterval);
-				this.playbackState = "media";
+				view.timer.start(view._sequenceInterval);
+				view.playbackState = "media";
 			}
 		};
 		var nextModelHandlers = {
@@ -452,7 +484,15 @@ var SequenceRenderer = PlayableRenderer.extend({
 		} else {
 			this.playbackState = "network";
 			this.listenToOnce(nextModel, nextModelHandlers);
+			// nextModel.once("change:prefetched change:error", showNextStep);
 		}
+		
+		// var nextView = view.itemViews.findByModel(nextModel);
+		// if (!nextView.el.complete || nextView.el.src !== "") {
+		// 	this.playbackState = "network";
+		// }
+		// _whenImageLoads(nextView.el).then(showNextStep);
+		
 	},
 	
 	_onTimerStart: function(duration) {
@@ -460,51 +500,83 @@ var SequenceRenderer = PlayableRenderer.extend({
 	},
 	
 	_onTimerResume: function(duration) {
+		// var delta = this.timer.getDuration() / this._sequenceInterval;
 		this.progressMeter.valueTo(this.sources.selectedIndex + 1, duration);
 	},
 	
 	_onTimerPause: function () {
+		// var delta = this.timer.getDuration() / this._sequenceInterval;
 		this.progressMeter.valueTo(this.progressMeter.renderedValue);
+	},
+	
+	/* --------------------------- *
+	/* sequence promises
+	/* --------------------------- */
+	
+	whenNextImageLoads: function(view) {
+		var nextModel = view.sources.followingOrFirst();
+		var nextView = view.itemViews.findByModel(nextModel);
+		return _whenImageLoads(nextView.el);
+	},
+	
+	whenCurrentTimerEnds: function(view) {
+		return new Promise(function(resolve, reject) {
+			view.timer.once("stop end", function() {
+				resolve(view);
+			});
+		});
+	},
+	
+	whenNextStepIsReady: function(view) {
+		return Promise.all([
+			view.whenNextImageLoads(view),
+			view.whenCurrentTimerEnds(view)
+		]);
 	},
 	
 	/* --------------------------- *
 	/* progress meter
 	/* --------------------------- */
 	
-	_updateSourceItemProgress: function(progress, index) {
-		this._sourceProgressByIdx[index] = progress;
+	_updateAllSourcesProgress: function(progress, sUrl) {
+		this._mediaProgress || (this._mediaProgress = {});
+		this._mediaProgress[sUrl] = progress;
+		
+		var sum = 0;
+		for (var url in this._mediaProgress) {
+			sum += this._mediaProgress[url];
+		}
 		if (this.progressMeter)
-			this.progressMeter.valueTo(this._sourceProgressByIdx, 300, "available");
+			this.progressMeter.valueTo(sum, 300, "available");
 	},
 	
 	_preloadAllSources: function(view) {
-		var defaultSourceDataURL = null;
-		// var pSrc = view.sources.map(function(o, i, a) { return 0; });
 		view.once("view:remove", function(){
-			var opts = { silent: true };
 			view.sources.forEach(function(o, i, a) {
-				var prefetched = o.get("prefetched");
-				if (prefetched && /^blob\:/.test(prefetched)) {
-					o.unset("prefetched", opts);
-					URL.revokeObjectURL(prefetched);
+				if (o.has("prefetched")) {
+					URL.revokeObjectURL(o.get("prefetched"));
 				}
 			});
 		});
-		return view.sources.reduce(function(p, o, i, a) {
+		return view.sources.reduce(function(p, o) {
+			// return new Promise(function(resolve, reject) { });
 			return p.then(function(view) {
 				var sUrl = Globals.MEDIA_DIR + "/" + o.get("src");
 				if (o.has("prefetched")) {
-					view._updateSourceItemProgress(1, i);
+					// console.log("%s::_preloadAllSources resolve-sync %s -> %s", view.cid, sUrl, o.get("prefetched"));
+					view._updateAllSourcesProgress(1, sUrl);
 					return view;
 				} else {
 					return _loadImageAsObjectURL(sUrl, function(progress) {
-						view._updateSourceItemProgress(progress, i);
+						view._updateAllSourcesProgress(progress, sUrl);
 					}).then(function(pUrl) {
-						view._updateSourceItemProgress(1, i);
+						// console.log("%s::_preloadAllSources resolve-async %s -> %s", view.cid, sUrl, pUrl);
+						view._updateAllSourcesProgress(1, sUrl);
 						o.set("prefetched", pUrl);
 						return view;
 					}, function(err) {
-						view._updateSourceItemProgress(0, i);
+						// console.warn("%s::_preloadAllSources reject-async %s ERR: %s", view.cid, sUrl, err.message);
+						view._updateAllSourcesProgress(1, sUrl);
 						o.set("error", err);
 						return view;
 					});
@@ -512,82 +584,40 @@ var SequenceRenderer = PlayableRenderer.extend({
 			});
 		}, Promise.resolve(view));
 	},
-	
-	_createDefaultSourceData: function() {
-		var canvas = document.createElement("canvas");
-		var context = canvas.getContext("2d");
-		var imageData = this._drawMediaElement(context).getImageData(0, 0, canvas.width, canvas.height);
-		
-		var opts = { radius: 20 };
-		var fgColor = new Color(this.model.attrs()["color"]);
-		var bgColor = new Color(this.model.attrs()["background-color"]);
-		var isFgDark = fgColor.luminosity() < bgColor.luminosity();
-		opts.x00 = isFgDark? fgColor.clone().lighten(0.33) : bgColor.clone().darken(0.33);
-		opts.xFF = isFgDark? bgColor.clone().lighten(0.33) : fgColor.clone().darken(0.33);
-		
-		stackBlurMono(imageData, opts);
-		duotone(imageData, opts);
-		// stackBlurRGB(imageData, opts);
-		
-		context.putImageData(imageData, 0, 0);
-		return canvas.toDataURL();
-	},
 });
 
 if (DEBUG) {
-SequenceRenderer = (function(SequenceRenderer) {
-	/** @type {module:underscore.strings/lpad} */
-	var lpad = require("underscore.string/lpad");
 	
+SequenceRenderer = (function(SequenceRenderer) {
 	return SequenceRenderer.extend({
 		__logTimerEvent: function(evname, msg) {
 			var logMsg = [
-				"idx:", lpad(this.sources.selectedIndex, 2),
-				"dur:", lpad(this.timer.getDuration(), 4),
-				"timer:", this.timer.getStatus()
+				"status:", this.timer.getStatus(),
+				"idx:", this.sources.selectedIndex,
+				"dur:", this.timer.getDuration()
 			];
 			msg && logMsg.push(msg);
 			this.__logMessage(logMsg.join(" "), evname);
 		},
-		_play: function() {
-			this.__logTimerEvent("playback");
-			SequenceRenderer.prototype._play.apply(this, arguments);
-		},
-		_pause: function() {
-			this.__logTimerEvent("playback");
-			SequenceRenderer.prototype._pause.apply(this, arguments);
-		},
-		
 		_onTimerStart: function() {
-			this.__logTimerEvent("timer:start");
+		this.__logTimerEvent("timer:start");
 			SequenceRenderer.prototype._onTimerStart.apply(this, arguments);
 		},
 		_onTimerResume: function() {
-			this.__logTimerEvent("timer:resume");
+		this.__logTimerEvent("timer:resume");
 			SequenceRenderer.prototype._onTimerStart.apply(this, arguments);
 		},
 		_onTimerPause: function() {
-			this.__logTimerEvent("timer:pause");
+		this.__logTimerEvent("timer:pause");
 			SequenceRenderer.prototype._onTimerPause.apply(this, arguments);
 		},
 		_onTimerEnd: function() {
-			this.__logTimerEvent("timer:end");
+		this.__logTimerEvent("timer:end");
 			SequenceRenderer.prototype._onTimerEnd.apply(this, arguments);
-		},
-		
-		_updateSourceItemProgress: function(progress, srcIdx) {
-			if (progress == 1) {
-				this.__logMessage("idx:" + srcIdx + " progress:" + progress, "load:progress");
-			}
-			SequenceRenderer.prototype._updateSourceItemProgress.apply(this, arguments);
-		},
-		
-		_preloadAllSources: function(view) {
-			view.__logMessage(view.cid + "::_preloadAllSources", "load:start");
-			SequenceRenderer.prototype._preloadAllSources.apply(view, arguments);
 		},
 	});
 })(SequenceRenderer);
+
 }
 
 module.exports = SequenceRenderer;

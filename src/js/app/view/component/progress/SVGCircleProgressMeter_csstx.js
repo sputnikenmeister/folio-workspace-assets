@@ -34,13 +34,13 @@ var SVGCircleProgressMeter = View.extend({
 		this._total = options.total || 1;
 		
 		this._transitionStartTime = -1;
-		this._valueChanged = true;
+		this._valuesChanged = true;
 		
 		this.createChildren();
 	},
 	
 	valueTo: function (value, duration) {
-		this._valueChanged = true;
+		this._valuesChanged = true;
 		
 		this._transitionDuration = duration || 0;
 		this._lastValue = this._value;
@@ -50,7 +50,7 @@ var SVGCircleProgressMeter = View.extend({
 	},
 	
 	render: function () {
-		if (this._valueChanged) {
+		if (this._valuesChanged) {
 			// log.call(this, this._transitionStartTime > 0? "interrupt" : "render");
 			var tx;
 			if (this._transitionDuration > 0) {

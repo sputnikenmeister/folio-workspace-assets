@@ -182,7 +182,7 @@ $darkolivegreen:	darkolivegreen;
 	flex-direction: row;
 	align-items: center;
 	&, * {
-		user-select: none !important;
+		@include user-select(none);
 	}
 	& > * {
 		-webkit-flex: 0 1 auto;

@@ -29,10 +29,10 @@ var Carousel = require("app/view/component/Carousel");
 var CarouselRenderer = require("app/view/render/CarouselRenderer");
 /** @type {module:app/view/render/ImageRenderer} */
 var ImageRenderer = require("app/view/render/ImageRenderer");
-/** @type {module:app/view/render/SequenceRenderer} */
-var SequenceRenderer = require("app/view/render/SequenceRenderer");
 /** @type {module:app/view/render/VideoRenderer} */
 var VideoRenderer = require("app/view/render/VideoRenderer");
+/** @type {module:app/view/render/SequenceRenderer} */
+var SequenceRenderer = require("app/view/render/SequenceRenderer");
 
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.hbs");

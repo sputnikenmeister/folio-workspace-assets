@@ -110,15 +110,20 @@ var ViewProto = {
 				return this._cid || (this._cid = this.cidPrefix + _cidSeed++);
 			}
 		},
-		inDomTree: {
-			get: function() {
-				console.warn("[deprecated] %s::inDomTree", this.cid);
-				return this._domPhase === "added";
-			}
-		},
+		// inDomTree: {
+		// 	get: function() {
+		// 		console.warn("[deprecated] %s::inDomTree", this.cid);
+		// 		return this._domPhase === "added";
+		// 	}
+		// },
 		enabled: {
 			get: function() {
 				return this._enabled;
+			}
+		},
+		domPhase: {
+			get: function() {
+				return this._domPhase;
 			}
 		}
 	},
@@ -186,8 +191,11 @@ var ViewProto = {
 		this._domPhase = "added";
 		this._addToParentView();
 		
-		if (this._viewPhase = "initialized") {
+		if (this._viewPhase === "initialized") {
 			this.trigger("view:added", this);
+		} else if (this._viewPhase === "replacing") {
+			this.trigger("view:replaced", this);
+			this._viewPhase === "initialized";
 		}
 	},
 	
@@ -218,24 +226,36 @@ var ViewProto = {
 	
 	/** @override */
 	setElement: function(element, delegate) {
-		// If an element was supplied, merge classes specified
-		// by this view with the ones already in DOM:
-		// setElement always initializes this.el,
-		// so this.el has to be checked before calling super
-		if (this.el && this.className) {
+		// setElement always initializes this.el, so check it to be non-null before calling super
+		if (this.el) {
+			if (this.el !== element && this.el.parentElement) {
+				// If element is being replaced, set _viewPhase = "replacing"
+				if (this._domPhase === "added") {
+					this._viewPhase = "replacing";
+				}
+				this.el.parentElement.replaceChild(element, this.el);
+				// var currPhase = this._viewPhase;
+				// this._viewPhase = "replacing";
+				// this.el.parentElement.replaceChild(element, this.el);
+				// this._viewPhase = currPhase;
+			}
 			Backbone.View.prototype.setElement.apply(this, arguments);
-			_.result(this, "className").split(" ").forEach(function (item) {
-				this.el.classList.add(item);
-			}, this);
+			// Merge classes specified by this view with the ones already in the element,
+			// as backbone will not:
+			if (this.className) {
+				_.result(this, "className").split(" ").forEach(function (item) {
+					this.el.classList.add(item);
+				}, this);
+			}
 		} else {
 			Backbone.View.prototype.setElement.apply(this, arguments);
 		}
+		
 		if (this.el === void 0) {
 			throw new Error("Backbone view has no element");
 		}
 		_viewsByCid[this.cid] = this;
 		this.el.cid = this.cid;
-		// this.el._view = this;
 		this.el.setAttribute("data-cid", this.cid);
 		
 		return this;

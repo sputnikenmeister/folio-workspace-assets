@@ -10,14 +10,14 @@ var _ = require("underscore");
 var Globals = require("app/control/Globals");
 /** @type {module:utils/svg/arcData} */
 var arcData = require("utils/svg/arcData");
-/** @type {module:app/view/component/progress/AbstractProgressMeter} */
-var AbstractProgressMeter = require("app/view/component/progress/AbstractProgressMeter");
+/** @type {module:app/view/component/progress/ModelProgressMeter} */
+var ModelProgressMeter = require("app/view/component/progress/ModelProgressMeter");
 
 /**
 * @constructor
 * @type {module:app/view/component/progress/SVGPathProgressMeter}
 */
-var SVGPathProgressMeter = AbstractProgressMeter.extend({
+var SVGPathProgressMeter = ModelProgressMeter.extend({
 	
 	cidPrefix: "svgProgressMeter",
 	/** @type {string} */
@@ -27,15 +27,18 @@ var SVGPathProgressMeter = AbstractProgressMeter.extend({
 	
 	/** @override */
 	defaults: {
-		value: 0,
+		amount: 0,
+		available: 0,
 		total: 1,
-		steps: 1,
+		// steps: 1,
 		gap: Math.PI/16,
 		// gap: 8 * (Math.PI/180), // x deg in radians
 		labelFn: function(value, total, steps) {
 			return ((value/total) * 100) | 0;
 		},
 	},
+	defaultKey: "amount",
+	interpolated: ["amount", "available"],
 	
 	/* --------------------------- *
 	/* children/layout
@@ -43,109 +46,140 @@ var SVGPathProgressMeter = AbstractProgressMeter.extend({
 	
 	/** @override */
 	initialize: function (options) {
-		AbstractProgressMeter.prototype.initialize.apply(this, arguments);
+		// !Array.isArray(options.available) && (options.available = [options.available]);
+		ModelProgressMeter.prototype.initialize.apply(this, arguments);
 		
 		// steps
-		this._steps = options.steps;
-		this._arcGap = options.gap;
-		this._arcStep = (1 / this._steps) * Math.PI * 2;
+		// var val = this._renderData["available"]._value;
+		// this._steps = Array.isArray(val)? val.length: 0;
+		// this._steps = options.steps;
 		
+		this._gapArc = options.gap;
 		this._labelFn = options.labelFn;
-		this._arcOffset = 0;//Math.PI * 1.5;
 		
 		this.createChildren();
 	},
 	
-	redraw: function(value) {
-		var m, labelStr = this._labelFn(this._renderedValue, this._total, this._steps);
-		if (this._labelStr != labelStr) {
-			// if (m = /^(\d+)([hms])$/.exec(labelStr)) {
-			// 	this.valueLabel.textContent = m[1];
-			// 	this.symbolLabel.textContent = m[2];
-			// } else {
-				this.valueLabel.textContent = labelStr;
-			// }
-			this._labelStr = labelStr;
+	createChildren: function() {
+		var p; // reuse this var for shapeData objects
+		var maxRadius = 48; // svg viewbox diameter
+		var startArc = (this._gapArc - Math.PI)/2; // start angle (half-gap)
+		var totalArc = Math.PI*2 - (this._gapArc); // arc span angle
+		
+		this._shapeData = {
+			total:			{ strokeWidth: 2.50, offset: 4.00 },
+			// available:		{ strokeWidth: 3.50, offset: 5.00 },
+			steps:			{ strokeWidth: 6.00, offset: 4.00 },
+			amountClear:	{ strokeWidth: 6.00, offset: 4.00 },
+			amount:			{ strokeWidth: 1.00, offset: 4.00 },
+		};
+		for (var key in this._shapeData) {
+			p = this._shapeData[key];
+			p.radius = maxRadius * 0.5 - p.offset;
+			p.spanArc = totalArc;
+			p.spanLength = p.spanArc * p.radius;
+			p.pathData = arcData([], startArc, p.spanArc, p.radius, void 0, 0, 0).join(" ");
 		}
-		this.amountShape.style.strokeDashoffset = 
-			(1 - (this._renderedValue/this._total)) * (this._params.c);
+		this._shapeData.viewSize = maxRadius;
+		
+		// available
+		// --------------------------------
+		var stepsNum = this._renderData["available"].length || 1;
+		var stepBaseArc = (1 / stepsNum) * Math.PI*2; // step angle span (no gap)
+		var stepStartArc = startArc; // step start initial value (90deg CCW + half-gap CW)
+		
+		p = this._shapeData["available"] = { strokeWidth: 3.50, offset: 5.00 };
+		p.radius = maxRadius * 0.5 - p.offset;
+		p.spanArc = stepBaseArc - this._gapArc; // step angle span (minus gap)
+		p.spanLength = p.spanArc * p.radius;
+		p.pathData = [];
+		for (var i = 0; i < stepsNum; i++) {
+			p.pathData[i] = arcData([], stepStartArc, p.spanArc, p.radius, void 0, 0, 0).join(" ");
+			stepStartArc += stepBaseArc;
+		}
+		
+		this.el.innerHTML = this.template(this._shapeData);
+		this.labelShape = this.el.querySelector("#label");
+		
+		p = this._shapeData["steps"];
+		p.shape = this.el.querySelector("#steps");
+		p.shape.style.strokeDashoffset = p.radius * this._gapArc;
+		p.shape.style.strokeDasharray = [
+			p.radius * this._gapArc,
+			p.radius * (stepBaseArc - this._gapArc)
+		];
+		// p.shape.style.strokeOpacity = 0.5;
+		// p.shape.style.stroke = "#0000cc";
+		// p.shape.style.strokeWidth = 10;
+		
+		p = this._shapeData["available"];
+		p.shape = this.el.querySelector("#available");
+		p.shape.style.strokeDashoffset = 0;
+		p.shape.style.strokeDasharray = [ p.spanLength, p.spanLength ];
+		// p.shape.style.strokeOpacity = 0.3;
+		// p.shape.style.stroke = "#cc0000";
+		// p.shape.style.strokeWidth = 10;
+		
+		p = this._shapeData["amountClear"];
+		p.shape = this.el.querySelector("#amountClear");
+		// p.shape.style.strokeDashoffset = p.radius * (p.spanArc + this._gapArc * 0.5);
+		// p.shape.style.strokeDashoffset = p.radius * p.spanArc;
+		p.shape.style.strokeDashoffset = p.spanLength;
+		p.shape.style.strokeDasharray = [
+			p.radius * (p.spanArc - this._gapArc * 0.5),
+			p.radius * (p.spanArc + this._gapArc * 0.5)
+		];
+		p.shape.style.strokeLinecap = "square";
+		// p.shape.style.stroke = "#6666FF";
+		// p.shape.style.strokeOpacity = 0.75;
+		
+		p = this._shapeData["amount"];
+		p.shape = this.el.querySelector("#amount");
+		p.shape.style.strokeDashoffset = p.spanLength;
+		p.shape.style.strokeDasharray = [ p.spanLength, p.spanLength ];
+		// p.shape.style.stroke = "#999999";
+		// p.shape.style.strokeOpacity = 0.8;
+		// p.shape.style.strokeWidth = 10;
+	},
+	
+	redraw: function() {
+		var o, p, pChild, val;
+		
+		// update "available"
+		o = this._renderData["available"];
+		p = this._shapeData["available"];
+		if (Array.isArray(o)) {
+			for (var i = 0, ii = o.length; i < ii; i++) {
+				pChild = p.shape.children[i];
+				pChild.style.strokeDashoffset =
+					-(o[i]._renderedValue/(o[i]._total/ii)) * p.spanLength;
+					// (1 - (o._renderedValue[i]/o._total)) * (p.spanArc*p.radius);
+				// console.log("%s::redraw available[%i]: %f/%f (value/rendered)", this.cid, i, o._value[i], o._renderedValue[i]);
+			}
+		} else {
+			pChild = p.shape.children[0];
+			pChild.style.strokeDashoffset =
+				-(o._renderedValue/o._total) * p.spanLength;
+				// (1 - (o._renderedValue/o._total)) * (p.spanArc*p.radius);
+		}
+		
+		// update "amount"
+		o = this._renderData["amount"];
+		val = 1 - (o._renderedValue/o._total);
+		p = this._shapeData["amountClear"];
+		p.shape.style.strokeDashoffset = (val * p.spanLength) - (p.radius * this._gapArc * 0.5);
+		p = this._shapeData["amount"];
+		p.shape.style.strokeDashoffset = val * p.spanLength;
+			
+		// update label usign "amount" value
+		// TODO: generalize passing values to fn
+		val = this._labelFn(o._renderedValue, o._total, this._steps);
+		if (this._renderedLabel != val) {
+			this._renderedLabel = val;
+			this.labelShape.textContent = val;
+		}
 		return this;
 	},
-	
-	createChildren: function() {
-		var p = { d: 48, s1: 1.5, s2: 0.75, p1: "", p2: "" };
-		var total = this._total;
-		
-		var r1 = (p.d - p.s1)/2 - 0.51, // amount radius
-			r2 = (p.d - p.s2)/2 - 0.55; // steps radius
-			
-		var sa = this._arcGap;
-		// var sa = Math.PI/16; // step gap angle in radians: 1/20 circumference
-		var sw1 = sa * r1, // step gap width in px
-			sw2 = sa * r2; // step gap width in px
-		
-		var a1 = (sa - Math.PI)/2, // start angle
-			a2 = Math.PI*2 - sa; // arc span angle
-		p.p1 = arcData([], a1, a2, r1, void 0, 0, 0).join(" ");
-		p.p2 = arcData([], a1, a2, r2, void 0, 0, 0).join(" ");
-		// p.c = (Math.PI*2 - sa) * (p.r);
-		
-		// keep template params
-		this._params = p;
-		
-		this.el.innerHTML = this.template(p);
-		
-		this.valueLabel = this.el.querySelector("#label");
-		
-		this.amountShape = this.el.querySelector("#amount");
-		this.stepsShape = this.el.querySelector("#steps");
-		
-		var s; // style
-		s = this.stepsShape.style;
-		// s.strokeOpacity = 0.5;
-		
-		s.strokeDasharray = [(this._arcStep * r2) - sw2, sw2];
-		// s.strokeDasharray = [((r2 * Math.PI*2) / total) - sw2, sw2];
-		
-		// this.stepsShape.style.strokeDasharray = [p.sw2, (p.c / total) - p.sw2];
-		// this.stepsShape.style.strokeDashoffset = p.sw2;
-		
-		p.c = this.amountShape.getTotalLength() + sw1;
-		s = this.amountShape.style;
-		s.strokeDasharray = [p.c - sw1, p.c + sw1];
-		// s.strokeDasharray = [p.c, p.c];
-		s.strokeDashoffset = p.c;
-	},
-	
-	// /**
-	// * @param {Number} a1 start radians
-	// * @param {Number} a2 end radians
-	// * @param {Number} r1 radius pixels
-	// * @param {Number} r2 radius pixels
-	// * @return {String} SVG path data
-	// */
-	// _arcPathData: function(a1, a2, r1, r2) {
-	// 	var d = [];
-	// 	
-	// 	a2 = Math.min(a2, (Math.PI*2) - 0.0001);
-	// 	a2 += a1;
-	// 	
-	// 	var x1 = Math.cos(a1),
-	// 		y1 = Math.sin(a1),
-	// 		x2 = Math.cos(a2),
-	// 		y2 = Math.sin(a2),
-	// 		f1 = Math.abs(a1 - a2) > Math.PI,
-	// 		f2 = a1 < a2;
-	// 	
-	// 	d.push("M", x1*r1, y1*r1, "A", r1, r1, 0, f1|0, f2|0, x2*r1, y2*r1);
-	// 	if (r2) {
-	// 		// var r3 = Math.abs(r1 - r2);
-	// 		// d.push("A", r3, r3, 0, 1, 0, x2*r2, y2*r2);
-	// 		d.push("L", x2*r2, y2*r2);
-	// 		d.push("A", r2, r2, 0, f1|0, (!f2)|0, x1*r2, y1*r2, "Z");
-	// 	}
-	// 	return d.join(" ");
-	// },
 });
 
 module.exports = SVGPathProgressMeter;

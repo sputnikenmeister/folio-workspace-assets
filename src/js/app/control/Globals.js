@@ -60,17 +60,22 @@ module.exports = (function () {
 			"ascent": 686,
 			"descent": -314
 		},
-		"FolioClaimcheck-Figures": {
+		"FolioFigures-Regular": {
 			"unitsPerEm": 1024,
 			"ascent": 939,
 			"descent": -256
 		},
+		// "FolioClaimcheck-Figures": {
+		// 	"unitsPerEm": 1024,
+		// 	"ascent": 939,
+		// 	"descent": -256
+		// },
 	};
 	
-	o = g.FONT_METRICS["FolioClaimcheck-Figures"];
-	g.FONT_METRICS["Numbers"] = o;
-	g.FONT_METRICS["NumbersClaimcheck"] = o;
-	g.FONT_METRICS["NumbersGreenback"] = o;
+	// o = g.FONT_METRICS["FolioClaimcheck-Figures"];
+	// g.FONT_METRICS["Numbers"] = o;
+	// g.FONT_METRICS["NumbersClaimcheck"] = o;
+	// g.FONT_METRICS["NumbersGreenback"] = o;
 	// g.FONT_METRICS["NumbersIndicia"] = o;
 	// g.FONT_METRICS["NumbersPremium"] = o;
 	// g.FONT_METRICS["NumbersRedbird"] = o;

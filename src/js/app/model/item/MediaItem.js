@@ -13,6 +13,19 @@ var parseSymAttrs = require("app/model/parseSymAttrs");
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
 
+/** @type {module:app/model/SelectableCollection} */
+var SelectableCollection = require("app/model/SelectableCollection");
+/** @type {module:app/model/item/SourceItem} */
+var SourceItem = require("app/model/item/SourceItem");
+
+/**
+* @constructor
+* @type {module:app/model/item/MediaItem.SourceCollection}
+*/
+var SourceCollection = SelectableCollection.extend({
+	model: SourceItem
+});
+
 /**
  * @constructor
  * @type {module:app/model/item/MediaItem}
@@ -25,8 +38,9 @@ module.exports = Backbone.Model.extend({
 			o: 0,
 			bId: -1,
 			desc: "<p><em>Untitled</em></p>",
-			src: "", w: 0, h: 0,
-			srcset: [],
+			// src: "", w: 0, h: 0,
+			srcIdx: 0,
+			srcset: function() { return [{ src: "", mime: "", w: 0, h: 0 }]; },
 			attrs: {},
 		};
 	},
@@ -46,9 +60,8 @@ module.exports = Backbone.Model.extend({
 		},
 		attrs: {
 			set: function (key, value, options, set) {
-				if (_.isArray(value)) {
-					var attrs = {};
-					_.each(value, function (attr) {
+				if (Array.isArray(value)) {
+					value = value.reduce(function(attrs, attr, attrIdx) {
 						if (_.isString(attr)) {
 							var idx = attr.indexOf(":");
 							if (idx > 0) {
@@ -57,17 +70,17 @@ module.exports = Backbone.Model.extend({
 								attrs[attr] = attr; // to match HTML5<>XHTML valueless attributes
 							}
 						} else {
-							console.warn("MediaItem.attrs.item", "value set is not a String", (typeof value), value);
+							console.warn("%s::attrs[%i] value not a string", this.cid, attrIdx, value);
 						}
-					});
-					value = attrs;
+						return attrs;
+					}, {});
 				}
 				if (_.isObject(value)) {
 					_.extend(this.attrs(), value);
 				} else {
-					console.warn("MediaItem.attrs", "value set is not an Object or parseable Array", (typeof value), value);
+					console.warn("%s::attrs value not an object or string array", this.cid, value);
 					value = {};//void 0;
-				} 
+				}
 				set(key, value, options);
 			}
 		},
@@ -78,10 +91,29 @@ module.exports = Backbone.Model.extend({
 			},
 			transient: true
 		},
+		srcset: {
+			set: function (key, value, options, set) {
+				if (Array.isArray(value)) {
+					for (var i = 0; i < value.length; i++) {
+						value[i]["src"] += "?" + Date.now();
+					}
+				}
+				set(key, value, options);
+			}
+		},
+		src: function() { 
+			return this._getDefaultSource()["src"] || "";
+		},
+		w: function() { 
+			return this._getDefaultSource()["w"] || 0;
+		},
+		h: function() { 
+			return this._getDefaultSource()["h"] || 0;
+		},
 	},
 	
 	initialize: function() {
-		var src = this.get("src");
+		var src = this._getDefaultSource()["src"];
 		this._imageUrl = Globals.IMAGE_URL_TEMPLATES["original"]({ src: src });
 		this._thumbUrl = Globals.IMAGE_URL_TEMPLATES["constrain-width"]({ src: src, width: 60 });
 		// _.defaults(_.extend(this.attrs(), this.get("attrs")), this.get("bundle").get("attrs"));
@@ -91,13 +123,48 @@ module.exports = Backbone.Model.extend({
 		return this._attrs || (this._attrs = {});
 	},
 	
-	getImageUrl: function() {
-		return this._imageUrl;
+	_getDefaultSource: function () {
+		if (this._defaultSource === void 0) {
+			this._defaultSource = this.get("srcset")[this.get("srcIdx")];
+		}
+		return this._defaultSource;
 	},
 	
-	getThumbUrl: function() {
-		return this._thumbUrl;
-	},
+	// getSources: function() {
+	// 	var opts = { silent: true };
+	// 	var srcset = this.get("srcset");
+	// 	var sources = new SourceCollection();
+	// 	var defaultSrc = _.pick(this.attributes, ["src"]);
+	// 	var defaultModel;
+	// 	
+	// 	// if not in srcset, create a model for defaultImage
+	// 	if (!_.some(srcset, _.matcher(defaultSrc))) {
+	// 		sources.add(defaultSrc, opts);
+	// 	}
+	// 	sources.add(srcset, opts);
+	// 	
+	// 	// sources[0].prefetched is bound to this.prefetched
+	// 	defaultModel = sources.at(0);
+	// 	if (this.has("prefetched")) {
+	// 		defaultModel.set("prefetched", this.get("prefetched"));
+	// 	} else {
+	// 		this.once("change:prefetched", function() {
+	// 			defaultModel.set("prefetched", this.get("prefetched"));
+	// 		}, this);
+	// 	}
+	// 	// select it
+	// 	sources.select(defaultModel);
+	// 	// return collection
+	// 	return sources;
+	// },
+	
+	// getImageUrl: function() {
+	// 	return this._imageUrl;
+	// },
+	// 
+	// getThumbUrl: function() {
+	// 	return this._thumbUrl;
+	// },
 	
 	/** @override */
 	toString: function() {

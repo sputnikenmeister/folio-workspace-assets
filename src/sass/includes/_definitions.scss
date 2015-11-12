@@ -66,7 +66,7 @@ $modern_fallback: "georgia", sans-serif;
 // - - - - - - - - - - - - - - - - - -
 // Webfonts included at compile-time
 $font_webfont_sans: "Franklin Gothic FS", $grotesque_fallback;
-$font_webfont_serif: "Old Standard TT", $modern_fallback;
+// $font_webfont_serif: "Old Standard TT", $modern_fallback;
 
 // - - - - - - - - - - - - - - - - - -
 // Typefaces: public
@@ -173,12 +173,14 @@ $base_font: $font_webfont_sans;
 }
 
 // ------------------------------------
-// transitions
-// ------------------------------------
-
-// ------------------------------------
 // misc
 // ------------------------------------
+
+@mixin user-select($value) {
+	-webkit-user-select: $value;
+	-moz-user-select: $value;
+	-ms-user-select: $value;
+}
 
 @mixin image-optimize-contrast {
 	image-rendering: optimizeSpeed;             /*   */

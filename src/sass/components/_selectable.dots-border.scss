@@ -1,7 +1,7 @@
 .dots-border.selectable .list-item,
 .dots-border.list-item {
+	@include user-select(none);
 	cursor: pointer;
-	user-select: none;
 	display: inline-block;
 	text-align: center;
 	margin-right: 0.5rem;

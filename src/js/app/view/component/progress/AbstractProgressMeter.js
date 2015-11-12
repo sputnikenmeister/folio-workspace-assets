@@ -27,12 +27,14 @@ var AbstractProgressMeterProto = {
 	cidPrefix: "progressMeter",
 	/** @type {string} */
 	className: "progress-meter",
+	
 	/** @type {Object} */
 	defaults: {
 		value: 0,
 		total: 1,
 	},
 	
+	/** @type {Object} */
 	properties: {
 		value: {
 			get: function() {
@@ -63,7 +65,7 @@ var AbstractProgressMeterProto = {
 		this._valueDelta = 0;
 		
 		// value change flag
-		this._valueChanged = true;
+		this._valuesChanged = true;
 		
 		// private easing state
 		this._duration = 0;
@@ -83,10 +85,12 @@ var AbstractProgressMeterProto = {
 	/* public interface
 	/* --------------------------- */
 	
-	valueTo: function (value, duration) {
-		// console.log("%s::valueTo(%f, %i)", this.cid, value, duration);
-		this._duration = duration || 0;
-		this._setValue(value);
+	valueTo: function (value, duration, key) {
+		if (key === void 0) {
+			// console.log("%s::valueTo(%f, %i)", this.cid, value, duration);
+			this._duration = duration || 0;
+			this._setValue(value);
+		}
 	},
 	
 	_setValue: function(value) {
@@ -96,7 +100,7 @@ var AbstractProgressMeterProto = {
 		this._valueDelta = value - oldValue;
 		this._startValue = oldValue;
 		
-		this._valueChanged = true;
+		this._valuesChanged = true;
 		this.render();
 	},
 	
@@ -106,8 +110,8 @@ var AbstractProgressMeterProto = {
 	
 	/** @override */
 	render: function () {
-		if (this._valueChanged) {
-			this._valueChanged = false;
+		if (this._valuesChanged) {
+			this._valuesChanged = false;
 			this._startTime = -1;
 			
 			if (this._nextRafId === -1) {
@@ -156,3 +160,47 @@ var AbstractProgressMeterProto = {
 };
 
 module.exports = View.extend(AbstractProgressMeterProto, AbstractProgressMeter);
+
+/*
+var lpad = require("underscore.string/lpad");
+var formatTimecode = function (value, total) {
+	return new Date((isNaN(value)? 0 : value) * 1000).toISOString().substr(14, 5);
+};
+var formatTimecodeLeft = function (value, total) {
+	return formatTimecode(Math.max(0, total - value));
+};
+var formatTimeShortUnit = function(value, total) {
+	value = isNaN(value)? total : total - value;
+	if (value > 3600)
+		return ((value / 3600) | 0) + "h";
+	if (value > 60)
+		return ((value / 60) | 0) + "m";
+	return (value | 0) + "s";
+};
+var formatTimeShortUnitless = function(value, total) {
+	value = isNaN(value)? total : total - value;
+	if (value > 3600)
+		return ((value / 3600) | 0);
+	if (value > 60)
+		return ((value / 60) | 0);
+	return (value | 0);
+};
+var formatTimeShortPadded = function(value,total) {
+	value = isNaN(value)? total : total - value;
+	if (value > 3600) value /= 3600;
+	else if (value > 60) value /= 60;
+	return lpad(value | 0, 2, "0");
+};
+var formatTimeShortUnitPadded = function(value,total) {
+	var unit;
+	value = isNaN(value)? total : total - value;
+	if (value > 3600) {
+		value /= 3600; unit = "h";
+	} else if (value > 60) {
+		value /= 60; unit = "m";
+	} else {
+		unit = "s";
+	}
+	return lpad(value | 0, 2, "0") + unit;
+};
+*/

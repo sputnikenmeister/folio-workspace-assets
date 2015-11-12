@@ -1,5 +1,7 @@
 /*global XMLHttpRequest */
 var _ = require("underscore");
+/** @type {module:underscore.string/lpad} */
+var classify = require("underscore.string/classify");
 
 var statusMsg = _.template("<%= status %> received from <%= url %> (<%= statusText %>)");
 var errMsg = _.template("'<%= errName %>' ocurred during request <%= url %>");
@@ -9,6 +11,7 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 		return new Promise(function(resolve, reject) {
 			var request = new XMLHttpRequest();
 			request.open("GET", url, true);
+			// request.timeout = 10000; // in milliseconds
 			request.responseType = "blob";
 			
 			// if progressFn is supplied
@@ -26,22 +29,22 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 					// If successful, resolve the promise by passing back a reference url
 					resolve(URL.createObjectURL(request.response));
 				} else {
-					var err = new Error(statusMsg({
-						statusText: request.statusText,
-						status: request.status, url: url
-					}));
-					err.event = ev;
+					var err = new Error(("http_" + request.statusText.replace(/\s/g, "_")).toUpperCase());
+					err.infoCode = request.status;
+					err.infoSrc = url;
+					err.logEvent = ev;
+					err.logMessage = "_loadImageAsObjectURL::onload [reject]";
 					reject(err);
 				}
 			};
 			// reject/failure
 			// - - - - - - - - - - - - - - - - - -
 			request.onerror = function (ev) {
-				var err = new Error(errMsg({
-					errName: ev.type,
-					url: url
-				}));
-				err.event = ev;
+				var err = new Error((ev.type + "_event").toUpperCase());
+				err.infoCode = -1;
+				err.infoSrc = url;
+				err.logEvent = ev;
+				err.logMessage = "_loadImageAsObjectURL::onerror [reject]";
 				reject(err);
 			};
 			request.onabort = request.ontimeout = request.onerror;

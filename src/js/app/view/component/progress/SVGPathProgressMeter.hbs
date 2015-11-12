@@ -1,9 +1,28 @@
-<svg version="1.1" xmlns="http://www.w3.org/2000/svg" class="color-bg" buffered-rendering="dynamic" shape-rendering="auto" viewBox="-{{divide d 2}} -{{divide d 2}} {{d}} {{d}}" preserveAspectRatio="xMidYMid meet">
-	<g class="determinate color-stroke" fill="none">
-		<path id="steps" d="{{p2}}" stroke-width="{{s2}}"></path>
-		<path id="amount" d="{{p1}}" stroke-width="{{s1}}"></path>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" class="color-bg" buffered-rendering="dynamic" shape-rendering="auto" viewBox="-{{divide viewSize 2}} -{{divide viewSize 2}} {{viewSize}} {{viewSize}}" preserveAspectRatio="xMidYMid meet">
+	<g class="determinate" fill="none">
+		<path id="total" d="{{total.pathData}}"
+			style="stroke-width:{{total.strokeWidth}};stroke-dasharray:0.75,2.25"
+			class="color-stroke"></path>
+		<path id="steps" d="{{steps.pathData}}"
+			style="stroke-width:{{steps.strokeWidth}}"
+			class="color-stroke color-reverse"></path>
+		<g id="available" class="color-stroke color-reverse"
+			style="stroke-width:{{available.strokeWidth}}">
+			{{#each available.pathData}}
+			<path d="{{this}}"></path>
+			{{/each}}
+		</g>
+		<!-- <path id="available" d="{{available.pathData}}"
+			style="stroke-width:{{available.strokeWidth}}"
+			class="color-stroke color-reverse"></path> -->
+		<path id="amountClear" d="{{amountClear.pathData}}"
+			style="stroke-width:{{amountClear.strokeWidth}}"
+			class="color-stroke color-reverse"></path>
+		<path id="amount" d="{{amount.pathData}}"
+			style="stroke-width:{{amount.strokeWidth}}"
+			class="color-stroke"></path>
 	</g>
-	<!-- <text id="step-label" class="color-reverse color-fill" font-size="{{divide d 2}}" dy="{{divide d 6}}" text-anchor="middle">1</text> -->
-	<text id="label" class="color-reverse color-fill" style="dominant-baseline:alphabetic;text-anchor:middle"
-		dy="0.33em">0</text>
+	<text id="label" dy="0.333em"
+		style="dominant-baseline:alphabetic;text-anchor:middle"
+		class="color-reverse color-fill"></text>
 </svg>

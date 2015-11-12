@@ -1,18 +1,9 @@
-// @import "../includes/_icons";
-
 .dots-fontello .list-item {
 	// @include font_smoothing();
 	display: inline-block;
 	position: static;
 	line-height: 1;
 	padding: 0 0.5em;
-	// font-size: 1.25rem;
-	// line-height: 1.5rem;
-	// padding: 0 0.25em;
-	
-	// margin-right: 0.5rem;
-	// &:first-child { margin-left: -0.5em; }
-	// &:last-child { margin-right: 1em; }
 	
 	// hide if there is only one item;
 	&:first-child:last-child {
@@ -38,16 +29,9 @@
 	& a:before 							{ content: '\25CB'; }
 	&.selected a:before					{ content: '\25CF'; }
 	&.empty-item a:before				{ content: '\25A4'; }
-	
-	// & a:before 							{ content: '\e801'; }
-	// &:hover a:before					{ content: '\e802'; }
-	// &.selected a:before					{ content: '\e802'; }
-	// &.empty-item a:before				{ content: ' '; }
-	// &.empty-item a:before				{ content: '\e814'; }
-	// &.empty-item.selected a:before	{ content: '\e807'; }
 
 	// show link cursor, except on selected
-	user-select: none;
+	@include user-select(none);
 	cursor: pointer;
 	&.selected, &.selected a {
 		cursor: default;

@@ -10,8 +10,9 @@ var CSS_EDGE_PROPS = [
 	"borderTopWidth","borderBottomWidth","borderLeftWidth","borderRightWidth",
 	"paddingTop","paddingBottom","paddingLeft","paddingRight",
 ];
-// var CSS_POS_PROPS = [ "top", "bottom", "left", "right"];
-// var CSS_SIZE_PROPS = [ "width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"];
+var CSS_POS_PROPS = [ "top", "bottom", "left", "right"];
+var CSS_SIZE_PROPS = [ "width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"];
+var CSS_ALL_PROPS = CSS_EDGE_PROPS.concat(CSS_SIZE_PROPS, CSS_POS_PROPS);
 
 // var COMPUTED_PROPS = [
 // 	"clientLeft", "clientTop", "clientWidth", "clientHeight",
@@ -24,7 +25,7 @@ var CSS_EDGE_PROPS = [
 var cssDimensionRE = /^(-?[\d\.]+)(px|em|rem)$/;
 // var cssDimRe = /^([-\.0-9]+)([rem]+)$/;
 
-module.exports = function(s, m) {
+module.exports = function(s, m, includeSizePos) {
 	if (s instanceof HTMLElement) {
 		s = getComputedStyle(s);
 	}
@@ -44,9 +45,9 @@ module.exports = function(s, m) {
 			m[p] = s[p];
 		}
 	}
-	
-	for (i = 0, ii = CSS_EDGE_PROPS.length; i < ii; i++) {
-		p = CSS_EDGE_PROPS[i];
+	var cssProps = includeSizePos? CSS_EDGE_PROPS: CSS_ALL_PROPS;
+	for (i = 0, ii = cssProps.length; i < ii; i++) {
+		p = cssProps[i];
 		m["_" + p] = s[p];
 		if (s[p] && (v = cssDimensionRE.exec(s[p]))) {
 			if (v[2] === "px") {
@@ -58,6 +59,7 @@ module.exports = function(s, m) {
 				m[p] = parseFloat(v[1]) * remPx;
 			} else {
 				console.warn("Ignoring value", p, v[1], v[2]);
+				m[p] = null;
 			}
 		}// else {
 		//	console.warn("Ignoring unitless value", p, v);

@@ -72,9 +72,7 @@ var SVGCircleProgressMeter = AbstractProgressMeter.extend({
 		
 		this.el.innerHTML = this.template(p);
 		
-		this.valueLabel = this.el.querySelector("#value-label");
-		this.symbolLabel = this.el.querySelector("#symbol-label");
-		
+		this.labelShape = this.el.querySelector("#label");
 		this.amountShape = this.el.querySelector("#amount");
 		this.stepsShape = this.el.querySelector("#steps");
 		
@@ -82,9 +80,8 @@ var SVGCircleProgressMeter = AbstractProgressMeter.extend({
 		s.strokeOpacity = 0.5;
 		s.strokeDasharray = [(this._arcStep * p.r) - p.sw, p.sw];
 		// s.strokeDasharray = [(p.c / total) - p.sw, p.sw];
-		
-		// this.stepsShape.style.strokeDasharray = [p.sw, (p.c / total) - p.sw];
-		// this.stepsShape.style.strokeDashoffset = p.sw;
+		// s.strokeDasharray = [p.sw, (p.c / total) - p.sw];
+		// s.strokeDashoffset = p.sw;
 		
 		s = this.amountShape.style;
 		s.strokeDasharray = [p.c - p.sw, p.c + p.sw];
@@ -105,15 +102,10 @@ var SVGCircleProgressMeter = AbstractProgressMeter.extend({
 	/* --------------------------- */
 	
 	redraw: function(value) {
-		var m, labelStr = this._labelFn(this._renderedValue, this._total, this._steps);
-		if (this._labelStr != labelStr) {
-			if (m = /^(\d+)([hms])$/.exec(labelStr)) {
-				this.valueLabel.textContent = m[1];
-				this.symbolLabel.textContent = m[2];
-			} else {
-				this.valueLabel.textContent = labelStr;
-			}
-			this._labelStr = labelStr;
+		var labelStr = this._labelFn(this._renderedValue, this._total, this._steps);
+		if (this._renderedLabel != labelStr) {
+			this._renderedLabel = labelStr;
+			this.labelShape.textContent = labelStr;
 		}
 		this.amountShape.style.strokeDashoffset = 
 			(1 - this._renderedValue / this._total) * (this._params.c - this._params.sw);

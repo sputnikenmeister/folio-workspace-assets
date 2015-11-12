@@ -5,11 +5,11 @@
 	.button {
 		@include small_caps();
 		@include font_smoothing();
+		@include user-select(none);
 		display: inline-block;
 		box-sizing: border-box;
 		white-space: nowrap;
 		cursor: pointer;
-		user-select: none;
 		margin-left: 2em;
 		&:first-child {
 			margin-left: 0;

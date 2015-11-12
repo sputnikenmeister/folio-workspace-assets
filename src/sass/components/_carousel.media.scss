@@ -53,11 +53,12 @@
 		content: "";
 		// text-shadow: -1px -1px 0 rgba(0, 0%, 50%, 0.2);
 	}
-	&.pending, &.ready { 
-		.placeholder:before { 
-			font-family: "FolioFigures-Regular", monospace;
-		}
-	}
+	// &.pending, &.ready { 
+	// 	.placeholder:before { 
+	// 		font-family: "FolioFigures-Regular", monospace;
+	// 		font-weight: normal;
+	// 	}
+	// }
 	&.idle .placeholder:before { content: "Waiting"; }
 	&.error .placeholder:before { content: "Error";	}
 	&.pending .placeholder:before { content: "0%"; }
@@ -66,7 +67,7 @@
 	&.selected, &.candidate, .empty-item.selected + & {
 		&.pending .placeholder[data-progress]:before {
 			content: attr(data-progress) "%";
-			font-style: normal;
+			// font-style: normal;
 		}
 	}
 	.placeholder:before {

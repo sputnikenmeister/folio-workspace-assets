@@ -94,16 +94,23 @@ module.exports = function() {
 		s = _.pick(attrs, carouselMediaStyles);//, "background-color"]);
 		Styles.createCSSRule(carouselSelector + " .media-item .content", s);
 		
+		// .media-item .color-bg09
+		// - - - - - - - - - - - - - - - - 
+		s = {};
+		s["background-color"]		= bgColor.clone().mix(fgColor, 0.95).hslString();
+		// s["background-color"]		= bgColor.clone()[hasDarkBg?"darken":"lighten"](0.045 ).hslString();
+		// s["background-color"]		= bgColor.clone()[hasDarkBg?"lighten":"darken"](0.03).hslString();
+		Styles.createCSSRule(carouselSelector + " .media-item .color-bg09", s);
+		
 		// .media-item .placeholder
 		// - - - - - - - - - - - - - - - - 
 		s = {};
-		// text color luminosity is inverse from body, apply oposite rendering mode
 		s["-webkit-font-smoothing"] = (hasDarkBg? "auto" : "antialiased");
-		s["color"]				= bgColor.hslString();
+		// text color luminosity is inverse from body, apply oposite rendering mode
+		s["color"]					= bgColor.hslString();
 		// s["color"]				= bgColor.clone()[hasDarkBg?"darken":"lighten"](0.045).hslString();
-		s["background-color"]	= bgColor.clone().mix(fgColor, 0.95).hslString();
+		s["background-color"]		= bgColor.clone().mix(fgColor, 0.95).hslString();
 		// s["background-color"]	= bgColor.clone()[hasDarkBg?"lighten":"darken"](0.03).hslString();
-		
 		("border-radius" in attrs) && (s["border-radius"] = attrs["border-radius"]);
 		Styles.createCSSRule(carouselSelector + " .media-item .placeholder", s);
 		

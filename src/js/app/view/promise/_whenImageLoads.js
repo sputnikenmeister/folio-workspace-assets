@@ -1,7 +1,15 @@
 module.exports = function(image) {
+	// if (image.src === "") {
+	// 	console.warn("_whenImageLoads WARNING", "image has empty src");
+	// }
 	if (image.complete) {
-		console.log("_whenImageLoads_dom resolve-sync", image.src);
-		return Promise.resolve(image);
+		if (image.src === "") {
+			console.warn("_whenImageLoads resolve-sync", "image has empty src");
+			return Promise.resolve(image);
+		} else {
+			console.log("_whenImageLoads resolve-sync", image.src);
+			return Promise.resolve(image);
+		}
 	} else {
 		return new Promise(function(resolve, reject) {
 			var handlers = {

@@ -74,7 +74,7 @@
 		doc[w3.enabled] = doc[api.enabled];
 		doc[w3.element] = doc[api.element];
 
-		// console.log("fullscreen polyfill redispatch event", e);
+		console.log("fullscreen polyfill redispatch event", e);
 		dispatch( w3.events.change, e.target );
 	} // end of handleChange()
 

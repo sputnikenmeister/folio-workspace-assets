@@ -49,11 +49,12 @@ require("hammerjs");
 
 window.addEventListener("error", function(ev) {
 	if (/iPad/.test(window.navigator.userAgent)) {
-		window.alert(ev.type + ": " + JSON.stringify(ev));
+		window.alert(ev.type + ": " + JSON.stringify(ev, null, " "));
 	} else { 
-		console.error("uncaught error event", ev);
+		console.error("uncaught error", ev);
 	}
 });
+
 window.addEventListener("load", function(ev) {
 // document.addEventListener('DOMContentLoaded', function() {
 	
@@ -104,15 +105,40 @@ window.addEventListener("load", function(ev) {
 	typeList.reset(types);
 	keywordList.reset(keywords);
 	bundleList.reset(bundles);
-
 	delete window.bootstrap;
-
-
+	
 	require("app/view/template/_helpers");
-	require("app/view/template/_partials");
+	// require("app/view/template/_partials");
 	
 	/** @type {module:app/view/AppView} */
 	var AppView = require("app/view/AppView");
-
-	window.app = new AppView();
+	
+	var WebFont = require("webfontloader");
+	WebFont.load({
+		classes: false,
+		custom: {
+			families: [
+				"FolioFigures-Regular", 
+				"Franklin Gothic FS",
+				"ITCFranklinGothicStd-Compressed"
+			],
+			testStrings: { 
+				"FolioFigures-Regular": "hms"
+			},
+		},
+		loading: function() {
+			console.log("Webfont loading");
+		},
+		active: function() { 
+			console.log("Webfont active"); 
+			AppView.getInstance();
+		},
+		inactive: function() {
+			console.log("Webfont inactive");
+			AppView.getInstance();
+		},
+		// fontloading: function(familyName, fvd) { console.log("Webfont fontloading: %s (%s)", familyName, fvd); },
+		// fontactive: function(familyName, fvd) { console.log("Webfont fontactive: %s (%s)", familyName, fvd); },
+		// fontinactive: function(familyName, fvd) { console.log("Webfont fontinactive: %s (%s)", familyName, fvd); }
+	});
 });

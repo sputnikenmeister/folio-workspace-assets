@@ -1,12 +1,14 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
+/** @type {module:app/control/Globals} */
+var Globals = require("app/control/Globals");
 
 /** @type {module:app/view/promise/_whenImageLoads} */
 var _whenImageLoads = require("app/view/promise/_whenImageLoads");
 /** @type {module:app/view/promise/_loadImageAsObjectURL} */
 var _loadImageAsObjectURL = require("app/view/promise/_loadImageAsObjectURL");
 
-var isBlobRE = /^blob\:.*/;
+// var isBlobRE = /^blob\:.*/;
 
 var logMessage = "%s::whenDefaultImageLoads [%s]: %s";
 
@@ -22,19 +24,19 @@ module.exports = function(view) {
 					});
 		} else {
 			view.mediaState = "pending";
-			
-			var imageUrl = view.model.getImageUrl();
+			var sUrl = Globals.MEDIA_DIR + "/" + view.model.get("src");
+			// var sUrl = view.model.getImageUrl();
 			var progressFn = function (progress) {
 				// console.log(logMessage, view.cid, "progress", progress);
 				// view.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
-				view.updateMediaProgress(imageUrl, progress);
+				view.updateMediaProgress(progress, sUrl);
 			};
 			progressFn = _.throttle(progressFn, 100, {leading: true, trailing: false});
 			
-			_loadImageAsObjectURL(imageUrl, progressFn)
+			_loadImageAsObjectURL(sUrl, progressFn)
 				.then(
 					function(url) {
-						if (isBlobRE.test(url))
+						if (/^blob\:.*/.test(url))
 							view.model.set({"prefetched": url});
 						view.defaultImage.src = url;
 						// URL.revokeObjectURL(url); 
