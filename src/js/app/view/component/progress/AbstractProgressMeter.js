@@ -58,7 +58,7 @@ var AbstractProgressMeterProto = {
 		
 		// value total
 		this._value = options.value;
-		this._total = options.total;
+		this._maxVal = options.total;
 		
 		this._startValue = this._value;
 		this._renderedValue = null;
@@ -135,7 +135,7 @@ var AbstractProgressMeterProto = {
 		if (currTime < this._duration) {
 			if (this._valueDelta < 0) {
 				this._renderedValue = linear(currTime, this._startValue,
-					this._valueDelta + this._total, this._duration) - this._total;
+					this._valueDelta + this._maxVal, this._duration) - this._maxVal;
 			} else {
 				this._renderedValue = linear(currTime, this._startValue,
 					this._valueDelta, this._duration);

@@ -50,7 +50,7 @@ var SVGPathProgressMeter = ModelProgressMeter.extend({
 		ModelProgressMeter.prototype.initialize.apply(this, arguments);
 		
 		// steps
-		// var val = this._renderData["available"]._value;
+		// var val = this._valueData["available"]._value;
 		// this._steps = Array.isArray(val)? val.length: 0;
 		// this._steps = options.steps;
 		
@@ -84,7 +84,7 @@ var SVGPathProgressMeter = ModelProgressMeter.extend({
 		
 		// available
 		// --------------------------------
-		var stepsNum = this._renderData["available"].length || 1;
+		var stepsNum = this._valueData["available"].length || 1;
 		var stepBaseArc = (1 / stepsNum) * Math.PI*2; // step angle span (no gap)
 		var stepStartArc = startArc; // step start initial value (90deg CCW + half-gap CW)
 		
@@ -146,26 +146,26 @@ var SVGPathProgressMeter = ModelProgressMeter.extend({
 		var o, p, pChild, val;
 		
 		// update "available"
-		o = this._renderData["available"];
+		o = this._valueData["available"];
 		p = this._shapeData["available"];
 		if (Array.isArray(o)) {
 			for (var i = 0, ii = o.length; i < ii; i++) {
 				pChild = p.shape.children[i];
 				pChild.style.strokeDashoffset =
-					-(o[i]._renderedValue/(o[i]._total/ii)) * p.spanLength;
-					// (1 - (o._renderedValue[i]/o._total)) * (p.spanArc*p.radius);
+					-(o[i]._renderedValue/(o[i]._maxVal/ii)) * p.spanLength;
+					// (1 - (o._renderedValue[i]/o._maxVal)) * (p.spanArc*p.radius);
 				// console.log("%s::redraw available[%i]: %f/%f (value/rendered)", this.cid, i, o._value[i], o._renderedValue[i]);
 			}
 		} else {
 			pChild = p.shape.children[0];
 			pChild.style.strokeDashoffset =
-				-(o._renderedValue/o._total) * p.spanLength;
-				// (1 - (o._renderedValue/o._total)) * (p.spanArc*p.radius);
+				-(o._renderedValue/o._maxVal) * p.spanLength;
+				// (1 - (o._renderedValue/o._maxVal)) * (p.spanArc*p.radius);
 		}
 		
 		// update "amount"
-		o = this._renderData["amount"];
-		val = 1 - (o._renderedValue/o._total);
+		o = this._valueData["amount"];
+		val = 1 - (o._renderedValue/o._maxVal);
 		p = this._shapeData["amountClear"];
 		p.shape.style.strokeDashoffset = (val * p.spanLength) - (p.radius * this._gapArc * 0.5);
 		p = this._shapeData["amount"];
@@ -173,7 +173,7 @@ var SVGPathProgressMeter = ModelProgressMeter.extend({
 			
 		// update label usign "amount" value
 		// TODO: generalize passing values to fn
-		val = this._labelFn(o._renderedValue, o._total, this._steps);
+		val = this._labelFn(o._renderedValue, o._maxVal, this._steps);
 		if (this._renderedLabel != val) {
 			this._renderedLabel = val;
 			this.labelShape.textContent = val;

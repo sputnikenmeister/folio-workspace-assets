@@ -22,25 +22,31 @@ function isSizeProp(propName) {
 	return /^(offset|client)(Left|Top|Width|Height)$/.test(propName);
 }
 
+// var ARC_ERR = 0.0001;
+var ARC_ERR = 0.0;
+var PI = Math.PI;
+var PI2 = Math.PI*2;
+
 var MIN_CANVAS_RATIO = 2;
-var GAP_ARC = Math.PI/32;
+var GAP_ARC = PI2/48;
+var CAP_SCALE = 2; // cap arc = GAP_ARC * CAP_SCALE
+
 var ARC_DEFAULTS = {
-	amount: {
+	"amount": {
 		lineWidth: 0.8,
-		lineDash: [],
 	},
-	available: {
-		lineWidth: 2,
-		lineDash: [
-			0.4, 0.93333,
-			0.4, 0.93333,
-			0.4, 0.93334
-		],
-	},
-	notAvailable: {
+	"available": {
+		// lineWidth: 1.8, lineDash: [0.3, 0.7],
 		lineWidth: 0.8,
-		lineDash: [0.3, 1.7],
+		inverse: "not-available",
+		// inverse2: "not-available2",
 	},
+	"not-available": {
+		lineWidth: 1, lineDash: [0.3, 0.7],
+	},
+	// "not-available2": {
+	// 	lineWidth: 1, lineDash: [0.7, 0.3],
+	// },
 };
 
 /**
@@ -54,31 +60,24 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	/** @type {string} */
 	tagName: "canvas",
 	/** @type {string} */
-	className: "progress-meter canvas-progress-meter color-bg",
+	className: "progress-meter canvas-progress-meter",
 	
 	defaults: {
-		amount: 0,
-		available: 0,
-		total: 1,
-		labelFn: function(value, total) {
-			return ((value/total) * 100) | 0;
+		values: {
+			amount: 0,
+			available: 0,
+			loop: 0,
+		},
+		maxValues: {
+			amount: 1,
+			available: 1,
+		},
+		useOpaque: true,
+		labelFn: function(value, max) {
+			return ((value/max) * 100) | 0;
 		},
 	},
 	defaultKey: "amount",
-	interpolated: ["amount", "available"],
-	
-	events: {
-		"transitionend": function(ev) {
-			console.log("%s::transitionend prop:'%s'", this.cid, ev.propertyName);
-			switch (ev.propName) {
-				case "color":
-				case "background-color":
-					this._canvasChanged = true;
-					this.render();
-				break;
-			}
-		}
-	},
 	
 	/* --------------------------- *
 	/* children/layout
@@ -93,18 +92,25 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		this._backgroundColor = options.backgroundColor;
 		this._labelFn = options.labelFn;
 		
+		// mozOpaque
+		// --------------------------------
+		this._useOpaque = options.useOpaque;
+		if (this._useOpaque) {
+			this._opaqueProp = Modernizr.prefixed("opaque", this.el, false);
+			if (this._opaqueProp) {
+				this.el.classList.add("color-bg");
+				this.el[this._opaqueProp] = true;
+			}
+		}
+		
 		// size
 		// --------------------------------
 		this._canvasChanged = true;
 		this._canvasSize = null;
-		this._arcData = {};
+		this._valueStyles = {};
 		
 		// canvas' context init
 		// --------------------------------
-		var opaqueProp = Modernizr.prefixed("opaque", this.el, false);
-		if (opaqueProp) {
-			this.el[opaqueProp] = true;
-		}
 		this._ctx = this.el.getContext("2d");
 	},
 
@@ -137,51 +143,31 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		this._canvasSize *= ratio;
 		this.el.width = this._canvasSize;
 		this.el.height = this._canvasSize;
-		// reset and translate 0,0 to center
-		this._ctx.setTransform(1,0,0,1,this._canvasSize/2, this._canvasSize/2);
-		// this._ctx.translate(this._canvasSize/2, this._canvasSize/2);
 		
-		// lines, gaps, dashes
+		// lines, gaps, dashes (this._valueStyles, GAP_ARC, this._arcRadius)
 		// --------------------------------
-		var arcName, arcObj, arcDefault, maxLineWidth = 0;
-		
-		this._gapArc = GAP_ARC;
+		var arcName, arcObj, arcDefault;
+		var mapLineDash = function(n) { return n * this.radius * GAP_ARC; };
+		this._maxDashArc = 0;
 		
 		for (arcName in ARC_DEFAULTS) {
 			arcDefault = ARC_DEFAULTS[arcName];
-			arcObj = this._arcData[arcName] = {};
+			arcObj = this._valueStyles[arcName] = {};
+			arcObj.inverse = arcDefault.inverse;// copy inverse key
+			// arcObj.inverse2 = arcDefault.inverse2;
 			arcObj.lineWidth = arcDefault.lineWidth * ratio;
-			maxLineWidth = Math.max(maxLineWidth, arcObj.lineWidth);
+			arcObj.radius = (this._canvasSize - arcObj.lineWidth)/2;
+			if (arcDefault.radiusOffset) {
+				arcObj.radius += arcDefault.radiusOffset * ratio;
+			}
+			if (arcDefault.lineDash && arcDefault.lineDash.length) {
+				arcObj.lineDash = arcDefault.lineDash.map(mapLineDash, arcObj);
+				arcObj.lineDashArc = arcDefault.lineDash[0] * GAP_ARC;
+				this._maxDashArc = Math.max(this._maxDashArc, arcObj.lineDashArc);
+			} else {
+				arcObj.lineDashArc = 0;
+			}
 		}
-		this._arcRadius = (this._canvasSize - maxLineWidth)/2;
-		
-		var gapLength = this._arcRadius * this._gapArc;
-		var mapRatioFn = function(n, i, a) { return n * gapLength; };
-		
-		for (arcName in ARC_DEFAULTS) {
-			arcDefault = ARC_DEFAULTS[arcName];
-			arcObj = this._arcData[arcName];
-			arcObj.lineDashArc = (arcDefault.lineDash.length? arcDefault.lineDash[0] : 0) * (this._gapArc/2);
-			arcObj.lineDash = arcDefault.lineDash.map(mapRatioFn);
-			// arcObj.lineDash.forEach(fnRatio);
-		}
-		
-		// // TODO: this is not efficient cloning
-		// this._arcData = JSON.parse(JSON.stringify(ARC_DEFAULTS));
-		// for (arcName in this._arcData) {
-		// 	arcObj = this._arcData[arcName];
-		// 	arcObj.lineWidth *= ratio;
-		// 	maxLineWidth = Math.max(maxLineWidth, arcObj.lineWidth);
-		// }
-		// this._arcRadius = (this._canvasSize - maxLineWidth)/2;
-		// 
-		// var gapLength = this._arcRadius * this._gapArc;
-		// var fnRatio = function(n, i, a) { a[i] *= gapLength; };
-		// for (arcName in this._arcData) {
-		// 	arcObj = this._arcData[arcName];
-		// 	arcObj.lineDashArc = arcObj.lineDash[0] * (this._gapArc/2);
-		// 	arcObj.lineDash.forEach(fnRatio);
-		// }
 		
 		// colors
 		// --------------------------------
@@ -191,23 +177,32 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		// fontSize
 		// --------------------------------
 		this._fontSize = parseFloat(s.fontSize) * ratio;
-		this._ctx.font = [s.fontWeight, s.fontStyle, this._fontSize + "px/1", s.fontFamily].join(" ");
-		this._ctx.textAlign = "left";
 		
-		// baseline
-		// NOTE: use ascent data to center to cap-height
-		// --------------------------------
-		var fontAscent = 0.7, fontDescent = 0.3; // default ascent/descent values
-		
-		for (var key in Globals.FONT_METRICS) {
-			if (s.fontFamily.indexOf(key) !== -1) {
-				var o = Globals.FONT_METRICS[key];
-				fontAscent = o.ascent / o.unitsPerEm;
-				fontDescent = Math.abs(o.descent) / o.unitsPerEm;
+		this._baselineShift = 0.7; // set a default value
+		// NOTE: Center baseline: use ascent data to center to x-height, or sort-of.
+		// with ascent/descent values (0.7, -0.3), x-height is 0.4
+		for (var mKey in Globals.FONT_METRICS) {
+			if (s.fontFamily.indexOf(mKey) !== -1) {
+				var mObj = Globals.FONT_METRICS[mKey];
+				this._baselineShift = (mObj.ascent + mObj.descent) / mObj.unitsPerEm;
 				break;
 			}
 		}
-		this._baselineShift = this._fontSize * (fontAscent - fontDescent) * 0.5;
+		this._baselineShift *= this._fontSize * 0.5; // apply to font-size, halve it
+		
+		// save canvas context
+		// --------------------------------
+		// reset matrix and translate 0,0 to center
+		this._ctx.setTransform(1,0,0,1,this._canvasSize/2, this._canvasSize/2);
+		// this._ctx.translate(this._canvasSize/2, this._canvasSize/2);
+		this._ctx.font = [s.fontWeight, s.fontStyle, this._fontSize + "px/1", s.fontFamily].join(" ");
+		this._ctx.textAlign = "left";
+		this._ctx.lineCap = "butt";
+		this._ctx.lineJoin = "miter";
+		this._ctx.strokeStyle = this._color;
+		this._ctx.fillStyle = this._color;
+		
+		this._ctx.save();
 	},
 	
 	/* --------------------------- *
@@ -224,11 +219,10 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		} else {
 			this._renderPending = false;
 			this.stopListening(this, "view:added", this.render);
-			
 			if (this.domPhase === "added") {
 				if (this._canvasChanged) {
-					// this._canvasChanged = false;
-					// this._updateCanvas();
+					this._canvasChanged = false;
+					this._updateCanvas();
 					this._valuesChanged = true;
 				}
 				ModelProgressMeter.prototype.render.apply(this, arguments);
@@ -236,144 +230,232 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		}
 		return this;
 	},
-	renderFrame: function(tstamp) {
-		if (this._canvasChanged) {
-			this._canvasChanged = false;
-			this._updateCanvas();
-		}
-		ModelProgressMeter.prototype.renderFrame.apply(this, arguments);
-	},
 	
 	/* --------------------------- *
 	/* private
 	/* --------------------------- */
 	
-	redraw: function(chnaged) {
+	redraw: function(changed) {
 		var canvasPos = -this._canvasSize/2;
 		this._ctx.clearRect(canvasPos, canvasPos, this._canvasSize, this._canvasSize);
-		if (Modernizr.prefixed("opaque", this.el)) {
+		
+		if (this._useOpaque) {
+			this._ctx.save();
 			this._ctx.fillStyle = this._backgroundColor;
 			this._ctx.fillRect(canvasPos, canvasPos, this._canvasSize, this._canvasSize);
+			this._ctx.restore();
 		}
 		
-		this._ctx.rotate(Math.PI * -0.5);
-		this._ctx.strokeStyle = this._color;
-		this._ctx.fillStyle = "none";
+		// save ctx before drawing arcs
+		this._ctx.save();
 		
-		var valueObj, arcData;
+		var amountData = this._valueData["amount"];
+		var amountStyle = this._valueStyles["amount"];
+		var availableData = this._valueData["available"];
+		var availableStyle = this._valueStyles["available"];
 		
-		// amount
+		// loop rotation
 		// --------------------------------
-		valueObj = this._renderData["amount"];
-		arcData = this._arcData["amount"];
-		// var startArc = this._gapArc;
-		// var endArc = (valueObj._renderedValue / valueObj._total) * (Math.PI*2 - this._gapArc*2) + startArc;
+		var loopValue = this._valueData["loop"]._renderedValue || 0;
+		if ((changed.indexOf("amount") !== -1) && amountData._lastRenderedValue > amountData._renderedValue) {
+			this.valueTo(1, 0, "loop");
+			this.valueTo(0, 750, "loop");
+		}
+		this._ctx.rotate(PI2 * ((1-loopValue) - 0.25));
 		
-		var startArc = 0;
-		var spanArc = Math.PI*2;
-		
-		var spanGapArc = this._gapArc;
-		startArc += spanGapArc;
-		spanArc -= spanGapArc*2;
-		
-		var endArc = ((valueObj._renderedValue / valueObj._total) * spanArc) + startArc;
-		
-		this._ctx.lineWidth = arcData.lineWidth;
-		this._ctx.setLineDash(arcData.lineDash);
-		this._ctx.beginPath();
-		this._ctx.arc(0, 0, this._arcRadius, startArc, endArc, false);
-		this._ctx.stroke();
-		
-		// amount end line
-		arcData = this._arcData["available"];
-		var r1 = this._arcRadius - (arcData.lineWidth * 0.5);
-		var r2 = r1 + arcData.lineWidth;
-		var cx = Math.cos(endArc);
-		var cy = Math.sin(endArc);
-		
-		this._ctx.lineWidth = arcData.lineDash[0];
-		this._ctx.beginPath();
-		this._ctx.moveTo( cx*r2, cy*r2);
-		this._ctx.lineTo( cx*r1, cy*r1);
-		this._ctx.stroke();
-		
-		// available
+		// amount arc
 		// --------------------------------
-		valueObj = this._renderData["available"];
+		// var amountGapArc = stepGapArc;
+		var amountGapArc = GAP_ARC;
+		var amountEndArc = 0;
+		var amountValue = loopValue + amountData._renderedValue / amountData._maxVal;
+		amountValue = Math.max(0, Math.min(1 - ARC_ERR, amountValue));
 		
-		var stepsNum = valueObj.length || 1;
-		var stepBaseArc = (Math.PI*2) / stepsNum;
-		var adjArc = (stepBaseArc % (Math.PI*2)) % this._gapArc;
-		spanGapArc = (this._gapArc - arcData.lineDashArc) + adjArc/2;
+		if (amountValue > 0) {
+			amountEndArc = this.drawArc(amountStyle, amountValue, amountGapArc, PI2 - amountGapArc);
+			// var capWidth = availableStyle.lineWidth;
+			var capWidth = amountStyle.radius * GAP_ARC;
+			// this.drawDash(amountStyle, amountGapArc, capWidth);
+			this.drawEndCap(amountStyle, amountEndArc);
+			amountEndArc = amountEndArc + amountGapArc*2;
+		}
 		
-		var drawArc = function (value, startArc, spanArc, prevArc) {
-			var endArc;
-			startArc += spanGapArc;
-			spanArc -= spanGapArc*2;
-			
-			// this._ctx.save();
-			// this._ctx.strokeStyle = "rgba(255,0,0,0.25)";
-			// this._ctx.lineWidth = arcData.lineWidth;
-			// this._ctx.setLineDash([]);
-			// this._ctx.beginPath();
-			// this._ctx.arc(0, 0, this._arcRadius*0.75, startArc, startArc + spanArc);
-			// this._ctx.stroke();
-			// this._ctx.restore();
-			
-			endArc = (spanArc * value) + startArc;
-			startArc = Math.max(startArc, prevArc);
-			// amount arc may overlap current
-			if (endArc > startArc) {
-				this._ctx.lineWidth = arcData.lineWidth;
-				this._ctx.setLineDash(arcData.lineDash);
-				this._ctx.beginPath();
-				this._ctx.arc(0, 0, this._arcRadius, endArc, startArc, true);
-				this._ctx.stroke();
-			}
-			startArc = Math.max(endArc, prevArc);
-			endArc += spanArc * (1 - value);
-			// endArc -= spanGapArc;
-			// startArc += spanGapArc;
-			if (endArc > startArc) {
-				// draw rest of step
-				this._ctx.lineWidth = this._arcData["notAvailable"].lineWidth;
-				this._ctx.setLineDash(this._arcData["notAvailable"].lineDash);
-				this._ctx.beginPath();
-				this._ctx.arc(0, 0, this._arcRadius, endArc, startArc, true);
-				this._ctx.stroke();
-			}
-		}.bind(this);
+		// available arc
+		// --------------------------------
+		var stepsNum = availableData.length || 1;
+		var stepBaseArc = PI2 / stepsNum;
+		var stepAdjustArc = stepBaseArc % GAP_ARC;
+		var stepGapArc = GAP_ARC + (stepAdjustArc - availableStyle.lineDashArc)/2;
 		
-		var prevArc = endArc + (this._gapArc);
-		
-		if (Array.isArray(valueObj)) {
+		if (Array.isArray(availableData)) {
 			for (var o, i = 0; i < stepsNum; i++) {
-				o = valueObj[i];
-				drawArc(
-					o._renderedValue/(o._total/stepsNum), stepBaseArc * i, stepBaseArc, prevArc
-					// (stepBaseArc * i) + this._gapArc,
-					// stepBaseArc - this._gapArc*2
+				o = availableData[i];
+				this.drawArc(availableStyle,
+					o._renderedValue/(o._maxVal/stepsNum),
+					(i * stepBaseArc) + stepGapArc,
+					((i+1) * stepBaseArc) - stepGapArc,
+					amountEndArc
 				);
 			}
 		} else {
-			drawArc(
-				valueObj._renderedValue / valueObj._total, 0, Math.PI*2, prevArc
-				// this._gapArc,
-				// Math.PI*2 - this._gapArc*2
+			this.drawArc(availableStyle,
+				availableData._renderedValue / availableData._maxVal,
+				stepGapArc, PI2 - stepGapArc,
+				amountEndArc
 			);
 		}
 		
-		// label
-		// --------------------------------
-		valueObj = this._renderData["amount"];
-		var labelValue = this._labelFn(valueObj._renderedValue, valueObj._total);
-		var labelWidth = this._ctx.measureText(labelValue).width;
-		var labelLeft = labelWidth * -0.5001;
+		// restore ctx after drawing arcs
+		this._ctx.restore();
 		
-		this._ctx.rotate(Math.PI * 0.5);
-		this._ctx.fillStyle = this._color;
+		// amount label
+		// --------------------------------
+		var labelValue = this._labelFn(amountData._renderedValue, amountData._maxVal);
+		var labelWidth = this._ctx.measureText(labelValue).width;
+		var labelLeft = labelWidth * -0.500001;
+		
 		this._ctx.fillText(labelValue, labelLeft, this._baselineShift, labelWidth);
+		// this._drawLabelGuides(labelLeft, labelWidth, canvasPos);
 	},
+	
+	drawArc: function (valueStyle, value, startArc, endArc, prevArc) {
+		var valArc, invStyle,
+			valStartArc, valEndArc,
+			invStartArc, invEndArc;
+		// var invStartArc2, invEndArc2;
+		prevArc || (prevArc = 0);
+		
+		valArc = endArc - startArc;
+		valEndArc = startArc + (valArc * value);
+		valStartArc = Math.max(startArc, prevArc);
+		if (valEndArc > valStartArc) {
+			this._ctx.save();
+			this._ctx.lineWidth = valueStyle.lineWidth;
+			valueStyle.lineDash &&
+				this._ctx.setLineDash(valueStyle.lineDash);
+			this._ctx.beginPath();
+			this._ctx.arc(0, 0, valueStyle.radius, valEndArc, valStartArc, true);
+			this._ctx.stroke();
+			this._ctx.restore();
+		}
+		// if there's valueStyle, draw rest of span, minus prevArc overlap too
+		if (valueStyle.inverse !== void 0) {
+			invStyle = this._valueStyles[valueStyle.inverse];
+			invEndArc = valEndArc + (valArc * (1-value));
+			invStartArc = Math.max(valEndArc, prevArc);
+			if (invEndArc > invStartArc) {
+				this._ctx.save();
+				this._ctx.lineWidth = invStyle.lineWidth;
+				invStyle.lineDash &&
+					this._ctx.setLineDash(invStyle.lineDash);
+				this._ctx.beginPath();
+				this._ctx.arc(0, 0, invStyle.radius, invEndArc, invStartArc, true);
+				this._ctx.stroke();
+				this._ctx.restore();
+			}
+			// invStyle = this._valueStyles[valueStyle.inverse2];
+			// invEndArc2 = Math.min(invEndArc, prevArc);
+			// invStartArc2 = valEndArc;
+			// if (invEndArc2 > invStartArc2) {
+			// 	this._ctx.save();
+			// 	this._ctx.globalCompositeOperation = "destination-out";
+			// 	this._ctx.lineWidth = invStyle.lineWidth;
+			// 	invStyle.lineDash &&
+			// 		this._ctx.setLineDash(invStyle.lineDash);
+			// 	this._ctx.beginPath();
+			// 	this._ctx.arc(0, 0, invStyle.radius, invEndArc2, invStartArc2, true);
+			// 	this._ctx.stroke();
+			// 	this._ctx.restore();
+			// }
+		}
+		return valEndArc;
+	},
+	
+	drawEndCap: function (valueStyle, arcPos) {
+		var ARR_ARC_SCALE = 2;
+		var ARR_WIDTH_SCALE = 1.25;
+		
+		var arrArc = arcPos - GAP_ARC * ARR_ARC_SCALE;
+		
+		var inArc = Math.max(GAP_ARC, arrArc);
+		var xIn = Math.cos(inArc);
+		var yIn = Math.sin(inArc);
+		var xOut = Math.cos(arcPos);
+		var yOut = Math.sin(arcPos);
+		
+		var arrWidth = Math.min(GAP_ARC, arrArc) * valueStyle.radius * ARR_WIDTH_SCALE;
+		var rOut = valueStyle.radius + valueStyle.lineWidth * 0.5;
+		var rIn = rOut - arrWidth;
+		// var rIn2 = rOut + arrWidth;
+		
+		this._ctx.save();
+		this._ctx.lineWidth = valueStyle.lineWidth;// * 0.75;
+		this._ctx.beginPath();
+		this._ctx.moveTo(xOut*rOut, yOut*rOut);
+		this._ctx.lineTo(xIn*rIn, yIn*rIn);
+		this._ctx.stroke();
+		
+		// this._ctx.lineTo(xIn*rOut, yIn*rOut);
+		// this._ctx.arc(0, 0, rOut, inArc, arcPos);
+		// this._ctx.closePath();
+		// this._ctx.fill();
+		this._ctx.restore();
+	},
+	
+	drawDash: function (valueStyle, arcPos, width) {
+		var cx = Math.cos(arcPos);
+		var cy = Math.sin(arcPos);
+		// instead of using a square cap line (only needed on outer end),
+		// shift dash by half lineWidth.
+		var rOut = valueStyle.radius + valueStyle.lineWidth * 0.5;
+		var rIn = rOut - width;
+		
+		this._ctx.save();
+		this._ctx.lineWidth = valueStyle.lineWidth * 0.75;
+		this._ctx.beginPath();
+		this._ctx.moveTo(cx*rOut, cy*rOut);
+		this._ctx.lineTo(cx*rIn, cy*rIn);
+		this._ctx.stroke();
+		this._ctx.restore();
+	},
+	
+	/*
+	_drawLabelGuides: function(labelLeft, labelWidth, canvasPos) {
+		this._ctx.save();
+		this._ctx.lineWidth = 1;
+		this._ctx.strokeStyle = "#990000";
+		
+		this._ctx.beginPath();
+		this._ctx.moveTo(labelLeft, this._baselineShift - 0.5);
+		this._ctx.lineTo(labelLeft + labelWidth, this._baselineShift - 0.5);
+		this._ctx.moveTo(labelLeft, -this._baselineShift - 0.5);
+		this._ctx.lineTo(labelLeft + labelWidth, -this._baselineShift - 0.5);
+		this._ctx.closePath();
+		this._ctx.stroke();
+		
+		this._ctx.beginPath();
+		this._ctx.arc(0, 0, labelWidth/2, 0, PI2);
+		this._ctx.closePath();
+		this._ctx.stroke();
+		
+		this._ctx.moveTo(0, canvasPos);
+		this._ctx.lineTo(0, this._canvasSize-1);
+		this._ctx.moveTo(canvasPos, 0);
+		this._ctx.lineTo(this._canvasSize-1, 0);
+		
+		this._ctx.strokeStyle = "none";
+		this._ctx.fillStyle = "#990000";
+		this._ctx.beginPath();
+		this._ctx.rect(canvasPos, -0.5, this._canvasSize-1, 1);
+		this._ctx.rect(-0.5, canvasPos, 1, this._canvasSize-1);
+		this._ctx.closePath();
+		this._ctx.fill();
+		
+		this._ctx.rect(labelLeft, this._baselineShift - this._fontSize, labelWidth, this._fontSize);
+		this._ctx.rect(canvasPos, canvasPos, this._canvasSize-1, this._canvasSize-1);
+		this._ctx.restore();
+	},
+	*/
 });
 
 module.exports = CanvasProgressMeter;

@@ -3,30 +3,24 @@
  */
 "use strict";
 
-function testStrictMode() {
-	try {
-		/* jshint -W117 */
-		undeclaredVar = 1;
-		/* jshint +W117 */
-	} catch (e) {
-		return true;
-	}
-	return false;
-}
-
-function testWeakMap() {
-	return window.WeakMap !== void 0;
-}
-
 console.log("App first statement");
-console.log("Strict mode", testStrictMode());
 
 require("Modernizr");
 Modernizr._config.classPrefix = "has-";
 Modernizr._config.enableClasses = false;
-Modernizr.addTest("strictmode", testStrictMode);
-Modernizr.addTest("weakmap", testWeakMap);
-
+Modernizr.addTest("weakmap", function () { 
+	return window.WeakMap !== void 0; 
+});
+Modernizr.addTest("strictmode", function testStrictMode() {
+	try {
+		/* jshint -W117 */
+		undeclaredVar = 1;
+		/* jshint +W117 */
+		return false;
+	} catch (e) {
+		return true;
+	}
+});
 // Modernizr.promises || require("es6-promise").polyfill();
 // Modernizr.classlist || require("classlist-polyfill");
 // Modernizr.raf || require("raf-polyfill");
@@ -47,28 +41,26 @@ require("backbone.babysitter");
 require("Backbone.Mutators");
 require("hammerjs");
 
-window.addEventListener("error", function(ev) {
-	if (/iPad/.test(window.navigator.userAgent)) {
+// handle error events on some platforms and production
+if (/iPad|iPhone/.test(window.navigator.userAgent)) {
+	window.addEventListener("error", function(ev) {
 		window.alert(ev.type + ": " + JSON.stringify(ev, null, " "));
-	} else { 
+	});
+} else if (!window.DEBUG) { 
+	window.addEventListener("error", function(ev) {
 		console.error("uncaught error", ev);
-	}
-});
+	});
+}
 
 window.addEventListener("load", function(ev) {
 // document.addEventListener('DOMContentLoaded', function() {
-	
 	if (window.bootstrap === void 0) {
-		console.error("bootstrap data missing");
-		document.body.innerHTML = "<h1>Oops... </h1>";
-		document.documentElement.classList.remove("app-initial");
-		document.documentElement.classList.add("app-error");
-		return;
+		throw new Error("bootstrap data is missing");
+		// document.body.innerHTML = "<h1>Oops... </h1>";
+		// document.documentElement.classList.remove("app-initial");
+		// document.documentElement.classList.add("app-error");
+		// return;
 	}
-	
-	/** @type {module:app/control/Globals} */
-	// var Globals = require("app/control/Globals");
-	// $.fx.speeds._default = Globals.TRANSITION_DURATION;
 
 	/** @type {module:app/model/collection/TypeCollection} */
 	var typeList = require("app/model/collection/TypeCollection");
@@ -105,6 +97,7 @@ window.addEventListener("load", function(ev) {
 	typeList.reset(types);
 	keywordList.reset(keywords);
 	bundleList.reset(bundles);
+	// detele global var
 	delete window.bootstrap;
 	
 	require("app/view/template/_helpers");
@@ -113,6 +106,7 @@ window.addEventListener("load", function(ev) {
 	/** @type {module:app/view/AppView} */
 	var AppView = require("app/view/AppView");
 	
+	/** @type {module:webfontloader} */
 	var WebFont = require("webfontloader");
 	WebFont.load({
 		classes: false,
@@ -137,8 +131,8 @@ window.addEventListener("load", function(ev) {
 			console.log("Webfont inactive");
 			AppView.getInstance();
 		},
-		// fontloading: function(familyName, fvd) { console.log("Webfont fontloading: %s (%s)", familyName, fvd); },
-		// fontactive: function(familyName, fvd) { console.log("Webfont fontactive: %s (%s)", familyName, fvd); },
-		// fontinactive: function(familyName, fvd) { console.log("Webfont fontinactive: %s (%s)", familyName, fvd); }
+		// fontloading: function(familyName, fvd) {},
+		// fontactive: function(familyName, fvd) {},
+		// fontinactive: function(familyName, fvd) {},
 	});
 });

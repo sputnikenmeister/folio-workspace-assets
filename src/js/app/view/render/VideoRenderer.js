@@ -36,11 +36,12 @@ var fullscreenErrorEvent = prefixedEvent("fullscreenerror", document);
 
 var progressLabelFn = function(value, total) {
 	value = isNaN(value)? total : total - value;
-	if (value > 3600)
+	if (value >= 3600)
 		return ((value / 3600) | 0) + "h";
-	if (value > 60)
+	if (value >= 60)
 		return ((value / 60) | 0) + "m";
-	return (value | 0) + "s";
+	return (value >= 10 ? "" : "0") + (value | 0) + "s";
+	// return (value | 0) + "s";
 };
 
 /**
@@ -63,20 +64,21 @@ var VideoRenderer = PlayableRenderer.extend({
 	/** @override */
 	initialize: function (opts) {
 		PlayableRenderer.prototype.initialize.apply(this, arguments);
+		
 		_.bindAll(this,
 			"_updatePlaybackState",
 			"_updatePlayedValue",
 			"_updateBufferedValue",
 			"_onMediaError",
 			"_onMediaEnded",
-			"_onMediaPlayingOnce",
+			"_onMediaFirstPlaying",
 			"_onFullscreenChange"
 		);
-		// var updateSelectionDistance = function() {
+		// var onPeerSelect = function() {
 		// 	this.getContentEl().style.display = (this.getSelectionDistance() > 1)? "none": "";
 		// };
-		// this.listenTo(this.model.collection, "select:one select:none", updateSelectionDistance);
-		// updateSelectionDistance();
+		// this.listenTo(this.model.collection, "select:one select:none", onPeerSelect);
+		// onPeerSelect();
 	},
 	
 	/* --------------------------- *
@@ -160,7 +162,6 @@ var VideoRenderer = PlayableRenderer.extend({
 	initializeAsync: function() {
 		return Promise.resolve(this)
 			.then(PlayableRenderer.whenSelectionIsContiguous)
-			// .then(PlayableRenderer.whenSelectTransitionEnds)
 			.then(PlayableRenderer.whenScrollingEnds)
 			.then(
 				function(view) {
@@ -182,16 +183,25 @@ var VideoRenderer = PlayableRenderer.extend({
 					view.addSelectionListeners();
 					view.updateOverlay(view.getDefaultImage(), view.el.querySelector(".overlay"));
 					view.progressMeter = new ProgressMeter({
+						// values: {
+						// 	amount: view._currentTimeValue,
+						// 	available: view._bufferedValue,
+						// },
+						maxValues: {
+							amount: view.video.duration,
+							available: view.video.duration,
+						},
 						// value: view._currentTimeValue,
-						available: view._bufferedValue,
-						total: view.video.duration,
+						// available: view._bufferedValue,
+						// total: view.video.duration,
 						color: view.model.attrs()["color"],
 						backgroundColor: view.model.attrs()["background-color"],
-						labelFn: progressLabelFn
+						labelFn: function(value, total) {
+							return progressLabelFn.call(null, (view.video.ended? 0 : value), total);
+						}
 					});
 					var parentEl = view.el.querySelector(".top-bar");
 					parentEl.insertBefore(view.progressMeter.render().el, parentEl.firstChild);
-					
 					return view;
 				});
 	},
@@ -263,27 +273,6 @@ var VideoRenderer = PlayableRenderer.extend({
 	/* PlayableRenderer overrides
 	/* --------------------------- */
 	
-	// /** @override */
-	// setEnabled: function(enabled) {
-	// 	PlayableRenderer.prototype.setEnabled.apply(this, arguments);
-	// 	
-	// 	// if (enabled) {
-	// 	// 	if (this._lastPlayState) {
-	// 	// 		this.video.play();
-	// 	// 	}
-	// 	// 	this._lastPlayState = void 0;
-	// 	// } else {
-	// 	// 	this._lastPlayState = !this.video.paused;
-	// 	// 	if (this._lastPlayState) {
-	// 	// 		this.video.pause();
-	// 	// 	}
-	// 	// }
-	// 	// this.togglePlayback(enabled);
-	// 	
-	// 	this._enabled = enabled;
-	// 	!enabled && !this.video.paused && this.video.pause();
-	// },
-	
 	togglePlayback: function(newPlayState) {
 		// is playback changing?
 		if (_.isBoolean(newPlayState) && newPlayState !== this.video.paused) {
@@ -307,17 +296,17 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 	
 	/* ---------------------------
-	/* video events
+	/* media events
 	/* --------------------------- */
 	
 	addMediaListeners: function() {
-		this.video.addEventListener("error", this._onMediaError, true);
 		//loadeddata progress canplay canplaythrough
-		this.addListener(this.video, "progress canplay canplaythrough timeupdate", this._updateBufferedValue);
 		this.addListener(this.video, "playing waiting pause seeking", this._updatePlaybackState);
+		this.addListener(this.video, "progress canplay canplaythrough timeupdate", this._updateBufferedValue);
 		this.addListener(this.video, "timeupdate", this._updatePlayedValue);
-		this.video.addEventListener("playing", this._onMediaPlayingOnce, false);
 		this.video.addEventListener("ended", this._onMediaEnded, false);
+		this.video.addEventListener("error", this._onMediaError, true);
+		if (this._notPlayed) this.video.addEventListener("playing", this._onMediaFirstPlaying, false);
 		
 		this.on("view:removed", this.removeMediaListeners, this);
 	},
@@ -325,42 +314,36 @@ var VideoRenderer = PlayableRenderer.extend({
 	removeMediaListeners: function() {
 		this.off("view:removed", this.removeMediaListeners, this);
 		
-		this.video.removeEventListener("error", this._onMediaError, true);
-		this.removeListener(this.video, "progress canplay canplaythrough timeupdate", this._updateBufferedValue);
 		this.removeListener(this.video, "playing waiting pause seeking", this._updatePlaybackState);
+		this.removeListener(this.video, "progress canplay canplaythrough timeupdate", this._updateBufferedValue);
 		this.removeListener(this.video, "timeupdate", this._updatePlayedValue);
-		this.video.removeEventListener("playing", this._onMediaPlayingOnce, false);
 		this.video.removeEventListener("ended", this._onMediaEnded, false);
+		this.video.removeEventListener("error", this._onMediaError, true);
+		if (this._notPlayed) this.video.removeEventListener("playing", this._onMediaFirstPlaying, false);
 	},
 	
 	/* ---------------------------
-	/* media events
+	/* media event handlers
 	/* --------------------------- */
 	
-	addListener: function(target, events, handler, useCapture) {
-		(typeof events === "string") && (events = events.split(" "));
-		for (var i = 0; i < events.length; i++) {
-			target.addEventListener(events[i], handler, !!useCapture);
+	_notPlayed: true,
+	
+	_onMediaFirstPlaying: function(ev) {
+		this.video.removeEventListener("playing", this._onMediaFirstPlaying, false);
+		if (this._notPlayed) {
+			this._notPlayed = false;
+			this._updateBufferedValue(ev);
+			this.getContentEl().classList.remove("not-played");
 		}
 	},
-	
-	removeListener: function(target, events, handler, useCapture) {
-		(typeof events === "string") && (events = events.split(" "));
-		for (var i = 0; i < events.length; i++) {
-			target.removeEventListener(events[i], handler, !!useCapture);
-		}
-	},
-	
-	/* ---------------------------
-	/* playback state
-	/* --------------------------- */
 	
 	_updatePlaybackState: function(ev) {
 		if (this.video.paused) {
 			if (this.video.ended) {
 				this._userPlaybackRequested = false;
-				this.progressMeter.valueTo(0);
 				this.playbackState = "user-replay";
+				// this.progressMeter.valueTo(0);
+				this._updatePlayedValue(ev);
 			} else {
 				this.playbackState = "user-resume";
 			}
@@ -370,12 +353,23 @@ var VideoRenderer = PlayableRenderer.extend({
 			this.playbackState = "network";
 		}
 	},
+		
+	_updateBufferedValue: function(ev) {
+		var bRanges = this.video.buffered;
+		if (bRanges.length > 0) {
+			this._bufferedValue = bRanges.end(bRanges.length - 1);
+			if (!this._notPlayed && this.progressMeter) {
+				this.progressMeter.valueTo(this._bufferedValue, 300, "available");
+				// this.progressMeter.valueTo(this._bufferedValue, Math.max(0, 1000 * (this._bufferedValue - (this.progressMeter.getValue("available") | 0))), "available");
+			}
+		}
+	},
 	
-	_onMediaPlayingOnce: function(ev) {
-		this.video.removeEventListener("playing", this._onFirstPlaying, false);
-		if (this.getContentEl().classList.contains("not-played")) {
-			// this.poster.style.display = "none";
-			this.getContentEl().classList.remove("not-played");
+	_updatePlayedValue: function(ev) {
+		this._currentTimeValue = this.video.currentTime;
+		if (this.progressMeter) {
+			this.progressMeter.valueTo(this._currentTimeValue, 0, "amount");
+			// this.progressMeter.valueTo(this._currentTimeValue, Math.max(0, 1000 * (this._currentTimeValue - (this.progressMeter.getValue("amount") | 0))), "amount");
 		}
 	},
 	
@@ -388,10 +382,6 @@ var VideoRenderer = PlayableRenderer.extend({
 		}
 	},
 	
-	/* ---------------------------
-	/* timeline
-	/* --------------------------- */
-	
 	_onMediaError: function(ev) {
 		// if (this.video.error || this.video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) {
 			this.removeMediaListeners();
@@ -399,44 +389,6 @@ var VideoRenderer = PlayableRenderer.extend({
 			this.mediaState = "error";
 		// }
 	},
-		
-	_updateBufferedValue: function(ev) {
-		var bRanges = this.video.buffered;
-		if (bRanges.length > 0) {
-			var lastValue = this._bufferedValue || 0;
-			this._bufferedValue = bRanges.end(bRanges.length - 1);
-			if (!this.video.paused && this.progressMeter) {
-				// var dur = Math.max(0, (this._bufferedValue - lastValue) * 1000);
-				// this.progressMeter.valueTo(this._bufferedValue, 200, "available");
-				this.progressMeter.valueTo(this._bufferedValue, 300, "available");
-			}
-		}
-	},
-	
-	_updatePlayedValue: function(ev) {
-		var lastValue = this._currentTimeValue || 0;
-		this._currentTimeValue = this.video.currentTime;
-		if (this.progressMeter) {
-			this.progressMeter.valueTo(this._currentTimeValue);
-		}
-	},
-	
-	// _updatePlayedValue_timeline: function(ev) {
-	// 	this.playedRect.setAttribute("width",
-	// 		((this.video.currentTime / this.video.duration) * 100) + "%");
-	// 	this.durationLabel.textContent =
-	// 		formatTimecodeLeft(this.video.currentTime, this.video.duration);
-	// 	this.currentTimeLabel.textContent =
-	// 		formatTimecode(this.video.currentTime, this.video.duration);
-	// },
-	// 
-	// _updateBufferedValue_timeline: function(ev) {
-	// 	var bRanges = this.video.buffered;
-	// 	if (bRanges.length > 0) {
-	// 		this.bufferedRect.setAttribute("width",
-	// 			((bRanges.end(bRanges.length - 1) / this.video.duration) * 100) + "%");
-	// 	}
-	// },
 	
 	/* ---------------------------
 	/* fullscreen api
@@ -466,7 +418,7 @@ var VideoRenderer = PlayableRenderer.extend({
 		switch (ev.type) {
 			case fullscreenChangeEvent:
 				// var isOwnFullscreen = Modernizr.prefixed("fullscreenElement", document) === this.video;
-				var isOwnFullscreen =  document.fullscreenElement === this.video;
+				var isOwnFullscreen = document.fullscreenElement === this.video;
 				this.video.controls = isOwnFullscreen;
 				if (!isOwnFullscreen) {
 					document.removeEventListener(fullscreenChangeEvent, this._onFullscreenChange, false);
@@ -484,30 +436,23 @@ var VideoRenderer = PlayableRenderer.extend({
 		}
 	},
 	
-	// _handlePollChangeEvent: function(ev) {
-	// 	if (ev.type === "play") {
-	// 		if (this._pollIntervalID) {
-	// 			console.warn(this.cid, ev.type, "_pollIntervalID is set", this._pollIntervalID);
-	// 			window.clearInterval(this._pollIntervalID);
-	// 		} else {
-	// 			this._pollIntervalID = window.setInterval(this._onPollInterval, 500);
-	// 			console.info(this.cid, ev.type, "started _pollIntervalID", this._pollIntervalID);
-	// 		}
-	// 	} else if (ev.type === "pause") {
-	// 		if (this._pollIntervalID) {
-	// 			console.info(this.cid, ev.type, "clearing _pollIntervalID", this._pollIntervalID);
-	// 			window.clearInterval(this._pollIntervalID);
-	// 			this._pollIntervalID = void 0;
-	// 		} else {
-	// 			console.warn(this.cid, ev.type, "_pollIntervalID not set");
-	// 		}
-	// 	}
-	// },
+	/* ---------------------------
+	/* event helpers
+	/* --------------------------- */
 	
-	// _onPollInterval: function() {
-	// 	this._logMediaEvent();
-	// 	if (!this.model.selected) console.warn(this.cid, "_onPollInterval ran on deselected model");
-	// },
+	addListener: function(target, events, handler, useCapture) {
+		(typeof events === "string") && (events = events.split(" "));
+		for (var i = 0; i < events.length; i++) {
+			target.addEventListener(events[i], handler, !!useCapture);
+		}
+	},
+	
+	removeListener: function(target, events, handler, useCapture) {
+		(typeof events === "string") && (events = events.split(" "));
+		for (var i = 0; i < events.length; i++) {
+			target.removeEventListener(events[i], handler, !!useCapture);
+		}
+	},
 });
 
 /* ---------------------------
@@ -529,8 +474,9 @@ VideoRenderer = (function(VideoRenderer) {
 		"webkitbeginfullscreen","webkitendfullscreen",
 	];
 	
-	var mediaEvents = _.without(require("utils/event/mediaEventsEnum"), "resize", "error"),
-		updatePlaybackStateEvents = ["playing", "waiting", "ended", "pause", "seeking", "seeked"],
+	var mediaEvents = [];
+	// var mediaEvents = _.without(require("utils/event/mediaEventsEnum"), "resize", "error");
+	var updatePlaybackStateEvents = ["playing", "waiting", "ended", "pause", "seeking", "seeked"],
 		updateBufferedEvents = ["progress", "durationchange", "canplay", "play"],
 		updatePlayedEvents = ["playing", "timeupdate"];
 	

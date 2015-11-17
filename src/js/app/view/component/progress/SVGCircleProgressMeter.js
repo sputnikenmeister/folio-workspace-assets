@@ -55,7 +55,7 @@ var SVGCircleProgressMeter = AbstractProgressMeter.extend({
 	},
 	
 	createChildren: function() {
-		var s, p, total = this._total;
+		var s, p, total = this._maxVal;
 		
 		// sw: step mark width in px
 		// p = { d: 24, s1: 1.6, s2: 1.4, sw: 2.75 };
@@ -102,13 +102,13 @@ var SVGCircleProgressMeter = AbstractProgressMeter.extend({
 	/* --------------------------- */
 	
 	redraw: function(value) {
-		var labelStr = this._labelFn(this._renderedValue, this._total, this._steps);
+		var labelStr = this._labelFn(this._renderedValue, this._maxVal, this._steps);
 		if (this._renderedLabel != labelStr) {
 			this._renderedLabel = labelStr;
 			this.labelShape.textContent = labelStr;
 		}
 		this.amountShape.style.strokeDashoffset = 
-			(1 - this._renderedValue / this._total) * (this._params.c - this._params.sw);
+			(1 - this._renderedValue / this._maxVal) * (this._params.c - this._params.sw);
 			
 		return this;
 	},

@@ -64,9 +64,9 @@ var SourceCollection = SelectableCollection.extend({
 
 /**
 * @constructor
-* @type {module:app/view/render/SequenceRenderer.SequenceStepRenderer}
+* @type {module:app/view/render/SequenceRenderer.PrefetechedSourceRenderer}
 */
-var SequenceStepRenderer = View.extend({
+var PrefetechedSourceRenderer = View.extend({
 	
 	cidPrefix: "sequenceStepRenderer",
 	/** @type {string} */
@@ -76,7 +76,8 @@ var SequenceStepRenderer = View.extend({
 	
 	/** @override */
 	initialize: function (options) {
-		this.el.classList.toggle("current", this.model.hasOwnProperty("selected"));
+		// this.el.classList.toggle("current", this.model.hasOwnProperty("selected"));
+		this.el.classList.toggle("current", !!this.model.selected);
 		this.listenTo(this.model, {
 			"selected": function () {
 				this.el.classList.add("current");
@@ -85,46 +86,115 @@ var SequenceStepRenderer = View.extend({
 				this.el.classList.remove("current");
 			}
 		});
-		var view = this;
-		// whenSelectionDistanceIs(this, 1).then(function(view) {
-			if (view.el.src === "") {
-				if (view.model.has("prefetched")) {
-					view._onModelPrefetched();
-				} else if (view.model.has("error")) {
-					view._onModelError();
-				} else {
-					view.listenToOnce(view.model, {
-						"change:prefetched": view._onModelPrefetched,
-						"change:error": view._onModelError,
-					});
-				}
-				// view.el.src = Globals.MEDIA_DIR + "/" + view.model.get("src");
+		if (this.el.src === "") {
+			if (this.model.has("prefetched")) {
+				this._onModelPrefetched();
+			} else if (this.model.has("error")) {
+				this._onModelError();
+			} else {
+				this.listenToOnce(this.model, {
+					"change:prefetched": this._onModelPrefetched,
+					"change:error": this._onModelError,
+				});
 			}
-		// }, function(err) {
-		// 	console.log("%s::whenSelectionDistanceIs [rejected]", err.view.cid, err.name, err.message);
-		// });
+		}
 	},
 	
 	_onModelPrefetched: function() {
 		this.el.src = this.model.get("prefetched");
-		console.log("%s::change:prefetched", this.cid, this.model.get("src"));
+		// console.log("%s::change:prefetched", this.cid, this.model.get("src"));
 	},
 	
 	_onModelError: function() {
 		var err = this.model.get("error");
-		
 		var errEl = document.createElement("div");
 		errEl.className = "error color-bg" + (this.model.selected? " current" : "");
 		errEl.innerHTML = errorTemplate(err);
 		this.setElement(errEl, true);
-		
 		console.log("%s::change:error", this.cid, err.message, err.infoSrc);
 	},
-	
-	// whenMediaIsReady: function() {
-	// 	return 
-	// },
 });
+
+// /**
+// * @constructor
+// * @type {module:app/view/render/SequenceRenderer.SimpleSourceRenderer}
+// */
+// var SimpleSourceRenderer = View.extend({
+// 	
+// 	/** @type {string} */
+// 	tagName: "img",
+// 	/** @type {string} */
+// 	className: "sequence-step",
+// 	/** @override */
+// 	cidPrefix: "sequenceStepRenderer",
+// 	
+// 	/** @override */
+// 	initialize: function (options) {
+// 		// this.el.classList.toggle("current", this.model.hasOwnProperty("selected"));
+// 		this.el.classList.toggle("current", !!this.model.selected);
+// 		this.listenTo(this.model, {
+// 			"selected": function () {
+// 				this.el.classList.add("current");
+// 			},
+// 			"deselected": function () {
+// 				this.el.classList.remove("current");
+// 			}
+// 		});
+// 		if (this.el.src === "") {
+// 			this.el.src = Globals.MEDIA_DIR + "/" + this.model.get("src");
+// 		}
+// 		
+// 		if (this.model.has("error")) {
+// 			this._onModelError();
+// 		} else {
+// 			this.listenToOnce(this.model, "change:error", this._onModelError);
+// 			// this.listenToOnce(this.model, {
+// 			// 	"change:source": this._onModelSource,
+// 			// 	"change:error": this._onModelError,
+// 			// });
+// 		}
+// 	},
+// 	
+// 	// _onModelSource: function() {
+// 	// 	this.el.src = Globals.MEDIA_DIR + "/" + this.model.get("src");
+// 	// 	// console.log("%s::change:src", this.cid, this.model.get("src"));
+// 	// },
+// 	
+// 	_onModelError: function() {
+// 		var err = this.model.get("error");
+// 		var errEl = document.createElement("div");
+// 		errEl.className = "error color-bg" + (this.model.selected? " current" : "");
+// 		errEl.innerHTML = errorTemplate(err);
+// 		this.setElement(errEl, true);
+// 		console.log("%s::change:error", this.cid, err.message, err.infoSrc);
+// 	},
+// });
+
+// var SourceErrorRenderer = View.extend({
+// 	
+// 	/** @type {string} */
+// 	className: "sequence-step error color-bg",
+// 	/** @override */
+// 	cidPrefix: "sourceErrorRenderer",
+// 	/** @override */
+// 	template: errorTemplate,
+// 	
+// 	initialize: function (options) {
+// 		var handleSelectionChange = function onSelectionChange () {
+// 			this.el.classList.toggle("selected", this.model.selected);
+// 		};
+// 		this.listenTo(this.model, "selected deselected", handleSelectionChange);
+// 		handleSelectionChange.call(this);
+// 	},
+// 	
+// 	render: function () {
+// 		this.el.innerHTML = this.template(this.model.get("error"));
+// 		return this;
+// 	},
+// });
+
+var SequenceStepRenderer = PrefetechedSourceRenderer;
+// var SequenceStepRenderer = SimpleSourceRenderer;
 
 /**
 * @constructor
@@ -138,29 +208,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 	className: PlayableRenderer.prototype.className + " sequence-renderer",
 	/** @type {Function} */
 	template: require("./SequenceRenderer.hbs"),
-	
-	// /** @override */
-	// initialize: function (opts) {
-	// 	PlayableRenderer.prototype.initialize.apply(this, arguments);
-	// 	
-	// 	// var autoplay = _.once(function() {
-	// 	// 	this._validatePlayback();
-	// 	// }.bind(this));
-	// 	
-	// 	// if (!this.model.selected) {
-	// 	// 	this.listenToOnce(this.model, "selected", function(model) {
-	// 	// 		if (this.parentView.scrolling) {
-	// 	// 			this.listenToOnce(this.parentView, "view:scrollend", function() {
-	// 	// 				this._validatePlayback();
-	// 	// 			});
-	// 	// 		} else {
-	// 	// 			this._validatePlayback();
-	// 	// 		}
-	// 	// 	});
-	// 	// } else {
-	// 	// 	this._validatePlayback();
-	// 	// }
-	// },
 	
 	properties: {
 		paused: {
@@ -280,7 +327,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 	},
 	
 	initializeSequence: function() {
-		
 		// Sequence model
 		// ---------------------------------
 		this.sources = this._createSourceCollection(this.model);
@@ -310,26 +356,34 @@ var SequenceRenderer = PlayableRenderer.extend({
 			el: this.getDefaultImage(),
 			model: this.sources.selected
 		}));
-		// create rest of views
-		var buffer = document.createDocumentFragment();
-		this.sources.each(function (item, index, arr) {
-			if (!this.itemViews.findByModel(item)) {
-				var view = new SequenceStepRenderer({ model: item });
-				this.itemViews.add(view);
-				buffer.appendChild(view.render().el);
-			}
-		}, this);
-		this.sequence.appendChild(buffer);
+		// // create rest of views
+		// var buffer = document.createDocumentFragment();
+		// this.sources.each(function (item, index, arr) {
+		// 	if (!this.itemViews.findByModel(item)) {
+		// 		var view = new SequenceStepRenderer({ model: item });
+		// 		this.itemViews.add(view);
+		// 		buffer.appendChild(view.render().el);
+		// 	}
+		// }, this);
+		// this.sequence.appendChild(buffer);
 		
 		// progress-meter
 		// ---------------------------------
 		this._sourceProgressByIdx = this.sources.map(function() { return 0; });
 		this._sourceProgressByIdx[0] = 1; // first item is already loaded
+		
 		this.progressMeter = new ProgressMeter({
-			total: this.sources.length,
-			available: this._sourceProgressByIdx.concat(),
+			values: {
+				available: this._sourceProgressByIdx.concat(),
+			},
+			maxValues: {
+				amount: this.sources.length,
+				available: this.sources.length,
+			},
+			
 			color: this.model.attrs()["color"],
 			backgroundColor: this.model.attrs()["background-color"],
+			
 			labelFn: function() { 
 				return (this.selectedIndex + 1) + "/" + this.length;
 			}.bind(this.sources)
@@ -338,17 +392,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 	},
 	
 	_createSourceCollection: function(mediaItem) {
-		// var opts = { silent: true };
 		var sources = new SourceCollection(mediaItem.get("srcset"));
-		// var srcset = mediaItem.get("srcset");
-		
-		// var defaultSrc = _.pick(mediaItem.attributes, ["src"]);
-		// // if not in srcset, create a model for defaultImage
-		// if (!_.some(srcset, _.matcher(defaultSrc))) {
-		// 	sources.add(defaultSrc, opts);
-		// }
-		// sources.add(srcset, opts);
-		
 		// bind sources[0].prefetched to this.model.prefetched
 		var defaultModel = sources.at(0);
 		if (mediaItem.has("prefetched")) {
@@ -364,17 +408,79 @@ var SequenceRenderer = PlayableRenderer.extend({
 		return sources;
 	},
 	
+	_preloadAllSources: function(view) {
+		view.once("view:remove", function() {
+			var opts = { silent: true };
+			view.sources.forEach(function(item, index, sources) {
+				var prefetched = item.get("prefetched");
+				if (prefetched && /^blob\:/.test(prefetched)) {
+					item.unset("prefetched", opts);
+					URL.revokeObjectURL(prefetched);
+				}
+			});
+		});
+		return view.sources.reduce(function(lastPromise, item, index, sources) {
+			return lastPromise.then(function(view) {
+				if (item.has("prefetched")) {
+					view._updateSourceProgress(1, index);
+					return view;
+				} else {
+					var sUrl = Globals.MEDIA_DIR + "/" + item.get("src");
+					return _loadImageAsObjectURL(sUrl, function(progress) {
+						view._updateSourceProgress(progress, index);
+					}).then(function(pUrl) {
+						item.set("prefetched", pUrl);
+						view._updateSourceProgress(1, index);
+						view._createSourceRenderer(item);
+						return view;
+					}, function(err) {
+						item.set("error", err);
+						view._updateSourceProgress(0, index);
+						view._createSourceRenderer(item);
+						return view;
+					});
+				}
+			});
+		}, Promise.resolve(view));
+	},
+	
+	// _preloadAllSources2: function(view) {
+	// 	return view.sources.reduce(function(lastPromise, item, index, sources) {
+	// 		return lastPromise.then(function(view) {
+	// 			var itemView = view._createSourceRenderer(item);
+	// 			return _whenImageLoads(itemView.el).then(function(url){
+	// 				view._updateSourceProgress(1, index);
+	// 				return view;
+	// 			}, function(err) {
+	// 				view._updateSourceProgress(0, index);
+	// 				item.set("error", err);
+	// 				return view;
+	// 			});
+	// 		});
+	// 	}, Promise.resolve(view));
+	// },
+	
+	_createSourceRenderer: function(item) {
+		var view = this.itemViews.findByModel(item);
+		if (!view) {
+			// var renderer = item.has("error")? SourceErrorRenderer : SequenceStepRenderer;
+			// view = new renderer({ model: item });
+			view = new SequenceStepRenderer({ model: item });
+			this.itemViews.add(view);
+			this.sequence.appendChild(view.render().el);
+		}
+		return view;
+	},
+	
+	_updateSourceProgress: function(progress, index) {
+		this._sourceProgressByIdx[index] = progress;
+		if (this.progressMeter)
+			this.progressMeter.valueTo(this._sourceProgressByIdx, 300, "available");
+	},
+	
 	/* ---------------------------
 	/* PlayableRenderer overrides
 	/* --------------------------- */
-	
-	/** @override */
-	// _onModelSelected: function() {
-	// 	this.togglePlayback(true);
-	// 	return PlayableRenderer.prototype._onModelSelected.apply(this, arguments);
-	// 	// this.content.addEventListener("click", this._onContentClick, false);
-	// 	// this.listenTo(this, "view:removed", this._removeClickHandler);
-	// },
 	
 	/** @override */
 	togglePlayback: function(newPlayState) {
@@ -398,140 +504,89 @@ var SequenceRenderer = PlayableRenderer.extend({
 	
 	_play: function() {
 		if (!this._paused) return;
-		
 		this._paused = false;
 		this.playbackState = "media";
 		if (this.timer.getStatus() === "paused") {
 			this.timer.start(); // resume, actually
 		} else {
-			// this.listenToOnce(this.timer, "end", this._onTimerEnd);
 			this.timer.start(this._sequenceInterval);
 		}
-		console.log("%s::_play()", this.cid);
 	},
 	
 	_pause: function() {
 		if (this._paused) return;
-		
 		this._paused = true;
 		if (this.timer.getStatus() === "started") {
 			this.timer.pause();
 		}
 		this.playbackState = "user-resume";
-		console.log("%s::_pause()", this.cid);
 	},
 	
 	_onTimerEnd: function() {
-		console.log("%s::%_onTimerEnd [%s] idx: %i dur: %ims [%s]", this.cid,
-			this.timer.getStatus(),
-			this.sources.selectedIndex,
-			this.timer.getDuration(),
-			"step ended"
-		);
-		
 		var nextModel = this.sources.followingOrFirst();
+		var nextView = this.itemViews.findByModel(nextModel);
+		
 		var showNextStep = function() {
 			if (this.paused) {
 				this.playbackState = "user-resume";
 			} else {
 				this.sources.select(nextModel);// NOTE: step increase done here
-				// view.updateOverlay(view.itemViews.findByModel(nextModel).el, view.overlay);
+				// view.updateOverlay(nextView.el, view.overlay);
 				this.timer.start(this._sequenceInterval);
 				this.playbackState = "media";
 			}
 		};
-		var nextModelHandlers = {
-			"change:prefetched": showNextStep,
-			"change:error": showNextStep
-		};
 		
-		if (nextModel.has("prefetched")) {
-			nextModelHandlers["change:prefetched"].call(this);
-		} else if (nextModel.has("error")) {
-			nextModelHandlers["change:error"].call(this);
+		if (nextModel.has("prefetched") || nextModel.has("error")) {
+			showNextStep.call(this);
 		} else {
 			this.playbackState = "network";
-			this.listenToOnce(nextModel, nextModelHandlers);
+			this.listenTo(nextModel, "change:prefetched change:error", showNextStep);
 		}
+		
+		// if (nextView.el.complete || nextModel.has("error")) {
+		// 	showNextStep.call(this);
+		// } else {
+		// 	this.playbackState = "network";
+		// 	_whenImageLoads(nextView.el).then(showNextStep.bind(this));
+		// }
 	},
 	
 	_onTimerStart: function(duration) {
-		this.progressMeter.valueTo(this.sources.selectedIndex + 1, duration);
+		this.progressMeter.valueTo(this.sources.selectedIndex + 1, duration, "amount");
 	},
 	
 	_onTimerResume: function(duration) {
-		this.progressMeter.valueTo(this.sources.selectedIndex + 1, duration);
+		this.progressMeter.valueTo(this.sources.selectedIndex + 1, duration, "amount");
 	},
 	
 	_onTimerPause: function () {
-		this.progressMeter.valueTo(this.progressMeter.renderedValue);
+		this.progressMeter.valueTo(this.progressMeter.getRenderedValue("amount"));
 	},
 	
 	/* --------------------------- *
 	/* progress meter
 	/* --------------------------- */
 	
-	_updateSourceItemProgress: function(progress, index) {
-		this._sourceProgressByIdx[index] = progress;
-		if (this.progressMeter)
-			this.progressMeter.valueTo(this._sourceProgressByIdx, 300, "available");
-	},
-	
-	_preloadAllSources: function(view) {
-		var defaultSourceDataURL = null;
-		// var pSrc = view.sources.map(function(o, i, a) { return 0; });
-		view.once("view:remove", function(){
-			var opts = { silent: true };
-			view.sources.forEach(function(o, i, a) {
-				var prefetched = o.get("prefetched");
-				if (prefetched && /^blob\:/.test(prefetched)) {
-					o.unset("prefetched", opts);
-					URL.revokeObjectURL(prefetched);
-				}
-			});
-		});
-		return view.sources.reduce(function(p, o, i, a) {
-			return p.then(function(view) {
-				var sUrl = Globals.MEDIA_DIR + "/" + o.get("src");
-				if (o.has("prefetched")) {
-					view._updateSourceItemProgress(1, i);
-					return view;
-				} else {
-					return _loadImageAsObjectURL(sUrl, function(progress) {
-						view._updateSourceItemProgress(progress, i);
-					}).then(function(pUrl) {
-						view._updateSourceItemProgress(1, i);
-						o.set("prefetched", pUrl);
-						return view;
-					}, function(err) {
-						view._updateSourceItemProgress(0, i);
-						o.set("error", err);
-						return view;
-					});
-				}
-			});
-		}, Promise.resolve(view));
-	},
-	
-	_createDefaultSourceData: function() {
-		var canvas = document.createElement("canvas");
-		var context = canvas.getContext("2d");
-		var imageData = this._drawMediaElement(context).getImageData(0, 0, canvas.width, canvas.height);
-		
-		var opts = { radius: 20 };
-		var fgColor = new Color(this.model.attrs()["color"]);
-		var bgColor = new Color(this.model.attrs()["background-color"]);
-		var isFgDark = fgColor.luminosity() < bgColor.luminosity();
-		opts.x00 = isFgDark? fgColor.clone().lighten(0.33) : bgColor.clone().darken(0.33);
-		opts.xFF = isFgDark? bgColor.clone().lighten(0.33) : fgColor.clone().darken(0.33);
-		
-		stackBlurMono(imageData, opts);
-		duotone(imageData, opts);
-		// stackBlurRGB(imageData, opts);
-		
-		context.putImageData(imageData, 0, 0);
-		return canvas.toDataURL();
-	},
+	// _createDefaultSourceData: function() {
+	// 	var canvas = document.createElement("canvas");
+	// 	var context = canvas.getContext("2d");
+	// 	var imageData = this._drawMediaElement(context).getImageData(0, 0, canvas.width, canvas.height);
+	// 	
+	// 	var opts = { radius: 20 };
+	// 	var fgColor = new Color(this.model.attrs()["color"]);
+	// 	var bgColor = new Color(this.model.attrs()["background-color"]);
+	// 	var isFgDark = fgColor.luminosity() < bgColor.luminosity();
+	// 	opts.x00 = isFgDark? fgColor.clone().lighten(0.33) : bgColor.clone().darken(0.33);
+	// 	opts.xFF = isFgDark? bgColor.clone().lighten(0.33) : fgColor.clone().darken(0.33);
+	// 	
+	// 	stackBlurMono(imageData, opts);
+	// 	duotone(imageData, opts);
+	// 	// stackBlurRGB(imageData, opts);
+	// 	
+	// 	context.putImageData(imageData, 0, 0);
+	// 	return canvas.toDataURL();
+	// },
 });
 
 if (DEBUG) {
@@ -542,20 +597,25 @@ SequenceRenderer = (function(SequenceRenderer) {
 	return SequenceRenderer.extend({
 		__logTimerEvent: function(evname, msg) {
 			var logMsg = [
-				"idx:", lpad(this.sources.selectedIndex, 2),
-				"dur:", lpad(this.timer.getDuration(), 4),
-				"timer:", this.timer.getStatus()
+				"source: ", lpad(this.sources.selectedIndex, 2),
+				"duration:", lpad(this.timer.getDuration(), 4),
+				"status:", this.timer.getStatus()
 			];
 			msg && logMsg.push(msg);
-			this.__logMessage(logMsg.join(" "), evname);
+			logMsg = logMsg.join(" ");
+			
+			this.__logMessage(logMsg, evname);
+			console.log("%s::[%s] %s", this.cid, evname, logMsg);
 		},
 		_play: function() {
 			this.__logTimerEvent("playback");
 			SequenceRenderer.prototype._play.apply(this, arguments);
+			console.log("%s::_play()", this.cid);
 		},
 		_pause: function() {
 			this.__logTimerEvent("playback");
 			SequenceRenderer.prototype._pause.apply(this, arguments);
+			console.log("%s::_pause()", this.cid);
 		},
 		
 		_onTimerStart: function() {
@@ -575,11 +635,11 @@ SequenceRenderer = (function(SequenceRenderer) {
 			SequenceRenderer.prototype._onTimerEnd.apply(this, arguments);
 		},
 		
-		_updateSourceItemProgress: function(progress, srcIdx) {
+		_updateSourceProgress: function(progress, srcIdx) {
 			if (progress == 1) {
 				this.__logMessage("idx:" + srcIdx + " progress:" + progress, "load:progress");
 			}
-			SequenceRenderer.prototype._updateSourceItemProgress.apply(this, arguments);
+			SequenceRenderer.prototype._updateSourceProgress.apply(this, arguments);
 		},
 		
 		_preloadAllSources: function(view) {

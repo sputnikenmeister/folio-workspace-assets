@@ -3,8 +3,8 @@ var _ = require("underscore");
 /** @type {module:underscore.string/lpad} */
 var classify = require("underscore.string/classify");
 
-var statusMsg = _.template("<%= status %> received from <%= url %> (<%= statusText %>)");
-var errMsg = _.template("'<%= errName %>' ocurred during request <%= url %>");
+// var statusMsg = _.template("<%= status %> received from <%= url %> (<%= statusText %>)");
+// var errMsg = _.template("'<%= errName %>' ocurred during request <%= url %>");
 
 if (window.XMLHttpRequest && window.URL && window.Blob) {
 	module.exports = function (url, progressFn) {
@@ -33,7 +33,7 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 					err.infoCode = request.status;
 					err.infoSrc = url;
 					err.logEvent = ev;
-					err.logMessage = "_loadImageAsObjectURL::onload [reject]";
+					err.logMessage = "_loadImageAsObjectURL::" + ev.type + " [reject]";
 					reject(err);
 				}
 			};
@@ -44,7 +44,7 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 				err.infoCode = -1;
 				err.infoSrc = url;
 				err.logEvent = ev;
-				err.logMessage = "_loadImageAsObjectURL::onerror [reject]";
+				err.logMessage = "_loadImageAsObjectURL::" + ev.type + " [reject]";
 				reject(err);
 			};
 			request.onabort = request.ontimeout = request.onerror;

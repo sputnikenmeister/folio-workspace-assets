@@ -31,7 +31,7 @@ var SVGCircleProgressMeter = View.extend({
 	initialize: function (options) {
 		// ProgressMeter.prototype.initialize.apply(this, arguments);
 		this._value = options.value || 0;
-		this._total = options.total || 1;
+		this._maxVal = options.total || 1;
 		
 		this._transitionStartTime = -1;
 		this._valuesChanged = true;
@@ -61,13 +61,13 @@ var SVGCircleProgressMeter = View.extend({
 				this._transitionStartTime = -1;
 			}
 			this.amountShape.style[prefixed("transition")] = tx;
-			this.amountShape.style.strokeDashoffset = (1 - (this._value/this._total)) * this._params.c;
+			this.amountShape.style.strokeDashoffset = (1 - (this._value/this._maxVal)) * this._params.c;
 		}
 		return this;
 	},
 	
 	createChildren: function() {
-		var s, p, total = this._total;
+		var s, p, total = this._maxVal;
 		
 		// sw: step mark width in px
 		// p = { d: 24, s1: 1.6, s2: 1.4, sw: 2.75 };

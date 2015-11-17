@@ -19,8 +19,11 @@ module.exports = function(image) {
 					resolve(image);
 				},
 				error: function(ev) {
-					var err = new Error("Failed to load image from (" + ev.type + "): " + image.src);
-					err.event = ev;
+					var err = new Error("Loading failed (" + ev.type + " event)");
+					err.infoCode = -1;
+					err.infoSrc = image.src;
+					err.logEvent = ev;
+					err.logMessage = "_whenImageLoads::" + ev.type + " [reject]";
 					removeEventListeners();
 					reject(err);
 				}
