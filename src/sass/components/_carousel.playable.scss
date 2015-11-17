@@ -40,11 +40,26 @@
 // .overlay .play-toggle
 // - - - - - - - - - - - - - - - - -
 .playable-renderer {
-	$symbol-class: ".play-toggle";
+	// hit-area
+	.play-toggle-hitarea {
+		// $size: 50%;//12em; 
+		// width: $size; height: $size;
+		// left: calc(50% - #{$size/2}); top: calc(50% - #{$size/2}); 
+		// margin-left: $size/2; margin-top: $size/2;
+		width: auto; height: auto;
+		top: 1em; bottom: 1em; left: 1em; right: 1em;
+		cursor: pointer;
+		display: block;
+		position: absolute;
+	}
+	// :not(.pending-media) .play-toggle-hitarea {
+	// 	background-color: rgba(255,0,255,0.2);
+	// }
 	// layout
 	.play-toggle {
 		background-size: 3rem 3rem;
 		background-position: bottom left;
+		// background-position: top right;
 		background-repeat: no-repeat;
 	}
 	// .pending-user-play .play-toggle {
@@ -82,21 +97,6 @@
 		// 	opacity $duration $ease 0.001s,
 		// 	visibility $duration step-start 0.001s;
 	}
-	// hit-area
-	.play-toggle-hitarea {
-		$size: 50%;//12em; 
-		display: block;
-		position: absolute;
-		// width: $size; height: $size;
-		// left: calc(50% - #{$size/2}); top: calc(50% - #{$size/2}); 
-		// margin-left: $size/2; margin-top: $size/2;
-		width: auto; height: auto;
-		top: 1em; bottom: 1em; left: 1em; right: 1em;
-		cursor: pointer;
-	}
-	// :not(.pending-media) .play-toggle-hitarea {
-	// 	background-color: rgba(255,0,255,0.2);
-	// }
 }
 
 // - - - - - - - - - - - - - - - - - -
@@ -210,11 +210,11 @@
 		width: 3rem; height: 3rem;
 		// flex-basis: 3rem;
 	}
-	.canvas-progress-meter {
-		overflow: hidden;
-		transition: none 0s 0s;
-		// font-size: 80%;
-	}
+	// .canvas-progress-meter {
+	// 	overflow: hidden;
+	// 	transition: none 0s 0s;
+	// 	// font-size: 80%;
+	// }
 	.svg-progress-meter {
 		#label {
 			font-size: 140%;

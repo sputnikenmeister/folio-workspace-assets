@@ -36,12 +36,12 @@ var ModelProgressMeterProto = {
 	properties: {
 		value: {
 			get: function() {
-				return this._renderData[this.defaultKey]._value;
+				return this._valueData[this.defaultKey]._value;
 			}
 		},
 		renderedValue: {
 			get: function() {
-				return this._renderData[this.defaultKey]._renderedValue;
+				return this._valueData[this.defaultKey]._renderedValue;
 			}
 		},
 	},
@@ -56,7 +56,7 @@ var ModelProgressMeterProto = {
 	
 	/** @override */
 	initialize: function (options) {
-		this._renderData = {};
+		this._valueData = {};
 		this._renderKeys = [];
 		
 		options = _.defaults(options, this.defaults);
@@ -70,7 +70,7 @@ var ModelProgressMeterProto = {
 			key = this.interpolated[i];
 			value = options[key];
 			if (value !== void 0) {
-				this._renderData[key] = Array.isArray(value)? 
+				this._valueData[key] = Array.isArray(value)? 
 					value.map(initValue, this):
 					this._initValue(value);
 			}
@@ -82,7 +82,7 @@ var ModelProgressMeterProto = {
 	
 	remove: function() {
 		this._renderKeys.length = 0;
-		// this._renderData = null;
+		// this._valueData = null;
 		// this._duration = 0;
 		if (this._nextRafId !== -1) {
 			this.cancelAnimationFrame(this._nextRafId);
@@ -96,8 +96,7 @@ var ModelProgressMeterProto = {
 	
 	valueTo: function (value, duration, key) {
 		key || (key = this.defaultKey);
-		var dataObj = this._renderData[key];
-		var changed = false;
+		var changed, dataObj = this._valueData[key];
 		
 		if (Array.isArray(dataObj)) {
 			changed = value.reduce(function(prevChanged, itemValue, i) {
@@ -149,7 +148,8 @@ var ModelProgressMeterProto = {
 	
 	/** @override */
 	render: function () {
-		if (!this._rendering && this._valuesChanged) {
+		// if (!this._rendering && this._valuesChanged) {
+		if (this._valuesChanged) {
 			this._valuesChanged = false;
 		 	if (this._nextRafId === -1) {
 				this._nextRafId = this.requestAnimationFrame(this.renderFrame);
@@ -163,14 +163,12 @@ var ModelProgressMeterProto = {
 	/* --------------------------- */
 	
 	renderFrame: function(tstamp) {
-		if (this._rendering) {
-			throw new Error("nested renderFrame?");
-		}
+		if (this._rendering) throw new Error("recursive call to renderFrame");
 		this._rendering = true;
 		
 		var changedKeys = this._renderKeys;
 		this._renderKeys = changedKeys.filter(function(key) {
-			var dataObj = this._renderData[key];
+			var dataObj = this._valueData[key];
 			if (Array.isArray(dataObj)) {
 				return dataObj.reduce(function(continueNext, o) {
 					return this.interpolateNumber(tstamp, o) || continueNext;
@@ -191,8 +189,8 @@ var ModelProgressMeterProto = {
 			o._startTime = tstamp;
 		}
 		var elapsed = tstamp - o._startTime;
+		o._lastRenderedValue = o._renderedValue;
 		if (elapsed < o._duration) {
-			o._lastRenderedValue = o._renderedValue;
 			if (o._total !== void 0 && o._valueDelta < 0) {
 				o._renderedValue = linear(elapsed, o._startValue,
 					o._valueDelta + o._total, o._duration) - o._total;

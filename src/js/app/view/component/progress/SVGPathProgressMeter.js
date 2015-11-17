@@ -50,7 +50,7 @@ var SVGPathProgressMeter = ModelProgressMeter.extend({
 		ModelProgressMeter.prototype.initialize.apply(this, arguments);
 		
 		// steps
-		// var val = this._renderData["available"]._value;
+		// var val = this._valueData["available"]._value;
 		// this._steps = Array.isArray(val)? val.length: 0;
 		// this._steps = options.steps;
 		
@@ -84,7 +84,7 @@ var SVGPathProgressMeter = ModelProgressMeter.extend({
 		
 		// available
 		// --------------------------------
-		var stepsNum = this._renderData["available"].length || 1;
+		var stepsNum = this._valueData["available"].length || 1;
 		var stepBaseArc = (1 / stepsNum) * Math.PI*2; // step angle span (no gap)
 		var stepStartArc = startArc; // step start initial value (90deg CCW + half-gap CW)
 		
@@ -146,7 +146,7 @@ var SVGPathProgressMeter = ModelProgressMeter.extend({
 		var o, p, pChild, val;
 		
 		// update "available"
-		o = this._renderData["available"];
+		o = this._valueData["available"];
 		p = this._shapeData["available"];
 		if (Array.isArray(o)) {
 			for (var i = 0, ii = o.length; i < ii; i++) {
@@ -164,7 +164,7 @@ var SVGPathProgressMeter = ModelProgressMeter.extend({
 		}
 		
 		// update "amount"
-		o = this._renderData["amount"];
+		o = this._valueData["amount"];
 		val = 1 - (o._renderedValue/o._total);
 		p = this._shapeData["amountClear"];
 		p.shape.style.strokeDashoffset = (val * p.spanLength) - (p.radius * this._gapArc * 0.5);

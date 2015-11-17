@@ -69,7 +69,7 @@ var VideoRenderer = PlayableRenderer.extend({
 			"_updateBufferedValue",
 			"_onMediaError",
 			"_onMediaEnded",
-			"_onMediaPlayingOnce",
+			"_onMediaFirstPlaying",
 			"_onFullscreenChange"
 		);
 		// var updateSelectionDistance = function() {
@@ -160,7 +160,6 @@ var VideoRenderer = PlayableRenderer.extend({
 	initializeAsync: function() {
 		return Promise.resolve(this)
 			.then(PlayableRenderer.whenSelectionIsContiguous)
-			// .then(PlayableRenderer.whenSelectTransitionEnds)
 			.then(PlayableRenderer.whenScrollingEnds)
 			.then(
 				function(view) {
@@ -183,7 +182,7 @@ var VideoRenderer = PlayableRenderer.extend({
 					view.updateOverlay(view.getDefaultImage(), view.el.querySelector(".overlay"));
 					view.progressMeter = new ProgressMeter({
 						// value: view._currentTimeValue,
-						available: view._bufferedValue,
+						// available: view._bufferedValue,
 						total: view.video.duration,
 						color: view.model.attrs()["color"],
 						backgroundColor: view.model.attrs()["background-color"],
@@ -191,7 +190,6 @@ var VideoRenderer = PlayableRenderer.extend({
 					});
 					var parentEl = view.el.querySelector(".top-bar");
 					parentEl.insertBefore(view.progressMeter.render().el, parentEl.firstChild);
-					
 					return view;
 				});
 	},
@@ -263,27 +261,6 @@ var VideoRenderer = PlayableRenderer.extend({
 	/* PlayableRenderer overrides
 	/* --------------------------- */
 	
-	// /** @override */
-	// setEnabled: function(enabled) {
-	// 	PlayableRenderer.prototype.setEnabled.apply(this, arguments);
-	// 	
-	// 	// if (enabled) {
-	// 	// 	if (this._lastPlayState) {
-	// 	// 		this.video.play();
-	// 	// 	}
-	// 	// 	this._lastPlayState = void 0;
-	// 	// } else {
-	// 	// 	this._lastPlayState = !this.video.paused;
-	// 	// 	if (this._lastPlayState) {
-	// 	// 		this.video.pause();
-	// 	// 	}
-	// 	// }
-	// 	// this.togglePlayback(enabled);
-	// 	
-	// 	this._enabled = enabled;
-	// 	!enabled && !this.video.paused && this.video.pause();
-	// },
-	
 	togglePlayback: function(newPlayState) {
 		// is playback changing?
 		if (_.isBoolean(newPlayState) && newPlayState !== this.video.paused) {
@@ -311,13 +288,13 @@ var VideoRenderer = PlayableRenderer.extend({
 	/* --------------------------- */
 	
 	addMediaListeners: function() {
-		this.video.addEventListener("error", this._onMediaError, true);
 		//loadeddata progress canplay canplaythrough
 		this.addListener(this.video, "progress canplay canplaythrough timeupdate", this._updateBufferedValue);
 		this.addListener(this.video, "playing waiting pause seeking", this._updatePlaybackState);
 		this.addListener(this.video, "timeupdate", this._updatePlayedValue);
-		this.video.addEventListener("playing", this._onMediaPlayingOnce, false);
+		this.video.addEventListener("playing", this._onMediaFirstPlaying, false);
 		this.video.addEventListener("ended", this._onMediaEnded, false);
+		this.video.addEventListener("error", this._onMediaError, true);
 		
 		this.on("view:removed", this.removeMediaListeners, this);
 	},
@@ -325,12 +302,12 @@ var VideoRenderer = PlayableRenderer.extend({
 	removeMediaListeners: function() {
 		this.off("view:removed", this.removeMediaListeners, this);
 		
-		this.video.removeEventListener("error", this._onMediaError, true);
 		this.removeListener(this.video, "progress canplay canplaythrough timeupdate", this._updateBufferedValue);
 		this.removeListener(this.video, "playing waiting pause seeking", this._updatePlaybackState);
 		this.removeListener(this.video, "timeupdate", this._updatePlayedValue);
-		this.video.removeEventListener("playing", this._onMediaPlayingOnce, false);
+		this.video.removeEventListener("playing", this._onMediaFirstPlaying, false);
 		this.video.removeEventListener("ended", this._onMediaEnded, false);
+		this.video.removeEventListener("error", this._onMediaError, true);
 	},
 	
 	/* ---------------------------
@@ -371,8 +348,11 @@ var VideoRenderer = PlayableRenderer.extend({
 		}
 	},
 	
-	_onMediaPlayingOnce: function(ev) {
-		this.video.removeEventListener("playing", this._onFirstPlaying, false);
+	_onMediaFirstPlaying: function(ev) {
+		this.video.removeEventListener("playing", this._onMediaFirstPlaying, false);
+		if (this._bufferedValue > 0) {
+			this.progressMeter.valueTo(this._bufferedValue, 300, "available");
+		}
 		if (this.getContentEl().classList.contains("not-played")) {
 			// this.poster.style.display = "none";
 			this.getContentEl().classList.remove("not-played");
@@ -403,7 +383,7 @@ var VideoRenderer = PlayableRenderer.extend({
 	_updateBufferedValue: function(ev) {
 		var bRanges = this.video.buffered;
 		if (bRanges.length > 0) {
-			var lastValue = this._bufferedValue || 0;
+			// var lastValue = this._bufferedValue || 0;
 			this._bufferedValue = bRanges.end(bRanges.length - 1);
 			if (!this.video.paused && this.progressMeter) {
 				// var dur = Math.max(0, (this._bufferedValue - lastValue) * 1000);
@@ -414,29 +394,14 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 	
 	_updatePlayedValue: function(ev) {
-		var lastValue = this._currentTimeValue || 0;
+		// var lastValue = this._currentTimeValue || 0;
 		this._currentTimeValue = this.video.currentTime;
 		if (this.progressMeter) {
-			this.progressMeter.valueTo(this._currentTimeValue);
+			// var dur = Math.max(0, (this._currentTimeValue - lastValue) * 1000);//1000 * 0.99);
+			// this.progressMeter.valueTo(this._currentTimeValue, dur, "amount");
+			this.progressMeter.valueTo(this._currentTimeValue, 0, "amount");
 		}
 	},
-	
-	// _updatePlayedValue_timeline: function(ev) {
-	// 	this.playedRect.setAttribute("width",
-	// 		((this.video.currentTime / this.video.duration) * 100) + "%");
-	// 	this.durationLabel.textContent =
-	// 		formatTimecodeLeft(this.video.currentTime, this.video.duration);
-	// 	this.currentTimeLabel.textContent =
-	// 		formatTimecode(this.video.currentTime, this.video.duration);
-	// },
-	// 
-	// _updateBufferedValue_timeline: function(ev) {
-	// 	var bRanges = this.video.buffered;
-	// 	if (bRanges.length > 0) {
-	// 		this.bufferedRect.setAttribute("width",
-	// 			((bRanges.end(bRanges.length - 1) / this.video.duration) * 100) + "%");
-	// 	}
-	// },
 	
 	/* ---------------------------
 	/* fullscreen api
@@ -466,7 +431,7 @@ var VideoRenderer = PlayableRenderer.extend({
 		switch (ev.type) {
 			case fullscreenChangeEvent:
 				// var isOwnFullscreen = Modernizr.prefixed("fullscreenElement", document) === this.video;
-				var isOwnFullscreen =  document.fullscreenElement === this.video;
+				var isOwnFullscreen = document.fullscreenElement === this.video;
 				this.video.controls = isOwnFullscreen;
 				if (!isOwnFullscreen) {
 					document.removeEventListener(fullscreenChangeEvent, this._onFullscreenChange, false);
@@ -483,31 +448,6 @@ var VideoRenderer = PlayableRenderer.extend({
 				break;
 		}
 	},
-	
-	// _handlePollChangeEvent: function(ev) {
-	// 	if (ev.type === "play") {
-	// 		if (this._pollIntervalID) {
-	// 			console.warn(this.cid, ev.type, "_pollIntervalID is set", this._pollIntervalID);
-	// 			window.clearInterval(this._pollIntervalID);
-	// 		} else {
-	// 			this._pollIntervalID = window.setInterval(this._onPollInterval, 500);
-	// 			console.info(this.cid, ev.type, "started _pollIntervalID", this._pollIntervalID);
-	// 		}
-	// 	} else if (ev.type === "pause") {
-	// 		if (this._pollIntervalID) {
-	// 			console.info(this.cid, ev.type, "clearing _pollIntervalID", this._pollIntervalID);
-	// 			window.clearInterval(this._pollIntervalID);
-	// 			this._pollIntervalID = void 0;
-	// 		} else {
-	// 			console.warn(this.cid, ev.type, "_pollIntervalID not set");
-	// 		}
-	// 	}
-	// },
-	
-	// _onPollInterval: function() {
-	// 	this._logMediaEvent();
-	// 	if (!this.model.selected) console.warn(this.cid, "_onPollInterval ran on deselected model");
-	// },
 });
 
 /* ---------------------------
@@ -529,8 +469,9 @@ VideoRenderer = (function(VideoRenderer) {
 		"webkitbeginfullscreen","webkitendfullscreen",
 	];
 	
-	var mediaEvents = _.without(require("utils/event/mediaEventsEnum"), "resize", "error"),
-		updatePlaybackStateEvents = ["playing", "waiting", "ended", "pause", "seeking", "seeked"],
+	var mediaEvents = [];
+	// var mediaEvents = _.without(require("utils/event/mediaEventsEnum"), "resize", "error");
+	var updatePlaybackStateEvents = ["playing", "waiting", "ended", "pause", "seeking", "seeked"],
 		updateBufferedEvents = ["progress", "durationchange", "canplay", "play"],
 		updatePlayedEvents = ["playing", "timeupdate"];
 	
