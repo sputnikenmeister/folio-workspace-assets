@@ -44,6 +44,7 @@ module.exports = (function () {
 	// - - - - - - - - - - - - - - - - -
 	g.APP_ROOT		=	window.approot;
 	g.MEDIA_DIR		=	window.mediadir;
+	g.MEDIA_DIR_SLOW = window.mediadir.replace(/(https?\:\/\/[^\/]+)/, "$1/slow/100");
 	delete window.approot;
 	delete window.mediadir;
 	

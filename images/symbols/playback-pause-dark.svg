@@ -1,0 +1,9 @@
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-200 -200 400 400" preserveAspectRatio="xMidYMid meet" style="stroke:none">
+<defs>
+	<!-- <path id="rr" d="M-70 -70 H 70 V 70 H -70 Z"/> -->
+	<path id="rr" d="M-70 -70 h 50 v 140 h -50 Z M20 -70 h 50 v 140 h -50 Z"/>
+</defs>
+<rect x="-200" y="-200" width="400" height="400" rx="10" style="fill:#fff;fill-opacity:0.8"/>
+<use xlink:href="#rr" style="fill:#fff" transform="translate(5 5)"/>
+<use xlink:href="#rr" style="fill:#000"/>
+</svg>

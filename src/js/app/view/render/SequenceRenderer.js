@@ -380,14 +380,19 @@ var SequenceRenderer = PlayableRenderer.extend({
 				amount: this.sources.length,
 				available: this.sources.length,
 			},
-			
 			color: this.model.attrs()["color"],
 			backgroundColor: this.model.attrs()["background-color"],
-			
-			labelFn: function() { 
-				return (this.selectedIndex + 1) + "/" + this.length;
-			}.bind(this.sources)
+			labelFn: function() {
+				return (this.sources.selectedIndex + 1) + "/" + this.sources.length;
+			}.bind(this)
 		});
+		
+		// labelFn: function() { // play: 0x23F5, pause: 0x23F8, stop: 0x23F9
+		// 	return this._paused?
+		// 		String.fromCharCode(0x23F5) :
+		// 		(this.sources.selectedIndex + 1) + "/" + this.sources.length;
+		// }.bind(this)
+		
 		this.el.querySelector(".top-bar").appendChild(this.progressMeter.render().el);
 	},
 	

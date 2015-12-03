@@ -24,17 +24,24 @@
 	visibility: hidden;
 	opacity: 0;
 }
-.carousel.scrolling .playable-renderer .overlay {
-	transition-property: visibility, opacity;
-	transition-timing-function: step-end;
-	transition-duration: $duration * 3;
-}
-.carousel:not(.scrolling) .playable-renderer.selected .overlay {
+.playable-renderer.selected .overlay {
 	visibility: visible;
 	opacity: 1;
+}
+// .carousel:not(.scrolling) .playable-renderer.selected .overlay {
+// 	visibility: visible;
+// 	opacity: 1;
+// }
+
+.carousel .playable-renderer .overlay {
 	transition-property: visibility, opacity;
 	transition-timing-function: step-start, $ease;
-	transition-duration: $duration;
+	transition-duration: $duration * 3;
+}
+.carousel:not(.panning) .playable-renderer.selected .overlay {
+	transition-property: visibility, opacity;
+	transition-timing-function: step-end;
+	transition-duration: $duration * 1;
 }
 
 // .overlay .play-toggle
@@ -55,19 +62,19 @@
 	// :not(.pending-media) .play-toggle-hitarea {
 	// 	background-color: rgba(255,0,255,0.2);
 	// }
-	// layout
+	
+	// play-toggle
 	.play-toggle {
+		background-repeat: no-repeat;
 		background-size: 3rem 3rem;
 		background-position: bottom left;
 		// background-position: top right;
-		background-repeat: no-repeat;
 	}
 	// .pending-user-play .play-toggle {
 	.not-played .play-toggle {
 		background-size: 6rem 6rem;
 		background-position: center;
 	}
-	// content
 	&, .pending-user-play, .pending-user-resume { 
 		.play-toggle { background-image: base64_encode("symbols/playback-play.svg"); }
 		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-play-dark.svg"); }
@@ -81,23 +88,86 @@
 		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-wait-dark.svg");}
 	}
 	.pending-media {
-		.play-toggle {background-image: none;}
+		.play-toggle { background-image: none;}
 		.over-dark .play-toggle { background-image: none;}
 	}
-	// visibility
 	.play-toggle {
 		opacity: 1;
 		visibility: visible;
 	}
-	&.selected .play-toggle {
-		transition-property: visibility, opacity;
-		transition-timing-function: step-start, $ease;
-		transition-duration: $duration;
-		// transition:
-		// 	opacity $duration $ease 0.001s,
-		// 	visibility $duration step-start 0.001s;
-	}
+	
+	// &.selected .play-toggle {
+	// 	transition-property: visibility, opacity;
+	// 	transition-timing-function: step-start, $ease;
+	// 	transition-duration: $duration;
+	// 	// transition:
+	// 	// 	opacity $duration $ease 0.001s,
+	// 	// 	visibility $duration step-start 0.001s;
+	// }
+		
 }
+
+// NOTE: debug only!!!
+// .scrolling .selected .play-toggle-hitarea:active {
+// 	outline: 1rem solid rgba(255,0,0,0.8); outline-offset: -1rem;
+// }
+// :not(.scrolling) .selected .play-toggle-hitarea:active {
+// 	outline: 1rem solid rgba(0,255,0,0.8); outline-offset: -1rem;
+// }
+
+// .play-toggle-hitarea {
+// 	opacity: 0;
+// 	transform-origin: center;
+// 	transform: scale(1.00, 1.00);
+// }
+// .selected .play-toggle-hitarea:active {
+// 	// opacity: 1;
+// 	animation-name: playtoggleactive;
+// 	animation-fill-mode: forwards;
+// 	animation-duration: 0.25s;
+// 	animation-timing-function: ease-in;
+// 	// animation-delay: 0.25s;
+// }
+// .scrolling .selected .play-toggle-hitarea:not(:active) {
+// 	// opacity: 0;
+// 	animation-name: playtogglecancel;
+// 	animation-fill-mode: both;
+// 	animation-duration: 0.25s;
+// 	animation-timing-function: ease-out;
+// 	// animation-delay: 0.0s;
+// }
+// :not(.scrolling) .selected .play-toggle-hitarea:not(:active)  {
+// 	// opacity: 0;
+// 	animation-name: playtogglerelease;
+// 	animation-fill-mode: both;
+// 	animation-duration: 0.50s;
+// 	animation-timing-function: ease-out;
+// 	// animation-delay: 0.0s;
+// }
+// // :not(.scrolling) {
+// .playable-renderer {
+// 	.pending-user-play, .pending-user-replay, .pending-user-resume { 
+// 		.play-toggle-hitarea:active { background-image: base64_encode("symbols/playback-play.svg"); }
+// 		.play-toggle-hitarea:not(:active) { background-image: base64_encode("symbols/playback-pause.svg"); }
+// 	}
+// 	.pending-media, .pending-network {
+// 		.play-toggle-hitarea:active { background-image: base64_encode("symbols/playback-pause.svg");}
+// 		.play-toggle-hitarea:not(:active) { background-image: base64_encode("symbols/playback-play.svg");}
+// 	}
+// }
+// /* background-image: none;}*/
+// @keyframes playtoggleactive {
+// 	0%   { opacity: 0.00; transform: scale(0.90, 0.90); }
+// 	100% { opacity: 1.00; transform: scale(1.00, 1.00); }
+// }
+// @keyframes playtogglecancel {
+// 	0%   { opacity: 1.00; transform: scale(1.00, 1.00); }
+// 	100% { opacity: 0.00; transform: scale(0.90, 0.90); }
+// }
+// @keyframes playtogglerelease {
+// 	0%   { opacity: 1.00; transform: scale(1.00, 1.00); }
+// 	100% { opacity: 0.00; transform: scale(1.20, 1.20); }
+// }
 
 // - - - - - - - - - - - - - - - - - -
 //  .playable-renderer .controls

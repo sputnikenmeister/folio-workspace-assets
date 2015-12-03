@@ -30,23 +30,19 @@ var PI2 = Math.PI*2;
 var MIN_CANVAS_RATIO = 2;
 var GAP_ARC = PI2/48;
 var CAP_SCALE = 2; // cap arc = GAP_ARC * CAP_SCALE
+var WAIT_CYCLE_VALUE = 1;
+var WAIT_CYCLE_MS = 300; // milliseconds per interpolation loop 
 
 var ARC_DEFAULTS = {
-	"amount": {
-		lineWidth: 0.8,
-	},
-	"available": {
-		// lineWidth: 1.8, lineDash: [0.3, 0.7],
-		lineWidth: 0.8,
-		inverse: "not-available",
-		// inverse2: "not-available2",
-	},
-	"not-available": {
-		lineWidth: 1, lineDash: [0.3, 0.7],
-	},
-	// "not-available2": {
-	// 	lineWidth: 1, lineDash: [0.7, 0.3],
-	// },
+	"amount": 			{ lineWidth: 0.8, radiusOffset: 0 },
+	// "available": 		{ lineWidth: 2.2, lineDash: [0.3, 0.7], inverse: "not-available" },
+	"not-available": 	{ lineWidth: 1.0, lineDash: [0.3, 0.7] },
+	"available": 		{ lineWidth: 0.8, inverse: "not-available" },
+	// "not-available": 	{ lineWidth: 1.0, lineDash: [0.3, 1.2] },
+	
+	// "wait": 			{ lineWidth: 2.2, lineDash: [0.3, 1.2] },
+	// "wait": 			{ lineWidth: 3.0, radiusOffset: 0, lineDash: [1.0, 3.0] },
+	// "wait": 			{ lineWidth: 0.8, radiusOffset: -3, lineDash: [2, 4] },
 };
 
 /**
@@ -66,18 +62,38 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		values: {
 			amount: 0,
 			available: 0,
-			loop: 0,
+			_loop: 0,
+			// _wait: 0,
 		},
 		maxValues: {
 			amount: 1,
 			available: 1,
 		},
+		indeterminate: false,
 		useOpaque: true,
 		labelFn: function(value, max) {
 			return ((value/max) * 100) | 0;
 		},
 	},
+	
 	defaultKey: "amount",
+	
+	// properties: {
+	// 	indeterminate: {
+	// 		get: function() {
+	// 			return this._indeterminate;
+	// 		},
+	// 		set: function(value) {
+	// 			if ((this._indeterminate === true && value === false) || (this._indeterminate === false && value === true)) {
+	// 				this._indeterminate = value;
+	// 				this.valueTo(0, 0, "_wait");
+	// 				if (value) {
+	// 					this.valueTo(WAIT_CYCLE_VALUE, WAIT_CYCLE_MS, "_wait");
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// },
 	
 	/* --------------------------- *
 	/* children/layout
@@ -91,6 +107,10 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		this._color = options.color;
 		this._backgroundColor = options.backgroundColor;
 		this._labelFn = options.labelFn;
+		
+		// indeterminate
+		// --------------------------------
+		// this._indeterminate = options.indeterminate;
 		
 		// mozOpaque
 		// --------------------------------
@@ -148,6 +168,7 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		// --------------------------------
 		var arcName, arcObj, arcDefault;
 		var mapLineDash = function(n) { return n * this.radius * GAP_ARC; };
+		var sumFn = function(s, n) { return s+n; };
 		this._maxDashArc = 0;
 		
 		for (arcName in ARC_DEFAULTS) {
@@ -163,6 +184,7 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 			if (arcDefault.lineDash && arcDefault.lineDash.length) {
 				arcObj.lineDash = arcDefault.lineDash.map(mapLineDash, arcObj);
 				arcObj.lineDashArc = arcDefault.lineDash[0] * GAP_ARC;
+				arcObj.lineDashLength = arcObj.lineDash.reduce(sumFn);
 				this._maxDashArc = Math.max(this._maxDashArc, arcObj.lineDashArc);
 			} else {
 				arcObj.lineDashArc = 0;
@@ -189,6 +211,7 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 			}
 		}
 		this._baselineShift *= this._fontSize * 0.5; // apply to font-size, halve it
+		// this._baselineShift *= 0.5; // halve it
 		
 		// save canvas context
 		// --------------------------------
@@ -246,20 +269,43 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 			this._ctx.restore();
 		}
 		
-		// save ctx before drawing arcs
-		this._ctx.save();
-		
 		var amountData = this._valueData["amount"];
 		var amountStyle = this._valueStyles["amount"];
 		var availableData = this._valueData["available"];
 		var availableStyle = this._valueStyles["available"];
 		
+		// // not-available dash animation
+		// // --------------------------------
+		// var notAvailableStyle = this._valueStyles[availableStyle.inverse];
+		// if (this.indeterminate) {
+		// 	var waitValue = this._valueData["_wait"]._renderedValue || 0;
+		// 	if (waitValue == WAIT_CYCLE_VALUE) {
+		// 		this.valueTo(0, 0, "_wait");
+		// 		this.valueTo(WAIT_CYCLE_VALUE, WAIT_CYCLE_MS, "_wait");
+		// 	}
+		// 	notAvailableStyle.lineDashOffset = waitValue * notAvailableStyle.lineDashLength;
+		// 	// waitValue = WAIT_CYCLE_VALUE - waitValue; // reverse direction
+		// 	// availableStyle.lineDashOffset = waitValue * availableStyle.lineDashLength;
+		// } else {
+		// 	notAvailableStyle.lineDashOffset = void 0;
+		// 	// availableStyle.lineDashOffset = void 0;
+		// }
+		
+		//// wait spinner
+		// if (this.indeterminate) this.drawSpinner();
+		
+		// amount label
+		// --------------------------------
+		this.drawLabel(this._labelFn(amountData._renderedValue, amountData._maxVal));
+		
+		// save ctx before drawing arcs
+		this._ctx.save();
 		// loop rotation
 		// --------------------------------
-		var loopValue = this._valueData["loop"]._renderedValue || 0;
+		var loopValue = this._valueData["_loop"]._renderedValue || 0;
 		if ((changed.indexOf("amount") !== -1) && amountData._lastRenderedValue > amountData._renderedValue) {
-			this.valueTo(1, 0, "loop");
-			this.valueTo(0, 750, "loop");
+			this.valueTo(1, 0, "_loop");
+			this.valueTo(0, 750, "_loop");
 		}
 		this._ctx.rotate(PI2 * ((1-loopValue) - 0.25));
 		
@@ -273,9 +319,7 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		
 		if (amountValue > 0) {
 			amountEndArc = this.drawArc(amountStyle, amountValue, amountGapArc, PI2 - amountGapArc);
-			// var capWidth = availableStyle.lineWidth;
-			var capWidth = amountStyle.radius * GAP_ARC;
-			// this.drawDash(amountStyle, amountGapArc, capWidth);
+			// this.drawDash(amountStyle, amountEndArc);
 			this.drawEndCap(amountStyle, amountEndArc);
 			amountEndArc = amountEndArc + amountGapArc*2;
 		}
@@ -290,32 +334,13 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		if (Array.isArray(availableData)) {
 			for (var o, i = 0; i < stepsNum; i++) {
 				o = availableData[i];
-				this.drawArc(availableStyle,
-					o._renderedValue/(o._maxVal/stepsNum),
-					(i * stepBaseArc) + stepGapArc,
-					((i+1) * stepBaseArc) - stepGapArc,
-					amountEndArc
-				);
+				this.drawArc(availableStyle, o._renderedValue/(o._maxVal/stepsNum), (i*stepBaseArc)+stepGapArc, ((i+1)*stepBaseArc)-stepGapArc, amountEndArc);
 			}
 		} else {
-			this.drawArc(availableStyle,
-				availableData._renderedValue / availableData._maxVal,
-				stepGapArc, PI2 - stepGapArc,
-				amountEndArc
-			);
+			this.drawArc(availableStyle, availableData._renderedValue/availableData._maxVal, stepGapArc, PI2-stepGapArc, amountEndArc);
 		}
-		
 		// restore ctx after drawing arcs
 		this._ctx.restore();
-		
-		// amount label
-		// --------------------------------
-		var labelValue = this._labelFn(amountData._renderedValue, amountData._maxVal);
-		var labelWidth = this._ctx.measureText(labelValue).width;
-		var labelLeft = labelWidth * -0.500001;
-		
-		this._ctx.fillText(labelValue, labelLeft, this._baselineShift, labelWidth);
-		// this._drawLabelGuides(labelLeft, labelWidth, canvasPos);
 	},
 	
 	drawArc: function (valueStyle, value, startArc, endArc, prevArc) {
@@ -331,8 +356,12 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		if (valEndArc > valStartArc) {
 			this._ctx.save();
 			this._ctx.lineWidth = valueStyle.lineWidth;
-			valueStyle.lineDash &&
+			if (valueStyle.lineDash) {
 				this._ctx.setLineDash(valueStyle.lineDash);
+			}
+			if (valueStyle.lineDashOffset) {
+				this._ctx.lineDashOffset = valueStyle.lineDashOffset;
+			}
 			this._ctx.beginPath();
 			this._ctx.arc(0, 0, valueStyle.radius, valEndArc, valStartArc, true);
 			this._ctx.stroke();
@@ -346,8 +375,13 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 			if (invEndArc > invStartArc) {
 				this._ctx.save();
 				this._ctx.lineWidth = invStyle.lineWidth;
-				invStyle.lineDash &&
+				if (invStyle.lineDash) {
 					this._ctx.setLineDash(invStyle.lineDash);
+				}
+				if (invStyle.lineDashOffset) {
+					this._ctx.lineDashOffset = invStyle.lineDashOffset;
+				}
+				invStyle.lineDash &&
 				this._ctx.beginPath();
 				this._ctx.arc(0, 0, invStyle.radius, invEndArc, invStartArc, true);
 				this._ctx.stroke();
@@ -371,56 +405,168 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		return valEndArc;
 	},
 	
+	drawLabel: function(labelString) {
+		var labelWidth = this._ctx.measureText(labelString).width;
+		this._ctx.fillText(labelString,
+			labelWidth * -0.49, //Math.ceil(labelWidth * -0.501),
+			this._baselineShift, labelWidth);
+		// this._drawLabelGuides(-this._canvasSize/2, labelWidth);
+	},
+	
 	drawEndCap: function (valueStyle, arcPos) {
-		var ARR_ARC_SCALE = 2;
-		var ARR_WIDTH_SCALE = 1.25;
-		
-		var arrArc = arcPos - GAP_ARC * ARR_ARC_SCALE;
-		
-		var inArc = Math.max(GAP_ARC, arrArc);
-		var xIn = Math.cos(inArc);
-		var yIn = Math.sin(inArc);
-		var xOut = Math.cos(arcPos);
-		var yOut = Math.sin(arcPos);
-		
-		var arrWidth = Math.min(GAP_ARC, arrArc) * valueStyle.radius * ARR_WIDTH_SCALE;
-		var rOut = valueStyle.radius + valueStyle.lineWidth * 0.5;
-		var rIn = rOut - arrWidth;
-		// var rIn2 = rOut + arrWidth;
-		
+		var radius = valueStyle.radius;// + valueStyle.lineWidth * 0.5;
 		this._ctx.save();
 		this._ctx.lineWidth = valueStyle.lineWidth;// * 0.75;
-		this._ctx.beginPath();
-		this._ctx.moveTo(xOut*rOut, yOut*rOut);
-		this._ctx.lineTo(xIn*rIn, yIn*rIn);
-		this._ctx.stroke();
 		
-		// this._ctx.lineTo(xIn*rOut, yIn*rOut);
-		// this._ctx.arc(0, 0, rOut, inArc, arcPos);
-		// this._ctx.closePath();
-		// this._ctx.fill();
+		this._ctx.rotate(arcPos - GAP_ARC*1.5);
+		this._ctx.beginPath();
+		this._ctx.arc(0, 0, radius, GAP_ARC*0.5, GAP_ARC*2, false);
+		this._ctx.lineTo(radius - (GAP_ARC * radius), 0);
+		this._ctx.closePath();
+		
+		this._ctx.fill();
+		this._ctx.stroke();
 		this._ctx.restore();
 	},
 	
-	drawDash: function (valueStyle, arcPos, width) {
-		var cx = Math.cos(arcPos);
-		var cy = Math.sin(arcPos);
-		// instead of using a square cap line (only needed on outer end),
-		// shift dash by half lineWidth.
-		var rOut = valueStyle.radius + valueStyle.lineWidth * 0.5;
-		var rIn = rOut - width;
-		
-		this._ctx.save();
-		this._ctx.lineWidth = valueStyle.lineWidth * 0.75;
-		this._ctx.beginPath();
-		this._ctx.moveTo(cx*rOut, cy*rOut);
-		this._ctx.lineTo(cx*rIn, cy*rIn);
-		this._ctx.stroke();
-		this._ctx.restore();
-	},
+	// drawEndCap2: function (valueStyle, arcPos) {
+	// 	var radius = valueStyle.radius + valueStyle.lineWidth * 0.5;
+	// 	var gapWidth = GAP_ARC * valueStyle.radius * 2;
+	// 	var xTip = Math.cos(GAP_ARC/2) * radius;
+	// 	var yTip = Math.sin(GAP_ARC/2) * radius;
+	// 	
+	// 	this._ctx.save();
+	// 	this._ctx.lineWidth = valueStyle.lineWidth;// * 0.75;
+	// 	
+	// 	this._ctx.rotate(arcPos);
+	// 	this._ctx.beginPath();
+	// 	this._ctx.moveTo(xTip, yTip);
+	// 	this._ctx.lineTo(xTip, yTip - gapWidth);
+	// 	this._ctx.lineTo(xTip - gapWidth * (2/3), yTip - gapWidth);
+	// 	this._ctx.closePath();
+	// 	
+	// 	this._ctx.fill();
+	// 	// this._ctx.stroke();
+	// 	this._ctx.restore();
+	// },
+	
+	// drawEndCap3: function (valueStyle, arcPos) {
+	// 	var ARR_ARC_SCALE = 2;
+	// 	var ARR_WIDTH_SCALE = 1.25;
+	// 	
+	// 	var arrArc = arcPos - GAP_ARC * ARR_ARC_SCALE;
+	// 	var inArc = Math.max(GAP_ARC, arrArc);
+	// 	// var inArc = arrArc;
+	// 	// var arrWidth = GAP_ARC * valueStyle.radius * ARR_WIDTH_SCALE;
+	// 	var arrWidth = Math.min(GAP_ARC, arrArc) * valueStyle.radius * ARR_WIDTH_SCALE;
+	// 	
+	// 	var xIn = Math.cos(inArc);
+	// 	var yIn = Math.sin(inArc);
+	// 	var xOut = Math.cos(arcPos);
+	// 	var yOut = Math.sin(arcPos);
+	// 	
+	// 	var rOut = valueStyle.radius + valueStyle.lineWidth * 0.5;
+	// 	var rIn = rOut - arrWidth;
+	// 	// var rIn2 = rOut + arrWidth;
+	// 	
+	// 	this._ctx.save();
+	// 	this._ctx.lineWidth = valueStyle.lineWidth;// * 0.75;
+	// 	this._ctx.beginPath();
+	// 	this._ctx.moveTo(xOut*rOut, yOut*rOut);
+	// 	this._ctx.lineTo(xIn*rIn, yIn*rIn);
+	// 	this._ctx.stroke();
+	// 	
+	// 	// this._ctx.lineTo(xIn*rOut, yIn*rOut);
+	// 	// this._ctx.arc(0, 0, rOut, inArc, arcPos);
+	// 	// this._ctx.closePath();
+	// 	// this._ctx.fill();
+	// 	this._ctx.restore();
+	// },
+	// 
+	// drawDash: function (valueStyle, arcPos) {
+	// 	var cx = Math.cos(arcPos);
+	// 	var cy = Math.sin(arcPos);
+	// 	var dashWidth = valueStyle.radius * GAP_ARC;
+	// 	// instead of using a square cap line (only needed on outer end),
+	// 	// shift dash by half lineWidth.
+	// 	var rOut = valueStyle.radius + valueStyle.lineWidth * 0.5;
+	// 	var rIn = rOut - dashWidth;
+	// 	
+	// 	this._ctx.save();
+	// 	this._ctx.lineWidth = valueStyle.lineWidth * 0.75;
+	// 	this._ctx.beginPath();
+	// 	this._ctx.moveTo(cx*rOut, cy*rOut);
+	// 	this._ctx.lineTo(cx*rIn, cy*rIn);
+	// 	this._ctx.stroke();
+	// 	this._ctx.restore();
+	// },
+	
+	// drawLabel2: function(labelString) {
+	// 	// var UNICODE_BLACK_MEDIUM_RIGHT_POINTING_TRIANGLE = String.fromCharCode(0x23F5);
+	// 	var UNICODE_PLAY = String.fromCharCode(0x23F5);
+	// 	// var UNICODE_DOUBLE_VERICAL_BAR = String.fromCharCode(0x23F8);
+	// 	var UNICODE_PAUSE = String.fromCharCode(0x23F8);
+	// 	// var UNICODE_BLACK_SQUARE_FOR_STOP = String.fromCharCode(0x23F9);
+	// 	var UNICODE_STOP = String.fromCharCode(0x23F9);
+	// 	
+	// 	var symbolFull = Math.round(this._canvasSize/14)*3;//this._fontSize;
+	// 	var symbolHalf = symbolFull/2;
+	// 	var symbolThird = symbolFull/3;
+	// 	var labelWidth = symbolFull;
+	// 	
+	// 	this._ctx.save();
+	// 	
+	// 	switch (labelString) {
+	// 		case UNICODE_PLAY:
+	// 			// this._ctx.scale(symbolScale, symbolScale);
+	// 			this._ctx.translate(-symbolFull*(3/7), -symbolFull*(1/2));
+	// 			this._ctx.beginPath();
+	// 			this._ctx.moveTo(0, 0);
+	// 			this._ctx.lineTo(symbolFull, symbolHalf);
+	// 			this._ctx.lineTo(0, symbolFull);
+	// 			this._ctx.closePath();
+	// 			this._ctx.fill();
+	// 			break;
+	// 		case UNICODE_PAUSE:
+	// 			// this._ctx.scale(symbolScale, symbolScale);
+	// 			this._ctx.translate(-symbolHalf, -symbolHalf);
+	// 			this._ctx.fillRect(0, 0, symbolThird, symbolFull);
+	// 			this._ctx.fillRect(symbolThird*2, 0, symbolThird, symbolFull);
+	// 			break;
+	// 		case UNICODE_STOP:
+	// 			// this._ctx.scale(symbolScale, symbolScale);
+	// 			this._ctx.translate(-symbolHalf, -symbolHalf);
+	// 			this._ctx.fillRect(0, 0, symbolFull, symbolFull);
+	// 			break;
+	// 		default:
+	// 			labelWidth = this._ctx.measureText(labelString).width;
+	// 			this._ctx.fillText(labelString.toUpperCase(),
+	// 				labelWidth * -0.501, //Math.ceil(labelWidth * -0.501),
+	// 				this._baselineShift, labelWidth);
+	// 			break;
+	// 	}
+	// 	
+	// 	this._ctx.restore();
+	// 	// this._drawLabelGuides(-this._canvasSize/2, labelWidth);
+	// },
+	
+	// drawSpinner: function() {
+	// 	var waitValue = this._valueData["_wait"]._renderedValue || 0;
+	// 	if (waitValue == 1) {
+	// 		this.valueTo(0, 0, "_wait");
+	// 		this.valueTo(1, WAIT_CYCLE_MS, "_wait");
+	// 	}
+	// 	this._ctx.save();
+	// 	this._ctx.rotate(PI2 * (1 - waitValue));
+	// 	this._ctx.strokeStyle = this._backgroundColor;
+	// 	this.drawArc(this._valueStyles["_wait"], 1, 0, PI2, 0);
+	// 	this._ctx.restore();
+	// },
 	
 	/*
-	_drawLabelGuides: function(labelLeft, labelWidth, canvasPos) {
+	_drawLabelGuides: function(canvasPos, labelWidth) {
+		var labelLeft = labelWidth * -0.5;
+		
 		this._ctx.save();
 		this._ctx.lineWidth = 1;
 		this._ctx.strokeStyle = "#990000";
