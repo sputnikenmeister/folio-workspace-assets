@@ -61,30 +61,16 @@ module.exports = (function () {
 			"ascent": 686,
 			"descent": -314
 		},
-		"FolioFigures-Regular": {
+		"FolioFigures": {
 			"unitsPerEm": 1024,
 			"ascent": 939,
 			"descent": -256
 		},
-		// "FolioClaimcheck-Figures": {
-		// 	"unitsPerEm": 1024,
-		// 	"ascent": 939,
-		// 	"descent": -256
-		// },
 	};
 	
-	// o = g.FONT_METRICS["FolioClaimcheck-Figures"];
-	// g.FONT_METRICS["Numbers"] = o;
-	// g.FONT_METRICS["NumbersClaimcheck"] = o;
-	// g.FONT_METRICS["NumbersGreenback"] = o;
-	// g.FONT_METRICS["NumbersIndicia"] = o;
-	// g.FONT_METRICS["NumbersPremium"] = o;
-	// g.FONT_METRICS["NumbersRedbird"] = o;
-	// g.FONT_METRICS["NumbersRevenue"] = o;
-	// o = g.FONT_METRICS["ITCFranklinGothicStd"];
-	// g.FONT_METRICS["ITCFranklinGothicStd-Condensed"];
-	// g.FONT_METRICS["ITCFranklinGothicStd-Compressed"];
-	// g.FONT_METRICS["ITCFranklinGothicStd-ExtraCompressed"];
+	g.PAUSE_CHAR = String.fromCharCode(0x23F8);
+	g.PLAY_CHAR = String.fromCharCode(0x23F5);
+	g.STOP_CHAR = String.fromCharCode(0x23F9);
 	
 	// css transition presets
 	// TODO: get rid of this
@@ -143,7 +129,9 @@ module.exports = (function () {
 		"constrain-width" :
 			_.template(g.APP_ROOT + "image/1/<%= width %>/0/uploads/<%= src %>"),
 		"constrain-height" :
-			_.template(g.APP_ROOT + "image/1/0/<%= height %>/uploads/<%= src %>")
+			_.template(g.APP_ROOT + "image/1/0/<%= height %>/uploads/<%= src %>"),
+		"debug-bandwidth":
+			_.template(g.MEDIA_DIR.replace(/(https?\:\/\/[^\/]+)/, "$1/slow/<%= kbps %>") + "/<%= src %>"),
 	};
 	
 	return g;

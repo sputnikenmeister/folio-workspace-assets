@@ -20,29 +20,24 @@
 
 // .overlay visibility
 // - - - - - - - - - - - - - - - - -
-.playable-renderer .overlay {
-	visibility: hidden;
-	opacity: 0;
-}
-.playable-renderer.selected .overlay {
-	visibility: visible;
-	opacity: 1;
-}
-// .carousel:not(.scrolling) .playable-renderer.selected .overlay {
+// .playable-renderer .overlay {
+// 	visibility: hidden;
+// 	opacity: 0;
+// }
+// .playable-renderer.selected .overlay {
 // 	visibility: visible;
 // 	opacity: 1;
 // }
-
-.carousel .playable-renderer .overlay {
-	transition-property: visibility, opacity;
-	transition-timing-function: step-start, $ease;
-	transition-duration: $duration * 3;
-}
-.carousel:not(.panning) .playable-renderer.selected .overlay {
-	transition-property: visibility, opacity;
-	transition-timing-function: step-end;
-	transition-duration: $duration * 1;
-}
+// .carousel .playable-renderer .overlay {
+// 	transition-property: visibility, opacity;
+// 	transition-timing-function: step-start, $ease;
+// 	transition-duration: $duration * 3;
+// }
+// .carousel:not(.panning) .playable-renderer.selected .overlay {
+// 	transition-property: visibility, opacity;
+// 	transition-timing-function: step-end;
+// 	transition-duration: $duration * 1;
+// }
 
 // .overlay .play-toggle
 // - - - - - - - - - - - - - - - - -
@@ -59,53 +54,185 @@
 		display: block;
 		position: absolute;
 	}
-	// :not(.pending-media) .play-toggle-hitarea {
-	// 	background-color: rgba(255,0,255,0.2);
-	// }
-	
 	// play-toggle
 	.play-toggle {
 		background-repeat: no-repeat;
-		background-size: 3rem 3rem;
-		background-position: bottom left;
-		// background-position: top right;
+		background-size: 3.3rem 3.3rem;
+		background-position: center center;
 	}
-	// .pending-user-play .play-toggle {
-	.not-played .play-toggle {
-		background-size: 6rem 6rem;
-		background-position: center;
-	}
-	&, .pending-user-play, .pending-user-resume { 
-		.play-toggle { background-image: base64_encode("symbols/playback-play.svg"); }
-		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-play-dark.svg"); }
-	}
-	.pending-user-replay {
-		.play-toggle { background-image: base64_encode("symbols/playback-replay.svg"); }
-		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-replay-dark.svg");}
-	}
-	.pending-network {
-		.play-toggle { background-image: base64_encode("symbols/playback-wait.svg");}
-		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-wait-dark.svg");}
-	}
-	.pending-media {
-		.play-toggle { background-image: none;}
-		.over-dark .play-toggle { background-image: none;}
-	}
-	.play-toggle {
-		opacity: 1;
-		visibility: visible;
-	}
-	
-	// &.selected .play-toggle {
-	// 	transition-property: visibility, opacity;
-	// 	transition-timing-function: step-start, $ease;
-	// 	transition-duration: $duration;
-	// 	// transition:
-	// 	// 	opacity $duration $ease 0.001s,
-	// 	// 	visibility $duration step-start 0.001s;
-	// }
-		
 }
+
+@function symbol-url($url) {
+	// @return base64_encode($url);
+	@return image-url($url);
+}
+
+.playable-renderer {
+	.play-toggle,
+	// .paused.not-played .play-toggle,
+	.paused:not(.requested) .play-toggle { background-image: symbol-url("symbols/playback-play.svg"); }
+	
+	.playing .play-toggle 			{ background-image: symbol-url("symbols/playback-play.svg"); }
+	.paused .play-toggle 			{ background-image: symbol-url("symbols/playback-pause.svg"); }
+	.playing.waiting .play-toggle 	{ background-image: symbol-url("symbols/playback-wait.svg"); }
+	.paused.ended .play-toggle 		{ background-image: symbol-url("symbols/playback-replay.svg"); }
+}
+
+// .playable-renderer {
+// 	.playing .play-toggle:active	{ background-image: symbol-url("symbols/playback-pause.svg"); }
+// 	.paused .play-toggle:active		{ background-image: symbol-url("symbols/playback-play.svg"); }
+// 	.play-toggle {
+// 		opacity: 1;
+// 		transition: opacity $duration*1.0 $ease $delay*0.5;
+// 	}
+// 	.play-toggle:active {
+// 		transition: opacity $duration*0.3 $ease 0.005s;
+// 	}
+// 	.playing:not(.waiting) .play-toggle { opacity: 0; }
+// 	.paused:not(.ended) .play-toggle { opacity: 0; }
+// 	.playing .play-toggle:active { opacity: 1; }
+// 	.paused .play-toggle:active { opacity: 1; }
+// 	@at-root .scrolling & .play-toggle:active { opacity: 0 !important; }
+// 	
+// 	.playing, .paused {
+// 		.play-toggle { opacity: 0; }
+// 		&:not(.requested) .play-toggle { opacity: 1; }
+// 	}
+// 	.playing.waiting, .paused.ended {
+// 		.play-toggle { opacity: 1; }
+// 	}
+// 	.playing:not(.waiting), .paused:not(.ended) { 
+// 		.play-toggle { 
+// 			opacity: 0; 
+// 			transition: opacity $duration*1.0 $ease $delay*0.5;
+// 		}
+// 		.play-toggle:active {
+// 			opacity: 1;
+// 			transition: opacity $duration*0.3 $ease 0.005s;
+// 		}
+// 	}
+// 	
+// 	@at-root :not(.scrolling) & { .playing, .paused { .play-toggle:active { opacity: 1; } } }
+// }
+
+.playable-renderer {
+	.play-toggle { opacity: 0; };
+	.not-played {
+		.play-toggle { opacity: 1; }
+		// &.paused .play-toggle { animation: none; }
+	}
+	// @at-root :not(.scrolling) & {
+	// 	&.requested .play-toggle { animation: $duration*2 $ease flashStart; }
+	// }
+	:not(.not-played) {
+	// .requested {
+		// .play-toggle { opacity: 0; }
+		// &.requested .play-toggle { opacity: 0; }
+		
+		@at-root :not(.scrolling) & {
+			// .play-toggle:active { animation: 0s none; }
+			// .play-toggle:not(:active) { animation: $duration*2 $ease flashOdd; }
+			&.playing .play-toggle { animation: $duration*2 $ease flashOdd; }
+			&.paused .play-toggle { animation: $duration*2 $ease flashEven; }
+		}
+		// @at-root .scrolling &:not(.selected) .play-toggle { animation: 0s none; }
+		
+		// &.playing .play-toggle { animation: $duration*2 $ease flashOdd; }
+		// &.playing:not(.waiting) .play-toggle { opacity: 0; };
+		// &.waiting .play-toggle { opacity: 1; };
+		&.playing.waiting .play-toggle { opacity: 1; }
+		// &.playing .play-toggle { opacity: 0; };
+		
+		// &.paused .play-toggle { animation: $duration*2 $ease flashOdd; }
+		// &.paused:not(.ended) .play-toggle { opacity: 0; }
+		// &.ended .play-toggle { opacity: 1; };
+		&.paused.ended .play-toggle { opacity: 1; }
+		// &.paused .play-toggle { opacity: 0; };
+	}
+}
+
+// @keyframes flashStart {
+// 	from  { opacity: 1.00; }
+// 	50%  { opacity: 1.00; }
+// 	// to   { opacity: 0.00; }
+// }
+@keyframes flashEven {
+	from  { opacity: 1.00; }
+	// from { opacity: 0.00; }
+	// 10%  { opacity: 1.00; }
+	50%  { opacity: 1.00; }
+	// to   { opacity: 0.00; }
+}
+@keyframes flashOdd {
+	from  { opacity: 1.00; }
+	// from { opacity: 0.00; }
+	// 10%  { opacity: 1.00; }
+	50%  { opacity: 1.00; }
+	// to   { opacity: 0.00; }
+}
+
+// .sequence-renderer {
+// 	&, .pending-user-play, .pending-media { 
+// 		.play-toggle { background-image: base64_encode("symbols/playback-play.svg"); }
+// 		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-play-dark.svg"); }
+// 	}
+// 	.pending-user-resume {
+// 		.play-toggle { background-image: base64_encode("symbols/playback-pause.svg");}
+// 		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-pause-dark.svg");}
+// 		// .play-toggle { background-image: none;}
+// 		// .over-dark .play-toggle { background-image: none;}
+// 	}
+// 	.pending-user-replay {
+// 		.play-toggle { background-image: base64_encode("symbols/playback-replay.svg"); }
+// 		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-replay-dark.svg");}
+// 	}
+// 	.pending-network {
+// 		.play-toggle { background-image: base64_encode("symbols/playback-wait.svg");}
+// 		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-wait-dark.svg");}
+// 	}
+// 	
+// 	.play-toggle { opacity: 0; }
+// 	.not-played .play-toggle { opacity: 1 !important; }
+// 	// @at-root :not(.scrolling) & {
+// 		// .not-played .play-toggle { opacity: 1; }
+// 		:not(.not-played) {
+// 			&.pending-network .play-toggle		{ opacity: 1; }
+// 			&.pending-user-play .play-toggle	{ opacity: 1; }
+// 			&.pending-user-replay .play-toggle	{ opacity: 1; }
+// 			&.pending-user-resume .play-toggle	{ opacity: 0; animation: $duration*2 $ease flashEven; }
+// 			&.pending-media .play-toggle		{ opacity: 0; animation: $duration*2 $ease flashOdd; }
+// 			// &.pending-user-resume, &.pending-media {
+// 			// 	.play-toggle { animation: $duration*3 $ease 0s 1 normal forwards running flashEven; }
+// 			// }
+// 			// .play-toggle:active { opacity: 1 !important; }
+// 		}
+// 	// }
+// 	@at-root .scrolling & {
+// 		// .play-toggle { animation-name: none !important; }
+// 		// .not-played .play-toggle { opacity: 0.8; }
+// 		// :not(.not-played) {
+// 			.play-toggle { 
+// 				// opacity: 0;
+// 				animation-name: none !important;
+// 				// animation: 0s none;
+// 			}
+// 		// }
+// 	}
+// }
+
+
+// .play-toggle {
+// 	visibility: hidden;
+// 	opacity: 0;
+// }
+// &.selected .play-toggle {
+// 	transition-property: visibility, opacity;
+// 	transition-timing-function: step-start, $ease;
+// 	transition-duration: $duration;
+// 	// transition:
+// 	// 	opacity $duration $ease 0.001s,
+// 	// 	visibility $duration step-start 0.001s;
+// }
 
 // NOTE: debug only!!!
 // .scrolling .selected .play-toggle-hitarea:active {
@@ -205,11 +332,14 @@
 	}
 	.bottom-bar {
 		top: 100%;
+		-webkit-justify-content: space-between;
 		justify-content: space-between;
 	}
 	.top-bar {
 		bottom: 100%;// top: -3.5rem;
-		justify-content: flex-end;
+		// -webkit-justify-content: flex-end;
+		// justify-content: flex-end;
+		direction: rtl;
 	}
 }
 
@@ -223,7 +353,9 @@
 			-webkit-flex-direction: column;
 			-ms-flex-direction: column;
 			flex-direction: column;
-			justify-content: flex-start;
+			// -webkit-justify-content: flex-start;
+			// justify-content: flex-start;
+			direction: ltr;
 			top: 0; left: 100%; 
 			width: auto; height: calc(100% + 1rem);
 			margin: -0.5rem 1rem;
@@ -274,10 +406,10 @@
 	
 		box-sizing: content-box;
 		// width: 2.1rem; height: 2.1rem;
-		// width: 2.6rem; height: 2.6rem;
 		// width: 2.3rem; height: 2.3rem;
+		width: 2.8rem; height: 2.8rem;
+		// width: 3rem; height: 3rem;
 		// width: 4rem; height: 4rem;
-		width: 3rem; height: 3rem;
 		// flex-basis: 3rem;
 	}
 	// .canvas-progress-meter {
@@ -294,15 +426,15 @@
 	
 	// .progress-meter per-renderer adjustments
 	// - - - - - - - - - - - - - - - - -
-	&.sequence-renderer {
-		// .progress-meter { width: 2.5rem; height: 2.5rem; }
-		// .canvas-progress-meter { font-size: 80%; }
-		// .svg-progress-meter {
-		// 	#label {
-		// 		font-size: 140%;
-		// 	}
-		// }
-	}
+	// &.sequence-renderer {
+	// 	.progress-meter { width: 2.5rem; height: 2.5rem; }
+	// 	.canvas-progress-meter { font-size: 80%; }
+	// 	.svg-progress-meter {
+	// 		#label {
+	// 			font-size: 140%;
+	// 		}
+	// 	}
+	// }
 	// &.video-renderer {
 	// 	.progress-meter { width: 2.3rem; height: 2.3rem; }
 	// 	.canvas-progress-meter { font-size: 90%; }
@@ -364,19 +496,23 @@
 		top: 0; left: 0;
 		width: 100%; height: 100%;
 		
-		z-index: 0;
-		opacity: 0;
-		visibility: hidden;
-		transition: 
-			visibility $duration*3 step-end,
-			opacity $duration*3 step-end;
+		&:not(.current) {
+			z-index: 0;
+			opacity: 0;
+			visibility: hidden;
+			transition: 
+				z-index $duration*0.5 step-end,
+				visibility $duration*3 step-end,
+				opacity $duration*3 step-end;
+		}
 		&.current {
 			z-index: 1;
 			opacity: 1;
 			visibility: visible;
 			transition: 
-				// visibility $duration * 2 step-start,
-				opacity $duration * 1.5 $ease $duration * 0.5;
+				z-index $duration*0.5 step-end,
+				// visibility $duration*1.5 step-end $duration*0.5,
+				opacity $duration*1.5 $ease $duration*0.5;
 		}
 		&.error {
 			

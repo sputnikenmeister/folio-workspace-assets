@@ -22,8 +22,8 @@ function isSizeProp(propName) {
 	return /^(offset|client)(Left|Top|Width|Height)$/.test(propName);
 }
 
-// var ARC_ERR = 0.0001;
-var ARC_ERR = 0.0;
+var ARC_ERR = 0.00001;
+// var ARC_ERR = 0.0;
 var PI = Math.PI;
 var PI2 = Math.PI*2;
 
@@ -300,13 +300,18 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		
 		// save ctx before drawing arcs
 		this._ctx.save();
+		
 		// loop rotation
 		// --------------------------------
-		var loopValue = this._valueData["_loop"]._renderedValue || 0;
+		// var loopValue = this._valueData["_loop"]._renderedValue || 0;
+		// trigger loop
 		if ((changed.indexOf("amount") !== -1) && amountData._lastRenderedValue > amountData._renderedValue) {
 			this.valueTo(1, 0, "_loop");
 			this.valueTo(0, 750, "_loop");
+			this.updateValue("_loop");
+			// loopValue = 1; // value will not be updated until next frame
 		}
+		var loopValue = this._valueData["_loop"]._renderedValue || 0;
 		this._ctx.rotate(PI2 * ((1-loopValue) - 0.25));
 		
 		// amount arc
@@ -315,7 +320,8 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		var amountGapArc = GAP_ARC;
 		var amountEndArc = 0;
 		var amountValue = loopValue + amountData._renderedValue / amountData._maxVal;
-		amountValue = Math.max(0, Math.min(1 - ARC_ERR, amountValue));
+		// amountValue = Math.max(0, Math.min(1, amountValue));
+		// if (loopValue > 0) console.log("%s::loop amount:%f loop:(%f)", this.cid, amountValue, loopValue, this._valueData["_loop"]._renderedValue);
 		
 		if (amountValue > 0) {
 			amountEndArc = this.drawArc(amountStyle, amountValue, amountGapArc, PI2 - amountGapArc);
@@ -355,13 +361,14 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		valStartArc = Math.max(startArc, prevArc);
 		if (valEndArc > valStartArc) {
 			this._ctx.save();
-			this._ctx.lineWidth = valueStyle.lineWidth;
-			if (valueStyle.lineDash) {
-				this._ctx.setLineDash(valueStyle.lineDash);
-			}
-			if (valueStyle.lineDashOffset) {
-				this._ctx.lineDashOffset = valueStyle.lineDashOffset;
-			}
+			this.applyValueStyle(valueStyle);
+			// this._ctx.lineWidth = valueStyle.lineWidth;
+			// if (valueStyle.lineDash) {
+			// 	this._ctx.setLineDash(valueStyle.lineDash);
+			// }
+			// if (valueStyle.lineDashOffset) {
+			// 	this._ctx.lineDashOffset = valueStyle.lineDashOffset;
+			// }
 			this._ctx.beginPath();
 			this._ctx.arc(0, 0, valueStyle.radius, valEndArc, valStartArc, true);
 			this._ctx.stroke();
@@ -374,41 +381,37 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 			invStartArc = Math.max(valEndArc, prevArc);
 			if (invEndArc > invStartArc) {
 				this._ctx.save();
-				this._ctx.lineWidth = invStyle.lineWidth;
-				if (invStyle.lineDash) {
-					this._ctx.setLineDash(invStyle.lineDash);
-				}
-				if (invStyle.lineDashOffset) {
-					this._ctx.lineDashOffset = invStyle.lineDashOffset;
-				}
-				invStyle.lineDash &&
+				this.applyValueStyle(invStyle);
+				// this._ctx.lineWidth = invStyle.lineWidth;
+				// if (invStyle.lineDash) {
+				// 	this._ctx.setLineDash(invStyle.lineDash);
+				// }
+				// if (invStyle.lineDashOffset) {
+				// 	this._ctx.lineDashOffset = invStyle.lineDashOffset;
+				// }
 				this._ctx.beginPath();
 				this._ctx.arc(0, 0, invStyle.radius, invEndArc, invStartArc, true);
 				this._ctx.stroke();
 				this._ctx.restore();
 			}
-			// invStyle = this._valueStyles[valueStyle.inverse2];
-			// invEndArc2 = Math.min(invEndArc, prevArc);
-			// invStartArc2 = valEndArc;
-			// if (invEndArc2 > invStartArc2) {
-			// 	this._ctx.save();
-			// 	this._ctx.globalCompositeOperation = "destination-out";
-			// 	this._ctx.lineWidth = invStyle.lineWidth;
-			// 	invStyle.lineDash &&
-			// 		this._ctx.setLineDash(invStyle.lineDash);
-			// 	this._ctx.beginPath();
-			// 	this._ctx.arc(0, 0, invStyle.radius, invEndArc2, invStartArc2, true);
-			// 	this._ctx.stroke();
-			// 	this._ctx.restore();
-			// }
 		}
 		return valEndArc;
+	},
+	
+	applyValueStyle: function(styleObj) {
+		this._ctx.lineWidth = styleObj.lineWidth;
+		if (styleObj.lineDash) {
+			this._ctx.setLineDash(styleObj.lineDash);
+		}
+		if (styleObj.lineDashOffset) {
+			this._ctx.lineDashOffset = styleObj.lineDashOffset;
+		}
 	},
 	
 	drawLabel: function(labelString) {
 		var labelWidth = this._ctx.measureText(labelString).width;
 		this._ctx.fillText(labelString,
-			labelWidth * -0.49, //Math.ceil(labelWidth * -0.501),
+			labelWidth * -0.5, //Math.ceil(labelWidth * -0.501),
 			this._baselineShift, labelWidth);
 		// this._drawLabelGuides(-this._canvasSize/2, labelWidth);
 	},

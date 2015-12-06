@@ -111,6 +111,15 @@ var ModelProgressMeterProto = {
 		}
 	},
 	
+	updateValue: function(key) {
+		// Call _renderValue only if needed. _renderValue() returns false once
+		// interpolation is done, in which case remove key from _renderKeys.
+		var kIndex = this._renderKeys.indexOf(key);
+		if (kIndex !== -1 && !this._renderValue(key)) {
+			this._renderKeys.splice(kIndex, 1);
+		}
+	},
+	
 	_initValue: function(value, duration, maxVal) {
 		var o = {};
 		o._value = value;
@@ -163,23 +172,36 @@ var ModelProgressMeterProto = {
 	renderFrame: function(tstamp) {
 		if (this._rendering) throw new Error("recursive call to renderFrame");
 		this._rendering = true;
+		this._tstamp = tstamp;
 		
 		var changedKeys = this._renderKeys;
-		this._renderKeys = changedKeys.filter(function(key) {
-			var dataObj = this._valueData[key];
-			if (Array.isArray(dataObj)) {
-				return dataObj.reduce(function(continueNext, o, index, arr) {
-					return this.interpolateNumber(tstamp, o) || continueNext;
-				}.bind(this), false);
-			} else {
-				return this.interpolateNumber(tstamp, dataObj);
-			}
-		}, this);
+		this._renderKeys = changedKeys.filter(this._renderValue, this);
+		// this._renderKeys = changedKeys.filter(function(key) {
+		// 	var dataObj = this._valueData[key];
+		// 	if (Array.isArray(dataObj)) {
+		// 		return dataObj.reduce(function(continueNext, o, index, arr) {
+		// 			return this.interpolateNumber(tstamp, o) || continueNext;
+		// 		}.bind(this), false);
+		// 	} else {
+		// 		return this.interpolateNumber(tstamp, dataObj);
+		// 	}
+		// }, this);
 		this.redraw(changedKeys);
 		this._nextRafId = this._renderKeys.length?
 			this.requestAnimationFrame(this.renderFrame) : -1;
 		
 		this._rendering = false;
+	},
+	
+	_renderValue: function(key) {
+		var dataObj = this._valueData[key];
+		if (Array.isArray(dataObj)) {
+			return dataObj.reduce(function(continueNext, o, index, arr) {
+				return this.interpolateNumber(this._tstamp, o) || continueNext;
+			}.bind(this), false);
+		} else {
+			return this.interpolateNumber(this._tstamp, dataObj);
+		}
 	},
 	
 	interpolateNumber: function (tstamp, o) {

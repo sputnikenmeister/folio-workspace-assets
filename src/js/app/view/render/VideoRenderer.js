@@ -34,8 +34,8 @@ var prefixedEvent = require("utils/prefixedEvent");
 var fullscreenChangeEvent = prefixedEvent("fullscreenchange", document);
 var fullscreenErrorEvent = prefixedEvent("fullscreenerror", document);
 
-var progressLabelFn = function(value, total) {
-	value = isNaN(value)? total : total - value;
+var formatTimecode = function(value) {
+	if (isNaN(value)) return "";//value = 0;
 	if (value >= 3600) return ((value / 3600) | 0) + "H";
 	if (value >= 60) return ((value / 60) | 0) + "M";
 	// if (value >= 10) return "0" + (value | 0) + "S";
@@ -195,9 +195,11 @@ var VideoRenderer = PlayableRenderer.extend({
 						},
 						color: view.model.attrs()["color"],
 						backgroundColor: view.model.attrs()["background-color"],
-						labelFn: function(value, total) {
-							return progressLabelFn.call(null, (view.video.ended? 0 : value), total);
-						}.bind(view)
+						labelFn: view._progressLabelFn.bind(view)
+						// labelFn: function(value, total) {
+						// 	if (this.userPlaybackRequested === false) return Globals.PAUSE_CHAR;
+						// 	else return progressLabelFn.call(null, (this.video.ended? 0 : value), total);
+						// }.bind(view)
 						// labelFn: function(value, total) {
 						// 	return (!this._notPlayed && !this.video.ended && this.video.paused)?
 						// 		String.fromCharCode(0x23F8) : // play: 0x23F5, pause: 0x23F8, stop: 0x23F9
@@ -208,6 +210,16 @@ var VideoRenderer = PlayableRenderer.extend({
 					parentEl.insertBefore(view.progressMeter.render().el, parentEl.firstChild);
 					return view;
 				});
+	},
+	
+	_progressLabelFn: function(value, total) {
+		if (!this.video.ended && this.userPlaybackRequested === false) {
+			return Globals.PAUSE_CHAR;
+		} else if (this.video.ended || isNaN(value)) {
+			return formatTimecode(total);
+		} else {
+			return formatTimecode(total - value);
+		}
 	},
 	
 	whenVideoHasMetadata: function(view) {
@@ -266,11 +278,21 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 	
 	findPlayableSource: function(video) {
-		var prefix = (this.model.attrs()["@debug"] === "slow")? Globals.MEDIA_DIR_SLOW : Globals.MEDIA_DIR;
 		var playable = _.find(this.model.get("srcset"), function(source) {
 			return /^video\//.test(source.mime) && video.canPlayType(source.mime) != "";
 		});
-		return (playable === void 0)? "" : prefix + "/" + playable.src;// + "?" + Date.now(): "";
+		if (playable === void 0) {
+			return "";
+		}
+		if (this.model.attrs()["@debug-bandwidth"]) {
+			return Globals.IMAGE_URL_TEMPLATES["debug-bandwidth"]({
+				kbps: this.model.attrs()["@debug-bandwidth"],
+				src: playable.src
+			});
+		}
+		return Globals.IMAGE_URL_TEMPLATES["original"](playable);
+		// var prefix = (this.model.attrs()["@debug"] === "slow")? Globals.MEDIA_DIR_SLOW : Globals.MEDIA_DIR;
+		// return (playable === void 0)? "" : prefix + "/" + playable.src;
 	},
 	
 	/* ---------------------------
@@ -303,14 +325,19 @@ var VideoRenderer = PlayableRenderer.extend({
 	/* media events
 	/* --------------------------- */
 	
+	// updatePlaybackEvents: "play playing waiting pause seeking seeked ended",
+	// updateBufferedEvents: "progress canplay canplaythrough playing timeupdate",//loadeddata
+	updatePlaybackEvents: "playing waiting pause",
+	updateBufferedEvents: "progress canplay canplaythrough play",
+	updatePlayedEvents: "timeupdate",
+	
 	addMediaListeners: function() {
-		//loadeddata progress canplay canplaythrough
-		this.addListener(this.video, "playing waiting pause seeking", this._updatePlaybackState);
-		this.addListener(this.video, "progress canplay canplaythrough timeupdate", this._updateBufferedValue);
-		this.addListener(this.video, "timeupdate", this._updatePlayedValue);
+		if (this._notPlayed) this.video.addEventListener("playing", this._onMediaFirstPlaying, false);
+		this.addListener(this.video, this.updatePlaybackEvents, this._updatePlaybackState);
+		this.addListener(this.video, this.updateBufferedEvents, this._updateBufferedValue);
+		this.addListener(this.video, this.updatePlayedEvents, this._updatePlayedValue);
 		this.video.addEventListener("ended", this._onMediaEnded, false);
 		this.video.addEventListener("error", this._onMediaError, true);
-		if (this._notPlayed) this.video.addEventListener("play", this._onMediaFirstPlaying, false);
 		
 		this.on("view:removed", this.removeMediaListeners, this);
 	},
@@ -318,12 +345,12 @@ var VideoRenderer = PlayableRenderer.extend({
 	removeMediaListeners: function() {
 		this.off("view:removed", this.removeMediaListeners, this);
 		
-		this.removeListener(this.video, "play playing waiting pause seeking", this._updatePlaybackState);
-		this.removeListener(this.video, "progress canplay canplaythrough timeupdate", this._updateBufferedValue);
-		this.removeListener(this.video, "timeupdate", this._updatePlayedValue);
+		if (this._notPlayed) this.video.removeEventListener("playing", this._onMediaFirstPlaying, false);
+		this.removeListener(this.video, this.updatePlaybackEvents, this._updatePlaybackState);
+		this.removeListener(this.video, this.updateBufferedEvents, this._updateBufferedValue);
+		this.removeListener(this.video, this.updatePlayedEvents, this._updatePlayedValue);
 		this.video.removeEventListener("ended", this._onMediaEnded, false);
 		this.video.removeEventListener("error", this._onMediaError, true);
-		if (this._notPlayed) this.video.removeEventListener("play", this._onMediaFirstPlaying, false);
 	},
 	
 	/* ---------------------------
@@ -333,7 +360,7 @@ var VideoRenderer = PlayableRenderer.extend({
 	_notPlayed: true,
 	
 	_onMediaFirstPlaying: function(ev) {
-		this.video.removeEventListener("play", this._onMediaFirstPlaying, false);
+		this.video.removeEventListener("playing", this._onMediaFirstPlaying, false);
 		if (this._notPlayed) {
 			this._notPlayed = false;
 			this._updateBufferedValue(ev);
@@ -342,32 +369,53 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 	
 	_updatePlaybackState: function(ev) {
-		if (this.video.paused) {
-			if (this.video.ended) {
-				this._userPlaybackRequested = false;
-				this.playbackState = "user-replay";
-				// this.progressMeter.valueTo(0);
-				// this._updatePlayedValue(ev);
-			} else {
-				this.playbackState = "user-resume";
-			}
-		} else if (this.video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
-			this.playbackState = "media";
-		} else {
-			this.playbackState = "network";
-		}
-		this._updatePlayedValue(ev);
-	},
+		// if (this.video.paused) {
+		// 	if (this.video.ended) {
+		// 		this.userPlaybackRequested = false;
+		// 		this.playbackState = "user-replay";
+		// 		// this.progressMeter.valueTo(0);
+		// 		// this._updatePlayedValue(ev);
+		// 	} else {
+		// 		this.playbackState = "user-resume";
+		// 	}
+		// } else if (this.video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+		// 	this.playbackState = "media";
+		// } else {
+		// 	this.playbackState = "network";
+		// }
 		
-	_updateBufferedValue: function(ev) {
-		var bRanges = this.video.buffered;
-		if (bRanges.length > 0) {
-			this._bufferedValue = bRanges.end(bRanges.length - 1);
-			if (this.progressMeter && !this._notPlayed) {
-				this.progressMeter.valueTo(this._bufferedValue, 300, "available");
-				// this.progressMeter.valueTo(this._bufferedValue, Math.max(0, 1000 * (this._bufferedValue - (this.progressMeter.getValue("available") | 0))), "available");
+		var classList = this.getContentEl().classList;
+		
+		classList.toggle("ended", this.video.ended);
+		// if (this.video.ended) {
+		// 	this.userPlaybackRequested = false;
+		// }
+		if (this.userPlaybackRequested) {
+			if (this.video.ended) {
+				this.userPlaybackRequested = false;
 			}
+			switch (ev.type) {
+				case "pause":
+				case "playing": 
+					// this.userState = "playing";
+					classList.remove("waiting");
+					break;
+				case "waiting":
+					// this.userState = "waiting";
+					classList.add("waiting");
+					break;
+				// case "ended":
+				// 	// this.userState = "waiting";
+				// 	classList.add("ended");
+				// 	this.userPlaybackRequested = false;
+				// 	break;
+			}
+		} else {
+			// this.userState = "paused";
+			classList.remove("waiting");
 		}
+		
+		this._updatePlayedValue(ev);
 	},
 	
 	_updatePlayedValue: function(ev) {
@@ -375,7 +423,20 @@ var VideoRenderer = PlayableRenderer.extend({
 		if (this.progressMeter) {
 			this.progressMeter.valueTo(this._currentTimeValue, 0, "amount");
 			// this.progressMeter.valueTo(this._currentTimeValue, Math.max(0, 1000 * (this._currentTimeValue - (this.progressMeter.getValue("amount") | 0))), "amount");
-			this.progressMeter.indeterminate = (this.playbackState === "network");
+			// this.progressMeter.indeterminate = (this.playbackState === "network");
+		}
+		// this._updateBufferedValue(ev);
+	},
+		
+	_updateBufferedValue: function(ev) {
+		var bRanges = this.video.buffered;
+		if (bRanges.length > 0) {
+			this._bufferedValue = bRanges.end(bRanges.length - 1);
+			// if (this.progressMeter && !this._notPlayed) {
+			if (this.progressMeter && ((this.video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) || (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && this.video.networkState == HTMLMediaElement.NETWORK_LOADING))) {
+				this.progressMeter.valueTo(this._bufferedValue, 300, "available");
+				// this.progressMeter.valueTo(this._bufferedValue, Math.max(0, 1000 * (this._bufferedValue - (this.progressMeter.getValue("available") | 0))), "available");
+			}
 		}
 	},
 	

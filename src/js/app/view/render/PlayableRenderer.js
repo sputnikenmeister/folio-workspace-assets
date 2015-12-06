@@ -48,12 +48,28 @@ var PlayableRenderer = MediaRenderer.extend({
 				return true;
 			}
 		},
-		playbackState: {
+		// playbackState: {
+		// 	get: function() {
+		// 		return this._playbackState;
+		// 	},
+		// 	set: function(value) {
+		// 		this._setPlaybackState(value);
+		// 	}
+		// },
+		userState: {
 			get: function() {
-				return this._playbackState;
+				return this._userState;
 			},
 			set: function(value) {
-				this._setPlaybackState(value);
+				this._setUserState(value);
+			}
+		},
+		userPlaybackRequested: {
+			get: function() {
+				return this._userPlaybackRequested;
+			},
+			set: function(value) {
+				this._setUserPlaybackRequested(value);
 			}
 		}
 	},
@@ -65,7 +81,9 @@ var PlayableRenderer = MediaRenderer.extend({
 			"_onUserPlaybackToggle",
 			"_onVisibilityChange"
 		);
-		this.playbackState = "user-play";
+		// this.playbackState = "user-play";
+		this._setUserPlaybackRequested(this._userPlaybackRequested);
+		// this.userState = this.userPlaybackRequested? "playing":"paused";
 	},
 	
 	// initializeAsync: function() {
@@ -108,24 +126,43 @@ var PlayableRenderer = MediaRenderer.extend({
 		}
 	},
 	
-	/* --------------------------- *
-	/* playbackState
-	/* --------------------------- */
-	
-	_validPlaybackStates: ["network", "media", "user-play", "user-resume", "user-replay"],
-	
-	_setPlaybackState: function(key) {
-		if (this._playbackState !== key) {
-			if (this._validPlaybackStates.indexOf(key) === -1) {
-				throw new Error("Value '%s' is not valid. Must be one of: %s", key, this._validPlaybackStates.join(", "));
-			}
-			if (this._playbackState) {
-				this.getContentEl().classList.remove( "pending-" + this._playbackState);
-			}
-			this.getContentEl().classList.add("pending-" + key);
-			this._playbackState = key;
-		}
-	},
+	// /* --------------------------- *
+	// /* playbackState
+	// /* --------------------------- */
+	// 
+	// _validPlaybackStates: ["network", "media", "user-play", "user-resume", "user-replay"],
+	// 
+	// _setPlaybackState: function(key) {
+	// 	if (this._playbackState !== key) {
+	// 		if (this._validPlaybackStates.indexOf(key) === -1) {
+	// 			throw new Error("Value '%s' is not valid. Must be one of: %s", key, this._validPlaybackStates.join(", "));
+	// 		}
+	// 		if (this._playbackState) {
+	// 			this.getContentEl().classList.remove( "pending-" + this._playbackState);
+	// 		}
+	// 		this.getContentEl().classList.add("pending-" + key);
+	// 		this._playbackState = key;
+	// 	}
+	// },
+	// 
+	// /* --------------------------- *
+	// /* userState
+	// /* --------------------------- */
+	// 
+	// _validUserStates: ["playing", "waiting", "paused"],
+	// 
+	// _setUserState: function(key) {
+	// 	if (this._userState !== key) {
+	// 		if (this._validUserStates.indexOf(key) === -1) {
+	// 			throw new Error("Value '%s' is not valid. Must be one of: %s", key, this._validUserStates.join(", "));
+	// 		}
+	// 		if (this._userState) {
+	// 			this.getContentEl().classList.remove( "user-" + this._userState);
+	// 		}
+	// 		this.getContentEl().classList.add("user-" + key);
+	// 		this._userState = key;
+	// 	}
+	// },
 	
 	/* ---------------------------
 	/* selection handlers
@@ -198,9 +235,6 @@ var PlayableRenderer = MediaRenderer.extend({
 	/* --------------------------- */
 	
 	/** @type {String} */
-	_userPlaybackRequested: false,
-	
-	/** @type {String} */
 	_toggleEvent: "mouseup",
 	
 	/** @return {HTMLElement} */
@@ -213,14 +247,25 @@ var PlayableRenderer = MediaRenderer.extend({
 		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
 		if (!ev.defaultPrevented && !ev.button) {
 			ev.preventDefault();
-			this._userPlaybackRequested = !this._userPlaybackRequested;
+			this.userPlaybackRequested = !this.userPlaybackRequested;
 			
-			if (this._userPlaybackRequested) {
+			if (this.userPlaybackRequested) {
 				this._validatePlayback();
 			} else {
 				this.togglePlayback(false);
 			}
 		}
+	},
+	
+	/** @type {String} */
+	_userPlaybackRequested: null,
+	
+	_setUserPlaybackRequested: function(value) {
+		this._userPlaybackRequested = value;
+		var classList = this.content.classList;
+		classList.toggle("playing", value === true);
+		classList.toggle("paused", value === false);
+		classList.toggle("requested", value === true || value === false);
 	},
 	
 	/* --------------------------- *
@@ -230,14 +275,14 @@ var PlayableRenderer = MediaRenderer.extend({
 	_canResumePlayback: function() {
 		var retval = !!(this.enabled &&
 			this.model.selected &&
-			this._userPlaybackRequested &&
+			this.userPlaybackRequested &&
 			this.mediaState === "ready" &&
 			!this.parentView.scrolling &&
 			document[visibilityStateProp] !== "hidden");
 		// console.log("%s::_canResumePlayback():", this.cid, retval, {
 		// 	"enabled": this.enabled,
 		// 	"selected": (!!this.model.selected),
-		// 	"playback requested": this._userPlaybackRequested,
+		// 	"playback requested": this.userPlaybackRequested,
 		// 	"not scrolling": !this.parentView.scrolling,
 		// 	"mediaState": this.mediaState,
 		// 	"doc visibility": document[visibilityStateProp]

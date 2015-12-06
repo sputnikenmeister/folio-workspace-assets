@@ -26,6 +26,19 @@ var CarouselRenderer = View.extend({
 	/** @override */
 	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
 	
+	properties: {
+		content: {
+			get: function() { 
+				return this._content || (this._content = this.el.querySelector(".content"));
+			},
+		},
+		sizing: {
+			get: function() { 
+				return this._sizing || (this._sizing = this.el.querySelector(".sizing"));
+			},
+		}
+	},
+	
 	/** @override */
 	initialize: function (options) {
 		options.parentView && (this.parentView = options.parentView);
