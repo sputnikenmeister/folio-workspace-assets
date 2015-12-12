@@ -315,7 +315,7 @@ var NavigationView = ContainerView.extend({
 		this._onVPanMove(ev);
 	},
 	
-	_collapsedOffsetY: 300,
+	_collapsedOffsetY: Globals.COLLAPSE_OFFSET,
 	
 	_onVPanMove: function (ev) {
 		var delta = ev.thresholdDeltaY;

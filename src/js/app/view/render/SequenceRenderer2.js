@@ -166,7 +166,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/* initialize
 	/* --------------------------- */
 	
-	_userPlaybackRequested: true,
+	_playbackRequested: true,
 	
 	initializeAsync: function() {
 		return PlayableRenderer.prototype.initializeAsync.apply(this, arguments)

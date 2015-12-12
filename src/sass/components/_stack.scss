@@ -3,44 +3,27 @@
 // -----------------------------------
 
 .stack {
-	& > .current, & > .not-current {
-	// & > * {
+	& > .stack-item {
 		display: block;
 		position: absolute;
 		top: 0; left: 0;
-	}
-}
-
-.stack {
-	& > .current {
-		opacity: 1;
-		transition: opacity #{$duration - 0.001s} $ease 0.001s;
-	}
-	& > .not-current {
+		
+		transition: opacity nav_transition(1, 0);
 		opacity: 0;
-		transition: opacity #{$duration - 0.001s} $ease 0.001s;
+		&.current {
+			opacity: 1;
+		}
 	}
-	&.skip-transitions {
-		& > .current,
-		& > .not-current {
+	&.skip-transitions > .stack-item {
+		&, &.current {
 			transition: none 0s ease 0s;
 		}
 	}
 }
 
-// :not(.skip-transitions) .stack.alt > div,
-// .stack.alt:not(.skip-transitions) > div {
-// 	transition: opacity #{$duration - 0.001s} $ease;// #{$delay*1 + 0.001s};
-// 	&.exiting {
-// 		transition: opacity #{$duration - 0.001s} $ease;// #{$delay*0 + 0.001s};
-// 	}
+// .container-expanded .stack > .stack-item { 
+// 	opacity: 0 !important;
 // }
-// 
-// .stack.alt {
-// 	& > .entering {
-// 		opacity: 0;
-// 	}
-// 	& > .exiting {
-// 		opacity: 0;
-// 	}
+// .container-collapsed.container-changing .stack > .stack-item { 
+// 	transition: opacity nav_transition(1, 2);
 // }

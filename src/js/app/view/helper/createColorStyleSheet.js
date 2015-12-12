@@ -47,15 +47,15 @@ module.exports = function() {
 		Styles.createCSSRule(bodySelector, s);
 		
 		s = {};
-		s["color"] = fgColor.clone().mix(bgColor, 0.5).hslString();
-		s["border-color"] = fgColor.clone().mix(bgColor, 0.7).hslString();
+		s["color"] = fgColor.clone().mix(bgColor, 0.5).rgbString();
+		s["border-color"] = fgColor.clone().mix(bgColor, 0.7).rgbString();
 		Styles.createCSSRule(bodySelector + " .color-fg05", s);
 		
-		fgColorVal = fgColor.hslString();
-		bgColorVal = bgColor.hslString();
+		fgColorVal = fgColor.rgbString();
+		bgColorVal = bgColor.rgbString();
 		// inverted fg/bg colors (slightly muted)
-		revFgColorVal = bgColor.clone().mix(fgColor, 0.1).hslString();
-		revBgColorVal = fgColor.clone().mix(bgColor, 0.1).hslString();
+		revFgColorVal = bgColor.clone().mix(fgColor, 0.1).rgbString();
+		revBgColorVal = fgColor.clone().mix(bgColor, 0.1).rgbString();
 		revSelector = bodySelector + " .color-reverse";
 		
 		// .color-fg .color-bg
@@ -97,9 +97,9 @@ module.exports = function() {
 		// .media-item .color-bg09
 		// - - - - - - - - - - - - - - - - 
 		s = {};
-		s["background-color"]		= bgColor.clone().mix(fgColor, 0.95).hslString();
-		// s["background-color"]		= bgColor.clone()[hasDarkBg?"darken":"lighten"](0.045 ).hslString();
-		// s["background-color"]		= bgColor.clone()[hasDarkBg?"lighten":"darken"](0.03).hslString();
+		s["background-color"]		= bgColor.clone().mix(fgColor, 0.95).rgbString();
+		// s["background-color"]		= bgColor.clone()[hasDarkBg?"darken":"lighten"](0.045 ).rgbString();
+		// s["background-color"]		= bgColor.clone()[hasDarkBg?"lighten":"darken"](0.03).rgbString();
 		Styles.createCSSRule(carouselSelector + " .media-item .color-bg09", s);
 		
 		// .media-item .placeholder
@@ -107,10 +107,10 @@ module.exports = function() {
 		s = {};
 		s["-webkit-font-smoothing"] = (hasDarkBg? "auto" : "antialiased");
 		// text color luminosity is inverse from body, apply oposite rendering mode
-		s["color"]					= bgColor.hslString();
-		// s["color"]				= bgColor.clone()[hasDarkBg?"darken":"lighten"](0.045).hslString();
-		s["background-color"]		= bgColor.clone().mix(fgColor, 0.95).hslString();
-		// s["background-color"]	= bgColor.clone()[hasDarkBg?"lighten":"darken"](0.03).hslString();
+		s["color"]					= bgColor.rgbString();
+		// s["color"]				= bgColor.clone()[hasDarkBg?"darken":"lighten"](0.045).rgbString();
+		s["background-color"]		= bgColor.clone().mix(fgColor, 0.95).rgbString();
+		// s["background-color"]	= bgColor.clone()[hasDarkBg?"lighten":"darken"](0.03).rgbString();
 		("border-radius" in attrs) && (s["border-radius"] = attrs["border-radius"]);
 		Styles.createCSSRule(carouselSelector + " .media-item .placeholder", s);
 		

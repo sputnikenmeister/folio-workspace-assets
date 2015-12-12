@@ -244,15 +244,17 @@ MediaRenderer = (function(MediaRenderer) {
 		initialize: function() {
 			MediaRenderer.prototype.initialize.apply(this, arguments);
 			
-			var fgColor = this.model.attrs()["color"];
-			// var bgColor = this.model.attrs()["background-color"];
+			var fgColor = new Color(this.model.attrs()["color"]);
+			var bgColor = new Color(this.model.attrs()["background-color"]);
 			this.__logColors = {
-				normal: new Color(fgColor).alpha(0.75).rgbaString(),
-				ignored: new Color(fgColor).alpha(0.25).rgbaString(),
+				normal: fgColor.clone().mix(bgColor, 0.75).hslString(),
+				ignored: fgColor.clone().mix(bgColor, 0.25).hslString(),
 				error: "brown",
 				abort: "orange"
 			};
+			this.__logFrameStyle = "1px dashed " + fgColor.clone().mix(bgColor, 0.5).hslString();
 			this.__logStartTime = Date.now();
+			this.__rafId = -1;
 		},
 		
 		initializeAsync: function() {
@@ -285,11 +287,6 @@ MediaRenderer = (function(MediaRenderer) {
 			return this;
 		},
 		
-		__getTStamp: function() {
-			// return new Date(Date.now() - this.__logStartTime).toISOString().substr(11, 12);
-			return lpad(((Date.now() - this.__logStartTime)/1000).toFixed(3), 8, "0");
-		},
-		
 		__logMessage: function(msg, logtype, color) {
 			var logEntryEl = document.createElement("pre");
 			
@@ -299,6 +296,22 @@ MediaRenderer = (function(MediaRenderer) {
 			
 			this.__logElement.appendChild(logEntryEl);
 			this.__logElement.scrollTop = this.__logElement.scrollHeight;
+			
+			if (this.__rafId == -1) {
+				this.__rafId = this.requestAnimationFrame(this.__onFrame);
+			}
+		},
+		
+		__onFrame: function(tstamp) {
+			this.__rafId = -1;
+			this.__logElement.lastElementChild.style.borderBottom = this.__logFrameStyle;
+			this.__logElement.lastElementChild.style.paddingBottom = "2px";
+			this.__logElement.lastElementChild.style.marginBottom = "2px";
+		},
+		
+		__getTStamp: function() {
+			// return new Date(Date.now() - this.__logStartTime).toISOString().substr(11, 12);
+			return lpad(((Date.now() - this.__logStartTime)/1000).toFixed(3), 8, "0");
 		},
 	});
 })(MediaRenderer);

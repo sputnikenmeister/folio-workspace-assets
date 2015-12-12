@@ -29,6 +29,11 @@
 		box-sizing: content-box;
 		opacity: 0;
 	}
+	.error-message { 
+		position: absolute;
+		bottom: 0;
+		padding: 3rem;
+	}
 	&.idle,	&.error {
 		.content {
 			visibility: hidden;

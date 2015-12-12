@@ -273,7 +273,7 @@ var ContentView = ContainerView.extend({
 	 * Vertical touch/move (_onVPan*)
 	 * ------------------------------- */
 	
-	_collapsedOffsetY: 300,
+	_collapsedOffsetY: Globals.COLLAPSE_OFFSET,
 	
 	_onVPanStart: function (ev) {
 		this.touch.on("vpanmove", this._onVPanMove);

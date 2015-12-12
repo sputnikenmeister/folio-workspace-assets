@@ -32,10 +32,10 @@ var cssToPx = function (cssVal, el) {
 };
 
 var defaultRendererFunction = (function() {
-	var renderer = CarouselRenderer.extend({ className: "carousel-item default-renderer"}),
-		emptyRenderer = CarouselRenderer.extend({ className: "carousel-item default-renderer"});
+	var defaultRenderer = CarouselRenderer.extend({ className: "carousel-item default-renderer"}),
+		emptyRenderer = CarouselRenderer.extend({ className: "carousel-item empty-renderer"});
 	return function(item, index, arr) {
-		return (index === -1)? emptyRenderer: renderer;
+		return (index === -1)? emptyRenderer: defaultRenderer;
 	};
 })();
 var Carousel = {
@@ -49,11 +49,6 @@ var Carousel = {
 	DIRECTION_VERTICAL: Hammer.DIRECTION_VERTICAL,
 	/** copy of Hammer.DIRECTION_HORIZONTAL */
 	DIRECTION_HORIZONTAL: Hammer.DIRECTION_HORIZONTAL,
-	/** used in crateEmptyItemView */
-	EMPTY_VIEW_OPTS: ["model", "collection", "template"],
-	
-	// defaultRenderer: CarouselRenderer
-
 };
 
 /**
@@ -68,6 +63,18 @@ var CarouselProto = {
 	tagName: "div",
 	/** @override */
 	className: "carousel skip-transitions",
+	
+	/* --------------------------- *
+	/* properties
+	/* --------------------------- */
+	
+	properties: {
+		scrolling: {
+			get: function() {
+				return this._scrolling;
+			}
+		},
+	},
 	
 	requireSelection: false,
 	/** @type {int} In pixels */
@@ -192,15 +199,35 @@ var CarouselProto = {
 	/* Render
 	/* --------------------------- */
 	
+	
+	/** @override */
 	render: function () {
-		this.measureLater();
-		this.scrollByLater(0, Carousel.IMMEDIATE);
-		
-		if (this.el.parentElement) {
-			this.renderNow();
+		if (this.domPhase === "created") {
+			if (!this._renderPending) {
+				this._renderPending = true;
+				this.listenTo(this, "view:added", this.render);
+			}
+		} else {
+			this._renderPending = false;
+			this.stopListening(this, "view:added", this.render);
+			if (this.domPhase === "added") {
+				this.measureLater();
+				this.scrollByLater(0, Carousel.IMMEDIATE);
+				this.renderNow();
+			}
 		}
 		return this;
 	},
+	
+	// render: function () {
+	// 	this.measureLater();
+	// 	this.scrollByLater(0, Carousel.IMMEDIATE);
+	// 	
+	// 	if (this.el.parentElement) {
+	// 		this.renderNow();
+	// 	}
+	// 	return this;
+	// },
 	
 	/** @override */
 	renderLater: function () {
@@ -210,17 +237,44 @@ var CarouselProto = {
 		this.validateRender("enabled");
 	},
 	
-	/* --------------------------- *
-	/* Create children
-	/* --------------------------- */
+	/* Render: now   ------------- */
 	
 	createChildrenNow: function () {
 		this._createChildren();
 	},
-
+	measureNow: function () {
+		this._measure();
+	},
+	scrollByNow: function (delta, skipTransitions) {
+		this._scrollBy(delta, skipTransitions);
+	},
+	setEnabledNow: function(enabled) {
+		if (this._enabled !== enabled) {
+			this._enabled = enabled;
+			this._setEnabled(enabled);
+		}
+	},
+	
+	/* Render: later ------------- */
 	createChildrenLater: function () {
 		this.requestRender("createChildren", this._createChildren);
 	},
+	measureLater: function () {
+		this.requestRender("measure", this._measure);
+	},
+	scrollByLater: function (delta, skipTransitions) {
+		this.requestRender("scrollBy", this._scrollBy.bind(this, delta, skipTransitions));
+	},
+	setEnabledLater: function(enabled) {
+		if (this._enabled !== enabled) {
+			this._enabled = enabled;
+			this.requestRender("enabled", this._setEnabled.bind(this, enabled));
+		}
+	},
+	
+	/* --------------------------- *
+	/* Create children
+	/* --------------------------- */
 	
 	_createChildren: function () {
 		var buffer;
@@ -235,30 +289,20 @@ var CarouselProto = {
 				sIndex = 0;
 			}
 			this.collection.each(function (item, index, arr) {
-				buffer.appendChild(this.createItemView(
-					// this._getRenderer(item, index, arr), {model: item, parentView: this}, index, sIndex).el);
-					this.rendererFunction(item, index, arr), {model: item, parentView: this}, index, sIndex).el);
+				buffer.appendChild(this.createItemView(this.rendererFunction(item, index, arr), { model: item }, index, sIndex).el);
 			}, this);
 			this.el.appendChild(buffer);
 		}
 	},
 	
-	// _getRenderer: function(item, index, arr) {
-	// 	return this.rendererFunction(item, index, arr);
-	// 	// return this.rendererFunction? this.rendererFunction(item, index, arr) : this.renderer;
-	// },
-	
 	createEmptyView: function () {
-		// var renderer = this._getRenderer(null, -1, this.collection); // this.emptyRenderer
-		var renderer = this.rendererFunction(null, -1, this.collection); // this.emptyRenderer
-		var opts = _.pick(this, ["model", "collection", "template"]);//Carousel.EMPTY_VIEW_OPTS);
-		opts.parentView = this;
-		return this.emptyView = this.createItemView(
-			renderer, opts, -1, this.collection.selectedIndex);
+		return this.emptyView = this.createItemView(this.rendererFunction(null, -1, this.collection), _.pick(this, ["model", "collection", "template"]), -1, this.collection.selectedIndex);
 	},
 	
 	createItemView: function (renderer, opts, index, sIndex) {
-		var view = new renderer(opts);
+		var view;
+		opts.parentView = this;
+		view = new renderer(opts);
 		this.itemViews.add(view);
 		switch (index - sIndex) {
 			case  0:
@@ -297,19 +341,12 @@ var CarouselProto = {
 	// 	offsetHeight: ["offsetHeight", "offsetWidth"],
 	// };
 	
-	measureNow: function () {
-		this._measure();
-	},
-	
-	measureLater: function () {
-		this.requestRender("measure", this._measure);
-	},
-	
 	_measure: function() {
-		var m, mm, pos = 0, posInner = 0;
-		var maxAcross = 0, maxOuter = 0,
-			maxOuterView, maxAcrossView;
-			
+		var m, mm;
+		var pos = 0, posInner = 0;
+		var maxAcross = 0, maxOuter = 0;
+		var maxOuterView, maxAcrossView;
+		
 		maxOuterView = maxAcrossView = this.emptyView || this.itemViews.first();
 		
 		// chidren metrics
@@ -363,9 +400,6 @@ var CarouselProto = {
 		
 		if (view.metrics) {
 			m.before = view.metrics[this.dirProp("marginLeft","marginTop")];
-			// m.outer = view.metrics[this.dirProp("maxWidth","maxHeight")] ||
-			// 	view.metrics[this.dirProp("width","height")] ||
-			// 	viewEl[this.dirProp("offsetWidth", "offsetHeight")];
 			m.outer = viewEl[this.dirProp("offsetWidth", "offsetHeight")];
 			m.outer += m.before;
 			m.outer += view.metrics[this.dirProp("marginRight","marginBottom")];
@@ -374,48 +408,11 @@ var CarouselProto = {
 		} else {
 			// throw new Error("renderer has no metrics");
 			console.warn("%s::measureItemView view '%s' has no metrics", this.cid, view.cid);
-			
-			// s = getComputedStyle(viewEl);
-			// m.before = cssToPx(s[this.dirProp("marginLeft","marginTop")]);
-			// m.outer = cssToPx(s[this.dirProp("maxWidth","maxHeight")]) ||
-			// 	cssToPx(s[this.dirProp("width","height")]) ||
-			// 	viewEl[this.dirProp("offsetWidth", "offsetHeight")];
-			// m.outer += m.before;
-			// m.outer += cssToPx(s[this.dirProp("marginRight","marginBottom")]);
-			// 
-			// sizeEl = viewEl.querySelector(".sizing") || viewEl.firstChild;
-			// if (sizeEl) {
-			// 	m.inner = sizeEl[this.dirProp("offsetWidth", "offsetHeight")];
-			// 	m.before += sizeEl[this.dirProp("offsetLeft", "offsetTop")];
-			// } else {
-			// 	m.inner = m.outer;
-			// 	m.before = 0;
-			// }
 		}
 		m.after = m.outer - (m.inner + m.before);
 		m.across = viewEl[this.dirProp("offsetHeight", "offsetWidth")];
 		
-		// m.before = cssToPx(s[this.dirProp("marginLeft","marginTop")]);
-		// m.after = cssToPx(s[this.dirProp("marginRight","marginBottom")]);
-		// m.inner =
-		// 	cssToPx(s[this.dirProp("maxWidth","maxHeight")]) ||
-		// 	cssToPx(s[this.dirProp("width","height")]) ||
-		// 	viewEl[this.dirProp("offsetWidth", "offsetHeight")];
-		// m.outer = m.before + m.inner + m.after;
-		
 		return m;
-	},
-	
-	/* --------------------------- *
-	/* properties
-	/* --------------------------- */
-	
-	properties: {
-		scrolling: {
-			get: function() {
-				return this._scrolling;
-			}
-		},
 	},
 	
 	/* --------------------------- *
@@ -437,20 +434,11 @@ var CarouselProto = {
 	/* @return {?Boolean}
 	/*/
 	setEnabled: function(enabled) {
-		if (this._enabled !== enabled) {
-			this._enabled = enabled;
-			this.requestRender("enabled", this.renderEnabled.bind(this, enabled));
-		}
-	},
-	setEnabledNow: function(enabled) {
-		if (this._enabled !== enabled) {
-			this._enabled = enabled;
-			this.renderEnabled(enabled);
-		}
+		this.setEnabledLater(enabled);
 	},
 
 	/** @private */
-	renderEnabled: function (enabled) {
+	_setEnabled: function (enabled) {
 		if (enabled) {
 			this.hammer.on("tap", this._onTap);
 			this.hammer.on("panstart panmove panend pancancel", this._onPan);
@@ -482,14 +470,6 @@ var CarouselProto = {
 	/* --------------------------- *
 	/* Scroll/layout
 	/* --------------------------- */
-	
-	scrollByLater: function (delta, skipTransitions) {
-		this.requestRender("scrollBy", this._scrollBy.bind(this, delta, skipTransitions));
-	},
-	
-	scrollByNow: function (delta, skipTransitions) {
-		this._scrollBy(delta, skipTransitions);
-	},
 	
 	_scrollBy: function (delta, skipTransitions) {
 		var metrics, sView, sMetrics, cView, cMetrics, pos, txProp;
@@ -529,6 +509,29 @@ var CarouselProto = {
 		this.commitScrollSelection();
 	},
 	
+	// captureSelectedOffset: function() {
+	// 	var val, view, cssval, m, mm;
+	// 	
+	// 	val = 0;
+	// 	view = this._scrollCandidateView || this._selectedView;
+	// 	cssval = getComputedStyle(view.el)[transformProperty];
+	// 	
+	// 	mm = cssval.match(/(matrix|matrix3d)\(([^\)]+)\)/);
+	// 	if (mm) {
+	// 		m = mm[2].split(",");
+	// 		if (this.direction & Hammer.DIRECTION_HORIZONTAL) {
+	// 			val = m[mm[1]=="matrix"? 4 : 12];
+	// 		} else {
+	// 			val = m[mm[1]=="matrix"? 5 : 13];
+	// 		}
+	// 		val = parseFloat(val);
+	// 	}
+	// 	
+	// 	console.log("%s::captureSelectedOffset", this.cid, cssval, val, cssval.match(/matrix\((?:\d\,){3}(\d)\,(\d)|matrix3d\((?:\d\,){11}(\d)\,(\d)/));
+	// 	
+	// 	return val;
+	// },
+	
 	// _onScrollEnd: function(exec) {
 	// 	this._scrollEndCancellable = void 0;
 	// 	// this.el.classList.remove("disabled-changing");
@@ -544,12 +547,18 @@ var CarouselProto = {
 		"transitionend .carousel-item.selected": function(ev) {
 			if (ev.propertyName === transformStyleName) {
 				this._setScrolling(false);
-				// this.el.classList.remove("scrolling");
-				// this.trigger("view:scrollend");
-				console.log("%s::_onScrollEnd", this.cid);
-				// console.log("%s::events ['%s']: .carousel-item.selected '%s'", this.cid, ev.type, ev.propertyName);
+				console.log("%s:::events[transitionend .carousel-item.selected] scroll end", this.cid);
 			}
-		}
+		},
+		// "mousedown": function(ev) {
+		// 	if (this._scrolling) {
+		// 		this._panCapturedOffset = this.captureSelectedOffset();
+		// 		console.log("%s::events[mousedown] scrolling interrupted (pos %f)", this.cid, this._panCapturedOffset);
+		// 	}
+		// },
+		// "mouseup": function(ev) {
+		// 	this._panCapturedOffset = 0;
+		// },
 	},
 	
 	_getScrollOffset: function (delta, mCurr, mSel, mCan) {
@@ -621,17 +630,7 @@ var CarouselProto = {
 		var tapX = ev.center.x - bounds.left;
 		var tapY = ev.center.y - bounds.top;
 		
-		// console.log("Carousel.getTapCandidateAt [main] pos(%d) bounds(%d) range(%d - %d)",
-		// 	pos, bounds[this.dirProp("left", "top")], this._tapBefore, this._tapAfter
-		// );
-		// var pp = posAcross - bounds[this.dirProp("top", "left")];
-		// console.log("Carousel.getTapCandidateAt [across] ev+bounds(%d + %d = %d) range(%d - %d) pass?",
-		// 	posAcross, bounds[this.dirProp("top", "left")], pp, 
-		// 	this._tapAcrossBefore, this._tapAcrossAfter,
-		// 	(this._tapAcrossBefore < pp && pp < this._tapAcrossAfter)
-		// );
-		
-		this._scrollCandidateView = this.getTapCandidateAt(
+		this._scrollCandidateView = this.getCandidateAtTapPos(
 			this.dirProp(tapX, tapY),
 			this.dirProp(tapY, tapX)
 		);
@@ -639,15 +638,12 @@ var CarouselProto = {
 		if (this._scrollCandidateView) {
 			ev.preventDefault();
 			this._scrollCandidateView.el.classList.add("candidate");
-			
 			this._setScrolling(true);
-			// this.el.classList.add("scrolling");
-			// this.trigger("view:scrollstart");
 			this.scrollByNow(0, Carousel.ANIMATED);
 		}
 	},
 	
-	getTapCandidateAt: function(pos, posAcross) {
+	getCandidateAtTapPos: function(pos, posAcross) {
 		if (this._tapAcrossBefore < posAcross && posAcross < this._tapAcrossAfter) {
 			if (pos < this._tapBefore) {
 				return this._precedingView;
@@ -671,22 +667,29 @@ var CarouselProto = {
 		}
 	},
 	
+	// _panCapturedOffset: 0,
+	
 	/** @param {Object} ev */
 	_onPanStart: function (ev) {
+		// if (this._scrolling) {
+		// 	this._panCapturedOffset = this.captureSelectedOffset();
+		// 	console.log("%s::event[$s] captureSelectedOffset", this.cid, ev.type, this._panCapturedOffset);
+		// }
 		this.commitScrollSelection();
+		
 		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.thresholdDeltaX : ev.thresholdDeltaY;
+		// delta += this._panCapturedOffset;
 		
 		this.el.classList.add("panning");
 		this._setScrolling(true);
-		// this.el.classList.add("scrolling");
-		// this.trigger("view:scrollstart");
 		this.scrollByNow(delta, Carousel.IMMEDIATE);
 	},
 	
 	/** @param {Object} ev */
 	_onPanMove: function (ev) {
-		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.thresholdDeltaX : ev.thresholdDeltaY;
 		var view = (ev.offsetDirection & this._precedingDir)? this._precedingView : this._followingView;
+		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.thresholdDeltaX : ev.thresholdDeltaY;
+		// delta += this._panCapturedOffset;
 		
 		if (this._panCandidateView !== view) {
 			this._panCandidateView && this._panCandidateView.el.classList.remove("candidate");
@@ -701,8 +704,10 @@ var CarouselProto = {
 	
 	/** @param {Object} ev */
 	_onPanFinish: function (ev) {
-		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX : ev.deltaY;
 		var view = (ev.offsetDirection & this._precedingDir)? this._precedingView : this._followingView;
+		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX : ev.deltaY;
+		// delta += this._panCapturedOffset;
+		
 		if ((ev.type == "panend") &&
 				// pan direction (last event) and offsetDirection (whole gesture) must match
 				((ev.direction ^ ev.offsetDirection) & this.direction) &&
@@ -715,6 +720,7 @@ var CarouselProto = {
 			this._panCandidateView.el.classList.remove("candidate");
 		}
 		this.el.classList.remove("panning");
+		// this._panCapturedOffset = 0;
 		this._panCandidateView = void 0;
 		
 		this.scrollByNow(0, Carousel.ANIMATED);
@@ -746,9 +752,6 @@ var CarouselProto = {
 		}
 		
 		this._setScrolling(true);
-		// this.el.classList.add("scrolling");
-		// this.trigger("view:scrollstart");
-		// this.scrollByLater(0, Carousel.ANIMATED);
 		this.scrollByNow(0, Carousel.ANIMATED);
 	},
 

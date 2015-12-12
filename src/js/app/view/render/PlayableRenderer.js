@@ -48,28 +48,17 @@ var PlayableRenderer = MediaRenderer.extend({
 				return true;
 			}
 		},
-		// playbackState: {
-		// 	get: function() {
-		// 		return this._playbackState;
-		// 	},
-		// 	set: function(value) {
-		// 		this._setPlaybackState(value);
-		// 	}
-		// },
-		userState: {
+		playbackRequested: {
 			get: function() {
-				return this._userState;
+				return this._playbackRequested;
 			},
 			set: function(value) {
-				this._setUserState(value);
+				this._setPlaybackRequested(value);
 			}
 		},
-		userPlaybackRequested: {
+		playToggle: {
 			get: function() {
-				return this._userPlaybackRequested;
-			},
-			set: function(value) {
-				this._setUserPlaybackRequested(value);
+				return this.getPlayToggle();
 			}
 		}
 	},
@@ -82,13 +71,13 @@ var PlayableRenderer = MediaRenderer.extend({
 			"_onVisibilityChange"
 		);
 		// this.playbackState = "user-play";
-		this._setUserPlaybackRequested(this._userPlaybackRequested);
-		// this.userState = this.userPlaybackRequested? "playing":"paused";
+		this._setPlaybackRequested(this._playbackRequested);
+		// this.userState = this.playbackRequested? "playing":"paused";
 	},
 	
 	// initializeAsync: function() {
 	// 	// _.bindAll(this, "_onUserPlaybackToggle", "_onVisibilityChange");
-	// 	// this._userPlaybackRequested = false;
+	// 	// this._playbackRequested = false;
 	// 	// this.playbackState = "user-play";
 	// 	
 	// 	return MediaRenderer.prototype.initialize.initializeAsync.apply(this, arguments);
@@ -125,44 +114,6 @@ var PlayableRenderer = MediaRenderer.extend({
 			this.model.selected && this.togglePlayback(false);
 		}
 	},
-	
-	// /* --------------------------- *
-	// /* playbackState
-	// /* --------------------------- */
-	// 
-	// _validPlaybackStates: ["network", "media", "user-play", "user-resume", "user-replay"],
-	// 
-	// _setPlaybackState: function(key) {
-	// 	if (this._playbackState !== key) {
-	// 		if (this._validPlaybackStates.indexOf(key) === -1) {
-	// 			throw new Error("Value '%s' is not valid. Must be one of: %s", key, this._validPlaybackStates.join(", "));
-	// 		}
-	// 		if (this._playbackState) {
-	// 			this.getContentEl().classList.remove( "pending-" + this._playbackState);
-	// 		}
-	// 		this.getContentEl().classList.add("pending-" + key);
-	// 		this._playbackState = key;
-	// 	}
-	// },
-	// 
-	// /* --------------------------- *
-	// /* userState
-	// /* --------------------------- */
-	// 
-	// _validUserStates: ["playing", "waiting", "paused"],
-	// 
-	// _setUserState: function(key) {
-	// 	if (this._userState !== key) {
-	// 		if (this._validUserStates.indexOf(key) === -1) {
-	// 			throw new Error("Value '%s' is not valid. Must be one of: %s", key, this._validUserStates.join(", "));
-	// 		}
-	// 		if (this._userState) {
-	// 			this.getContentEl().classList.remove( "user-" + this._userState);
-	// 		}
-	// 		this.getContentEl().classList.add("user-" + key);
-	// 		this._userState = key;
-	// 	}
-	// },
 	
 	/* ---------------------------
 	/* selection handlers
@@ -243,13 +194,13 @@ var PlayableRenderer = MediaRenderer.extend({
 	},
 	
 	_onUserPlaybackToggle: function(ev) {
-		// console.log("PlayableRenderer._onUserPlaybackToggle", ev.type, "defaultPrevented: " + ev.defaultPrevented);
+		// console.log("%s::_onUserPlaybackToggle[%s] defaultPrevented: %s", this.cid, ev.type, ev.defaultPrevented);
 		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
 		if (!ev.defaultPrevented && !ev.button) {
 			ev.preventDefault();
-			this.userPlaybackRequested = !this.userPlaybackRequested;
+			this.playbackRequested = !this.playbackRequested;
 			
-			if (this.userPlaybackRequested) {
+			if (this.playbackRequested) {
 				this._validatePlayback();
 			} else {
 				this.togglePlayback(false);
@@ -258,10 +209,10 @@ var PlayableRenderer = MediaRenderer.extend({
 	},
 	
 	/** @type {String} */
-	_userPlaybackRequested: null,
+	_playbackRequested: null,
 	
-	_setUserPlaybackRequested: function(value) {
-		this._userPlaybackRequested = value;
+	_setPlaybackRequested: function(value) {
+		this._playbackRequested = value;
 		var classList = this.content.classList;
 		classList.toggle("playing", value === true);
 		classList.toggle("paused", value === false);
@@ -275,14 +226,14 @@ var PlayableRenderer = MediaRenderer.extend({
 	_canResumePlayback: function() {
 		var retval = !!(this.enabled &&
 			this.model.selected &&
-			this.userPlaybackRequested &&
+			this.playbackRequested &&
 			this.mediaState === "ready" &&
 			!this.parentView.scrolling &&
 			document[visibilityStateProp] !== "hidden");
 		// console.log("%s::_canResumePlayback():", this.cid, retval, {
 		// 	"enabled": this.enabled,
 		// 	"selected": (!!this.model.selected),
-		// 	"playback requested": this.userPlaybackRequested,
+		// 	"playback requested": this.playbackRequested,
 		// 	"not scrolling": !this.parentView.scrolling,
 		// 	"mediaState": this.mediaState,
 		// 	"doc visibility": document[visibilityStateProp]
@@ -313,10 +264,11 @@ var PlayableRenderer = MediaRenderer.extend({
 		// }
 	},
 	
-	_drawMediaElement: function(context, mediaEl, destRect) {
+	_drawMediaElement: function(context, mediaEl, dest) {
 		// destination rect
+		// NOTE: mediaEl is expected to have the same dimensions in this.metrics.media 
 		mediaEl || (mediaEl = this.defaultImage);
-		destRect || (destRect = {
+		dest || (dest = {
 			x:0, y:0,
 			width: this.metrics.media.width,
 			height: this.metrics.media.height
@@ -328,25 +280,28 @@ var PlayableRenderer = MediaRenderer.extend({
 			rsX = sW/this.metrics.media.width,
 			rsY = sH/this.metrics.media.height;
 		
-		// destRect, scaled to native
-		var srcRect = {
-			x: Math.max(0, destRect.x * rsX),
-			y: Math.max(0, destRect.y * rsY),
-			width: Math.min(sW, destRect.width * rsX),
-			height: Math.min(sH, destRect.height * rsY)
+		// dest, scaled to native
+		var src = {
+			x: Math.max(0, dest.x * rsX),
+			y: Math.max(0, dest.y * rsY),
+			width: Math.min(sW, dest.width * rsX),
+			height: Math.min(sH, dest.height * rsY)
 		};
 		
-		// Copy image to canvas
-		// ------------------------------
-		var canvas = context.canvas;
-		if (canvas.width !== destRect.width || canvas.height !== destRect.height) {
-			canvas.width = destRect.width;
-			canvas.height = destRect.height;
-		}
-		context.clearRect(0, 0, destRect.width, destRect.height);
+		// resize canvas
+		// var canvas = context.canvas;
+		// if (canvas.width !== dest.width || canvas.height !== dest.height) {
+		// 	canvas.width = dest.width;
+		// 	canvas.height = dest.height;
+		// }
+		context.canvas.width = dest.width;
+		context.canvas.height = dest.height;
+		
+		// copy image to canvas
+		context.clearRect(0, 0, dest.width, dest.height);
 		context.drawImage(mediaEl, 
-			srcRect.x, srcRect.y, srcRect.width, srcRect.height,
-			0, 0, destRect.width, destRect.height // destination rect
+			src.x, src.y, src.width, src.height,
+			0, 0, dest.width, dest.height // destination rect
 		);
 		
 		return context;
@@ -378,7 +333,7 @@ var PlayableRenderer = MediaRenderer.extend({
 			
 		// destination rect
 		var RECT_GROW = 20;
-		var destRect = {
+		var dest = {
 			x: tX - RECT_GROW,
 			y: tY - RECT_GROW,
 			width: tW + RECT_GROW * 2,
@@ -391,12 +346,12 @@ var PlayableRenderer = MediaRenderer.extend({
 			rsX = sW/this.metrics.media.width,
 			rsY = sH/this.metrics.media.height;
 		
-		// destRect, scaled to native
-		var srcRect = {
-			x: Math.max(0, destRect.x * rsX),
-			y: Math.max(0, destRect.y * rsY),
-			width: Math.min(sW, destRect.width * rsX),
-			height: Math.min(sH, destRect.height * rsY)
+		// dest, scaled to native
+		var src = {
+			x: Math.max(0, dest.x * rsX),
+			y: Math.max(0, dest.y * rsY),
+			width: Math.min(sW, dest.width * rsX),
+			height: Math.min(sH, dest.height * rsY)
 		};
 		
 		// Copy image to canvas
@@ -404,21 +359,21 @@ var PlayableRenderer = MediaRenderer.extend({
 		var canvas, context, imageData;
 		
 		// canvas = document.createElement("canvas");
-		// canvas.style.width  = destRect.width + "px";
-		// canvas.style.height = destRect.height + "px";
+		// canvas.style.width  = dest.width + "px";
+		// canvas.style.height = dest.height + "px";
 		
 		canvas = getSharedCanvas();
-		if (canvas.width !== destRect.width || canvas.height !== destRect.height) {
-			canvas.width = destRect.width;
-			canvas.height = destRect.height;
+		if (canvas.width !== dest.width || canvas.height !== dest.height) {
+			canvas.width = dest.width;
+			canvas.height = dest.height;
 		}
 		context = canvas.getContext("2d");
-		context.clearRect(0, 0, destRect.width, destRect.height);
+		context.clearRect(0, 0, dest.width, dest.height);
 		context.drawImage(mediaEl, 
-			srcRect.x, srcRect.y, srcRect.width, srcRect.height,
-			0, 0, destRect.width, destRect.height // destination rect
+			src.x, src.y, src.width, src.height,
+			0, 0, dest.width, dest.height // destination rect
 		);
-		imageData = context.getImageData(0, 0, destRect.width, destRect.height);
+		imageData = context.getImageData(0, 0, dest.width, dest.height);
 		
 		var avgColor = Color().rgb(getAverageRGB(imageData));
 		// var avgHex = avgColor.hexString(), els = this.el.querySelectorAll("img, video");

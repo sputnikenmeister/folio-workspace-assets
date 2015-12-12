@@ -18,6 +18,7 @@ module.exports = (function () {
 	g.V_PANOUT_DRAG			= 0.1; // factor
 	g.PAN_THRESHOLD			= 15; // px
 	g.COLLAPSE_THRESHOLD	= 75; // px
+	g.COLLAPSE_OFFSET		= parseInt(sass.temp["collapse_offset"]);
 	
 	// breakpoints
 	// - - - - - - - - - - - - - - - - -
@@ -44,7 +45,7 @@ module.exports = (function () {
 	// - - - - - - - - - - - - - - - - -
 	g.APP_ROOT		=	window.approot;
 	g.MEDIA_DIR		=	window.mediadir;
-	g.MEDIA_DIR_SLOW = window.mediadir.replace(/(https?\:\/\/[^\/]+)/, "$1/slow/100");
+	
 	delete window.approot;
 	delete window.mediadir;
 	
@@ -133,6 +134,7 @@ module.exports = (function () {
 		"debug-bandwidth":
 			_.template(g.MEDIA_DIR.replace(/(https?\:\/\/[^\/]+)/, "$1/slow/<%= kbps %>") + "/<%= src %>"),
 	};
+	// g.MEDIA_DIR_SLOW =	window.mediadir.replace(/(https?\:\/\/[^\/]+)/, "$1/slow/100");
 	
 	return g;
 }());

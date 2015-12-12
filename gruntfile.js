@@ -59,7 +59,7 @@ module.exports = function (grunt) {
 	grunt.registerTask("build-watch", ["browserify:watch-client", "browserify:watch-vendor", "watch"]);
 	
 	// Default task
-	grunt.registerTask("default", ["build-debug"]);
+	grunt.registerTask("default", ["build-watch"]);
 	
 	/* --------------------------------
 	/* watch

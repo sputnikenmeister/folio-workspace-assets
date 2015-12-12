@@ -77,7 +77,7 @@ var VideoRenderer = PlayableRenderer.extend({
 			"_updateBufferedValue",
 			"_onMediaError",
 			"_onMediaEnded",
-			"_onMediaFirstPlaying",
+			"_onMediaPlayingOnce",
 			"_onFullscreenChange"
 		);
 		// var onPeerSelect = function() {
@@ -197,11 +197,11 @@ var VideoRenderer = PlayableRenderer.extend({
 						backgroundColor: view.model.attrs()["background-color"],
 						labelFn: view._progressLabelFn.bind(view)
 						// labelFn: function(value, total) {
-						// 	if (this.userPlaybackRequested === false) return Globals.PAUSE_CHAR;
+						// 	if (this.playbackRequested === false) return Globals.PAUSE_CHAR;
 						// 	else return progressLabelFn.call(null, (this.video.ended? 0 : value), total);
 						// }.bind(view)
 						// labelFn: function(value, total) {
-						// 	return (!this._notPlayed && !this.video.ended && this.video.paused)?
+						// 	return (this._started && !this.video.ended && this.video.paused)?
 						// 		String.fromCharCode(0x23F8) : // play: 0x23F5, pause: 0x23F8, stop: 0x23F9
 						// 		progressLabelFn.call(null, (view.video.ended? 0 : value), total);
 						// }.bind(view)
@@ -213,7 +213,7 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 	
 	_progressLabelFn: function(value, total) {
-		if (!this.video.ended && this.userPlaybackRequested === false) {
+		if (!this.video.ended && this.playbackRequested === false) {
 			return Globals.PAUSE_CHAR;
 		} else if (this.video.ended || isNaN(value)) {
 			return formatTimecode(total);
@@ -286,13 +286,10 @@ var VideoRenderer = PlayableRenderer.extend({
 		}
 		if (this.model.attrs()["@debug-bandwidth"]) {
 			return Globals.IMAGE_URL_TEMPLATES["debug-bandwidth"]({
-				kbps: this.model.attrs()["@debug-bandwidth"],
-				src: playable.src
+				src: playable.src, kbps: this.model.attrs()["@debug-bandwidth"]
 			});
 		}
 		return Globals.IMAGE_URL_TEMPLATES["original"](playable);
-		// var prefix = (this.model.attrs()["@debug"] === "slow")? Globals.MEDIA_DIR_SLOW : Globals.MEDIA_DIR;
-		// return (playable === void 0)? "" : prefix + "/" + playable.src;
 	},
 	
 	/* ---------------------------
@@ -312,6 +309,7 @@ var VideoRenderer = PlayableRenderer.extend({
 				console.warn(this.cid, "WTF! got video data, but cannot seek, calling load()");
 				// this._logMessage("call:load", "got video data, but cannot seek, calling load()", "orange");
 				this.video.load();
+				this.video.currentTime = 0;
 			} else if (this.video.ended) {
 				this.video.currentTime = this.video.seekable.start(0);
 			}
@@ -328,11 +326,11 @@ var VideoRenderer = PlayableRenderer.extend({
 	// updatePlaybackEvents: "play playing waiting pause seeking seeked ended",
 	// updateBufferedEvents: "progress canplay canplaythrough playing timeupdate",//loadeddata
 	updatePlaybackEvents: "playing waiting pause",
-	updateBufferedEvents: "progress canplay canplaythrough play",
-	updatePlayedEvents: "timeupdate",
+	updateBufferedEvents: "progress canplay canplaythrough play playing",
+	updatePlayedEvents: "timeupdate seeked",
 	
 	addMediaListeners: function() {
-		if (this._notPlayed) this.video.addEventListener("playing", this._onMediaFirstPlaying, false);
+		if (!this._started) this.video.addEventListener("playing", this._onMediaPlayingOnce, false);
 		this.addListener(this.video, this.updatePlaybackEvents, this._updatePlaybackState);
 		this.addListener(this.video, this.updateBufferedEvents, this._updateBufferedValue);
 		this.addListener(this.video, this.updatePlayedEvents, this._updatePlayedValue);
@@ -345,7 +343,7 @@ var VideoRenderer = PlayableRenderer.extend({
 	removeMediaListeners: function() {
 		this.off("view:removed", this.removeMediaListeners, this);
 		
-		if (this._notPlayed) this.video.removeEventListener("playing", this._onMediaFirstPlaying, false);
+		if (!this._started) this.video.removeEventListener("playing", this._onMediaPlayingOnce, false);
 		this.removeListener(this.video, this.updatePlaybackEvents, this._updatePlaybackState);
 		this.removeListener(this.video, this.updateBufferedEvents, this._updateBufferedValue);
 		this.removeListener(this.video, this.updatePlayedEvents, this._updatePlayedValue);
@@ -357,90 +355,29 @@ var VideoRenderer = PlayableRenderer.extend({
 	/* media event handlers
 	/* --------------------------- */
 	
-	_notPlayed: true,
-	
-	_onMediaFirstPlaying: function(ev) {
-		this.video.removeEventListener("playing", this._onMediaFirstPlaying, false);
-		if (this._notPlayed) {
-			this._notPlayed = false;
-			this._updateBufferedValue(ev);
-			this.getContentEl().classList.remove("not-played");
-		}
+	_onMediaError: function(ev) {
+		this.removeMediaListeners();
+		this.removeSelectionListeners();
+		
+		this._onMediaEnded(ev);
+		this.content.classList.remove("ended");
+		this.content.classList.remove("waiting");
+		this.content.classList.remove("started");
+		this._started = false;
+		
+		this.mediaState = "error";
 	},
 	
-	_updatePlaybackState: function(ev) {
-		// if (this.video.paused) {
-		// 	if (this.video.ended) {
-		// 		this.userPlaybackRequested = false;
-		// 		this.playbackState = "user-replay";
-		// 		// this.progressMeter.valueTo(0);
-		// 		// this._updatePlayedValue(ev);
-		// 	} else {
-		// 		this.playbackState = "user-resume";
-		// 	}
-		// } else if (this.video.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
-		// 	this.playbackState = "media";
-		// } else {
-		// 	this.playbackState = "network";
-		// }
-		
-		var classList = this.getContentEl().classList;
-		
-		classList.toggle("ended", this.video.ended);
-		// if (this.video.ended) {
-		// 	this.userPlaybackRequested = false;
-		// }
-		if (this.userPlaybackRequested) {
-			if (this.video.ended) {
-				this.userPlaybackRequested = false;
-			}
-			switch (ev.type) {
-				case "pause":
-				case "playing": 
-					// this.userState = "playing";
-					classList.remove("waiting");
-					break;
-				case "waiting":
-					// this.userState = "waiting";
-					classList.add("waiting");
-					break;
-				// case "ended":
-				// 	// this.userState = "waiting";
-				// 	classList.add("ended");
-				// 	this.userPlaybackRequested = false;
-				// 	break;
-			}
-		} else {
-			// this.userState = "paused";
-			classList.remove("waiting");
-		}
-		
-		this._updatePlayedValue(ev);
-	},
-	
-	_updatePlayedValue: function(ev) {
-		this._currentTimeValue = this.video.currentTime;
-		if (this.progressMeter) {
-			this.progressMeter.valueTo(this._currentTimeValue, 0, "amount");
-			// this.progressMeter.valueTo(this._currentTimeValue, Math.max(0, 1000 * (this._currentTimeValue - (this.progressMeter.getValue("amount") | 0))), "amount");
-			// this.progressMeter.indeterminate = (this.playbackState === "network");
-		}
-		// this._updateBufferedValue(ev);
-	},
-		
-	_updateBufferedValue: function(ev) {
-		var bRanges = this.video.buffered;
-		if (bRanges.length > 0) {
-			this._bufferedValue = bRanges.end(bRanges.length - 1);
-			// if (this.progressMeter && !this._notPlayed) {
-			if (this.progressMeter && ((this.video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) || (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && this.video.networkState == HTMLMediaElement.NETWORK_LOADING))) {
-				this.progressMeter.valueTo(this._bufferedValue, 300, "available");
-				// this.progressMeter.valueTo(this._bufferedValue, Math.max(0, 1000 * (this._bufferedValue - (this.progressMeter.getValue("available") | 0))), "available");
-			}
+	_onMediaPlayingOnce: function(ev) {
+		this.video.removeEventListener("playing", this._onMediaPlayingOnce, false);
+		if (!this._started) {
+			this._started = true;
+			this.getContentEl().classList.add("started");
 		}
 	},
 	
 	_onMediaEnded: function(ev) {
+		this.playbackRequested = false;
 		if (this.video.webkitDisplayingFullscreen) {
 			this.video.webkitExitFullscreen();
 		}
@@ -449,10 +386,42 @@ var VideoRenderer = PlayableRenderer.extend({
 		}
 	},
 	
-	_onMediaError: function(ev) {
-		this.removeMediaListeners();
-		this.removeSelectionListeners();
-		this.mediaState = "error";
+	_updatePlaybackState: function(ev) {
+		var classList = this.getContentEl().classList;
+		if (this.playbackRequested) {
+			switch (ev.type) {
+				case "pause":
+				case "playing": 
+					classList.remove("waiting");
+					break;
+				case "waiting":
+					classList.add("waiting");
+					break;
+			}
+		} else {
+			classList.remove("waiting");
+		}
+		classList.toggle("ended", this.video.ended);
+		
+		this._updatePlayedValue(ev);
+	},
+	
+	_updatePlayedValue: function(ev) {
+		this._currentTimeValue = this.video.currentTime;
+		if (this.progressMeter) {
+			this.progressMeter.valueTo(this._currentTimeValue, 0, "amount");
+		}
+	},
+		
+	_updateBufferedValue: function(ev) {
+		var bRanges = this.video.buffered;
+		if (bRanges.length > 0) {
+			this._bufferedValue = bRanges.end(bRanges.length - 1);
+			if (this.progressMeter && ((this.video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) || (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && this.video.networkState == HTMLMediaElement.NETWORK_LOADING))) {
+				this.progressMeter.valueTo(this._bufferedValue, 300, "available");
+				// this.progressMeter.valueTo(this._bufferedValue, Math.max(0, 1000 * (this._bufferedValue - (this.progressMeter.getValue("available") | 0))), "available");
+			}
+		}
 	},
 	
 	/* ---------------------------
@@ -664,7 +633,15 @@ VideoRenderer = (function(VideoRenderer) {
 		
 		__handleMediaEvent: function(ev) {
 			var evmsg, errmsg;
-			evmsg = formatVideoStats(this.video) + " " + rpad(this._lastPlaybackStates || "-", 9);
+			// evmsg = formatVideoStats(this.video) + " " + rpad(this._lastPlaybackStates || "-", 9);
+			evmsg = formatVideoStats(this.video);
+			if (this.playbackRequested === true) {
+				evmsg += " (>>)";
+			} else if (this.playbackRequested === false) {
+				evmsg += " (::)";
+			} else {
+				evmsg += " (--)";
+			}
 			this.__logEvent(evmsg, ev.type);
 			if (ev.type === "error" || ev.type === "abort") {
 				this.__logMessage(formatVideoError(this.video), ev.type);

@@ -24,13 +24,6 @@ var View = require("app/view/base/View");
 var NavigationView = require("app/view/NavigationView");
 /** @type {module:app/view/ContentView} */
 var ContentView = require("app/view/ContentView");
-/** @type {module:app/view/FooterView} */
-// var FooterView = require("app/view/FooterView");
-
-/** @type {module:app/view/helper/createColorStyleSheet} */
-var createColorStyleSheet = require("app/view/helper/createColorStyleSheet");
-/** @type {module:app/view/helper/ColorStyleSheet} */
-// var ColorStyleSheet = require("app/view/helper/ColorStyleSheet");
 
 /** @type {module:app/utils/debug/traceArgs} */
 var stripTags = require("utils/strings/stripTags");
@@ -67,16 +60,6 @@ var AppView = View.extend({
 			"change:after": this._afterChange
 		});
 		
-		// document.head.appendChild(new ColorStyleSheet().render().el);
-		
-		if (document.readyState === "complete") {
-			createColorStyleSheet();
-		} else {
-			document.addEventListener("load", createColorStyleSheet);
-			console.warn("Controller.createColorStyleSheet: document.readyState is '" +
-				document.readyState + "', will wait for 'load' event.");
-		}
-		
 		// render on resize
 		var windowEventHandler = this.render.bind(this);
 		window.addEventListener("onorientationchange", windowEventHandler, false);
@@ -90,18 +73,11 @@ var AppView = View.extend({
 		}
 		
 		/* initialize views */
-		this.navigationView = new NavigationView({
-			el: "#navigation"
-		});
-		this.contentView = new ContentView({
-			el: "#content"
-		});
+		this.navigationView = new NavigationView({ el: "#navigation" });
+		this.contentView = new ContentView({ el: "#content" });
 		
 		// start router, which will request appropiate state
-		Backbone.history.start({
-			pushState: false,
-			hashChange: true
-		});
+		Backbone.history.start({ pushState: false, hashChange: true });
 		
 		// Change to .app-ready on next frame:
 		// CSS animations do not trigger while on .app-initial,
@@ -114,10 +90,8 @@ var AppView = View.extend({
 	},
 	
 	render: function () {
-		// document.body.classList.toggle("desktop-small",
-		// 	this.breakpoints["desktop-small"].matches);
-		document.documentElement.classList.toggle("desktop-small",
-			this.breakpoints["desktop-small"].matches);
+		// document.body.classList.toggle("desktop-small", this.breakpoints["desktop-small"].matches);
+		document.documentElement.classList.toggle("desktop-small", this.breakpoints["desktop-small"].matches);
 		this.navigationView.render();
 		this.contentView.render();
 		return this;
@@ -134,19 +108,20 @@ var AppView = View.extend({
 		cls.toggle("with-media", !!media);
 		cls.toggle("without-media", !media);
 		
-		bundle && cls.toggle("color-dark", bundle.colors.hasDarkBg);
-		
 		// Set bundle class
-		if (this._lastBundle) {
-			cls.remove(this._lastBundle.get("domid"));
+		if (this._lastBundle !== bundle) {
+			if (this._lastBundle) {
+				cls.remove(this._lastBundle.get("domid"));
+			}
+			if (bundle) {
+				cls.add(bundle.get("domid"));
+			}
+			cls.toggle("color-dark", bundle &&  bundle.colors.hasDarkBg);
+			// Set browser title
+			document.title = bundle? "Portfolio – " + stripTags(bundle.get("name")): "Portfolio";
+			this._lastBundle = bundle;
 		}
-		if (bundle) {
-			cls.add(bundle.get("domid"));
-		}
-		this._lastBundle = bundle;
 		
-		// Set browser title
-		document.title = bundle? "Portfolio – " + stripTags(bundle.get("name")): "Portfolio";
 	},
 
 }, {

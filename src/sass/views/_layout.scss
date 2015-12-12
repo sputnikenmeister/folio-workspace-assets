@@ -37,13 +37,13 @@ html, body {
 // ------------------------------------
 .app-ready #container {
 	transition:
-		visibility $duration step-start $delay,
+		// visibility $duration step-start $delay,
 		opacity $duration $ease $delay;
-	visibility: visible;
+	// visibility: visible;
 	opacity: 1;
 }
 .app-initial #container {
-	visibility: hidden;
+	// visibility: hidden;
 	opacity: 0;
 }
 // body.skip-transitions *,
@@ -61,20 +61,14 @@ html, body {
 	border-color: lighten($color, 60%);
 }
 body, .color-tx {
-	// transition:
-	// 	background-color $duration $ease $delay * 2,
-	// 	color $duration $ease $delay * 2;
-	transition-property: background-color, color;
-	transition-delay: $delay*1 + 0.001s;
-	transition-duration: $duration - 0.001s;
-	transition-timing-function: $ease;
+	transition:
+		background-color $duration $ease $delay,
+		color $duration $ease $delay;
+	// transition-property: background-color, color;
+	// transition-delay: $delay + 0.001s;
+	// transition-duration: $duration - 0.001s;
+	// transition-timing-function: $ease;
 }
-// .color-no-tx {
-// 	transition-property: background-color, color;
-// 	transition-delay: 0.0s;
-// 	transition-duration: 0.0s;
-// 	transition-timing-function: step-start;
-// }
 
 // -----------------------------------
 // Layer ordering
@@ -121,7 +115,7 @@ $nav_height_portrait: 15rem;//13.5rem;//14.25rem;
 $nav_height_landscape_right: $nav_height_landscape + 1.5rem;
 $footer_height: 3rem;
 
-$nav_collapse_extra: 28rem;
+$nav_collapse_extra: map-get($temp, collapse_offset) * 1px;//28rem;
 
 // translate wrapper function
 // - - - - - - - - - - - - - - - - - -

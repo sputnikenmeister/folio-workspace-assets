@@ -1,17 +1,12 @@
-module.exports = function(image) {
-	// if (image.src === "") {
-	// 	console.warn("_whenImageLoads WARNING", "image has empty src");
-	// }
-	if (image.complete) {
-		if (image.src === "") {
-			console.warn("_whenImageLoads resolve-sync", "image has empty src");
-			return Promise.resolve(image);
+module.exports = function(image, resolveEmpty) {
+	return new Promise(function(resolve, reject) {
+		if (!(image instanceof window.HTMLImageElement)) {
+			reject(new Error("not an HTMLImageElement"));
+		} else if (image.complete && (image.src.length > 0 || resolveEmpty)) {
+			// if (image.src === "") console.warn("_whenImageLoads resolved with empty src");
+			// else console.log("_whenImageLoads resolve-sync", image.src);
+			resolve(image);
 		} else {
-			console.log("_whenImageLoads resolve-sync", image.src);
-			return Promise.resolve(image);
-		}
-	} else {
-		return new Promise(function(resolve, reject) {
 			var handlers = {
 				load: function(ev) {
 					// console.log("_whenImageLoads_dom resolve-async", ev.type, image.src);
@@ -41,6 +36,6 @@ module.exports = function(image) {
 					image.addEventListener(event, handlers[event], false);
 				}
 			}
-		});
-	}
+		}
+	});
 };

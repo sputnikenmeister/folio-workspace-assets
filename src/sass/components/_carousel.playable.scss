@@ -39,262 +39,121 @@
 // 	transition-duration: $duration * 1;
 // }
 
-// .overlay .play-toggle
-// - - - - - - - - - - - - - - - - -
-.playable-renderer {
-	// hit-area
-	.play-toggle-hitarea {
-		// $size: 50%;//12em; 
-		// width: $size; height: $size;
-		// left: calc(50% - #{$size/2}); top: calc(50% - #{$size/2}); 
-		// margin-left: $size/2; margin-top: $size/2;
-		width: auto; height: auto;
-		top: 1em; bottom: 1em; left: 1em; right: 1em;
-		cursor: pointer;
-		display: block;
-		position: absolute;
-	}
-	// play-toggle
-	.play-toggle {
-		background-repeat: no-repeat;
-		background-size: 3.3rem 3.3rem;
-		background-position: center center;
-	}
-}
+// -----------------------------------
+// .playable-renderer .play-toggle
+// -----------------------------------
 
 @function symbol-url($url) {
 	// @return base64_encode($url);
 	@return image-url($url);
 }
 
-.playable-renderer {
-	.play-toggle,
-	// .paused.not-played .play-toggle,
-	.paused:not(.requested) .play-toggle { background-image: symbol-url("symbols/playback-play.svg"); }
-	
-	.playing .play-toggle 			{ background-image: symbol-url("symbols/playback-play.svg"); }
-	.paused .play-toggle 			{ background-image: symbol-url("symbols/playback-pause.svg"); }
-	.playing.waiting .play-toggle 	{ background-image: symbol-url("symbols/playback-wait.svg"); }
-	.paused.ended .play-toggle 		{ background-image: symbol-url("symbols/playback-replay.svg"); }
-}
-
-// .playable-renderer {
-// 	.playing .play-toggle:active	{ background-image: symbol-url("symbols/playback-pause.svg"); }
-// 	.paused .play-toggle:active		{ background-image: symbol-url("symbols/playback-play.svg"); }
-// 	.play-toggle {
-// 		opacity: 1;
-// 		transition: opacity $duration*1.0 $ease $delay*0.5;
-// 	}
-// 	.play-toggle:active {
-// 		transition: opacity $duration*0.3 $ease 0.005s;
-// 	}
-// 	.playing:not(.waiting) .play-toggle { opacity: 0; }
-// 	.paused:not(.ended) .play-toggle { opacity: 0; }
-// 	.playing .play-toggle:active { opacity: 1; }
-// 	.paused .play-toggle:active { opacity: 1; }
-// 	@at-root .scrolling & .play-toggle:active { opacity: 0 !important; }
-// 	
-// 	.playing, .paused {
-// 		.play-toggle { opacity: 0; }
-// 		&:not(.requested) .play-toggle { opacity: 1; }
-// 	}
-// 	.playing.waiting, .paused.ended {
-// 		.play-toggle { opacity: 1; }
-// 	}
-// 	.playing:not(.waiting), .paused:not(.ended) { 
-// 		.play-toggle { 
-// 			opacity: 0; 
-// 			transition: opacity $duration*1.0 $ease $delay*0.5;
-// 		}
-// 		.play-toggle:active {
-// 			opacity: 1;
-// 			transition: opacity $duration*0.3 $ease 0.005s;
-// 		}
-// 	}
-// 	
-// 	@at-root :not(.scrolling) & { .playing, .paused { .play-toggle:active { opacity: 1; } } }
-// }
-
-.playable-renderer {
-	.play-toggle { opacity: 0; };
-	.not-played {
-		.play-toggle { opacity: 1; }
-		// &.paused .play-toggle { animation: none; }
-	}
-	// @at-root :not(.scrolling) & {
-	// 	&.requested .play-toggle { animation: $duration*2 $ease flashStart; }
-	// }
-	:not(.not-played) {
-	// .requested {
-		// .play-toggle { opacity: 0; }
-		// &.requested .play-toggle { opacity: 0; }
-		
-		@at-root :not(.scrolling) & {
-			// .play-toggle:active { animation: 0s none; }
-			// .play-toggle:not(:active) { animation: $duration*2 $ease flashOdd; }
-			&.playing .play-toggle { animation: $duration*2 $ease flashOdd; }
-			&.paused .play-toggle { animation: $duration*2 $ease flashEven; }
-		}
-		// @at-root .scrolling &:not(.selected) .play-toggle { animation: 0s none; }
-		
-		// &.playing .play-toggle { animation: $duration*2 $ease flashOdd; }
-		// &.playing:not(.waiting) .play-toggle { opacity: 0; };
-		// &.waiting .play-toggle { opacity: 1; };
-		&.playing.waiting .play-toggle { opacity: 1; }
-		// &.playing .play-toggle { opacity: 0; };
-		
-		// &.paused .play-toggle { animation: $duration*2 $ease flashOdd; }
-		// &.paused:not(.ended) .play-toggle { opacity: 0; }
-		// &.ended .play-toggle { opacity: 1; };
-		&.paused.ended .play-toggle { opacity: 1; }
-		// &.paused .play-toggle { opacity: 0; };
-	}
-}
-
-// @keyframes flashStart {
-// 	from  { opacity: 1.00; }
-// 	50%  { opacity: 1.00; }
-// 	// to   { opacity: 0.00; }
-// }
 @keyframes flashEven {
 	from  { opacity: 1.00; }
-	// from { opacity: 0.00; }
-	// 10%  { opacity: 1.00; }
 	50%  { opacity: 1.00; }
-	// to   { opacity: 0.00; }
 }
 @keyframes flashOdd {
 	from  { opacity: 1.00; }
-	// from { opacity: 0.00; }
-	// 10%  { opacity: 1.00; }
 	50%  { opacity: 1.00; }
-	// to   { opacity: 0.00; }
+}
+// from { opacity: 0.00; }
+// 10%  { opacity: 1.00; }
+// to   { opacity: 0.00; }
+
+// - - - - - - - - - - - - - - - - -
+// .play-toggle
+// - - - - - - - - - - - - - - - - -
+.playable-renderer {
+	// - - - - - - - - - - - - - - - - -
+	// box/background position
+	// - - - - - - - - - - - - - - - - -
+	.play-toggle {
+		width: auto; height: auto;
+		top: 1em; bottom: 1em; left: 1em; right: 1em;
+		cursor: pointer;
+		display: block;
+		position: absolute;
+		// $size: 50%;//12em; 
+		// width: $size; height: $size;
+		// left: calc(50% - #{$size/2}); top: calc(50% - #{$size/2}); 
+		// margin-left: $size/2; margin-top: $size/2;
+		
+		background-repeat: no-repeat;
+		background-size: 3.3rem 3.3rem;
+		background-position: center center;
+	}
+	// .play-toggle-hitarea {} // hit-area
+	
+	// - - - - - - - - - - - - - - - - -
+	// symbols
+	// - - - - - - - - - - - - - - - - -
+	.paused:not(.started) .play-toggle,
+	.playing .play-toggle,
+	.play-toggle 					{ background-image: symbol-url("symbols/playback-play.svg"); }
+	.paused .play-toggle 			{ background-image: symbol-url("symbols/playback-pause.svg"); }
+	.playing.waiting .play-toggle 	{ background-image: symbol-url("symbols/playback-wait.svg"); }
+	.paused.ended .play-toggle 		{ background-image: symbol-url("symbols/playback-replay.svg"); }
+	// .over-dark .play-toggle { background-image: symbol-url("symbols/playback-play-dark.svg"); }
+	// .over-dark .play-toggle { background-image: symbol-url("symbols/playback-pause-dark.svg");}
+	// .over-dark .play-toggle { background-image: symbol-url("symbols/playback-replay-dark.svg");}
+	// .over-dark .play-toggle { background-image: symbol-url("symbols/playback-wait-dark.svg");}
+	
+	// - - - - - - - - - - - - - - - - -
+	// opacity animation
+	// - - - - - - - - - - - - - - - - -
+	// .play-toggle { opacity: 0; };
+	// :not(.started) .play-toggle { opacity: 1; }
+	.play-toggle { opacity: 1; };
+	.started {
+		.play-toggle { opacity: 0; };
+		&.playing.waiting .play-toggle { opacity: 1; }
+		&.paused.ended .play-toggle { opacity: 1; }
+		
+		// &.playing .play-toggle 			{ background-image: symbol-url("symbols/playback-play.svg"); }
+		// &.paused .play-toggle 			{ background-image: symbol-url("symbols/playback-pause.svg"); }
+		// &.playing.waiting .play-toggle 	{ background-image: symbol-url("symbols/playback-wait.svg"); }
+		// &.paused.ended .play-toggle 	{ background-image: symbol-url("symbols/playback-replay.svg"); }
+		
+		@at-root :not(.scrolling) & {
+			&.playing .play-toggle { animation: $duration*2 $ease flashOdd; }
+			&.paused .play-toggle { animation: $duration*2 $ease flashEven; }
+		}
+	}
+	// @at-root :not(.scrolling) & .started {
+	// 	&.playing .play-toggle { animation: $duration*2 $ease flashOdd; }
+	// 	&.paused .play-toggle { animation: $duration*2 $ease flashEven; }
+	// }
 }
 
-// .sequence-renderer {
-// 	&, .pending-user-play, .pending-media { 
-// 		.play-toggle { background-image: base64_encode("symbols/playback-play.svg"); }
-// 		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-play-dark.svg"); }
-// 	}
-// 	.pending-user-resume {
-// 		.play-toggle { background-image: base64_encode("symbols/playback-pause.svg");}
-// 		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-pause-dark.svg");}
-// 		// .play-toggle { background-image: none;}
-// 		// .over-dark .play-toggle { background-image: none;}
-// 	}
-// 	.pending-user-replay {
-// 		.play-toggle { background-image: base64_encode("symbols/playback-replay.svg"); }
-// 		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-replay-dark.svg");}
-// 	}
-// 	.pending-network {
-// 		.play-toggle { background-image: base64_encode("symbols/playback-wait.svg");}
-// 		.over-dark .play-toggle { background-image: base64_encode("symbols/playback-wait-dark.svg");}
-// 	}
-// 	
-// 	.play-toggle { opacity: 0; }
-// 	.not-played .play-toggle { opacity: 1 !important; }
-// 	// @at-root :not(.scrolling) & {
-// 		// .not-played .play-toggle { opacity: 1; }
-// 		:not(.not-played) {
-// 			&.pending-network .play-toggle		{ opacity: 1; }
-// 			&.pending-user-play .play-toggle	{ opacity: 1; }
-// 			&.pending-user-replay .play-toggle	{ opacity: 1; }
-// 			&.pending-user-resume .play-toggle	{ opacity: 0; animation: $duration*2 $ease flashEven; }
-// 			&.pending-media .play-toggle		{ opacity: 0; animation: $duration*2 $ease flashOdd; }
-// 			// &.pending-user-resume, &.pending-media {
-// 			// 	.play-toggle { animation: $duration*3 $ease 0s 1 normal forwards running flashEven; }
-// 			// }
-// 			// .play-toggle:active { opacity: 1 !important; }
-// 		}
-// 	// }
-// 	@at-root .scrolling & {
-// 		// .play-toggle { animation-name: none !important; }
-// 		// .not-played .play-toggle { opacity: 0.8; }
-// 		// :not(.not-played) {
-// 			.play-toggle { 
-// 				// opacity: 0;
-// 				animation-name: none !important;
-// 				// animation: 0s none;
-// 			}
-// 		// }
-// 	}
-// }
-
-
-// .play-toggle {
-// 	visibility: hidden;
-// 	opacity: 0;
-// }
-// &.selected .play-toggle {
-// 	transition-property: visibility, opacity;
-// 	transition-timing-function: step-start, $ease;
-// 	transition-duration: $duration;
-// 	// transition:
-// 	// 	opacity $duration $ease 0.001s,
-// 	// 	visibility $duration step-start 0.001s;
-// }
-
-// NOTE: debug only!!!
-// .scrolling .selected .play-toggle-hitarea:active {
-// 	outline: 1rem solid rgba(255,0,0,0.8); outline-offset: -1rem;
-// }
-// :not(.scrolling) .selected .play-toggle-hitarea:active {
-// 	outline: 1rem solid rgba(0,255,0,0.8); outline-offset: -1rem;
-// }
-
-// .play-toggle-hitarea {
-// 	opacity: 0;
-// 	transform-origin: center;
-// 	transform: scale(1.00, 1.00);
-// }
-// .selected .play-toggle-hitarea:active {
-// 	// opacity: 1;
-// 	animation-name: playtoggleactive;
-// 	animation-fill-mode: forwards;
-// 	animation-duration: 0.25s;
-// 	animation-timing-function: ease-in;
-// 	// animation-delay: 0.25s;
-// }
-// .scrolling .selected .play-toggle-hitarea:not(:active) {
-// 	// opacity: 0;
-// 	animation-name: playtogglecancel;
-// 	animation-fill-mode: both;
-// 	animation-duration: 0.25s;
-// 	animation-timing-function: ease-out;
-// 	// animation-delay: 0.0s;
-// }
-// :not(.scrolling) .selected .play-toggle-hitarea:not(:active)  {
-// 	// opacity: 0;
-// 	animation-name: playtogglerelease;
-// 	animation-fill-mode: both;
-// 	animation-duration: 0.50s;
-// 	animation-timing-function: ease-out;
-// 	// animation-delay: 0.0s;
-// }
-// // :not(.scrolling) {
-// .playable-renderer {
-// 	.pending-user-play, .pending-user-replay, .pending-user-resume { 
-// 		.play-toggle-hitarea:active { background-image: base64_encode("symbols/playback-play.svg"); }
-// 		.play-toggle-hitarea:not(:active) { background-image: base64_encode("symbols/playback-pause.svg"); }
-// 	}
-// 	.pending-media, .pending-network {
-// 		.play-toggle-hitarea:active { background-image: base64_encode("symbols/playback-pause.svg");}
-// 		.play-toggle-hitarea:not(:active) { background-image: base64_encode("symbols/playback-play.svg");}
-// 	}
-// }
-// /* background-image: none;}*/
-// @keyframes playtoggleactive {
-// 	0%   { opacity: 0.00; transform: scale(0.90, 0.90); }
-// 	100% { opacity: 1.00; transform: scale(1.00, 1.00); }
-// }
-// @keyframes playtogglecancel {
-// 	0%   { opacity: 1.00; transform: scale(1.00, 1.00); }
-// 	100% { opacity: 0.00; transform: scale(0.90, 0.90); }
-// }
-// @keyframes playtogglerelease {
-// 	0%   { opacity: 1.00; transform: scale(1.00, 1.00); }
-// 	100% { opacity: 0.00; transform: scale(1.20, 1.20); }
-// }
+/*
+.playable-renderer {
+	.play-toggle 								{ opacity: 1; }
+	.playing .play-toggle 						{ opacity: 0; }
+	.paused .play-toggle 						{ opacity: 0; }
+	// .playing:not(.waiting) .play-toggle 		{ opacity: 0; }
+	// .paused:not(.ended) .play-toggle 			{ opacity: 0; }
+	
+	.playing.waiting .play-toggle 				{ opacity: 1; }
+	.paused.ended .play-toggle 					{ opacity: 1; }
+	// :not(.requested).playing .play-toggle 		{ opacity: 1; }
+	// :not(.requested).paused .play-toggle 		{ opacity: 1; }
+	
+	@at-root :not(.scrolling) & .playing .play-toggle:active	{ opacity: 1; }
+	@at-root :not(.scrolling) & .paused .play-toggle:active		{ opacity: 1; }
+	// .playing .play-toggle:active 				{ opacity: 1; }
+	// .paused .play-toggle:active 				{ opacity: 1; }
+	// @at-root .scrolling & .play-toggle:active					{ opacity: 0 !important; }
+	
+	.play-toggle 				{ transition: opacity $duration*1.0 $ease $delay*0.5; }
+	.play-toggle:active 		{ transition: opacity $duration*0.3 $ease 0.005s; }
+	.playing:not(.waiting), .paused:not(.ended) { 
+		.play-toggle 			{ transition: opacity $duration*1.0 $ease $delay*0.5; }
+		.play-toggle:active 	{ transition: opacity $duration*0.3 $ease 0.005s; }
+	}
+	.playing .play-toggle:active	{ background-image: symbol-url("symbols/playback-pause.svg"); }
+	.paused .play-toggle:active		{ background-image: symbol-url("symbols/playback-play.svg"); }
+}
+*/
 
 // - - - - - - - - - - - - - - - - - -
 //  .playable-renderer .controls
@@ -321,14 +180,14 @@
 			-webkit-flex: 0 1 auto;
 			-ms-flex: 0 1 auto;
 			flex: 0 1 auto;
-			padding: 0 0.5rem;
+			padding: 0rem 0.5rem;
 			align-self: center;
 		}
 	}
 	.top-bar, .bottom-bar {
 		position: absolute;
 		width: calc(100% + 1rem); height: auto;
-		margin: 1rem -0.5rem;
+		margin: 1.25rem -0.5rem;
 	}
 	.bottom-bar {
 		top: 100%;
@@ -358,9 +217,9 @@
 			direction: ltr;
 			top: 0; left: 100%; 
 			width: auto; height: calc(100% + 1rem);
-			margin: -0.5rem 1rem;
+			margin: -0.5rem 1.25rem;
 			& > * {
-				padding: 0.5rem 0;
+				padding: 0.5rem 0rem;
 			}
 		}
 	}
@@ -473,11 +332,8 @@
 			// border-width: 0; margin: 0; padding: 0;
 		}
 	}
-	.poster {
+	.started .poster {
 		visibility: hidden;
-	}
-	.not-played .poster {
-		visibility: visible;
 	}
 }
 
@@ -486,8 +342,8 @@
 // -----------------------------------
 .sequence-renderer {
 	.sequence {
-	// 	position: absolute;
-	// 	width: 100%; height: 100%;
+		// position: absolute;
+		// width: 100%; height: 100%;
 		border-radius: inherit;
 		overflow: hidden;
 	}
@@ -496,26 +352,21 @@
 		top: 0; left: 0;
 		width: 100%; height: 100%;
 		
-		&:not(.current) {
-			z-index: 0;
-			opacity: 0;
-			visibility: hidden;
-			transition: 
-				z-index $duration*0.5 step-end,
-				visibility $duration*3 step-end,
-				opacity $duration*3 step-end;
-		}
+		// NOTE: z-index changed last, opacity transition in outgoing image
+		z-index: 0; opacity: 0; visibility: hidden;
+		transition: 
+			opacity $duration*1.5 $ease $duration*0.5,
+			visibility $duration*3 step-end, 
+			z-index $duration*3 step-end;
+		
 		&.current {
-			z-index: 1;
-			opacity: 1;
-			visibility: visible;
-			transition: 
-				z-index $duration*0.5 step-end,
-				// visibility $duration*1.5 step-end $duration*0.5,
-				opacity $duration*1.5 $ease $duration*0.5;
+			z-index: 1; opacity: 1; visibility: visible;
+			transition: z-index $duration*3 step-end;
 		}
+		
 		&.error {
-			
+			// background-image: image-url("bg-missing-media.svg");
+			background-image: base64_encode("bg-missing-media.svg");
 		}
 	}
 	.overlay {

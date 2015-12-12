@@ -12,22 +12,47 @@
 	// transition-delay: 0s !important;
 }
 
-@mixin nav_transition($delay_count: null) {
+@function nav_transition($duration_count, $delay_count, $ease:$ease) {
+	@return #{$duration * $duration_count - 0.001s} $ease #{$delay * $delay_count + 0.001s};
 }
 
-@mixin nav_transition_short($phase: null) {
-	@if $phase == exiting {
-		transition: transform #{$duration - 0.001s} $ease 0.001s;
-	} @else if $phase == changing {
-		transition: transform #{$duration - 0.001s} $ease #{$delay*1 + 0.001s};
-	} @else if $phase == entering {
-		transition: transform #{$duration - 0.001s} $ease #{$delay*2 + 0.001s};
-	} @else if $phase == skip {
-		transition: none 0s 0s;
-	} @else {
-		transition: transform $duration $ease 0s;
-	}
+// @mixin nav_transition($delay_count: null) {
+// }
+$_transition_named: (
+	exiting: nav_transition(1, 0),
+	changing: nav_transition(1, 1),
+	entering: nav_transition(1, 2),
+	skip: 0s step-start 0s,
+);
+
+@function nav_transition_named($phase: exiting) {
+	@return map-get($_transition_named, $phase);
+	// @if $phase == exiting {
+	// 	@return #{$duration - 0.001s} $ease 0.001s;
+	// } @else if $phase == changing {
+	// 	@return #{$duration - 0.001s} $ease #{$delay*1 + 0.001s};
+	// } @else if $phase == entering {
+	// 	@return #{$duration - 0.001s} $ease #{$delay*2 + 0.001s};
+	// } @else if $phase == skip {
+	// 	@return 0s step-start 0s;
+	// } @else {
+	// 	@return $duration $ease 0s;
+	// }
 }
+
+// @mixin nav_transition_short($phase: null) {
+// 	@if $phase == exiting {
+// 		transition: transform #{$duration - 0.001s} $ease 0.001s;
+// 	} @else if $phase == changing {
+// 		transition: transform #{$duration - 0.001s} $ease #{$delay*1 + 0.001s};
+// 	} @else if $phase == entering {
+// 		transition: transform #{$duration - 0.001s} $ease #{$delay*2 + 0.001s};
+// 	} @else if $phase == skip {
+// 		transition: none 0s 0s;
+// 	} @else {
+// 		transition: transform $duration $ease 0s;
+// 	}
+// }
 
 // -----------------------------------
 // Transition classes

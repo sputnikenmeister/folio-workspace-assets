@@ -103,6 +103,9 @@ window.addEventListener("load", function(ev) {
 	require("app/view/template/_helpers");
 	// require("app/view/template/_partials");
 	
+	/** @type {module:app/view/helper/createColorStyleSheet} */
+	require("app/view/helper/createColorStyleSheet").call();
+	
 	/** @type {module:app/view/AppView} */
 	var AppView = require("app/view/AppView");
 	

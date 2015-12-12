@@ -76,6 +76,48 @@ observer.observe(document.body, {
 });
 
 /* -------------------------------
+/* requestAnimationFrame queue
+/* ------------------------------- */
+
+// var _isExecuting = false;
+var _queue = [];
+var _queueRafId = null;
+var _fnidSeed = 0;
+
+var _callQueuedAF = function(tstamp) {
+	// console.log("View::callQueuedAF (%i calls)", _queue.length);
+	var queue = _queue;
+	_queue = [];
+	_fnidSeed += queue.length;
+	_queueRafId = null;
+	// _isExecuting = true;
+	queue.forEach(function(fn) {
+		fn && fn(tstamp);
+	});
+	// _isExecuting = false;
+};
+var requestQueuedAF = function(fn) {
+	// _isExecuting && console.warn("View::requestQueuedAF", "nested invocation");
+	if (_queueRafId === null) {
+		_queueRafId = window.requestAnimationFrame(_callQueuedAF);
+	}
+	_queue.push(fn);
+	return (_queue.length - 1) + _fnidSeed;
+};
+var cancelQueuedAF = function(fnid) {
+	// _isExecuting && console.warn("View::cancelQueuedAF", "nested invocation");
+	// var fnRef;
+	if (fnid > _fnidSeed) {
+		// fnRef = _queue[fnid - _fnidSeed];
+		_queue[fnid - _fnidSeed] = null;
+	}
+	// return fnRef;
+};
+
+var requestRenderImpl = requestQueuedAF;
+var cancelRenderImpl = cancelQueuedAF;
+
+/* -------------------------------
 /* static public
 /* ------------------------------- */
 
@@ -293,11 +335,13 @@ var ViewProto = {
 	/* ------------------------------- */
 	
 	requestAnimationFrame: function(callback) {
-		return window.requestAnimationFrame(callback.bind(this));
+		return requestRenderImpl(callback.bind(this));
+		// return window.requestAnimationFrame(callback.bind(this));
 	},
 	
 	cancelAnimationFrame: function(id) {
-		return window.cancelAnimationFrame(id);
+		return cancelRenderImpl(id);
+		// return window.cancelAnimationFrame(id);
 	},
 	
 	/* -------------------------------

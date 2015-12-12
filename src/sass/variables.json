@@ -25,5 +25,8 @@
 		"color": "hsl(47, 5%, 15%)",
 		"background-color": "hsl(47, 5%, 95%)",
 		"link-color": "hsl(10, 80%, 50%)"
+	},
+	"temp": {
+		"collapse_offset": "360"
 	}
 }

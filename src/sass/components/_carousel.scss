@@ -5,9 +5,6 @@
 		p, span, div {
 			@include user-select(none);
 		}
-//		.sizing {
-//			box-sizing: border-box;
-//		}
 	}
 	&.panning {
 		cursor: grabbing;
@@ -32,14 +29,17 @@
 // - - - - - - - - - - - - - - - - - -
 // Animation
 // - - - - - - - - - - - - - - - - - -
-$pan_ease: $ease;
-
 .carousel {
 	.carousel-item {
 		transform: translate3d(0,0,0);
 		transform-style: preserve-3d;
-		transition: transform $duration $pan_ease;
+		// transition: transform nav_transition(1, 0);
+		transition: transform $duration $ease;
 	}
+	// &.panning .carousel-item {
+	// 	@include skip_transitions;
+	// 	// transition: transform 0s step-start 0s;
+	// }
 	&.skip-transitions .carousel-item {
 		@include skip_transitions;
 	}
@@ -47,17 +47,22 @@ $pan_ease: $ease;
 	// Content opacity
 	.carousel-item .content {
 		// transition: opacity $duration $delay + 0.001s $ease;
-		// transition: opacity $duration $ease 0.001s;
-		transition-property: 		opacity;
-		transition-timing-function:	$ease;
-		transition-delay: 			$delay*0 + 0.001s;
-		transition-duration:		$duration*1 + 0.001s;
+		// transition: opacity $duration + 0.001s $ease 0.001s;
+		// transition-property: 		opacity;
+		// transition-timing-function:	$ease;
+		// transition-delay: 			$delay*0 + 0.001s;
+		// transition-duration:		$duration*1 + 0.001s;
+		transition: opacity nav_transition(1, 0);
 	}
 	&:not(.scrolling) .carousel-item.selected .content {
-		transition-delay: 			$delay*2 + 0.001s;
+		// transition-delay: 			$delay*2 + 0.001s;
+		// transition: opacity $duration + 0.001s $ease $delay*2 + 0.001s;
+		transition: opacity nav_transition(1, 1);
 	}
 	&.disabled .carousel-item.selected .content {
-		transition-delay: 			$delay*0 + 0.001s;
+		// transition-delay: 			$delay*0 + 0.001s;
+		// transition: opacity $duration + 0.001s $ease 0.001s;
+		transition: opacity nav_transition(1, 0);
 	}
 }
 
@@ -84,9 +89,10 @@ $pan_ease: $ease;
 .carousel.media-carousel {
 	.empty-item {
 		.content {
+			transition: opacity nav_transition(1, 0);
 			// transition: opacity #{$duration - 0.001s} $ease #{$delay + 0.001s};
-			transition: opacity #{$duration - 0.001s} $ease 0.001s;
-			opacity: 0.25;
+			// transition: opacity #{$duration - 0.001s} $ease 0.001s;
+			opacity: 0.2;
 		}
 		&.selected,	&.candidate {
 			.content {
@@ -104,7 +110,7 @@ $pan_ease: $ease;
 	&.disabled .empty-item {
 		&.selected,	&.candidate {
 			.content {
-				opacity: 0.15;
+				opacity: 0.2;
 			}
 		}
 	}
