@@ -30,7 +30,18 @@ var FilterableListView = DeferredView.extend({
 	tagName: "ul",
 	/** @override */
 	className: "list selectable filterable skip-transitions",
-
+	
+	properties: {
+		collapsed: {
+			get: function() {
+				return this.getCollapsed();
+			},
+			set: function(value) {
+				this.setCollapsed(value);
+			}
+		}
+	},
+	
 	/** @override */
 	initialize: function (options) {
 		this.itemViews = new Container();
@@ -54,7 +65,7 @@ var FilterableListView = DeferredView.extend({
 	 * --------------------------- */
 
 	render: function() {
-		this.renderNow();
+		this.renderNow(true);
 		return this;
 	},
 
@@ -65,8 +76,16 @@ var FilterableListView = DeferredView.extend({
 			this.requestAnimationFrame(function() {
 				this.skipTransitions = false;
 				this.el.classList.remove("skip-transitions");
+				// this.el.classList.remove("collapsed-changed");
 			});
 		}
+		
+		// this.el.classList.toggle("collapsed-changed", this._collapsedChanged);
+		// if (this._collapsedChanged) {
+		// 	this._collapsedChanged = false;
+		// 	this.el.classList.toggle("collapsed", this._collapsed);
+		// }
+		
 		this.el.classList.toggle("collapsed-changed", this.needsRender("collapsed"));
 		this.validateRender("collapsed");
 		this.validateRender("selection");
@@ -150,6 +169,8 @@ var FilterableListView = DeferredView.extend({
 	setCollapsed: function (collapsed) {
 		if (collapsed !== this._collapsed) {
 			this._collapsed = collapsed;
+			// this._collapsedChanged = true;
+			// this.requestRender()
 			this.requestRender("collapsed", this.renderCollapsed.bind(this, collapsed));
 		}
 	},

@@ -660,17 +660,17 @@ SequenceRenderer = (function(SequenceRenderer) {
 			logMsg = logMsg.join(" ");
 			
 			this.__logMessage(logMsg, evname);
-			console.log("%s::[%s] %s", this.cid, evname, logMsg);
+			// console.log("%s::[%s] %s", this.cid, evname, logMsg);
 		},
 		_play: function() {
 			this.__logTimerEvent("playback");
 			SequenceRenderer.prototype._play.apply(this, arguments);
-			console.log("%s::_play()", this.cid);
+			// console.log("%s::_play()", this.cid);
 		},
 		_pause: function() {
 			this.__logTimerEvent("playback");
 			SequenceRenderer.prototype._pause.apply(this, arguments);
-			console.log("%s::_pause()", this.cid);
+			// console.log("%s::_pause()", this.cid);
 		},
 		
 		_onTimerStart: function() {

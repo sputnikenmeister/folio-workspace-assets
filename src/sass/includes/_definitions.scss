@@ -9,6 +9,7 @@
 $hu: 					map-get($units, hu_px) * 1px;
 $vu: 					map-get($units, vu_px) * 1px;
 // Time base units (transitions/animations)
+$min_delay:				map-get($transitions, min_delay_ms) * 0.001s;
 $delay_interval:		map-get($transitions, delay_interval_ms) * 0.001s;
 $duration: 				map-get($transitions, duration_ms) * 0.001s;
 $ease:					map-get($transitions, ease);
@@ -48,11 +49,11 @@ $link_down_color: scale_color($link_color, $lightness: -15%);//hsl(10, 95%, 30%)
 $selection_fgcolor: hsl(203, 100%, 50%);
 $selection_bgcolor: hsl(203, 100%, 90%);
 
-$royal_blue_color:	#204980;
-$royal_ivory_color:	#FEFCE7;
+// $royal_blue_color:	#204980;
+// $royal_ivory_color:	#FEFCE7;
 
 // ------------------------------------
-// Typefaces: private (not to be used directly)
+// Typefaces
 // ------------------------------------
 
 // Font fallback lists
@@ -61,23 +62,15 @@ $humanist_fallback: "Lucida Grande","Lucida Sans", Calibri, Tahoma, Verdana, Kal
 $grotesque_fallback: "Helvetica", sans-serif;
 $modern_fallback: "georgia", sans-serif;
 
-// Webfonts are loaded in a separate CSS file
-// compiled from "fonts.scss"
-// - - - - - - - - - - - - - - - - - -
-// Webfonts included at compile-time
-$font_webfont_sans: "Franklin Gothic FS", $grotesque_fallback;
-// $font_webfont_serif: "Old Standard TT", $modern_fallback;
-
-// - - - - - - - - - - - - - - - - - -
 // Typefaces: public
 // - - - - - - - - - - - - - - - - - -
 
-// font-family
-$large_font_family: $font_webfont_sans;
+$base_font_family: "Franklin Gothic FS", $grotesque_fallback;
+
+$large_font_family: $base_font_family;
 $small_font_family: $humanist_fallback;
 $mono_font_family: $mono_fallback;
 
-$base_font: $font_webfont_sans;
 
 // ------------------------------------
 // Typography mixins
@@ -107,7 +100,6 @@ $base_font: $font_webfont_sans;
 }
 
 %heading_base {
-//	font-family: $large_font_family;
 	letter-spacing: -1px;
 	font-kerning: normal;
 	@include text_rendering_legibility();
@@ -122,10 +114,7 @@ $base_font: $font_webfont_sans;
 	font-size: $size;
 	font-weight: $weight;
 	line-height: $lead;
-//	font: $weight #{$size + "/" + $lead} $large_font_family;
-//	font: $weight $size/$lead $large_font_family;
 	letter-spacing: -1px;
-//	font-kerning: normal;
 	@include text_rendering_legibility();
 	@include font_smoothing();
 }
@@ -150,8 +139,6 @@ $base_font: $font_webfont_sans;
 %large_text p {
 //	@include heading_font($size: 2.5rem, $weight: 300, $lead: 0.960em);
 	@include heading_font($size: 28px, $weight: 300, $lead: 30px);
-//	transform: translate3d(-2px,0,0);
-//	transform: translateX(-2px);
 	margin-left: -2px;
 	margin-right: 2px;
 	margin-top: 0;

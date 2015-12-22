@@ -2,52 +2,8 @@
 // Filterable
 // -----------------------------------
 
-// Transitions
 // - - - - - - - - - - - - - - - - - -
-$collapse_ease: $ease;
-//$collapse_ease: ease-out;
-
-%changing-list {
-	// wait, expand, fadein
-	transition-property: visibility, opacity, transform;
-	transition-timing-function: step-start, $collapse_ease, $collapse_ease;
-	/* bundle-style */
-	// transition-duration: $delay * 2 + $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
-	// transition-delay: $delay * 0 + 0.001s, $delay * 2 + 0.001s, $delay * 1 + 0.001s;
-	/* keyword-style */
-	transition-duration: $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
-	transition-delay: $delay * 2 + 0.001s, $delay * 2 + 0.001s, $delay * 1 + 0.001s;
-}
-%changing-list-excluded {
-	// fadeout, collapse, wait
-	// transition-timing-function: step-end, $collapse_ease, $collapse_ease;
-	transition-timing-function: step-end, $collapse_ease, step-end;
-	transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
-}
-%changing-list-shorthand {
-	transition:
-		visibility ($duration - 0.001s) step-start ($delay*2 + 0.001s),
-		opacity ($duration - 0.001s) $collapse_ease ($delay*2 + 0.001s),
-		transform ($duration - 0.001s) $collapse_ease ($delay*1 + 0.001s);
-}
-%changing-list-excluded-shorthand {
-	transition:
-		visibility ($duration*1 - 0.001s) step-end ($delay*0 + 0.001s) ,
-		opacity ($duration*1 - 0.001s) $collapse_ease ($delay*0 + 0.001s),
-		transform ($duration*1 - 0.001s) $collapse_ease ($delay*1 + 0.001s);
-}
-// &.collapsed-changed {
-// 	.list-group, .list-item {
-// 		transition-delay: $delay * 1 + 0.001s, $delay * 1 + 0.001s, $delay * 0 + 0.001s;
-// 	}
-// }
-%entering-list {
-	transition-duration: $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
-	transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
-}
-
-// - - - - - - - - - - - - - - - - - -
-// FilterableListView
+// .list-item common
 // - - - - - - - - - - - - - - - - - -
 .list {
 	position: relative;
@@ -60,12 +16,13 @@ $collapse_ease: $ease;
 		transform-style: preserve-3d;
 	}
 }
-
+// #bundle-list (FilterableListView)
+// - - - - - - - - - - - - - - - - - -
 #bundle-list {
 	.list-item {
 		visibility: visible;
 		opacity: 1;
-//		max-height: 1.5em;
+		// max-height: 1.5em;
 	}
 	&.collapsed {
 		.list-item {
@@ -83,35 +40,7 @@ $collapse_ease: $ease;
 		// }
 	}
 }
-#bundle-list {
-	.list-item {
-		// wait, expand, fadein
-		@extend %changing-list;
-	}
-	&.collapsed {
-		.list-item:not(.selected) {
-			// fadeout, collapse, wait
-			@extend %changing-list-excluded;
-		}
-	}
-	&.collapsed-changed.collapsed {
-		.list-item {
-			&, &.excluded {
-				@extend %entering-list;
-			}
-		}
-	}
-	&.skip-transitions {
-		.list-item {
-			&, * {
-				@include skip_transitions;
-			}
-		}
-	}
-}
-
-// - - - - - - - - - - - - - - - - - -
-// GroupingListView
+// #keyword-list (GroupingListView)
 // - - - - - - - - - - - - - - - - - -
 #keyword-list {
 	.list-item, .list-group {
@@ -128,21 +57,112 @@ $collapse_ease: $ease;
 	}
 }
 
-#keyword-list  {
-	.list-group, .list-item {
-		// wait, expand, fadein
-		@extend %changing-list;
+// -----------------------------------
+// Transitions
+// -----------------------------------
+%wait-move-fadein {
+	// wait, expand, fadein (3 steps)
+	transition:
+		tx(visibility, 1, 2, step-start),
+		tx(opacity, 1, 2),
+		tx(transform, 1, 1);
+}
+%fadeout-move-wait {
+	// fadeout, collapse, wait (3 steps)
+	transition:
+		tx(visibility, 1, 0, step-end),
+		tx(opacity, 1, 0),
+		tx(transform, 1, 1, step-end);
+}
+%move-fadein {
+	// expand, fadein (2 steps)
+	transition:
+		tx(visibility, 2, 1, step-start),
+		tx(opacity, 1, 1),
+		tx(transform, 1, 0);
+}
+%fadeout-move {
+	// fadeout, collapse (2 steps)
+	transition:
+		tx(visibility, 2, 1, step-end),
+		tx(opacity, 1, 0),
+		tx(transform, 1, 1);
+}
+
+#bundle-list {
+	.list-item {
+		// background-color: transparentize(blue, 0.75);
+		// wait, expand, fadein (3 steps)
+		@extend %wait-move-fadein;
 	}
 	&.collapsed {
-		.list-group.excluded, .list-item.excluded {
-			// fadeout, collapse, wait
-			@extend %changing-list-excluded;
+		.list-item:not(.selected) {
+			// background-color: transparentize(green, 0.75);
+			// fadeout, collapse, wait (3 steps)
+			@extend %fadeout-move-wait;
 		}
 	}
-	&.collapsed-changed.collapsed {
+	&.collapsed-changed {
+		// &:not(.collapsed) {
+			// .list-item {
+				// &, &.excluded {
+					// background-color: transparentize(green, 0.75);
+					// @extend %move-fadein;
+				// }
+			// }
+		// }
+		&.collapsed {
+			.list-item {
+				// &, &.excluded {
+					// background-color: transparentize(blue, 0.75);
+					@extend %fadeout-move;
+				// }
+			}
+		}
+	}
+	&.skip-transitions {
+		.list-item {
+			&, * {
+				@include skip_transitions;
+			}
+		}
+	}
+}
+
+// - - - - - - - - - - - - - - - - - -
+// GroupingListView
+// - - - - - - - - - - - - - - - - - -
+
+#keyword-list  {
+	.list-group, .list-item {
+		// background-color: transparentize(blue, 0.75);
+		// wait, expand, fadein
+		@extend %wait-move-fadein;
+	}
+	&.collapsed {
 		.list-group, .list-item {
-			&, &.excluded {
-				@extend %entering-list;
+			&.excluded {
+				// background-color: transparentize(green, 0.75);
+				// fadeout, collapse, wait
+				@extend %fadeout-move-wait;
+			}
+		}
+	}
+	&.collapsed-changed {
+		// &:not(.collapsed) {
+			// .list-group, .list-item {
+				// &, &.excluded {
+					// background-color: transparentize(green, 0.75);
+					// @extend %move-fadein;
+				// }
+			// }
+		// }
+		&.collapsed {
+			.list-group, .list-item {
+				// background-color: transparentize(blue, 0.75);
+				// &, &.excluded {
+					@extend %fadeout-move;
+				// }
 			}
 		}
 	}
@@ -159,7 +179,7 @@ $collapse_ease: $ease;
 	.list-item.selected {
 		.name {
 			text-decoration: underline;
-			// background-color: transparentize($link-color, 0.5);
+			// background-color: transparentize($link-color, 0.75);
 			// border-bottom: 1px solid currentColor;
 		}
 	}
@@ -168,8 +188,53 @@ $collapse_ease: $ease;
 	.list-item:not(.excluded) {
 		.name {
 			text-decoration: underline;
-			// background-color: transparentize($link-color, 0.5);
+			// background-color: transparentize($link-color, 0.75);
 			// border-bottom: 1px solid currentColor;
 		}
 	}
 }
+
+
+// Transitions
+// - - - - - - - - - - - - - - - - - -
+// $collapse_ease: $ease;
+// //$collapse_ease: ease-out;
+// 
+// %wait-move-fadein {
+// 	// wait, expand, fadein
+// 	// transition-property: visibility, opacity, transform;
+// 	// transition-timing-function: step-start, $collapse_ease, $collapse_ease;
+// 	/* bundle-style */
+// 	// transition-duration: $delay * 2 + $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
+// 	// transition-delay: $delay * 0 + 0.001s, $delay * 2 + 0.001s, $delay * 1 + 0.001s;
+// 	/* keyword-style */
+// 	transition-duration: $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
+// 	transition-delay: $delay * 2 + 0.001s, $delay * 2 + 0.001s, $delay * 1 + 0.001s;
+// }
+// %wait-move-fadein-excluded {
+// 	// fadeout, collapse, wait
+// 	// transition-timing-function: step-end, $collapse_ease, $collapse_ease;
+// 	transition-timing-function: step-end, $collapse_ease, step-end;
+// 	transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
+// }
+// %wait-move-fadein-shorthand {
+// 	transition:
+// 		visibility ($duration - 0.001s) step-start ($delay*2 + 0.001s),
+// 		opacity ($duration - 0.001s) $collapse_ease ($delay*2 + 0.001s),
+// 		transform ($duration - 0.001s) $collapse_ease ($delay*1 + 0.001s);
+// }
+// %wait-move-fadein-excluded-shorthand {
+// 	transition:
+// 		visibility ($duration*1 - 0.001s) step-end ($delay*0 + 0.001s) ,
+// 		opacity ($duration*1 - 0.001s) $collapse_ease ($delay*0 + 0.001s),
+// 		transform ($duration*1 - 0.001s) $collapse_ease ($delay*1 + 0.001s);
+// }
+// &.collapsed-changed {
+// 	.list-group, .list-item {
+// 		transition-delay: $delay * 1 + 0.001s, $delay * 1 + 0.001s, $delay * 0 + 0.001s;
+// 	}
+// }
+// %collapsed-changed {
+// 	transition-duration: $duration - 0.001s, $duration - 0.001s, $duration - 0.001s;
+// 	transition-delay: 0s + 0.001s, 0s + 0.001s, $delay * 1 + 0.001s;
+// }

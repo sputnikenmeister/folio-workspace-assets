@@ -12,12 +12,10 @@
 }
 
 html {
-	font: #{$vu}/1 $base_font;
+	font: #{$vu}/1 $base_font_family;
 }
 
 body {
-	color: $color;
-	background-color: $background_color;
 	line-height: 1.5rem;
 	-moz-osx-font-smoothing: grayscale;
 }

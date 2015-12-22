@@ -2,7 +2,6 @@
 // Media Queries
 // ------------------------------------
 
-
 @mixin media($query) {
 	@at-root .#{$query &} {
 		@content;

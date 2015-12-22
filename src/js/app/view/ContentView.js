@@ -73,6 +73,8 @@ var ContentView = ContainerView.extend({
 			"deselect:none": this._onDeselectMedia,
 		};
 		this.listenTo(bundles, this.bundleListeners);
+		
+		// this._validateTransforms = this.transforms.validate.bind(this.transforms);
 	},
 	
 	/** @override */
@@ -113,13 +115,13 @@ var ContentView = ContainerView.extend({
 	_onSelectOne: function(bundle) {
 		this.listenTo(bundle.get("media"), this.mediaListeners);
 		this.createChildren(bundle);
-		this.setCollapsed(true);
+		this.collapsed = true;
 		
 	},
 	
 	_onSelectNone: function() {
 		this.touch.off("vpanstart", this._onVPanStart);
-		this.setCollapsed(false);
+		this.collapsed = false;
 	},
 	
 	/* --------------------------- *
@@ -127,15 +129,17 @@ var ContentView = ContainerView.extend({
 	 * --------------------------- */
 	
 	_onDeselectMedia: function(media) {
-		if (!this.isCollapsed()) {
+		if (!this.collapsed) {
 			this.transforms.clearAllOffsets();
 			this.transforms.runAllTransitions(Globals.TRANSIT_ENTERING);
-			this.transforms.validate();
+			// this.transforms.validate();
 		}
 	},
 	
 	_onSelectMedia: function(media) {
-		this._bundleChanging || this.setCollapsed(true);
+		if (!this._bundleChanging) {
+			this.collapsed = true;
+		}
 	},
 
 	/* -------------------------------
@@ -148,6 +152,8 @@ var ContentView = ContainerView.extend({
 	
 	_afterChange: function(bundle, media) {
 		this._bundleChanging = false;
+		this.transforms.validate();
+		// this.requestAnimationFrame(this._validateTransforms);
 	},
 	
 	/* -------------------------------
@@ -288,9 +294,8 @@ var ContentView = ContainerView.extend({
 		var delta = ev.thresholdDeltaY;
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapse/expand
-		var isValidDir = this.isCollapsed()? (delta > 0) : (delta < 0);
-		var moveFactor = this.isCollapsed()?
-		 	1 - ContentView.PAN_MOVE_FACTOR : ContentView.PAN_MOVE_FACTOR;
+		var isValidDir = this.collapsed? (delta > 0) : (delta < 0);
+		var moveFactor = this.collapsed? Globals.VPAN_DRAG : 1 - Globals.VPAN_DRAG;
 		
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
@@ -298,17 +303,18 @@ var ContentView = ContainerView.extend({
 		
 		if (isValidDir) {
 			if (delta > maxDelta) { // overshooting
-				delta = ((delta - maxDelta) * Globals.V_PANOUT_DRAG) + maxDelta;
+				delta = ((delta - maxDelta) * Globals.VPAN_OUT_DRAG) + maxDelta;
 			} else { // no overshooting
 				delta = delta;
 			}
 		} else {
-			delta = (-delta) * Globals.V_PANOUT_DRAG; // delta is opposite
+			delta = (-delta) * Globals.VPAN_OUT_DRAG; // delta is opposite
 		}
-		delta *= this.isCollapsed()? 1 : -1; // reapply sign
+		delta *= this.collapsed? 1 : -1; // reapply sign
 
 		this.transforms.offsetAll(0, delta);
 		this.transforms.validate();
+		// this.requestAnimationFrame(this._validateTransforms);
 	},
 
 	_onVPanFinal: function(ev) {
@@ -317,19 +323,21 @@ var ContentView = ContainerView.extend({
 		
 		this.transforms.clearAllOffsets();
 		if (this.willCollapseChange(ev)) {
-			this.transforms.runAllTransitions(this.isCollapsed()?
+			this.transforms.runAllTransitions(this.collapsed?
 					Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING);
 			this.transforms.validate();
-			this.setCollapsed(!this.isCollapsed());
+			this.collapsed = !this.collapsed;
 		} else {
 			this.transforms.runAllTransitions(Globals.TRANSIT_IMMEDIATE);
 			this.transforms.validate();
 		}
 		this.el.classList.remove("container-changing");
+		
+		// this.requestAnimationFrame(this._validateTransforms);
 	},
 
 	willCollapseChange: function(ev) {
-		return ev.type == "vpanend"? this.isCollapsed()?
+		return ev.type == "vpanend"? this.collapsed?
 			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
 			ev.thresholdDeltaY < (-Globals.COLLAPSE_THRESHOLD) :
 			false;
@@ -427,8 +435,6 @@ var ContentView = ContainerView.extend({
 	// 	return view;
 	// },
 
-}, {
-	PAN_MOVE_FACTOR: 0.05,
 });
 
 module.exports = ContentView;

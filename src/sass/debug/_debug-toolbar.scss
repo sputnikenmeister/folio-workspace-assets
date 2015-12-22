@@ -1,0 +1,147 @@
+
+// -----------------------------------
+// #debug-toolbar
+// -----------------------------------
+
+#debug-toolbar {
+	z-index: 999;
+	position: fixed;
+	top: 0; right: 0;
+	// width: 100%;// prevents dotnav mouse events
+	.debug-links {
+		direction: rtl;
+	}
+	.toggle-enabled {
+		text-decoration: underline;
+	}
+	&:not(.show-links) {
+		opacity: 0.25;
+		#test-results {
+			display: none;
+		}
+		.debug-links > dd {
+			display: none;
+		}
+	}
+	
+	#test-results {
+		font: normal 12px/1 monospace;
+		color: #333333;
+		background-color: white;
+		box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		margin: 0 3rem;
+		max-height: 75vh;
+		overflow-y: auto;
+		
+		padding: 1rem 0;
+		& > * {
+			margin: 0.75em 0;
+			padding: 0 1.5em;
+		}
+		h6 {
+			font-weight: bold;
+		}
+		ul {
+			column-width: 14em;
+		}
+		li.failed {
+			color: #CC3333;
+			text-decoration: line-through;
+		}
+	}
+	&:not(.show-tests) #test-results {
+		display: none;
+	}
+	#toggle-passed {
+		// padding: 0 0.25em;
+		float: right;
+		// font-weight: normal;
+		&::before { content: "Hide "; }
+		&.toggle-enabled::before { content: "Show "; }
+	}
+	&.hide-passed {
+		#test-results {
+			li.passed {
+				display: none;
+			}
+			li.failed {
+				text-decoration: none;
+			}
+		}
+	}
+}
+
+#debug-toolbar dl {
+	line-height: 1rem;
+	padding: 0 0.25rem;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	&, * {
+		@include user-select(none);
+	}
+	& > * {
+		-webkit-flex: 0 1 auto;
+		flex: 0 1 auto;
+		display: block;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		cursor: pointer;
+	}
+	dt, dd {
+		margin: auto 0;
+		padding: 0;
+		a, span, svg {
+			padding: 1em 0.75em;
+			display: inline-block;
+			vertical-align: middle;
+		}
+	}
+	dt + dd {
+		&:before {
+			border-left: none;
+		}
+	}
+	dd {
+		&:before {
+			content: ' ';
+			display: inline-block;
+			height: 1em;
+			margin: 1em 0;
+			border-left: currentColor solid thin;
+			vertical-align: middle;
+		}
+	}
+	dt {
+		-webkit-flex: 0 0 auto;
+		flex: 0 0 auto;
+		// span.icon {
+		// 	@include fontello_icon_base();
+		// 	width: 1em;
+		// 	text-align: center;
+		// 	display: inline-block;
+		// }
+		svg.icon {
+			width: 1em;
+			height: 1em;
+			vertical-align: middle;
+			display: block;
+		}
+	}
+	&.debug-links dd {
+		@include small_caps($lead: inherit);
+	}
+	&.debug-info dd {
+		font-weight: 300;
+		& > * {
+			margin-top: -0.1rem;
+		}
+	}
+}
+
+.without-media #debug-toolbar {
+	#media-info, #toggle-logs {
+		display: none;
+	}
+}

@@ -1,5 +1,5 @@
 /**
- * @module {module:app/utils/css/parseTransformMatrix}
+ * @module {module:utils/css/parseTransformMatrix}
  */
 
 /*
@@ -11,20 +11,21 @@
  * @param {Object} o 		optional value host
  * @returns {Object}
  */
-module.exports = function(cssval, o) {
-	var m = cssval.match(/(matrix|matrix3d)\(([^\)]+)\)/);
+module.exports = function(cssText, o) {
+	var m = cssText.match(/(matrix|matrix3d)\(([^\)]+)\)/);
 	o || (o = {});
+	o.cssText = cssText;
 	if (m) {
 		o.type = m[1];
-		m = m[2].split(",");
+		o.values = m[2].split(",");
 		if (o.type === "matrix") {
-			o.x = parseFloat(m[4]);
-			o.y = parseFloat(m[5]);
+			o.x = parseFloat(o.values[4]);
+			o.y = parseFloat(o.values[5]);
 			o.z = 0;
 		} else {
-			o.x = parseFloat(m[12]);
-			o.y = parseFloat(m[13]);
-			o.z = parseFloat(m[14]);
+			o.x = parseFloat(o.values[12]);
+			o.y = parseFloat(o.values[13]);
+			o.z = parseFloat(o.values[14]);
 		}
 	} else {
 		o.type = "none";

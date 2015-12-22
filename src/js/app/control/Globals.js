@@ -14,8 +14,9 @@ module.exports = (function () {
 	
 	// JUNK FIRST: Some app-wide defaults
 	// - - - - - - - - - - - - - - - - -
-	g.H_PANOUT_DRAG			= 0.4; // factor
-	g.V_PANOUT_DRAG			= 0.1; // factor
+	g.VPAN_DRAG				= 0.95; // as factor of pointer delta
+	g.HPAN_OUT_DRAG			= 0.4; // factor
+	g.VPAN_OUT_DRAG			= 0.1; // factor
 	g.PAN_THRESHOLD			= 15; // px
 	g.COLLAPSE_THRESHOLD	= 75; // px
 	g.COLLAPSE_OFFSET		= parseInt(sass.temp["collapse_offset"]);
@@ -37,8 +38,9 @@ module.exports = (function () {
 	
 	// timing, easing
 	// - - - - - - - - - - - - - - - - -
-	g.TRANSITION_GAP			=	parseFloat(sass.transitions["delay_interval_ms"]);
+	g.TRANSITION_DELAY_INTERVAL			=	parseFloat(sass.transitions["delay_interval_ms"]);
 	g.TRANSITION_DURATION		=	parseFloat(sass.transitions["duration_ms"]);
+	g.TRANSITION_MIN_DELAY		=	parseFloat(sass.transitions["min_delay_ms"]);
 	g.TRANSITION_EASE			=	sass.transitions["ease"];
 	
 	// paths, networking
@@ -78,14 +80,14 @@ module.exports = (function () {
 	// - - - - - - - - - - - - - - - - -
 	
 	g.NO_DELAY	 				=	0;
-	g.TRANSITION_DELAY			=	(g.TRANSITION_DURATION + g.TRANSITION_GAP);
-	g.EXITING_DELAY 			=	g.TRANSITION_DELAY * 0 + 1;
-	g.CHANGING_DELAY 			=	g.TRANSITION_DELAY * 1 + 1;
-	g.ENTERING_DELAY 			=	g.TRANSITION_DELAY * 2 + 1;
+	g.TRANSITION_DELAY			=	g.TRANSITION_DURATION + g.TRANSITION_DELAY_INTERVAL;
+	g.EXITING_DELAY 			=	g.TRANSITION_DELAY * 0 + g.TRANSITION_MIN_DELAY;
+	g.CHANGING_DELAY 			=	g.TRANSITION_DELAY * 1 + g.TRANSITION_MIN_DELAY;
+	g.ENTERING_DELAY 			=	g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY;
 	
 	/* Removing the gap would be more accutrate, but best to leave it for safety */
-	//g.TRANSITION_END_TIMEOUT	=	(g.TRANSITION_DELAY) * 3 - g.TRANSITION_GAP;
-	g.TRANSITION_END_TIMEOUT	=	(g.TRANSITION_DELAY) * 3;
+	g.TRANSITION_END_TIMEOUT	=	g.TRANSITION_DELAY * 3 - g.TRANSITION_DELAY_INTERVAL;
+	// g.TRANSITION_END_TIMEOUT	=	g.TRANSITION_DELAY * 3;
 
 	var transitionTemplate = function(o) {
 		return o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
@@ -93,7 +95,7 @@ module.exports = (function () {
 	
 	o = {};
 	o.easing = g.TRANSITION_EASE;
-	o.duration = g.TRANSITION_DURATION - 1;
+	o.duration = g.TRANSITION_DURATION - g.TRANSITION_MIN_DELAY;
 	
 	g.TRANSIT_ENTERING = _.clone(o);
 	g.TRANSIT_ENTERING.delay = g.ENTERING_DELAY;
@@ -116,10 +118,10 @@ module.exports = (function () {
 	g.TRANSIT_CHANGING.className = "transform-changing";
 	g.TRANSIT_CHANGING.cssText = transitionTemplate(g.TRANSIT_CHANGING);
 	
-	g.TRANSIT_PARENT = _.clone(g.TRANSIT_CHANGING);
-	// g.TRANSIT_PARENT.delay = g.CHANGING_DELAY;
-	// g.TRANSIT_PARENT.className = "transform-changing";
-	g.TRANSIT_ENTERING.cssText = transitionTemplate(g.TRANSIT_ENTERING);
+	g.TRANSIT_XXX = _.clone(o);
+	g.TRANSIT_XXX.delay = g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY;
+	g.TRANSIT_XXX.className = "transform-xxx";
+	g.TRANSIT_XXX.cssText = transitionTemplate(g.TRANSIT_XXX);
 	
 	// Symphony CMS jit-image url templates
 	// TODO: get rid of this

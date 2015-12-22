@@ -16,10 +16,10 @@
 	// nav_list
 	// -----------------------------------
 	%nav_list {
-		@include nav_translate(0, #{$nav_height_landscape - 1.5rem});
+		transform: move(0, #{$nav_height_landscape - 1.5rem});
 	}
 	.with-bundle %nav_list {
-		@include nav_translate(0, 0);
+		transform: move(0, 0);
 	}
 
 	// bundle-list
@@ -37,10 +37,10 @@
 		width: $aside_width_large;
 	}
 	.with-bundle.default-layout #keyword-list {
-		@include nav_translate(0, #{$nav_height_landscape - 0.5rem});
+		transform: move(0, #{$nav_height_landscape - 0.5rem});
 	}
 	.with-bundle.default-layout .container-expanded #keyword-list {
-		@include nav_translate(0, 0);
+		transform: move(0, 0);
 	}
 
 	// keyword-list list-group
@@ -51,7 +51,7 @@
 	.with-bundle .navigation:not(.container-expanded) #keyword-list .list-group {
 		height: 1.5rem;
 		span {
-			@include nav_translate(-0.5px, 0.0rem);
+			transform: move(0, 0);
 		}
 	}
 
@@ -61,14 +61,14 @@
 	// site-name
 	// - - - - - - - - - - - - - - - - - -
 	.#{$select_state} .container-expanded #site-name {
-		@include nav_translate(-1px, 0);
+		transform: move(-1px, 0);
 	}
 
 	// transform-wrappers
 	// -----------------------------------
 	.transform-wrapper {
 		transform-style: preserve-3d;
-		@include nav_translate(0, 0);
+		transform: move(0, 0);
 	}
 
 	// site-name-wrapper
@@ -80,7 +80,7 @@
 	// bundle-list-wrapper
 	// - - - - - - - - - - - - - - - - - -
 	.#{$select_state} .container-expanded #bundle-list-wrapper {
-		@include nav_translate($aside_width_large, 0);
+		transform: move($aside_width_large, 0);
 	}
 	
 	// FIXME
@@ -94,10 +94,10 @@
 		left: $_fixme_kw_left; // FIXME
 	}
 	.with-media #keyword-list-wrapper {
-		@include nav_translate(-$_fixme_kw_left, 0); // FIXME
+		transform: move(-$_fixme_kw_left, 0); // FIXME
 	}
 	.#{$select_state} .container-expanded #keyword-list-wrapper {
-		@include nav_translate(0, 0);
+		transform: move(0, 0);
 	}
 	
 	// -----------------------------------
@@ -185,10 +185,10 @@
 	.default-layout .media-caption-stack {
 		top: $header_height_landscape;
 		margin-top: 0;
-		@include nav_translate(0, 0);
+		transform: move(0, 0);
 	}
 	.default-layout .container-expanded .media-caption-stack {
-		@include nav_translate(0, $nav_collapse_extra);
+		transform: move(0, $nav_collapse_extra);
 	}
 	
 	// media-dotnav

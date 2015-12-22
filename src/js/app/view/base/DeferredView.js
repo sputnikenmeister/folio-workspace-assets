@@ -14,53 +14,35 @@ var _queueRafId = null;
 var _queuedViewsIndex = {};
 var _isExecuting = false;
 
-var _callQueuedAF = function() {
-	// console.log("DeferredView::callQueuedAF (%i): %s", _queue.length, Object.keys(_queuedViewsIndex).join(", "));
-	var queue = _queue;
-	_queue = [];
-	_queueRafId = null;
-	_queuedViewsIndex = {};
-	_isExecuting = true;
-	queue.forEach(function(fn) {
-		fn && fn.call();
-	});
-	_isExecuting = false;
-};
-var requestQueuedAF = function(view) {
-	_isExecuting && console.warn("DeferredView::requestQueuedAF", "nested request", view.cid);
-	var viewIndex = _queuedViewsIndex[view.cid] || (_queuedViewsIndex[view.cid] = _queue.length);
-	_queue[viewIndex] = view._applyRender;
-	if (_queueRafId === null) {
-		_queueRafId = window.requestAnimationFrame(_callQueuedAF);
-	}
-};
-var cancelQueuedAF = function(view) {
-	_isExecuting && console.warn("DeferredView::cancelQueuedAF", "nested request", view.cid);
-	if (_queuedViewsIndex.hasOwnProperty(view.cid)) {
-		_queue[_queuedViewsIndex[view.cid]] = null;
-	}
-};
-
-var requestRenderImpl = requestQueuedAF;
-var cancelRenderImpl = cancelQueuedAF;
-
-// var _pendingRafIds = {};
-// var requestAF = function(view) {
-// 	if (!_pendingRafIds.hasOwnProperty(view.cid)) {
-// 		_pendingRafIds[view.cid] = window.requestAnimationFrame(view._applyRender);
+// var _callQueuedAF = function() {
+// 	// console.log("DeferredView::callQueuedAF (%i): %s", _queue.length, Object.keys(_queuedViewsIndex).join(", "));
+// 	var queue = _queue;
+// 	_queue = [];
+// 	_queueRafId = null;
+// 	_queuedViewsIndex = {};
+// 	_isExecuting = true;
+// 	queue.forEach(function(fn) {
+// 		fn && fn.call();
+// 	});
+// 	_isExecuting = false;
+// };
+// var requestQueuedAF = function(view) {
+// 	_isExecuting && console.warn("DeferredView::requestQueuedAF", "nested request", view.cid);
+// 	var viewIndex = _queuedViewsIndex[view.cid] || (_queuedViewsIndex[view.cid] = _queue.length);
+// 	_queue[viewIndex] = view._applyRender;
+// 	if (_queueRafId === null) {
+// 		_queueRafId = window.requestAnimationFrame(_callQueuedAF);
 // 	}
 // };
-// var cancelAF = function(view) {
-// 	if (_pendingRafIds.hasOwnProperty(view.cid)) {
-// 		window.cancelAnimationFrame(_pendingRafIds[view.cid]);
-// 		delete _pendingRafIds[view.cid];
+// var cancelQueuedAF = function(view) {
+// 	_isExecuting && console.warn("DeferredView::cancelQueuedAF", "nested request", view.cid);
+// 	if (_queuedViewsIndex.hasOwnProperty(view.cid)) {
+// 		_queue[_queuedViewsIndex[view.cid]] = null;
 // 	}
 // };
-// var requestRenderImpl = requestAF;
-// var cancelRenderImpl = cancelAF;
-
-// var requestRenderImpl = window.setTimeout;
-// var cancelRenderImpl = window.clearTimeout;
+// var hasQueuedAF = function(view) {
+// 	return _queuedViewsIndex.hasOwnProperty(view.cid);
+// };
 
 /**
  * @constructor
@@ -69,11 +51,12 @@ var cancelRenderImpl = cancelQueuedAF;
 var DeferredView = View.extend({
 
 	/* -------------------------------
-	 * Backbone.View
-	 * ------------------------------- */
+	/* Backbone.View
+	/* ------------------------------- */
 	
 	constructor: function(options) {
-		_.bindAll(this, "_applyRender");
+		// _.bindAll(this, "_applyRender");
+		this._renderRafId = -1;
 		this._renderJobs = {};
 		View.apply(this, arguments);
 		// View.prototype.constructor.apply(this, arguments);
@@ -81,39 +64,40 @@ var DeferredView = View.extend({
 	
 	/** @override */
 	remove: function () {
-		cancelRenderImpl(this);
+		this._cancelRender();
+		
 		return View.prototype.remove.apply(this, arguments);
 	},
 	
 	/* -------------------------------
-	 * public
-	 * ------------------------------- */
+	/* public
+	/* ------------------------------- */
 	
 	/**
-	 * @param {String} [key]
-	 * @param [value]
-	 */
-	requestRender: function (key, value) {
+	/* @param {String} [key]
+	/* @param [value]
+	/*/
+	requestRender: function(key, value) {
 		if (key) {
 			if (this._renderJobs.hasOwnProperty(key)) {
 				console.log("%s::requestRender [%s] '%s'", this.cid, "job overwritten", key);
 			}
 			this._renderJobs[key] = value ? value : true;
 		}
-		requestRenderImpl(this);
-	},
-	
-	renderNow: function () {
-		cancelRenderImpl(this);
-		this._applyRender();
+		this._requestRender();
 	},
 
-	/* -------------------------------
-	 * subclasses should use these
-	 * ------------------------------- */
+	renderNow: function(force) {
+		if (this._isPendingRender()) {
+			this._cancelRender();
+			this._applyRender(Date.now());
+		} else if (force === true) {
+			this._applyRender(Date.now());
+		}
+	},
 	
 	/** @abstract */
-	renderLater: function () {
+	renderLater: function (tstamp) {
 		// subclasses should override this method
 	},
 	
@@ -133,12 +117,15 @@ var DeferredView = View.extend({
 	},
 	
 	/* -------------------------------
-	 * private
-	 * ------------------------------- */
+	/* private
+	/* ------------------------------- */
 
 	/** @private */
-	_applyRender: function () {
-		this.renderLater();
+	_applyRender: function (tstamp) {
+		this._renderRafId = -1;
+		console.warn("%s::_applyRender()", this.cid);
+		this.renderLater(tstamp);
+		
 		for (var key in this._renderJobs) {
 			if (this._renderJobs.hasOwnProperty(key)) {
 				console.warn("DeferredView._applyRender", "'" + key + "' discarded w/o validation", this.cid);
@@ -146,6 +133,23 @@ var DeferredView = View.extend({
 			}
 		}
 	},
+	
+	_cancelRender: function() {
+		// cancelQueuedAF(this);
+		if (this._isPendingRender()) {
+			this.cancelAnimationFrame(this._renderRafId);
+		}
+	},
+	_requestRender: function() {
+		// requestQueuedAF(this);
+		if (!this._isPendingRender()) {
+			this._renderRafId = this.requestAnimationFrame(this._applyRender);
+		}
+	},
+	_isPendingRender: function() {
+		// hasQueuedAF(this);
+		return this._renderRafId !== -1;
+	}
 
 });
 

@@ -1,3 +1,4 @@
+/* global MutationObserver */
 /**
  * @module app/view/NavigationView
  */
@@ -34,6 +35,12 @@ var GroupingListView = require("app/view/component/GroupingListView");
 /** @type {module:app/view/component/CollectionPager} */
 var CollectionPager = require("app/view/component/CollectionPager");
 
+/** @type {module:utils/css/parseTransformMatrix} */
+var parseMatrix = require("utils/css/parseTransformMatrix");
+/** @type {module:utils/prefixedProperty} */
+var prefixedProperty = require("utils/prefixedProperty");
+
+
 /**
  * @constructor
  * @type {module:app/view/NavigationView}
@@ -45,6 +52,13 @@ var NavigationView = ContainerView.extend({
 	
 	// /** @override */
 	// className: ContainerView.prototype.className + " navigation",
+	
+	// events: {
+	// 	"transitionend #bundle-list-wrapper": function(ev) {
+	// 		if (ev.target !== this.bundleList.wrapper) return;
+	// 		console.log("%s::[%s] id:%s (%s) %s", this.cid, ev.type, ev.target.id, ev.target.className, ev.propertyName);
+	// 	}
+	// },
 	
 	/** @override */
 	initialize: function (options) {
@@ -81,6 +95,7 @@ var NavigationView = ContainerView.extend({
 			this.bundleList.wrapper, this.keywordList.wrapper,
 			this.sitename.el, this.hGroupings
 		);
+		this._validateTransforms = this.transforms.validate.bind(this.transforms);
 	},
 	
 	/* --------------------------- *
@@ -94,9 +109,12 @@ var NavigationView = ContainerView.extend({
 		// this.transforms.clearAllTransitions();
 		this.transforms.stopAllTransitions();
 		this.transforms.validate();
-		_.each(this.itemViews, function(view) {
+		// _.each(this.itemViews, function(view) {
+		this.itemViews.forEach(function(view) {
 			view.skipTransitions = true;
 			view.render();
+			// view.requestRender();
+			// view.renderNow(true);
 		}, this);
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
@@ -106,11 +124,29 @@ var NavigationView = ContainerView.extend({
 	 * ------------------------------- */
 	
 	_beforeChange: function(bundle, media) {
+		// this._changeType = "c2b";
+		// if (bundle !== bundles.selected) {
+		// 	if (bundle && bundles.selected) {
+		// 		if (this.collapsed) {
+		// 			this._changeType = "b2b";
+		// 		} else {
+		// 			this._changeType = "c2b";
+		// 		}
+		// 	}
+		// }
 		this._bundleChanging = (bundle !== bundles.selected);
+		this._bundleChangeDelay = (bundle !== bundles.selected) && (bundle && bundles.selected) && !this.collapsed;
+		// this._bundleChangeDelay = (bundle !== bundles.selected) && bundle && !this.collapsed;
 	},
 	
 	_afterChange: function(bundle, media) {
 		this._bundleChanging = false;
+		this._bundleChangeDelay = false;
+		
+		// this.bundleList.renderNow();
+		// this.keywordList.renderNow();
+		// this.transforms.validate();
+		// this.requestAnimationFrame(this._validateTransforms);
 	},
 	
 	/* --------------------------- *
@@ -124,28 +160,33 @@ var NavigationView = ContainerView.extend({
 		// this.transforms.captureAll();
 		// this.transforms.clearAllCaptures();
 		this.transforms.runTransition(
-			Globals.TRANSIT_CHANGING,
-			// Globals.TRANSIT_EXITING,
+			Globals.TRANSIT_CHANGING, // Globals.TRANSIT_EXITING,
 			this.bundleList.el,
 			this.keywordList.el);
-			
-		this.transforms.runTransition(
-			this.isCollapsed()? Globals.TRANSIT_CHANGING : Globals.TRANSIT_ENTERING,
-			this.sitename.el);
-			
-		this.transforms.runTransition(
-			this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
-			this.hGroupings);
-			
-		this.transforms.runTransition(
-			// Globals.TRANSIT_ENTERING,
-			this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
-			this.bundleList.wrapper);
-			
-		this.transforms.runTransition(
-			this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
-			this.keywordList.wrapper);
-			
+		
+		// this.transforms.runTransition(
+		// 	this.collapsed? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
+		// 	this.hGroupings,
+		// 	this.keywordList.wrapper);
+		
+		if (this._bundleChangeDelay) {
+			console.log("this._bundleChangeDelay", this._bundleChangeDelay, Globals.TRANSIT_XXX.cssText);
+			this.transforms.runTransition(
+				Globals.TRANSIT_XXX,
+				this.sitename.el,
+				this.keywordList.wrapper,
+				this.bundleList.wrapper,
+				this.hGroupings);
+		} else {
+			this.transforms.runTransition(
+				this.collapsed? Globals.TRANSIT_CHANGING : Globals.TRANSIT_ENTERING,
+				this.sitename.el);
+			this.transforms.runTransition(
+				this.collapsed? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
+				this.keywordList.wrapper,
+				this.bundleList.wrapper,
+				this.hGroupings);
+		}
 		this.transforms.validate();
 	},
 
@@ -175,7 +216,7 @@ var NavigationView = ContainerView.extend({
 	},
 
 	_onDeselectAnyMedia: function(media) {
-		if (this.isCollapsed()) {
+		if (this.collapsed) {
 			this.transforms.clearOffset(this.keywordList.wrapper);
 			this.transforms.runTransition(
 				Globals.TRANSIT_IMMEDIATE,
@@ -190,10 +231,7 @@ var NavigationView = ContainerView.extend({
 				Globals.TRANSIT_ENTERING,
 				this.bundleList.wrapper,
 				this.keywordList.wrapper,
-				this.sitename.el);
-				
-			this.transforms.runTransition(
-				Globals.TRANSIT_ENTERING,
+				this.sitename.el,
 				this.hGroupings);
 		}
 		if (!this._bundleChanging) {
@@ -208,25 +246,25 @@ var NavigationView = ContainerView.extend({
 	_onSelectOneBundle: function(bundle) {
 		this.listenTo(bundle.get("media"), this.mediaListeners);
 		this.keywordList.filterBy(bundle);
-		this.setCollapsed(true);
+		this.collapsed = true;
 	},
 	
 	_onSelectNoBundle: function() {
 		this.touch.off("panstart", this._onHPanStart);
 		this.touch.off("vpanstart", this._onVPanStart);
 		this.keywordList.clearFilter();
-		this.setCollapsed(false);
+		this.collapsed = false;
 	},
 	
 	_onSelectAnyMedia: function(media) {
-		this.setCollapsed(true);
+		this.collapsed = true;
 	},
 	
 	_onKeywordListSelect: function(keyword) {
-		if (!this.isCollapsed()) {
+		if (!this.collapsed) {
 			this.bundleList.filterBy(keyword);
 			keywords.select(keyword);
-			// this.setCollapsed(false);
+			// this.collapsed = false;
 		}
 	},
 	
@@ -259,35 +297,78 @@ var NavigationView = ContainerView.extend({
 	 * Horizontal touch/move (_onHPan*)
 	 * ------------------------------- */
 
+	// _onHPanStart2: function(ev) {
+	// 	if (this.collapsed &&
+	// 		bundles.selected.get("media").selectedIndex <= 0 &&
+	// 		document.body.matches(".desktop-small .default-layout")
+	// 		// this.el.matches(".desktop-small.default-layout " + this.el.tagName)
+	// 		// window.matchMedia(Globals.BREAKPOINTS["desktop-small"]).matches)
+	// 	) {
+	// 		var mDest = this.keywordList.wrapper;
+	// 		var mTarget = document.querySelector(".carousel .empty-item");
+	// 		
+	// 		var mObs = new MutationObserver(function(mutations) {
+	// 			mDest.style.transform = mTarget.style.transform;
+	// 			// var m = /^translate(?:3d)?\(\s*([-\.\d]+)/.exec(mTarget.style.transform);
+	// 			// m = m.length? parseFloat(m[1]) : 0;
+	// 			// console.log(mTarget.style.transform, m);
+	// 		});
+	// 		
+	// 		var handleMutation = function() {
+	// 		};
+	// 		
+	// 		var handlePanFinal = function() {
+	// 			mObs.disconnect();
+	// 			mDest.style.transform = "";
+	// 			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE, mDest);
+	// 			this.transforms.validate();
+	// 			this.touch.off("panend pancancel", handlePanFinal);
+	// 		}.bind(this);
+	// 		
+	// 		mDest.style.transform = mTarget.style.transform;
+	// 		mObs.observe(mTarget, {attributes: true, attributeFilter: ["style"]});
+	// 		
+	// 		this.transforms.clearCapture(mDest);
+	// 		this.transforms.stopTransition(mDest);
+	// 		this.transforms.validate();
+	// 		this.touch.on("panend pancancel", handlePanFinal);
+	// 	}
+	// },
+	
 	_onHPanStart: function(ev) {
-		if (this.isCollapsed() &&
+		if (this.collapsed &&
 			bundles.selected.get("media").selectedIndex <= 0 &&
 			document.body.matches(".desktop-small .default-layout")
-			// this.el.matches(".desktop-small.default-layout " + this.el.tagName)
-			// window.matchMedia(Globals.BREAKPOINTS["desktop-small"]).matches)
 		) {
-			this.touch.on("panend pancancel", this._onHPanFinal);
-			this.touch.on("panmove", this._onHPanMove);
+			this.transforms.stopTransition(this.keywordList.wrapper);
+			this.transforms.clearOffset(this.keywordList.wrapper);
+			this.transforms.validate();
 			
-			this.transforms.stopTransitions(this.keywordList.wrapper);
-			this.transforms.clearCapture(this.keywordList.wrapper);
-			this._onHPanMove(ev);
+			// this.requestAnimationFrame(function() {
+				this.transforms.clearCapture(this.keywordList.wrapper);
+				this._onHPanMove(ev);
+				
+				this.touch.on("panend pancancel", this._onHPanFinal);
+				this.touch.on("panmove", this._onHPanMove);
+			// });
 		}
 	},
 	
 	_onHPanMove: function(ev) {
+		// var HPAN_DRAG = 1;
+		// var HPAN_DRAG = 0.75;
+		var HPAN_DRAG = 720/940;
 		var delta = ev.thresholdDeltaX;
 		if (bundles.selected.get("media").selectedIndex == -1) {
-			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)?
-				Globals.H_PANOUT_DRAG : 0.75;
+			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)? Globals.HPAN_OUT_DRAG : HPAN_DRAG;
 			//delta *= (delta > 0)? 0.40: 0.75;
 		} else {//if (media.selectedIndex == 0) {
-			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)? 0.75 : 0.0;
+			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)? HPAN_DRAG : 0.0;
 			//delta *= (delta > 0)? 0.75: 0.00;
 		}
-		// this.transforms.get(this.keywordList.wrapper).offset(delta, void 0).validate();
 		this.transforms.offset(delta, void 0, this.keywordList.wrapper);
 		this.transforms.validate();
+		// this.requestAnimationFrame(this._validateTransforms);
 	},
 	
 	_onHPanFinal: function(ev) {
@@ -295,11 +376,11 @@ var NavigationView = ContainerView.extend({
 		this.touch.off("panend pancancel", this._onHPanFinal);
 		
 		// NOTE: transition will be set twice if there is a new selection!
-		// this.transforms.get(this.keywordList.wrapper)
-		// 		.runTransition(Globals.TRANSIT_IMMEDIATE).clearOffset().validate();
 		this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE, this.keywordList.wrapper);
 		this.transforms.clearOffset(this.keywordList.wrapper);
+		// this.transforms.clearCapture(this.keywordList.wrapper);
 		this.transforms.validate();
+		// this.requestAnimationFrame(this._validateTransforms);
 	},
 	
 	/* -------------------------------
@@ -310,7 +391,7 @@ var NavigationView = ContainerView.extend({
 		this.touch.on("vpanmove", this._onVPanMove);
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
 
-		this.transforms.stopTransitions(this.bundleList.el, this.keywordList.el);
+		this.transforms.stopTransition(this.bundleList.el, this.keywordList.el);
 		this.transforms.clearCapture(this.bundleList.el, this.keywordList.el);
 		this._onVPanMove(ev);
 	},
@@ -321,9 +402,8 @@ var NavigationView = ContainerView.extend({
 		var delta = ev.thresholdDeltaY;
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapse/expand
-		var isValidDir = this.isCollapsed()? (delta > 0) : (delta < 0);
-		var moveFactor = this.isCollapsed()?
-				NavigationView.PAN_MOVE_FACTOR : 1 - NavigationView.PAN_MOVE_FACTOR;
+		var isValidDir = this.collapsed? (delta > 0) : (delta < 0);
+		var moveFactor = this.collapsed? 1 - Globals.VPAN_DRAG : Globals.VPAN_DRAG;
 		
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
@@ -331,17 +411,18 @@ var NavigationView = ContainerView.extend({
 		
 		if (isValidDir) {
 			if (delta > maxDelta) { // overshooting
-				delta = ((delta - maxDelta) * Globals.V_PANOUT_DRAG) + maxDelta;
+				delta = ((delta - maxDelta) * Globals.VPAN_OUT_DRAG) + maxDelta;
 			} else { // no overshooting
 				delta = delta;
 			}
 		} else {
-			delta = (-delta) * Globals.V_PANOUT_DRAG; // delta is opposite
+			delta = (-delta) * Globals.VPAN_OUT_DRAG; // delta is opposite
 		}
-		delta *= this.isCollapsed()? 0.5 : -1; // reapply sign
+		delta *= this.collapsed? 0.5 : -1; // reapply sign
 
 		this.transforms.offset(0, delta, this.bundleList.el, this.keywordList.el);
 		this.transforms.validate();
+		// this.requestAnimationFrame(this._validateTransforms);
 	},
 	
 	_onVPanFinal: function(ev) {
@@ -352,21 +433,26 @@ var NavigationView = ContainerView.extend({
 		
 		if (this.willCollapseChange(ev)) {
 			this.transforms.runTransition(Globals.TRANSIT_CHANGING,
-				this.bundleList.el, this.keywordList.el);
+				this.bundleList.el,
+				this.keywordList.el);
 			this.transforms.runTransition(
-				this.isCollapsed()? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
-				this.bundleList.wrapper, this.keywordList.wrapper, this.sitename.el, this.hGroupings);
-			this.setCollapsed(!this.isCollapsed());
-			this.transforms.validate();
+				this.collapsed? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
+				this.bundleList.wrapper,
+				this.keywordList.wrapper,
+				this.sitename.el,
+				this.hGroupings);
+			this.collapsed = !this.collapsed;
 		} else {
 			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE,
-				this.bundleList.el, this.keywordList.el);
-			this.transforms.validate();
+				this.bundleList.el,
+				this.keywordList.el);
 		}
+		this.transforms.validate();
+		// this.requestAnimationFrame(this._validateTransforms);
 	},
 	
 	willCollapseChange: function(ev) {
-		return ev.type == "vpanend"? this.isCollapsed()?
+		return ev.type == "vpanend"? this.collapsed?
 			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
 			ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
 			false;
@@ -457,8 +543,6 @@ var NavigationView = ContainerView.extend({
 		});
 		return view;
 	},*/
-}, {
-	PAN_MOVE_FACTOR: 0.05,
 });
 
 module.exports = NavigationView;

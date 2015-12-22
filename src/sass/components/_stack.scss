@@ -8,7 +8,7 @@
 		position: absolute;
 		top: 0; left: 0;
 		
-		transition: opacity nav_transition(1, 0);
+		transition: tx(opacity, 1, 0);
 		opacity: 0;
 		&.current {
 			opacity: 1;
@@ -25,5 +25,5 @@
 // 	opacity: 0 !important;
 // }
 // .container-collapsed.container-changing .stack > .stack-item { 
-// 	transition: opacity nav_transition(1, 2);
+// 	transition: tx(opacity, 1, 2);
 // }

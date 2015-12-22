@@ -27,23 +27,18 @@ html, body {
 	}
 }
 
-// - - - - - - - - - - - - - - - - - -
-// footer
-// - - - - - - - - - - - - - - - - - -
-//@import "views/footer";
-
 // ------------------------------------
 // Body init
 // ------------------------------------
 .app-ready #container {
 	transition:
-		// visibility $duration step-start $delay,
-		opacity $duration $ease $delay;
-	// visibility: visible;
+		tx(opacity, 1, 1),
+		tx(visibility, 1, 1, step-start);
+	visibility: visible;
 	opacity: 1;
 }
 .app-initial #container {
-	// visibility: hidden;
+	visibility: hidden;
 	opacity: 0;
 }
 // body.skip-transitions *,
@@ -52,18 +47,27 @@ html, body {
 }
 
 // ------------------------------------
-// Dynamic color
+// Color
 // ------------------------------------
-// body default color values specified in "_base.scss"
-
+html {
+	color: #666;
+	background-color: #000;
+}
+body {
+	color: $color;
+	background-color: $background_color;
+}
 .color-fg05 {
 	color: lighten($color, 40%);
 	border-color: lighten($color, 60%);
 }
 body, .color-tx {
 	transition:
-		background-color $duration $ease $delay,
-		color $duration $ease $delay;
+		tx(background-color, 1, 1),
+		tx(color, 1, 1);
+	// transition:
+	// 	background-color $duration $ease $delay,
+	// 	color $duration $ease $delay;
 	// transition-property: background-color, color;
 	// transition-delay: $delay + 0.001s;
 	// transition-duration: $duration - 0.001s;
@@ -119,9 +123,9 @@ $nav_collapse_extra: map-get($temp, collapse_offset) * 1px;//28rem;
 
 // translate wrapper function
 // - - - - - - - - - - - - - - - - - -
-@mixin nav_translate($x, $y) {
-	// transform: translate3d($x, $y, 0);
-	transform: translate($x, $y);
+@function move($x: 0, $y: 0) {
+	@return translate3d($x, $y, 0);
+	// @return translate($x, $y);
 }
 
 // leaf elements
@@ -140,17 +144,17 @@ $nav_collapse_extra: map-get($temp, collapse_offset) * 1px;//28rem;
 %nav_list {
 	position: absolute;
 	display: inline-block;
-	will-change: transform;
-	// transform-style: preserve-3d;
-	@include nav_translate(0, #{$nav_height_portrait - 4.5rem});
+	// will-change: transform;
+	transform-style: preserve-3d;
+	transform: move(0, #{$nav_height_portrait - 4.5rem});
 }
 .with-bundle %nav_list {
 	// padding-top: 1.5rem;
-	@include nav_translate(0, 0);
+	transform: move(0, 0);
 }
 
 .transform-wrapper {
-	will-change: transform;
+	// will-change: transform;
 }
 
 // ///////////////////////////////////

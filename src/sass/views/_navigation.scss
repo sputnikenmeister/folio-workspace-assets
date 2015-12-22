@@ -73,9 +73,11 @@
 		}
 	}
 	.list-group {
-		margin-top: 0.5rem; // in js, this value is ignored when height == 0
-		span {
+		// NOTE: in js, this value is ignored when height is zero
+		margin-top: 0.5rem; 
+		.name {//span {
 			display: inline-block;
+			margin-left: -1px;
 			@include small_caps($lead: 1.5rem);
 		}
 	}
@@ -128,7 +130,7 @@
 .with-bundle {
 	#keyword-list {
 		.list-item:before {
-			transition: opacity $duration $ease $delay;
+			transition: tx(opacity, 1, 1);//$duration $ease $delay;
 		}
 		&:not(.collapsed) .list-item:not(.excluded):before {
 			opacity: 1;

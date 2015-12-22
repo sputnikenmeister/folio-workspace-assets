@@ -29,7 +29,7 @@ var getSharedCanvas =  function() {
 	return _sharedCanvas;
 };
 
-var visibilityHiddenProp = prefixedProperty("hidden", document);
+// var visibilityHiddenProp = prefixedProperty("hidden", document);
 var visibilityStateProp = prefixedProperty("visibilityState", document);
 var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden");
 

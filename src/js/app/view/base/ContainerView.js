@@ -44,17 +44,24 @@ module.exports = View.extend({
 		this.listenTo(this, "collapsed:change", this._onCollapseChange);
 	},
 	
+	properties: {
+		collapsed: {
+			get: function() {
+				return this._collapsed;
+			},
+			set: function(collapsed) {
+				this._setCollapsed(collapsed);
+			}
+		}
+	},
+	
 	/* -------------------------------
 	 * collapse
 	 * ------------------------------- */
 	 
 	_collapsed: false,
-	
-	isCollapsed: function() {
-		return this._collapsed;
-	},
 
-	setCollapsed: function(collapsed) {
+	_setCollapsed: function(collapsed) {
 		if (this._collapsed !== collapsed) {
 			this._collapsed = collapsed;
 			this.el.classList.toggle("container-collapsed", collapsed);

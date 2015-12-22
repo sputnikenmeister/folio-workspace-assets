@@ -36,6 +36,10 @@ var log = function() {
 /* Private static
 /* ------------------------------- */
 
+var translateTemplate = function(o) {
+	// return "translate(" + o._renderedX + "px, " + o._renderedY + "px)";
+	return "translate3d(" + o._renderedX + "px, " + o._renderedY + "px, 0px)";
+};
 var transitionTemplate = function(o) {
 	return o.property + " " + o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
 };
@@ -117,8 +121,8 @@ function TransformItem(el, immediate) {
 	this._renderedX = null;
 	this._renderedY = null;
 
-	this.enableTransitions = this.clearTransitions;
-	this.disableTransitions = this.stopTransitions;
+	// this.enableTransitions = this.clearTransition;
+	// this.disableTransitions = this.stopTransition;
 }
 
 TransformItem.prototype = {
@@ -148,7 +152,6 @@ TransformItem.prototype = {
 	
 	clearCapture: function() {
 		log(traceElt(this.el), "TransformItem.clearCapture");
-		
 		// this._hasOffset = false;
 		this._captureInvalid = true;
 		return this;
@@ -212,7 +215,7 @@ TransformItem.prototype = {
 		return this;
 	},
 	
-	clearTransitions: function(immediate) {
+	clearTransition: function(immediate) {
 		this._transition.property = "none";
 		this._transitionValue = NO_TRANSITION;
 		
@@ -224,7 +227,7 @@ TransformItem.prototype = {
 		return this;
 	},
 	
-	stopTransitions: function(immediate) {
+	stopTransition: function(immediate) {
 		this._transition.property = "none";
 		this._transitionValue =  NO_TRANSITION;
 		
@@ -321,8 +324,7 @@ TransformItem.prototype = {
 				if (tx !== this._renderedX || ty !== this._renderedY) {
 					this._renderedX = tx;
 					this._renderedY = ty;
-					// this._setCSSProp("transform", "translate(" + this._renderedX + "px, " + this._renderedY + "px)");
-					this._setCSSProp("transform", "translate3d(" + this._renderedX + "px, " + this._renderedY + "px, 0px)");
+					this._setCSSProp("transform", translateTemplate(this));
 				}
 			} else {
 				this._renderedX = null;

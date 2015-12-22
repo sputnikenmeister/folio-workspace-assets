@@ -73,15 +73,21 @@
 		cursor: pointer;
 		display: block;
 		position: absolute;
-		// $size: 50%;//12em; 
-		// width: $size; height: $size;
-		// left: calc(50% - #{$size/2}); top: calc(50% - #{$size/2}); 
-		// margin-left: $size/2; margin-top: $size/2;
 		
-		background-repeat: no-repeat;
-		background-size: 3.3rem 3.3rem;
+		// background-size: 3.3rem 3.3rem;
+		background-size: 33px 33px;
 		background-position: center center;
+		background-repeat: no-repeat;
 	}
+	.paused:not(.started) .play-toggle {
+		background-size: 49px 49px;
+	}
+	// .play-toggle {
+	// 	$size: 50%;//12em; 
+	// 	width: $size; height: $size;
+	// 	left: calc(50% - #{$size/2}); top: calc(50% - #{$size/2}); 
+	// 	margin-left: $size/2; margin-top: $size/2;
+	// }
 	// .play-toggle-hitarea {} // hit-area
 	
 	// - - - - - - - - - - - - - - - - -
@@ -260,62 +266,33 @@
 	.progress-meter {
 		font-family: "FolioFigures-Regular", monospace;
 		font-weight: normal;
-		// font-family: "ITCFranklinGothicStd-Compressed", monospace;
-		// font-weight: bold;
-	
 		box-sizing: content-box;
-		// width: 2.1rem; height: 2.1rem;
 		// width: 2.3rem; height: 2.3rem;
 		width: 2.8rem; height: 2.8rem;
-		// width: 3rem; height: 3rem;
-		// width: 4rem; height: 4rem;
-		// flex-basis: 3rem;
+		transition: tx(opacity, 1, 0);
+		opacity: 0;
 	}
-	// .canvas-progress-meter {
-	// 	overflow: hidden;
-	// 	transition: none 0s 0s;
-	// 	// font-size: 80%;
-	// }
-	.svg-progress-meter {
-		#label {
-			font-size: 140%;
-			// font-size: 155%;
-		}
+	@at-root :not(.scrolling) &.selected .progress-meter { 
+		opacity: 1;
 	}
-	
-	// .progress-meter per-renderer adjustments
-	// - - - - - - - - - - - - - - - - -
-	// &.sequence-renderer {
-	// 	.progress-meter { width: 2.5rem; height: 2.5rem; }
-	// 	.canvas-progress-meter { font-size: 80%; }
-	// 	.svg-progress-meter {
-	// 		#label {
-	// 			font-size: 140%;
-	// 		}
-	// 	}
-	// }
-	// &.video-renderer {
-	// 	.progress-meter { width: 2.3rem; height: 2.3rem; }
-	// 	.canvas-progress-meter { font-size: 90%; }
-	// 	.svg-progress-meter {
-	// 		#label {
-	// 			font-size: 133%;
-	// 			// 	transform: scale(0.7);
-	// 		}
-	// 	}
-	// }
-	
 }
 
-.svg-progress-meter {
-	svg {
-		width: 100%;
-		height: 100%;
-		display: block;
-		// overflow: hidden;
-		// border-radius: 100%;
-	}
-}
+// .progress-meter per-renderer adjustments
+// - - - - - - - - - - - - - - - - -
+// .progress-meter {
+// 	@at-root .playable-renderer & { font-size: 140%; }
+// 	@at-root .sequence-renderer & { width: 2.5rem; height: 2.5rem; }
+// 	@at-root .video-renderer & { width: 2.3rem; height: 2.3rem; }
+// }
+// .canvas-progress-meter {
+// 	@at-root .sequence-renderer & { font-size: 80%; }
+// 	@at-root .video-renderer & { font-size: 90%; }
+// }
+// .svg-progress-meter #label {
+// 	@at-root .playable-renderer & { font-size: 140%; }
+// 	@at-root .sequence-renderer & { font-size: 140%; }
+// 	@at-root .video-renderer & { font-size: 133%; }
+// }
 
 // -----------------------------------
 // VideoRenderer
@@ -354,14 +331,19 @@
 		
 		// NOTE: z-index changed last, opacity transition in outgoing image
 		z-index: 0; opacity: 0; visibility: hidden;
-		transition: 
+		transition:
 			opacity $duration*1.5 $ease $duration*0.5,
 			visibility $duration*3 step-end, 
 			z-index $duration*3 step-end;
+		// transition: 
+		// 	tx(opacity, 1.5, 0.5),
+		// 	tx(visibility, 3, $ease: step-end),
+		// 	z-tx(index, 3, $ease: step-end);
 		
 		&.current {
 			z-index: 1; opacity: 1; visibility: visible;
 			transition: z-index $duration*3 step-end;
+			// transition: z-tx(index, 3, $ease: step-end);
 		}
 		
 		&.error {

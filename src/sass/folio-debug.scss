@@ -1,4 +1,5 @@
 @import "fonts";
 @import "folio";
-@import "includes/_debug";
-@import "components/_carousel.media-debug.scss";
+@import "debug/_layout";
+@import "debug/_debug-toolbar";
+@import "debug/_carousel.debug-log";

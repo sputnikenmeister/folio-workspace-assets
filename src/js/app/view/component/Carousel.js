@@ -208,8 +208,10 @@ var CarouselProto = {
 				this.listenTo(this, "view:added", this.render);
 			}
 		} else {
-			this._renderPending = false;
-			this.stopListening(this, "view:added", this.render);
+			if (this._renderPending) {
+				this._renderPending = false;
+				this.stopListening(this, "view:added", this.render);
+			}
 			if (this.domPhase === "added") {
 				this.measureLater();
 				this.scrollByLater(0, Carousel.IMMEDIATE);
@@ -697,7 +699,7 @@ var CarouselProto = {
 			this._panCandidateView && this._panCandidateView.el.classList.add("candidate");
 		}
 		if (this._panCandidateView === void 0) {
-			delta *= Globals.H_PANOUT_DRAG;
+			delta *= Globals.HPAN_OUT_DRAG;
 		}
 		this.scrollByNow(delta, Carousel.IMMEDIATE);
 	},

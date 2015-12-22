@@ -145,8 +145,8 @@ TransformHelper.prototype = {
 		}
 	},
 	
-	clearTransitions: function() {
-		this._invoke("clearTransitions", arguments);
+	clearTransition: function() {
+		this._invoke("clearTransition", arguments);
 	},
 	clearAllTransitions: function() {
 		for (var i in this._items) {
@@ -154,12 +154,12 @@ TransformHelper.prototype = {
 		}
 	},
 	
-	stopTransitions: function() {
-		this._invoke("stopTransitions", arguments);
+	stopTransition: function() {
+		this._invoke("stopTransition", arguments);
 	},
 	stopAllTransitions: function() {
 		for (var i in this._items) {
-			this._items[i].stopTransitions();
+			this._items[i].stopTransition();
 		}
 	},
 	

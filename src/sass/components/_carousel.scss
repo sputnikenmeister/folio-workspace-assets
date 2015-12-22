@@ -1,68 +1,86 @@
-.carousel {
-	.carousel-item {
-		display: block;
-		position: absolute;
-		p, span, div {
-			@include user-select(none);
-		}
-	}
-	&.panning {
-		cursor: grabbing;
-	}
-	&:not(.panning) .carousel-item {
-		.content {
-			cursor: pointer;
-		}
-		&.selected {
-			.content   {
-				cursor: grab;
-			}
-		}
-	}
-	&.disabled .carousel-item {
-		.content {
-			cursor: default !important;
-		}
-	}
-}
-
-// - - - - - - - - - - - - - - - - - -
-// Animation
-// - - - - - - - - - - - - - - - - - -
-.carousel {
-	.carousel-item {
-		transform: translate3d(0,0,0);
-		transform-style: preserve-3d;
-		// transition: transform nav_transition(1, 0);
-		transition: transform $duration $ease;
-	}
-	// &.panning .carousel-item {
-	// 	@include skip_transitions;
-	// 	// transition: transform 0s step-start 0s;
-	// }
-	&.skip-transitions .carousel-item {
+.carousel-item {
+	display: block;
+	position: absolute;
+	@include user-select(none);
+	
+	// carousel animation
+	// - - - - - - - - - - - - - - - - - -
+	transform: translate3d(0,0,0);
+	transform-style: preserve-3d;
+	
+	transition: tx(transform, 1, 0);
+	@at-root .skip-transitions & {
 		@include skip_transitions;
 	}
 	
-	// Content opacity
-	.carousel-item .content {
-		// transition: opacity $duration $delay + 0.001s $ease;
-		// transition: opacity $duration + 0.001s $ease 0.001s;
-		// transition-property: 		opacity;
-		// transition-timing-function:	$ease;
-		// transition-delay: 			$delay*0 + 0.001s;
-		// transition-duration:		$duration*1 + 0.001s;
-		transition: opacity nav_transition(1, 0);
+	// cursor/pointer
+	// - - - - - - - - - - - - - - - - - -
+	.content {
+		cursor: pointer;
 	}
-	&:not(.scrolling) .carousel-item.selected .content {
-		// transition-delay: 			$delay*2 + 0.001s;
-		// transition: opacity $duration + 0.001s $ease $delay*2 + 0.001s;
-		transition: opacity nav_transition(1, 1);
+	&.selected .content {
+		cursor: grab;
 	}
-	&.disabled .carousel-item.selected .content {
-		// transition-delay: 			$delay*0 + 0.001s;
-		// transition: opacity $duration + 0.001s $ease 0.001s;
-		transition: opacity nav_transition(1, 0);
+	@at-root .carousel.panning & .content { 
+		cursor: grabbing;
+	}
+	@at-root .carousel.disabled & .content {
+		cursor: default !important;
+	}
+	
+	// .content
+	// - - - - - - - - - - - - - - - - - -
+	.content {
+		transition: tx(opacity, 1, 1);
+	}
+	&.selected, &.candidate, .empty-item.selected + & {
+	// &.selected, &.candidate {
+		.content {
+			@at-root & {
+				transition: tx(opacity, 1, 2);
+			}
+			@at-root .carousel.scrolling & {
+				transition: tx(opacity, 1, 0);
+			}
+			@at-root .carousel.disabled & {
+				transition: tx(opacity, 1, 0);
+			}
+		}
+		
+		// @at-root & {
+		// 	background-color: transparentize(#FF0000, 0.5);
+		// }
+		// @at-root :not(.container-changing) & {
+		// 	background-color: transparentize(#0000FF, 0.5);
+		// }
+		// @at-root .carousel.scrolling & {
+		// 	background-color: transparentize(#00FF00, 0.5);
+		// }
+		// @at-root .carousel.disabled & {
+		// 	background-color: transparentize(#999999, 0.5);
+		// }
+	}
+	
+	// .empty-item .content
+	// - - - - - - - - - - - - - - - - - -
+	&.empty-item {
+		.content {
+			transition: tx(opacity, 1, 0);
+			opacity: 0.2;
+		}
+		&.selected, &.candidate {
+			.content {
+				@at-root & {
+					opacity: 1.0;
+				}
+				@at-root .carousel.panning & {
+					opacity: 0.5;
+				}
+				@at-root .carousel.disabled & {
+					opacity: 0.2;
+				}
+			}
+		}
 	}
 }
 
@@ -72,80 +90,45 @@
 
 // .disabled .media-item
 // - - - - - - - - - - - - - - - - - -
-.carousel.disabled {
-	.media-item.selected,
-	.media-item.candidate,
-	.empty-item.selected + .media-item {
-		&.ready .content {
-			opacity: 0;
-		}
-	}
-}
+// .carousel.disabled .media-item {
+// 	&.selected, &.candidate, .empty-item.selected + & {
+// 		&.ready .content {
+// 			@at-root .carousel.disabled & {
+// 				opacity: 0.0;
+// 			}
+// 		}
+// 	}
+// }
 
 // - - - - - - - - - - - - - - - - - -
 // .media-carousel
 // - - - - - - - - - - - - - - - - - -
 
-.carousel.media-carousel {
-	.empty-item {
-		.content {
-			transition: opacity nav_transition(1, 0);
-			// transition: opacity #{$duration - 0.001s} $ease #{$delay + 0.001s};
-			// transition: opacity #{$duration - 0.001s} $ease 0.001s;
-			opacity: 0.2;
-		}
-		&.selected,	&.candidate {
-			.content {
-				opacity: 1;
-			}
-		}
-	}
-	&.panning .empty-item {
-		&.selected,	&.candidate {
-			.content {
-				opacity: 0.5;
-			}
-		}
-	}
-	&.disabled .empty-item {
-		&.selected,	&.candidate {
-			.content {
-				opacity: 0.2;
-			}
-		}
-	}
-	// &:not(.disabled-changing) .empty-item .content {
-	// 	transition: opacity #{$duration - 0.001s} $ease 0.001s;
-	// }
-	// &.disabled-changing .empty-item .content {
-	// 	transition: opacity #{$duration - 0.001s} $ease #{$delay + 0.001s};
-	// }
-	// &.disabled-changing .empty-item {
-	// 	outline: 2px solid blue;
-	// }
-}
-
-// // - - - - - - - - - - - - - - - - - -
-// // .default-renderer
-// // - - - - - - - - - - - - - - - - - -
-// .carousel-item.default-renderer {
-// 	.sizing {
-// 		display: inline-block;
-// 	}
-// }
-// 
-// // - - - - - - - - - - - - - - - - - -
-// // .label-carousel
-// // - - - - - - - - - - - - - - - - - -
-// .label-carousel {
-// 	.carousel-item {
+// .carousel {
+// 	.empty-item {
 // 		.content {
-// 			transition: opacity $duration $ease 0.001s;
+// 			transition: tx(opacity, 1, 0);
+// 			// transition: opacity #{$duration - 0.001s} $ease #{$delay + 0.001s};
+// 			// transition: opacity #{$duration - 0.001s} $ease 0.001s;
 // 			opacity: 0.2;
 // 		}
-// 		&.selected, &.candidate {
+// 		&.selected,	&.candidate {
 // 			.content {
 // 				opacity: 1;
+// 			}
+// 		}
+// 	}
+// 	&.panning .empty-item {
+// 		&.selected,	&.candidate {
+// 			.content {
+// 				opacity: 0.5;
+// 			}
+// 		}
+// 	}
+// 	&.disabled .empty-item {
+// 		&.selected,	&.candidate {
+// 			.content {
+// 				opacity: 0.2;
 // 			}
 // 		}
 // 	}

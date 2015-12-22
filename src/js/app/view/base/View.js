@@ -81,7 +81,7 @@ observer.observe(document.body, {
 
 // var _isExecuting = false;
 var _queue = [];
-var _queueRafId = null;
+var _queueRafId = -1;
 var _fnidSeed = 0;
 
 var _callQueuedAF = function(tstamp) {
@@ -89,7 +89,7 @@ var _callQueuedAF = function(tstamp) {
 	var queue = _queue;
 	_queue = [];
 	_fnidSeed += queue.length;
-	_queueRafId = null;
+	_queueRafId = -1;
 	// _isExecuting = true;
 	queue.forEach(function(fn) {
 		fn && fn(tstamp);
@@ -98,24 +98,24 @@ var _callQueuedAF = function(tstamp) {
 };
 var requestQueuedAF = function(fn) {
 	// _isExecuting && console.warn("View::requestQueuedAF", "nested invocation");
-	if (_queueRafId === null) {
+	if (_queueRafId == -1) {
 		_queueRafId = window.requestAnimationFrame(_callQueuedAF);
 	}
 	_queue.push(fn);
 	return (_queue.length - 1) + _fnidSeed;
 };
 var cancelQueuedAF = function(fnid) {
-	// _isExecuting && console.warn("View::cancelQueuedAF", "nested invocation");
-	// var fnRef;
+	var fnRef;
 	if (fnid > _fnidSeed) {
-		// fnRef = _queue[fnid - _fnidSeed];
+		fnRef = _queue[fnid - _fnidSeed];
 		_queue[fnid - _fnidSeed] = null;
 	}
-	// return fnRef;
+	if (!fnRef) console.warn("View::cancelQueuedAF ID %s not found", fnid);
+	return fnRef;
 };
 
-var requestRenderImpl = requestQueuedAF;
-var cancelRenderImpl = cancelQueuedAF;
+// var requestRenderImpl = requestQueuedAF;
+// var cancelRenderImpl = cancelQueuedAF;
 
 /* -------------------------------
 /* static public
@@ -152,12 +152,6 @@ var ViewProto = {
 				return this._cid || (this._cid = this.cidPrefix + _cidSeed++);
 			}
 		},
-		// inDomTree: {
-		// 	get: function() {
-		// 		console.warn("[deprecated] %s::inDomTree", this.cid);
-		// 		return this._domPhase === "added";
-		// 	}
-		// },
 		enabled: {
 			get: function() {
 				return this._enabled;
@@ -325,22 +319,22 @@ var ViewProto = {
 	/* transitionEnd helpers
 	/* ------------------------------- */
 	 
-	onTransitionEnd: function(target, prop, callback, timeout) {
-		console.warn("[deprecated] %s::onTransitionEnd", this.cid);
-		return addTransitionCallback(target, prop, callback, this, timeout);
-	},
+	// onTransitionEnd: function(target, prop, callback, timeout) {
+	// 	console.warn("[deprecated] %s::onTransitionEnd", this.cid);
+	// 	return addTransitionCallback(target, prop, callback, this, timeout);
+	// },
 	
 	/* -------------------------------
 	/* requestAnimationFrame
 	/* ------------------------------- */
 	
 	requestAnimationFrame: function(callback) {
-		return requestRenderImpl(callback.bind(this));
+		return requestQueuedAF(callback.bind(this));
 		// return window.requestAnimationFrame(callback.bind(this));
 	},
 	
 	cancelAnimationFrame: function(id) {
-		return cancelRenderImpl(id);
+		return cancelQueuedAF(id);
 		// return window.cancelAnimationFrame(id);
 	},
 	
