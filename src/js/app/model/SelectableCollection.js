@@ -73,7 +73,7 @@ var SelectableCollection = Backbone.Collection.extend({
 	},
 	
 	deselect: function (options) {
-		this.select(void 0, options);
+		this.select(null, options);
 	},
 	
 	selectAt: function (index, options) {
@@ -84,14 +84,25 @@ var SelectableCollection = Backbone.Collection.extend({
 	},
 	
 	distance: function (a, b) {
-		throw new Error("not implemented");
-		// modelTo || (modelTo = this.selected);
-		// this.indexOf(model) - this.indexOf(modelTo)
+		var aIdx, bIdx;
+		
+		if (!a) return NaN;
+		aIdx = this.indexOf(a);
+		if (aIdx == -1) return NaN;
+		
+		if (arguments.length == 1) {
+			bIdx = this.selectedIndex;
+		} else {
+			if (!b) return NaN;
+			bIdx = this.indexOf(b);
+			if (bIdx == -1) return NaN;
+		}
+		return Math.abs(bIdx - aIdx);
 	},
 	
 	/* TODO: MOVE INTO MIXIN */
 	
-	/** @return boolean	 */
+	/** @return boolean	/*/
 	hasFollowing: function (model) {
 		model || (model = this.selected);
 		return this.indexOf(model) < (this.length - 1);
@@ -109,7 +120,7 @@ var SelectableCollection = Backbone.Collection.extend({
 		return this.at((this.indexOf(model) + 1) % this.length);
 	},
 	
-	/** @return boolean	 */
+	/** @return boolean	/*/
 	hasPreceding: function (model) {
 		model || (model = this.selected);
 		return this.indexOf(model) > 0;

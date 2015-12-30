@@ -72,8 +72,8 @@ module.exports = DeferredView.extend({
 	},
 
 	/* --------------------------- *
-	 * create children
-	 * --------------------------- */
+	/* create children
+	/* --------------------------- */
 
 	$createContentElement: function(item) {
 		return Backbone.$(this._createContentElement(item));
@@ -86,8 +86,8 @@ module.exports = DeferredView.extend({
 	},
 
 	/* --------------------------- *
-	 * render
-	 * --------------------------- */
+	/* render
+	/* --------------------------- */
 
 	renderLater: function () {
 		this.render();
@@ -155,8 +155,8 @@ module.exports = DeferredView.extend({
 	},
 
 	/* --------------------------- *
-	 * collection event handlers
-	 * --------------------------- */
+	/* collection event handlers
+	/* --------------------------- */
 
 	_onCollectionReset: function() {
 		this.skipTransitions = true;

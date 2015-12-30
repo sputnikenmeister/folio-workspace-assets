@@ -1,7 +1,7 @@
 /* global MutationObserver */
 /**
- * @module app/view/NavigationView
- */
+/* @module app/view/NavigationView
+/*/
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -42,9 +42,9 @@ var prefixedProperty = require("utils/prefixedProperty");
 
 
 /**
- * @constructor
- * @type {module:app/view/NavigationView}
- */
+/* @constructor
+/* @type {module:app/view/NavigationView}
+/*/
 var NavigationView = ContainerView.extend({
 	
 	/** @override */
@@ -66,20 +66,6 @@ var NavigationView = ContainerView.extend({
 		
 		_.bindAll(this, "_onHPanStart", "_onHPanMove", "_onHPanFinal");
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
-		
-		this.bundleListeners = {
-			"select:one": this._onSelectOneBundle,
-			"select:none": this._onSelectNoBundle,
-			"deselect:one": this._onDeselectOneBundle,
-			"deselect:none": this._onDeselectNoBundle,
-		};
-		this.mediaListeners = {
-			"select:one": this._onSelectAnyMedia,
-			"select:none": this._onSelectAnyMedia,
-			"deselect:one": this._onDeselectAnyMedia,
-			"deselect:none": this._onDeselectAnyMedia,
-		};
-		this.listenTo(bundles, this.bundleListeners);
 
 		this.sitename = this.assignSitenameButton();
 		this.bundleList = this.createBundleList();
@@ -95,33 +81,60 @@ var NavigationView = ContainerView.extend({
 			this.bundleList.wrapper, this.keywordList.wrapper,
 			this.sitename.el, this.hGroupings
 		);
-		this._validateTransforms = this.transforms.validate.bind(this.transforms);
+		
+		this.bundleListeners = {
+			"select:one": this._onSelectOneBundle,
+			"select:none": this._onSelectNoBundle,
+			"deselect:one": this._onDeselectOneBundle,
+			"deselect:none": this._onDeselectNoBundle,
+		};
+		this.mediaListeners = {
+			"select:one": this._onSelectAnyMedia,
+			"select:none": this._onSelectAnyMedia,
+			"deselect:one": this._onDeselectAnyMedia,
+			"deselect:none": this._onDeselectAnyMedia,
+		};
+		this.listenTo(bundles, this.bundleListeners);
+		
+		// this.skipTransitions = true;
 	},
 	
 	/* --------------------------- *
-	 * Render
-	 * --------------------------- */
-	 
+	/* Render
+	/* --------------------------- */
+	
 	/** @override */
 	render: function () {
-		// console.log(".... NavigationView.render()");
-		// this.transforms.clearAllCaptures();
-		// this.transforms.clearAllTransitions();
 		this.transforms.stopAllTransitions();
 		this.transforms.validate();
-		// _.each(this.itemViews, function(view) {
 		this.itemViews.forEach(function(view) {
 			view.skipTransitions = true;
 			view.render();
-			// view.requestRender();
-			// view.renderNow(true);
 		}, this);
 		return ContainerView.prototype.render.apply(this, arguments);
 	},
 	
+	// renderLater: function() {
+	// 	ContainerView.prototype.renderLater.apply(this, arguments);
+	// 	
+	// 	if (this.skipTransitions) {
+	// 		this.transforms.stopAllTransitions();
+	// 		this._transformsChanged = true;
+	// 	}
+	// 	if (this._transformsChanged) {
+	// 		this._transformsChanged = false;
+	// 		this.transforms.validate();
+	// 	}
+	// 	this.skipTransitions = false;
+	// },
+	// invalidateTransforms: function() {
+	// 	this._transformsChanged = true;
+	// 	this.requestRender();
+	// },
+	
 	/* -------------------------------
-	 * Router -> before model change
-	 * ------------------------------- */
+	/* Router -> before model change
+	/* ------------------------------- */
 	
 	_beforeChange: function(bundle, media) {
 		// this._changeType = "c2b";
@@ -137,6 +150,8 @@ var NavigationView = ContainerView.extend({
 		this._bundleChanging = (bundle !== bundles.selected);
 		this._bundleChangeDelay = (bundle !== bundles.selected) && (bundle && bundles.selected) && !this.collapsed;
 		// this._bundleChangeDelay = (bundle !== bundles.selected) && bundle && !this.collapsed;
+		
+		// this.invalidateTransforms();
 	},
 	
 	_afterChange: function(bundle, media) {
@@ -145,13 +160,21 @@ var NavigationView = ContainerView.extend({
 		
 		// this.bundleList.renderNow();
 		// this.keywordList.renderNow();
-		// this.transforms.validate();
-		// this.requestAnimationFrame(this._validateTransforms);
+		// this.requestAnimationFrame(function() {
+		//	this.transforms.validate();
+		//	this.renderNow();
+		// });
+		
+		
+		// this.bundleList.requestRender();
+		// this.keywordList.requestRender();
+		
+		this.transforms.validate();
 	},
 	
 	/* --------------------------- *
-	 * Deselect event handlers
-	 * --------------------------- */
+	/* Deselect event handlers
+	/* --------------------------- */
 	 
 	_onDeselectOneBundle: function(bundle) {
 		this.stopListening(bundle.get("media"), this.mediaListeners);
@@ -163,11 +186,6 @@ var NavigationView = ContainerView.extend({
 			Globals.TRANSIT_CHANGING, // Globals.TRANSIT_EXITING,
 			this.bundleList.el,
 			this.keywordList.el);
-		
-		// this.transforms.runTransition(
-		// 	this.collapsed? Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING,
-		// 	this.hGroupings,
-		// 	this.keywordList.wrapper);
 		
 		if (this._bundleChangeDelay) {
 			console.log("this._bundleChangeDelay", this._bundleChangeDelay, Globals.TRANSIT_XXX.cssText);
@@ -187,9 +205,10 @@ var NavigationView = ContainerView.extend({
 				this.bundleList.wrapper,
 				this.hGroupings);
 		}
-		this.transforms.validate();
+		
+		// this.transforms.validate();
 	},
-
+	
 	_onDeselectNoBundle: function() {
 		this.touch.on("panstart", this._onHPanStart);
 		this.touch.on("vpanstart", this._onVPanStart);
@@ -212,9 +231,9 @@ var NavigationView = ContainerView.extend({
 			this.bundleList.wrapper,
 			this.keywordList.wrapper);
 		
-		this.transforms.validate();
+		// this.transforms.validate();
 	},
-
+	
 	_onDeselectAnyMedia: function(media) {
 		if (this.collapsed) {
 			this.transforms.clearOffset(this.keywordList.wrapper);
@@ -234,25 +253,25 @@ var NavigationView = ContainerView.extend({
 				this.sitename.el,
 				this.hGroupings);
 		}
-		if (!this._bundleChanging) {
-			this.transforms.validate();
-		}
+		// if (!this._bundleChanging) {
+		// 	this.transforms.validate();
+		// }
 	},
-
+	
 	/* --------------------------- *
-	 * Select event handlers
-	 * --------------------------- */
-
+	/* Select event handlers
+	/* --------------------------- */
+	
 	_onSelectOneBundle: function(bundle) {
 		this.listenTo(bundle.get("media"), this.mediaListeners);
-		this.keywordList.filterBy(bundle);
+		this.keywordList.refresh();
 		this.collapsed = true;
 	},
 	
 	_onSelectNoBundle: function() {
 		this.touch.off("panstart", this._onHPanStart);
 		this.touch.off("vpanstart", this._onVPanStart);
-		this.keywordList.clearFilter();
+		this.keywordList.refresh();
 		this.collapsed = false;
 	},
 	
@@ -262,78 +281,28 @@ var NavigationView = ContainerView.extend({
 	
 	_onKeywordListSelect: function(keyword) {
 		if (!this.collapsed) {
-			this.bundleList.filterBy(keyword);
 			keywords.select(keyword);
-			// this.collapsed = false;
+			this.bundleList.refresh();
 		}
 	},
 	
-	// _onKeywordListSelect_notCollapsed: function(keyword) {
-	// 	keywords.select(keyword);
-	// 	this.bundleList.filterBy(keyword);
-	// },
-	
 	/* -------------------------------
-	 * collapse
-	 * ------------------------------- */
+	/* collapse
+	/* ------------------------------- */
 
 	_onCollapseChange: function(collapsed) {
 		if (collapsed) {
-			this.bundleList.clearFilter();
+			// this.bundleList.clearFilter();
 			keywords.deselect();
-		// 	this.stopListening(this.keywordList, "view:select:one view:select:none", this._onKeywordListSelect_notCollapsed);
-		// } else {
-		// 	this.listenTo(this.keywordList, "view:select:one view:select:none", this._onKeywordListSelect_notCollapsed);
+			this.bundleList.refresh();
 		}
-		this.bundleList.setCollapsed(collapsed);
-		this.keywordList.setCollapsed(collapsed);
+		this.bundleList.collapsed = collapsed;
+		this.keywordList.collapsed = collapsed;
 	},
 	
-	/* --------------------------- *
-	 * DOM event handlers
-	 * --------------------------- */
-
 	/* -------------------------------
-	 * Horizontal touch/move (_onHPan*)
-	 * ------------------------------- */
-
-	// _onHPanStart2: function(ev) {
-	// 	if (this.collapsed &&
-	// 		bundles.selected.get("media").selectedIndex <= 0 &&
-	// 		document.body.matches(".desktop-small .default-layout")
-	// 		// this.el.matches(".desktop-small.default-layout " + this.el.tagName)
-	// 		// window.matchMedia(Globals.BREAKPOINTS["desktop-small"]).matches)
-	// 	) {
-	// 		var mDest = this.keywordList.wrapper;
-	// 		var mTarget = document.querySelector(".carousel .empty-item");
-	// 		
-	// 		var mObs = new MutationObserver(function(mutations) {
-	// 			mDest.style.transform = mTarget.style.transform;
-	// 			// var m = /^translate(?:3d)?\(\s*([-\.\d]+)/.exec(mTarget.style.transform);
-	// 			// m = m.length? parseFloat(m[1]) : 0;
-	// 			// console.log(mTarget.style.transform, m);
-	// 		});
-	// 		
-	// 		var handleMutation = function() {
-	// 		};
-	// 		
-	// 		var handlePanFinal = function() {
-	// 			mObs.disconnect();
-	// 			mDest.style.transform = "";
-	// 			this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE, mDest);
-	// 			this.transforms.validate();
-	// 			this.touch.off("panend pancancel", handlePanFinal);
-	// 		}.bind(this);
-	// 		
-	// 		mDest.style.transform = mTarget.style.transform;
-	// 		mObs.observe(mTarget, {attributes: true, attributeFilter: ["style"]});
-	// 		
-	// 		this.transforms.clearCapture(mDest);
-	// 		this.transforms.stopTransition(mDest);
-	// 		this.transforms.validate();
-	// 		this.touch.on("panend pancancel", handlePanFinal);
-	// 	}
-	// },
+	/* Horizontal touch/move (_onHPan*)
+	/* ------------------------------- */
 	
 	_onHPanStart: function(ev) {
 		if (this.collapsed &&
@@ -343,14 +312,12 @@ var NavigationView = ContainerView.extend({
 			this.transforms.stopTransition(this.keywordList.wrapper);
 			this.transforms.clearOffset(this.keywordList.wrapper);
 			this.transforms.validate();
+			this.transforms.clearCapture(this.keywordList.wrapper);
 			
-			// this.requestAnimationFrame(function() {
-				this.transforms.clearCapture(this.keywordList.wrapper);
-				this._onHPanMove(ev);
-				
-				this.touch.on("panend pancancel", this._onHPanFinal);
-				this.touch.on("panmove", this._onHPanMove);
-			// });
+			this._onHPanMove(ev);
+			
+			this.touch.on("panend pancancel", this._onHPanFinal);
+			this.touch.on("panmove", this._onHPanMove);
 		}
 	},
 	
@@ -368,7 +335,6 @@ var NavigationView = ContainerView.extend({
 		}
 		this.transforms.offset(delta, void 0, this.keywordList.wrapper);
 		this.transforms.validate();
-		// this.requestAnimationFrame(this._validateTransforms);
 	},
 	
 	_onHPanFinal: function(ev) {
@@ -378,14 +344,12 @@ var NavigationView = ContainerView.extend({
 		// NOTE: transition will be set twice if there is a new selection!
 		this.transforms.runTransition(Globals.TRANSIT_IMMEDIATE, this.keywordList.wrapper);
 		this.transforms.clearOffset(this.keywordList.wrapper);
-		// this.transforms.clearCapture(this.keywordList.wrapper);
 		this.transforms.validate();
-		// this.requestAnimationFrame(this._validateTransforms);
 	},
 	
 	/* -------------------------------
-	 * Vertical touch/move (_onVPan*)
-	 * ------------------------------- */
+	/* Vertical touch/move (_onVPan*)
+	/* ------------------------------- */
 	
 	_onVPanStart: function (ev) {
 		this.touch.on("vpanmove", this._onVPanMove);
@@ -422,7 +386,6 @@ var NavigationView = ContainerView.extend({
 
 		this.transforms.offset(0, delta, this.bundleList.el, this.keywordList.el);
 		this.transforms.validate();
-		// this.requestAnimationFrame(this._validateTransforms);
 	},
 	
 	_onVPanFinal: function(ev) {
@@ -448,7 +411,6 @@ var NavigationView = ContainerView.extend({
 				this.keywordList.el);
 		}
 		this.transforms.validate();
-		// this.requestAnimationFrame(this._validateTransforms);
 	},
 	
 	willCollapseChange: function(ev) {
@@ -459,8 +421,8 @@ var NavigationView = ContainerView.extend({
 	},
 	
 	/* -------------------------------
-	 * Components
-	 * ------------------------------- */
+	/* Components
+	/* ------------------------------- */
 	
 	assignSitenameButton: function() {
 		var view = new View({
@@ -477,18 +439,17 @@ var NavigationView = ContainerView.extend({
 	},
 	
 	/**
-	 * bundle-list
-	 */
+	/* bundle-list
+	/*/
 	createBundleList: function() {
 		var view = new FilterableListView({
 			el: "#bundle-list",
 			collection: bundles,
 			collapsed: false,
-			filterKey: "bIds",
-			filterBy: keywords.selected,
-			filterFn: function (bundle, newVal, oldVal) {
-				return newVal? newVal.get("bIds").indexOf(bundle.id) !== -1 : true;
+			filterFn: function(bundle, index, arr) {
+				return keywords.selected? bundle.get("kIds").indexOf(keywords.selected.id) !== -1 : false;
 			},
+			// filterKey: "bIds", filterBy: keywords.selected,
 		});
 		controller.listenTo(view, {
 			"view:select:one": controller.selectBundle,
@@ -496,38 +457,36 @@ var NavigationView = ContainerView.extend({
 			"view:removed": controller.stopListening
 		});
 		view.wrapper = view.el.parentElement;
+		view.requestRender();
 		return view;
 	},
 
 	/**
-	 * keyword-list
-	 */
+	/* keyword-list
+	/*/
 	createKeywordList: function() {
 		var view = new GroupingListView({
 			el: "#keyword-list",
 			collection: keywords,
 			collapsed: false,
-			filterKey: "kIds",
-			filterBy: bundles.selected,
-			filterFn: function (keyword, newVal, oldVal) {
-				return newVal? newVal.get("kIds").indexOf(keyword.id) !== -1 : true;
+			filterFn: function(item, idx, arr) {
+				return bundles.selected? (bundles.selected.get("kIds").indexOf(item.id) !== -1) : false;
 			},
-			groupings: {
-				collection: types,
-				key: "tIds",
-				// groupingFn: function (keyword) {
-				// 	return keyword.get("tIds");
-				// },
+			groupingFn: function(item, idx, arr) {
+				return types.get(item.get("tId"));
 			},
+			// filterKey: "kIds", filterBy: bundles.selected,
+			// groupings: { collection: types,	key: "tIds", },
 		});
 		view.wrapper = view.el.parentElement;
+		view.requestRender();
 		this.listenTo(view, "view:select:one view:select:none", this._onKeywordListSelect);
 		return view;
 	},
 	
 	/**
-	 * bundle-pager
-	 */
+	/* bundle-pager
+	/*/
 	/*createBundlePager: function() {
 		// Component: bundle pager
 		var view = new CollectionPager({

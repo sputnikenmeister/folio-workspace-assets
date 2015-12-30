@@ -8,8 +8,8 @@ var Globals = require("app/control/Globals");
 // (function() {
 	var helpers = {
 		/*
-		 * Arithmetic helpers
-		 */
+		/* Arithmetic helpers
+		/*/
 		add: function(value, addition) {
 			return value + addition;
 		},
@@ -36,8 +36,8 @@ var Globals = require("app/control/Globals");
 		},
 		
 		/*
-		 * Flow control helpers
-		 */
+		/* Flow control helpers
+		/*/
 		is: function(a, b, opts) {
 			return (a === b)? opts.fn(this) : opts.inverse(this);
 		},
@@ -59,8 +59,8 @@ var Globals = require("app/control/Globals");
 		},
 		
 		/*
-		 * Color helpers
-		 */
+		/* Color helpers
+		/*/
 		mix: function(colora, colorb, amount) {
 			return new Color(colora).mix(new Color(colorb), amount).rgbString();
 		},

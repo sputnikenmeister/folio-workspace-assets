@@ -52,9 +52,9 @@ function directionStr(direction) {
 //
 //inherit(PanRecognizer, Hammer.AttrRecognizer, {
 //	/**
-//	 * @namespace
-//	 * @memberof PanRecognizer
-//	 */
+//	/* @namespace
+//	/* @memberof PanRecognizer
+//	/*/
 //	defaults: {
 //		event: "pan",
 //		threshold: 10,

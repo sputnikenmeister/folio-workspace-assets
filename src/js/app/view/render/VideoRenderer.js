@@ -100,7 +100,8 @@ var VideoRenderer = PlayableRenderer.extend({
 		this.placeholder = this.el.querySelector(".placeholder");
 		
 		this.video = content.querySelector("video");
-		this.video.loop = this.model.attrs().hasOwnProperty("@video-loop");
+		// this.video.loop = this.model.attrs().hasOwnProperty("@video-loop");
+		this.video.loop = this.model.attr("@video-loop") !== void 0;
 		this.video.src = this.findPlayableSource(this.video);
 	},
 	
@@ -137,8 +138,20 @@ var VideoRenderer = PlayableRenderer.extend({
 		
 		content.style.width = cssW;
 		content.style.height = (this.metrics.media.height - 1) + "px";
-		content.style.left = this.metrics.content.x + "px";
-		content.style.top = this.metrics.content.y + "px";
+		
+		// content-position
+		// ---------------------------------
+		var cssX, cssY;
+		cssX = this.metrics.content.x + "px";
+		cssY = this.metrics.content.y + "px";
+		content.style.left = cssX;
+		content.style.top = cssY;
+		
+		var controls = this.el.querySelector(".controls");
+		// controls.style.left = cssX;
+		// controls.style.top = cssY;
+		controls.style.width = this.metrics.content.width + "px";
+		controls.style.height = this.metrics.content.height + "px";
 		
 		// // content-size
 		// // ---------------------------------
@@ -193,8 +206,8 @@ var VideoRenderer = PlayableRenderer.extend({
 							amount: view.video.duration,
 							available: view.video.duration,
 						},
-						color: view.model.attrs()["color"],
-						backgroundColor: view.model.attrs()["background-color"],
+						color: view.model.attr("color"),
+						backgroundColor: view.model.attr("background-color"),
 						labelFn: view._progressLabelFn.bind(view)
 						// labelFn: function(value, total) {
 						// 	if (this.playbackRequested === false) return Globals.PAUSE_CHAR;
@@ -278,18 +291,22 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 	
 	findPlayableSource: function(video) {
-		var playable = _.find(this.model.get("srcset"), function(source) {
-			return /^video\//.test(source.mime) && video.canPlayType(source.mime) != "";
+		var playable = this.model.get("sources").find(function(source) {
+			return /^video\//.test(source.get("mime")) && video.canPlayType(source.get("mime")) != "";
 		});
-		if (playable === void 0) {
-			return "";
-		}
-		if (this.model.attrs()["@debug-bandwidth"]) {
-			return Globals.IMAGE_URL_TEMPLATES["debug-bandwidth"]({
-				src: playable.src, kbps: this.model.attrs()["@debug-bandwidth"]
-			});
-		}
-		return Globals.IMAGE_URL_TEMPLATES["original"](playable);
+		return playable? playable.get("original") : "";
+		// var playable = _.find(this.model.get("srcset"), function(source) {
+		// 	return /^video\//.test(source.mime) && video.canPlayType(source.mime) != "";
+		// });
+		// if (playable === void 0) {
+		// 	return "";
+		// }
+		// if (this.model.attr("@debug-bandwidth")) {
+		// 	return Globals.MEDIA_SRC_TPL["debug-bandwidth"]({
+		// 		src: playable.src, kbps: this.model.attr("@debug-bandwidth")
+		// 	});
+		// }
+		// return Globals.MEDIA_SRC_TPL["original"](playable);
 	},
 	
 	/* ---------------------------
@@ -581,7 +598,7 @@ VideoRenderer = (function(VideoRenderer) {
 			
 			_.bindAll(this, "__handleMediaEvent");
 			
-			var fgColor = this.model.attrs()["color"],
+			var fgColor = this.model.attr("color"),
 				red = new Color("red"),
 				blue = new Color("blue"),
 				green = new Color("green");

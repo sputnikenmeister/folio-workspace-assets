@@ -14,8 +14,9 @@ var logMessage = "%s::whenDefaultImageLoads [%s]: %s";
 
 module.exports = function(view) {
 	return new Promise(function(resolve, reject) {
-		if (view.model.has("prefetched")) {
-			view.defaultImage.src = view.model.get("prefetched");
+		var source = view.model.get("source");
+		if (source.has("prefetched")) {
+			view.defaultImage.src = source.get("prefetched");
 			_whenImageLoads(view.defaultImage)
 				.then(
 					function(targetEl) {
@@ -24,11 +25,21 @@ module.exports = function(view) {
 					});
 		} else {
 			view.mediaState = "pending";
-			var sUrl = Globals.MEDIA_DIR + "/" + view.model.get("src");
-			// var sUrl = view.model.getImageUrl();
+			
+			var sUrl = source.get("original");
+			// if (source.get("media").attrs().hasOwnProperty("@debug-bandwidth")) {
+			// 	sUrl = Globals.MEDIA_SRC_TPL["debug-bandwidth"]({
+			// 		src: source.get("src"),
+			// 		kbps: source.get("media").attr("@debug-bandwidth")
+			// 	});
+			// } else {
+			// 	sUrl = Globals.MEDIA_SRC_TPL["original"]({
+			// 		src: source.get("src")
+			// 	});
+			// }
+			
 			var progressFn = function (progress) {
 				// console.log(logMessage, view.cid, "progress", progress);
-				// view.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
 				view.updateMediaProgress(progress, sUrl);
 			};
 			progressFn = _.throttle(progressFn, 100, {leading: true, trailing: false});
@@ -36,8 +47,9 @@ module.exports = function(view) {
 			_loadImageAsObjectURL(sUrl, progressFn)
 				.then(
 					function(url) {
-						if (/^blob\:.*/.test(url))
-							view.model.set({"prefetched": url});
+						if (/^blob\:.*/.test(url)) {
+							source.set("prefetched", url);
+						}
 						view.defaultImage.src = url;
 						// URL.revokeObjectURL(url); 
 						return view.defaultImage;
@@ -46,7 +58,13 @@ module.exports = function(view) {
 				.then(
 					function(targetEl) {
 						console.log(logMessage, view.cid, "resolved", targetEl.src);
-						// view.on("view:removed", function() { URL.revokeObjectURL(url); });
+						view.on("view:removed", function() { 
+							var prefetched = source.get("prefetched");
+							if (prefetched && /^blob\:/.test(prefetched)) {
+								source.unset("prefetched", { silent: true });
+								URL.revokeObjectURL(prefetched);
+							}
+						});
 						// view.placeholder.removeAttribute("data-progress");
 						// view.updateMediaProgress(imageUrl, "complete");
 						resolve(view);

@@ -25,37 +25,81 @@ var GroupingListView = FilterableListView.extend({
 	tagName: "dl",
 	/** @override */
 	className: "grouped",
+	
+	/** @type {Function|null} empty array */
+	_groupingFn: null,//function() { return null; },
 
 	/** @override */
 	initialize: function (options) {
 		FilterableListView.prototype.initialize.apply(this, arguments);
-		if (options.groupings) {
-			// options.filterFn && (this._filterFn = options.filterFn);
-			this.groupingKey = options.groupings.key;
-			this.groupingCollection = options.groupings.collection;
-			this.groupingRenderer = options.groupings.renderer || GroupingListView.defaultGroupRenderer;
-			this.groupingCollection.each(this.assignGroupingView, this);
+		
+		// this.groupingCollection = new Backbone.Collection();
+		this.groupingRenderer = options.groupingRenderer || GroupingListView.defaultGroupRenderer;
+		
+		if (options.groupingFn) {
+			this._groupingFn = options.groupingFn;
+			this._groupItems = _.uniq(this.collection.map(this._groupingFn, this));
+			// this.groupingCollection.reset(this._groupItems);
+			// this.groupingCollection.each(this.assignGroupingView, this);
+			this._groupItems.forEach(this.assignGroupingView, this);
 		}
+		// else if (options.groupings) {
+		// 	options.filterFn && (this._filterFn = options.filterFn);
+		// 	this.groupingKey = options.groupings.key;
+		// 	this.groupingCollection = options.groupings.collection;
+		// 	// this.groupingRenderer = options.groupings.renderer || GroupingListView.defaultGroupRenderer;
+		// 	this.groupingCollection.each(this.assignGroupingView, this);
+		// }
 	},
 
-	/** @private */
-	renderFilterBy: function (newVal, oldVal) {
-		this.renderChildrenGroups(newVal && newVal.get(this.groupingKey));
-		FilterableListView.prototype.renderFilterBy.apply(this, arguments);
-	},
-
-	/** @private */
-	renderChildrenGroups: function (modelIds) {
-		if (modelIds) {
-			this.groupingCollection.each(function (model, index, arr) {
-				this.itemViews.findByModel(model).el.classList.toggle("excluded", !_.contains(modelIds, model.id));
+	// /** @private */
+	// renderFilterBy: function (newVal, oldVal) {
+	// 	FilterableListView.prototype.renderFilterBy.apply(this, arguments);
+	// // 	this.renderFilteredGroupsById(newVal && newVal.get(this.groupingKey));
+	// },
+	
+	renderFilterFn: function() {
+		FilterableListView.prototype.renderFilterFn.apply(this, arguments);
+		
+		var groups, groupIds;
+		if (this._groupingFn) {
+			groups = this._filteredItems.map(this._groupingFn, this);
+			// groupIds = _.pluck(groups, "id");
+			// this.renderChildrenGroups(groups);
+			this._groupItems.forEach(function (group, index, arr) {
+				this.itemViews.findByModel(group).el.classList.toggle("excluded", groups.indexOf(group) == -1);
+				// this.itemViews.findByModel(group).el.classList.toggle("excluded",!_.contains(groups, group));
 			}, this);
-		} else {
-			this.itemViews.each(function (view) {
-				view.el.classList.remove("excluded");
-			});
 		}
+		// this.renderFilteredGroupsById(groupIds);
+		// this._filteredGroups = groups;
+		// this._filteredGroupIds = groupIds;
+		
+		// console.log("%s::renderFilterFn\n\tgroups: [%s]", this.cid, (groupIds? groupIds.join(", "): ""));
 	},
+
+	// /** @private */
+	// renderFilteredGroups: function (groups) {
+	// 	
+	// },
+
+	// /** @private */
+	// renderFilteredGroupsById: function (groupIds) {
+	// 	if (groupIds && groupIds.length) {
+	// 		// this.groupingCollection.each(function (item, index, arr) {
+	// 		this._groupItems.forEach(function (item, index, arr) {
+	// 			this.itemViews.findByModel(item).el.classList.toggle("excluded", groupIds.indexOf(item.id) == -1);
+	// 		}, this);
+	// 	} else {
+	// 		// this.groupingCollection.each(function (item, index, arr) {
+	// 		this._groupItems.forEach(function (item, index, arr) {
+	// 			this.itemViews.findByModel(item).el.classList.remove("excluded");
+	// 		}, this);
+	// 		// this.itemViews.each(function (view) {
+	// 		// 	view.el.classList.remove("excluded");
+	// 		// });
+	// 	}
+	// },
 
 	// renderLayout: function () {
 	// 	return FilterableListView.prototype.renderLayout.apply(this, arguments);
@@ -63,6 +107,8 @@ var GroupingListView = FilterableListView.extend({
 
 	/** @private Create children views */
 	assignGroupingView: function (item) {
+		// var groupEl = this.el.querySelector(".list-group[data-id=\"" + item.id + "\"]");
+		// console.log(item.id, groupEl);
 		var view = new this.groupingRenderer({
 			model: item,
 			el: this.el.querySelector(".list-group[data-id=\"" + item.id + "\"]")
@@ -73,9 +119,9 @@ var GroupingListView = FilterableListView.extend({
 
 }, {
 	/**
-	 * @constructor
-	 * @type {module:app/view/component/GroupingListView.defaultGroupRenderer}
-	 */
+	/* @constructor
+	/* @type {module:app/view/component/GroupingListView.defaultGroupRenderer}
+	/*/
 	defaultGroupRenderer: View.extend({
 		/** @override */
 		cidPrefix: "listGroup",

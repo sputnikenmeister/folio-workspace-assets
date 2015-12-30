@@ -1,38 +1,24 @@
 /**
 * @module app/model/item/KeywordItem
-* @requires module:backbone
+* @requires module:app/model/BaseItem
 */
 
-/** @type {module:backbone} */
-var Backbone = require("backbone");
+/** @type {module:app/model/BaseItem} */
+var BaseItem = require("app/model/BaseItem");
 
 /**
  * @constructor
  * @type {module:app/model/item/KeywordItem}
  */
-module.exports = Backbone.Model.extend({
-
+module.exports = BaseItem.extend({
+	
+	_domPrefix: "k",
+	
 	/** @type {Object} */
 	defaults: {
 		name: "",
 		handle: "",
-		tId: 0,
-		attrs: null,
+		tId: -1,
+		// attrs: null,
 	},
-	
-	mutators: {
-		domid: function() {
-			return "k" + this.id;
-		},
-	},
-	
-	attrs: function() {
-		return this.get("attrs");
-	},
-	
-	/** @override */
-	toString: function() {
-		return this.id;
-	}
-
 });

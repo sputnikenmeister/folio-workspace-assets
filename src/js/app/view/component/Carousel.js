@@ -1,6 +1,6 @@
 /**
- * @module app/view/component/Carousel
- */
+/* @module app/view/component/Carousel
+/*/
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -13,8 +13,10 @@ var Container = require("backbone.babysitter");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
-/** @type {module:app/view/base/DeferredView} */
-var DeferredView = require("app/view/base/DeferredView");
+/** @type {module:app/view/base/View} */
+var View = require("app/view/base/View");
+// /** @type {module:app/view/base/DeferredView} */
+// var View = require("app/view/base/DeferredView");
 
 /** @type {module:app/view/render/CarouselRenderer} */
 var CarouselRenderer = require("app/view/render/CarouselRenderer");
@@ -31,13 +33,14 @@ var cssToPx = function (cssVal, el) {
 	return parseInt(cssVal);
 };
 
-var defaultRendererFunction = (function() {
-	var defaultRenderer = CarouselRenderer.extend({ className: "carousel-item default-renderer"}),
-		emptyRenderer = CarouselRenderer.extend({ className: "carousel-item empty-renderer"});
-	return function(item, index, arr) {
-		return (index === -1)? emptyRenderer: defaultRenderer;
-	};
-})();
+// var defaultRendererFunction = (function() {
+// 	var defaultRenderer = CarouselRenderer.extend({ className: "carousel-item default-renderer"}),
+// 		emptyRenderer = CarouselRenderer.extend({ className: "carousel-item empty-renderer"});
+// 	return function(item, index, arr) {
+// 		return (index === -1)? emptyRenderer: defaultRenderer;
+// 	};
+// })();
+
 var Carousel = {
 	/** const */
 	MAX_SELECT_THRESHOLD: 50,
@@ -49,12 +52,18 @@ var Carousel = {
 	DIRECTION_VERTICAL: Hammer.DIRECTION_VERTICAL,
 	/** copy of Hammer.DIRECTION_HORIZONTAL */
 	DIRECTION_HORIZONTAL: Hammer.DIRECTION_HORIZONTAL,
+	
 };
 
+var CHILDREN_INVALID = 1,
+	ENABLED_INVALID = 2,
+	MEASURE_INVALID = 4,
+	SCROLL_INVALID = 8;
+
 /**
- * @constructor
- * @type {module:app/view/component/Carousel}
- */
+/* @constructor
+/* @type {module:app/view/component/Carousel}
+/*/
 var CarouselProto = {
 	
 	/** @override */
@@ -83,33 +92,21 @@ var CarouselProto = {
 	panThreshold: 15,
 	/** @type {int} */
 	direction: Carousel.DIRECTION_HORIZONTAL,
-	/** @type {Function} */
-	rendererFunction: defaultRendererFunction,
 	
-	// renderer: CarouselRenderer.extend({ className: "carousel-item default-renderer"}),
-	// /** @type {Function} */
-	// emptyRenderer: CarouselRenderer.extend({ className: "carousel-item empty-item"}),
-	// 
-	// defaults: {
-	// 	/** @type {int} In pixels */
-	// 	selectThreshold: 20,
-	// 	/** @type {int} In pixels */
-	// 	panThreshold: 15,
-	// 	/** @type {int} */
-	// 	direction: Carousel.DIRECTION_HORIZONTAL,
-	// 	/** @type {Function} */
-	// 	rendererFunction: (function() {
-	// 		var renderer = CarouselRenderer.extend({ className: "carousel-item default-renderer"}),
-	// 			emptyRenderer = CarouselRenderer.extend({ className: "carousel-item default-renderer"})
-	// 		return function(item, index, arr) {
-	// 			return (index === -1)? emptyRenderer: renderer;
-	// 		};
-	// 	})(),
-	// },
+	/** @type {Function} */
+	rendererFunction: (function() {
+		var defaultRenderer = CarouselRenderer.extend({ className: "carousel-item default-renderer"}),
+			emptyRenderer = CarouselRenderer.extend({ className: "carousel-item empty-renderer"});
+		return function(item, index, arr) {
+			return (index === -1)? emptyRenderer: defaultRenderer;
+		};
+	})(),
 	
 	/** @override */
 	initialize: function (options) {
-		_.bindAll(this, "_createChildren", "_measure", "_onPan", "_onTap");
+		// _.bindAll(this, "_createChildren", "_measure", "_onPanStart", "_onPanMove", "_onPanFinal", "_onTap");
+		// _.bindAll(this, "_onTap", "_onPan");
+		_.bindAll(this, "_onTouchEvent");
 		
 		this.initializeHammer(options);
 		
@@ -126,10 +123,13 @@ var CarouselProto = {
 		this._precedingDir = (Hammer.DIRECTION_LEFT | Hammer.DIRECTION_UP) & this.direction;
 		this._followingDir = (Hammer.DIRECTION_RIGHT | Hammer.DIRECTION_DOWN) & this.direction;
 		
-		this.createChildrenNow();
+		this.setEnabled(true);
+		this.invalidateChildren();
+		
+		// this.createChildrenNow();
 		// this._enabled = true;
-		// this.hammer.on("panstart panmove panend pancancel", this._onPan);
-		this.setEnabledNow(true);
+		// this.touch.on("panstart panmove panend pancancel", this._onPan);
+		// this.setEnabledNow(true);
 		
 		this.listenTo(this.collection, {
 			"reset": this._onReset,
@@ -141,23 +141,23 @@ var CarouselProto = {
 	},
 	
 	initializeHammer: function(options) {
-		var hammer, pan, tap;
+		var touch, pan, tap;
 		// direction from opts/defaults
 		if (options.direction === Hammer.DIRECTION_VERTICAL) {
 			this.direction = Hammer.DIRECTION_VERTICAL;
 		} // do nothing: the default is horizontal
 
-		// validate external hammer or create one if neccesary
-		// if ((hammer = options.hammer) && (pan = hammer.get("pan")) && hammer.get("tap")) {
-		if ((hammer = options.hammer) && (pan = hammer.get("pan"))) {
+		// validate external touch or create one if neccesary
+		// if ((touch = options.touch) && (pan = touch.get("pan")) && touch.get("tap")) {
+		if ((touch = options.touch) && (pan = touch.get("pan"))) {
 			// Override direction only if specific
 			if (pan.options.direction !== Hammer.DIRECTION_ALL) {
 				this.direction = pan.options.direction;
 			}
 			this.panThreshold = pan.options.threshold;
 		} else {
-			console.log("Carousel created own Hammer");
-			hammer = new Hammer.Manager(this.el);
+			console.log("%s::initializeHammer using private Hammer instance", this.cid);
+			touch = new Hammer.Manager(this.el);
 			pan = new Hammer.Pan({
 				threshold: this.panThreshold,
 				direction: this.direction,
@@ -169,20 +169,21 @@ var CarouselProto = {
 				//enable: this._canEnableTan.bind(this),
 			});
 			tap.recognizeWith(pan);
-			hammer.add([pan, tap]);
-			this.on("view:removed", hammer.destroy, hammer);
+			touch.add([pan, tap]);
+			this.on("view:removed", touch.destroy, touch);
 		}
-		this.hammer = hammer;
+		this.touch = touch;
 	},
 	
 	remove: function () {
-		this._scrollPendingAction && this._scrollPendingAction(true);
-		if (this._enabled) {
-			this.hammer.off("tap", this._onTap);
-			this.hammer.off("panstart panmove panend pancancel", this._onPan);
-		}
+		// this._scrollPendingAction && this._scrollPendingAction(true);
+		// if (this._enabled) {
+		// 	this.touch.off("tap", this._onTap);
+		// 	this.touch.off("panstart panmove panend pancancel", this._onPan);
+		// }
+		this._toggleTouchEvents(false);
 		this.removeChildren();
-		DeferredView.prototype.remove.apply(this, arguments);
+		View.prototype.remove.apply(this, arguments);
 		return this;
 	},
 	
@@ -213,8 +214,12 @@ var CarouselProto = {
 				this.stopListening(this, "view:added", this.render);
 			}
 			if (this.domPhase === "added") {
-				this.measureLater();
-				this.scrollByLater(0, Carousel.IMMEDIATE);
+				// this.measureLater();
+				// this.scrollByLater(0, Carousel.IMMEDIATE);
+				this._delta = 0;
+				this._skipTransitions = true;
+				this.invalidateMeasure();
+				// this.invalidateScroll();
 				this.renderNow();
 			}
 		}
@@ -231,48 +236,161 @@ var CarouselProto = {
 	// 	return this;
 	// },
 	
+	_renderFlags: 0,
+	
 	/** @override */
 	renderLater: function () {
-		this.validateRender("createChildren");
-		this.validateRender("measure");
-		this.validateRender("scrollBy");
-		this.validateRender("enabled");
+		this._logFlags("RENDER");
+		
+		if (this._renderFlags & ENABLED_INVALID) {
+			this._renderFlags &= ~ENABLED_INVALID;
+			this._renderEnabled();
+			// this.el.classList.toggle("disabled", !this.enabled);
+		}
+		
+		if (this._renderFlags & CHILDREN_INVALID) {
+			this._renderFlags &= ~CHILDREN_INVALID;
+			this._createChildren();
+		}
+		// this.validateRender("createChildren");
+		// this._logFlags();
+		
+		if (this._renderFlags & MEASURE_INVALID) {
+			this._renderFlags &= ~MEASURE_INVALID;
+			this._measure();
+		}
+		// this.validateRender("measure");
+		// this._logFlags();
+		
+		if (this._renderFlags & SCROLL_INVALID) {
+			this._renderFlags &= ~SCROLL_INVALID;
+			this._scrollBy(this._delta, this._skipTransitions);
+		}
+		// this.validateRender("scrollBy");
+		// this._logFlags();
+		// this.validateRender("enabled");
+		// this._logFlags();
+	},
+	
+	_logFlags: function(label) {
+		var flags = [];
+		if (this._renderFlags & CHILDREN_INVALID) flags.push("CHILDREN");
+		if (this._renderFlags & MEASURE_INVALID) flags.push("MEASURE");
+		if (this._renderFlags & SCROLL_INVALID) flags.push("SCROLL");
+		if (this._renderFlags & ENABLED_INVALID) flags.push("ENABLED");
+		console.log("%s::_renderFlags %s: %s", this.cid, (label || "INVALID"), flags.join(" "));
 	},
 	
 	/* Render: now   ------------- */
 	
-	createChildrenNow: function () {
-		this._createChildren();
-	},
-	measureNow: function () {
-		this._measure();
-	},
-	scrollByNow: function (delta, skipTransitions) {
-		this._scrollBy(delta, skipTransitions);
-	},
-	setEnabledNow: function(enabled) {
-		if (this._enabled !== enabled) {
-			this._enabled = enabled;
-			this._setEnabled(enabled);
-		}
+	invalidateChildren: function() {
+		this._renderFlags |= (CHILDREN_INVALID | MEASURE_INVALID | SCROLL_INVALID);
+		this.requestRender();
 	},
 	
-	/* Render: later ------------- */
-	createChildrenLater: function () {
-		this.requestRender("createChildren", this._createChildren);
+	invalidateMeasure: function() {
+		this._renderFlags |= (MEASURE_INVALID | SCROLL_INVALID);
+		this.requestRender();
 	},
-	measureLater: function () {
-		this.requestRender("measure", this._measure);
+	
+	invalidateScroll: function() {
+		this._renderFlags |= SCROLL_INVALID;
+		this.requestRender();
+	},
+	
+	// createChildrenNow: function () {
+	// 	this._createChildren();
+	// },
+	// createChildrenLater: function () {
+	// 	this.requestRender("createChildren", this._createChildren);
+	// },
+	
+	// measureNow: function () {
+	// 	this._measure();
+	// },
+	// measureLater: function () {
+	// 	this.requestRender("measure", this._measure);
+	// },
+	
+	scrollByNow: function (delta, skipTransitions) {
+		// this._delta = delta;
+		// this._skipTransitions = skipTransitions;
+		// this.invalidateScroll();
+		
+		this.scrollByLater(delta, skipTransitions);
+		// this.renderNow();
+		
+		// this._scrollBy(delta, skipTransitions);
 	},
 	scrollByLater: function (delta, skipTransitions) {
-		this.requestRender("scrollBy", this._scrollBy.bind(this, delta, skipTransitions));
+		this._delta = delta;
+		this._skipTransitions = skipTransitions;
+		this.invalidateScroll();
+		
+		// this.requestRender("scrollBy", this._scrollBy.bind(this, delta, skipTransitions));
 	},
-	setEnabledLater: function(enabled) {
+	
+	/* --------------------------- *
+	/* enabled
+	/* --------------------------- */
+	
+	/** @override */
+	_enabled: undefined,
+	
+	/** @override */
+	isEnabled: function () {
+		return this._enabled;
+	},
+	
+	/** @override */
+	setEnabled: function(enabled) {
 		if (this._enabled !== enabled) {
 			this._enabled = enabled;
-			this.requestRender("enabled", this._setEnabled.bind(this, enabled));
+			
+			// properties set immediately
+			this._toggleTouchEvents(enabled);
+			// this.itemViews.each(function (view) {
+			// 	view.setEnabled(enabled);
+			// });
+			// this.el.classList.toggle("disabled", !this.enabled);
+			
+			// dom manipulation on render (_renderEnabled)
+			this._renderFlags |= ENABLED_INVALID;
+			this.requestRender();
 		}
+		// this.setEnabledLater(enabled);
 	},
+	
+	_renderEnabled: function() {
+		// this._toggleTouchEvents(this.enabled);
+		this.itemViews.each(function (view) {
+			view.setEnabled(this.enabled);
+		}, this);
+		this.el.classList.toggle("disabled", !this.enabled);
+	},
+	
+	// setEnabledNow: function(enabled) {
+	// 	if (this._enabled !== enabled) {
+	// 		this._enabled = enabled;
+	// 		this._setEnabled(enabled);
+	// 	}
+	// },
+	// setEnabledLater: function(enabled) {
+	// 	if (this._enabled !== enabled) {
+	// 		this._enabled = enabled;
+	// 		this._renderFlags |= ENABLED_INVALID;
+	// 		this.requestRender("enabled", this._setEnabled.bind(this, enabled));
+	// 	}
+	// },
+
+	// /** @private */
+	// _setEnabled: function (enabled) {
+	// 	this._toggleTouchEvents(enabled)
+	// 	this.itemViews.each(function (view) {
+	// 		view.setEnabled(enabled);
+	// 	});
+	// 	this.el.classList.toggle("disabled", !enabled);
+	// },
 	
 	/* --------------------------- *
 	/* Create children
@@ -306,6 +424,8 @@ var CarouselProto = {
 		opts.parentView = this;
 		view = new renderer(opts);
 		this.itemViews.add(view);
+		
+		view.enabled = this.enabled;
 		switch (index - sIndex) {
 			case  0:
 				view.el.classList.add("selected");
@@ -418,43 +538,6 @@ var CarouselProto = {
 	},
 	
 	/* --------------------------- *
-	/* enabled
-	/* --------------------------- */
-	
-	/** @private */
-	_enabled: undefined,
-	
-	/**
-	/* @return {?Boolean}
-	/*/
-	isEnabled: function () {
-		return this._enabled;
-	},
-	
-	/**
-	/* @param {Boolean}
-	/* @return {?Boolean}
-	/*/
-	setEnabled: function(enabled) {
-		this.setEnabledLater(enabled);
-	},
-
-	/** @private */
-	_setEnabled: function (enabled) {
-		if (enabled) {
-			this.hammer.on("tap", this._onTap);
-			this.hammer.on("panstart panmove panend pancancel", this._onPan);
-		} else {
-			this.hammer.off("tap", this._onTap);
-			this.hammer.off("panstart panmove panend pancancel", this._onPan);
-		}
-		this.itemViews.each(function (view) {
-			view.setEnabled(enabled);
-		});
-		this.el.classList.toggle("disabled", !enabled);
-	},
-	
-	/* --------------------------- *
 	/* scrolling property
 	/* --------------------------- */
 	
@@ -465,7 +548,7 @@ var CarouselProto = {
 		if (this._scrolling != scrolling) {
 			this._scrolling = scrolling;
 			this.el.classList.toggle("scrolling", scrolling);
-			this.trigger(scrolling? "view:scrollstart":"view:scrollend");
+			this.trigger(scrolling? "view:scrollstart" : "view:scrollend");
 		}
 	},
 	
@@ -602,70 +685,37 @@ var CarouselProto = {
 	// 	return posInner + offset;
 	// },
 	
-	commitScrollSelection: function () {
-		if (this._scrollCandidateView !== void 0) {
-			var view = this._scrollCandidateView;
-			this._scrollCandidateView = void 0;
-			view.el.classList.remove("candidate");
-			
-			this._internalSelection = true;
-			if (view === this.emptyView) {
-				this.trigger("view:select:none");
-			} else {
-				this.trigger("view:select:one", view.model);
-			}
-			this._internalSelection = false;
-		}
-	},
-	
 	/* --------------------------- *
-	/* touch event: tap
+	/* toggle touch events
 	/* --------------------------- */
 	
-	/** @type {int} In pixels */
-	_tapGrow: 10,
-	
-	_onTap: function (ev) {
-		this.commitScrollSelection();
-		
-		var bounds = this.el.getBoundingClientRect();
-		var tapX = ev.center.x - bounds.left;
-		var tapY = ev.center.y - bounds.top;
-		
-		this._scrollCandidateView = this.getCandidateAtTapPos(
-			this.dirProp(tapX, tapY),
-			this.dirProp(tapY, tapX)
-		);
-		
-		if (this._scrollCandidateView) {
-			ev.preventDefault();
-			this._scrollCandidateView.el.classList.add("candidate");
-			this._setScrolling(true);
-			this.scrollByNow(0, Carousel.ANIMATED);
-		}
-	},
-	
-	getCandidateAtTapPos: function(pos, posAcross) {
-		if (this._tapAcrossBefore < posAcross && posAcross < this._tapAcrossAfter) {
-			if (pos < this._tapBefore) {
-				return this._precedingView;
-			} else if (pos > this._tapAfter) {
-				return this._followingView;
+	_toggleTouchEvents: function(enable) {
+		// console.log("%s::_toggleTouchEvents", this.cid, enable);
+		if (this._touchEventsEnabled !== enable) {
+			this._touchEventsEnabled = enable;
+			if (enable) {
+				// this.touch.on("tap", this._onTap);
+				// this.touch.on("panstart panmove panend pancancel", this._onPan);
+				this.touch.on("tap panstart panmove panend pancancel", this._onTouchEvent);
+			} else {
+				// this.touch.off("tap", this._onTap);
+				// this.touch.off("panstart panmove panend pancancel", this._onPan);
+				this.touch.off("tap panstart panmove panend pancancel", this._onTouchEvent);
 			}
 		}
-		return void 0;
 	},
 	
 	/* --------------------------- *
 	/* touch event: pan
 	/* --------------------------- */
 	
-	_onPan: function (ev) {
+	_onTouchEvent: function (ev) {
 		switch (ev.type) {
+			case "tap": return this._onTap(ev);
 			case "panstart": return this._onPanStart(ev);
 			case "panmove": return this._onPanMove(ev);
-			case "panend": return this._onPanFinish(ev);
-			case "pancancel": return this._onPanFinish(ev);
+			case "panend": return this._onPanFinal(ev);
+			case "pancancel": return this._onPanFinal(ev);
 		}
 	},
 	
@@ -679,12 +729,18 @@ var CarouselProto = {
 		// }
 		this.commitScrollSelection();
 		
-		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.thresholdDeltaX : ev.thresholdDeltaY;
-		// delta += this._panCapturedOffset;
-		
 		this.el.classList.add("panning");
 		this._setScrolling(true);
+		
+		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.thresholdDeltaX : ev.thresholdDeltaY;
+		// delta += this._panCapturedOffset;
 		this.scrollByNow(delta, Carousel.IMMEDIATE);
+		this.renderNow();
+		
+		// this._onPanMove(ev);
+		
+		// this.touch.on("panmove", this._onPanMove);
+		// this.touch.on("panend pancancel", this._onPanFinal);
 	},
 	
 	/** @param {Object} ev */
@@ -702,10 +758,14 @@ var CarouselProto = {
 			delta *= Globals.HPAN_OUT_DRAG;
 		}
 		this.scrollByNow(delta, Carousel.IMMEDIATE);
+		this.renderNow();
 	},
 	
 	/** @param {Object} ev */
-	_onPanFinish: function (ev) {
+	_onPanFinal: function (ev) {
+		// this.touch.off("panmove", this._onPanMove);
+		// this.touch.off("panend pancancel", this._onPanFinal);
+		
 		var view = (ev.offsetDirection & this._precedingDir)? this._precedingView : this._followingView;
 		var delta = this.direction & Hammer.DIRECTION_HORIZONTAL? ev.deltaX : ev.deltaY;
 		// delta += this._panCapturedOffset;
@@ -726,44 +786,67 @@ var CarouselProto = {
 		this._panCandidateView = void 0;
 		
 		this.scrollByNow(0, Carousel.ANIMATED);
+		this.renderNow();
 	},
-
+	
 	/* --------------------------- *
-	/* Model listeners
+	/* touch event: tap
 	/* --------------------------- */
-
-	/** @private */
-	_onReset: function () {
-		this.createChildrenLater();
-		this.render();
+	
+	_onTap: function (ev) {
+		this.commitScrollSelection();
+		
+		var bounds = this.el.getBoundingClientRect();
+		var tapX = ev.center.x - bounds.left;
+		var tapY = ev.center.y - bounds.top;
+		
+		this._scrollCandidateView = this.getCandidateAtTapPos(
+			this.dirProp(tapX, tapY),
+			this.dirProp(tapY, tapX)
+		);
+		
+		if (this._scrollCandidateView) {
+			ev.preventDefault();
+			this._scrollCandidateView.el.classList.add("candidate");
+			this._setScrolling(true);
+			this.scrollByNow(0, Carousel.ANIMATED);
+			this.renderNow();
+		}
 	},
-
-	/** @private */
-	_onSelectAny: function (model) {
-		if (DEBUG) {
-			if (this._selectedView === (model? this.itemViews.findByModel(model) : (this.emptyView || this.itemViews.first()))) {
-				console.error("Carousel._onSelectAny: Select event triggered for model already selected");
+	
+	/** @type {int} In pixels */
+	_tapGrow: 10,
+	
+	getCandidateAtTapPos: function(pos, posAcross) {
+		if (this._tapAcrossBefore < posAcross && posAcross < this._tapAcrossAfter) {
+			if (pos < this._tapBefore) {
+				return this._precedingView;
+			} else if (pos > this._tapAfter) {
+				return this._followingView;
 			}
 		}
-		this._selectedView.el.classList.remove("selected");
-		this.updateSelection();
-		this._selectedView.el.classList.add("selected");
-		if (this._internalSelection) {
-			// console.log("Internal selection");
-			return;
-		}
-		
-		this._setScrolling(true);
-		this.scrollByNow(0, Carousel.ANIMATED);
-	},
-
-	_onDeselectAny: function (model) {
-		// this._selectedView.el.classList.remove("selected");
+		return void 0;
 	},
 
 	/* --------------------------- *
 	/* Private
 	/* --------------------------- */
+	
+	commitScrollSelection: function () {
+		if (this._scrollCandidateView !== void 0) {
+			var view = this._scrollCandidateView;
+			this._scrollCandidateView = void 0;
+			view.el.classList.remove("candidate");
+			
+			this._internalSelection = true;
+			if (view === this.emptyView) {
+				this.trigger("view:select:none");
+			} else {
+				this.trigger("view:select:one", view.model);
+			}
+			this._internalSelection = false;
+		}
+	},
 	
 	updateSelection: function () {
 		var m, i = this.collection.selectedIndex;
@@ -779,6 +862,43 @@ var CarouselProto = {
 			this._followingView = (m = this.collection.at(i + 1)) && this.itemViews.findByModel(m);
 		}
 	},
+
+	/* --------------------------- *
+	/* Model listeners
+	/* --------------------------- */
+
+	/** @private */
+	_onSelectAny: function (model) {
+		// if (DEBUG) {
+		// 	if (this._selectedView === (model? this.itemViews.findByModel(model) : 
+		// 			(this.emptyView || this.itemViews.first()))) {
+		// 		console.error("Carousel._onSelectAny: Select event triggered for model already selected");
+		// 	}
+		// }
+		this._selectedView.el.classList.remove("selected");
+		this.updateSelection();
+		this._selectedView.el.classList.add("selected");
+		if (this._internalSelection) {
+			// console.info("INTERNAL");
+			return;
+		}
+		
+		this._setScrolling(true);
+		this.scrollByNow(0, Carousel.ANIMATED);
+		this.renderNow();
+		// console.warn("EXTERNAL");
+	},
+
+	_onDeselectAny: function (model) {
+		// this._selectedView.el.classList.remove("selected");
+	},
+
+	/** @private */
+	_onReset: function () {
+		this.invalidateChildren();
+		// this.createChildrenLater();
+		// this.render();
+	},
 };
 
-module.exports = DeferredView.extend(CarouselProto, Carousel);
+module.exports = View.extend(CarouselProto, Carousel);

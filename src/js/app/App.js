@@ -1,6 +1,6 @@
 /**
- * @module app/App
- */
+/* @module app/App
+/*/
 "use strict";
 
 console.log("App first statement");

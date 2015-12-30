@@ -11,16 +11,16 @@
 	},
 	"breakpoints": {
 		"_unquoted": "only screen and (min-device-width : 320px) and (max-device-width : 480px)",
-		"smartphone": "'only screen and (min-device-width : 320px) and (max-device-width : 480px)'",
-		"smartphone-landscape": "'only screen and (min-width : 321px)'",
-		"smartphone-portrait": "'only screen and (max-width : 320px)'",
-		"ipad-landscape": "'only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape)'",
-		"ipad-portrait": "'only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : portrait)'",
-		"ipad": "'only screen and (min-device-width : 768px) and (max-device-width : 1024px)'",
-		"desktop-small": "'only screen and (min-width : 1024px)'",
-		"desktop-medium": "'only screen and (min-width : 1224px)'",
-		"desktop-large": "'only screen and (min-width : 1824px)'",
-		"iphone4": "'only screen and (min-device-pixel-ratio : 1.5)'"
+		"smartphone": "only screen and (min-device-width : 320px) and (max-device-width : 480px)",
+		"smartphone-landscape": "only screen and (min-width : 321px)",
+		"smartphone-portrait": "only screen and (max-width : 320px)",
+		"ipad-landscape": "only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape)",
+		"ipad-portrait": "only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : portrait)",
+		"ipad": "only screen and (min-device-width : 768px) and (max-device-width : 1024px)",
+		"desktop-small": "only screen and (min-width : 1024px)",
+		"desktop-medium": "only screen and (min-width : 1224px)",
+		"desktop-large": "only screen and (min-width : 1824px)",
+		"iphone4": "only screen and (min-device-pixel-ratio : 1.5)"
 	},
 	"default_colors": {
 		"color": "hsl(47, 5%, 15%)",

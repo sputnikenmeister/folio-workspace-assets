@@ -21,12 +21,18 @@ var parseSymAttrs = function (s, m1, m2) {
 
 var BaseItemProto = {
 	
+	_domPrefix: "_",
+	
 	/** @type {Object} */
 	defaults: {
-		attrs: function() { return {}; },
+		// attrs: function() { return {}; },
+		get attrs() { return {}; },
 	},
 	
 	mutators: {
+		domid: function() {
+			return this._domId || (this._domId = this._domPrefix + this.id);
+		},
 		attrs: {
 			set: function (key, value, options, set) {
 				if (Array.isArray(value)) {
@@ -51,14 +57,27 @@ var BaseItemProto = {
 				set(key, value, options);
 			}
 		},
+	},
+	
+	attr: function(attr) {
+		return this.attrs()[attr];
+	},
+	
+	attrs: function() {
+		return this.get("attrs");
+	},
+	
+	toString: function() {
+		return this.get("domid");
 	}
 };
 
 var BaseItem = {
 	extend: function(proto, obj) {
 		for (var p in BaseItemProto) {
-			if (proto.hasOwnProperty(p)) {
+			if (proto.hasOwnProperty(p) && (Object.getPrototypeOf(proto[p]) === Object.prototype)) {
 				_.defaults(proto[p], BaseItemProto[p]);
+				// console.log("BaseItem::extend '%s:%s' is Object\n%s", proto._domPrefix, p, JSON.stringify(proto[p]));
 			}
 		}
 		return Model.extend.apply(this, arguments);

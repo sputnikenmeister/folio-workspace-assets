@@ -1,6 +1,6 @@
 /**
- * @module app/control/Controller
- */
+/* @module app/control/Controller
+/*/
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -15,13 +15,13 @@ var keywords = require("app/model/collection/KeywordCollection");
 var bundles = require("app/model/collection/BundleCollection");
 
 /* --------------------------- *
- * Static private
- * --------------------------- */
+/* Static private
+/* --------------------------- */
 
 /**
- * @constructor
- * @type {module:app/control/Controller}
- */
+/* @constructor
+/* @type {module:app/control/Controller}
+/*/
 var Controller = Backbone.Router.extend({
 
 	/** @override */

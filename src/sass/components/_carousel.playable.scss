@@ -8,9 +8,8 @@
 		position: absolute;
 		display: inline-block;
 	}
-	.content-size {
-		width: 100%; height: 100%;
-		top: 0; left: 0;
+	.content > .content-size {
+		width: 100%; height: 100%; top: 0; left: 0;
 	}
 }
 
@@ -75,18 +74,20 @@
 		position: absolute;
 		
 		// background-size: 3.3rem 3.3rem;
-		background-size: 33px 33px;
+		// background-size: 49px 49px;
+		background-size: 111px 111px;
 		background-position: center center;
 		background-repeat: no-repeat;
 	}
-	.paused:not(.started) .play-toggle {
-		background-size: 49px 49px;
+	// :not(.started) .play-toggle {
+	.playing.waiting .play-toggle {
+		background-size: 69px 69px;
 	}
 	// .play-toggle {
-	// 	$size: 50%;//12em; 
+	// 	$size: 49px;//50%;//12em; 
 	// 	width: $size; height: $size;
 	// 	left: calc(50% - #{$size/2}); top: calc(50% - #{$size/2}); 
-	// 	margin-left: $size/2; margin-top: $size/2;
+	// 	// margin-left: $size/2; margin-top: $size/2;
 	// }
 	// .play-toggle-hitarea {} // hit-area
 	
@@ -99,10 +100,6 @@
 	.paused .play-toggle 			{ background-image: symbol-url("symbols/playback-pause.svg"); }
 	.playing.waiting .play-toggle 	{ background-image: symbol-url("symbols/playback-wait.svg"); }
 	.paused.ended .play-toggle 		{ background-image: symbol-url("symbols/playback-replay.svg"); }
-	// .over-dark .play-toggle { background-image: symbol-url("symbols/playback-play-dark.svg"); }
-	// .over-dark .play-toggle { background-image: symbol-url("symbols/playback-pause-dark.svg");}
-	// .over-dark .play-toggle { background-image: symbol-url("symbols/playback-replay-dark.svg");}
-	// .over-dark .play-toggle { background-image: symbol-url("symbols/playback-wait-dark.svg");}
 	
 	// - - - - - - - - - - - - - - - - -
 	// opacity animation
@@ -114,52 +111,12 @@
 		.play-toggle { opacity: 0; };
 		&.playing.waiting .play-toggle { opacity: 1; }
 		&.paused.ended .play-toggle { opacity: 1; }
-		
-		// &.playing .play-toggle 			{ background-image: symbol-url("symbols/playback-play.svg"); }
-		// &.paused .play-toggle 			{ background-image: symbol-url("symbols/playback-pause.svg"); }
-		// &.playing.waiting .play-toggle 	{ background-image: symbol-url("symbols/playback-wait.svg"); }
-		// &.paused.ended .play-toggle 	{ background-image: symbol-url("symbols/playback-replay.svg"); }
-		
 		@at-root :not(.scrolling) & {
 			&.playing .play-toggle { animation: $duration*2 $ease flashOdd; }
 			&.paused .play-toggle { animation: $duration*2 $ease flashEven; }
 		}
 	}
-	// @at-root :not(.scrolling) & .started {
-	// 	&.playing .play-toggle { animation: $duration*2 $ease flashOdd; }
-	// 	&.paused .play-toggle { animation: $duration*2 $ease flashEven; }
-	// }
 }
-
-/*
-.playable-renderer {
-	.play-toggle 								{ opacity: 1; }
-	.playing .play-toggle 						{ opacity: 0; }
-	.paused .play-toggle 						{ opacity: 0; }
-	// .playing:not(.waiting) .play-toggle 		{ opacity: 0; }
-	// .paused:not(.ended) .play-toggle 			{ opacity: 0; }
-	
-	.playing.waiting .play-toggle 				{ opacity: 1; }
-	.paused.ended .play-toggle 					{ opacity: 1; }
-	// :not(.requested).playing .play-toggle 		{ opacity: 1; }
-	// :not(.requested).paused .play-toggle 		{ opacity: 1; }
-	
-	@at-root :not(.scrolling) & .playing .play-toggle:active	{ opacity: 1; }
-	@at-root :not(.scrolling) & .paused .play-toggle:active		{ opacity: 1; }
-	// .playing .play-toggle:active 				{ opacity: 1; }
-	// .paused .play-toggle:active 				{ opacity: 1; }
-	// @at-root .scrolling & .play-toggle:active					{ opacity: 0 !important; }
-	
-	.play-toggle 				{ transition: opacity $duration*1.0 $ease $delay*0.5; }
-	.play-toggle:active 		{ transition: opacity $duration*0.3 $ease 0.005s; }
-	.playing:not(.waiting), .paused:not(.ended) { 
-		.play-toggle 			{ transition: opacity $duration*1.0 $ease $delay*0.5; }
-		.play-toggle:active 	{ transition: opacity $duration*0.3 $ease 0.005s; }
-	}
-	.playing .play-toggle:active	{ background-image: symbol-url("symbols/playback-pause.svg"); }
-	.paused .play-toggle:active		{ background-image: symbol-url("symbols/playback-play.svg"); }
-}
-*/
 
 // - - - - - - - - - - - - - - - - - -
 //  .playable-renderer .controls
@@ -171,6 +128,7 @@
 		// right: 0;
 		// height: 4.5rem;
 	}
+	
 	// .control-box
 	// - - - - - - - - - - - - - - - - -
 	.control-box {
@@ -201,54 +159,71 @@
 		justify-content: space-between;
 	}
 	.top-bar {
-		bottom: 100%;// top: -3.5rem;
-		// -webkit-justify-content: flex-end;
-		// justify-content: flex-end;
+		// NOTE: using direction, for crossbrowser consistency
+		// [ direction: rtl | ltr ]
+		// [ justify-content: flex-start | flex-end ]
 		direction: rtl;
-	}
-}
-
-@include media(desktop-small) {
-	.playable-renderer {
-		// .progress-meter {
-		// 	top: 0; right: -$hu*2;
-		// 	// &.dev { transform: translate(0, -3rem); }
-		// }
-		.top-bar.control-box {
+		bottom: 100%;// top: -3.5rem;
+		@include media(desktop-small) {
+			direction: ltr;
 			-webkit-flex-direction: column;
 			-ms-flex-direction: column;
 			flex-direction: column;
-			// -webkit-justify-content: flex-start;
-			// justify-content: flex-start;
-			direction: ltr;
 			top: 0; left: 100%; 
 			width: auto; height: calc(100% + 1rem);
 			margin: -0.5rem 1.25rem;
 			& > * {
 				padding: 0.5rem 0rem;
+				// &:first-child { padding-inline-start: 0; }
+				// &:last-child { padding-inline-end: 0; }
 			}
 		}
 	}
+	
+	// .control-box > *
+	// - - - - - - - - - - - - - - - - -
+	// NOTE: Fade controls while scrolling ONLY. For other states
+	// (not-selected, disabled), an ancestor will be shown/hidden.
+	.control-box > * {
+		opacity: 0; visibility: hidden;
+	}
+	&.ready.selected .control-box > * {
+		transition: tx(opacity, 1, 0), tx(visibility, 1, 0);
+		opacity: 1; visibility: visible;
+		@at-root .scrolling & {
+			opacity: 0; visibility: hidden;
+		}
+		// @at-root .disabled & { }
+	}
 }
+
+// @include media(desktop-small) {
+// 	.playable-renderer {
+// 		// .progress-meter {
+// 		// 	top: 0; right: -$hu*2;
+// 		// 	// &.dev { transform: translate(0, -3rem); }
+// 		// }
+// 		.top-bar.control-box {
+// 			-webkit-flex-direction: column;
+// 			-ms-flex-direction: column;
+// 			flex-direction: column;
+// 			// -webkit-justify-content: flex-start;
+// 			// justify-content: flex-start;
+// 			direction: ltr;
+// 			top: 0; left: 100%; 
+// 			width: auto; height: calc(100% + 1rem);
+// 			margin: -0.5rem 1.25rem;
+// 			& > * {
+// 				padding: 0.5rem 0rem;
+// 			}
+// 		}
+// 	}
+// }
 
 // - - - - - - - - - - - - - - - - - -
 //  .playable-renderer children
 // - - - - - - - - - - - - - - - - - -
 .playable-renderer {
-	// .timeline | .timecode
-	// - - - - - - - - - - - - - - - - -
-	.timecode {
-		font-size: 85%;
-		letter-spacing: 1px;
-		font-variant-numeric: tabular-nums;
-	}
-	.control-box {
-		& > .timeline {
-			-webkit-flex: 1 0 auto;
-			flex: 1 0 auto;
-		}
-		// & > .svg-progress-meter {}
-	}
 	
 	// .fullscreen-toggle
 	// - - - - - - - - - - - - - - - - -
@@ -269,12 +244,27 @@
 		box-sizing: content-box;
 		// width: 2.3rem; height: 2.3rem;
 		width: 2.8rem; height: 2.8rem;
-		transition: tx(opacity, 1, 0);
-		opacity: 0;
+		// transition: tx(opacity, 1, 0);
+		// opacity: 0;
 	}
-	@at-root :not(.scrolling) &.selected .progress-meter { 
-		opacity: 1;
-	}
+	// @at-root :not(.scrolling) &.selected .progress-meter { 
+	// 	opacity: 1;
+	// }
+	
+	// .timeline | .timecode
+	// - - - - - - - - - - - - - - - - -
+	// .timecode {
+	// 	font-size: 85%;
+	// 	letter-spacing: 1px;
+	// 	font-variant-numeric: tabular-nums;
+	// }
+	// .control-box {
+	// 	& > .timeline {
+	// 		-webkit-flex: 1 0 auto;
+	// 		flex: 1 0 auto;
+	// 	}
+	// 	// & > .svg-progress-meter {}
+	// }
 }
 
 // .progress-meter per-renderer adjustments
@@ -318,39 +308,74 @@
 // SequenceRenderer
 // -----------------------------------
 .sequence-renderer {
+	// .content {
+	// 	box-shadow: none;//0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+	// }
 	.sequence {
+		// box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		
 		// position: absolute;
 		// width: 100%; height: 100%;
-		border-radius: inherit;
+		// border-radius: inherit;
 		overflow: hidden;
 	}
+	// .sequence-step
+	// - - - - - - - - - - - - - - - - -
 	.sequence-step {
 		position: absolute;
 		top: 0; left: 0;
 		width: 100%; height: 100%;
 		
-		// NOTE: z-index changed last, opacity transition in outgoing image
-		z-index: 0; opacity: 0; visibility: hidden;
-		transition:
-			opacity $duration*1.5 $ease $duration*0.5,
-			visibility $duration*3 step-end, 
-			z-index $duration*3 step-end;
+		// NOTE: current on top, z-index changed last, opacity tx in outgoing image
+		// z-index: 0; opacity: 0; visibility: hidden;
 		// transition: 
 		// 	tx(opacity, 1.5, 0.5),
-		// 	tx(visibility, 3, $ease: step-end),
-		// 	z-tx(index, 3, $ease: step-end);
+		// 	tx(visibility, 3, 0, step-end),
+		// 	tx(z-index, 3, 0, step-end);
+		// &.current {
+		// 	z-index: 1; opacity: 1; visibility: visible;
+		// 	// transition: z-index $duration*3 step-end;
+		// 	transition: tx(z-index, 3, 0, step-end);
+		// }
 		
+		// NOTE: current on top, z-index changed first, opacity tx in current image
+		visibility: hidden;
+		opacity: 0;
+		z-index: 0;
+		transition:
+			tx(visibility, 3, 0, step-end), 
+			tx(opacity, 3, 0, step-end);
 		&.current {
-			z-index: 1; opacity: 1; visibility: visible;
-			transition: z-index $duration*3 step-end;
-			// transition: z-tx(index, 3, $ease: step-end);
+			visibility: visible;
+			opacity: 1;
+			z-index: 1;
+			transition: tx(opacity, 1.5, 0.5);
 		}
 		
 		&.error {
 			// background-image: image-url("bg-missing-media.svg");
 			background-image: base64_encode("bg-missing-media.svg");
+			// background-color: transparent !important;
 		}
 	}
+	.playback-error .sequence-step:not(.current) {
+		transition:
+			tx(visibility, 3, 0, step-end), 
+			tx(opacity, 1.5, 0.5);
+	}
+	
+	// .media-border
+	// - - - - - - - - - - - - - - - - -
+	.media-border {
+		transition: tx(opacity, 1.5, 0.5);
+		opacity: 1;
+	}
+	.playback-error .media-border {
+		opacity: 0;
+	}
+	
+	// .overlay
+	// - - - - - - - - - - - - - - - - -
 	.overlay {
 		z-index: 2;
 	}

@@ -18,11 +18,10 @@ var prefixedStyleName = require("utils/prefixedStyleName");
 var prefixedEvent = require("utils/prefixedEvent");
 /** @type {Function} */
 var transitionEnd = require("utils/event/transitionEnd");
-
-/** @type {module:utils/event/addTransitionCallback} */
-var addTransitionCallback = require("utils/event/addTransitionCallback");
 // /** @type {Function} */
 var getPrototypeChainValue = require("utils/object/getPrototypeChainValue");
+// /** @type {module:utils/event/addTransitionCallback} */
+// var addTransitionCallback = require("utils/event/addTransitionCallback");
 
 /* -------------------------------
 /* static private
@@ -79,7 +78,7 @@ observer.observe(document.body, {
 /* requestAnimationFrame queue
 /* ------------------------------- */
 
-// var _isExecuting = false;
+var _rendering = false;
 var _queue = [];
 var _queueRafId = -1;
 var _fnidSeed = 0;
@@ -90,50 +89,110 @@ var _callQueuedAF = function(tstamp) {
 	_queue = [];
 	_fnidSeed += queue.length;
 	_queueRafId = -1;
-	// _isExecuting = true;
+	_rendering = true;
 	queue.forEach(function(fn) {
 		fn && fn(tstamp);
 	});
-	// _isExecuting = false;
+	_rendering = false;
 };
+
 var requestQueuedAF = function(fn) {
-	// _isExecuting && console.warn("View::requestQueuedAF", "nested invocation");
+	// _rendering && console.warn("View::requestQueuedAF", "nested invocation");
 	if (_queueRafId == -1) {
 		_queueRafId = window.requestAnimationFrame(_callQueuedAF);
 	}
 	_queue.push(fn);
 	return (_queue.length - 1) + _fnidSeed;
 };
+
 var cancelQueuedAF = function(fnid) {
 	var fnRef;
-	if (fnid > _fnidSeed) {
+	if (fnid >= _fnidSeed) {
 		fnRef = _queue[fnid - _fnidSeed];
 		_queue[fnid - _fnidSeed] = null;
+		if (!fnRef) console.warn("View::cancelQueuedAF raf:%i not found", fnid);
+		// else console.info("View::cancelQueuedAF raf:%s cancelled", fnid);
 	}
-	if (!fnRef) console.warn("View::cancelQueuedAF ID %s not found", fnid);
+	// else console.warn("View::cancelQueuedAF raf id past execution (raf: %i, curr seed: %i)", fnid, _fnidSeed);
 	return fnRef;
 };
 
-// var requestRenderImpl = requestQueuedAF;
-// var cancelRenderImpl = cancelQueuedAF;
+/* -------------------------------
+/* prefixed events
+/* ------------------------------- */
+
+var prefixedEvents = (function(){
+	var events = {
+		"transitionend": transitionEnd,
+		"fullscreenchange": prefixedEvent("fullscreenchange", document),
+		"fullscreenerror": prefixedEvent("fullscreenerror", document),
+		"visibilitychange": prefixedEvent("visibilitychange", document, "hidden")
+	};
+	for (var eventName in events) {
+		if (eventName === events[eventName]) {
+			delete events[eventName];
+		}
+	}
+	return events;
+})();
 
 /* -------------------------------
 /* static public
 /* ------------------------------- */
 
 var View = {
-	// rootViews: {},
+	
+	/** @type {module:app/view/base/ViewError} */
+	ViewError: require("app/view/base/ViewError"),
+	
+	/**
+	/* @param el {HTMLElement}
+	/* @return {module:app/view/base/View}
+	/*/
 	findByElement: function(el) {
 		return _viewsByCid[el.cid];
 	},
+	
+	/**
+	/* @param el {HTMLElement}
+	/* @return {module:app/view/base/View}
+	/*/
 	findByDescendant: function(el) {
-		do
-			if (_viewsByCid[el.cid])
+		do {
+			if (_viewsByCid[el.cid]) {
 				return _viewsByCid[el.cid];
-		while (el = el.parentElement);
+			}
+		} while (el = el.parentElement);
 		return null;
 	},
-	ViewError: require("app/view/base/ViewError"),
+	
+	/** @override */
+	extend: function(proto) {
+		var prefixEventDelegates = function(events) {
+			// var replaced = [];
+			var selector, prefixed, unprefixed;
+			for (selector in events) {
+				unprefixed = selector.match(/^\w+/i)[0];
+				if (prefixedEvents.hasOwnProperty(unprefixed)) {
+					// replaced.push(unprefixed);
+					events[selector.replace(unprefixed, prefixedEvents[unprefixed])] = events[selector];
+					delete events[selector];
+				}
+			}
+			// replaced.length && console.log("[prefixEventDelegates]", replaced, events);
+		};
+		if (_.isFunction(proto.events)) {
+			proto.delegateEvents = _.wrap(proto.delegateEvents, function(fn) {
+				// console.log("%s::prefixEventDelegates", this.cid);
+				proto.events = prefixEventDelegates(_.result(this, "events"));
+				fn.apply(this, Array.prototype.slice.call(arguments, 1));
+			});
+		} else if (_.isObject(proto.events)) {
+			// console.log("[proto:%s]::prefixEventDelegates", proto.cidPrefix);
+			prefixEventDelegates(proto.events);
+		}
+		return Backbone.View.extend.apply(this, arguments);
+	},
 };
 
 /* -------------------------------
@@ -145,6 +204,18 @@ var ViewProto = {
 	/** @type {string} */
 	cidPrefix: "view",
 	
+	/** @type {HTMLElement|null} */
+	parentView: null,
+	
+	/** @type {string} created > added > removed */
+	_domPhase: "created",
+	
+	/** @type {string} initializing > initialized > disposing > disposed */
+	_viewPhase: "initializing",
+	
+	/** @type {int} */
+	_renderRafId: -1,
+	
 	/** @type {object} */
 	properties: {
 		cid: {
@@ -154,7 +225,10 @@ var ViewProto = {
 		},
 		enabled: {
 			get: function() {
-				return this._enabled;
+				return this.isEnabled();
+			},
+			set: function(enabled) {
+				this.setEnabled(enabled);
 			}
 		},
 		domPhase: {
@@ -163,12 +237,6 @@ var ViewProto = {
 			}
 		}
 	},
-	
-	parentView: null,
-	
-	_domPhase: "created",// created>added>removed
-	
-	_viewPhase: "initializing",// initializing>initialized>disposing>disposed
 	
 	/**
 	* @constructor
@@ -180,17 +248,8 @@ var ViewProto = {
 		if (options && options.className && this.className) {
 			options.className += " " + _.result(this, "className");
 		}
-		
-		if ("transitionend" !== transitionEnd) {
-			for (var selector in this.events) {
-				if (this.events.hasOwnProperty(selector) && /^transitionend(\s.+)?$/i.test(selector)) {
-					this.events[selector.replace("transitionend", transitionEnd)] = this.events[selector];
-					delete this.events[selector];
-				}
-			}
-		}
-		
-		this.parentView = null;
+		// this._renderRafId = -1;
+		// this.parentView = null;
 		this.childViews = {};
 		
 		Backbone.View.apply(this, arguments);
@@ -206,6 +265,7 @@ var ViewProto = {
 	remove: function() {
 		// console.log("%s::remove viewPhase:[%s => disposing]", this.cid, this._viewPhase);
 		this._viewPhase = "disposing";
+		this._cancelRender();
 		
 		this.trigger("view:removed", this);
 		for (var cid in this.childViews) {
@@ -297,33 +357,6 @@ var ViewProto = {
 		return this;
 	},
 	
-
-	// var _prefixedEvents = ["transitionend", "fullscreenchange", "fullscreenerror"];
-	
-	// delegateEvents: function(events) {
-	// 	if (!(events || (events = _.result(this, "events")))) return this;
-	// 	
-	// 	if ("transitionend" !== transitionEnd) {
-	// 		for (var key in events) {
-	// 			if (events.hasOwnProperty(key) && /^transitionend(\s.+)?$/i.test(key)) {
-	// 				events[key.toLowerCase().replace("transitionend", transitionEnd)] = events[key];
-	// 				delete events[key];
-	// 			}
-	// 		}
-	// 	}
-	// 	Backbone.View.prototype.delegateEvents.call(this, events);
-	// 	return this;
-	// },
-	
-	/* -------------------------------
-	/* transitionEnd helpers
-	/* ------------------------------- */
-	 
-	// onTransitionEnd: function(target, prop, callback, timeout) {
-	// 	console.warn("[deprecated] %s::onTransitionEnd", this.cid);
-	// 	return addTransitionCallback(target, prop, callback, this, timeout);
-	// },
-	
 	/* -------------------------------
 	/* requestAnimationFrame
 	/* ------------------------------- */
@@ -339,9 +372,80 @@ var ViewProto = {
 	},
 	
 	/* -------------------------------
+	/* simple render deferring
+	/* ------------------------------- */
+	
+	render: function() {
+		return this.renderNow(true);
+	},
+	
+	/** @abstract */
+	renderLater: function (tstamp) {
+		// subclasses should override this method
+	},
+	
+	requestRender: function() {
+		this._requestRender();
+	},
+
+	renderNow: function(force) {
+		if (this._isPendingRender()) {
+			this._cancelRender();
+			this._applyRender(Date.now());
+		} else if (force === true) {
+			this._applyRender(Date.now());
+		}
+		return this;
+	},
+	
+	/** @private */
+	_applyRender: function (tstamp) {
+		// console.warn("%s::_applyRender (raf:%i)", this.cid, this._renderRafId);
+		this._renderRafId = -1;
+		this.renderLater(tstamp);
+	},
+	
+	_cancelRender: function() {
+		// cancelQueuedAF(this)
+		if (this._isPendingRender()) {
+			var ref = this.cancelAnimationFrame(this._renderRafId);
+			if (!ref) console.warn("%s::_cancelRender id '%i' not found", this.cid, this._renderRafId);
+			this._renderRafId = -1;
+		}
+	},
+	
+	_requestRender: function() {
+		// requestQueuedAF(this);
+		if (!this._isPendingRender()) {
+			_rendering && console.log("%s::requestRender inside render loop", this.cid);
+			this._renderRafId = this.requestAnimationFrame(this._applyRender);
+		}
+	},
+	
+	_isPendingRender: function() {
+		// hasQueuedAF(this);
+		return this._renderRafId !== -1;
+	},
+	
+	/* -------------------------------
 	/* common abstract
 	/* ------------------------------- */
 	
+	
+	/** @private */
+	_enabled: undefined,
+	
+	/**
+	/* @return {?Boolean}
+	/*/
+	isEnabled: function () {
+		return this._enabled;
+	},
+	
+	/**
+	/* @param {Boolean}
+	/* @return {?Boolean}
+	/*/
 	setEnabled: function(enable) {
 		this._enabled = enable;
 	},

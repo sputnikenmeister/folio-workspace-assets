@@ -13,26 +13,24 @@
 		height: 100%;
 		box-sizing: border-box;
 	}
+	.content {
+		position: absolute;
+		box-sizing: content-box;
+		// *** "mutable" properties: must be in the first matching rule
+		// border: 0 none;
+		// background-color: $background_color;
+		// box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+	}
 	.placeholder {
 		// *** "mutable" properties: must be in the first matching rule
-		color: $background_color;
-		background-color: mix($color, $background_color, 7%);
+		// color: $background_color;
+		// background-color: mix($color, $background_color, 7%);
 		// border: 1px solid transparent;
 		// text-shadow: rgba(0,0,0,0.25) 1px 1px 0;
 	}
+	
 	.content {
-		// *** "mutable" properties: must be in the first matching rule
-		border: 0 none;
-		// background-color: $background_color;
-		box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
-		position: absolute;
-		box-sizing: content-box;
 		opacity: 0;
-	}
-	.error-message { 
-		position: absolute;
-		bottom: 0;
-		padding: 3rem;
 	}
 	&.idle,	&.error {
 		.content {
@@ -94,29 +92,51 @@
 // $browser_height: 2rem;
 $browser_height: 30px;
 
-.media-item.browser-safari,
-.media-item.browser-generic {
-	.content {
-		padding-top: $browser_height;
-		background-origin: border-box;
-		background-size: 100% $browser_height;
-		background-position: top;
-		background-repeat: no-repeat;
-		box-shadow:
-			0px 0px 0px 1px rgba(0,0,0,0.15),
-			0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+.media-item {
+	.placeholder {
+		color: $background_color;
+		background-color: mix($color, $background_color, 7%);
 	}
-	.content, .placeholder {
-		border-radius: #{$browser_height * 0.1} #{$browser_height * 0.1} 0 0;
+	.media-border {
+		border: 0 none;
+		box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		// background-color: $background_color;
 	}
-	.content img {
-		border-radius: 0 0 0 0;
+	&.browser-safari,
+	&.browser-generic {
+		.content,
+		.media-border {
+			padding-top: $browser_height;
+		}
+		.media-border,
+		.placeholder {
+			border-radius: #{$browser_height * 0.1} #{$browser_height * 0.1} 0 0;
+		}
+		.media-border {
+			background-origin: border-box;
+			background-size: 100% $browser_height;
+			background-position: top;
+			background-repeat: no-repeat;
+			box-shadow:
+				0px 0px 0px 1px rgba(0,0,0,0.15),
+				0px 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		}
+		.media-border img {
+			border-radius: 0 0 0 0;
+		}
+	}
+	&.browser-safari .media-border {
+		background-image: image-url("mockup/browser-safari.svg");
+	}
+	&.browser-generic .media-border {
+		background-image: image-url("mockup/browser-generic.svg");
 	}
 }
 
-.media-item.browser-safari .content {
-	background-image: image-url("mockup/browser-safari.svg");
-}
-.media-item.browser-generic .content {
-	background-image: image-url("mockup/browser-generic.svg");
+// TEMP
+// - - - - - - - - - - - - - - - - - -
+.media-item .error-message { 
+	position: absolute;
+	bottom: 0;
+	padding: 3rem;
 }

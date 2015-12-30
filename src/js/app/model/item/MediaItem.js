@@ -1,11 +1,14 @@
 /**
 * @module app/model/item/MediaItem
+* @requires module:backbone
 */
 
 // /** @type {module:backbone} */
 // var Backbone = require("backbone");
 /** @type {module:underscore} */
 var _ = require("underscore");
+/** @type {Function} */
+var Color = require("color");
 
 /** @type {module:app/model/item/SourceItem} */
 var BaseItem = require("app/model/BaseItem");
@@ -21,6 +24,14 @@ var stripTags = require("utils/strings/stripTags");
 // /** @type {module:app/model/parseSymAttrs} */
 // var parseSymAttrs = require("app/model/parseSymAttrs");
 
+// var computeSrc = function(media, src) {
+// 	var values = { src: src };
+// 	if (values.kbps = media.attr("@debug-bandwidth")) {
+// 		return Globals.MEDIA_SRC_TPL["debug-bandwidth"](values);
+// 	}
+// 	return Globals.MEDIA_SRC_TPL["original"](values);
+// };
+
 /**
 * @constructor
 * @type {module:app/model/item/MediaItem.SourceCollection}
@@ -35,24 +46,24 @@ var SourceCollection = SelectableCollection.extend({
  */
 module.exports = BaseItem.extend({
 	
+	_domPrefix: "m",
+	
 	/** @type {Object} */
-	defaults: function () {
-		return {
-			o: 0,
-			bId: -1,
-			desc: "<p><em>Untitled</em></p>",
-			// src: "", w: 0, h: 0,
-			srcIdx: 0,
-			// srcset: function() { return [{ src: "", mime: "", w: 0, h: 0 }]; },
-			srcset: function() { return []; },
-			// attrs: function() { return {}; },
-		};
+	defaults: {
+		o: 0,
+		bId: -1,
+		desc: "<p><em>Untitled</em></p>",
+		srcIdx: 0,
+		get srcset() { return []; },
+		get sources() { return new SourceCollection(); },
+		// srcset: function() { return []; },
+		// sources: function() { return new SourceCollection(); },
 	},
 	
 	mutators: {
-		domid: function() {
-			return "m" + this.id;
-		},
+		// domid: function() {
+		// 	return "m" + this.id;
+		// },
 		name: function () {
 			return this.get("text") || this.get("src");
 		},
@@ -62,82 +73,91 @@ module.exports = BaseItem.extend({
 		text: function () {
 			return stripTags(this.get("desc"));
 		},
-		srcset: {
-			set: function (key, value, options, set) {
-				if (Array.isArray(value)) {
-					for (var i = 0; i < value.length; i++) {
-						value[i]["src"] += "?" + Date.now();
-					}
-				}
-				set(key, value, options);
+		attrs: {
+			set: function (key, value, opts, set) {
+				this._attrs = null;
+				BaseItem.prototype.mutators.attrs.set.apply(this, arguments);
+				this._updateSources();
 			}
 		},
-		src: function() { 
-			return this._getDefaultSource()["src"] || "";
+		srcset: {
+			set: function (key, value, opts, set) {
+				set(key, value, opts);
+				this.get("sources").reset(value, opts);
+				this._updateSources();
+			}
 		},
-		w: function() { 
-			return this._getDefaultSource()["w"] || 0;
+		source: {
+			transient: true,
+			get: function () {
+				return this.get("sources").at(this.get("srcIdx"));
+			},
 		},
-		h: function() { 
-			return this._getDefaultSource()["h"] || 0;
-		},
-		// attrs: {
-		// 	set: function (key, value, options, set) {
-		// 		if (Array.isArray(value)) {
-		// 			value = value.reduce(function(attrs, attr, attrIdx) {
-		// 				if (_.isString(attr)) {
-		// 					var idx = attr.indexOf(":");
-		// 					if (idx > 0) {
-		// 						attrs[attr.substring(0, idx)] = parseSymAttrs(attr.substring(idx + 1));
-		// 					} else {
-		// 						attrs[attr] = attr; // to match HTML5<>XHTML valueless attributes
-		// 					}
-		// 				} else {
-		// 					console.warn("%s::attrs[%i] value not a string", this.cid, attrIdx, value);
-		// 				}
-		// 				return attrs;
-		// 			}, {});
-		// 		}
-		// 		if (!_.isObject(value)) {
-		// 			console.error("%s::attrs value not an object or string array", this.cid, value);
-		// 			value = {};
-		// 		}
-		// 		set(key, value, options);
-		// 	}
-		// },
-		// bundle: {
-		// 	set: function (key, value, options, set) {
-		// 		_.defaults(this.attrs(), value.get("attrs"));
-		// 		set(key, value, options);
+		// src: {
+		// 	transient: true,
+		// 	get: function() {
+		// 		return this.has("source")? this.get("source").get("src") : "";
+		// 		// return this.get("source").get("src");
 		// 	},
-		// 	transient: true
+		// },
+		// w: {
+		// 	transient: true,
+		// 	get: function() {
+		// 		return this.has("source")? this.get("source").get("w") : 0;
+		// 		// return this.get("source").get("w");
+		// 	},
+		// },
+		// h: { 
+		// 	transient: true,
+		// 	get: function() {
+		// 		return this.has("source")? this.get("source").get("h") : 0;
+		// 		// return this.get("source").get("h");
+		// 	},
 		// },
 	},
 	
 	initialize: function() {
-		var src = this._getDefaultSource()["src"];
-		this._imageUrl = Globals.IMAGE_URL_TEMPLATES["original"]({ src: src });
-		this._thumbUrl = Globals.IMAGE_URL_TEMPLATES["constrain-width"]({ src: src, width: 60 });
+		this._updateColors();
+		this.listenTo(this, "change:attrs", function() {
+			this._attrs = null;
+		});
 	},
 	
 	attrs: function() {
-		if (this._attrs === void 0) {
-			// this._attrs = _.defaults(_.extend({}, this.get("attrs")), this.get("bundle").get("attrs"));
-			this._attrs = _.defaults({}, this.get("attrs"), this.get("bundle").attrs());
-		}
-		return this._attrs;// || (this._attrs = {});
+		// if (this._attrs === void 0) {
+		// 	this._attrs = _.defaults({}, this.get("attrs"), this.get("bundle").attrs());
+		// }
+		return this._attrs || (this._attrs = _.defaults({}, this.get("attrs"), this.get("bundle").attrs()));
 	},
 	
-	_getDefaultSource: function () {
-		if (this._defaultSource === void 0) {
-			this._defaultSource = this.get("srcset")[this.get("srcIdx")];
-		}
-		return this._defaultSource;
+	_updateColors: function() {
+		this.colors = {
+			fgColor: new Color(this.attr("color")),
+			bgColor: new Color(this.attr("background-color"))
+		};
+		this.colors.hasDarkBg = this.colors.fgColor.luminosity() > this.colors.bgColor.luminosity();
 	},
 	
-	/** @override */
-	toString: function() {
-		return this.id;
+	_updateSources: function() {
+		var srcObj = { kbps: this.attr("@debug-bandwidth") };
+		var srcTpl = Globals.MEDIA_SRC_TPL[srcObj.kbps? "debug-bandwidth" : "original"];
+		this.get("sources").forEach(function(item) {
+			srcObj.src = item.get("src");
+			item.set("original", srcTpl(srcObj));
+		});
 	},
-
+	
+	// _updateSourcesArr: function() {
+	// 	var srcset = this.get("srcset");
+	// 	if (Array.isArray(srcset)) {
+	// 		var srcObj = { kbps: this.attr("@debug-bandwidth") };
+	// 		var srcTpl = Globals.MEDIA_SRC_TPL[srcObj.kbps? "debug-bandwidth" : "original"];
+	// 		srcset.forEach(function(o) {
+	// 			srcObj.src = o.src;
+	// 			o.original = srcTpl(srcObj);
+	// 		}, this);
+	// 	}
+	// 	this.get("sources").reset(srcset);
+	// },
+	
 });

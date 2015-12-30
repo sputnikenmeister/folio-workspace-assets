@@ -58,8 +58,8 @@ var SelectableListView = View.extend({
 	},
 	
 	/* --------------------------- *
-	 * Child views
-	 * --------------------------- */
+	/* Child views
+	/* --------------------------- */
 	
 	createChildren: function() {
 		var eltBuffer, view;
@@ -102,8 +102,8 @@ var SelectableListView = View.extend({
 	},
 	
 	/* --------------------------- *
-	 * Child event handlers
-	 * --------------------------- */
+	/* Child event handlers
+	/* --------------------------- */
 	
 	/** @private */
 	onItemViewClick: function (item) {
@@ -113,8 +113,8 @@ var SelectableListView = View.extend({
 	},
 	
 	/* --------------------------- *
-	 * Empty view
-	 * --------------------------- */
+	/* Empty view
+	/* --------------------------- */
 	
 	createEmptyView: function () {
 		var view = new SelectableListView.EmptyRenderer({

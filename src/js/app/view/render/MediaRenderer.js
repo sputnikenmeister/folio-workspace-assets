@@ -42,8 +42,11 @@ var MediaRenderer = CarouselRenderer.extend({
 	
 	/** @override */
 	initialize: function (opts) {
-		if (this.model.attrs().hasOwnProperty("@classname")) {
-			this.el.className += " " + this.model.attrs()["@classname"];
+		// if (this.model.attrs().hasOwnProperty("@classname")) {
+		// 	this.el.className += " " + this.model.attr("@classname");
+		// }
+		if (this.model.attr("@classname") !== void 0) {
+			this.el.classList.add(this.model.attr("@classname"))
 		}
 		CarouselRenderer.prototype.initialize.apply(this, arguments);
 		
@@ -113,7 +116,6 @@ var MediaRenderer = CarouselRenderer.extend({
 	/** @return {HTMLElement} */
 	getDefaultImage: function () {
 		return this.defaultImage;
-		// return this._defaultImage || (this._defaultImage = this.el.querySelector("img.default"));
 	},
 	
 	/* --------------------------- *
@@ -145,8 +147,8 @@ var MediaRenderer = CarouselRenderer.extend({
 		pcw -= ew;
 		pch -= eh;
 		
-		sw = this.model.get("w");
-		sh = this.model.get("h");
+		sw = this.model.get("source").get("w");
+		sh = this.model.get("source").get("h");
 		
 		// Unless both client dimensions are larger than the source's
 		// choose constraint direction by aspect ratio
@@ -244,8 +246,8 @@ MediaRenderer = (function(MediaRenderer) {
 		initialize: function() {
 			MediaRenderer.prototype.initialize.apply(this, arguments);
 			
-			var fgColor = new Color(this.model.attrs()["color"]);
-			var bgColor = new Color(this.model.attrs()["background-color"]);
+			var fgColor = new Color(this.model.attr("color"));
+			var bgColor = new Color(this.model.attr("background-color"));
 			this.__logColors = {
 				normal: fgColor.clone().mix(bgColor, 0.75).hslString(),
 				ignored: fgColor.clone().mix(bgColor, 0.25).hslString(),

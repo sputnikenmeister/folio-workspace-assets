@@ -21,11 +21,12 @@
 }
 
 #site-name a {
-	transition: color $duration $ease $delay * 2;
 	color: $link_color;
-}
-.with-bundle .expanded #site-name a {
-	color: inherit;
+	// transition: tx(color, 1, 1);
+	// @at-root .with-bundle .container-expanded & {
+	// 	color: inherit;
+	// 	transition: tx(color, 1, 1);
+	// }
 }
 
 // -----------------------------------
@@ -83,48 +84,34 @@
 	}
 }
 
-// bundle-pager
-// - - - - - - - - - - - - - - - - - -
-/*@import "components/_pager.folio";
-#bundle-pager {
-	position: absolute;
-	display: inline-block;
-	top: -1rem;
-	.button {
-		position: absolute;
-		margin-left: 0 !important;
-		opacity: 0;
-		.name {
-			min-width: $aside_width;
-		}
-	}
-	.following-button {
-		left: $main_width;
-		@include media(desktop-small) {
-			left: $aside_width_large;
-		}
-	}
-}
-#bundle-pager .button {
-	@extend %leaf-content;
-}
-*/
-
 // - - - - - - - - - - - - - - - - - -
 // TEMP
 // - - - - - - - - - - - - - - - - - -
 
+#keyword-list  {
+	.list-item.selected {
+		.name {
+			text-decoration: underline;
+		}
+	}
+}
+#bundle-list.has-excluded:not(.collapsed) {
+	.list-item:not(.excluded) {
+		.name {
+			text-decoration: underline;
+		}
+	}
+}
+
 #keyword-list .list-item:before {
 	content: "*";
-	font-size: 1.25em;
-	line-height: 0.75em;
 	position: absolute;
 	display: inline-block;
-	top: 0.375em;
-	left: 0;
-	width: 0.5em;
-	height: 0.5em;
+	top: 0.375em; left: 0;
+	width: 0.5em; height: 0.5em;
 	opacity: 0;
+	font-size: 1.25em;
+	line-height: 0.75em;
 }
 
 .with-bundle {
@@ -137,17 +124,12 @@
 		}
 	}
 	#bundle-list {
-		.list-item.selected .name {
-			transition: color $duration steps(16);//$ease;// $delay;
+		// .list-item.selected .name {
+		.list-item .name {
+			transition: tx(color, 1, 0);//steps(16)
 		}
 		&:not(.collapsed) .list-item.selected .name {
-			// transition: color $duration steps(16);//$ease;// $delay;
 			color: $link_color;
-			// color: hsla(0 ,0% ,100% ,0.75);
-			// text-shadow:
-			// 	-4px 0px rgba(255, 0, 0, 0.33),
-			// 	0px 0px rgba(0, 0, 255, 0.33),
-			// 	4px 0px rgba(64, 255, 32, 0.5)
 		}
 	}
 }

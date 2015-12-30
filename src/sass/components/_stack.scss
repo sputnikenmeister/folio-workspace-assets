@@ -16,7 +16,8 @@
 	}
 	&.skip-transitions > .stack-item {
 		&, &.current {
-			transition: none 0s ease 0s;
+			@include skip_transitions;
+			// transition: none 0s ease 0s;
 		}
 	}
 }

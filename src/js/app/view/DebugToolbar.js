@@ -41,11 +41,11 @@ var DebugToolbar = Backbone.View.extend({
 		});
 		
 		/* toggle visibility
-		 * - - - - - - - - - - - - - - - - */
+		/* - - - - - - - - - - - - - - - - */
 		this.initializeToggle(this.el.querySelector(".debug-links dt"), "show-links", this.el);
 		
 		/* container toggles
-		 * - - - - - - - - - - - - - - - - */
+		/* - - - - - - - - - - - - - - - - */
  		var container = document.body.querySelector("#container");
 		
 		this.initializeToggle(this.el.querySelector("#toggle-grid-bg a"), "debug-grid-bg", container);
@@ -93,7 +93,7 @@ var DebugToolbar = Backbone.View.extend({
 	_onSelectOneBundle: function(bundle) {
 		var mediaItems = bundle.get("media");
 		
-		this._onSelectAnyMedia.call(this, mediaItems.selected);
+		this._onSelectAnyMedia(mediaItems.selected);
 		this.listenTo(mediaItems, "select:one select:none", this._onSelectAnyMedia);
 		this.listenToOnce(bundle, "deselected", function () {
 			this.stopListening(mediaItems, "select:one select:none", this._onSelectAnyMedia);
@@ -101,7 +101,7 @@ var DebugToolbar = Backbone.View.extend({
 	},
 	
 	_onSelectAnyMedia: function(media) {
-		this.mediaInfoEl.textContent = media? mediaInfoTemplate(media.toJSON()) : "";
+		this.mediaInfoEl.textContent = media? mediaInfoTemplate(media.get("source").toJSON()) : "";
 		this.mediaInfoEl.style.display = media? "" : "none";
 	},
 });

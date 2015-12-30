@@ -150,21 +150,30 @@
 	.default-layout .media-carousel {
 		// .carousel-item.empty-item .content {}
 		.carousel-item.empty-item.selected .content {
-			transition-property: 		transform, 					opacity;
+			// transition-property: 		transform, 					opacity;
 			// transition-timing-function:	step-start, 				cubic-bezier(0.2, 1.75, 0.2, 1.75);
-			transition-delay: 			#{$delay*1 - 0.001s},		#{$delay*0 + 0.001s};
-			transition-duration:		#{$duration*0 + 0.001s},	#{$duration*3 - 0.001s};
+			// transition-delay: 			#{$delay*1 - 0.001s},		#{$delay*0 + 0.001s};
+			// transition-duration:		#{$duration*0 + 0.001s},	#{$duration*3 - 0.001s};
+			// transition: 
+			// 	tx(transform, 1, 1),
+			// 	tx(opacity, 3, 0);
 		}
 		// FIXME: .container-expanded animation
 		&:not(.scrolling) .carousel-item.empty-item.selected .content {
-			transition-timing-function:	step-start, 				cubic-bezier(0.25, -0.75, 0.25, -0.75);
-			transform: translate(0, 0);
+			// transition-timing-function:	step-start, 				cubic-bezier(0.25, -0.75, 0.25, -0.75);
+			transform: move(0, 0);
 			// opacity: 1;
+			transition: 
+				tx(transform, 1, 1, step-start),
+				tx(opacity, 3, 0, cubic-bezier(0.25, -0.75, 0.25, -0.75));
 		}
 		&.disabled .carousel-item.empty-item.selected .content {
-			transition-timing-function:	step-start, 				cubic-bezier(0.25, 1.75, 0.25, 1.75);
-			transform: translate($aside_width_large, 0);
+			// transition-timing-function:	step-start, 				cubic-bezier(0.25, 1.75, 0.25, 1.75);
+			transform: move($aside_width_large, 0);
 			// opacity: 0.15;
+			transition: 
+				tx(transform, 1, 1, step-start),
+				tx(opacity, 3, 0, cubic-bezier(0.25, 1.75, 0.25, 1.75));
 		}
 		
 	}

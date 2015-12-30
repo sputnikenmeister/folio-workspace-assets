@@ -15,7 +15,6 @@
 html, body {
 	height: 100%;
 }
-
 #container {
 	width: 100%;
 	height: 100%;
@@ -41,7 +40,6 @@ html, body {
 	visibility: hidden;
 	opacity: 0;
 }
-// body.skip-transitions *,
 .app-initial * {
 	@include skip_transitions;
 }
@@ -65,13 +63,6 @@ body, .color-tx {
 	transition:
 		tx(background-color, 1, 1),
 		tx(color, 1, 1);
-	// transition:
-	// 	background-color $duration $ease $delay,
-	// 	color $duration $ease $delay;
-	// transition-property: background-color, color;
-	// transition-delay: $delay + 0.001s;
-	// transition-duration: $duration - 0.001s;
-	// transition-timing-function: $ease;
 }
 
 // -----------------------------------

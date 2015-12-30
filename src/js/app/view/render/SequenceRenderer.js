@@ -59,13 +59,13 @@ var errorTemplate = require("../template/ErrorBlock.hbs");
 /* Private classes
 /* --------------------------- */
 
-/**
-* @constructor
-* @type {module:app/view/render/SequenceRenderer.SourceCollection}
-*/
-var SourceCollection = SelectableCollection.extend({
-	model: Backbone.Model
-});
+// /**
+// * @constructor
+// * @type {module:app/view/render/SequenceRenderer.SourceCollection}
+// */
+// var SourceCollection = SelectableCollection.extend({
+// 	model: Backbone.Model
+// });
 
 /**
 * @constructor
@@ -115,6 +115,7 @@ var PrefetechedSourceRenderer = View.extend({
 		var prefetched = this.model.get("prefetched");
 		if (prefetched !== this.el.src) {
 			this.el.src = prefetched;
+		}
 			_whenImageLoads(this.el).then(
 				function(el) {
 					this.requestAnimationFrame(function(tstamp) {
@@ -126,7 +127,7 @@ var PrefetechedSourceRenderer = View.extend({
 					throw err;
 				}
 			);
-		}
+		// }
 	},
 	
 	// _renderError: function() {
@@ -206,7 +207,7 @@ var PrefetechedSourceRenderer = View.extend({
 var SourceErrorRenderer = View.extend({
 	
 	/** @type {string} */
-	className: "sequence-step error color-bg color-reverse",
+	className: "sequence-step error",
 	/** @override */
 	cidPrefix: "sourceErrorRenderer",
 	/** @override */
@@ -255,13 +256,22 @@ var SequenceRenderer = PlayableRenderer.extend({
 				return this._paused;
 			}
 		},
+		// sources: {
+		// 	get: function() {
+		// 		// return this._createSourceCollection(this.model);
+		// 		return this.model.get("sources");
+		// 	}
+		// }
 	},
 	
 	/* --------------------------- *
 	/* initialize
 	/* --------------------------- */
 	
-	_playbackRequested: true,
+	initialize: function() {
+		this.sources = this.model.get("sources");
+		PlayableRenderer.prototype.initialize.apply(this, arguments);
+	},
 	
 	initializeAsync: function() {
 		return PlayableRenderer.prototype.initializeAsync.apply(this, arguments)
@@ -291,37 +301,31 @@ var SequenceRenderer = PlayableRenderer.extend({
 		this.content = this.el.querySelector(".content");
 		this.content.classList.add("started");
 		
-		var contentStyles = ["box-shadow", "border", "border-radius"];
-		var placeholderStyles = ["border-radius"];
-		var attrs = this.model.get("attrs");
-		// for (var s in attrs) {
-		// 	if (typeof attrs[s] != "string") {
-		// 		continue;
-		// 	}
-		// 	if (contentStyles.indexOf(s) != -1) {
-		// 		this.content.style[s] = attrs[s];
-		// 	}
-		// 	if (placeholderStyles.indexOf(s) != -1) {
-		// 		this.placeholder.style[s] = attrs[s];
-		// 	}
-		// }
-		var s, i, ii;
-		for (i = 0, ii = contentStyles.length; i < ii; i++) {
-			s = contentStyles[i];
-			if (typeof attrs[s] == "string") {
-				this.content.style[s] = attrs[s];
-			}
-		}
-		for (i = 0, ii = placeholderStyles.length; i < ii; i++) {
-			s = placeholderStyles[i];
-			if (typeof attrs[s] == "string") {
-				this.placeholder.style[s] = attrs[s];
-			}
-		}
-		
 		this.playToggle = this.el.querySelector(".play-toggle");
 		this.sequence = this.content.querySelector(".sequence");
 		this.overlay = this.content.querySelector(".overlay");
+		
+		// styles
+		// ---------------------------------
+		var s, attrs = this.model.get("attrs");
+		s = _.pick(attrs, "box-shadow", "border", "border-radius");
+		_.extend(this.content.querySelector(".media-border").style, s);
+		s = _.pick(attrs, "border-radius");
+		_.extend(this.sequence.style, s);
+		_.extend(this.placeholder.style, s);
+		
+		// model
+		// ---------------------------------
+		this.sources.select(this.model.get("source"));
+		
+		// itemViews
+		// ---------------------------------
+		this.itemViews = new Container();
+		// add default image as renderer (already in DOM)
+		this.itemViews.add(new SequenceStepRenderer({
+			el: this.getDefaultImage(),
+			model: this.sources.selected
+		}));
 	},
 	
 	/* --------------------------- *
@@ -346,11 +350,22 @@ var SequenceRenderer = PlayableRenderer.extend({
 			el.style.width = cssW;
 			el.style.height = cssH;
 		}
-		
 		content.style.width = cssW;
 		content.style.height = cssH;
-		content.style.left = this.metrics.content.x + "px";
-		content.style.top = this.metrics.content.y + "px";
+		
+		// content-position
+		// ---------------------------------
+		var cssX, cssY;
+		cssX = this.metrics.content.x + "px";
+		cssY = this.metrics.content.y + "px";
+		content.style.left = cssX;
+		content.style.top = cssY;
+		
+		var controls = this.el.querySelector(".controls");
+		// controls.style.left = cssX;
+		// controls.style.top = cssY;
+		controls.style.width = this.metrics.content.width + "px";
+		controls.style.height = this.metrics.content.height + "px";
 		
 		// // content-size
 		// // ---------------------------------
@@ -370,12 +385,12 @@ var SequenceRenderer = PlayableRenderer.extend({
 	initializeSequence: function() {
 		// Sequence model
 		// ---------------------------------
-		this.sources = this._createSourceCollection(this.model);
+		// this.sources = this._createSourceCollection(this.model);
 		whenSelectionDistanceIs(this, 0).then(this._preloadAllItems);
 		
 		// timer
 		// ---------------------------------
-		this._sequenceInterval = parseInt(this.model.attrs()["@sequence-interval"]) || 2500;
+		this._sequenceInterval = parseInt(this.model.attr("@sequence-interval")) || 2500;
 		
 		this.timer = new Timer();
 		this.listenTo(this, "view:removed", function () {
@@ -388,23 +403,20 @@ var SequenceRenderer = PlayableRenderer.extend({
 			"end": this._onTimerEnd,
 			// "stop": function () { // stop is only called on view remove},
 		});
-		// this.listenToOnce(this.timer, "start", function() {
-		//	this.content.classList.add("started");
-		// });
 		
-		// itemViews
-		// ---------------------------------
-		this.itemViews = new Container();
-		// add default image as renderer (already in DOM)
-		this.itemViews.add(new SequenceStepRenderer({
-			el: this.getDefaultImage(),
-			model: this.sources.selected
-		}));
-		
-		// progress-meter
+		// preload sources
 		// ---------------------------------
 		this._sourceProgressByIdx = this.sources.map(function() { return 0; });
 		this._sourceProgressByIdx[0] = 1; // first item is already loaded
+		// this.listenToOnce(this.timer, "start", function() {
+		// 	// this.content.classList.add("started");
+		// 	this._preloadAllItems(this);
+		// });
+		
+		// progress-meter
+		// ---------------------------------
+		// this._sourceProgressByIdx = this.sources.map(function() { return 0; });
+		// this._sourceProgressByIdx[0] = 1; // first item is already loaded
 		
 		// var labelFn = function() { // play: 0x23F5, pause: 0x23F8, stop: 0x23F9
 		// 	return this._paused?
@@ -424,9 +436,9 @@ var SequenceRenderer = PlayableRenderer.extend({
 				amount: this.sources.length,
 				available: this.sources.length,
 			},
-			color: this.model.attrs()["color"],
-			backgroundColor: this.model.attrs()["background-color"],
-			labelFn: this._progressLabelFn.bind(this)//labelFn
+			color: this.model.attr("color"),
+			backgroundColor: this.model.attr("background-color"),
+			labelFn: this._progressLabelFn.bind(this)
 		});
 		
 		this.el.querySelector(".top-bar").appendChild(this.progressMeter.render().el);
@@ -437,30 +449,33 @@ var SequenceRenderer = PlayableRenderer.extend({
 		return (this.sources.selectedIndex + 1) + "/" + this.sources.length;
 	},
 	
-	_createSourceCollection: function(mediaItem) {
-		var sources = new SourceCollection(mediaItem.get("srcset"));
-		// bind sources[0].prefetched to this.model.prefetched
-		var defaultModel = sources.at(0);
-		if (mediaItem.has("prefetched")) {
-			defaultModel.set("prefetched", mediaItem.get("prefetched"));
-		} else {
-			mediaItem.once("change:prefetched", function() {
-				defaultModel.set("prefetched", mediaItem.get("prefetched"));
-			});
-		}
-		// select it
-		sources.select(defaultModel);
-		// return collection
-		return sources;
-	},
+	// _createSourceCollection: function(mediaItem) {
+	// 	var sources = new SourceCollection(mediaItem.get("srcset"));
+	// 	sources.forEach(function(item) {
+	// 		item.set("media", mediaItem);
+	// 	});
+	// 	// bind sources[0].prefetched to this.model.prefetched
+	// 	var defaultModel = sources.at(0);
+	// 	if (mediaItem.has("prefetched")) {
+	// 		defaultModel.set("prefetched", mediaItem.get("prefetched"));
+	// 	} else {
+	// 		mediaItem.once("change:prefetched", function() {
+	// 			defaultModel.set("prefetched", mediaItem.get("prefetched"));
+	// 		});
+	// 	}
+	// 	// select it
+	// 	sources.select(defaultModel);
+	// 	// return collection
+	// 	return sources;
+	// },
 	
 	_preloadAllItems: function(view) {
-		var tplObj = {};
-		var tplFn = Globals.IMAGE_URL_TEMPLATES["original"];
-		if (this.model.attrs()["@debug-bandwidth"]) {
-			tplObj.kbps = this.model.attrs()["@debug-bandwidth"];
-			tplFn = Globals.IMAGE_URL_TEMPLATES["debug-bandwidth"];
-		}
+		// var tplObj = {};
+		// var tplFn = Globals.MEDIA_SRC_TPL["original"];
+		// if (this.model.attr("@debug-bandwidth")) {
+		// 	tplObj.kbps = this.model.attr("@debug-bandwidth");
+		// 	tplFn = Globals.MEDIA_SRC_TPL["debug-bandwidth"];
+		// }
 		view.once("view:remove", function() {
 			var opts = { silent: true };
 			view.sources.forEach(function(item, index, sources) {
@@ -477,18 +492,16 @@ var SequenceRenderer = PlayableRenderer.extend({
 					view._updateItemProgress(1, index);
 					return view;
 				} else {
-					tplObj.src = item.get("src");
-					return _loadImageAsObjectURL(tplFn(tplObj), function(progress) {
+					var sUrl = item.get("original");
+					return _loadImageAsObjectURL(sUrl, function(progress) {
 						view._updateItemProgress(progress, index);
 					}).then(function(pUrl) {
 						view._updateItemProgress(1, index);
 						item.set("prefetched", pUrl);
-						// view.sequence.appendChild(view._getItemRenderer(item).render().el);
 						return view;
 					}, function(err) {
 						view._updateItemProgress(0, index);
 						item.set("error", err);
-						// view.sequence.appendChild(view._getItemRenderer(item).render().el);
 						return view;
 					});
 				}
@@ -523,6 +536,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/* ---------------------------
 	/* PlayableRenderer overrides
 	/* --------------------------- */
+	
+	_playbackRequested: true,
 	
 	/** @override */
 	togglePlayback: function(newPlayState) {
@@ -582,26 +597,59 @@ var SequenceRenderer = PlayableRenderer.extend({
 	
 	_onTimerEnd: function() {
 		var context = this;
-		var nextItem = this.sources.followingOrFirst();
-		var nextView = context._getItemRenderer(nextItem).el;
+		var nextSource, nextView;
+		
+		nextSource = this.sources.followingOrFirst();
+		
+		// var afterNextItem, afterNextView;
+		// afterNextItem = this.sources.followingOrFirst(afterNextItem);
+		// afterNextView = context._getItemRenderer(afterNextItem).el;
 		
 		var showNextView = function() {
 			context.requestAnimationFrame(function() {
 				context.content.classList.remove("waiting");
 				if (!context.paused) {
-					context.sources.select(nextItem);// NOTE: step increase done here
+					context.content.classList.toggle("playback-error", nextSource.has("error"));
+					context.sources.select(nextSource);// NOTE: step increase done here
 					// view.updateOverlay(nextView.el, view.overlay);
 					context.timer.start(context._sequenceInterval);
 				}
 			});
 		};
 		
-		if (nextItem.has("prefetched") || nextItem.has("error")) {
+		// var showNext = function() {
+		// 	context.content.classList.remove("waiting");
+		// 	if (!context.paused) {
+		// 		context.sources.select(nextSource);// NOTE: step increase done here
+		// 		// view.updateOverlay(nextView.el, view.overlay);
+		// 		context.timer.start(context._sequenceInterval);
+		// 	}
+		// };
+		// var prepareNextErrorView = function() {
+		// 	nextView = context._getItemRenderer(nextSource).el;
+		// 	context.requestAnimationFrame(function() {
+		// 		context.content.classList.add("playback-error");
+		// 		showNext();
+		// 	});
+		// };
+		// var prepareNextView = function() {
+		// 	nextView = context._getItemRenderer(nextSource).el;
+		// 	_whenImageLoads(nextView.el).then(function() {
+		// 		context.requestAnimationFrame(function() {
+		// 			context.content.classList.remove("playback-error");
+		// 			showNext();
+		// 		})
+		// 	});
+		// };
+		
+		if (nextSource.has("prefetched") || nextSource.has("error")) {
+			nextView = context._getItemRenderer(nextSource).el;
 			_whenImageLoads(nextView.el).then(showNextView, showNextView);
 		} else {
 			this.content.classList.add("waiting");
-			this.listenTo(nextItem, "change:prefetched change:error", function() {
-				this.stopListening(nextItem, "change:prefetched change:error");
+			this.listenTo(nextSource, "change:prefetched change:error", function() {
+				this.stopListening(nextSource, "change:prefetched change:error");
+				nextView = context._getItemRenderer(nextSource).el;
 				_whenImageLoads(nextView.el).then(showNextView, showNextView);
 			});
 		}
@@ -629,8 +677,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 	// 	var imageData = this._drawMediaElement(context).getImageData(0, 0, canvas.width, canvas.height);
 	// 	
 	// 	var opts = { radius: 20 };
-	// 	var fgColor = new Color(this.model.attrs()["color"]);
-	// 	var bgColor = new Color(this.model.attrs()["background-color"]);
+	// 	var fgColor = new Color(this.model.attr("color"));
+	// 	var bgColor = new Color(this.model.attr("background-color"));
 	// 	var isFgDark = fgColor.luminosity() < bgColor.luminosity();
 	// 	opts.x00 = isFgDark? fgColor.clone().lighten(0.33) : bgColor.clone().darken(0.33);
 	// 	opts.xFF = isFgDark? bgColor.clone().lighten(0.33) : fgColor.clone().darken(0.33);

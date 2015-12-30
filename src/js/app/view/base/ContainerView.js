@@ -1,6 +1,6 @@
 /**
- * @module app/view/base/ContainerView
- */
+/* @module app/view/base/ContainerView
+/*/
 
 /** @type {module:backbone} */
 var Backbone = require("backbone");
@@ -20,16 +20,22 @@ var TouchManager = require("app/control/TouchManager");
 var controller = require("app/control/Controller");
 
 /**
- * @constructor
- * @type {module:app/view/base/ContainerView}
- */
+/* @constructor
+/* @type {module:app/view/base/ContainerView}
+/*/
 module.exports = View.extend({
 	
 	className: "container container-expanded",
 	
-	/** @override */
-	constructor: function(options) {
-		View.apply(this, arguments);
+	properties: {
+		collapsed: {
+			get: function() {
+				return this._collapsed;
+			},
+			set: function(collapsed) {
+				this._setCollapsed(collapsed);
+			}
+		}
 	},
 	
 	initialize: function (options) {
@@ -44,35 +50,39 @@ module.exports = View.extend({
 		this.listenTo(this, "collapsed:change", this._onCollapseChange);
 	},
 	
-	properties: {
-		collapsed: {
-			get: function() {
-				return this._collapsed;
-			},
-			set: function(collapsed) {
-				this._setCollapsed(collapsed);
+	renderLater: function() {
+		if (this._collapseChanged) {
+			this._collapseChanged = true;
+			if (this.collapsed) {
+				this.el.classList.remove("container-expanded");
+				this.el.classList.add("container-collapsed");
+			} else {
+				this.el.classList.remove("container-collapsed");
+				this.el.classList.add("container-expanded");
 			}
+			// this.el.classList.toggle("container-collapsed", this.collapsed);
+			// this.el.classList.toggle("container-expanded", !this.collapsed);
 		}
 	},
 	
 	/* -------------------------------
-	 * collapse
-	 * ------------------------------- */
-	 
+	/* collapse
+	/* ------------------------------- */
+	
 	_collapsed: false,
-
+	
 	_setCollapsed: function(collapsed) {
 		if (this._collapsed !== collapsed) {
+			this._collapseChanged = true;
 			this._collapsed = collapsed;
-			this.el.classList.toggle("container-collapsed", collapsed);
-			this.el.classList.toggle("container-expanded", !collapsed);
+			this.requestRender();
 			this.trigger("collapsed:change", collapsed);
 		}
 	},
 	
 	/* -------------------------------
-	 * Router -> Model change
-	 * ------------------------------- */
+	/* Router -> Model change
+	/* ------------------------------- */
 	 
 	_beforeChange: function(bundle, media) {
 		// console.log(">>>> ContainerView._beforeChange");
@@ -81,7 +91,7 @@ module.exports = View.extend({
 	
 	_afterChange: function(bundle, media) {
 		// console.log("<<<< ContainerView._afterChange");
-		// this.setCollapsed(bundle !== void 0);
+		// this._setCollapsed(bundle !== void 0);
 		// this.transforms.validate();
 	},
 	

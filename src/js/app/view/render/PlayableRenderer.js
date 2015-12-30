@@ -269,14 +269,14 @@ var PlayableRenderer = MediaRenderer.extend({
 		// NOTE: mediaEl is expected to have the same dimensions in this.metrics.media 
 		mediaEl || (mediaEl = this.defaultImage);
 		dest || (dest = {
-			x:0, y:0,
+			x: 0, y: 0,
 			width: this.metrics.media.width,
 			height: this.metrics.media.height
 		});
 			
 		// native/display scale
-		var sW = this.model.get("w"),
-			sH = this.model.get("h"),
+		var sW = this.model.get("source").get("w"),
+			sH = this.model.get("source").get("h"),
 			rsX = sW/this.metrics.media.width,
 			rsY = sH/this.metrics.media.height;
 		
@@ -388,8 +388,8 @@ var PlayableRenderer = MediaRenderer.extend({
 		// Color, filter opts
 		// ------------------------------
 		
-		// this.fgColor || (this.fgColor = new Color(this.model.attrs()["color"]));
-		// this.bgColor || (this.bgColor = new Color(this.model.attrs()["background-color"]));
+		// this.fgColor || (this.fgColor = new Color(this.model.attr("color")));
+		// this.bgColor || (this.bgColor = new Color(this.model.attr("background-color")));
 		// 
 		// var opts = { radius: 20 };
 		// var isFgDark = this.fgColor.luminosity() < this.bgColor.luminosity();
