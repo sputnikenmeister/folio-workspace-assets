@@ -44,6 +44,8 @@ var transitionEnd = require("utils/event/transitionEnd");
 /** @type {module:utils/prefixedProperty} */
 var prefixedProperty = require("utils/prefixedProperty");
 
+var tx = Globals.transitions;
+
 
 /**
  * @constructor
@@ -73,8 +75,6 @@ var ContentView = ContainerView.extend({
 			"deselect:none": this._onDeselectMedia,
 		};
 		this.listenTo(bundles, this.bundleListeners);
-		
-		// this.skipTransitions = true;
 	},
 	
 	/** @override */
@@ -117,6 +117,10 @@ var ContentView = ContainerView.extend({
 	// 	this._transformsChanged = true;
 	// 	this.requestRender();
 	// },
+	// invalidateChildren: function() {
+	// 	this._childrenChanged = true;
+	// 	this.requestRender();
+	// },
 	
 	/* -------------------------------
 	/* collapse
@@ -126,6 +130,19 @@ var ContentView = ContainerView.extend({
 		this.itemViews.forEach(function(view) {
 			view.setEnabled(collapsed);
 		});
+	},
+	
+	/* -------------------------------
+	/* Router -> before model change
+	/* ------------------------------- */
+	 
+	_beforeChange: function(bundle, media) {
+		this._bundleChanging = (bundle !== bundles.selected);
+	},
+	
+	_afterChange: function(bundle, media) {
+		this._bundleChanging = false;
+		this.transforms.validate();
 	},
 	
 	/* --------------------------- *
@@ -159,7 +176,6 @@ var ContentView = ContainerView.extend({
 	_onSelectNone: function() {
 		this.touch.off("vpanstart", this._onVPanStart);
 		this.collapsed = false;
-		
 	},
 	
 	/* --------------------------- *
@@ -169,8 +185,7 @@ var ContentView = ContainerView.extend({
 	_onDeselectMedia: function(media) {
 		if (!this.collapsed) {
 			this.transforms.clearAllOffsets();
-			this.transforms.runAllTransitions(Globals.TRANSIT_ENTERING);
-			// this.transforms.validate();
+			this.transforms.runAllTransitions(tx.LAST);
 		}
 	},
 	
@@ -179,34 +194,13 @@ var ContentView = ContainerView.extend({
 			this.collapsed = true;
 		}
 	},
-
-	/* -------------------------------
-	/* Router -> before model change
-	/* ------------------------------- */
-	 
- 	_beforeChange: function(bundle, media) {
- 		this._bundleChanging = (bundle !== bundles.selected);
-		// this.invalidateTransforms();
- 	},
-	
-	_afterChange: function(bundle, media) {
-		this._bundleChanging = false;
-		
-		this.transforms.validate();
-	},
 	
 	/* -------------------------------
 	/* create/remove children on bundle selection
 	/* ------------------------------- */
 	
-	// invalidateChildren: function() {
-	// 	this._childrenChanged = true;
-	// 	this.requestRender();
-	// },
-	
 	/** Create children on bundle select */
 	createChildren: function (bundle) {
-		//this.itemViews.push();
 		var transitionProp = prefixedProperty("transition");
 		
 		this.captionStack = this.createMediaCaptionStack(bundle);
@@ -226,11 +220,10 @@ var ContentView = ContainerView.extend({
 						if (ev.target === view.el) {
 							view.el.removeEventListener(transitionEnd, transitionHandler, false);
 							view.el.style.removeProperty(transitionProp);
-							// console.log("ContentView", "TX IN", view.cid);
 						}
 					};
 					view.el.addEventListener(transitionEnd, transitionHandler, false);
-					view.el.style[transitionProp] = "opacity " + Globals.TRANSIT_ENTERING.cssText;
+					view.el.style[transitionProp] = "opacity " + tx.LAST.cssText;
 					view.el.style.removeProperty("opacity");
 				};
 				this.requestAnimationFrame(rafHandler);
@@ -269,10 +262,9 @@ var ContentView = ContainerView.extend({
 					view.el.addEventListener(transitionEnd, transitionHandler, false);
 					view.el.classList.add("removing-child");
 					view.el.style[transformProp] = computedStyle[transformProp];
-					view.el.style[transitionProp] = "opacity " + Globals.TRANSIT_EXITING.cssText;
+					view.el.style[transitionProp] = "opacity " + tx.FIRST.cssText;
 					view.el.style.opacity = 0;
 				}
-				// console.log("ContentView.removeChildren", "transitionEnd", view.cid);
 			}
 		}, this);
 		this.itemViews.length = 0;
@@ -308,7 +300,7 @@ var ContentView = ContainerView.extend({
 		this.el.classList.add("container-changing");
 		this._onVPanMove(ev);
 	},
-
+	
 	_onVPanMove: function (ev) {
 		var delta = ev.thresholdDeltaY;
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
@@ -330,11 +322,11 @@ var ContentView = ContainerView.extend({
 			delta = (-delta) * Globals.VPAN_OUT_DRAG; // delta is opposite
 		}
 		delta *= this.collapsed? 1 : -1; // reapply sign
-
+		
 		this.transforms.offsetAll(0, delta);
 		this.transforms.validate();
 	},
-
+	
 	_onVPanFinal: function(ev) {
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
@@ -342,27 +334,27 @@ var ContentView = ContainerView.extend({
 		this.transforms.clearAllOffsets();
 		if (this.willCollapseChange(ev)) {
 			this.transforms.runAllTransitions(this.collapsed?
-					Globals.TRANSIT_EXITING : Globals.TRANSIT_ENTERING);
+					tx.FIRST : tx.LAST);
 			this.transforms.validate();
 			this.collapsed = !this.collapsed;
 		} else {
-			this.transforms.runAllTransitions(Globals.TRANSIT_IMMEDIATE);
+			this.transforms.runAllTransitions(tx.NOW);
 			this.transforms.validate();
 		}
 		this.el.classList.remove("container-changing");
 	},
-
+	
 	willCollapseChange: function(ev) {
 		return ev.type == "vpanend"? this.collapsed?
 			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
 			ev.thresholdDeltaY < (-Globals.COLLAPSE_THRESHOLD) :
 			false;
 	},
-
+	
 	/* -------------------------------
 	/* Components
 	/* ------------------------------- */
-
+	
 	/**
 	/* media-carousel
 	/*/
@@ -381,7 +373,7 @@ var ContentView = ContainerView.extend({
 			switch (item.attr("@renderer")) {
 				case "video": return VideoRenderer;
 				case "sequence": return SequenceRenderer;
-				case "image": return ImageRenderer;
+				// case "image": return ImageRenderer;
 				default: return ImageRenderer;
 			}
 		};
@@ -400,7 +392,7 @@ var ContentView = ContainerView.extend({
 		});
 		return view;
 	},
-
+	
 	/**
 	/* media-caption-stack
 	/*/
@@ -412,7 +404,7 @@ var ContentView = ContainerView.extend({
 		});
 		return view;
 	},
-
+	
 	/**
 	/* media-dotnav
 	/*/
@@ -429,23 +421,6 @@ var ContentView = ContainerView.extend({
 		});
 		return view;
 	},
-	
-	/**
-	/* label-carousel
-	/*/
-	// createMediaCaptionCarousel: function(bundle, media) {
-	// 	var view = new Carousel({
-	// 		className: "label-carousel",
-	// 		collection: media,
-	// 		hammer: this.touch,
-	// 	});
-	// 	// controller.listenTo(view, {
-	// 	// 	"view:select:one": controller.selectMedia,
-	// 	// 	"view:select:none": controller.deselectMedia
-	// 	// });
-	// 	return view;
-	// },
-
 });
 
 module.exports = ContentView;

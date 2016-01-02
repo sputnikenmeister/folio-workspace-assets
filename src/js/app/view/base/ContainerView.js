@@ -50,20 +50,18 @@ module.exports = View.extend({
 		this.listenTo(this, "collapsed:change", this._onCollapseChange);
 	},
 	
-	renderLater: function() {
-		if (this._collapseChanged) {
-			this._collapseChanged = true;
-			if (this.collapsed) {
-				this.el.classList.remove("container-expanded");
-				this.el.classList.add("container-collapsed");
-			} else {
-				this.el.classList.remove("container-collapsed");
-				this.el.classList.add("container-expanded");
-			}
-			// this.el.classList.toggle("container-collapsed", this.collapsed);
-			// this.el.classList.toggle("container-expanded", !this.collapsed);
-		}
-	},
+	// renderLater: function() {
+	// 	if (this._collapseChanged) {
+	// 		this._collapseChanged = true;
+	// 		if (this.collapsed) {
+	// 			this.el.classList.add("container-collapsed");
+	// 			this.el.classList.remove("container-expanded");
+	// 		} else {
+	// 			this.el.classList.remove("container-collapsed");
+	// 			this.el.classList.add("container-expanded");
+	// 		}
+	// 	}
+	// },
 	
 	/* -------------------------------
 	/* collapse
@@ -73,9 +71,11 @@ module.exports = View.extend({
 	
 	_setCollapsed: function(collapsed) {
 		if (this._collapsed !== collapsed) {
-			this._collapseChanged = true;
 			this._collapsed = collapsed;
-			this.requestRender();
+			this.el.classList.toggle("container-collapsed", collapsed);
+			this.el.classList.toggle("container-expanded", !collapsed);
+			// this._collapseChanged = true;
+			// this.requestRender();
 			this.trigger("collapsed:change", collapsed);
 		}
 	},
@@ -85,17 +85,11 @@ module.exports = View.extend({
 	/* ------------------------------- */
 	 
 	_beforeChange: function(bundle, media) {
-		// console.log(">>>> ContainerView._beforeChange");
-		// this.transforms.captureAll();
 	},
 	
 	_afterChange: function(bundle, media) {
-		// console.log("<<<< ContainerView._afterChange");
-		// this._setCollapsed(bundle !== void 0);
-		// this.transforms.validate();
 	},
 	
 	_onCollapseChange: function(collapsed) {
-		// console.log("ContainerView._onCollapseChange(" + (collapsed?"true":"false") + ")");
 	},
 });

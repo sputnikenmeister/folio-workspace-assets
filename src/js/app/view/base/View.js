@@ -391,9 +391,11 @@ var ViewProto = {
 	renderNow: function(force) {
 		if (this._isPendingRender()) {
 			this._cancelRender();
-			this._applyRender(Date.now());
-		} else if (force === true) {
-			this._applyRender(Date.now());
+			force = true;
+		}
+		if (force === true) {
+			this._applyRender(window.performance? window.performance.now() : Date.now());
+			// this._applyRender(Date.now());
 		}
 		return this;
 	},

@@ -74,15 +74,15 @@
 		position: absolute;
 		
 		// background-size: 3.3rem 3.3rem;
-		// background-size: 49px 49px;
-		background-size: 111px 111px;
+		background-size: 49px 49px;
+		// background-size: 111px 111px;
 		background-position: center center;
 		background-repeat: no-repeat;
 	}
 	// :not(.started) .play-toggle {
-	.playing.waiting .play-toggle {
-		background-size: 69px 69px;
-	}
+	// .started.playing.waiting .play-toggle {
+	// 	background-size: 69px 69px;
+	// }
 	// .play-toggle {
 	// 	$size: 49px;//50%;//12em; 
 	// 	width: $size; height: $size;

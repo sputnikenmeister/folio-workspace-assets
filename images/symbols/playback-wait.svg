@@ -15,7 +15,7 @@
 		<use xlink:href="#r1" transform="rotate(330 0 0)"/>
 	</g>
 </defs>
-<rect x="-200" y="-200" width="400" height="400" rx="10" style="fill:#000;fill-opacity:0.8"/>
+<rect x="-200" y="-200" width="400" height="400" rx="10" style="fill:#000;fill-opacity:0.2"/>
 <g>
 	<use xlink:href="#rr" style="fill:#000" transform="translate(5 5)"/>
 	<animateTransform attributeName="transform" type="rotate" from="0 5 5" to="360 5 5" begin="0s" dur="3s" repeatCount="indefinite" />

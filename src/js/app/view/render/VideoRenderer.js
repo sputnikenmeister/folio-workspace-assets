@@ -242,7 +242,7 @@ var VideoRenderer = PlayableRenderer.extend({
 			var handlers = {
 				loadedmetadata: function(ev) {
 					if (ev) removeEventListeners();
-					console.log("%s::whenVideoHasMetadata [%s] %s", view.cid, "resolved", ev? ev.type : "sync");
+					// console.log("%s::whenVideoHasMetadata [%s] %s", view.cid, "resolved", ev? ev.type : "sync");
 					resolve(view);
 				},
 				abort: function(ev) {
@@ -512,6 +512,7 @@ var VideoRenderer = PlayableRenderer.extend({
 if (DEBUG) {
 
 VideoRenderer = (function(VideoRenderer) {
+	if (!VideoRenderer.LOG_TO_SCREEN) return VideoRenderer;
 	
 	/** @type {Function} */
 	var Color = require("color");

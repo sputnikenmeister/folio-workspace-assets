@@ -14,7 +14,7 @@ module.exports = function (grunt) {
 		dest: {
 			js:			"./js",
 			css:		"./css",
-			fonts:		"./images",
+			// fonts:		"./images",
 		},
 		ext: {
 			fonts: "*.{eot,woff,woff2,svg,ttf,otf}",
@@ -43,19 +43,21 @@ module.exports = function (grunt) {
 	/* Main Targets
 	/* -------------------------------- */
 	
+	
 	grunt.registerTask("build-debug-styles", ["compass:debug", "autoprefixer:debug"]);
 	grunt.registerTask("build-dist-styles", ["compass:dist", "compass:fonts", "autoprefixer:dist"]);
 	
-	grunt.registerTask("build-deps", ["modernizr-build:production"]);
-	grunt.registerTask("build-debug-vendor", ["build-deps", "browserify:vendor", "exorcise:vendor"]);
+	grunt.registerTask("build-debug-vendor", ["browserify:vendor", "exorcise:vendor"]);
 	grunt.registerTask("build-debug-client", ["browserify:client", "exorcise:client"]);
 	
+	grunt.registerTask("build-deps", ["modernizr-build:production"]);
 	grunt.registerTask("build-debug", ["build-debug-vendor", "build-debug-client","build-debug-styles"]);
-	grunt.registerTask("build-dist",  ["build-deps", "browserify:dist", "uglify:dist", "build-dist-styles"]);
+	grunt.registerTask("build-dist",  ["browserify:dist", "uglify:dist", "build-dist-styles"]);
 	
-	grunt.registerTask("clean-all", ["clean", "compass:clean"]);
-	grunt.registerTask("build-all", ["build-debug", "build-dist"]);
-	grunt.registerTask("build-clean-all", ["clean-all", "build-all"]);
+	// grunt.registerTask("clean-all", ["clean:build", "compass:clean"]);
+	grunt.registerTask("build", ["build-debug", "build-dist"]);
+	grunt.registerTask("rebuild", ["clean:build", "compass:clean", "build-deps", "build"]);
+	
 	grunt.registerTask("build-watch", ["browserify:watch-client", "browserify:watch-vendor", "watch"]);
 	
 	// Default task
@@ -118,7 +120,7 @@ module.exports = function (grunt) {
 	/* -------------------------------- */
 
 	grunt.loadNpmTasks("grunt-contrib-clean");
-	grunt.config("clean", {
+	grunt.config("clean.build", {
 		src: [
 			"./js/*",
 			"./css/*"
@@ -442,12 +444,22 @@ module.exports = function (grunt) {
 	/* resources
 	/* -------------------------------- */
 	
-	/* generate-favicons
+	/* generate-favicon
 	* - - - - - - - - - - - - - - - - - */
+	
+	// grunt.loadNpmTasks("grunt-contrib-clean"); // NOTE: already loaded above
+	grunt.config("clean.favicon", {
+		src: [
+			"<%= paths.src.generated %>/resources/favicon",
+			"./images/favicon"
+		]
+	});
 	grunt.loadNpmTasks("grunt-svg2png");
-	grunt.config("svg2png.favicons", {
+	grunt.config("svg2png.favicon", {
 		files: [{
-			cwd: "src/resources/favicon/", src: "*.svg"
+			cwd: "src/resources/favicon/",
+			src: "IMG_0139_*.svg",
+			dest: "<%= paths.src.generated %>/resources/favicon/"
 		}]
 	});
 	grunt.loadNpmTasks("grunt-favicons");
@@ -455,7 +467,7 @@ module.exports = function (grunt) {
 		options: {
 			trueColor: true,
 			tileBlackWhite: false,
-			html: "./build/sandbox/favicons.html",
+			html: "<%= paths.src.generated %>/resources/favicon/favicon.html",
 			HTMLPrefix: "/workspace/assets/images/favicon/"
 		},
 		steampunk: {
@@ -470,13 +482,16 @@ module.exports = function (grunt) {
 		img_0139: {
 			options: {
 				appleTouchPadding: 0,
+				firefox: true,
+				firefoxRound: true,
 			},
-			src: "src/resources/favicon/IMG_0139_fav.png",
+			src: "<%= paths.src.generated %>/resources/favicon/IMG_0139_fav.png",
 			dest: "images/favicon",
 		},
 	});
-	grunt.registerTask("generate-favicons", [
-		"svg2png:favicons",
+	grunt.registerTask("generate-favicon", [
+		"clean:favicon",
+		"svg2png:favicon",
 		"favicons:img_0139",
 		// "favicons:steampunk",
 	]);

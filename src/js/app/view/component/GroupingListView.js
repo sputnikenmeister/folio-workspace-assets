@@ -61,7 +61,7 @@ var GroupingListView = FilterableListView.extend({
 	renderFilterFn: function() {
 		FilterableListView.prototype.renderFilterFn.apply(this, arguments);
 		
-		var groups, groupIds;
+		var groups;
 		if (this._groupingFn) {
 			groups = this._filteredItems.map(this._groupingFn, this);
 			// groupIds = _.pluck(groups, "id");

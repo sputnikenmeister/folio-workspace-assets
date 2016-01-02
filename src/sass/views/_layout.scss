@@ -26,21 +26,18 @@ html, body {
 	}
 }
 
-// ------------------------------------
-// Body init
-// ------------------------------------
-.app-ready #container {
+// initialize fade-in
+// - - - - - - - - - - - - - - - - - -
+#container {
 	transition:
 		tx(opacity, 1, 1),
 		tx(visibility, 1, 1, step-start);
-	visibility: visible;
-	opacity: 1;
-}
-.app-initial #container {
-	visibility: hidden;
-	opacity: 0;
 }
 .app-initial * {
+	#container {
+		visibility: hidden;
+		opacity: 0;
+	}
 	@include skip_transitions;
 }
 

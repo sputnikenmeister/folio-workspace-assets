@@ -24,13 +24,16 @@ var stripTags = require("utils/strings/stripTags");
 // /** @type {module:app/model/parseSymAttrs} */
 // var parseSymAttrs = require("app/model/parseSymAttrs");
 
-// var computeSrc = function(media, src) {
-// 	var values = { src: src };
-// 	if (values.kbps = media.attr("@debug-bandwidth")) {
-// 		return Globals.MEDIA_SRC_TPL["debug-bandwidth"](values);
-// 	}
-// 	return Globals.MEDIA_SRC_TPL["original"](values);
-// };
+var urlTemplates = {
+	"original" :
+		_.template(Globals.MEDIA_DIR + "/<%= src %>"),
+	"constrain-width" :
+		_.template(Globals.APP_ROOT + "image/1/<%= width %>/0/uploads/<%= src %>"),
+	"constrain-height" :
+		_.template(Globals.APP_ROOT + "image/1/0/<%= height %>/uploads/<%= src %>"),
+	"debug-bandwidth":
+		_.template(Globals.MEDIA_DIR.replace(/(https?\:\/\/[^\/]+)/, "$1/slow/<%= kbps %>") + "/<%= src %>"),
+};
 
 /**
 * @constructor
@@ -140,7 +143,7 @@ module.exports = BaseItem.extend({
 	
 	_updateSources: function() {
 		var srcObj = { kbps: this.attr("@debug-bandwidth") };
-		var srcTpl = Globals.MEDIA_SRC_TPL[srcObj.kbps? "debug-bandwidth" : "original"];
+		var srcTpl = urlTemplates[srcObj.kbps? "debug-bandwidth" : "original"];
 		this.get("sources").forEach(function(item) {
 			srcObj.src = item.get("src");
 			item.set("original", srcTpl(srcObj));

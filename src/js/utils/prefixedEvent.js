@@ -28,3 +28,59 @@ module.exports = function(name, obj, testProp) {
 	console.warn("Event '%s' not found", name);
 	return null;
 };
+
+/*
+var tests = {
+	"transitionend" : function (style) {
+		style || (style = document.body.style);
+		var prop, map = {
+			"transition" : "transitionend",
+			"WebkitTransition" : "webkitTransitionEnd",
+			"MozTransition" : "transitionend",
+			// "msTransition" : "MSTransitionEnd",
+			"OTransition" : "oTransitionEnd"
+		};
+		for (prop in map) {
+			if (prop in style) {
+				return map[prop];
+			}
+		}
+	}
+};
+
+var defaultTest = function(name, obj) {
+	var prefixes = /^[A-Z]/.test(name)? ucPrefixes : lcPrefixes;
+	for (var i = 0; i < prefixes.length; i++) {
+		if (("on" + prefixes[i] + name) in obj) {
+			console.log("Event '%s' found as '%s'", name, prefixes[i] + name);
+			return prefixes[i] + name;
+		}
+	}
+	return null;
+};
+
+var propTest = function(name, obj, testProp) {
+	var prefixes = /^[A-Z]/.test(name)? ucPrefixes : lcPrefixes;
+	for (var i = 0; i < prefixes.length; i++) {
+		if ((prefixes[i] + testProp) in obj) {
+			console.log("Event %s inferred as '%s' from property '%s'", name, prefixes[i] + name, testProp);
+			return prefixes[i] + name;
+		}
+	}
+	return null;
+};
+
+module.exports = function(name, obj, testProp) {
+	if (name in tests) {
+		return tests[name]();
+	}
+	obj || (obj = document);
+	if (testProp) {
+		return propTest(name, obj, testProp);
+	}
+	return defaultTest(name, obj);
+	
+	console.warn("Event '%s' not found", name);
+	return null;
+};
+*/

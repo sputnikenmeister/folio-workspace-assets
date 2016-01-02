@@ -1,8 +1,5 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
-
 /** @type {module:app/view/promise/_whenImageLoads} */
 var _whenImageLoads = require("app/view/promise/_whenImageLoads");
 /** @type {module:app/view/promise/_loadImageAsObjectURL} */
@@ -20,30 +17,18 @@ module.exports = function(view) {
 			_whenImageLoads(view.defaultImage)
 				.then(
 					function(targetEl) {
-						console.log(logMessage, view.cid, "resolved", "prefetched");
+						// console.log(logMessage, view.cid, "resolved", "prefetched");
 						resolve(view);
 					});
 		} else {
 			view.mediaState = "pending";
 			
 			var sUrl = source.get("original");
-			// if (source.get("media").attrs().hasOwnProperty("@debug-bandwidth")) {
-			// 	sUrl = Globals.MEDIA_SRC_TPL["debug-bandwidth"]({
-			// 		src: source.get("src"),
-			// 		kbps: source.get("media").attr("@debug-bandwidth")
-			// 	});
-			// } else {
-			// 	sUrl = Globals.MEDIA_SRC_TPL["original"]({
-			// 		src: source.get("src")
-			// 	});
-			// }
-			
 			var progressFn = function (progress) {
 				// console.log(logMessage, view.cid, "progress", progress);
 				view.updateMediaProgress(progress, sUrl);
 			};
 			progressFn = _.throttle(progressFn, 100, {leading: true, trailing: false});
-			
 			_loadImageAsObjectURL(sUrl, progressFn)
 				.then(
 					function(url) {
@@ -57,7 +42,7 @@ module.exports = function(view) {
 				.then(_whenImageLoads)
 				.then(
 					function(targetEl) {
-						console.log(logMessage, view.cid, "resolved", targetEl.src);
+						// console.log(logMessage, view.cid, "resolved", targetEl.src);
 						view.on("view:removed", function() { 
 							var prefetched = source.get("prefetched");
 							if (prefetched && /^blob\:/.test(prefetched)) {
@@ -72,7 +57,7 @@ module.exports = function(view) {
 				// 	})
 				// .catch(
 					function(err) {
-						console.warn(logMessage, view.cid, "rejected", err.message);
+						// console.warn(logMessage, view.cid, "rejected", err.message);
 						// view.placeholder.removeAttribute("data-progress");
 						// view.updateMediaProgress(imageUrl, progress);
 						reject(err);

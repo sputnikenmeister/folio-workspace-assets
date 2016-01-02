@@ -42,6 +42,7 @@ module.exports = (function () {
 	g.TRANSITION_DURATION		=	parseFloat(sass.transitions["duration_ms"]);
 	g.TRANSITION_MIN_DELAY		=	parseFloat(sass.transitions["min_delay_ms"]);
 	g.TRANSITION_EASE			=	sass.transitions["ease"];
+	g.TRANSITION_DELAY			=	g.TRANSITION_DURATION + g.TRANSITION_DELAY_INTERVAL;
 	
 	// paths, networking
 	// - - - - - - - - - - - - - - - - -
@@ -78,65 +79,40 @@ module.exports = (function () {
 	// css transition presets
 	// TODO: get rid of this
 	// - - - - - - - - - - - - - - - - -
-	
-	g.NO_DELAY	 				=	0;
-	g.TRANSITION_DELAY			=	g.TRANSITION_DURATION + g.TRANSITION_DELAY_INTERVAL;
-	g.EXITING_DELAY 			=	g.TRANSITION_DELAY * 0 + g.TRANSITION_MIN_DELAY;
-	g.CHANGING_DELAY 			=	g.TRANSITION_DELAY * 1 + g.TRANSITION_MIN_DELAY;
-	g.ENTERING_DELAY 			=	g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY;
-	
-	/* Removing the gap would be more accutrate, but best to leave it for safety */
-	g.TRANSITION_END_TIMEOUT	=	g.TRANSITION_DELAY * 3 - g.TRANSITION_DELAY_INTERVAL;
-	// g.TRANSITION_END_TIMEOUT	=	g.TRANSITION_DELAY * 3;
 
 	var transitionTemplate = function(o) {
 		return o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
 	};
 	
-	o = {};
+	g.transitions = {};
+	
+	o = g.transitions.FIRST = {};
+	o.className = "tx-first";
 	o.easing = g.TRANSITION_EASE;
 	o.duration = g.TRANSITION_DURATION - g.TRANSITION_MIN_DELAY;
+	o.delay = g.TRANSITION_DELAY * 0 + g.TRANSITION_MIN_DELAY;
+	o.cssText = transitionTemplate(o);
 	
-	g.TRANSIT_ENTERING = _.clone(o);
-	g.TRANSIT_ENTERING.delay = g.ENTERING_DELAY;
-	g.TRANSIT_ENTERING.className = "transform-entering";
-	g.TRANSIT_ENTERING.cssText = transitionTemplate(g.TRANSIT_ENTERING);
+	o = g.transitions.BETWEEN = _.clone(o);
+	o.className = "tx-between";
+	o.delay = g.TRANSITION_DELAY * 1 + g.TRANSITION_MIN_DELAY;
+	o.cssText = transitionTemplate(o);
 	
-	g.TRANSIT_EXITING = _.clone(o);
-	g.TRANSIT_EXITING.delay = g.EXITING_DELAY;
-	g.TRANSIT_EXITING.className = "transform-exiting";
-	g.TRANSIT_EXITING.cssText = transitionTemplate(g.TRANSIT_EXITING);
+	o = g.transitions.LAST = _.clone(o);
+	o.className = "tx-last";
+	o.delay = g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY;
+	o.cssText = transitionTemplate(o);
 	
-	g.TRANSIT_IMMEDIATE = _.clone(o);
-	g.TRANSIT_IMMEDIATE.delay = g.NO_DELAY;
-	g.TRANSIT_IMMEDIATE.duration = g.TRANSITION_DURATION;
-	g.TRANSIT_IMMEDIATE.className = "transform-immediate";
-	g.TRANSIT_IMMEDIATE.cssText = transitionTemplate(g.TRANSIT_IMMEDIATE);
+	o = g.transitions.AFTER = _.clone(o);
+	o.className = "tx-after";
+	o.delay = g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY;
+	o.cssText = transitionTemplate(o);
 	
-	g.TRANSIT_CHANGING = _.clone(o);
-	g.TRANSIT_CHANGING.delay = g.CHANGING_DELAY;
-	g.TRANSIT_CHANGING.className = "transform-changing";
-	g.TRANSIT_CHANGING.cssText = transitionTemplate(g.TRANSIT_CHANGING);
-	
-	g.TRANSIT_XXX = _.clone(o);
-	g.TRANSIT_XXX.delay = g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY;
-	g.TRANSIT_XXX.className = "transform-xxx";
-	g.TRANSIT_XXX.cssText = transitionTemplate(g.TRANSIT_XXX);
-	
-	// Symphony CMS jit-image url templates
-	// TODO: get rid of this
-	// - - - - - - - - - - - - - - - - -
-	g.MEDIA_SRC_TPL = {
-		"original" :
-			_.template(g.MEDIA_DIR + "/<%= src %>"),
-		"constrain-width" :
-			_.template(g.APP_ROOT + "image/1/<%= width %>/0/uploads/<%= src %>"),
-		"constrain-height" :
-			_.template(g.APP_ROOT + "image/1/0/<%= height %>/uploads/<%= src %>"),
-		"debug-bandwidth":
-			_.template(g.MEDIA_DIR.replace(/(https?\:\/\/[^\/]+)/, "$1/slow/<%= kbps %>") + "/<%= src %>"),
-	};
-	// g.MEDIA_DIR_SLOW =	window.mediadir.replace(/(https?\:\/\/[^\/]+)/, "$1/slow/100");
+	o = g.transitions.NOW = _.clone(o);
+	o.className = "tx-now";
+	o.duration = g.TRANSITION_DURATION;
+	o.delay = 0;
+	o.cssText = transitionTemplate(o);
 	
 	return g;
 }());

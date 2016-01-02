@@ -46,7 +46,7 @@ var MediaRenderer = CarouselRenderer.extend({
 		// 	this.el.className += " " + this.model.attr("@classname");
 		// }
 		if (this.model.attr("@classname") !== void 0) {
-			this.el.classList.add(this.model.attr("@classname"))
+			this.el.classList.add(this.model.attr("@classname"));
 		}
 		CarouselRenderer.prototype.initialize.apply(this, arguments);
 		
@@ -68,7 +68,7 @@ var MediaRenderer = CarouselRenderer.extend({
 	},
 	
 	whenInitialized: function(view) {
-		console.log("%s::whenInitialized [%s]", view.cid, "resolved");
+		// console.log("%s::whenInitialized [%s]", view.cid, "resolved");
 		view.mediaState = "ready";
 		view.placeholder.removeAttribute("data-progress");
 		return view;
@@ -215,7 +215,7 @@ var MediaRenderer = CarouselRenderer.extend({
 		}
 	},
 },{
-
+	// LOG_TO_SCREEN: true,
 	/** @type {module:app/view/promise/whenSelectionIsContiguous} */
 	whenSelectionIsContiguous: require("app/view/promise/whenSelectionIsContiguous"),
 	// /** @type {module:app/view/promise/whenSelectTransitionEnds} */
@@ -232,6 +232,7 @@ var MediaRenderer = CarouselRenderer.extend({
 if (DEBUG) {
 
 MediaRenderer = (function(MediaRenderer) {
+	if (!MediaRenderer.LOG_TO_SCREEN) return MediaRenderer;
 	
 	/** @type {Function} */
 	var Color = require("color");

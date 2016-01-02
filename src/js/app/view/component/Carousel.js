@@ -885,7 +885,7 @@ var CarouselProto = {
 		
 		this._setScrolling(true);
 		this.scrollByNow(0, Carousel.ANIMATED);
-		this.renderNow();
+		// this.renderNow();
 		// console.warn("EXTERNAL");
 	},
 

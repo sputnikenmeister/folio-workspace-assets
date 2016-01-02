@@ -2,7 +2,7 @@
 <defs>
 	<path id="rr" d="M-40 -50 L65 0 L-40 50 Z M -132 -1.6e-14 A 132 132 0 1 0 -93.33809511662416 -93.33809511662439 L -76.36753236814704 -76.36753236814722 A 108 108 0 1 1 -108 -1.3e-14 H-85 L -120 -40 L -155 13e-14 Z"/>
 </defs>
-<rect x="-200" y="-200" width="400" height="400" rx="10" style="fill:#000;fill-opacity:0.8"/>
+<rect x="-200" y="-200" width="400" height="400" rx="10" style="fill:#000;fill-opacity:0.2"/>
 <use xlink:href="#rr" style="fill:#000" transform="translate(5 5)"/>
 <use xlink:href="#rr" style="fill:#fff"/>
 </svg>

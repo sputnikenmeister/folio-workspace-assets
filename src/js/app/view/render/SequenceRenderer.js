@@ -386,7 +386,13 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// Sequence model
 		// ---------------------------------
 		// this.sources = this._createSourceCollection(this.model);
-		whenSelectionDistanceIs(this, 0).then(this._preloadAllItems);
+		whenSelectionDistanceIs(this, 0).then(this._preloadAllItems, function(err) {
+			if (err instanceof View.ViewError) { // Ignore ViewError
+				// console.warn(err.name, err.message);//, err.view.cid);
+				return;
+			}
+			return err;
+		});
 		
 		// timer
 		// ---------------------------------
@@ -693,7 +699,10 @@ var SequenceRenderer = PlayableRenderer.extend({
 });
 
 if (DEBUG) {
+
 SequenceRenderer = (function(SequenceRenderer) {
+	if (!SequenceRenderer.LOG_TO_SCREEN) return SequenceRenderer;
+	
 	/** @type {module:underscore.strings/lpad} */
 	var lpad = require("underscore.string/lpad");
 	
