@@ -1,173 +1,152 @@
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 
-/** @type {module:utils/setImmediate} */
-var setImmediate = require("utils/setImmediate");
-
-var _now = window.performance? 
-	window.performance.now.bind(window.performance) :
-	Date.now.bind(Date);
-
-function Queue(id) {
-	this._id = id;
+function RequestQueue(indexOffset) {
+	this._offset = indexOffset | 0;
 	this._items = [];
 	this._priorities = [];
 	this._length = 0;
 }
-Queue.prototype = Object.create({
+
+RequestQueue.prototype = Object.create({
 	enqueue: function(item, priority) {
-		this._items.push(item);
-		this._priorities.push(priority | 0);
+		var i = this._items.length;
+		this._items[i] = item;
+		this._priorities[i] = { 
+			priority: (priority | 0),
+			index: i
+		};
 		this._length++;
-		return this.lastIndex;
+		return this._offset + i;
 	},
 	
 	skip: function(index) {
-		var item = this._items[index];
-		this._items[index] = null;
-		this._priorities[index] = null;
-		this._length++;
+		if (this.firstIndex > index || index > this.lastIndex) return;
+		var i = index - this.firstIndex;
+		var item = this._items[i];
+		this._items[i] = null;
+		this._length--;
+		if (this._length == 0) {
+			this.empty();
+		}
 		return item;
 	},
+	
+	items: function() {
+		return this._priorities.sort(function (a, b) {
+			if (a.priority > b.priority)
+				return 1;
+			if (a.priority < b.priority)
+				return -1;
+			return 0;
+		}).map(function(o, i, a) {
+			return this[o.index];
+		}, this._items);
+	},
+	
+	empty: function() {
+		this._offset = this.lastIndex + 1;
+		this._items.length = 0;
+		this._priorities.length = 0;
+		this._length = 0;
+	}
 }, {
-	lastIndex: { get: function() {
-		return this._items.length - 1;
+	
+	firstIndex: { get: function() {
+		return this._offset;
 	}},
+	
+	lastIndex: { get: function() {
+		return this._offset + this._items.length - 1;
+	}},
+	
 	length: { get: function() {
 		return this._length;
 	}},
-	id: { get: function() {
-		return this._id;
-	}},
 });
 
-var q = new Queue(1425);
-console.log("queue id:%i, length:%i", q.id, q.length);
-q.enqueue("xxx");
-console.log("queue id:%i, length:%i", q.id, q.length);
-
-var _queueItems = [];
-var _queueLen = 0;
-var _queueRafId = -1;
-var _queueIdxOffset = 0;
 var _queueRunning = false;
-var _queuePriority = [];
-
+var _queueItems = new RequestQueue(0);
+var _queueRafId = -1;
 /**
 /* @param tstamp {int}
 /*/
 var _runQueue = function(tstamp) {
 	var currItems = _queueItems;
-	var currLen = _queueLen;
 	var currRafId = _queueRafId;
-	var currPriority = _queuePriority;
+	var itemsArr;
 	
-	_queueItems = [];
-	_queueLen = 0;
-	_queueIdxOffset += currItems.length;
-	_queuePriority = [];
+	_queueItems = new RequestQueue(currItems.lastIndex);
 	_queueRunning = true;
-	
-	// currPriority.sort(function (a, b) {
-	// 	return a.priority - b.priority;
-	// });
-	currPriority.sort(function (a, b) {
-		if (a.priority > b.priority) {
-			return 1;
-		}
-		if (a.priority < b.priority) {
-			return -1;
-		}
-		// a must be equal to b
-		return 0;
-	});
-	currPriority.forEach(function(o) {
-		var fn = currItems[o.id];
+	itemsArr = currItems.items();
+	itemsArr.forEach(function(fn) {
 		if (fn !== null) fn(tstamp);
 	});
-	// currItems.forEach(function(fn, index) {
-	// 	if (fn !== null) fn(tstamp);
-	// });
-	
 	_queueRafId = -1;
 	_queueRunning = false;
 	
-	if (_queueLen > 0) {
+	if (_queueItems.length > 0) {
 		_queueRafId = window.requestAnimationFrame(_runQueue);
 	}
 };
 
-
-/**
-/* @param fn {Function}
-/* @param forceNext {int}
-/* @return {int}
-/*/
-var _requestCallback = function(fn, priority) {
-	if (!_queueRunning && _queueRafId == -1) {
-		_queueRafId = window.requestAnimationFrame(_runQueue);
-	}
-	var index = _queueItems.length;
-	_queueItems[index] = fn;
-	_queuePriority[index] = { priority: (priority || 0), id: index };
-	_queueLen++;
+var FrameQueue = Object.create({
+	/**
+	/* @param fn {Function}
+	/* @param forceNext {int}
+	/* @return {int}
+	/*/
+	request: function(fn, priority) {
+		if (!_queueRunning && _queueRafId == -1) {
+			_queueRafId = window.requestAnimationFrame(_runQueue);
+		}
+		return _queueItems.enqueue(fn, priority);
+	},
 	
-	return index + _queueIdxOffset;
-};
-
-/**
-/* @param id {int}
-/* @return {Function?}
-/*/
-var _cancelCallback = function(id) {
-	var fn, index;
-	
-	if (id < _queueIdxOffset) {
-		console.warn("FrameQueue::cancel [id:%i] past current offset %i", id, _queueIdxOffset);
-		return void 0;
-	}
-	index = id - _queueIdxOffset;
-	if (index >= _queueItems.length) {
-		return void 0;
-	}
-	fn = _queueItems[index];
-	if (fn === null) {
-		return null;
-	}
-	_queueItems[index] = null;
-	_queueLen--;
-	if (!_queueRunning && _queueLen == 0) {
-		window.cancelAnimationFrame(_queueRafId);
-		_queueRafId = -1;
-		_queueIdxOffset += _queueItems.length;
-		_queueItems.length = 0;
-	}
-	return fn;
-};
-
-var FrameQueue = Object.create(Object.prototype, {
+	/**
+	/* @param id {int}
+	/* @return {Function?}
+	/*/
+	cancel: function(id) {
+		var fn = _queueItems.skip(id);
+		if (!_queueRunning && _queueItems.length == 0) {
+			window.cancelAnimationFrame(_queueRafId);
+		}
+		return fn;
+	},
+}, {
 	running: {
 		get: function () {
 			return _queueRunning;
 		}
 	}
 });
-FrameQueue.request = _requestCallback;
-FrameQueue.cancel = _cancelCallback;
 
 if (DEBUG) {
-	// // log exec time
+	/** @type {module:underscore} */
+	var _ = require("underscore");
+	
+	// // log frame exec time
+	// var _now = window.performance? 
+	// 	window.performance.now.bind(window.performance) :
+	// 	Date.now.bind(Date);
 	// _runQueue = _.wrap(_runQueue, function(fn, tstamp) {
 	// 	var retval, tframe;
-	// 	console.log("[BEGIN] [%ims] %i calls (id offset: %i)", tstamp, _queueLen, _queueIdxOffset + _queueItems.length);
+	// 	console.log("[FRAME BEGIN] [%ims] %i items [ids:%i-%i]", tstamp, _queueItems.length, _queueItems.firstIndex, _queueItems.lastIndex);
 	// 	tframe = _now();
 	// 	retval = fn(tstamp);
 	// 	tframe = _now() - tframe;
-	// 	console.log("[ENDED] [%ims] took %ims\n---\n", tstamp + tframe, tframe);
-	// 	if (_queueLen != 0) console.info("[ENDED] %i scheduled for [raf:%i]", _queueLen,  _queueRafId);
+	// 	console.log("[FRAME ENDED] [%ims] took %ims\n---\n", tstamp + tframe, tframe);
+	// 	if (_queueItems.length != 0) console.info("[FRAME ENDED] %i items scheduled for [raf:%i]", _queueItems.length, _queueRafId);
 	// 	return retval;
 	// });
+	
+	// log frame end
+	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
+		var retval;
+		retval = fn(tstamp);
+		console.log("[Frame exit]\n---\n");
+		return retval;
+	});
 	
 	// use log prefix
 	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
@@ -188,7 +167,7 @@ if (DEBUG) {
 		} else if (retval === null) {
 			console.warn("FrameQueue::cancel [id:%i] already cancelled", id);
 		} else {
-			if (!_queueRunning && _queueLen == 0) {
+			if (!_queueRunning && _queueItems.length == 0) {
 				console.info("FrameQueue::cancel [raf:%i] cancelled (empty queue)", rafId);
 			} else {
 				// console.log("FrameQueue::cancel [id:%i] cancelled", id);

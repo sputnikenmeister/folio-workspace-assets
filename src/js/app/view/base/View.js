@@ -68,7 +68,7 @@ var _now = window.performance?
 	Date.now.bind(Date);
 
 /** @type {module:app/view/base/FrameQueue} */
-var FrameQueue = require("app/view/base/FrameQueue");
+var FrameQueue = require("app/view/base/FrameQueue2");
 
 /* -------------------------------
 /* prefixed events
@@ -94,7 +94,7 @@ var prefixProtoEvents = (function() {
 				eventNum++;
 			}
 		}
-		console.log("View::[init] prefixes enabled for %i events", eventNum, Object.keys(eventMap));
+		// console.log("View::[init] prefixes enabled for %i events", eventNum, Object.keys(eventMap));
 		return eventNum > 0? eventMap : null;
 	})();
 	
@@ -145,19 +145,20 @@ var View = {
 	
 	/** @const */
 	NONE_INVALID: 0,
+	
 	/** @const */
 	CHILDREN_INVALID: 1,
 	/** @const */
 	PROPS_INVALID: 2,
+	
+	/** @const */
+	RENDER_INVALID: 8 | 16,
 	/** @const */
 	CLASSES_INVALID: 4,
 	/** @const */
 	SIZE_INVALID: 8,
 	/** @const */
 	LAYOUT_INVALID: 16,
-	
-	/** @const */
-	RENDER_INVALID: 8 | 16,
 	
 	/** @type {module:app/view/base/ViewError} */
 	ViewError: require("app/view/base/ViewError"),
@@ -170,12 +171,6 @@ var View = {
 	
 	/** @type {module:utils/prefixedEvent} */
 	prefixedEvent: require("utils/prefixedEvent"),
-	
-	// /** @type {module:FrameQueue.request} */
-	// requestAnimationFrame: FrameQueue.request,
-	// 
-	// /** @type {module:FrameQueue.cancel} */
-	// cancelAnimationFrame: FrameQueue.cancel,
 	
 	/** @type {module:utils/setImmediate} */
 	setImmediate: setImmediate,
@@ -395,17 +390,17 @@ var ViewProto = {
 	/* requestAnimationFrame
 	/* ------------------------------- */
 	
-	requestAnimationFrame: function(callback, noBinding, priority) {
-		var retval = FrameQueue.request(noBinding? callback : callback.bind(this), priority);
-		// if (!this._skipLog)
-		// 	console.log("%s::requestAnimationFrame [id:%i] rescheduled", this.cid, retval);
+	requestAnimationFrame: function(callback, priority) {
+		var retval = FrameQueue.request(callback.bind(this), priority);
+		if (!this._skipLog)
+			console.log("%s::requestAnimationFrame [id:%i] requested", this.cid, retval);
 		return retval;
 	},
 	
 	cancelAnimationFrame: function(id) {
 		var retval = FrameQueue.cancel(id);
-		// if (!this._skipLog)
-		// 	console.log("%s::requestAnimationFrame [id:%i] cancelled", this.cid, id);
+		if (!this._skipLog)
+			console.log("%s::requestAnimationFrame [id:%i] cancelled", this.cid, id);
 		return retval;
 	},
 	
@@ -449,7 +444,6 @@ var ViewProto = {
 	_requestRender: function() {
 		if (this._renderRafId == -1) {
 			this._renderRafId = FrameQueue.request(this._applyRender);
-			
 			if (!this._skipLog && !FrameQueue.running)
 				console.log("%s::_requestRender [id:%i] rescheduled", this.cid, this._renderRafId);
 		}

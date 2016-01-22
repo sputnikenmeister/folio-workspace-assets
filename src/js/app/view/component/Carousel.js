@@ -335,10 +335,10 @@ var CarouselProto = {
 			this._renderFlags &= ~SIZE_INVALID;
 			this._measure();
 		}
-		if (this._renderFlags & LAYOUT_INVALID) {
-			this._renderFlags &= ~LAYOUT_INVALID;
+		if (this._renderFlags & (SIZE_INVALID | LAYOUT_INVALID)) {
 			this._scrollBy(this._delta, this.skipTransitions);
 		}
+		this._renderFlags &= ~(SIZE_INVALID | LAYOUT_INVALID);
 	},
 	
 	// _logFlags: function(label) {

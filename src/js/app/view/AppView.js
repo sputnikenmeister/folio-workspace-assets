@@ -18,8 +18,8 @@ var prefixedEvent = require("utils/prefixedEvent");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
-/** @type {module:app/control/TouchManager} */
-var TouchManager = require("app/control/TouchManager");
+/** @type {module:app/view/base/TouchManager} */
+var TouchManager = require("app/view/base/TouchManager");
 /** @type {module:app/model/collection/BundleCollection} */
 var bundles = require("app/model/collection/BundleCollection");
 /** @type {module:app/control/Controller} */
@@ -53,6 +53,7 @@ var AppViewProto = {
 	// /** @override */
 	// className: "without-bundle without-media",
 	
+	model: new Backbone.Model({bundle: null, media: null}),
 	
 	events: {
 		"visibilitychange": function(ev) { console.log(ev.type) ;},
@@ -76,13 +77,18 @@ var AppViewProto = {
 		this.listenTo(controller, "change:before", this._beforeChange);
 		
 		/* initialize views */
-		this.navigationView = new NavigationView({ el: "#navigation" });
-		this.contentView = new ContentView({ el: "#content" });
+		this.navigationView = new NavigationView({ el: "#navigation", model: this.model });
+		this.contentView = new ContentView({ el: "#content", model: this.model });
 		
 		// this.listenTo(this.navigationView, "collapsed:change", this._onNavigationCollapsed);
 		// this.listenTo(this.contentView, "collapsed:change", this._onContentCollapsed);
 		
 		this.listenToOnce(controller, "change:after", this._appReady);
+		
+		this.listenTo(controller, "change:after", function(bundle, media) {
+			this.model.set("bundle", bundle);
+			this.model.set("media", media);
+		});
 		
 		// start router, which will request appropiate state
 		Backbone.history.start({ pushState: false, hashChange: true });
@@ -147,7 +153,6 @@ var AppViewProto = {
 		document.documentElement.classList.toggle("desktop-small",
 			Globals.BREAKPOINTS["desktop-small"].matches);
 		
-		
 		var ccid, view;
 		for (ccid in this.childViews) {
 			view = this.childViews[ccid];
@@ -186,7 +191,7 @@ var AppViewProto = {
 		// but they are skipped while in .app-initial. Wait one more frame for 
 		// everything to render in it's final state, then finally change to .app-ready.
 		// this.requestAnimationFrame(function() {
-			// console.log("%s::renderAppReady[-2]", this.cid);
+			console.log("%s::renderAppReady[-2]", this.cid);
 			this.requestAnimationFrame(function() {
 				console.log("%s::renderAppReady[-1]", this.cid);
 				// this.renderAppReady();

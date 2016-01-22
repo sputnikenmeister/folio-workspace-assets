@@ -12,8 +12,8 @@ var Hammer = require("hammerjs");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
-/** @type {module:app/control/TouchManager} */
-var TouchManager = require("app/control/TouchManager");
+/** @type {module:app/view/base/TouchManager} */
+var TouchManager = require("app/view/base/TouchManager");
 /** @type {module:app/control/Controller} */
 var controller = require("app/control/Controller");
 
@@ -95,13 +95,13 @@ var NavigationView = ContainerView.extend({
 		this.keywordList = this.createKeywordList();
 		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group span");
 		this.itemViews = [this.bundleList, this.keywordList];
-		this.vPanItems = [this.bundleList.el, this.keywordList.el];
+		// this.vPanItems = [this.bundleList.el, this.keywordList.el];
 		// this.bundleList.renderNow();
 		// this.keywordList.renderNow();
 		
 		this.transforms.add(
-			// this.bundleList.el, this.keywordList.el,
-			this.vPanItems,
+			// this.vPanItems,
+			this.bundleList.el, this.keywordList.el,
 			this.bundleList.wrapper, this.keywordList.wrapper,
 			this.sitename.el, this.hGroupings
 		);
@@ -135,6 +135,10 @@ var NavigationView = ContainerView.extend({
 		
 		if (this._collapsedChanged) {
 			this.renderCollapsed();
+			// if (this.collapsed) {
+			// 	keywords.deselect();
+			// 	this.bundleList.refresh();
+			// }
 			// this.bundleList.collapsed = this.collapsed;
 			// this.keywordList.collapsed = this.collapsed;
 			// this.bundleList.renderNow();
@@ -143,16 +147,39 @@ var NavigationView = ContainerView.extend({
 		
 		if (this._transformsChanged) {
 			if (!this.skipTransitions) {
+				// this.transforms.clearAllTransitions();
 				this.renderTransitions(bundles.selected,
 					bundles.selected? bundles.selected.get("media").selected: null);
 			} else {
 				this.transforms.stopAllTransitions();
-			}
-			if (sizeChanged) {
-				this.transforms.clearCapture(this.bundleList.el, this.keywordList.el);
+				this.transforms.validate();
 			}
 			this.transforms.clearOffset(this.bundleList.el, this.keywordList.el);
+				// ,this.bundleList.wrapper, this.keywordList.wrapper);
+			if (sizeChanged) {
+				this.transforms.clearCapture(this.bundleList.el, this.keywordList.el);
+				// this.transforms.clearCapture(
+				// 	this.bundleList.el, this.keywordList.el,
+				// 	this.bundleList.wrapper, this.keywordList.wrapper);
+			}
+			
+			console.group(this.cid + "::renderFrame transforms.validate");
+			this.transforms.items.forEach(function(tx) {
+				console.log("%s::tx[%s]", this.cid, tx.el.id || tx.id, tx.transition.name || tx.transition);
+			}, this);
+			console.groupEnd();
+			
 			this.transforms.validate();
+		}
+		
+		if (sizeChanged) {
+			this.itemViews.forEach(function(view) {
+				view.invalidateSize();
+				if (this.skipTransitions) {
+					view.skipTransitions = this.skipTransitions;
+					view.renderNow();
+				}
+			}, this);
 		}
 		
 		// this.itemViews.forEach(function(view) {
@@ -167,15 +194,6 @@ var NavigationView = ContainerView.extend({
 		// 	}
 		// }, this);
 		
-		if (sizeChanged) {
-			this.itemViews.forEach(function(view) {
-				view.invalidateSize();
-				if (this.skipTransitions) {
-					view.skipTransitions = this.skipTransitions;
-					view.renderNow();
-				}
-			}, this);
-		}
 		
 		this.skipTransitions = this._transformsChanged = this._collapsedChanged = false;
 		this._renderFlags &= ~ContainerView.RENDER_INVALID;
@@ -187,7 +205,7 @@ var NavigationView = ContainerView.extend({
 	},
 	
 	/* --------------------------- *
-	/* Deselect event handlers
+	/* collection events
 	/* --------------------------- */
 	
 	_onDeselectOneBundle: function(bundle) {
@@ -199,35 +217,35 @@ var NavigationView = ContainerView.extend({
 		this.touch.on("vpanstart", this._onVPanStart);
 	},
 	
-	_onDeselectAnyMedia: function(media) {
-		if (this.collapsed) {
-			this.transforms.clearOffset(this.keywordList.wrapper);
-		}
-	},
-	
-	/* --------------------------- *
-	/* Select event handlers
-	/* --------------------------- */
-	
 	_onSelectOneBundle: function(bundle) {
 		this.listenTo(bundle.get("media"), this.mediaListeners);
 		this.keywordList.refresh();
-		this.collapsed = true;
+		// this.collapsed = true;
 	},
 	
 	_onSelectNoBundle: function() {
 		this.touch.off("panstart", this._onHPanStart);
 		this.touch.off("vpanstart", this._onVPanStart);
 		this.keywordList.refresh();
-		this.collapsed = false;
+		// this.collapsed = false;
+	},
+	
+	_onDeselectAnyMedia: function(media) {
+		// if (this.collapsed) {
+		// 	this.transforms.clearOffset(this.keywordList.wrapper);
+		// }
 	},
 	
 	_onSelectAnyMedia: function(media) {
-		console.log("%s::_onSelectAnyMedia", this.cid);
-		this.collapsed = true;
+		// console.log("%s::_onSelectAnyMedia", this.cid);
+		// this.collapsed = true;
 	},
 	
-	_onKeywordListSelect: function(keyword) {
+	/* --------------------------- *
+	/* keywordList event
+	/* --------------------------- */
+	
+	_onSelectAnyKeyword: function(keyword) {
 		if (!this.collapsed) {
 			keywords.select(keyword);
 			this.bundleList.refresh();
@@ -235,7 +253,7 @@ var NavigationView = ContainerView.extend({
 	},
 	
 	/* -------------------------------
-	/* collapse
+	/* collapse change event
 	/* ------------------------------- */
 	
 	_onCollapsedChange: function(collapsed) {
@@ -246,8 +264,6 @@ var NavigationView = ContainerView.extend({
 		}
 		this.bundleList.collapsed = collapsed;
 		this.keywordList.collapsed = collapsed;
-		// NOTE: invalidateTransforms called in ContainerView._setCollapsed
-		// this.invalidateTransforms();
 	},
 	
 	/* -------------------------------
@@ -258,6 +274,8 @@ var NavigationView = ContainerView.extend({
 		// console.log("%s::_beforeChange", this.cid, arguments);
 		// this._lastBundle = bundles.selected;
 		// this._lastMedia = bundles.selected? bundles.selected.get("media").selected: null;
+		
+		this.collapsed = !!(bundle || media);
 		this.invalidateTransforms();
 	},
 		
@@ -432,17 +450,24 @@ var NavigationView = ContainerView.extend({
 				// bListTx =	tx.BETWEEN;
 			}
 		}
-		
-		kListTx && this.transforms.runTransition(kListTx, this.keywordList.el);
-		bListTx && this.transforms.runTransition(bListTx, this.bundleList.el);
-		siteTx && this.transforms.runTransition(siteTx, this.sitename.el);
-		kWrapTx && this.transforms.runTransition(kWrapTx, this.keywordList.wrapper);
-		bWrapTx && this.transforms.runTransition(bWrapTx, this.bundleList.wrapper);
-		hGroupTx && this.transforms.runTransition(hGroupTx, this.hGroupings);
-		
 		if (!(kListTx || bListTx || siteTx || bWrapTx || kWrapTx || hGroupTx)) {
-			console.log("%s::renderTransitions [no change]", this.cid);
+			console.log("%s::renderTransitions [unchanged]", this.cid);
 		}
+		
+		this.transforms.runTransition(kListTx, this.keywordList.el);
+		this.transforms.runTransition(bListTx, this.bundleList.el);
+		this.transforms.runTransition(siteTx, this.sitename.el);
+		this.transforms.runTransition(kWrapTx, this.keywordList.wrapper);
+		this.transforms.runTransition(bWrapTx, this.bundleList.wrapper);
+		this.transforms.runTransition(hGroupTx, this.hGroupings);
+		
+		// kListTx && this.transforms.runTransition(kListTx, this.keywordList.el);
+		// bListTx && this.transforms.runTransition(bListTx, this.bundleList.el);
+		// siteTx && this.transforms.runTransition(siteTx, this.sitename.el);
+		// kWrapTx && this.transforms.runTransition(kWrapTx, this.keywordList.wrapper);
+		// bWrapTx && this.transforms.runTransition(bWrapTx, this.bundleList.wrapper);
+		// hGroupTx && this.transforms.runTransition(hGroupTx, this.hGroupings);
+		
 	},
 	
 	/* -------------------------------
@@ -503,9 +528,10 @@ var NavigationView = ContainerView.extend({
 	_onVPanStart: function (ev) {
 		this.touch.on("vpanmove", this._onVPanMove);
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
+		
 		this.transforms.stopTransition(this.bundleList.el, this.keywordList.el);
 		this.transforms.clearCapture(this.bundleList.el, this.keywordList.el);
-		this.el.classList.add("container-changing");
+		// this.el.classList.add("container-changing");
 		this._onVPanMove(ev);
 	},
 	
@@ -539,12 +565,11 @@ var NavigationView = ContainerView.extend({
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 		
+		this._onVPanMove(ev);
 		
-		this.el.classList.remove("container-changing");
 		if (this.willCollapseChange(ev)) {
 			console.info("%s::_onVPanFinal [changing] delta: [%f,%f]", this.cid, ev.thresholdDeltaX, ev.thresholdDeltaY);
 			this.collapsed = !this.collapsed;
-			this.renderNow();
 		} else {
 			console.info("%s::_onVPanFinal [unchanged] delta: [%f,%f]", this.cid, ev.thresholdDeltaX, ev.thresholdDeltaY);
 			// this.transforms.clearAllOffsets();
@@ -553,9 +578,12 @@ var NavigationView = ContainerView.extend({
 			// 	this.bundleList.el,
 			// 	this.keywordList.el);
 			// this.transforms.validate();
-			this.invalidateTransforms();
+			// this.invalidateTransforms();
 		}
-		this.renderNow();
+		this.invalidateTransforms();
+		// this.renderNow();
+		// this.el.classList.remove("container-changing");
+		
 		// console.info("%s::_onVPanFinal [complete]", this.cid);
 	},
 	
@@ -635,7 +663,7 @@ var NavigationView = ContainerView.extend({
 		this.listenTo(view, "all", function(evName, model) {
 			console.log("%s::[%s %s] model: %s", this.cid, view.cid, evName, model? model.cid: "none");
 		});
-		this.listenTo(view, "view:select:one view:select:none", this._onKeywordListSelect);
+		this.listenTo(view, "view:select:one view:select:none", this._onSelectAnyKeyword);
 		view.wrapper = view.el.parentElement;
 		return view;
 	},

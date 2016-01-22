@@ -39,8 +39,8 @@ var bundleDescTemplate = require("./template/CollectionStack.Bundle.hbs");
 /** @type {Function} */
 var mediaCaptionTemplate = require("./template/CollectionStack.Media.hbs");
 
-/** @type {module:app/view/base/FrameQueue} */
-var FrameQueue = require("app/view/base/FrameQueue");
+// /** @type {module:app/view/base/FrameQueue} */
+// var FrameQueue = require("app/view/base/FrameQueue2");
 
 var transitionEnd = ContainerView.prefixedEvent("transitionend");
 var transformProp = ContainerView.prefixedProperty("transform");
@@ -283,35 +283,9 @@ var ContentView = ContainerView.extend({
 		// console.log("%s::_beforeChange", this.cid, arguments);
 		// this._bundleChanging = (bundle !== bundles.selected);
 		// this.invalidateTransforms();
-		// var cid = this.cid;
-		
-		// FrameQueue.request(function() {
-		// 	console.log("%s::_beforeChange requested=1, priority= 10", this.cid);
-		// }.bind(this), 10);
-		// FrameQueue.request(function() {
-		// 	console.log("%s::_beforeChange requested=2, priority=  0", this.cid);
-		// }.bind(this), 0);
-		// FrameQueue.request(function() {
-		// 	console.log("%s::_beforeChange requested=3, priority=-10", this.cid);
-		// }.bind(this), -10);
 	},
 	
 	_afterChange: function(bundle, media) {
-		
-		// this._bundleChanging = false;
-		
-		// this.renderNow();
-		// this.transforms.validate();
-		
-		// FrameQueue.request(function() {
-		// 	console.log("%s::_afterChange  requested=1, priority= 10", this.cid);
-		// }.bind(this), 10);
-		// FrameQueue.request(function() {
-		// 	console.log("%s::_afterChange  requested=2, priority=  0", this.cid);
-		// }.bind(this), 0);
-		// FrameQueue.request(function() {
-		// 	console.log("%s::_afterChange  requested=3, priority=-10", this.cid);
-		// }.bind(this), -10);
 	},
 	
 	/* -------------------------------
@@ -392,22 +366,28 @@ var ContentView = ContainerView.extend({
 			if (!this.skipTransitions) {
 				view.el.classList.add("adding-child");
 				view.el.style.opacity = 0;
+				// this.listenToOnce(view, "view:added", function(view) {
+				// 	// console.log("%s::[view:added] id:%s", this.cid, view.cid);
+				// 	if (!this.skipTransitions) {
+				// 		view.el.style[transitionProp] = "opacity " + tx.LAST.cssText;
+				// 	}
+				// 	view.el.style.removeProperty("opacity");
+				// });
 			}
 			this.el.appendChild(view.el);
 			view.render();
 		}, this);
 		
-		var rafHandler = function() {
-			this.itemViews.forEach(function(view) {
-				if (!this.skipTransitions) {
-					view.el.style[transitionProp] = "opacity " + tx.LAST.cssText;
-				}
-				view.el.style.removeProperty("opacity");
-			}, this);
-		};
-		
 		if (!this.skipTransitions) {
-			this.requestAnimationFrame(rafHandler.bind(this));
+			this.requestAnimationFrame(function() {
+				console.log("%s::createChildren::[callback:requestAnimationFrame]", this.cid);
+				this.itemViews.forEach(function(view) {
+					if (!this.skipTransitions) {
+						view.el.style[transitionProp] = "opacity " + tx.LAST.cssText;
+					}
+					view.el.style.removeProperty("opacity");
+				}, this);
+			});
 		}
 	},
 	
@@ -418,13 +398,13 @@ var ContentView = ContainerView.extend({
 			if (this.skipTransitions) {
 				view.remove();
 			} else {
-				var computedStyle = window.getComputedStyle(view.el);
-				if (computedStyle.opacity == "0" || computedStyle.visibility == "hidden") {
-					console.log("%s::removeChildren [view:%s] removed immediately, was invisible", this.cid, view.cid);
+				var s = window.getComputedStyle(view.el);
+				if (s.opacity == "0" || s.visibility == "hidden") {
+					console.log("%s::removeChildren [view:%s] removed immediately (invisible)", this.cid, view.cid);
 					view.remove();
 				} else {
 					view.el.classList.add("removing-child");
-					view.el.style[transformProp] = computedStyle[transformProp];
+					if (s[transformProp]) view.el.style[transformProp] = s[transformProp];
 					view.el.style[transitionProp] = "opacity " + tx.FIRST.cssText;
 					view.el.style.opacity = 0;
 				}
@@ -434,30 +414,8 @@ var ContentView = ContainerView.extend({
 		this.itemViews.length = 0;
 	},
 	
-	// _onTransitionEnd: function(ev) {
-	// 	if (ev.target.cid === void 0) {
-	// 		return;//throw new Error("element has no view");
-	// 	}
-	// 	if (this.childViews.hasOwnProperty(ev.target.cid)) {
-	// 		var view = this.childViews[ev.target.cid];
-	// 		if (view.el.classList.contains("adding-child") && ev.propertyName == "opacity") {
-	// 			view.el.classList.remove("adding-child");
-	// 			view.el.style.removeProperty(transitionProp);
-	// 			console.log("%s::_onTransitionEnd added [child: %s] [prop: %s] [ev: %s]", this.cid, ev.target.cid, ev.propertyName, ev.type);
-	// 		}
-	// 		else if (view.el.classList.contains("removing-child") && ev.propertyName == "opacity") {
-	// 			view.el.classList.remove("removing-child");
-	// 			view.remove();
-	// 			console.log("%s::_onTransitionEnd removing [child: %s] [prop: %s] [ev: %s]", this.cid, ev.target.cid, ev.propertyName, ev.type);
-	// 		}
-	// 	}
-	// 	// else if (ev.target.cid == this.cid) {}
-	// },
-	
 	_onAddedTransitionEnd: function(ev) {
-		if (ev.target.cid === void 0) {
-			return;//throw new Error("element has no view");
-		} else if (this.childViews.hasOwnProperty(ev.target.cid)) {
+		if (ev.target.cid && this.childViews.hasOwnProperty(ev.target.cid)) {
 			console.log("%s::_onAddedTransitionEnd [view:%s] [prop:%s] [ev:%s]", this.cid, ev.target.cid, ev.propertyName, ev.type);
 			var view = this.childViews[ev.target.cid];
 			view.el.classList.remove("adding-child");
@@ -466,9 +424,7 @@ var ContentView = ContainerView.extend({
 	},
 	
 	_onRemovedTransitionEnd: function(ev) {
-		if (ev.target.cid === void 0) {
-			return;//throw new Error("element has no view");
-		} else if (this.childViews.hasOwnProperty(ev.target.cid)) {
+		if (ev.target.cid && this.childViews.hasOwnProperty(ev.target.cid)) {
 			console.log("%s::_onRemovedTransitionEnd [view:%s] [prop:%s] [ev:%s]", this.cid, ev.target.cid, ev.propertyName, ev.type);
 			var view = this.childViews[ev.target.cid];
 			view.el.classList.remove("removing-child");

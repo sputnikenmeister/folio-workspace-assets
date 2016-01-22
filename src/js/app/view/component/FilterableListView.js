@@ -31,8 +31,6 @@ var CHILDREN_INVALID = View.CHILDREN_INVALID,
 	SIZE_INVALID = View.SIZE_INVALID,
 	LAYOUT_INVALID = View.LAYOUT_INVALID,
 	RENDER_INVALID = View.RENDER_INVALID;
-	
-var RENDER_INVALID = SIZE_INVALID | LAYOUT_INVALID;
 
 /**
 /* @constructor
@@ -135,9 +133,8 @@ var FilterableListView = View.extend({
 		if (this.skipTransitions) {
 			this.el.classList.add("skip-transitions");
 			this.requestAnimationFrame(function() {
-				this.skipTransitions = false;
 				this.el.classList.remove("skip-transitions");
-			}.bind(this));
+			});
 		}
 		this._collapsedTransitioning = !this.skipTransitions && this._collapsedChanged;
 		this.el.classList.toggle("collapsed-changed", this._collapsedTransitioning);
@@ -145,23 +142,20 @@ var FilterableListView = View.extend({
 		if (this._collapsedChanged || this._selectionChanged || this._filterChanged) {
 			this._renderFlags |= View.RENDER_INVALID;
 		}
-		
 		if (this._collapsedChanged) {
-			this._collapsedChanged = false;
 			this.el.classList.toggle("collapsed", this._collapsed);
 		}
 		if (this._selectionChanged) {
-			this._selectionChanged = false;
 			this.renderSelection(this.collection.selected, this.collection.lastSelected);
 		}
 		if (this._filterChanged) {
-			this._filterChanged = false;
 			this.renderFilterFn();
 		}
 		if (this._renderFlags & View.RENDER_INVALID) {
-			this._renderFlags &= ~View.RENDER_INVALID;
 			this.renderLayout();
 		}
+		this.skipTransitions = this._collapsedChanged = this._selectionChanged = this._filterChanged = false;
+		this._renderFlags &= ~View.RENDER_INVALID;
 	},
 	
 	renderLayout: function() {

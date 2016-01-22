@@ -78,31 +78,22 @@ var PrefetechedSourceRenderer = View.extend({
 	className: "sequence-step",
 	/** @type {string} */
 	tagName: "img",
-	/** @type {boolean} */
-	ready: false,
 	
-	// /** @override */
-	// initialize: function (options) {
-	// 	this.listenTo(this.model, "selected deselected", this._renderSelection);
-	// 	this.listenTo(this.model, "change:error", this._renderSelection);
-	// 	this.listenTo(this.model, "change:prefetched", this._renderPrefetched);
-	// },
+	properties: {
+		ready: {
+			get: function() {
+				return this._ready;
+			}
+		}
+	},
 	
 	/** @override */
 	initialize: function (options) {
-		// if (this.el.src === "") {
-			if (this.model.has("prefetched")) {
-				this._renderPrefetched();
-			// } else if (this.model.has("error")) {
-			// 	this._renderError();
-			} else {
-				this.listenTo(this.model, "change:prefetched", this._renderPrefetched);
-				// this.listenToOnce(this.model, {
-				// 	"change:prefetched": this._renderError,
-				// 	"change:error": this._renderPrefetched,
-				// });
-			}
-		// }
+		if (this.model.has("prefetched")) {
+			this._renderPrefetched();
+		} else {
+			this.listenTo(this.model, "change:prefetched", this._renderPrefetched);
+		}
 		this.listenTo(this.model, "selected deselected", this._renderSelection);
 		this._renderSelection();
 	},
@@ -116,38 +107,37 @@ var PrefetechedSourceRenderer = View.extend({
 		if (prefetched !== this.el.src) {
 			this.el.src = prefetched;
 		}
-			_whenImageLoads(this.el).then(
-				function(el) {
-					this.requestAnimationFrame(function(tstamp) {
-						this.trigger("renderer:ready", this);
-					}.bind(this));
-				}.bind(this),
-				function(err) {
-					(err instanceof Error) || (err = new Error("cannot load prefetched url"));
-					throw err;
-				}
-			);
-		// }
+		_whenImageLoads(this.el).then(
+			function(el) {
+				this.requestAnimationFrame(function(tstamp) {
+					this._setReady(true);
+				});
+			}.bind(this),
+			function(err) {
+				// this._setReady(false);
+				(err instanceof Error) || (err = new Error("cannot load prefetched url"));
+				throw err;
+			}.bind(this)
+		);
 	},
 	
-	// _renderError: function() {
-	// 	var err = this.model.get("error");
-	// 	var errEl = document.createElement("div");
-	// 	errEl.className = "error color-bg color-reverse" + (this.model.selected? " current" : "");
-	// 	errEl.innerHTML = errorTemplate(err);
-	// 	this.setElement(errEl, true);
-	// },
+	/** @type {boolean} */
+	_ready: false,
 	
-	// render: function() {
-	// 	if (this.model.has("prefetched")) {
-	// 		this._renderPrefetched();
-	// 	} else if (this.model.has("error")) {
-	// 		this._renderError();
-	// 	}
-	// 	this.el.classList.toggle("current", !!this.model.selected);
-	// 	return this;
-	// },
+	_setReady: function(ready) {
+		if (this._ready === ready) return;
+		this._ready = !!(ready); // make bool
+		this.trigger("renderer:ready", this);
+	},
 	
+	render: function() {
+		// if (this.model.has("prefetched")) {
+		// 	this._renderPrefetched();
+		// }
+		// this.el.classList.toggle("current", !!this.model.selected);
+		console.log("%s::render", this.cid);
+		return this;
+	},
 });
 
 /**

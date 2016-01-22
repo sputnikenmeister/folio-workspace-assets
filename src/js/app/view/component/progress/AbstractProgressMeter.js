@@ -115,7 +115,7 @@ var AbstractProgressMeterProto = {
 			this._startTime = -1;
 			
 			if (this._nextRafId === -1) {
-				this._nextRafId = this.requestAnimationFrame(this.renderFrame.bind(this));
+				this._nextRafId = this.requestAnimationFrame(this.renderFrame);
 			}
 		}
 		return this;
@@ -141,7 +141,7 @@ var AbstractProgressMeterProto = {
 					this._valueDelta, this._duration);
 			}
 			this.redraw(this._renderedValue);
-			this._nextRafId = this.requestAnimationFrame(this.renderFrame.bind(this));
+			this._nextRafId = this.requestAnimationFrame(this.renderFrame);
 			// console.log("%s::update(%f) [RAF: %i] [NEXT: %i] from/to: %f/%f, curr: %f",
 			// 	this.cid, tstamp, currRafId, this._nextRafId,
 			// 	this._startValue, this._value, this._renderedValue);

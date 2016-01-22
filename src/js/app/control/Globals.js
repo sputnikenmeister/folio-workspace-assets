@@ -5,12 +5,12 @@
 var _ = require("underscore");
 
 module.exports = (function () {
-	// reusable var
-	var o; 
-	// SASS <--> JS shared hash
-	var sass = require("../../../sass/variables.json");
+	// reusable vars
+	var o, s;
 	// global hash
 	var g = {};
+	// SASS <--> JS shared hash
+	var sass = require("../../../sass/variables.json");
 	
 	// JUNK FIRST: Some app-wide defaults
 	// - - - - - - - - - - - - - - - - -
@@ -24,11 +24,8 @@ module.exports = (function () {
 	// breakpoints
 	// - - - - - - - - - - - - - - - - -
 	g.BREAKPOINTS = {};
-	for (var b in sass.breakpoints) {
-		// NOTE: breakpoints have to be enclosed in quotes for the sass-json-vars
-		// compass plug-in to work as expected, but hey have to be removed
-		// g.BREAKPOINTS[b] = sass.breakpoints[b];//.slice(1, -1); // remove first and last char
-		g.BREAKPOINTS[b] = window.matchMedia(sass.breakpoints[b]);
+	for (s in sass.breakpoints) {
+		g.BREAKPOINTS[s] = window.matchMedia(sass.breakpoints[s]);
 	}
 	
 	// base colors, dimensions
@@ -39,7 +36,7 @@ module.exports = (function () {
 	
 	// timing, easing
 	// - - - - - - - - - - - - - - - - -
-	g.TRANSITION_DELAY_INTERVAL			=	parseFloat(sass.transitions["delay_interval_ms"]);
+	g.TRANSITION_DELAY_INTERVAL	=	parseFloat(sass.transitions["delay_interval_ms"]);
 	g.TRANSITION_DURATION		=	parseFloat(sass.transitions["duration_ms"]);
 	g.TRANSITION_MIN_DELAY		=	parseFloat(sass.transitions["min_delay_ms"]);
 	g.TRANSITION_EASE			=	sass.transitions["ease"];
@@ -80,40 +77,53 @@ module.exports = (function () {
 	// css transition presets
 	// TODO: get rid of this
 	// - - - - - - - - - - - - - - - - -
-
-	var transitionTemplate = function(o) {
+	
+	o = {};
+	
+	o.NONE = {
+		easing: "step-start",
+		duration: 0,
+		delay: 0,
+	};
+	o.NOW = {
+		easing: g.TRANSITION_EASE,
+		duration: g.TRANSITION_DURATION,
+		delay: 0,
+	};
+	o.UNSET = _.defaults({ cssText: "" }, o.NONE);
+	
+	o.FIRST = {
+		easing: g.TRANSITION_EASE,
+		duration: g.TRANSITION_DURATION - g.TRANSITION_MIN_DELAY,
+		delay: g.TRANSITION_DELAY * 0 + g.TRANSITION_MIN_DELAY,
+	};
+	o.BETWEEN = _.defaults({
+		delay: g.TRANSITION_DELAY * 1 + g.TRANSITION_MIN_DELAY
+	}, o.FIRST);
+	o.LAST = _.defaults({
+		delay: g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY
+	}, o.FIRST);
+	o.AFTER = _.defaults({
+		delay: g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY
+	}, o.FIRST);
+	
+	// var easing = "ease-in";
+	// o.FIRST_LINEAR = _.defaults({ easing: easing }, o.FIRST);
+	// o.BETWEEN_LINEAR = _.defaults({ easing: easing }, o.BETWEEN);
+	// o.LAST_LINEAR = _.defaults({ easing: easing }, o.LAST);
+	
+	var so, transToCSS = function(o) {
 		return o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
 	};
-	
-	g.transitions = {};
-	
-	o = g.transitions.FIRST = {};
-	o.className = "tx-first";
-	o.easing = g.TRANSITION_EASE;
-	o.duration = g.TRANSITION_DURATION - g.TRANSITION_MIN_DELAY;
-	o.delay = g.TRANSITION_DELAY * 0 + g.TRANSITION_MIN_DELAY;
-	o.cssText = transitionTemplate(o);
-	
-	o = g.transitions.BETWEEN = _.clone(o);
-	o.className = "tx-between";
-	o.delay = g.TRANSITION_DELAY * 1 + g.TRANSITION_MIN_DELAY;
-	o.cssText = transitionTemplate(o);
-	
-	o = g.transitions.LAST = _.clone(o);
-	o.className = "tx-last";
-	o.delay = g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY;
-	o.cssText = transitionTemplate(o);
-	
-	o = g.transitions.AFTER = _.clone(o);
-	o.className = "tx-after";
-	o.delay = g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY;
-	o.cssText = transitionTemplate(o);
-	
-	o = g.transitions.NOW = _.clone(o);
-	o.className = "tx-now";
-	o.duration = g.TRANSITION_DURATION;
-	o.delay = 0;
-	o.cssText = transitionTemplate(o);
+	for (s in o) {
+		so = o[s];
+		so.name = s;
+		so.className = "tx-" + s.toLowerCase();
+		if (!so.hasOwnProperty("cssText")) {
+			so.cssText = transToCSS(so);
+		}
+	}
+	g.transitions = o;
 	
 	return g;
 }());

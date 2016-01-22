@@ -13,8 +13,8 @@ var Globals = require("app/control/Globals");
 var View = require("app/view/base/View");
 /** @type {module:utils/TransformHelper} */
 var TransformHelper = require("utils/TransformHelper");
-/** @type {module:app/control/TouchManager} */
-var TouchManager = require("app/control/TouchManager");
+/** @type {module:app/view/base/TouchManager} */
+var TouchManager = require("app/view/base/TouchManager");
 
 /** @type {module:app/control/Controller} */
 var controller = require("app/control/Controller");

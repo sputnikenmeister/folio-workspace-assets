@@ -302,7 +302,7 @@ MediaRenderer = (function(MediaRenderer) {
 			this.__logElement.scrollTop = this.__logElement.scrollHeight;
 			
 			if (this.__rafId == -1) {
-				this.__rafId = this.requestAnimationFrame(this.__onFrame.bind(this));
+				this.__rafId = this.requestAnimationFrame(this.__onFrame);
 			}
 		},
 		

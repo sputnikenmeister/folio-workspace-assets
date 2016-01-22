@@ -5,14 +5,18 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {String} */
-var transitionEnd = require("./event/transitionEnd");
 /** @type {module:utils/prefixedProperty} */
-var prefixedProperty = require("./prefixedProperty");
+var prefixedProperty = require("utils/prefixedProperty");
 /** @type {module:utils/prefixedStyleName} */
-var prefixedStyleName = require("./prefixedStyleName");
+var prefixedStyleName = require("utils/prefixedStyleName");
+/** @type {module:utils/prefixedEvent} */
+var prefixedEvent = require("utils/prefixedEvent");
 
+/** @type {String} */
+var transitionEnd = prefixedEvent("transitionend");//require("utils/event/transitionEnd");
+/** @type {Function} */
 var slice = Array.prototype.slice;
+
 // /** @type {module:utils/debug/traceElement} */
 // var traceElt = require("./debug/traceElement");
 // var traceEltCache = {};
@@ -30,7 +34,7 @@ var slice = Array.prototype.slice;
 // 			return;
 // 	}
 // 	var el, txId;
-// 	if ((el = args[0]) && (txId = el._txId)) {
+// 	if ((el = args[0]) && (txId = el.eid)) {
 // 		args[0] = traceEltCache[txId] || (traceEltCache[txId] = el);
 // 	}
 // 	args[0] = "\t" + args[0];
@@ -38,42 +42,44 @@ var slice = Array.prototype.slice;
 // };
 
 /* jshint -W079 */
-var console = (function(target) {
-	return Object.getOwnPropertyNames(target).reduce(function(proxy, prop) {
-		if ((typeof target[prop]) == "function") {
-			switch (prop) {
-				case "error":
-				case "warn":
-				case "info":
-					proxy[prop] = function () {
-						var args = slice.apply(arguments);
-						if (typeof args[0] == "string") {
-							args[0] = prop + "::" + args[0];
-						}
-						return target[prop].apply(target, args);
-					};
-					break;
-				case "log":
-					proxy[prop] = function() {};
-					break;
-				default:
-					proxy[prop] = target[prop].bind(target);
-					break;
-			}
-		} else {
-			Object.defineProperty(proxy, prop, {
-				get: function() { return target[prop]; },
-				set: function(val) { target[prop] = val; }
-			});
-		}
-		return proxy;
-	}, {});
-})(window.console);
+// var console = (function(target) {
+// 	return Object.getOwnPropertyNames(target).reduce(function(proxy, prop) {
+// 		if ((typeof target[prop]) == "function") {
+// 			switch (prop) {
+// 				case "error":
+// 				case "warn":
+// 				case "info":
+// 					proxy[prop] = function () {
+// 						var args = slice.apply(arguments);
+// 						if (typeof args[0] == "string") {
+// 							args[0] = prop + "::" + args[0];
+// 						}
+// 						return target[prop].apply(target, args);
+// 					};
+// 					break;
+// 				case "log":
+// 					proxy[prop] = function() {};
+// 					break;
+// 				default:
+// 					proxy[prop] = target[prop].bind(target);
+// 					break;
+// 			}
+// 		} else {
+// 			Object.defineProperty(proxy, prop, {
+// 				get: function() { return target[prop]; },
+// 				set: function(val) { target[prop] = val; }
+// 			});
+// 		}
+// 		return proxy;
+// 	}, {});
+// })(window.console);
 /* jshint +W079 */
 
 /* -------------------------------
 /* Private static
 /* ------------------------------- */
+
+var NO_TRANSITION = "none 0s step-start 0s";
 
 var translateTemplate = function(o) {
 	// return "translate(" + o._renderedX + "px, " + o._renderedY + "px)";
@@ -82,7 +88,16 @@ var translateTemplate = function(o) {
 var transitionTemplate = function(o) {
 	return o.property + " " + o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
 };
-var NO_TRANSITION = "none 0s step-start 0s";
+
+var UNSET_TRANSITION = {
+	name: "unset",
+	className: "tx-unset",
+	property: "none",
+	easing: "ease",
+	delay: 0,
+	duration: 0,
+	cssText: "unset",
+};
 
 // var transitionTemplate = _.template("<%= property %> <% duration/1000 %>s <%= easing %> <% delay/1000 %>s");
 // var NO_TRANSITION = "all 0.001s step-start 0.001s";
@@ -110,30 +125,6 @@ var styleNames = propKeys.map(camelToDashed).reduce(function(obj, propName) {
 	obj[propName] = prefixedStyleName(propName);
 	return obj;
 }, {});
-
-// var propNames = {}; 
-// var styleNames = {};
-// 
-// (function() {
-// 	var i, p, props, styleNames;
-// 	
-// 	var _visibilityProps = ["opacity", "visibility"];
-// 	var _transformProps = ["transform", "transformStyle"];
-// 	var _transitionProps = ["transition", "transitionDuration", "transitionDelay", "transitionProperty", "transitionTimingFunction"];
-// 	var _transformStyleNames = ["transform", "transform-style"];
-// 	var _transitionStyleNames = ["transition", "transition-duration", "transition-delay", "transition-property", "transition-timing-function"];
-// 	styleNames = _transformStyleNames.concat(_transitionStyleNames).concat(_visibilityProps);
-// 	props = _transformProps.concat(_transitionProps).concat(_visibilityProps);
-// 	
-// 	for (i = 0; i < props.length; ++i) {
-// 		p = props[i];
-// 		propNames[p] = prefixedProperty(p);
-// 	}
-// 	for (i = 0; i < styleNames.length; ++i) {
-// 		p = styleNames[i];
-// 		styleNames[p] = prefixedStyleName(p);
-// 	}
-// }());
 
 var resolveAll = function(pp, result) {
 	if (pp.length != 0) {
@@ -164,38 +155,39 @@ var rejectAll = function(pp, reason) {
 /**
  * @constructor
  */
-function TransformItem(el) {
+function TransformItem(el, id) {
 	_.bindAll(this, "_onTransitionEnd");
 	
 	this.el = el;
-	this.id = el._txId;
+	this.id = id;
+	this.el.eid = id;
 	this.el.addEventListener(transitionEnd, this._onTransitionEnd, false);
 	
 	this._captureInvalid = false;
+	this._capturedChanged = false;
 	this._capturedX = null;
 	this._capturedY = null;
 	this._currCapture = {};
 	this._lastCapture = {};
-	this._capturedChanged = false;
 	
 	this._hasOffset = false;
 	this._offsetInvalid = false;
 	this._offsetX = null;
 	this._offsetY = null;
 	
+	this._renderedX = null;
+	this._renderedY = null;
+	
 	this._hasTransition = false;
 	this._transitionInvalid = false;
 	this._transitionRunning = false;
-	this._transition = {};
+	this._transition = _.extend({}, UNSET_TRANSITION);//{};
 	
 	this._promises = [];
 	this._pendingPromises = [];
-	
-	this._renderedX = null;
-	this._renderedY = null;
 }
 
-TransformItem.prototype = {
+TransformItem.prototype = Object.create({
 	
 	/* -------------------------------
 	/* Public
@@ -207,9 +199,9 @@ TransformItem.prototype = {
 		// NOTE: style property may have been modified; clearOffset(element) should
 		// be called explicitly if clean up is required.
 		this.el.removeEventListener(transitionEnd, this._onTransitionEnd, false);
-		
 		rejectAll(this._pendingPromises, this.id);
 		rejectAll(this._promises, this.id);
+		// delete this.el.eid;
 	},
 
 	/* capture
@@ -258,14 +250,18 @@ TransformItem.prototype = {
 	/* transitions
 	/* - - - - - - - - - - - - - - - - */
 	runTransition: function(transition) {
+		if (!transition) {// || (transition.duration + transition.delay) == 0) {
+			return this.clearTransition();
+		}
 		var lastValue = this._transitionValue;
+		var lastName = this._transition.name;
 		this._transition.property = styleNames["transform"];
 		this._transition = _.extend(this._transition, transition);
 		this._transitionValue = transitionTemplate(this._transition);
 		
 		if (this._transitionInvalid) {
-			console.warn("tx[%s]::runTransition changed twice", this.id,
-				lastValue, this._transitionValue);
+			console.warn("tx[%s]::runTransition set over (%s:'%s' => %s:'%s')", this.id,
+				lastName, lastValue, this._transition.name, this._transitionValue);
 		}
 		
 		this._hasTransition = true;
@@ -275,7 +271,7 @@ TransformItem.prototype = {
 	},
 	
 	clearTransition: function() {
-		this._transition.property = "none";
+		this._transition = _.extend(this._transition, UNSET_TRANSITION);
 		this._transitionValue = NO_TRANSITION;
 		
 		this._hasTransition = false;
@@ -285,7 +281,9 @@ TransformItem.prototype = {
 	},
 	
 	stopTransition: function() {
-		this._transition.property = "none";
+		// this._transition.name = "[none]";
+		// this._transition.property = "none";
+		this._transition = _.extend(this._transition, UNSET_TRANSITION);
 		this._transitionValue =  NO_TRANSITION;
 		
 		this._hasTransition = false;
@@ -295,14 +293,15 @@ TransformItem.prototype = {
 	},
 	
 	whenTransitionEnds: function() {
-		var p, d;
+		var d, p, pp;
 		if (this._transitionInvalid || this._transitionRunning) {
 			d = {};
 			p = new Promise(function(resolve, reject) {
 				d.resolve = resolve;
 				d.reject = reject;
 			});
-			(this._transitionInvalid? this._pendingPromises : this._promises).push(d);
+			pp = this._transitionInvalid? this._pendingPromises: this._promises;
+			pp.push(d);
 		} else {
 			p = Promise.resolve(this.el);
 		}
@@ -315,13 +314,34 @@ TransformItem.prototype = {
 		// this.el.removeEventListener(transitionEnd, this._onTransitionEnd, false);
 		this._ignoreEvent = true;
 		
-		this._validateCapture();
-		this._validateTransition();
-		this._validateOffset();
+		if (this._captureInvalid) {
+			var lastX = (this._renderedX !== null? this._renderedX : this._capturedX),
+				lastY = (this._renderedY !== null? this._renderedY : this._capturedY);
+				
+			this._validateCapture();
+			this._validateOffset();
+			
+			var currX = (this._renderedX !== null? this._renderedX : this._capturedX),
+				currY = (this._renderedY !== null? this._renderedY : this._capturedY);
+				
+			if (lastX === currX && lastY === currY) {
+				this._hasTransition && console.info("tx[%s]::validate unchanged: last:[%i,%i] curr:[%i,%i]", this.el.id || this.id, lastX, lastY, currX, currY);
+				// console.info("tx[%s]::validate unchanged: last:[%f,%f] curr:[%f,%f] render:[%f,%f] captured[%f,%f]", this.el.id || this.id, lastX, lastY, currX, currY, this._renderedX, this._renderedY, this._capturedX, this._capturedY);
+				this.clearTransition();
+			}
+			this._validateTransition();
+		} else {
+			// this._validateCapture();
+			this._validateTransition();
+			this._validateOffset();
+		}
 		
 		// this.el.addEventListener(transitionEnd, this._onTransitionEnd, false);
 		this._ignoreEvent = false;
 		
+		// if (this._capturedChanged) {
+		// 	console.error("tx[%s]::validate capture changed: [%f,%f]", this.id, this._capturedX, this._capturedY);
+		// }
 		this._capturedChanged = false;
 		return this;
 	},
@@ -441,7 +461,10 @@ TransformItem.prototype = {
 	},
 	
 	_setCSSProp: function(prop, value) {
-		if (prop === "transition" && value === NO_TRANSITION) {
+		if (prop === "transition" && value == NO_TRANSITION) {
+			value = "";
+		}
+		if (value === null || value === void 0 || value === "" ) {
 			this._removeCSSProp(prop);
 		} else {
 			this.el.style[propNames[prop]] = value;
@@ -462,6 +485,25 @@ TransformItem.prototype = {
 		}
 		return values;
 	},
-};
+},
+{
+	transition: {
+		get: function() {
+			return this._transition;
+		}
+	},
+	
+	capturedX: {
+		get: function() {
+			return this._capturedX;
+		}
+	},
+	
+	capturedY: {
+		get: function() {
+			return this._capturedY;
+		}
+	},
+});
 
 module.exports = TransformItem;

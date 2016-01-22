@@ -23,19 +23,19 @@ function TransformHelper() {
 	this._itemsById = {};
 }
 
-TransformHelper.prototype = {
+TransformHelper.prototype = Object.create({
 	
 	/* -------------------------------
 	/* Public
 	/* ------------------------------- */
 	
 	has: function(el) {
-		return el._txId && this._itemsById[el._txId] !== void 0;
+		return el.eid && this._itemsById[el.eid] !== void 0;
 	},
 	
 	get: function(el) {
 		if (this.has(el)) {
-			return this._itemsById[el._txId];
+			return this._itemsById[el.eid];
 		} else {
 			return this._add(el);
 		}
@@ -70,22 +70,27 @@ TransformHelper.prototype = {
 	},
 	
 	_add: function(el) {
-		var item;
-		if (!el._txId) {
-			el._txId = el.cid || ("elt" + cidSeed++);
-		}
-		item = new TransformItem(el);
-		this._itemsById[el._txId] = item;
+		var item, id;
+		// id = el.eid || el.cid || el.id;
+		// if (!id || (this._itemsById[id] && (this._itemsById[id].el !== el))) {
+		// 	id = "elt" + cidSeed++;
+		// }
+		// if (!el.eid) {
+		// 	id = el.eid || el.cid || ("elt" + cidSeed++);
+		// }
+		id = el.eid || el.cid || ("elt" + cidSeed++);
+		item = new TransformItem(el, id);
+		this._itemsById[id] = item;
 		this._items.push(item);
 		return item;
 	},
 	
 	_remove: function(el) {
 		if (this.has(el)) {
-			var o = this._itemsById[el._txId];
+			var o = this._itemsById[el.eid];
 			this._items.splice(this._items.indexOf(o), 1);
 			o.destroy();
-			delete this._itemsById[el._txId];
+			delete this._itemsById[el.eid];
 		}
 	},
 	
@@ -240,6 +245,13 @@ TransformHelper.prototype = {
 		// 	this._itemsById[i].validate();
 		// }
 	},
-};
+},
+{
+	items: {
+		get: function() {
+			return this._items;
+		}
+	}
+});
 
 module.exports = TransformHelper;

@@ -1,5 +1,5 @@
 /**
- * @module app/control/TouchManager
+ * @module app/view/base/TouchManager
  */
 
 /** @type {module:underscore} */

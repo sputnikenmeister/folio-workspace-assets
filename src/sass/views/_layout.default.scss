@@ -148,12 +148,15 @@
 	margin: 0 auto;
 	padding: 0 $hu;
 	width: $page_width;
-	font-size: 1.25rem;
+	font-size: 1.15rem;
 	text-align: center;
 	
 	transition: tx(opacity, 1, 0);
 	opacity: 1;
-	@at-root .without-media &, .container-expanded &, .container-changing & {
+	@at-root .without-media &,
+		.container-expanded &,
+		.container-changing &,
+		.container-changed & {
 		opacity: 0;
 	}
 }
