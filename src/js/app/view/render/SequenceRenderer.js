@@ -120,7 +120,7 @@ var PrefetechedSourceRenderer = View.extend({
 				function(el) {
 					this.requestAnimationFrame(function(tstamp) {
 						this.trigger("renderer:ready", this);
-					});
+					}.bind(this));
 				}.bind(this),
 				function(err) {
 					(err instanceof Error) || (err = new Error("cannot load prefetched url"));
@@ -251,11 +251,12 @@ var SequenceRenderer = PlayableRenderer.extend({
 	template: require("./SequenceRenderer.hbs"),
 	
 	properties: {
-		paused: {
-			get: function() {
-				return this._paused;
-			}
-		},
+		// paused: {
+		// 	get: function() {
+		// 		// console.log("%s::paused [SequenceRenderer]", this.cid, this._paused);
+		// 		return this._paused;
+		// 	}
+		// },
 		// sources: {
 		// 	get: function() {
 		// 		// return this._createSourceCollection(this.model);
@@ -540,32 +541,20 @@ var SequenceRenderer = PlayableRenderer.extend({
 	},
 	
 	/* ---------------------------
-	/* PlayableRenderer overrides
+	/* PlayableRenderer implementation
 	/* --------------------------- */
 	
+	/** @override initial value */
 	_playbackRequested: true,
 	
 	/** @override */
-	togglePlayback: function(newPlayState) {
-		if (_.isBoolean(newPlayState) && newPlayState !== this._paused) {
-			return; // requested state is current, do nothing
-		} else {
-			newPlayState = this._paused;
-		}
-		if (newPlayState) { // changing to what?
-			this._play();
-		} else {
-			this._pause();
-		}
+	_isMediaPaused: function() {
+		return this._paused;
 	},
 	
-	/* --------------------------- *
-	/* sequence private
-	/* --------------------------- */
-	
-	_paused: true,
-	
-	_play: function() {
+	/** @override */
+	_playMedia: function() {
+		console.log("%s::_playMedia() paused:%s requested:%s", this.cid, this.paused, this.playbackRequested);
 		if (!this._paused) return;
 		this._paused = false;
 		// this.playbackState = "media";
@@ -578,16 +567,22 @@ var SequenceRenderer = PlayableRenderer.extend({
 		}
 	},
 	
-	_pause: function() {
+	/** @override */
+	_pauseMedia: function() {
+		console.log("%s::_pauseMedia() paused:%s requested:%s", this.cid, this.paused, this.playbackRequested);
 		if (this._paused) return;
 		this._paused = true;
 		if (this.timer.getStatus() === "started") {
 			this.timer.pause();
-			// this.userState = "paused";
 		}
-		// this.playbackState = "user-resume";
-		// this.userState = this._playbackRequested? "playing":"paused";
 	},
+	
+	/** @type {Boolean} internal store */
+	_paused: true,
+	
+	/* --------------------------- *
+	/* sequence private
+	/* --------------------------- */
 	
 	_onTimerStart: function(duration) {
 		this.progressMeter.valueTo(this.sources.selectedIndex + 1, duration, "amount");
@@ -614,7 +609,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 		var showNextView = function() {
 			context.requestAnimationFrame(function() {
 				context.content.classList.remove("waiting");
-				if (!context.paused) {
+				if (!context._paused) {
+				// if (context.playbackRequested) {
 					context.content.classList.toggle("playback-error", nextSource.has("error"));
 					context.sources.select(nextSource);// NOTE: step increase done here
 					// view.updateOverlay(nextView.el, view.overlay);
@@ -711,7 +707,9 @@ SequenceRenderer = (function(SequenceRenderer) {
 			var logMsg = [
 				"source: ", lpad(this.sources.selectedIndex, 2),
 				"duration:", lpad(this.timer.getDuration(), 4),
-				"status:", this.timer.getStatus()
+				"paused:", this.paused,
+				"requested:", this.playbackRequested,
+				"status:", this.timer.getStatus(),
 			];
 			msg && logMsg.push(msg);
 			logMsg = logMsg.join(" ");
@@ -719,15 +717,15 @@ SequenceRenderer = (function(SequenceRenderer) {
 			this.__logMessage(logMsg, evname);
 			// console.log("%s::[%s] %s", this.cid, evname, logMsg);
 		},
-		_play: function() {
+		_playMedia: function() {
 			this.__logTimerEvent("playback");
-			SequenceRenderer.prototype._play.apply(this, arguments);
-			// console.log("%s::_play()", this.cid);
+			SequenceRenderer.prototype._playMedia.apply(this, arguments);
+			// console.log("%s::_playMedia()", this.cid);
 		},
-		_pause: function() {
+		_pauseMedia: function() {
 			this.__logTimerEvent("playback");
-			SequenceRenderer.prototype._pause.apply(this, arguments);
-			// console.log("%s::_pause()", this.cid);
+			SequenceRenderer.prototype._pauseMedia.apply(this, arguments);
+			// console.log("%s::_pauseMedia()", this.cid);
 		},
 		
 		_onTimerStart: function() {

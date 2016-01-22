@@ -80,80 +80,111 @@ var NavigationView = ContainerView.extend({
 			"deselect:one": this._onDeselectAnyMedia,
 			"deselect:none": this._onDeselectAnyMedia,
 		};
+		
+		this.listenTo(controller, {
+			"change:before": this._beforeChange,
+			"change:after": this._afterChange
+		});
+		this.listenTo(this, "collapsed:change", this._onCollapsedChange);
 		this.listenTo(bundles, this.bundleListeners);
 		
 		// this.skipTransitions = true;
-		this.sitename = this.assignSitenameButton();
+		
+		this.sitename = this.createSitenameButton();
 		this.bundleList = this.createBundleList();
 		this.keywordList = this.createKeywordList();
 		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group span");
 		this.itemViews = [this.bundleList, this.keywordList];
+		this.vPanItems = [this.bundleList.el, this.keywordList.el];
 		// this.bundleList.renderNow();
 		// this.keywordList.renderNow();
 		
 		this.transforms.add(
-			this.bundleList.el, this.keywordList.el,
+			// this.bundleList.el, this.keywordList.el,
+			this.vPanItems,
 			this.bundleList.wrapper, this.keywordList.wrapper,
 			this.sitename.el, this.hGroupings
 		);
+		// this.clearAllCaptures();
 	},
 	
 	/* --------------------------- *
 	/* Render
 	/* --------------------------- */
 	
-	/** @override */
-	render: function () {
-		this.transforms.stopAllTransitions();
-		this.transforms.validate();
-		this.itemViews.forEach(function(view) {
-			view.skipTransitions = true;
-			view.render();
-		}, this);
-		return ContainerView.prototype.render.apply(this, arguments);
+	// /** @override */
+	// render: function () {
+	// 	// this.transforms.clearAllOffsets();
+	// 	// this.transforms.stopAllTransitions();
+	// 	// this.transforms.validate();
+	// 	// 
+	// 	// this.itemViews.forEach(function(view) {
+	// 	// 	view.skipTransitions = true;
+	// 	// 	view.invalidateSize();
+	// 	// 	view.renderNow();
+	// 	// }, this);
+	// 	
+	// 	// this.renderResize();
+	// 	this.renderNow(true);
+	// 	return this;
+	// },
+	
+	renderFrame: function(tstamp) {
+		var sizeChanged = this._renderFlags & ContainerView.RENDER_INVALID;
+		this._transformsChanged = this._transformsChanged || this._collapsedChanged || this.skipTransitions || (this._renderFlags & ContainerView.RENDER_INVALID);
+		
+		if (this._collapsedChanged) {
+			this.renderCollapsed();
+			// this.bundleList.collapsed = this.collapsed;
+			// this.keywordList.collapsed = this.collapsed;
+			// this.bundleList.renderNow();
+			// this.keywordList.renderNow();
+		}
+		
+		if (this._transformsChanged) {
+			if (!this.skipTransitions) {
+				this.renderTransitions(bundles.selected,
+					bundles.selected? bundles.selected.get("media").selected: null);
+			} else {
+				this.transforms.stopAllTransitions();
+			}
+			if (sizeChanged) {
+				this.transforms.clearCapture(this.bundleList.el, this.keywordList.el);
+			}
+			this.transforms.clearOffset(this.bundleList.el, this.keywordList.el);
+			this.transforms.validate();
+		}
+		
+		// this.itemViews.forEach(function(view) {
+		// 	if (sizeChanged) {
+		// 		view.invalidateSize();
+		// 	}
+		// 	if (view.invalidated) {
+		// 		if (this.skipTransitions) {
+		// 			view.skipTransitions = this.skipTransitions;
+		// 		}
+		// 		view.renderNow();
+		// 	}
+		// }, this);
+		
+		if (sizeChanged) {
+			this.itemViews.forEach(function(view) {
+				view.invalidateSize();
+				if (this.skipTransitions) {
+					view.skipTransitions = this.skipTransitions;
+					view.renderNow();
+				}
+			}, this);
+		}
+		
+		this.skipTransitions = this._transformsChanged = this._collapsedChanged = false;
+		this._renderFlags &= ~ContainerView.RENDER_INVALID;
 	},
 	
-	// renderLater: function(bundle, media) {
-	// 	if (this._transformsChanged) {
-	// 		this._transformsChanged = false;
-	// 		this.transforms.validate();
-	// 	}
-	// },
-	
-	// renderLater: function() {
-	// 	ContainerView.prototype.renderLater.apply(this, arguments);
-	// 	
-	// 	if (this.skipTransitions) {
-	// 		this.transforms.stopAllTransitions();
-	// 		this._transformsChanged = true;
-	// 	}
-	// 	if (this._transformsChanged) {
-	// 		this._transformsChanged = false;
-	// 		this.transforms.validate();
-	// 	}
-	// 	this.skipTransitions = false;
-	// },
-	// invalidateTransforms: function() {
-	// 	this._transformsChanged = true;
-	// 	this.requestRender();
-	// },
-	
-	/* -------------------------------
-	/* Router -> before model change
-	/* ------------------------------- */
-	
-	// _beforeChange: function(bundle, media) {
-	// 	// var hasBundleChanged = (!!bundle) !== (!!bundles.selected);
-	// 	this._bundleChanging = (bundle !== bundles.selected);
-	// 	this._bundleChangeDelay = (bundle !== bundles.selected) && (bundle && bundles.selected) && !this.collapsed;
-	// },
-	// 
-	// _afterChange: function(bundle, media) {
-	// 	this._bundleChanging = false;
-	// 	this._bundleChangeDelay = false;
-	// 	
-	// 	this.transforms.validate();
-	// },
+	invalidateTransforms: function() {
+		this._transformsChanged = true;
+		this.requestRender();
+	},
 	
 	/* --------------------------- *
 	/* Deselect event handlers
@@ -161,72 +192,16 @@ var NavigationView = ContainerView.extend({
 	
 	_onDeselectOneBundle: function(bundle) {
 		this.stopListening(bundle.get("media"), this.mediaListeners);
-		
-		// this.transforms.runTransition(
-		// 	tx.BETWEEN, // tx.FIRST,
-		// 	this.bundleList.el,
-		// 	this.keywordList.el);
-		// 
-		// if (this._bundleChangeDelay) {
-		// 	this.transforms.runTransition(
-		// 		tx.AFTER,
-		// 		this.sitename.el,
-		// 		this.keywordList.wrapper,
-		// 		this.bundleList.wrapper,
-		// 		this.hGroupings);
-		// } else {
-		// 	this.transforms.runTransition(
-		// 		this.collapsed? tx.BETWEEN : tx.LAST,
-		// 		this.sitename.el);
-		// 	this.transforms.runTransition(
-		// 		this.collapsed? tx.FIRST : tx.LAST,
-		// 		this.keywordList.wrapper,
-		// 		this.bundleList.wrapper,
-		// 		this.hGroupings);
-		// }
-		
-		// this.transforms.validate();
 	},
 	
 	_onDeselectNoBundle: function() {
 		this.touch.on("panstart", this._onHPanStart);
 		this.touch.on("vpanstart", this._onVPanStart);
-		
-		// this.transforms.runTransition(
-		// 	tx.BETWEEN,
-		// 	this.bundleList.el,
-		// 	this.keywordList.el);
-		// this.transforms.runTransition(
-		// 	tx.BETWEEN,
-		// 	this.sitename.el);
-		// this.transforms.runTransition(
-		// 	tx.LAST,
-		// 	this.hGroupings);
-		// this.transforms.runTransition(
-		// 	tx.LAST,
-		// 	this.bundleList.wrapper,
-		// 	this.keywordList.wrapper);
-		
-		// this.transforms.validate();
 	},
 	
 	_onDeselectAnyMedia: function(media) {
 		if (this.collapsed) {
 			this.transforms.clearOffset(this.keywordList.wrapper);
-		// 	this.transforms.runTransition(
-		// 		tx.NOW,
-		// 		this.keywordList.wrapper);
-		// } else {
-		// 	this.transforms.runTransition(
-		// 		tx.BETWEEN,
-		// 		this.bundleList.el,
-		// 		this.keywordList.el);
-		// 	this.transforms.runTransition(
-		// 		tx.LAST,
-		// 		this.bundleList.wrapper,
-		// 		this.keywordList.wrapper,
-		// 		this.sitename.el,
-		// 		this.hGroupings);
 		}
 	},
 	
@@ -248,6 +223,7 @@ var NavigationView = ContainerView.extend({
 	},
 	
 	_onSelectAnyMedia: function(media) {
+		console.log("%s::_onSelectAnyMedia", this.cid);
 		this.collapsed = true;
 	},
 	
@@ -262,165 +238,211 @@ var NavigationView = ContainerView.extend({
 	/* collapse
 	/* ------------------------------- */
 	
-	_onCollapseChange: function(collapsed) {
+	_onCollapsedChange: function(collapsed) {
+		console.log("%s::_onCollapseChange %s", this.cid, collapsed);
 		if (collapsed) {
 			keywords.deselect();
 			this.bundleList.refresh();
 		}
 		this.bundleList.collapsed = collapsed;
 		this.keywordList.collapsed = collapsed;
+		// NOTE: invalidateTransforms called in ContainerView._setCollapsed
+		// this.invalidateTransforms();
 	},
 	
 	/* -------------------------------
-	/* renderTransforms
+	/* Router -> before model change
 	/* ------------------------------- */
 	
 	_beforeChange: function(bundle, media) {
-		this._lastCollapsed = this.collapsed;
+		// console.log("%s::_beforeChange", this.cid, arguments);
+		// this._lastBundle = bundles.selected;
+		// this._lastMedia = bundles.selected? bundles.selected.get("media").selected: null;
+		this.invalidateTransforms();
 	},
 		
 	_afterChange: function(bundle, media) {
-		this.renderTransitions(bundle, media);
 	},
+	
+	/* -------------------------------
+	/* renderTransitions
+	/* ------------------------------- */
+	
+	_lastBundle: null,
+	
+	_lastMedia: null,
 		
 	renderTransitions: function(bundle, media) {
-		// var bundleChanged = bundle !== bundles.selected;
+		var txMsgTpl = "%s::renderTransitions [%s => %s]";
+		var kListTx, bListTx, siteTx, bWrapTx, kWrapTx, hGroupTx;
+		
+		var bundleChanged = this._lastBundle !== bundle;
 		var withBundleFrom = !!this._lastBundle;
 		var withBundleTo = !!bundle;
 		var withBundleChanged = withBundleFrom !== withBundleTo;
-		// var withBundleChanged = (!!bundle) !== (!!bundles.selected);
+		this._lastBundle = bundle;
 		
-		// var mediaChanged = media !== media.selected;
+		var mediaChanged = this._lastMedia !== media;
 		var withMediaFrom = !!this._lastMedia;
 		var withMediaTo = !!media;
 		var withMediaChanged = withMediaFrom !== withMediaTo;
-		// var withMediaChanged = (!!media) !== (!!media.selected);
-		
-		var collapseChanged = this._lastCollapsed !== this.collapsed;
-			// || (!(withBundleChanged || withMediaChanged) && !this.collapsed);
-		
-		this._lastBundle = bundle;
 		this._lastMedia = media;
 		
-		// These two are always between
+		var collapseChanged = this._collapsedChanged;
 		
-		var kListTx, bListTx, siteTx, bWrapTx, kWrapTx, hGroupTx;
-		// kListTx = bListTx = tx.BETWEEN;
-		// siteTx = bWrapTx = kWrapTx = hGroupTx = tx.BETWEEN;
+		if (collapseChanged || withMediaChanged || withBundleChanged) {
+			kListTx =	tx.BETWEEN;
+			bListTx =	tx.BETWEEN;
+		} else {
+			kListTx =	tx.NOW;
+			bListTx =	tx.NOW;
+		}
 		
-		if (withBundleChanged) {
-			if (withBundleTo) {
-				if (withMediaChanged) {
-					if (withMediaTo) {
-						// console.log("Controller: no bundle with no media -> bundle with media");
-						console.log("Controller: bm* - BM*");
-						kListTx =	tx.BETWEEN;
-						bListTx =	tx.BETWEEN;
-						siteTx =	tx.BETWEEN;
-						kWrapTx =	tx.LAST;
-						bWrapTx =	tx.LAST;
-						hGroupTx =	tx.LAST;
+		if (Globals.BREAKPOINTS["desktop-small"].matches) {
+			if (withBundleChanged) {
+				if (withBundleTo) {
+					if (withMediaChanged) {
+						if (withMediaTo) {
+							// no bundle with no media -> bundle with media
+							console.log(txMsgTpl, this.cid, "bm*", "BM*");
+							// kListTx =	tx.BETWEEN;
+							// bListTx =	tx.BETWEEN;
+							siteTx =	tx.BETWEEN;
+							kWrapTx =	tx.LAST;
+							bWrapTx =	tx.LAST;
+							hGroupTx =	tx.LAST;
+						} else {
+							// no bundle with media -> bundle with no media
+							console.error(txMsgTpl, this.cid, "bM*", "Bm*");
+						}
 					} else {
-						// console.error("Controller: no bundle with media -> bundle with no media");
-						console.error("Controller: bM* - Bm*");
+						if (withMediaTo) {
+							// no bundle with media -> bundle with media
+							console.error(txMsgTpl, this.cid, "bM*", "BM*");
+						} else {
+							// no bundle with no media -> bundle with no media
+							console.log(txMsgTpl, this.cid, "bm*", "Bm*");
+							// kListTx =	tx.BETWEEN;
+							// bListTx =	tx.BETWEEN;
+							siteTx =	tx.BETWEEN;
+							kWrapTx =	tx.FIRST;
+							bWrapTx =	tx.FIRST;
+							hGroupTx =	tx.LAST;
+						}
 					}
 				} else {
-					if (withMediaTo) {
-						// console.error("Controller: no bundle with media -> bundle with media");
-						console.error("Controller: bM* - BM*");
+					if (withMediaChanged) {
+						if (withMediaTo) {
+							// bundle with no media -> no bundle with media
+							console.error(txMsgTpl, this.cid, "Bm*", "bM*");
+						} else {
+							// bundle with media -> no bundle with no media
+							console.log(txMsgTpl, this.cid, "BM*", "bm*");
+							// kListTx =	tx.BETWEEN;
+							// bListTx =	tx.BETWEEN;
+							siteTx =	tx.BETWEEN;
+							bWrapTx =	tx.LAST;
+							kWrapTx =	tx.FIRST;
+							hGroupTx =	tx.FIRST;
+						}
 					} else {
-						// console.log("Controller: no bundle with no media -> bundle with no media");
-						console.log("Controller: bm* - Bm*");
-						kListTx =	tx.BETWEEN;
-						bListTx =	tx.BETWEEN;
-						siteTx =	tx.BETWEEN;
-						kWrapTx =	tx.FIRST;
-						bWrapTx =	tx.FIRST;
-						hGroupTx =	tx.LAST;
-					}
-				}
-			} else {
-				if (withMediaChanged) {
-					if (withMediaTo) {
-						// console.error("Controller: bundle with no media -> no bundle with media");
-						console.error("Controller: Bm* - bM*");
-					} else {
-						// console.log("Controller: bundle with media -> no bundle with no media");
-						console.log("Controller: BM* - bm*");
-						kListTx =	tx.BETWEEN;
-						bListTx =	tx.BETWEEN;
+						// bundle with no media -> no bundle with no media
+						console.log(txMsgTpl, this.cid, "B**", "b**");
+						// kListTx =	tx.BETWEEN;
+						// bListTx =	tx.BETWEEN;
 						siteTx =	tx.BETWEEN;
 						bWrapTx =	tx.LAST;
-						kWrapTx =	tx.FIRST;
+						kWrapTx =	tx.LAST;
 						hGroupTx =	tx.FIRST;
 					}
-				} else {
-					// console.log("Controller: bundle with no media -> no bundle with no media");
-					console.log("Controller: B** - b**");
-					kListTx =	tx.BETWEEN;
-					bListTx =	tx.BETWEEN;
-					siteTx =	tx.BETWEEN;
-					bWrapTx =	tx.LAST;
-					kWrapTx =	tx.LAST;
-					hGroupTx =	tx.FIRST;
 				}
-			}
-		} else if (withMediaChanged) {
-			if (withMediaTo) {
-				kWrapTx =	tx.NOW;
-				// console.log("Controller: *m* - *M* with bundle, no media -> media");
-				console.log("Controller: *m* - *M* ");
-			} else {
-				if (collapseChanged) {
-					if (this.collapsed) {
-						// console.log("Controller: *Mc - *mC with bundle, media expanded -> no media collapsed");
-						console.log("Controller: *Mc - *mC");
-						kListTx =	tx.BETWEEN;
-						bListTx =	tx.BETWEEN;
-						siteTx =	tx.LAST;
-						bWrapTx =	tx.LAST;
-						kWrapTx =	tx.LAST;
-						hGroupTx =	tx.LAST;
+			} else if (withMediaChanged) {
+				if (withMediaTo) {
+					if (collapseChanged) {
+						if (this.collapsed) {
+							// *Mc - *mC with bundle, media expanded -> no media collapsed
+							console.log(txMsgTpl, this.cid, "*mc", "*MC");
+							// kListTx =	tx.BETWEEN;
+							// bListTx =	tx.BETWEEN;
+							siteTx =	tx.LAST;
+							bWrapTx =	tx.LAST;
+							kWrapTx =	tx.LAST;
+							hGroupTx =	tx.LAST;
+						}
 					} else {
-						// console.warn("Controller: *MC - *mc with bundle, media collapsed -> no media expanded");
-						console.warn("Controller: *MC - *mc");
+						// *m* - *M* with bundle, no media -> media
+						console.log(txMsgTpl, this.cid, "*m*", "*M*");
+						kWrapTx =	bundleChanged? tx.BETWEEN : tx.NOW;
 					}
 				} else {
-					kWrapTx =	tx.NOW;
-					// console.log("Controller: *M* - *m* with bundle, media -> no media");
-					console.log("Controller: *M* - *m*");
+					if (collapseChanged) {
+						if (this.collapsed) {
+							// *Mc - *mC with bundle, media expanded -> no media collapsed
+							console.log(txMsgTpl, this.cid, "*Mc", "*mC");
+							// kListTx =	tx.BETWEEN;
+							// bListTx =	tx.BETWEEN;
+							siteTx =	tx.LAST;
+							bWrapTx =	tx.LAST;
+							kWrapTx =	tx.LAST;
+							hGroupTx =	tx.LAST;
+						} else {
+							// *MC - *mc with bundle, media collapsed -> no media expanded
+							console.warn(txMsgTpl, this.cid, "*MC", "*mc");
+						}
+					} else {
+						kWrapTx =	bundleChanged? tx.BETWEEN : tx.NOW;
+						// *M* - *m* with bundle, media -> no media");
+						console.log(txMsgTpl, this.cid, "*M*", "*m*");
+					}
+				}
+			} else if (collapseChanged) {
+				if (this.collapsed) {
+					// **c - **C with bundle with no media: expanded -> collapsed
+					console.log(txMsgTpl, this.cid, "**c", "**C");
+					// kListTx =	tx.BETWEEN;
+					// bListTx =	tx.BETWEEN;
+					siteTx =	tx.LAST;
+					bWrapTx =	tx.LAST;
+					hGroupTx =	tx.LAST;
+					if (withMediaTo) {
+						kWrapTx =	tx.LAST;
+					}
+				} else {
+					// **C - **c collapsed -> expanded
+					console.log(txMsgTpl, this.cid, "**C", "**c");
+					// kListTx =	tx.BETWEEN;
+					// bListTx =	tx.BETWEEN;
+					siteTx =	tx.FIRST;
+					bWrapTx =	tx.FIRST;
+					hGroupTx =	tx.FIRST;
+					if (withMediaTo) {
+						kWrapTx =	tx.FIRST;
+					}
 				}
 			}
-		} else if (collapseChanged) {
-			if (this.collapsed) {
-				// console.log("Controller: **c - **C with bundle with no media: expanded -> collapsed");
-				console.log("Controller: **c - **C");
-				kListTx =	tx.BETWEEN;
-				bListTx =	tx.BETWEEN;
-				siteTx =	tx.LAST;
-				bWrapTx =	tx.LAST;
-				kWrapTx =	tx.LAST; // will not change
-				hGroupTx =	tx.LAST;
+		} else {
+			if (withBundleChanged) {
+				console.log(txMsgTpl, this.cid, "s:B**", "s:B**");
+				siteTx =	tx.BETWEEN;
+				// kListTx =	tx.BETWEEN;
+				// bListTx =	tx.BETWEEN;
 			} else {
-				// console.error("Controller: **C - **c collapsed -> expanded");
-				console.error("Controller: **C - **c");
+				console.log(txMsgTpl, this.cid, "s:***", "s:***");
+				// kListTx =	tx.BETWEEN;
+				// bListTx =	tx.BETWEEN;
 			}
 		}
-		if (kListTx || bListTx || siteTx || bWrapTx || kWrapTx || hGroupTx) {
-		// if (withBundleChanged || withMediaChanged || collapseChanged) {
-			kListTx && this.transforms.runTransition(kListTx, this.keywordList.el);
-			bListTx && this.transforms.runTransition(bListTx, this.bundleList.el);
-			siteTx && this.transforms.runTransition(siteTx, this.sitename.el);
-			kWrapTx && this.transforms.runTransition(kWrapTx, this.keywordList.wrapper);
-			bWrapTx && this.transforms.runTransition(bWrapTx, this.bundleList.wrapper);
-			hGroupTx && this.transforms.runTransition(hGroupTx, this.hGroupings);
-			// this._transformsChanged = true;
-			this.transforms.validate();
-		} else {
-			console.log("Controller: no layout change");
+		
+		kListTx && this.transforms.runTransition(kListTx, this.keywordList.el);
+		bListTx && this.transforms.runTransition(bListTx, this.bundleList.el);
+		siteTx && this.transforms.runTransition(siteTx, this.sitename.el);
+		kWrapTx && this.transforms.runTransition(kWrapTx, this.keywordList.wrapper);
+		bWrapTx && this.transforms.runTransition(bWrapTx, this.bundleList.wrapper);
+		hGroupTx && this.transforms.runTransition(hGroupTx, this.hGroupings);
+		
+		if (!(kListTx || bListTx || siteTx || bWrapTx || kWrapTx || hGroupTx)) {
+			console.log("%s::renderTransitions [no change]", this.cid);
 		}
-		// console.log("Controller: \t-- ");
-		// console.log("Controller: \t-- collapsed: %s -> %s", this._lastCollapsed, this.collapsed);
 	},
 	
 	/* -------------------------------
@@ -430,7 +452,8 @@ var NavigationView = ContainerView.extend({
 	_onHPanStart: function(ev) {
 		if (this.collapsed &&
 			bundles.selected.get("media").selectedIndex <= 0 &&
-			document.body.matches(".desktop-small .default-layout")
+			Globals.BREAKPOINTS["desktop-small"].matches
+			// document.body.matches(".desktop-small .default-layout")
 		) {
 			this.transforms.stopTransition(this.keywordList.wrapper);
 			this.transforms.clearOffset(this.keywordList.wrapper);
@@ -463,25 +486,28 @@ var NavigationView = ContainerView.extend({
 		this.touch.off("panend pancancel", this._onHPanFinal);
 		
 		// NOTE: transition will be set twice if there is a new selection!
-		this.transforms.runTransition(tx.NOW, this.keywordList.wrapper);
 		this.transforms.clearOffset(this.keywordList.wrapper);
+		this.transforms.runTransition(tx.NOW, this.keywordList.wrapper);
 		this.transforms.validate();
+		
+		this._afterPanFinal = true;
+		console.log("%s::_onHPanFinal", this.cid);
 	},
 	
 	/* -------------------------------
 	/* Vertical touch/move (_onVPan*)
 	/* ------------------------------- */
 	
+	_collapsedOffsetY: Globals.COLLAPSE_OFFSET,
+	
 	_onVPanStart: function (ev) {
 		this.touch.on("vpanmove", this._onVPanMove);
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
-
 		this.transforms.stopTransition(this.bundleList.el, this.keywordList.el);
 		this.transforms.clearCapture(this.bundleList.el, this.keywordList.el);
+		this.el.classList.add("container-changing");
 		this._onVPanMove(ev);
 	},
-	
-	_collapsedOffsetY: Globals.COLLAPSE_OFFSET,
 	
 	_onVPanMove: function (ev) {
 		var delta = ev.thresholdDeltaY;
@@ -513,25 +539,24 @@ var NavigationView = ContainerView.extend({
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 		
-		this.transforms.clearOffset(this.bundleList.el, this.keywordList.el);
 		
+		this.el.classList.remove("container-changing");
 		if (this.willCollapseChange(ev)) {
-			this.transforms.runTransition(tx.BETWEEN,
-				this.bundleList.el,
-				this.keywordList.el);
-			this.transforms.runTransition(
-				this.collapsed? tx.FIRST : tx.LAST,
-				this.bundleList.wrapper,
-				this.keywordList.wrapper,
-				this.sitename.el,
-				this.hGroupings);
+			console.info("%s::_onVPanFinal [changing] delta: [%f,%f]", this.cid, ev.thresholdDeltaX, ev.thresholdDeltaY);
 			this.collapsed = !this.collapsed;
+			this.renderNow();
 		} else {
-			this.transforms.runTransition(tx.NOW,
-				this.bundleList.el,
-				this.keywordList.el);
+			console.info("%s::_onVPanFinal [unchanged] delta: [%f,%f]", this.cid, ev.thresholdDeltaX, ev.thresholdDeltaY);
+			// this.transforms.clearAllOffsets();
+			// this.transforms.clearOffset(this.bundleList.el, this.keywordList.el);
+			// this.transforms.runTransition(tx.FIRST,
+			// 	this.bundleList.el,
+			// 	this.keywordList.el);
+			// this.transforms.validate();
+			this.invalidateTransforms();
 		}
-		this.transforms.validate();
+		this.renderNow();
+		// console.info("%s::_onVPanFinal [complete]", this.cid);
 	},
 	
 	willCollapseChange: function(ev) {
@@ -545,7 +570,7 @@ var NavigationView = ContainerView.extend({
 	/* Components
 	/* ------------------------------- */
 	
-	assignSitenameButton: function() {
+	createSitenameButton: function() {
 		var view = new View({
 			el: "#site-name",
 			events: {
@@ -567,18 +592,26 @@ var NavigationView = ContainerView.extend({
 			el: "#bundle-list",
 			collection: bundles,
 			collapsed: false,
+			// filterKey: "bIds", filterBy: keywords.selected,
 			filterFn: function(bundle, index, arr) {
 				return keywords.selected? bundle.get("kIds").indexOf(keywords.selected.id) !== -1 : false;
 			},
-			// filterKey: "bIds", filterBy: keywords.selected,
 		});
 		controller.listenTo(view, {
+			// "view:removed": controller.stopListening
 			"view:select:one": controller.selectBundle,
-			"view:select:none": controller.deselectBundle,
-			"view:removed": controller.stopListening
+			// "view:select:none": controller.deselectBundle,
+		});
+		this.listenTo(view, {
+			"view:removed": this.stopListening,
+			"view:select:none": function() {
+				if (bundles.selected && !this.collapsed) {
+					this.collapsed = true;
+					// this.invalidateTransforms();
+				}
+			},
 		});
 		view.wrapper = view.el.parentElement;
-		// view.requestRender();
 		return view;
 	},
 	
@@ -590,18 +623,20 @@ var NavigationView = ContainerView.extend({
 			el: "#keyword-list",
 			collection: keywords,
 			collapsed: false,
+			// filterKey: "kIds", filterBy: bundles.selected,
 			filterFn: function(item, idx, arr) {
 				return bundles.selected? (bundles.selected.get("kIds").indexOf(item.id) !== -1) : false;
 			},
+			// groupings: {collection: types, key: "tIds"},
 			groupingFn: function(item, idx, arr) {
 				return types.get(item.get("tId"));
 			},
-			// filterKey: "kIds", filterBy: bundles.selected,
-			// groupings: { collection: types,	key: "tIds", },
 		});
-		view.wrapper = view.el.parentElement;
-		// view.requestRender();
+		this.listenTo(view, "all", function(evName, model) {
+			console.log("%s::[%s %s] model: %s", this.cid, view.cid, evName, model? model.cid: "none");
+		});
 		this.listenTo(view, "view:select:one view:select:none", this._onKeywordListSelect);
+		view.wrapper = view.el.parentElement;
 		return view;
 	},
 });

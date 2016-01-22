@@ -31,54 +31,48 @@
 	// .content
 	// - - - - - - - - - - - - - - - - - -
 	.content {
-		transition: tx(opacity, 1, 1);
+		transition: tx(opacity, 1, 0);
 	}
-	&.selected, &.candidate, .empty-item.selected + & {
-	// &.selected, &.candidate {
+	// // &.selected, &.candidate {
+	// &.selected, &.candidate, .empty-item.selected + & {
+	// 	.content {
+	// 		@at-root & { // :not(.disabled)
+	// 			// transition: tx(opacity, 1, 2);
+	// 			transition: tx(opacity, 1, 0);
+	// 		}
+	// 		@at-root .carousel.scrolling & {
+	// 			transition: tx(opacity, 1, 0);
+	// 		}
+	// 		@at-root .carousel.disabled & {
+	// 			transition: tx(opacity, 1, 0);
+	// 		}
+	// 	}
+	// }
+}
+	
+// .empty-item .content
+// - - - - - - - - - - - - - - - - - -
+.carousel-item.empty-item {
+	.content {
+		transition: tx(opacity, 0.5, 0);
+		opacity: 0.15;
+		// color: silver;
+	}
+	&.selected, &.candidate {
 		.content {
 			@at-root & {
-				transition: tx(opacity, 1, 2);
+				opacity: 1.0;
+				// color: darkgreen;
 			}
-			@at-root .carousel.scrolling & {
-				transition: tx(opacity, 1, 0);
-			}
+			// @at-root .carousel.scrolling & {
+			// // @at-root .carousel.panning & {
+			// 	// opacity: 0.2;
+			// 	color: blue;
+			// }
 			@at-root .carousel.disabled & {
-				transition: tx(opacity, 1, 0);
-			}
-		}
-		
-		// @at-root & {
-		// 	background-color: transparentize(#FF0000, 0.5);
-		// }
-		// @at-root :not(.container-changing) & {
-		// 	background-color: transparentize(#0000FF, 0.5);
-		// }
-		// @at-root .carousel.scrolling & {
-		// 	background-color: transparentize(#00FF00, 0.5);
-		// }
-		// @at-root .carousel.disabled & {
-		// 	background-color: transparentize(#999999, 0.5);
-		// }
-	}
-	
-	// .empty-item .content
-	// - - - - - - - - - - - - - - - - - -
-	&.empty-item {
-		.content {
-			transition: tx(opacity, 1, 0);
-			opacity: 0.2;
-		}
-		&.selected, &.candidate {
-			.content {
-				@at-root & {
-					opacity: 1.0;
-				}
-				@at-root .carousel.panning & {
-					opacity: 0.5;
-				}
-				@at-root .carousel.disabled & {
-					opacity: 0.2;
-				}
+				opacity: 0.15;
+				// color: red;
+				// text-decoration: line-through
 			}
 		}
 	}

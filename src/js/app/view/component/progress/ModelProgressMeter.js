@@ -65,14 +65,15 @@ var ModelProgressMeterProto = {
 			this._renderKeys.push(key);
 		}
 		this._valuesChanged = true;
-		this._nextRafId = -1;
+		// this._nextRafId = -1;
 	},
 	
 	remove: function() {
+		// this._valuesChanged = false;
 		this._renderKeys.length = 0;
-		if (this._nextRafId !== -1) {
-			this.cancelAnimationFrame(this._nextRafId);
-		}
+		// if (this._nextRafId !== -1) {
+		// 	this.cancelAnimationFrame(this._nextRafId);
+		// }
 		return View.prototype.remove.apply(this, arguments);
 	},
 	
@@ -107,7 +108,8 @@ var ModelProgressMeterProto = {
 		if (changed) {
 			this._valuesChanged = true;
 			this._renderKeys.indexOf(key) !== -1 || this._renderKeys.push(key);
-			this.render();
+			// this.render();
+			this.requestRender();
 		}
 	},
 	
@@ -153,45 +155,63 @@ var ModelProgressMeterProto = {
 	/* render
 	/* --------------------------- */
 	
+	// /** @override */
+	// render: function () {
+	// 	// if (!this._rendering && this._valuesChanged) {
+	// 	if (this._valuesChanged) {
+	// 		this._valuesChanged = false;
+	// 	 	if (this._nextRafId === -1) {
+	// 			this._nextRafId = this.requestAnimationFrame(this.renderFrame);
+	// 		}
+	// 	}
+	// 	return this;
+	// },
+	// 
+	// /** @override */
+	// renderFrame: function(tstamp) {
+	// 	if (this._rendering) throw new Error("recursive call to renderFrame");
+	// 	this._rendering = true;
+	// 	
+	// 	var changedKeys = this._renderKeys;
+	// 	this._tstamp = tstamp;
+	// 	this._renderKeys = changedKeys.filter(this._renderValue, this);
+	// 	// this._renderKeys = changedKeys.filter(function(key) {
+	// 	// 	var dataObj = this._valueData[key];
+	// 	// 	if (Array.isArray(dataObj)) {
+	// 	// 		return dataObj.reduce(function(continueNext, o, index, arr) {
+	// 	// 			return this.interpolateNumber(tstamp, o) || continueNext;
+	// 	// 		}.bind(this), false);
+	// 	// 	} else {
+	// 	// 		return this.interpolateNumber(tstamp, dataObj);
+	// 	// 	}
+	// 	// }, this);
+	// 	this.redraw(changedKeys);
+	// 	this._nextRafId = this._renderKeys.length?
+	// 		this.requestAnimationFrame(this.renderFrame) : -1;
+	// 	
+	// 	this._rendering = false;
+	// },
+	
 	/** @override */
-	render: function () {
-		// if (!this._rendering && this._valuesChanged) {
+	renderFrame: function(tstamp) {
 		if (this._valuesChanged) {
 			this._valuesChanged = false;
-		 	if (this._nextRafId === -1) {
-				this._nextRafId = this.requestAnimationFrame(this.renderFrame);
+		
+			var changedKeys = this._renderKeys;
+			this._tstamp = tstamp;
+			this._renderKeys = changedKeys.filter(this._renderValue, this);
+			this.redraw(changedKeys);
+			
+			if (this._renderKeys.length != 0) {
+				this._valuesChanged = true;
+				this.requestRender();
 			}
 		}
-		return this;
 	},
 	
 	/* --------------------------- *
 	/* private
 	/* --------------------------- */
-	
-	renderFrame: function(tstamp) {
-		if (this._rendering) throw new Error("recursive call to renderFrame");
-		this._rendering = true;
-		this._tstamp = tstamp;
-		
-		var changedKeys = this._renderKeys;
-		this._renderKeys = changedKeys.filter(this._renderValue, this);
-		// this._renderKeys = changedKeys.filter(function(key) {
-		// 	var dataObj = this._valueData[key];
-		// 	if (Array.isArray(dataObj)) {
-		// 		return dataObj.reduce(function(continueNext, o, index, arr) {
-		// 			return this.interpolateNumber(tstamp, o) || continueNext;
-		// 		}.bind(this), false);
-		// 	} else {
-		// 		return this.interpolateNumber(tstamp, dataObj);
-		// 	}
-		// }, this);
-		this.redraw(changedKeys);
-		this._nextRafId = this._renderKeys.length?
-			this.requestAnimationFrame(this.renderFrame) : -1;
-		
-		this._rendering = false;
-	},
 	
 	_renderValue: function(key) {
 		var dataObj = this._valueData[key];
@@ -227,5 +247,9 @@ var ModelProgressMeterProto = {
 	
 	redraw: function() { /* abstract */ },
 };
+
+if (DEBUG) {
+	ModelProgressMeterProto._skipLog = true;
+}
 
 module.exports = View.extend(ModelProgressMeterProto, ModelProgressMeter);

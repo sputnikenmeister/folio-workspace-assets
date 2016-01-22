@@ -67,6 +67,10 @@ $darkolivegreen:	darkolivegreen;
 		}
 	}
 	#content {
+		&.container-changing {
+			// @include debug_outline_thick($color: $deepskyblue);
+			background-color: transparentize($deepskyblue, 0.5);
+		}
 		// @include debug_outline($width: 0.25rem, $style: solid, $color: $deepskyblue);
 		.stack {
 			.content {
@@ -77,7 +81,6 @@ $darkolivegreen:	darkolivegreen;
 			}
 		}
 		.carousel {
-			// @include debug_outline_thick($color: $deepskyblue);
 			@include debug_outline(1rem, solid, transparentize($deepskyblue, 0.8));
 			&.scrolling {
 				@include debug_outline(1rem, dashed, transparentize($deepskyblue, 0.4));

@@ -109,9 +109,6 @@
 	}
 	
 }
-// .container-expanded .media-carousel {
-// 	transform: move(0, $nav_collapse_extra);
-// }
 .playable-renderer .progress-meter {
 	top: -3.5rem; right: 0;
 }
@@ -135,19 +132,11 @@
 	@at-root .container-expanded & {
 		transform: move(0, $nav_collapse_extra);
 	}
-	@at-root .container-expanded &, &.removing-child {
-		& > .stack-item { opacity: 0; }
-	}
+	// @at-root .container-expanded &, &.removing-child {
+	// 	& > .stack-item { opacity: 0; }
+	// }
+	&.disabled > .stack-item { opacity: 0; }
 }
-// .container-expanded .media-caption-stack {
-// 	transform: move(0, $nav_collapse_extra);
-// }
-// .container-expanded .media-caption-stack,
-// .removing-child.media-caption-stack {
-// 	& > .stack-item {
-// 		opacity: 0;
-// 	}
-// }
 
 // media-dotnav
 // - - - - - - - - - - - - - - - - - -

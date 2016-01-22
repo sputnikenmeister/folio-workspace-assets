@@ -215,7 +215,7 @@ var MediaRenderer = CarouselRenderer.extend({
 		}
 	},
 },{
-	// LOG_TO_SCREEN: true,
+	LOG_TO_SCREEN: true,
 	/** @type {module:app/view/promise/whenSelectionIsContiguous} */
 	whenSelectionIsContiguous: require("app/view/promise/whenSelectionIsContiguous"),
 	// /** @type {module:app/view/promise/whenSelectTransitionEnds} */
@@ -258,6 +258,7 @@ MediaRenderer = (function(MediaRenderer) {
 			this.__logFrameStyle = "1px dashed " + fgColor.clone().mix(bgColor, 0.5).hslString();
 			this.__logStartTime = Date.now();
 			this.__rafId = -1;
+			this.__onFrame = this.__onFrame.bind(this);
 		},
 		
 		initializeAsync: function() {
@@ -301,7 +302,7 @@ MediaRenderer = (function(MediaRenderer) {
 			this.__logElement.scrollTop = this.__logElement.scrollHeight;
 			
 			if (this.__rafId == -1) {
-				this.__rafId = this.requestAnimationFrame(this.__onFrame);
+				this.__rafId = this.requestAnimationFrame(this.__onFrame.bind(this));
 			}
 		},
 		

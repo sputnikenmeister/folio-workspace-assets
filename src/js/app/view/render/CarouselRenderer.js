@@ -46,6 +46,7 @@ var CarouselRenderer = View.extend({
 		this.metrics.content = {};
 		this.createChildren();
 		// this.enabled = !!options.enabled; // force bool
+		this.setEnabled(!!options.enabled);
 	},
 	
 	createChildren: function() {

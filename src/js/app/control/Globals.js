@@ -27,7 +27,8 @@ module.exports = (function () {
 	for (var b in sass.breakpoints) {
 		// NOTE: breakpoints have to be enclosed in quotes for the sass-json-vars
 		// compass plug-in to work as expected, but hey have to be removed
-		g.BREAKPOINTS[b] = sass.breakpoints[b];//.slice(1, -1); // remove first and last char
+		// g.BREAKPOINTS[b] = sass.breakpoints[b];//.slice(1, -1); // remove first and last char
+		g.BREAKPOINTS[b] = window.matchMedia(sass.breakpoints[b]);
 	}
 	
 	// base colors, dimensions

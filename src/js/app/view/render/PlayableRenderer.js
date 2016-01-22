@@ -45,7 +45,7 @@ var PlayableRenderer = MediaRenderer.extend({
 	properties: {
 		paused: {
 			get: function() {
-				return true;
+				return this._isMediaPaused();
 			}
 		},
 		playbackRequested: {
@@ -208,7 +208,22 @@ var PlayableRenderer = MediaRenderer.extend({
 		}
 	},
 	
-	/** @type {String} */
+	/** @override */
+	togglePlayback: function(newPlayState) {
+		console.log("%s::togglePlayback(%s) paused:%s requested:%s", this.cid, newPlayState, this._isMediaPaused(), this.playbackRequested);
+		if (_.isBoolean(newPlayState) && newPlayState !== this._isMediaPaused()) {
+			return; // requested state is current, do nothing
+		} else {
+			newPlayState = this._isMediaPaused();
+		}
+		if (newPlayState) { // changing to what?
+			this._playMedia();
+		} else {
+			this._pauseMedia();
+		}
+	},
+	
+	/** @type {Boolean?} */
 	_playbackRequested: null,
 	
 	_setPlaybackRequested: function(value) {
@@ -230,14 +245,16 @@ var PlayableRenderer = MediaRenderer.extend({
 			this.mediaState === "ready" &&
 			!this.parentView.scrolling &&
 			document[visibilityStateProp] !== "hidden");
-		// console.log("%s::_canResumePlayback():", this.cid, retval, {
-		// 	"enabled": this.enabled,
-		// 	"selected": (!!this.model.selected),
-		// 	"playback requested": this.playbackRequested,
-		// 	"not scrolling": !this.parentView.scrolling,
-		// 	"mediaState": this.mediaState,
-		// 	"doc visibility": document[visibilityStateProp]
-		// });
+		console.log("%s::_canResumePlayback", this.cid, retval
+			// ,{
+			// 	"enabled": this.enabled,
+			// 	"selected": (!!this.model.selected),
+			// 	"playbackRequested": this.playbackRequested,
+			// 	"!scrolling": !this.parentView.scrolling,
+			// 	"mediaState": this.mediaState,
+			// 	"visibility": document[visibilityStateProp]
+			// }
+		);
 		return retval;
 	},
 	
@@ -247,9 +264,20 @@ var PlayableRenderer = MediaRenderer.extend({
 		}
 	},
 	
-	togglePlayback: function(playback) {
-		// abstract
+	_isMediaPaused: function() {
+		console.warn("%s::_isMediaPaused Not implemented", this.cid);
+		return true;
 	},
+	
+	_playMedia: function() {
+		console.warn("%s::_playMedia Not implemented", this.cid);
+	},
+	
+	_pauseMedia: function() {
+		console.warn("%s::_pauseMedia Not implemented", this.cid);
+	},
+	
+	
 	
 	/* --------------------------- *
 	/* util

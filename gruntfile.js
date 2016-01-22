@@ -31,12 +31,6 @@ module.exports = function (grunt) {
 		}
 	});
 	
-	// grunt.config("paths.filebase.debugClientJs", "folio-debug-client");
-	// grunt.config("paths.filebase.debugVendorJs", "folio-debug-vendor");
-	// grunt.config("paths.filebase.debugStyles", "folio-debug");
-	// grunt.config("paths.filebase.distJs", "folio");
-	// grunt.config("paths.filebase.distStyles", "folio");
-	
 	grunt.loadTasks("./build/grunt/tasks");
 	
 	/* --------------------------------

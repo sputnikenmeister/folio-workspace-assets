@@ -32,14 +32,9 @@ var NavigationView = require("app/view/NavigationView");
 /** @type {module:app/view/ContentView} */
 var ContentView = require("app/view/ContentView");
 
-if (DEBUG) {
-	/** @type {module:app/view/DebugToolbar} */
-	var DebugToolbar = require("app/view/DebugToolbar");
-}
-
 // var visibilityHiddenProp = prefixedProperty("hidden", document);
-var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden");
-var visibilityStateProp = prefixedProperty("visibilityState", document);
+// var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden");
+// var visibilityStateProp = prefixedProperty("visibilityState", document);
 
 var AppView = {
 	getInstance: function() {
@@ -58,133 +53,166 @@ var AppViewProto = {
 	// /** @override */
 	// className: "without-bundle without-media",
 	
+	
 	events: {
-		"visibilitychange": function(ev) {
-			console.log("%s:visibilitychange value=%s", this.cid, document[visibilityStateProp]);
-		},
-		"fullscreenchange #navigationView": function (ev) {
-			console.warn("%s:fullscreenchange [WTF!!!]", this.cid);
-		}
+		"visibilitychange": function(ev) { console.log(ev.type) ;},
+		"fullscreenchange": function(ev) { console.log(ev.type) ;},
 	},
 	
 	/** @override */
 	initialize: function (options) {
-		_.bindAll(this, "_onResize");
-		// this.appReady = _.once(this.appReady);
-		
-		this.breakpoints = {
-			"desktop-small": window.matchMedia(Globals.BREAKPOINTS["desktop-small"])
-		};
-		document.documentElement.classList.toggle("desktop-small", this.breakpoints["desktop-small"].matches);
+		document.documentElement.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
 		
 		/* create single hammerjs manager */
 		this.touch = TouchManager.init(document.querySelector("#container"));
 		
-		// render on resize, onorientationchange, visibilitychange
+		// // render on resize, onorientationchange, visibilitychange
+		this._onResize = this._onResize.bind(this);// _.bindAll(this, "_onResize");
 		window.addEventListener("orientationchange", this._onResize, false);
-		window.addEventListener("resize", _.debounce(this._onResize, 100, false), false);
-		window.addEventListener("resize", function(ev) {
-			document.body.scrollTop = 0;
-		}, false);
+		window.addEventListener("resize", _.debounce(this._onResize, 100, false/* immediate? */), false);
 		
 		/* initialize controller listeners */
-		this.listenToOnce(controller, "change:after", this._appReady);
-		this.listenToOnce(controller, "change:after", this._afterFirstChange);
-		// this.listenTo(controller, "change:before", this._beforeChange);
+		// this.listenToOnce(controller, "change:after", this._afterFirstChange);
+		this.listenTo(controller, "change:before", this._beforeChange);
 		
-		if (DEBUG) {
-			this.el.appendChild((new DebugToolbar({ id: "debug-toolbar", collection: bundles })).render().el);
-		}
 		/* initialize views */
 		this.navigationView = new NavigationView({ el: "#navigation" });
 		this.contentView = new ContentView({ el: "#content" });
+		
+		// this.listenTo(this.navigationView, "collapsed:change", this._onNavigationCollapsed);
+		// this.listenTo(this.contentView, "collapsed:change", this._onContentCollapsed);
+		
+		this.listenToOnce(controller, "change:after", this._appReady);
 		
 		// start router, which will request appropiate state
 		Backbone.history.start({ pushState: false, hashChange: true });
 	},
 	
-	/* -------------------------------
-	/* opt A
-	/* ------------------------------- */
+	// _onNavigationCollapsed: function(value) {
+	// 	console.log("%s::_onNavigationCollapsed content old -> new", this.cid, this.contentView.collapsed, value);
+	// 	this.contentView.collapsed = value;
+	// },
+	// 
+	// _onContentCollapsed: function(value) {
+	// 	console.log("%s::_onContentCollapsed nav old -> new", this.cid, this.navigationView.collapsed, value);
+	// 	this.navigationView.collapsed = value;
+	// },
 	
-	// renderLater: function() {
-	// 	if (this._controllerChanged) {
-	// 		this._controllerChanged = false;
-	// 		this.renderControllerChange(bundles.selected,
-	// 			(bundles.selected? bundles.selected.get("media").selected : null));
-	// 	}
-	// },
-	// 
-	// _onResize: function() {
-	// 	document.documentElement.classList.toggle("desktop-small", this.breakpoints["desktop-small"].matches);
-	// 	var renderView = function(view) {
-	// 		view.skipTransitions = true;
-	// 		view.renderNow(true);
-	// 		for (var childId in view.childViews) {
-	// 			renderView(view.childViews[childId]);
-	// 		}
-	// 		view.skipTransitions = false;
-	// 	};
-	// 	renderView(this);
-	// },
-	// 
-	// _beforeChange: function(bundle, media) {
-	// 	this._controllerChanged = true;
-	// 	this.requestRender();
-	// },
+	_beforeChange: function(bundle, media) {
+		console.log("%s::_beforeChange", this.cid);
+		this._controllerChanged = true;
+		this.requestRender();
+	},
 	
 	/* -------------------------------
 	/* opt A
 	/* ------------------------------- */
 	
-	render: function() {
-		// console.log("%s::render [%s]", this.cid, (arguments[0] instanceof window.Event? arguments[0].type : "direct call"));
-		document.documentElement.classList.toggle("desktop-small", this.breakpoints["desktop-small"].matches);
-		this.navigationView.render();
-		this.contentView.render();
-		return this;
-	},
-	_onResize: function() { 
-		this.render();
-	},
-	_afterFirstChange: function(bundle, media) {
-		this.listenTo(controller, "change:before", this._afterChangeDeferred);
-		this.renderControllerChange(bundle, media);
-		this.render();
-	},
-	_afterChangeDeferred: function(bundle, media) {
-		this.requestAnimationFrame(function() {
-			this.renderControllerChange(bundle, media);
-		});
+	renderFrame: function(tstamp) {
+		if (this._controllerChanged) {
+			this._controllerChanged = false;
+			this.renderControllerChange();
+		}
+		if (this._sizeChanged) {
+			this._sizeChanged = false;
+			this.renderResize();
+		}
+		if (this._appReadyChanged) {
+			this._appReadyChanged = false;
+			this.renderAppReady();
+			// this._sizeChanged = true;
+		}
 	},
 	
 	/* -------------------------------
-	/* render helpers
+	/* resize
+	/* ------------------------------- */
+	
+	// _onResize_immediate: function() {
+	// 	console.log("%s::_onResize_immediate", this.cid);
+	// 	document.body.scrollTop = 0;
+	// },
+	
+	_onResize: function() {
+		console.log("%s::_onResize", this.cid);
+		// this.renderResize();
+		this._sizeChanged = true;
+		// this.requestRender();
+		this.renderNow(true);
+	},
+	
+	renderResize: function() {
+		console.log("%s::renderResize", this.cid);
+		document.body.scrollTop = 0;
+		document.documentElement.classList.toggle("desktop-small",
+			Globals.BREAKPOINTS["desktop-small"].matches);
+		
+		
+		var ccid, view;
+		for (ccid in this.childViews) {
+			view = this.childViews[ccid];
+			view.skipTransitions = true;
+			view.invalidateSize();
+			view.renderNow();
+		}
+		
+		// this.navigationView.render();
+		// this.contentView.render();
+		
+		// var viewCids = [];
+		// var renderView = function(view) {
+		// 	view.skipTransitions = true;
+		// 	view.renderNow();
+		// 	view.render();
+		// 	for (var childId in view.childViews) {
+		// 		renderView(view.childViews[childId]);
+		// 	}
+		// 	// view.skipTransitions = false;
+		// 	// viewCids.push(view.cid);
+		// };
+		// renderView(this.navigationView);
+		// renderView(this.contentView);
+		// console.log("%s::_onResize", this.cid, viewCids);
+	},
+	
+	
+	/* -------------------------------
+	/* _appReady
 	/* ------------------------------- */
 	
 	_appReady: function() {
-		var context = this;
 		// NOTE: Change to .app-ready:
 		// Wait one frame for views to be rendered. Some may trigger transitions,
 		// but they are skipped while in .app-initial. Wait one more frame for 
 		// everything to render in it's final state, then finally change to .app-ready.
-		this.requestAnimationFrame(function() {
+		// this.requestAnimationFrame(function() {
+			// console.log("%s::renderAppReady[-2]", this.cid);
 			this.requestAnimationFrame(function() {
-				context._onResize();
-				document.documentElement.classList.remove("app-initial");
-				document.documentElement.classList.add("app-ready");
+				console.log("%s::renderAppReady[-1]", this.cid);
+				// this.renderAppReady();
+				this._sizeChanged = true;
+				this._appReadyChanged = true;
+				this.requestRender();
+				// this.renderNow();
 			});
-		});
+		// });
 	},
 	
-	renderControllerChange: function(bundle, media) {
-		var cls = this.el.classList;
+	renderAppReady: function() {
+		console.log("%s::renderAppReady", this.cid);
+		document.documentElement.classList.remove("app-initial");
+		// document.documentElement.classList.add("app-ready");
+	},
+	
+	/* -------------------------------
+	/* body classes etc
+	/* ------------------------------- */
+	
+	renderControllerChange: function() {
+		console.log("%s::renderControllerChange", this.cid);
 		
-		// Set state classes
-		cls.toggle("with-bundle", !!bundle);
-		cls.toggle("without-bundle", !bundle);
-		cls.toggle("with-media", !!media);
-		cls.toggle("without-media", !media);
+		var bundle = bundles.selected;
+		var media = bundle? bundles.selected.get("media").selected : null;
 		
 		this.renderModelClasses(bundle, media);
 		this.renderDocTitle(bundle, media);
@@ -203,8 +231,14 @@ var AppViewProto = {
 	},
 	
 	renderModelClasses: function(bundle, media) {
-		// Set state classes
+		// classList target
 		var cls = this.el.classList;
+		
+		// Set state classes
+		cls.toggle("with-bundle", !!bundle);
+		cls.toggle("without-bundle", !bundle);
+		cls.toggle("with-media", !!media);
+		cls.toggle("without-media", !media);
 		
 		// Set bundle class
 		var bDomId = bundle? bundle.get("domid") : null;
@@ -220,8 +254,13 @@ var AppViewProto = {
 			if (mDomId) cls.add(mDomId);
 			this._mediaDomId = mDomId;
 		}
-		cls.toggle("color-dark", (media && media.colors.hasDarkBg) || (bundle && bundle.colors.hasDarkBg));
+		// Set color-dark class
+		cls.toggle("color-dark", 
+			(media && media.colors.hasDarkBg) ||
+			(bundle && bundle.colors.hasDarkBg));
 	},
+	
+
 	
 	// renderModelClasses: function(bundle, media) {
 	// 	// Set state classes
@@ -240,7 +279,50 @@ var AppViewProto = {
 	// 	}
 	// 	cls.toggle("color-dark", (media && media.colors.hasDarkBg) || (bundle && bundle.colors.hasDarkBg));
 	// },
+	
+	/* -------------------------------
+	/* opt A
+	/* ------------------------------- */
+	
+	// render: function() {
+	// 	// console.log("%s::render [%s]", this.cid, (arguments[0] instanceof window.Event? arguments[0].type : "direct call"));
+	// 	document.documentElement.classList.toggle("desktop-small", this.breakpoints["desktop-small"].matches);
+	// 	this.navigationView.render();
+	// 	this.contentView.render();
+	// 	return this;
+	// },
+	// _onResize: function() { 
+	// 	this.render();
+	// },
+	// _afterFirstChange: function(bundle, media) {
+	// 	this.listenTo(controller, "change:before", this._afterChangeDeferred);
+	// 	this.renderControllerChange(bundle, media);
+	// 	this.render();
+	// },
+	// _afterChangeDeferred: function(bundle, media) {
+	// 	this.requestAnimationFrame(function() {
+	// 		this.renderControllerChange(bundle, media);
+	// 	});
+	// },
 };
+
+if (DEBUG) {
+	/** @type {module:app/view/DebugToolbar} */
+	var DebugToolbar = require("app/view/DebugToolbar");
+	// var init = AppViewProto.initialize;
+	AppViewProto.initialize = (function(fn) {
+		return function() {
+			this.el.appendChild((new DebugToolbar({id: "debug-toolbar", collection: bundles})).render().el);
+			return fn.apply(this, arguments);
+		};
+	})(AppViewProto.initialize);
+	
+	// AppViewProto.initialize = _.wrap(AppViewProto.initialize, function(fn) {
+	// 	this.el.appendChild((new DebugToolbar({id: "debug-toolbar", collection: bundles})).render().el);
+	// 	// wrapped fn is first argument, so call shift result directly with (already shifted) arguments
+	// 	Array.prototype.shift.apply(arguments).apply(this, arguments);
+	// });
+}
 
 /**
 /* @constructor

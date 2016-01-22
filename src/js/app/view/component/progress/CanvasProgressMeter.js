@@ -44,6 +44,7 @@ var ARC_DEFAULTS = {
 	// "wait": 			{ lineWidth: 3.0, radiusOffset: 0, lineDash: [1.0, 3.0] },
 	// "wait": 			{ lineWidth: 0.8, radiusOffset: -3, lineDash: [2, 4] },
 };
+var SIZE_OR_LAYOUT = ModelProgressMeter.SIZE_INVALID | ModelProgressMeter.LAYOUT_INVALID;
 
 /**
 * @constructor
@@ -125,13 +126,23 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		
 		// size
 		// --------------------------------
-		this._canvasChanged = true;
+		// this._canvasChanged = true;
 		this._canvasSize = null;
 		this._valueStyles = {};
 		
 		// canvas' context init
 		// --------------------------------
 		this._ctx = this.el.getContext("2d");
+		
+		// if (this.attached)
+		// 	this._updateCanvas();
+		// } else {
+		// 	this.listenToOnce(this, "view:added", this._updateCanvas);
+		// }
+		this.listenTo(this, "view:added", function(){
+			this.invalidateSize();
+			this.renderNow();
+		});
 	},
 
 	_updateCanvas: function() {
@@ -232,8 +243,8 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	/* render
 	/* --------------------------- */
 	
-	/** @override */
-	render: function () {
+	///** @override */ 
+	/* render: function () {
 		if (this.domPhase === "created") {
 			if (!this._renderPending) {
 				this._renderPending = true;
@@ -248,10 +259,39 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 					this._updateCanvas();
 					this._valuesChanged = true;
 				}
-				ModelProgressMeter.prototype.render.apply(this, arguments);
+				ModelProgressMeter.prototype.renderFrame.apply(this, arguments);
 			}
 		}
 		return this;
+	},*/
+	
+	/** @override */
+	renderFrame: function(tstamp) {
+		// if (!this.attached) {
+		// 	if (this._canvasChanged) {
+		// 		this._canvasChanged = false;
+		// 		this.listenToOnce(this, "view:added", function() {
+		// 			this._canvasChanged = true;
+		// 			this.requestRender();
+		// 		});
+		// 	}
+		// 	return;
+		// }
+		// if (this._canvasChanged) {
+		// 	this._canvasChanged = false;
+		// 	this._updateCanvas();
+		// 	this._valuesChanged = true;
+		// }
+		
+		if (!this.attached) return;
+		
+		if (this._renderFlags & SIZE_OR_LAYOUT) {
+			this._renderFlags &= ~SIZE_OR_LAYOUT;
+			this._updateCanvas();
+			this._valuesChanged = true;
+		}
+		
+		ModelProgressMeter.prototype.renderFrame.apply(this, arguments);
 	},
 	
 	/* --------------------------- *

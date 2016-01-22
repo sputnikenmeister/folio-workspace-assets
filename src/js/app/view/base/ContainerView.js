@@ -42,26 +42,28 @@ module.exports = View.extend({
 		this.transforms = new TransformHelper();
 		this.touch = TouchManager.getInstance();
 		
-		this.listenTo(controller, {
-			"change:before": this._beforeChange,
-			"change:after": this._afterChange
-		});
-
-		this.listenTo(this, "collapsed:change", this._onCollapseChange);
+		// this.listenTo(controller, {
+		// 	"change:before": this._beforeChange,
+		// 	"change:after": this._afterChange
+		// });
+		// this.listenTo(this, "collapsed:change", this._onCollapsedChange);
 	},
 	
-	// renderLater: function() {
-	// 	if (this._collapseChanged) {
-	// 		this._collapseChanged = true;
-	// 		if (this.collapsed) {
-	// 			this.el.classList.add("container-collapsed");
-	// 			this.el.classList.remove("container-expanded");
-	// 		} else {
-	// 			this.el.classList.remove("container-collapsed");
-	// 			this.el.classList.add("container-expanded");
-	// 		}
-	// 	}
+	// /** @override */
+	// render: function () {
+	// 	this.transforms.stopAllTransitions();
+	// 	this.transforms.validate();
+	// 	this.itemViews.forEach(function(view) {
+	// 		view.skipTransitions = true;
+	// 		view.invalidateSize();
+	// 		view.renderNow();
+	// 	}, this);
 	// },
+	
+	renderCollapsed: function() {
+		this.el.classList.toggle("container-collapsed", this._collapsed);
+		this.el.classList.toggle("container-expanded", !this._collapsed);
+	},
 	
 	/* -------------------------------
 	/* collapse
@@ -72,24 +74,9 @@ module.exports = View.extend({
 	_setCollapsed: function(collapsed) {
 		if (this._collapsed !== collapsed) {
 			this._collapsed = collapsed;
-			this.el.classList.toggle("container-collapsed", collapsed);
-			this.el.classList.toggle("container-expanded", !collapsed);
-			// this._collapseChanged = true;
-			// this.requestRender();
+			this._collapsedChanged = true;
+			this.requestRender();
 			this.trigger("collapsed:change", collapsed);
 		}
-	},
-	
-	/* -------------------------------
-	/* Router -> Model change
-	/* ------------------------------- */
-	 
-	_beforeChange: function(bundle, media) {
-	},
-	
-	_afterChange: function(bundle, media) {
-	},
-	
-	_onCollapseChange: function(collapsed) {
 	},
 });

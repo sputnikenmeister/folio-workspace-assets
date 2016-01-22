@@ -28,87 +28,58 @@ var GroupingListView = FilterableListView.extend({
 	
 	/** @type {Function|null} empty array */
 	_groupingFn: null,//function() { return null; },
-
+	
 	/** @override */
 	initialize: function (options) {
 		FilterableListView.prototype.initialize.apply(this, arguments);
 		
-		// this.groupingCollection = new Backbone.Collection();
 		this.groupingRenderer = options.groupingRenderer || GroupingListView.defaultGroupRenderer;
 		
 		if (options.groupingFn) {
 			this._groupingFn = options.groupingFn;
-			this._groupItems = _.uniq(this.collection.map(this._groupingFn, this));
-			// this.groupingCollection.reset(this._groupItems);
-			// this.groupingCollection.each(this.assignGroupingView, this);
+			// this._groupItems = _.uniq(this.collection.map(this._groupingFn, this));
+			this._refreshGroups();
 			this._groupItems.forEach(this.assignGroupingView, this);
 		}
-		// else if (options.groupings) {
-		// 	options.filterFn && (this._filterFn = options.filterFn);
-		// 	this.groupingKey = options.groupings.key;
-		// 	this.groupingCollection = options.groupings.collection;
-		// 	// this.groupingRenderer = options.groupings.renderer || GroupingListView.defaultGroupRenderer;
-		// 	this.groupingCollection.each(this.assignGroupingView, this);
-		// }
 	},
-
-	// /** @private */
-	// renderFilterBy: function (newVal, oldVal) {
-	// 	FilterableListView.prototype.renderFilterBy.apply(this, arguments);
-	// // 	this.renderFilteredGroupsById(newVal && newVal.get(this.groupingKey));
+	
+	// renderLayout: function () {
+	// 	return FilterableListView.prototype.renderLayout.apply(this, arguments);
 	// },
+	
+	_refreshGroups: function() {
+		var group, groupIdx, groupSet = [], groupsByItemCid = {};
+		this.collection.forEach(function(item) {
+			group = this._groupingFn.apply(null, arguments);
+			groupIdx = groupSet.indexOf(group);
+			if (groupIdx == -1) {
+				groupIdx = groupSet.length;
+				groupSet[groupIdx] = group;
+			}
+			groupsByItemCid[item.cid] = group;
+		}, this);
+		this._groupItems = groupSet;
+		this._groupsByItemCid = groupsByItemCid;
+	},
 	
 	renderFilterFn: function() {
 		FilterableListView.prototype.renderFilterFn.apply(this, arguments);
 		
-		var groups;
 		if (this._groupingFn) {
-			groups = this._filteredItems.map(this._groupingFn, this);
-			// groupIds = _.pluck(groups, "id");
-			// this.renderChildrenGroups(groups);
+			// groups = this._filteredItems.map(this._groupingFn, this);
+			var groups = this._filteredItems.map(function(item) {
+				return this._groupsByItemCid[item.cid];
+			}, this);
 			this._groupItems.forEach(function (group, index, arr) {
 				this.itemViews.findByModel(group).el.classList.toggle("excluded", groups.indexOf(group) == -1);
 				// this.itemViews.findByModel(group).el.classList.toggle("excluded",!_.contains(groups, group));
 			}, this);
 		}
-		// this.renderFilteredGroupsById(groupIds);
-		// this._filteredGroups = groups;
-		// this._filteredGroupIds = groupIds;
-		
 		// console.log("%s::renderFilterFn\n\tgroups: [%s]", this.cid, (groupIds? groupIds.join(", "): ""));
 	},
-
-	// /** @private */
-	// renderFilteredGroups: function (groups) {
-	// 	
-	// },
-
-	// /** @private */
-	// renderFilteredGroupsById: function (groupIds) {
-	// 	if (groupIds && groupIds.length) {
-	// 		// this.groupingCollection.each(function (item, index, arr) {
-	// 		this._groupItems.forEach(function (item, index, arr) {
-	// 			this.itemViews.findByModel(item).el.classList.toggle("excluded", groupIds.indexOf(item.id) == -1);
-	// 		}, this);
-	// 	} else {
-	// 		// this.groupingCollection.each(function (item, index, arr) {
-	// 		this._groupItems.forEach(function (item, index, arr) {
-	// 			this.itemViews.findByModel(item).el.classList.remove("excluded");
-	// 		}, this);
-	// 		// this.itemViews.each(function (view) {
-	// 		// 	view.el.classList.remove("excluded");
-	// 		// });
-	// 	}
-	// },
-
-	// renderLayout: function () {
-	// 	return FilterableListView.prototype.renderLayout.apply(this, arguments);
-	// },
-
+	
 	/** @private Create children views */
 	assignGroupingView: function (item) {
-		// var groupEl = this.el.querySelector(".list-group[data-id=\"" + item.id + "\"]");
-		// console.log(item.id, groupEl);
 		var view = new this.groupingRenderer({
 			model: item,
 			el: this.el.querySelector(".list-group[data-id=\"" + item.id + "\"]")

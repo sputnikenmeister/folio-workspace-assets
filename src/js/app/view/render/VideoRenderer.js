@@ -59,13 +59,13 @@ var VideoRenderer = PlayableRenderer.extend({
 		"mouseup .fullscreen-toggle": "_onFullscreenToggle",
 	},
 	
-	properties: {
-		paused: {
-			get: function() {
-				return this.video.paused;
-			}
-		},
-	},
+	// properties: {
+	// 	paused: {
+	// 		get: function() {
+	// 			return this.video.paused;
+	// 		}
+	// 	},
+	// },
 	
 	/** @override */
 	initialize: function (opts) {
@@ -184,7 +184,6 @@ var VideoRenderer = PlayableRenderer.extend({
 			.then(PlayableRenderer.whenScrollingEnds)
 			.then(
 				function(view) {
-					view.addMediaListeners();
 					return Promise.all([
 						view.whenVideoHasMetadata(view),
 						PlayableRenderer.whenDefaultImageLoads(view),
@@ -199,8 +198,9 @@ var VideoRenderer = PlayableRenderer.extend({
 				})
 			.then(
 				function(view) {
+					view.addMediaListeners();
 					view.addSelectionListeners();
-					view.updateOverlay(view.getDefaultImage(), view.el.querySelector(".overlay"));
+					view.updateOverlay(view.defaultImage, view.el.querySelector(".overlay"));
 					view.progressMeter = new ProgressMeter({
 						maxValues: {
 							amount: view.video.duration,
@@ -209,15 +209,6 @@ var VideoRenderer = PlayableRenderer.extend({
 						color: view.model.attr("color"),
 						backgroundColor: view.model.attr("background-color"),
 						labelFn: view._progressLabelFn.bind(view)
-						// labelFn: function(value, total) {
-						// 	if (this.playbackRequested === false) return Globals.PAUSE_CHAR;
-						// 	else return progressLabelFn.call(null, (this.video.ended? 0 : value), total);
-						// }.bind(view)
-						// labelFn: function(value, total) {
-						// 	return (this._started && !this.video.ended && this.video.paused)?
-						// 		String.fromCharCode(0x23F8) : // play: 0x23F5, pause: 0x23F8, stop: 0x23F9
-						// 		progressLabelFn.call(null, (view.video.ended? 0 : value), total);
-						// }.bind(view)
 					});
 					var parentEl = view.el.querySelector(".top-bar");
 					parentEl.insertBefore(view.progressMeter.render().el, parentEl.firstChild);
@@ -226,20 +217,20 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 	
 	_progressLabelFn: function(value, total) {
-		if (!this.video.ended && this.playbackRequested === false) {
-			return Globals.PAUSE_CHAR;
-		} else if (this.video.ended || isNaN(value)) {
+		if (!this._started || this.video.ended || isNaN(value)) {
 			return formatTimecode(total);
+		} else if (!this.playbackRequested) {
+			return Globals.PAUSE_CHAR;
 		} else {
 			return formatTimecode(total - value);
 		}
 	},
 	
 	whenVideoHasMetadata: function(view) {
+		// NOTE: not pretty !!!
 		return new Promise(function(resolve, reject) {
 			var mediaEl = view.video;
-			
-			var handlers = {
+			var eventHandlers = {
 				loadedmetadata: function(ev) {
 					if (ev) removeEventListeners();
 					// console.log("%s::whenVideoHasMetadata [%s] %s", view.cid, "resolved", ev? ev.type : "sync");
@@ -251,38 +242,42 @@ var VideoRenderer = PlayableRenderer.extend({
 				},
 				error: function(ev) {
 					if (ev) removeEventListeners();
-					var err = new Error(mediaEl.error?_.invert(MediaError)[mediaEl.error.code]:"Unspecified error");
+					var err;
+					if (mediaEl.error) {
+						err = new Error(_.invert(MediaError)[mediaEl.error.code]);
+						err.infoCode = mediaEl.error.code;
+					} else {
+						err = new Error("Unspecified error");
+					}
 					err.infoSrc = mediaEl.src;
-					err.infoCode = mediaEl.error? mediaEl.error.code: null;
 					err.logMessage = "whenVideoHasMetadata: " + err.name + " " + err.infoSrc;
 					err.logEvent = ev;
 					reject(err);
 				},
 			};
-			
-			// if ((mediaEl.preload === "auto" && mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) ||
-			// 	(mediaEl.preload === "metadata" && mediaEl.readyState >= HTMLMediaElement.HAVE_METADATA)) {
+			//  (mediaEl.preload == "auto" && mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA)
+			// 	(mediaEl.preload == "metadata" && mediaEl.readyState >= HTMLMediaElement.HAVE_METADATA)
 			if (mediaEl.error) {
-				handlers.error();
+				eventHandlers.error();
 			} else if (mediaEl.readyState >= HTMLMediaElement.HAVE_METADATA) {
-				handlers.loadedmetadata();
+				eventHandlers.loadedmetadata();
 			} else {
 				var sources = mediaEl.querySelectorAll("source");
 				var errTarget = sources.length > 0? sources.item(sources.length - 1) : mediaEl;
 				var errCapture = errTarget === mediaEl; // use capture with HTMLMediaElement
 				
 				var removeEventListeners = function () {
-					errTarget.removeEventListener("error", handlers.error, errCapture);
-					for (var ev in handlers) {
-						if (ev !== "error" && handlers.hasOwnProperty(ev)) {
-							mediaEl.removeEventListener(ev, handlers[ev], false);
+					errTarget.removeEventListener("error", eventHandlers.error, errCapture);
+					for (var ev in eventHandlers) {
+						if (ev !== "error" && eventHandlers.hasOwnProperty(ev)) {
+							mediaEl.removeEventListener(ev, eventHandlers[ev], false);
 						}
 					}
 				};
-				errTarget.addEventListener("error", handlers.error, errCapture);
-				for (var ev in handlers) {
-					if (ev !== "error" && handlers.hasOwnProperty(ev)) {
-						mediaEl.addEventListener(ev, handlers[ev], false);
+				errTarget.addEventListener("error", eventHandlers.error, errCapture);
+				for (var ev in eventHandlers) {
+					if (ev !== "error" && eventHandlers.hasOwnProperty(ev)) {
+						mediaEl.addEventListener(ev, eventHandlers[ev], false);
 					}
 				}
 				mediaEl.preload = "metadata";
@@ -295,45 +290,36 @@ var VideoRenderer = PlayableRenderer.extend({
 			return /^video\//.test(source.get("mime")) && video.canPlayType(source.get("mime")) != "";
 		});
 		return playable? playable.get("original") : "";
-		// var playable = _.find(this.model.get("srcset"), function(source) {
-		// 	return /^video\//.test(source.mime) && video.canPlayType(source.mime) != "";
-		// });
-		// if (playable === void 0) {
-		// 	return "";
-		// }
-		// if (this.model.attr("@debug-bandwidth")) {
-		// 	return Globals.MEDIA_SRC_TPL["debug-bandwidth"]({
-		// 		src: playable.src, kbps: this.model.attr("@debug-bandwidth")
-		// 	});
-		// }
-		// return Globals.MEDIA_SRC_TPL["original"](playable);
 	},
 	
 	/* ---------------------------
-	/* PlayableRenderer overrides
+	/* PlayableRenderer implementation
 	/* --------------------------- */
 	
-	togglePlayback: function(newPlayState) {
-		// is playback changing?
-		if (_.isBoolean(newPlayState) && newPlayState !== this.video.paused) {
-			return; // requested state is current, do nothing
-		} else {
-			newPlayState = this.video.paused;
+	/** @override initial value */
+	_playbackRequested: false,
+	
+	/** @override */
+	_isMediaPaused: function() {
+		return this.video.paused;
+	},
+	
+	/** @override */
+	_playMedia: function() {
+		if (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && this.video.seekable.length == 0) {
+			console.warn(this.cid, "WTF! got video data, but cannot seek, calling load()");
+			// this._logMessage("call:load", "got video data, but cannot seek, calling load()", "orange");
+			this.video.load();
+			this.video.currentTime = 0;
+		} else if (this.video.ended) {
+			this.video.currentTime = this.video.seekable.start(0);
 		}
-		// changing to what?
-		if (newPlayState) {
-			if (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && this.video.seekable.length == 0) {
-				console.warn(this.cid, "WTF! got video data, but cannot seek, calling load()");
-				// this._logMessage("call:load", "got video data, but cannot seek, calling load()", "orange");
-				this.video.load();
-				this.video.currentTime = 0;
-			} else if (this.video.ended) {
-				this.video.currentTime = this.video.seekable.start(0);
-			}
-			this.video.play();
-		} else {
-			this.video.pause();
-		}
+		this.video.play();
+	},
+	
+	/** @override */
+	_pauseMedia: function() {
+		this.video.pause();
 	},
 	
 	/* ---------------------------

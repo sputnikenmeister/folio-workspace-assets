@@ -22,7 +22,7 @@ var Globals = require("app/control/Globals");
  * @constructor
  * @type {module:app/component/CollectionViewStack}
  */
-module.exports = DeferredView.extend({
+module.exports = View.extend({
 
 	/** @override */
 	tagName: "div",
@@ -30,7 +30,7 @@ module.exports = DeferredView.extend({
 	className: "view-stack",
 
 	initialize: function (options) {
-//		_.bindAll(this, "renderLater");
+//		_.bindAll(this, "renderFrame");
 		// options
 		options.renderer && (this.renderer = options.renderer);
 		options.emptyRenderer && (this.emptyRenderer = options.emptyRenderer);
@@ -89,7 +89,7 @@ module.exports = DeferredView.extend({
 	/* render
 	/* --------------------------- */
 
-	renderLater: function () {
+	renderFrame: function () {
 		this.render();
 	},
 

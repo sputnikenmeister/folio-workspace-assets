@@ -16,7 +16,23 @@ var ClickableRenderer = require("app/view/render/ClickableRenderer");
 /** @type {module:utils/prefixedProperty} */
 var prefixedProperty = require("utils/prefixedProperty");
 
-var diff = _.difference;
+var diff = function(a1, a2) {
+	return a1.reduce(function(res, o, i, a) {
+		if (a2.indexOf(o) == -1) res.push(o);
+		return res;
+	}, []);
+};
+
+var transformProp = prefixedProperty("transform");
+
+/** @const */
+var CHILDREN_INVALID = View.CHILDREN_INVALID,
+	CLASSES_INVALID = View.CLASSES_INVALID,
+	SIZE_INVALID = View.SIZE_INVALID,
+	LAYOUT_INVALID = View.LAYOUT_INVALID,
+	RENDER_INVALID = View.RENDER_INVALID;
+	
+var RENDER_INVALID = SIZE_INVALID | LAYOUT_INVALID;
 
 /**
 /* @constructor
@@ -55,11 +71,11 @@ var FilterableListView = View.extend({
 	/** @override */
 	initialize: function (options) {
 		this.itemViews = new Container();
-		
 		this.renderer = options.renderer || FilterableListView.defaultRenderer;
-		this.collection.each(this.assignItemView, this);
 		
 		this.skipTransitions = true;
+		// create children
+		this.collection.each(this.assignItemView, this);
 		if (options.filterFn) {
 			this._filterFn = options.filterFn;
 			this.refresh();
@@ -67,53 +83,68 @@ var FilterableListView = View.extend({
 		this.setSelection(this.collection.selected);
 		this.setCollapsed((_.isBoolean(options.collapsed)? options.collapsed : false));
 		
+		// if (this.attached) {
+		// 	this.skipTransitions = true;
+		// 	this.invalidateSize();
+		// }
+		this.listenTo(this, "view:added", function() {
+			this.skipTransitions = true;
+			this.invalidateSize();
+			this.renderNow();
+		});
+		
 		this.listenTo(this.collection, "select:one select:none", this.setSelection);
+		this.listenTo(this.collection, "reset", function() {
+			this._allItems = null;
+			throw new Error("not implemented");
+		});
 	},
 
 	/* --------------------------- *
 	/* Render
 	/* --------------------------- */
 	
-	/** @override */
-	render: function () {
-		if (this.domPhase === "created") {
-			if (!this._renderPending) {
-				this._renderPending = true;
-				this.listenTo(this, "view:added", this.render);
-			}
-		} else {
-			if (this._renderPending) {
-				this._renderPending = false;
-				this.stopListening(this, "view:added", this.render);
-			}
-			if (this.domPhase === "added") {
-				this._layoutChanged = true;
-				this.renderNow(true);
-			}
-		}
-		return this;
-	},
-
-	// render: function() {
-	// 	this.renderNow(true);
+	// // /** @override */
+	// render: function () {
+	// 	if (this.domPhase === "created") {
+	// 		if (!this._renderPending) {
+	// 			this._renderPending = true;
+	// 			this.listenTo(this, "view:added", this.render);
+	// 		}
+	// 	} else {
+	// 		if (this._renderPending) {
+	// 			this._renderPending = false;
+	// 			this.stopListening(this, "view:added", this.render);
+	// 		}
+	// 		if (this.domPhase === "added") {
+	// 			this.skipTransitions = true;
+	// 			// this._layoutChanged = true;
+	// 			this.invalidateSize();
+	// 			this.renderNow();
+	// 		}
+	// 	}
 	// 	return this;
 	// },
-
+	
 	/** @override */
-	renderLater: function () {
+	renderFrame: function () {
+		// collapsed transition flag
+		if (this._collapsedTransitioning)
+			console.warn("%s::renderFrame collapse transition interrupted", this.cid);
+		
 		if (this.skipTransitions) {
 			this.el.classList.add("skip-transitions");
 			this.requestAnimationFrame(function() {
 				this.skipTransitions = false;
 				this.el.classList.remove("skip-transitions");
-			});
+			}.bind(this));
 		}
-		// collapsed transition flag
-		if (this._collapsedTransitioning) console.warn("%s::renderLater collapse transition interrupted");
 		this._collapsedTransitioning = !this.skipTransitions && this._collapsedChanged;
 		this.el.classList.toggle("collapsed-changed", this._collapsedTransitioning);
 		
-		this._layoutChanged = this._layoutChanged || this._collapsedChanged || this._selectionChanged || this._filterChanged;
+		if (this._collapsedChanged || this._selectionChanged || this._filterChanged) {
+			this._renderFlags |= View.RENDER_INVALID;
+		}
 		
 		if (this._collapsedChanged) {
 			this._collapsedChanged = false;
@@ -127,19 +158,20 @@ var FilterableListView = View.extend({
 			this._filterChanged = false;
 			this.renderFilterFn();
 		}
-		if (this._layoutChanged) {
-			this._layoutChanged = false;
+		if (this._renderFlags & View.RENDER_INVALID) {
+			this._renderFlags &= ~View.RENDER_INVALID;
 			this.renderLayout();
 		}
 	},
 	
 	renderLayout: function() {
+		// console.log("%s::renderLayout", this.cid);
 		var s = window.getComputedStyle(this.el);
 		var posX = parseFloat(s.paddingLeft);
 		var posY = parseFloat(s.paddingTop);
 		
-		var el = this.el.firstElementChild;
-		var els = [], tx = [], idx = 0, includeHeigth;
+		var el = this.el.firstElementChild, idx = 0;
+		var els = [], tx = [], includeHeigth;
 		
 		do {
 			includeHeigth = !(this._collapsed && el.classList.contains("excluded"));
@@ -154,9 +186,8 @@ var FilterableListView = View.extend({
 			}
 		} while (el = el.nextElementSibling);
 		
-		var txProp = prefixedProperty("transform");
 		for (var i = 0; i < idx; i++) {
-			els[i].style[txProp] = tx[i];
+			els[i].style[transformProp] = tx[i];
 		}
 		
 		posY += parseFloat(s.paddingBottom);
@@ -190,189 +221,71 @@ var FilterableListView = View.extend({
 	/* --------------------------- *
 	/* Collapse
 	/* --------------------------- */
-
+	
 	/** @private */
 	_collapsed: undefined,
-
+	
 	/**
 	/* @param {Boolean}
-	/* @return {?Boolean}
 	/*/
-	// setCollapsed: function (collapsed, force) {
-	// 	force && console.warn("FilterableListView.setCollapsed", "force=true");
-	// 	if (force || collapsed !== this._collapsed) {
 	setCollapsed: function (collapsed) {
 		if (collapsed !== this._collapsed) {
 			this._collapsed = collapsed;
 			this._collapsedChanged = true;
 			this.requestRender();
-			// this.requestRender("collapsed", this.renderCollapsed.bind(this, collapsed));
 		}
 	},
-	getCollapsed: function () {
-		return this._collapsed;
-	},
-
-	/** @private */
-	renderCollapsed: function (collapsed) {
-		this.el.classList.toggle("collapsed", collapsed);
-	},
-
+	
 	/* --------------------------- *
 	/* Selection
 	/* --------------------------- */
-
+	
 	/** @private */
 	_selectedItem: undefined,
-
+	
 	/** @param {Backbone.Model|null} */
-	// setSelection: function (item, force) {
-	// 	if (force || item !== this._selectedItem) {
 	setSelection: function (item) {
 		this._selectionChanged = true;
+		this._selectedItem = item;
 		this._requestRender();
-		
-		// if (item !== this._selectedItem) {
-		// 	var oldVal = this._selectedItem;
-		// 	this._selectionChanged = true;
-		// 	this.requestRender("selection", this.renderSelection.bind(this, item, oldVal));
-		// }
 	},
-
+	
 	/** @private */
 	renderSelection: function (newItem, oldItem) {
-		// var els = this.el.querySelectorAll(".selected");
-		// for (var i = 0, ii = els.length; i < ii; i++) {
-		// 	els.item(i).classList.remove("selected");
-		// }
 		if (oldItem) {
-			// this.itemViews.findByModel(oldItem).$el.removeClass("selected");
 			this.itemViews.findByModel(oldItem).el.classList.remove("selected");
 		}
 		if (newItem) {
-			// this.itemViews.findByModel(newItem).$el.addClass("selected");
 			this.itemViews.findByModel(newItem).el.classList.add("selected");
 		}
-		this._selectedItem = newItem;
 	},
-
+	
 	/* --------------------------- *
 	/* Filter
 	/* --------------------------- */
-
-	// _filter: undefined,
-	// 
-	// // filterBy: function (filter, force) {
-	// // 	if (force || filter !== this._filter) {
-	// filterBy: function (filter) {
-	// 	if (filter !== this._filter) {
-	// 		// if (this._filterChanged)
-	// 		// 	console.warn("%s::filterBy filterBy changed again before render", this.cid);
-	// 		this._filterChanged = true;
-	// 		this._candidateFilter = filter;
-	// 		this.requestRender();
-	// 	} else {
-	// 		if (this._filterChanged)
-	// 			console.warn("%s::filterBy filterBy reverted to unchanged, but render still will happen", this.cid);
-	// 		this._filterChanged = false;
-	// 		this._candidateFilter = null;
-	// 	}
-	// 	// if (filter !== this._filter) {
-	// 	// 	var oldVal = this._filter;
-	// 	// 	this.requestRender("filterBy", this.renderFilterBy.bind(this, filter, oldVal));
-	// 	// }
-	// },
 	
 	refresh: function() {
 		this._filterChanged = true;
 		this.requestRender();
 	},
 	
-	// clearFilter: function(force) {
-	// 	this.filterBy(null, force);
-	// clearFilter: function() {
-	// 	this.filterBy(null);
-	// },
-	
 	renderFilterFn: function() {
 		var items = this._filterFn? this.collection.filter(this._filterFn, this) : this._getAllItems();
 		this.renderFilters(items, this._filteredItems);
 		this._filteredItems = items;
-		
-		// console.log("%s::renderFilterFn\n\titems:  [%s]", this.cid, (ids? ids.join(", "): ""));
 	},
 	
-	// /** @private */
-	// renderFilterBy: function (newVal, oldVal) {
-	// 	// this.el.classList.toggle("has-excluded", !!newVal);
-	// 	
-	// 	// var newByFn, oldByFn, newByKey, oldByKey;
-	// 	// var newIds, oldIds;
-	// 	// var ids;
-	// 	
-	// 	// if (this._filterFn) {
-	// 		// ids = _.pluck(this.collection.filter(function() {
-	// 		// 	return this._filterFn.apply(this, arguments);
-	// 		// }, this), "id");
-	// 		// ids = _.pluck(this.collection.filter(this._filterFn, this), "id");
-	// 		
-	// 		
-	// 		// newByFn = ids;
-	// 		// oldByFn = this._currIds;
-	// 		// this.renderFiltersById(ids, this._currIds);
-	// 		
-	// 		// this.collection.each(function(model) {
-	// 		// 	this.itemViews.findByModel(model).el.toggleClass("excluded", !this._filterFn(model, newVal, oldVal));
-	// 		// }, this);
-	// 	// }
-	// 	// if (this.filterKey) {
-	// 		// newByKey = newVal && newVal.get(this.filterKey);// : null;
-	// 		// oldByKey = oldVal && oldVal.get(this.filterKey);// : null;
-	// 		// this.renderFiltersById(newVal && newVal.get(this.filterKey), oldVal && oldVal.get(this.filterKey));
-	// 	// }
-	// 	
-	// 	// console.log("%s::renderFilterBy\n\tbyKey: [%s]\n\tbyFn:  [%s]", this.cid, 
-	// 	// 	(newVal? newVal.get(this.filterKey).join(", "): ""), ids.join(", "));
-	// 		
-	// 	// this.renderFiltersById(newByKey, oldByKey);
-	// 	
-	// 	// this._currIds = ids;
-	// 	this._filter = newVal;
-	// 	this._candidateFilter = null;
-	// },
-
 	renderFilters: function (newItems, oldItems) {
-		// var newIncludes, newExcludes;
 		var hasNew = !!(newItems && newItems.length);
 		var hasOld = !!(oldItems && oldItems.length);
 		
-		// this._allItems || (this._allItems = this.collection.pluck("id"));
-		
-		
 		if (hasNew) {
-			// newExcludes = _.difference((hasOld? oldItems : this._allItems), newItems);
-			// _.each(newExcludes, function (id) {
-			// 	// this.itemViews.findByCustom(id).$el.addClass("excluded");
-			// 	// this.itemViews.findByModel(this.collection.get(id)).$el.addClass("excluded");
-			// 	this.itemViews.findByModel(this.collection.get(id)).el.classList.add("excluded");
-			// }, this);
-			
-			// _.difference((hasOld? oldItems : this._allItems), newItems).forEach(function(id) {
 			diff((hasOld? oldItems : this._getAllItems()), newItems).forEach(function(id) {
-				// this.itemViews.findByModelCid(id).el.classList.add("excluded");
 				this.itemViews.findByModel(id).el.classList.add("excluded");
 			}, this);
 		}
 		if (hasOld) {
-			// newIncludes = _.difference((hasNew? newItems : this._allItems), oldItems);
-			// _.each(newIncludes, function (id) {
-			// 	// this.itemViews.findByCustom(id).$el.removeClass("excluded");
-			// 	// this.itemViews.findByModel(this.collection.get(id)).$el.removeClass("excluded");
-			// 	this.itemViews.findByModel(this.collection.get(id)).el.classList.remove("excluded");
-			// }, this);
-			// _.difference((hasNew? newItems : this._allItems), oldItems).forEach(function(id) {
 			diff((hasNew? newItems : this._getAllItems()), oldItems).forEach(function(id) {
-				// this.itemViews.findByModelCid(id).el.classList.remove("excluded");
 				this.itemViews.findByModel(id).el.classList.remove("excluded");
 			}, this);
 		}
