@@ -1,4 +1,4 @@
-/* global MutationObserver */
+/* global HTMLElement, MutationObserver */
 /**
 * @module app/view/base/View
 */
@@ -15,8 +15,37 @@ var _ = require("underscore");
 var _cidSeed = 1;
 var _viewsByCid = {};
 
+function addChildViews(el) {
+	var view, els = el.querySelectorAll("*[data-cid]");
+	for (var i = 0, ii = els.length; i < ii; i++) {
+		view = View.findByElement(els.item(i));
+		if (view) {
+			if (!view.attached) {
+				// console.log("View::[attached (parent)] %s", view.cid);
+				view._elementAttached();
+			// } else {
+			// 	console.warn("View::[attached (parent)] %s (ignored)", view.cid);
+			}
+		}
+	}
+}
+function removeChildViews(el) {
+	var view, els = el.querySelectorAll("*[data-cid]");
+	for (var i = 0, ii = els.length; i < ii; i++) {
+		view = View.findByElement(els.item(i));
+		if (view) {
+			if (view.attached) {
+				console.log("View::[detached (parent)] %s", view.cid);
+				view._elementDetached();
+			} else {
+				console.warn("View::[detached (parent)] %s (ignored)", view.cid);
+			}
+		}
+	}
+}
+
 var observer = new MutationObserver(function(mm) {
-	// console.log("View::mutations %i", mm.length);
+	// console.log("View::mutations %s", JSON.stringify(mm, null, " "));
 	var i, ii, m;
 	var j, jj, e;
 	var view;
@@ -25,25 +54,40 @@ var observer = new MutationObserver(function(mm) {
 		if (m.type == "childList") {
 			for (j = 0, jj = m.addedNodes.length; j < jj; j++) {
 				e = m.addedNodes.item(j);
-				if (e.cid !== void 0) {
-					view = _viewsByCid[e.cid];
-					view._viewAdded();
-					// console.log("View::[viewElementAttached] %s", view.cid);
+				view = View.findByElement(e);
+				if (view) {
+					if (!view.attached) {
+						// console.log("View::[attached (childList)] %s", view.cid);
+						view._elementAttached();
+					// } else {
+					// 	console.warn("View::[attached (childList)] %s (ignored)", view.cid);
+					}
 				}
+				if (e instanceof HTMLElement) addChildViews(e);
 			}
 			for (j = 0, jj = m.removedNodes.length; j < jj; j++) {
 				e = m.removedNodes.item(j);
-				if (e.cid !== void 0) {
-					view = _viewsByCid[e.cid];
-					view._viewRemoved();
-					// console.log("View::[viewElementRemoved] %s", e.cid);
+				// console.log("View::[detached (childList)] %s", e.cid);
+				view = View.findByElement(e);
+				if (view) {
+					if (view.attached) {
+						console.log("View::[detached (childList)] %s", view.cid, view.attached);
+						view._elementDetached();
+					} else {
+						console.warn("View::[detached (childList)] %s (ignored)", view.cid, view.attached);
+					}
 				}
+				if (e instanceof HTMLElement) removeChildViews(e);
 			}
 		} else if (m.type == "attributes") {
-			if (m.target.cid !== void 0) {
-				view = _viewsByCid[m.target.cid];
-				view._viewAdded();
-				// console.log("View::[viewAttachedToElement] %s", m.target.cid);
+			view = View.findByElement(m.target);
+			if (view) {
+				if (!view.attached) {
+					// console.log("View::[attached (attribute)] %s", view.cid);
+					view._elementAttached();
+				// } else {
+				// 	console.warn("View::[attached (attribute)] %s (ignored)", view.cid);
+				}
 			}
 			// else {
 			// 	console.warn("View::[attributes] target has no cid (%s='%s')", m.attributeName, m.target.getAttribute(m.attributeName), m);
@@ -60,92 +104,79 @@ observer.observe(document.body, {
 });
 
 /* -------------------------------
-/* requestAnimationFrame queue
+/* static private
 /* ------------------------------- */
-
-var _now = window.performance? 
-	window.performance.now.bind(window.performance) :
-	Date.now.bind(Date);
 
 /** @type {module:app/view/base/FrameQueue} */
-var FrameQueue = require("app/view/base/FrameQueue2");
+var FrameQueue = require("app/view/base/FrameQueue");
 
-/* -------------------------------
-/* prefixed events
-/* ------------------------------- */
+/** @type {module:app/view/base/PrefixedEvents} */
+var PrefixedEvents = require("app/view/base/PrefixedEvents");
 
-/** @type {module:utils/prefixedEvent} */
-var prefixedEvent = require("utils/prefixedEvent");
-// /** @type {module:utils/event/transitionEnd} */
-// var transitionEnd = require("utils/event/transitionEnd");
+var _now = window.performance? 
+	window.performance.now.bind(window.performance):
+	Date.now.bind(Date);
+// var _now = window.performance? 
+// 	function() { return window.performance.now(); }: 
+// 	function() { return Date.now(); };
 
-var prefixProtoEvents = (function() {
-	var prefixedEvents = (function(){
-		var eventNum = 0, eventMap = {
-			"transitionend": prefixedEvent("transitionend"),//transitionEnd,
-			"fullscreenchange": prefixedEvent("fullscreenchange", document),
-			"fullscreenerror": prefixedEvent("fullscreenerror", document),
-			"visibilitychange": prefixedEvent("visibilitychange", document, "hidden")
-		};
-		for (var eventName in eventMap) {
-			if (eventName === eventMap[eventName]) {
-				delete eventMap[eventName];
-			} else {
-				eventNum++;
-			}
+var applyEventPrefixes = function(events) {
+	var selector, prefixed, unprefixed;
+	for (selector in events) {
+		unprefixed = selector.match(/^\w+/i)[0];
+		if (PrefixedEvents.hasOwnProperty(unprefixed)) {
+			events[selector.replace(unprefixed, PrefixedEvents[unprefixed])] = events[selector];
+			// console.log("applyEventPrefixes", unprefixed, prefixedEvents[unprefixed]);
+			delete events[selector];
 		}
-		// console.log("View::[init] prefixes enabled for %i events", eventNum, Object.keys(eventMap));
-		return eventNum > 0? eventMap : null;
-	})();
-	
-	var prefixEventDelegates = function(events) {
-		// var replaced = [];
-		var selector, prefixed, unprefixed;
-		for (selector in events) {
-			unprefixed = selector.match(/^\w+/i)[0];
-			if (prefixedEvents.hasOwnProperty(unprefixed)) {
-				// replaced.push(unprefixed);
-				events[selector.replace(unprefixed, prefixedEvents[unprefixed])] = events[selector];
-				delete events[selector];
-			}
-		}
-		// replaced.length && console.log("[prefixEventDelegates]", replaced, events);
-		return events;
-	};
-	
-	return function(events) {
-		if (prefixedEvents) {
-			if (_.isFunction(events)) {
-				return _.wrap(events, function(fn) {
-					return prefixEventDelegates(fn.apply(this));
-				});
-			} else if (_.isObject(events)) {
-				return prefixEventDelegates(events);
-			}
-		}
-		return events;
-	};
-})();
+	}
+	return events;
+};
+
+// var getViewDepth = function(view) {
+// 	if (!view) {
+// 		return null;
+// 	}
+// 	if (view.attached) {
+// 		if (view.parentView === null) {
+// 			return 0;
+// 		} else {
+// 			return view.parentView.viewDepth + 1;
+// 		}
+// 	} else {
+// 		return NaN;
+// 	}
+// };
+
+var getViewDepth = function(view) {	
+	if (!view) {
+		return null;
+	}
+	if (!view.attached) {
+		return NaN;
+	}
+	if (view.parentView === null) {
+		return 0;
+	}
+	return view.parentView.viewDepth + 1;
+};
+
+function logAttachInfo(view, name, level) {
+	if (["log", "info", "warn", "error"].indexOf(level) != -1) {
+		level = "log";
+	}
+	console[level].call(console, "%s::%s [parent:%s %s %s depth:%s]", view.cid, name, view.parentView && view.parentView.cid, view.attached? "attached" : "detached", view._viewPhase, view.viewDepth);
+}
 
 /* -------------------------------
 /* static public
 /* ------------------------------- */
 
-// /** @type {module:utils/object/getPrototypeChainValue} */
-// var getPrototypeChainValue = require("utils/object/getPrototypeChainValue");
-// /** @type {module:utils/prefixedProperty} */
-// var prefixedProperty = require("utils/prefixedProperty");
-// /** @type {module:utils/prefixedStyleName} */
-// var prefixedStyleName = require("utils/prefixedStyleName");
-
-/** @type {module:utils/setImmediate} */
-var setImmediate = require("utils/setImmediate");
 
 var View = {
 	
 	/** @const */
 	NONE_INVALID: 0,
-	
 	/** @const */
 	CHILDREN_INVALID: 1,
 	/** @const */
@@ -173,14 +204,20 @@ var View = {
 	prefixedEvent: require("utils/prefixedEvent"),
 	
 	/** @type {module:utils/setImmediate} */
-	setImmediate: setImmediate,
+	setImmediate: require("utils/setImmediate"),
+	
+	/** @type {module:app/view/promise/whenViewIsAttached} */
+	whenViewIsAttached: require("app/view/promise/whenViewIsAttached"),
 	
 	/**
 	/* @param el {HTMLElement}
 	/* @return {module:app/view/base/View}
 	/*/
 	findByElement: function(el) {
-		return _viewsByCid[el.cid];
+		if (_viewsByCid[el.cid]) {
+			return _viewsByCid[el.cid];
+		}
+		return null;
 	},
 	
 	/**
@@ -198,15 +235,31 @@ var View = {
 	
 	/** @override */
 	extend: function(proto, obj) {
-		if (proto.events) {
-			proto.events = prefixProtoEvents(proto.events);
+		if (PrefixedEvents.length && proto.events) {
+			if (_.isFunction(proto.events)) {
+				proto.events = _.wrap(proto.events, function(fn) {
+					return applyEventPrefixes(fn.apply(this));
+				});
+			} else
+			if (_.isObject(proto.events)) {
+				proto.events = applyEventPrefixes(proto.events);
+			}
 		}
 		if (proto.properties && this.prototype.properties) {
 			_.defaults(proto.properties, this.prototype.properties);
 		}
 		return Backbone.View.extend.apply(this, arguments);
 	},
+	
+	// get viewsByCid() {
+	// 	return _viewsByCid;
+	// },
 };
+
+Object.defineProperty(View, "instances", {
+	value: _viewsByCid,
+	enumerable: true
+});
 
 /* -------------------------------
 /* prototype
@@ -216,19 +269,16 @@ var ViewProto = {
 	
 	/** @type {string} */
 	cidPrefix: "view",
-	
+	/** @type {Boolean} */
+	_attached: false,
 	/** @type {HTMLElement|null} */
-	parentView: null,
-	
-	/** @type {string} created > added > removed */
-	_domPhase: "created",
-	
+	_parentView: null,
+	/** @type {int|null} */
+	_viewDepth: null,
 	/** @type {string} initializing > initialized > disposing > disposed */
 	_viewPhase: "initializing",
-	
 	/** @type {int} */
-	_renderRafId: -1,
-	
+	_frameQueueId: -1,
 	/** @type {int} */
 	_renderFlags: 0,
 	
@@ -239,6 +289,26 @@ var ViewProto = {
 				return this._cid || (this._cid = this.cidPrefix + _cidSeed++);
 			}
 		},
+		attached: {
+			get: function() {
+				return this._attached;
+			}
+		},
+		parentView: {
+			get: function() {
+				return this._parentView;
+			}
+		},
+		viewDepth: {
+			get: function() {
+				return this._getViewDepth();
+			}
+		},
+		invalidated: {
+			get: function() {
+				return this._frameQueueId !== -1;
+			}
+		},
 		enabled: {
 			get: function() {
 				return this.isEnabled();
@@ -247,21 +317,6 @@ var ViewProto = {
 				this.setEnabled(enabled);
 			}
 		},
-		domPhase: {
-			get: function() {
-				return this._domPhase;
-			}
-		},
-		attached: {
-			get: function() {
-				return this._domPhase === "added";
-			}
-		},
-		invalidated: {
-			get: function() {
-				return this._renderRafId !== -1;
-			}
-		}
 	},
 	
 	/**
@@ -269,7 +324,7 @@ var ViewProto = {
 	* @type {module:app/view/base/View}
 	*/
 	constructor: function(options) {
-		// this._renderRafId = -1;
+		// this._frameQueueId = -1;
 		// this.parentView = null;
 		this.childViews = {};
 		this._applyRender = this._applyRender.bind(this);
@@ -281,69 +336,185 @@ var ViewProto = {
 		if (options && options.className && this.className) {
 			options.className += " " + _.result(this, "className");
 		}
-		
+		if (options && options.parentView) {
+			this._setParentView(options.parentView, true);
+		}
 		Backbone.View.apply(this, arguments);
 		
 		// console.log("%s::initialize viewPhase:[%s => initialized]", this.cid, this._viewPhase);
 		this._viewPhase = "initialized";
-		if (this._domPhase === "added") {
-			this.trigger("view:added", this);
+		
+		if (this.parentView !== null) {
+			this.trigger("view:parentChange", this.parentView, null);
+		}
+		if (this.attached) {
+			this.trigger("view:attached", this);
 		}
 	},
 	
+	/* -------------------------------
+	/* remove
+	/* ------------------------------- */
+	
 	/** @override */
 	remove: function() {
-		// console.log("%s::remove viewPhase:[%s => disposing]", this.cid, this._viewPhase);
+		if (this._viewPhase == "disposing") {
+			logAttachInfo(this, "remove", "warn");
+		} else {
+			// logAttachInfo(this, "remove", "log");
+		}
+		
+		// before removal
 		this._viewPhase = "disposing";
 		this._cancelRender();
 		
+		// call Backbone impl
+		// Backbone.View.prototype.remove.apply(this, arguments);
+		
+		// NOTE: from Backbone impl
+		this.$el.remove(); // from Backbone impl
+		
+		this._attached = false;
 		this.trigger("view:removed", this);
-		for (var cid in this.childViews) {
-			this.childViews[cid].remove();
+		
+		// remove parent/child references
+		this._setParentView(null);
+		
+		// NOTE: from Backbone impl. No more events after this
+		this.stopListening();
+		
+		// check for invalidations that may have been triggered by "view:removed"
+		if (this.invalidated) {
+			console.warn("%s::remove invalidated after remove()", this.cid);
+			this._cancelRender();
 		}
-		this._removeFromParentView();
-		
-		Backbone.View.prototype.remove.apply(this, arguments);
-		
+		// // check for children still here
+		// var ccids = Object.keys(this.childViews);
+		// if (ccids.length) {
+		// 	console.warn("%s::remove %i children not removed [%s]", this.cid, ccids.length, ccids.join(", "), this.childViews);
+		// }
+		// // remove childViews
+		// for (var cid in this.childViews) {
+		// 	this.childViews[cid].remove();
+		// }
+		// clear reference in view map
 		delete _viewsByCid[this.cid];
-		delete this.el.cid;
-		
+		// delete this.el.cid;
+		// update phase
 		this._viewPhase = "disposed";
 		return this;
 	},
 	
-	_viewAdded: function() {
-		// console.log("%s::_viewAdded domPhase:[%s => added]", this.cid, this._domPhase);
-		this._domPhase = "added";
-		this._addToParentView();
+	/* -------------------------------
+	/* _elementAttached _elementDetached
+	/* ------------------------------- */
+	
+	_elementAttached: function() {
+		// this._addToParentView();
+		this._attached = true;
+		this._viewDepth = null;
+		this._setParentView(View.findByDescendant(this.el.parentElement));
 		
-		if (this._viewPhase === "initialized") {
-			this.trigger("view:added", this);
-		} else if (this._viewPhase === "replacing") {
+		// if (this.parentView) {
+		// 	console.log("[attach] [%i] %s > %s::_elementAttached", this.viewDepth, this.parentView.cid, this.cid);
+		// } else {
+		// 	console.log("[attach] [%i] %s::_elementAttached", this.viewDepth, this.cid);
+		// }
+		
+		// if (this._viewPhase == "initializing") {
+		// 	// this.trigger("view:attached", this);
+		// } else
+		if (this._viewPhase == "initialized") {
+			this.trigger("view:attached", this);
+		} else
+		if (this._viewPhase == "replacing") {
+			this._viewPhase = "initialized";
 			this.trigger("view:replaced", this);
-			this._viewPhase === "initialized";
 		}
 	},
 	
-	_viewRemoved: function() {
-		// console.log("%s::_viewRemoved domPhase:[%s => removed]", this.cid, this._domPhase);
-		this._domPhase = "removed";
-		if (this._viewPhase === "initialized") {
+	_elementDetached: function() {
+		if (!this.attached || (this._viewPhase == "disposing") || (this._viewPhase == "disposed")) {
+			logAttachInfo(this, "_elementDetached", "error");
+		} else {
+			// logAttachInfo(this, "_elementDetached", "log");
+		}
+		this._attached = false;
+		this._viewDepth = null;
+		
+		if (this._viewPhase != "disposing" || this._viewPhase == "disposed") {
 			this.remove();
 		}
 	},
 	
-	_addToParentView: function() {
-		this.parentView = View.findByDescendant(this.el.parentElement);
-		if (this.parentView) {
-			this.parentView.childViews[this.cid] = this;
+	// _addToParentView: function() {
+	// 	this._attached = true;
+	// 	this._setParentView(View.findByDescendant(this.el.parentElement));
+	// 	// this._viewDepth = this._getViewDepth();
+	// 	
+	// 	// var parentView = View.findByDescendant(this.el.parentElement);
+	// 	// this._attached = true;
+	// 	// if (parentView) {
+	// 	// 	this._parentView = parentView;
+	// 	// 	this._parentView.childViews[this.cid] = this;
+	// 	// 	this.viewDepth = this._parentView.viewDepth + 1;
+	// 	// } else {
+	// 	// 	this.viewDepth = 0;
+	// 	// }
+	// },
+	
+	// _removeFromParentView: function() {
+	// 	// if (this._parentView && (this.cid in this._parentView.childViews)) {
+	// 	// 	delete this._parentView.childViews[this.cid];
+	// 	// 	this._parentView = null;
+	// 	// 	this.viewDepth = NaN;
+	// 	// }
+	// 	this._attached = false;
+	// 	this._setParentView(null);
+	// 	// this._viewDepth = this._getViewDepth();
+	// },
+	
+	/* -------------------------------
+	/* parentView
+	/* ------------------------------- */
+	
+	_setParentView: function(newParent, silent) {
+		if (newParent === void 0) {
+			console.warn("$s::_setParentView invalid value '%s'", this.cid, newParent);
+			newParent = null;
 		}
+		var oldParent = this._parentView;
+		this._parentView = newParent;
+		
+		// force update of _viewDepth
+		this._viewDepth = null;//getViewDepth(this);
+		
+		// skip the rest if arg is the same
+		if (newParent === oldParent) {
+			return;
+		}
+		if (oldParent !== null) {
+			if (this.cid in oldParent.childViews) {
+				delete oldParent.childViews[this.cid];
+			}
+		}
+		if (newParent !== null) {
+			newParent.childViews[this.cid] = this;
+		}
+		if (!silent)
+			this.trigger("view:parentChange", newParent, oldParent);
 	},
 	
-	_removeFromParentView: function() {
-		if (this.parentView && (this.cid in this.parentView.childViews)) {
-			delete this.parentView.childViews[this.cid];
+	whenAttached: function() {
+		return View.whenViewIsAttached(this);
+	},
+	
+	_getViewDepth: function() {
+		if (this._viewDepth === null) {
+			this._viewDepth = getViewDepth(this);
 		}
+		return this._viewDepth;
+		// return getViewDepth(this);
 	},
 	
 	/* -------------------------------
@@ -356,8 +527,8 @@ var ViewProto = {
 		if (this.el) {
 			if (this.el !== element && this.el.parentElement) {
 				// Element is being replaced
-				if (this._domPhase === "added") {
-					// Since old element is attached to document tree, _viewAdded will be
+				if (this.attached) {
+					// Since old element is attached to document tree, _elementAttached will be
 					// triggered by replaceChild: set _viewPhase = "replacing" to flag this
 					// change and trigger 'view:replaced' instead of 'view:added'.
 					this._viewPhase = "replacing";
@@ -391,17 +562,19 @@ var ViewProto = {
 	/* ------------------------------- */
 	
 	requestAnimationFrame: function(callback, priority) {
-		var retval = FrameQueue.request(callback.bind(this), priority);
-		if (!this._skipLog)
-			console.log("%s::requestAnimationFrame [id:%i] requested", this.cid, retval);
-		return retval;
+		// var retval = FrameQueue.request(callback.bind(this), priority);
+		// if (!this._skipLog)
+		// 	console.log("%s::requestAnimationFrame ID:%i requested", this.cid, retval);
+		// return retval;
+		return FrameQueue.request(callback.bind(this), priority);
 	},
 	
 	cancelAnimationFrame: function(id) {
-		var retval = FrameQueue.cancel(id);
-		if (!this._skipLog)
-			console.log("%s::requestAnimationFrame [id:%i] cancelled", this.cid, id);
-		return retval;
+		// var retval = FrameQueue.cancel(id);
+		// if (!this._skipLog)
+		// 	console.log("%s::requestAnimationFrame ID:%i cancelled", this.cid, id);
+		// return retval;
+		return FrameQueue.cancel(id);
 	},
 	
 	/* -------------------------------
@@ -411,41 +584,41 @@ var ViewProto = {
 	/** @private */
 	_applyRender: function (tstamp) {
 		if (!this._skipLog) {
-			if (this._renderRafId == -1) {
+			if (this._frameQueueId == -1) {
 				console.log("%s::_applyRender [synchronous]", this.cid);
 			} else {
-				console.log("%s::_applyRender [id:%i]", this.cid, this._renderRafId);
+				console.log("%s::_applyRender ID:%i", this.cid, this._frameQueueId);
 			}
 		}
 		
-		this._renderRafId = -1;
+		this._frameQueueId = -1;
 		this.renderFrame(tstamp);
 	},
 	
 	_cancelRender: function() {
-		if (this._renderRafId != -1) {
+		if (this._frameQueueId != -1) {
 			var cancelId, cancelFn;
 			
-			cancelId = this._renderRafId;
-			this._renderRafId = -1;
+			cancelId = this._frameQueueId;
+			this._frameQueueId = -1;
 			cancelFn = FrameQueue.cancel(cancelId);
 			
 			if (cancelFn === void 0) {
-				console.warn("%s::_cancelRender [id:%i] not found", this.cid, cancelId);
+				console.warn("%s::_cancelRender ID:%i not found", this.cid, cancelId);
 			} else if (cancelFn === null) {
-				console.warn("%s::_cancelRender [id:%s] already cancelled", this.cid, cancelId);
-			} else {
-				if (!this._skipLog && !FrameQueue.running)
-					console.log("%s::_cancelRender [id:%s] cancelled", this.cid, cancelId);
+				console.warn("%s::_cancelRender ID:%i already cancelled", this.cid, cancelId);
+			// } else {
+			// 	if (!this._skipLog && !FrameQueue.running)
+			// 		console.log("%s::_cancelRender ID:%i cancelled", this.cid, cancelId);
 			}
 		}
 	},
 	
 	_requestRender: function() {
-		if (this._renderRafId == -1) {
-			this._renderRafId = FrameQueue.request(this._applyRender);
-			if (!this._skipLog && !FrameQueue.running)
-				console.log("%s::_requestRender [id:%i] rescheduled", this.cid, this._renderRafId);
+		if (this._frameQueueId == -1) {
+			this._frameQueueId = FrameQueue.request(this._applyRender, isNaN(this.viewDepth)? Number.MAX_VALUE : this.viewDepth);
+			// if (!this._skipLog && !FrameQueue.running)
+			// 	console.log("%s::_requestRender ID:%i rescheduled", this.cid, this._frameQueueId);
 		}
 	},
 	
@@ -459,9 +632,9 @@ var ViewProto = {
 	},
 
 	renderNow: function(alwaysRun) {
-		if (this._renderRafId != -1) {
+		if (this._frameQueueId != -1) {
 			// /* jshint -W059 */
-			// console.warn("%s::renderNow (raf:%i)", this.cid, this._renderRafId, _queueRafId, arguments.callee);
+			// console.warn("%s::renderNow (raf:%i)", this.cid, this._frameQueueId, _queueRafId, arguments.callee);
 			// /* jshint +W059 */
 			var cancelId = this._cancelRender();
 			alwaysRun = true;
@@ -509,3 +682,8 @@ var ViewProto = {
 };
 
 module.exports = Backbone.View.extend(ViewProto, View);
+
+
+// Object.defineProperty(module.exports, "instances", {
+// 	value: _viewsByCid
+// });

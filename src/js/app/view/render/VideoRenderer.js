@@ -31,6 +31,8 @@ var prefixedEvent = require("utils/prefixedEvent");
 /* private static
 /* --------------------------- */
 
+// var whenViewIsAttached = require("app/view/promise/whenViewIsAttached");
+
 var fullscreenChangeEvent = prefixedEvent("fullscreenchange", document);
 var fullscreenErrorEvent = prefixedEvent("fullscreenerror", document);
 
@@ -81,7 +83,7 @@ var VideoRenderer = PlayableRenderer.extend({
 			"_onFullscreenChange"
 		);
 		// var onPeerSelect = function() {
-		// 	this.getContentEl().style.display = (this.getSelectionDistance() > 1)? "none": "";
+		// 	this.content.style.display = (this.getSelectionDistance() > 1)? "none": "";
 		// };
 		// this.listenTo(this.model.collection, "select:one select:none", onPeerSelect);
 		// onPeerSelect();
@@ -95,11 +97,9 @@ var VideoRenderer = PlayableRenderer.extend({
 	createChildren: function() {
 		PlayableRenderer.prototype.createChildren.apply(this, arguments);
 		
-		var content = this.getContentEl();
-		this.overlay = content.querySelector(".overlay");
 		this.placeholder = this.el.querySelector(".placeholder");
-		
-		this.video = content.querySelector("video");
+		// this.overlay = this.content.querySelector(".overlay");
+		this.video = this.content.querySelector("video");
 		// this.video.loop = this.model.attrs().hasOwnProperty("@video-loop");
 		this.video.loop = this.model.attr("@video-loop") !== void 0;
 		this.video.src = this.findPlayableSource(this.video);
@@ -121,8 +121,8 @@ var VideoRenderer = PlayableRenderer.extend({
 		PlayableRenderer.prototype.render.apply(this, arguments);
 		
 		var els, el, i, cssW, cssH;
-		var img = this.getDefaultImage();
-		var content = this.getContentEl();
+		var img = this.defaultImage;
+		var content = this.content;
 		
 		// media-size
 		// ---------------------------------
@@ -147,11 +147,11 @@ var VideoRenderer = PlayableRenderer.extend({
 		content.style.left = cssX;
 		content.style.top = cssY;
 		
-		var controls = this.el.querySelector(".controls");
-		// controls.style.left = cssX;
+		el = this.el.querySelector(".controls");
+		// el.style.left = cssX;
 		// controls.style.top = cssY;
-		controls.style.width = this.metrics.content.width + "px";
-		controls.style.height = this.metrics.content.height + "px";
+		el.style.width = this.metrics.content.width + "px";
+		el.style.height = this.metrics.content.height + "px";
 		
 		// // content-size
 		// // ---------------------------------
@@ -198,22 +198,35 @@ var VideoRenderer = PlayableRenderer.extend({
 				})
 			.then(
 				function(view) {
-					view.addMediaListeners();
+					return view.whenAttached();
+				})
+			.then(
+				function(view) {
+					view.initializePlayable();
+					view.updateOverlay(view.defaultImage, view.overlay);
 					view.addSelectionListeners();
-					view.updateOverlay(view.defaultImage, view.el.querySelector(".overlay"));
-					view.progressMeter = new ProgressMeter({
-						maxValues: {
-							amount: view.video.duration,
-							available: view.video.duration,
-						},
-						color: view.model.attr("color"),
-						backgroundColor: view.model.attr("background-color"),
-						labelFn: view._progressLabelFn.bind(view)
-					});
-					var parentEl = view.el.querySelector(".top-bar");
-					parentEl.insertBefore(view.progressMeter.render().el, parentEl.firstChild);
 					return view;
 				});
+	},
+	
+	initializePlayable: function() {
+		// video
+		// ---------------------------------
+		this.addMediaListeners();
+		
+		// progress-meter
+		// ---------------------------------
+		this.progressMeter = new ProgressMeter({
+			maxValues: {
+				amount: this.video.duration,
+				available: this.video.duration,
+			},
+			color: this.model.attr("color"),
+			backgroundColor: this.model.attr("background-color"),
+			labelFn: this._progressLabelFn.bind(this)
+		});
+		var parentEl = this.el.querySelector(".top-bar");
+		parentEl.insertBefore(this.progressMeter.render().el, parentEl.firstChild);
 	},
 	
 	_progressLabelFn: function(value, total) {
@@ -225,6 +238,10 @@ var VideoRenderer = PlayableRenderer.extend({
 			return formatTimecode(total - value);
 		}
 	},
+	
+	/* ---------------------------
+	/* whenVideoHasMetadata promise
+	/* --------------------------- */
 	
 	whenVideoHasMetadata: function(view) {
 		// NOTE: not pretty !!!
@@ -375,7 +392,7 @@ var VideoRenderer = PlayableRenderer.extend({
 		this.video.removeEventListener("playing", this._onMediaPlayingOnce, false);
 		if (!this._started) {
 			this._started = true;
-			this.getContentEl().classList.add("started");
+			this.content.classList.add("started");
 		}
 	},
 	
@@ -390,7 +407,7 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 	
 	_updatePlaybackState: function(ev) {
-		var classList = this.getContentEl().classList;
+		var classList = this.content.classList;
 		if (this.playbackRequested) {
 			switch (ev.type) {
 				case "pause":

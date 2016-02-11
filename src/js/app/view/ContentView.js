@@ -13,16 +13,15 @@ var controller = require("app/control/Controller");
 var bundles = require("app/model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
+var View = require("app/view/base/View");
+/** @type {module:app/view/base/ContainerView} */
 var ContainerView = require("app/view/base/ContainerView");
-
 /** @type {module:app/view/component/CollectionStack} */
 var CollectionStack = require("app/view/component/CollectionStack");
-
 /** @type {module:app/view/component/CollectionStack} */
 var SelectableListView = require("app/view/component/SelectableListView");
 /** @type {module:app/view/render/DotNavigationRenderer} */
 var DotNavigationRenderer = require("app/view/render/DotNavigationRenderer");
-
 /** @type {module:app/view/component/Carousel} */
 var Carousel = require("app/view/component/Carousel");
 /** @type {module:app/view/component/Carousel} */
@@ -33,6 +32,8 @@ var ImageRenderer = require("app/view/render/ImageRenderer");
 var VideoRenderer = require("app/view/render/VideoRenderer");
 /** @type {module:app/view/render/SequenceRenderer} */
 var SequenceRenderer = require("app/view/render/SequenceRenderer");
+/** @type {module:app/view/component/progress/ProgressMeter} */
+var ProgressMeter = require("app/view/component/progress/ProgressMeter");
 
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.hbs");
@@ -70,6 +71,11 @@ var ContentView = ContainerView.extend({
 		
 		this.skipTransitions = true;
 		this.itemViews = [];
+		
+		this.progressWrapper = this.createProgressWrapper(),
+		// this.el.appendChild(this.progressWrapper.el);
+		
+		this.listenTo(this.model, "change", this._onModelChange);
 		
 		this.bundleListeners = {
 			"select:one": this._onSelectOne,
@@ -208,6 +214,14 @@ var ContentView = ContainerView.extend({
 	},
 	
 	/* --------------------------- *
+	/* model changed
+	/* --------------------------- */
+	
+	_onModelChange: function() {
+		console.log("%s::_onModelChange", this.cid, this.model.changed);
+	},
+	
+	/* --------------------------- *
 	/* bundle model handlers
 	/* --------------------------- */
 	
@@ -261,12 +275,12 @@ var ContentView = ContainerView.extend({
 	},
 	
 	/* -------------------------------
-	/* collapse
+	/* collapsed
 	/* ------------------------------- */
 	
 	_onCollapsedChange: function(collapsed) {
 		// NOTE: invalidateTransforms is called in ContainerView._setCollapsed
-		console.log("%s::_onCollapseChange %s", this.cid, collapsed);
+		console.log("%s::_onCollapsedChange %s", this.cid, collapsed);
 		// if (!this._bundleChanging) {
 		// 	this._setChildrenEnabled(collapsed);
 		// }
@@ -277,7 +291,7 @@ var ContentView = ContainerView.extend({
 	/* ------------------------------- */
 	 
 	_beforeChange: function(bundle, media) {
-		// collapse on every change, except when nothing is selected
+		// collapsed on every change, except when nothing is selected
 		this.collapsed = !!(bundle || media);
 		
 		// console.log("%s::_beforeChange", this.cid, arguments);
@@ -306,7 +320,7 @@ var ContentView = ContainerView.extend({
 	_onVPanMove: function (ev) {
 		var delta = ev.thresholdDeltaY;
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
-		// check if direction is aligned with collapse/expand
+		// check if direction is aligned with collapsed/expand
 		var isValidDir = this.collapsed? (delta > 0) : (delta < 0);
 		var moveFactor = this.collapsed? Globals.VPAN_DRAG : 1 - Globals.VPAN_DRAG;
 		
@@ -333,15 +347,21 @@ var ContentView = ContainerView.extend({
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 		
-		if (this.willCollapseChange(ev)) {
+		// if (this.willCollapsedChange(ev)) {
+		// 	this.collapsed = !this.collapsed;
+		// } else {
+		// 	this.invalidateTransforms();
+		// }
+		// this.renderNow();
+		this._onVPanMove(ev);
+		
+		if (this.willCollapsedChange(ev)) {
 			this.collapsed = !this.collapsed;
-		} else {
-			this.invalidateTransforms();
 		}
-		this.renderNow();
+		this.invalidateTransforms();
 	},
 	
-	willCollapseChange: function(ev) {
+	willCollapsedChange: function(ev) {
 		return ev.type == "vpanend"? this.collapsed?
 			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
 			ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
@@ -366,7 +386,7 @@ var ContentView = ContainerView.extend({
 			if (!this.skipTransitions) {
 				view.el.classList.add("adding-child");
 				view.el.style.opacity = 0;
-				// this.listenToOnce(view, "view:added", function(view) {
+				// this.listenToOnce(view, "view:attached", function(view) {
 				// 	// console.log("%s::[view:added] id:%s", this.cid, view.cid);
 				// 	if (!this.skipTransitions) {
 				// 		view.el.style[transitionProp] = "opacity " + tx.LAST.cssText;
@@ -517,6 +537,18 @@ var ContentView = ContainerView.extend({
 			"view:removed": controller.stopListening
 		});
 		return view;
+	},
+	
+	createProgressWrapper: function() {
+		// var view = new ProgressMeter({
+		// 	id: "media-progress-wrapper",
+		// 	// className: "color-bg color-fg05",
+		// 	useOpaque: false,
+		// 	labelFn: function() { return "0%"; }
+		// });
+		// this.el.appendChild(this.progressWrapper.el);
+		// return view;
+		return null;
 	},
 });
 

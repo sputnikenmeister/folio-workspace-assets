@@ -36,9 +36,29 @@ var ContentView = require("app/view/ContentView");
 // var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden");
 // var visibilityStateProp = prefixedProperty("visibilityState", document);
 
+var AppStateModel = Backbone.Model.extend({
+	defaults: {
+		bundle: null,
+		media: null,
+		collapsed: false
+	},
+	mutators: {
+		bundle: {
+			set: function (key, value, options, set) {
+				set(key, value, options);
+			},
+		},
+	},
+});
+
 var AppView = {
 	getInstance: function() {
-		return (window.app instanceof this)? window.app : (window.app = new (this)());
+		if (!(window.app instanceof this)) {
+			window.app = new (this)({
+				model: new AppStateModel()
+			});
+		}
+		return window.app;
 	}
 };
 
@@ -53,7 +73,9 @@ var AppViewProto = {
 	// /** @override */
 	// className: "without-bundle without-media",
 	
-	model: new Backbone.Model({bundle: null, media: null}),
+	/** @override */
+	model: AppStateModel,
+	// model: new Backbone.Model({bundle: null, media: null, collapsed: false}),
 	
 	events: {
 		"visibilitychange": function(ev) { console.log(ev.type) ;},
@@ -72,26 +94,45 @@ var AppViewProto = {
 		window.addEventListener("orientationchange", this._onResize, false);
 		window.addEventListener("resize", _.debounce(this._onResize, 100, false/* immediate? */), false);
 		
+		/*  update model on controller event */
+		this.listenTo(controller, "change:after", function(bundle, media) {
+			this.model.set({
+				bundle: bundle || null,
+				media: media || null,
+				collapsed: !!bundle
+			});
+		});
+		
 		/* initialize controller listeners */
 		// this.listenToOnce(controller, "change:after", this._afterFirstChange);
 		this.listenTo(controller, "change:before", this._beforeChange);
+		this.listenToOnce(controller, "all", this._appReady);
+		// this.listenToOnce(controller, "change:after", this._appReady);
 		
+		this.listenTo(this.model, "change", this._beforeModelChange); /* FIXME */
 		/* initialize views */
 		this.navigationView = new NavigationView({ el: "#navigation", model: this.model });
 		this.contentView = new ContentView({ el: "#content", model: this.model });
 		
+		this.listenTo(this.model, "change", this._afterModelChange); /* FIXME */
+		
 		// this.listenTo(this.navigationView, "collapsed:change", this._onNavigationCollapsed);
 		// this.listenTo(this.contentView, "collapsed:change", this._onContentCollapsed);
 		
-		this.listenToOnce(controller, "change:after", this._appReady);
-		
-		this.listenTo(controller, "change:after", function(bundle, media) {
-			this.model.set("bundle", bundle);
-			this.model.set("media", media);
-		});
-		
 		// start router, which will request appropiate state
 		Backbone.history.start({ pushState: false, hashChange: true });
+	},
+	
+	/* --------------------------- *
+	/* model changed
+	/* --------------------------- */
+	
+	_beforeModelChange: function() {
+		console.log("%s::_beforeModelChange", this.cid, this.model.changed);
+	},
+	
+	_afterModelChange: function() {
+		console.log("%s::_afterModelChange", this.cid, this.model.changed);
 	},
 	
 	// _onNavigationCollapsed: function(value) {
@@ -106,6 +147,10 @@ var AppViewProto = {
 	
 	_beforeChange: function(bundle, media) {
 		console.log("%s::_beforeChange", this.cid);
+		
+		var viewCids = Object.keys(View.instances);
+		console.info("%s::_beforeChange stats: %i views", this.cid, viewCids.length, viewCids);
+		
 		this._controllerChanged = true;
 		this.requestRender();
 	},
@@ -125,7 +170,8 @@ var AppViewProto = {
 		}
 		if (this._appReadyChanged) {
 			this._appReadyChanged = false;
-			this.renderAppReady();
+			this.requestAnimationFrame(this.renderAppReady);
+			// this.renderAppReady();
 			// this._sizeChanged = true;
 		}
 	},
@@ -191,15 +237,15 @@ var AppViewProto = {
 		// but they are skipped while in .app-initial. Wait one more frame for 
 		// everything to render in it's final state, then finally change to .app-ready.
 		// this.requestAnimationFrame(function() {
-			console.log("%s::renderAppReady[-2]", this.cid);
-			this.requestAnimationFrame(function() {
+			// console.log("%s::renderAppReady[-2]", this.cid);
+			// this.requestAnimationFrame(function() {
 				console.log("%s::renderAppReady[-1]", this.cid);
 				// this.renderAppReady();
 				this._sizeChanged = true;
 				this._appReadyChanged = true;
 				this.requestRender();
 				// this.renderNow();
-			});
+			// });
 		// });
 	},
 	

@@ -476,8 +476,8 @@ module.exports = function (grunt) {
 		img_0139: {
 			options: {
 				appleTouchPadding: 0,
-				firefox: true,
-				firefoxRound: true,
+				// firefox: true,
+				// firefoxRound: true,
 			},
 			src: "<%= paths.src.generated %>/resources/favicon/IMG_0139_fav.png",
 			dest: "images/favicon",

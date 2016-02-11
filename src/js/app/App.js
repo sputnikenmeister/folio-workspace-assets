@@ -8,6 +8,7 @@
 var _ = require("underscore");
 
 // if (DEBUG) {
+if (/Firefox/.test(window.navigator.userAgent)) {
 	console.prefix = "# ";
 	var shift = [].shift;
 	var logWrapFn = function() {
@@ -18,6 +19,7 @@ var _ = require("underscore");
 	console.info = _.wrap(console.info, logWrapFn);
 	console.warn = _.wrap(console.warn, logWrapFn);
 	console.error = _.wrap(console.error, logWrapFn);
+}
 // }
 
 console.log("App first statement");
@@ -55,12 +57,38 @@ require("hammerjs");
 
 // handle error events on some platforms and production
 if (/iPad|iPhone/.test(window.navigator.userAgent)) {
-	window.addEventListener("error", function(ev) {
-		window.alert(ev.type + ": " + JSON.stringify(ev, null, " "));
+	window.addEventListener("error", function() {
+		var args = Array.prototype.slice.apply(arguments),
+			el = document.createElement("div"),
+			html = "";
+		_.extend(el.style, {
+			fontfamily: "monospace",
+			display: "block",
+			position: "absolute",
+			zIndex: "999",
+			backgroundColor: "white",
+			color: "black",
+			width: "calc(100% - 3em)",
+			bottom: "0",
+			margin: "1em 1.5em",
+			padding: "1em 1.5em",
+			outline: "0.5em solid red",
+			outlineOffset: "0.5em",
+			boxSizing: "border-box",
+			overflow: "hidden",
+		});
+		html +=  "<pre><b>location:<b> " + window.location + "</pre>";
+		html += "<pre><b>event: <b> " + JSON.stringify(args.shift(), null, " ") + "</pre>";
+		html += "<pre><b>rest: <b> " + JSON.stringify(args, null, " ") + "</pre>";
+		el.innerHTML = html;
+		document.body.appendChild(el);
+		
+		// window.alert(ev.type + ": " + JSON.stringify(ev, null, " "));
 	});
-} else if (!window.DEBUG) { 
+// } else if (!window.DEBUG) { 
+} else { 
 	window.addEventListener("error", function(ev) {
-		console.error("uncaught error", ev);
+		console.error("Uncaught Error", ev);
 	});
 }
 
@@ -93,27 +121,33 @@ window.addEventListener("load", function(ev) {
 		classes: false,
 		custom: {
 			families: [
+				"Franklin Gothic FS:n4,i4,n7,i7",
+				"ITCFranklinGothicStd-Compressed",
 				"FolioFigures-Regular", 
-				"Franklin Gothic FS",
-				"ITCFranklinGothicStd-Compressed"
 			],
 			testStrings: { 
 				"FolioFigures-Regular": "hms"
 			},
 		},
-		loading: function() {
-			console.log("webfontloader::loading");
-		},
 		active: function() { 
-			console.log("webfontloader::active"); 
+			console.log("WebFont::active"); 
 			AppView.getInstance();
 		},
 		inactive: function() {
-			console.log("webfontloader::inactive");
+			console.log("WebFont::inactive");
 			AppView.getInstance();
 		},
-		// fontloading: function(familyName, fvd) {},
-		// fontactive: function(familyName, fvd) {},
-		// fontinactive: function(familyName, fvd) {},
+		// loading: function() {
+		// 	console.log("WebFont::loading");
+		// },
+		fontactive: function(familyName, variantFvd) {
+			console.log("WebFont::fontactive %s %s", familyName, variantFvd);
+		},
+		fontinactive: function(familyName, variantFvd) {
+			console.log("WebFont::fontinactive %s %s", familyName, variantFvd);
+		},
+		// fontloading: function(familyName, variantDesc) {
+		// 	console.log("WebFont::fontloading", familyName, JSON.stringify(variantDesc, null, " "));
+		// },
 	});
 });

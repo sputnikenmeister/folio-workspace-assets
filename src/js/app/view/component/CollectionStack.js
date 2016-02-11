@@ -25,6 +25,7 @@ var viewTemplate = require("./CollectionStack.hbs");
  */
 module.exports = View.extend({
 	
+	/** @override */
 	cidPrefix: "stack",
 	/** @override */
 	tagName: "div",

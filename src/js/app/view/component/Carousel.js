@@ -191,23 +191,37 @@ var CarouselProto = {
 		} else {
 			console.warn("%s::initializeHammer using private Hammer instance", this.cid);
 			this.touch = createTouchManager(this.el, this.direction);
-			this.on("view:removed", this.touch.destroy, this.touch);
+			// this.on("view:removed", this.touch.destroy, this.touch);
+			this.listenTo(this, "view:removed", function() { this.touch.destroy(); });
 		}
 		
-		// create children and props
+		/* create children and props */
 		this.setEnabled(true);
-		this._createChildren();
+		this.skipTransitions = true;
 		
+		// this._createChildren();
 		// if (this.attached) {
 		// 	this.skipTransitions = true;
 		// 	this.invalidateSize();
 		// }
-		this.listenTo(this, "view:added", function() {
+		// this.listenTo(this, "view:attached", function() {
+		// 	this.skipTransitions = true;
+		// 	this.invalidateSize();
+		// 	this.renderNow();
+		// });
+		
+		/* CHILDREN_INVALID | SIZE_INVALID | LAYOUT_INVALID */
+		this._renderFlags = CHILDREN_INVALID;
+		// this.invalidateChildren();
+		
+		this.listenTo(this, "view:attached", function() {
 			this.skipTransitions = true;
 			this.invalidateSize();
-			this.renderNow();
+			// this.renderNow();
+			// this.requestRender();
 		});
 		
+		/* collection listeners */
 		this.listenTo(this.collection, {
 			"reset": this._onReset,
 			"select:one": this._onSelectOne,
@@ -285,23 +299,21 @@ var CarouselProto = {
 	
 	// /** @override */
 	// render: function () {
-	// 	if (this.domPhase === "created") {
+	// 	if (!this.attached) {
 	// 		if (!this._renderPending) {
 	// 			this._renderPending = true;
-	// 			this.listenTo(this, "view:added", this.render);
+	// 			this.listenTo(this, "view:attached", this.render);
 	// 		}
 	// 	} else {
 	// 		if (this._renderPending) {
 	// 			this._renderPending = false;
-	// 			this.stopListening(this, "view:added", this.render);
+	// 			this.stopListening(this, "view:attached", this.render);
 	// 		}
-	// 		if (this.domPhase === "added") {
-	// 			this._delta = 0;
-	// 			this.skipTransitions = true;
-	// 			this.invalidateSize();
-	// 			// this.invalidateLayout();
-	// 			this.renderNow();
-	// 		}
+	// 		this._delta = 0;
+	// 		this.skipTransitions = true;
+	// 		this.invalidateSize();
+	// 		// this.invalidateLayout();
+	// 		this.renderNow();
 	// 	}
 	// 	return this;
 	// },
@@ -318,45 +330,57 @@ var CarouselProto = {
 	
 	_renderFlags: 0,
 	
+	_attachedMask: SIZE_INVALID | LAYOUT_INVALID,
+	
 	/** @override */
 	renderFrame: function () {
-		// this._logFlags("renderFrame");
+		this._logFlags("renderFrame");
 		
 		// if (this._renderFlags & CLASSES_INVALID) {
 		// 	this._renderFlags &= ~CLASSES_INVALID;
 		// 	this._renderEnabled();
 		// 	// this.el.classList.toggle("disabled", !this.enabled);
 		// }
-		// if (this._renderFlags & CHILDREN_INVALID) {
-		// 	this._renderFlags &= ~CHILDREN_INVALID;
-		// 	this._createChildren();
-		// }
-		if (this._renderFlags & SIZE_INVALID) {
-			this._renderFlags &= ~SIZE_INVALID;
-			this._measure();
+		if (this._renderFlags & CHILDREN_INVALID) {
+			this._renderFlags &= ~CHILDREN_INVALID;
+			this._createChildren();
 		}
-		if (this._renderFlags & (SIZE_INVALID | LAYOUT_INVALID)) {
-			this._scrollBy(this._delta, this.skipTransitions);
+		
+		if (!this.attached && (this._renderFlags & this._attachedMask)) {
+			var flags = this._renderFlags;
+			this._renderFlags &= ~this._attachedMask;
+			this.listenToOnce(this, "view:attached", function() {
+				this._renderFlags = flags;
+				this.requestRender();
+			});
+		} else {
+			if (this._renderFlags & SIZE_INVALID) {
+				this._renderFlags &= ~SIZE_INVALID;
+				this._measure();
+			}
+			if (this._renderFlags & LAYOUT_INVALID) {
+				this._renderFlags &= ~LAYOUT_INVALID;
+				this._scrollBy(this._delta, this.skipTransitions);
+			}
 		}
-		this._renderFlags &= ~(SIZE_INVALID | LAYOUT_INVALID);
 	},
 	
-	// _logFlags: function(label) {
-	// 	var flags = [];
-	// 	if (this._renderFlags & CHILDREN_INVALID) flags.push("CHILDREN");
-	// 	if (this._renderFlags & SIZE_INVALID) flags.push("MEASURE");
-	// 	if (this._renderFlags & LAYOUT_INVALID) flags.push("SCROLL");
-	// 	if (this._renderFlags & CLASSES_INVALID) flags.push("ENABLED");
-	// 	console.log("%s::%s %s", this.cid, (label || "INVALID"), flags.join(" "));
-	// },
+	_logFlags: function(callerName) {
+		var flags = [];
+		callerName || (callerName = "_logFlags");
+		if (this._renderFlags & CHILDREN_INVALID) flags.push("CHILDREN");
+		if (this._renderFlags & CLASSES_INVALID) flags.push("CLASSES");
+		if (this._renderFlags & SIZE_INVALID) flags.push("SIZE");
+		if (this._renderFlags & LAYOUT_INVALID) flags.push("LAYOUT");
+		console.log("%s::%s attached:%s flags:[%s]", this.cid, callerName, this.attached, flags.join(", "));
+	},
 	
 	/* Render: now   ------------- */
 	
 	invalidateChildren: function() {
-		
-		this._createChildren();
-		// this._renderFlags |= (CHILDREN_INVALID | SIZE_INVALID | LAYOUT_INVALID);
-		// this.requestRender();
+		// this._createChildren();
+		this._renderFlags |= CHILDREN_INVALID;
+		this.requestRender();
 	},
 	
 	// invalidateSize: function() {
@@ -416,8 +440,13 @@ var CarouselProto = {
 		this.removeChildren();
 		
 		if (this.collection.length) {
-			viewOpts = { parentView: this, enabled: this.enabled };
+			viewOpts = { 
+				// viewDepth: this.viewDepth + 1,
+				// parentView: this,
+				enabled: this.enabled
+			};
 			buffer = document.createDocumentFragment();
+			// buffer = this.el;
 			
 			if (!this.requireSelection) {
 				renderer = this.rendererFunction(null, -1, this.collection);
@@ -660,10 +689,6 @@ var CarouselProto = {
 		}
 	},
 	
-	/* --------------------------- *
-	/* touch event: pan
-	/* --------------------------- */
-	
 	_onTouchEvent: function (ev) {
 		switch (ev.type) {
 			case "tap": return this._onTap(ev);
@@ -673,6 +698,10 @@ var CarouselProto = {
 			case "pancancel": return this._onPanFinal(ev);
 		}
 	},
+	
+	/* --------------------------- *
+	/* touch event: pan
+	/* --------------------------- */
 	
 	// _panCapturedOffset: 0,
 	
@@ -871,7 +900,7 @@ var CarouselProto = {
 	
 	/** @private */
 	_onReset: function () {
-		this._createChildren();
+		// this._createChildren();
 		this.invalidateChildren();
 	},
 	
@@ -960,4 +989,4 @@ var CarouselProto = {
 	
 };
 
-module.exports = View.extend(CarouselProto, Carousel);
+module.exports = Carousel = View.extend(CarouselProto, Carousel);

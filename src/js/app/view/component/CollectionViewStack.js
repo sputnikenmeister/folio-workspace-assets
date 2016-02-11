@@ -24,6 +24,8 @@ var Globals = require("app/control/Globals");
  */
 module.exports = View.extend({
 
+	/** @type {string} */
+	cidPrefix: "viewStack",
 	/** @override */
 	tagName: "div",
 	/** @override */

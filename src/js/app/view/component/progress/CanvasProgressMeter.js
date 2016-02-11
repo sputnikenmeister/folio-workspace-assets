@@ -137,9 +137,9 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		// if (this.attached)
 		// 	this._updateCanvas();
 		// } else {
-		// 	this.listenToOnce(this, "view:added", this._updateCanvas);
+		// 	this.listenToOnce(this, "view:attached", this._updateCanvas);
 		// }
-		this.listenTo(this, "view:added", function(){
+		this.listenTo(this, "view:attached", function(){
 			this.invalidateSize();
 			this.renderNow();
 		});
@@ -204,8 +204,8 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		
 		// colors
 		// --------------------------------
-		this._color || (this._color = s.color || Globals.DEFAULT_COLORS["color"]);
-		this._backgroundColor || (this._backgroundColor = s.backgroundColor || Globals.DEFAULT_COLORS["background-color"]);
+		this._color || (this._color = (s.color || Globals.DEFAULT_COLORS["color"]));
+		this._backgroundColor || (this._backgroundColor = (s.backgroundColor || Globals.DEFAULT_COLORS["background-color"]));
 		
 		// fontSize
 		// --------------------------------
@@ -245,22 +245,22 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	
 	///** @override */ 
 	/* render: function () {
-		if (this.domPhase === "created") {
+		if (!this.attached) {
 			if (!this._renderPending) {
 				this._renderPending = true;
-				this.listenTo(this, "view:added", this.render);
+				this.listenTo(this, "view:attached", this.render);
 			}
 		} else {
-			this._renderPending = false;
-			this.stopListening(this, "view:added", this.render);
-			if (this.domPhase === "added") {
-				if (this._canvasChanged) {
-					this._canvasChanged = false;
-					this._updateCanvas();
-					this._valuesChanged = true;
-				}
-				ModelProgressMeter.prototype.renderFrame.apply(this, arguments);
+			if (this._renderPending) {
+				this._renderPending = false;
+				this.stopListening(this, "view:attached", this.render);
 			}
+			if (this._canvasChanged) {
+				this._canvasChanged = false;
+				this._updateCanvas();
+				this._valuesChanged = true;
+			}
+			ModelProgressMeter.prototype.renderFrame.apply(this, arguments);
 		}
 		return this;
 	},*/
@@ -270,7 +270,7 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		// if (!this.attached) {
 		// 	if (this._canvasChanged) {
 		// 		this._canvasChanged = false;
-		// 		this.listenToOnce(this, "view:added", function() {
+		// 		this.listenToOnce(this, "view:attached", function() {
 		// 			this._canvasChanged = true;
 		// 			this.requestRender();
 		// 		});

@@ -41,24 +41,7 @@ module.exports = View.extend({
 	initialize: function (options) {
 		this.transforms = new TransformHelper();
 		this.touch = TouchManager.getInstance();
-		
-		// this.listenTo(controller, {
-		// 	"change:before": this._beforeChange,
-		// 	"change:after": this._afterChange
-		// });
-		// this.listenTo(this, "collapsed:change", this._onCollapsedChange);
 	},
-	
-	// /** @override */
-	// render: function () {
-	// 	this.transforms.stopAllTransitions();
-	// 	this.transforms.validate();
-	// 	this.itemViews.forEach(function(view) {
-	// 		view.skipTransitions = true;
-	// 		view.invalidateSize();
-	// 		view.renderNow();
-	// 	}, this);
-	// },
 	
 	renderCollapsed: function() {
 		this.el.classList.toggle("container-collapsed", this._collapsed);

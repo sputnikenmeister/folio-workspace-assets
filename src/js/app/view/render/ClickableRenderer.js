@@ -15,7 +15,8 @@ var View = require("app/view/base/View");
  */
 var ClickableRenderer = View.extend({
 	
-	cidPrefix: "renderer",
+	/** @type {string} */
+	cidPrefix: "clickableRenderer",
 	
 	/** @override */
 	events: {

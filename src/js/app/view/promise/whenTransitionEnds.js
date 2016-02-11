@@ -72,7 +72,7 @@ module.exports = function(view, target, prop, timeout) {
 			// resolve on view removal
 			rejectOnRemove = function() {
 				cleanupOnSettle();
-				reject(new ViewError(view, new Error("whenTransitionEnds:  view was removed ("+ view.cid +")")));
+				reject(new ViewError(view, new Error("whenTransitionEnds: view was removed")));
 			};
 			view.on("view:removed", rejectOnRemove);
 		}

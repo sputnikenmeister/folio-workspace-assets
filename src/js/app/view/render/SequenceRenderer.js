@@ -41,19 +41,14 @@ var whenSelectionDistanceIs = require("app/view/promise/whenSelectionDistanceIs"
 // var whenSelectTransitionEnds = require("app/view/promise/whenSelectTransitionEnds");
 // var whenDefaultImageLoads = require("app/view/promise/whenDefaultImageLoads");
 
-/** @type {Function} */
-var Color = require("color");
-var duotone = require("utils/canvas/bitmap/duotone");
-var stackBlurRGB = require("utils/canvas/bitmap/stackBlurRGB");
-var stackBlurMono = require("utils/canvas/bitmap/stackBlurMono");
-var getAverageRGBA = require("utils/canvas/bitmap/getAverageRGBA");
+// /** @type {Function} */
+// var Color = require("color");
+// var duotone = require("utils/canvas/bitmap/duotone");
+// var stackBlurRGB = require("utils/canvas/bitmap/stackBlurRGB");
+// var stackBlurMono = require("utils/canvas/bitmap/stackBlurMono");
+// var getAverageRGBA = require("utils/canvas/bitmap/getAverageRGBA");
 
 var errorTemplate = require("../template/ErrorBlock.hbs");
-
-// play: 0x23F5, pause: 0x23F8, stop: 0x23F9
-// var PAUSE_CHAR = String.fromCharCode(0x23F8);
-// var PLAY_CHAR = String.fromCharCode(0x23F5);
-// var STOP_CHAR = String.fromCharCode(0x23F9);
 
 /* --------------------------- *
 /* Private classes
@@ -266,9 +261,13 @@ var SequenceRenderer = PlayableRenderer.extend({
 	
 	initializeAsync: function() {
 		return PlayableRenderer.prototype.initializeAsync.apply(this, arguments)
+			.then(
+				function(view) {
+					return view.whenAttached();
+				})
 			.then(function(view) {
-				view.initializeSequence();
-				view.updateOverlay(view.getDefaultImage(), view.overlay);
+				view.initializePlayable();
+				view.updateOverlay(view.defaultImage, view.overlay);
 				view.addSelectionListeners();
 				return view;
 			});
@@ -289,12 +288,9 @@ var SequenceRenderer = PlayableRenderer.extend({
 		PlayableRenderer.prototype.createChildren.apply(this, arguments);
 		
 		this.placeholder = this.el.querySelector(".placeholder");
-		this.content = this.el.querySelector(".content");
-		this.content.classList.add("started");
-		
-		this.playToggle = this.el.querySelector(".play-toggle");
 		this.sequence = this.content.querySelector(".sequence");
-		this.overlay = this.content.querySelector(".overlay");
+		
+		this.content.classList.add("started");
 		
 		// styles
 		// ---------------------------------
@@ -328,7 +324,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		PlayableRenderer.prototype.render.apply(this, arguments);
 		
 		var els, el, i, cssW, cssH;
-		var content = this.getContentEl();
+		var content = this.content;
 		
 		// media-size
 		// ---------------------------------
@@ -352,11 +348,11 @@ var SequenceRenderer = PlayableRenderer.extend({
 		content.style.left = cssX;
 		content.style.top = cssY;
 		
-		var controls = this.el.querySelector(".controls");
-		// controls.style.left = cssX;
-		// controls.style.top = cssY;
-		controls.style.width = this.metrics.content.width + "px";
-		controls.style.height = this.metrics.content.height + "px";
+		el = this.el.querySelector(".controls");
+		// el.style.left = cssX;
+		// el.style.top = cssY;
+		el.style.width = this.metrics.content.width + "px";
+		el.style.height = this.metrics.content.height + "px";
 		
 		// // content-size
 		// // ---------------------------------
@@ -373,7 +369,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		return this;
 	},
 	
-	initializeSequence: function() {
+	initializePlayable: function() {
 		// Sequence model
 		// ---------------------------------
 		// this.sources = this._createSourceCollection(this.model);
@@ -392,6 +388,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		this.timer = new Timer();
 		this.listenTo(this, "view:removed", function () {
 			this.timer.stop();
+			this.stopListening(this.timer);
 		});
 		this.listenTo(this.timer, {
 			"start": this._onTimerStart,
@@ -401,7 +398,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 			// "stop": function () { // stop is only called on view remove},
 		});
 		
-		// preload sources
+		// preload remaining sources
 		// ---------------------------------
 		this._sourceProgressByIdx = this.sources.map(function() { return 0; });
 		this._sourceProgressByIdx[0] = 1; // first item is already loaded
@@ -474,11 +471,12 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// 	tplFn = Globals.MEDIA_SRC_TPL["debug-bandwidth"];
 		// }
 		view.once("view:remove", function() {
-			var opts = { silent: true };
+			var silent = { silent: true };
 			view.sources.forEach(function(item, index, sources) {
 				var prefetched = item.get("prefetched");
 				if (prefetched && /^blob\:/.test(prefetched)) {
-					item.unset("prefetched", opts);
+					item.unset("prefetched", silent);
+					item.set("progress", 0, silent);
 					URL.revokeObjectURL(prefetched);
 				}
 			});
@@ -489,18 +487,25 @@ var SequenceRenderer = PlayableRenderer.extend({
 					view._updateItemProgress(1, index);
 					return view;
 				} else {
-					var sUrl = item.get("original");
-					return _loadImageAsObjectURL(sUrl, function(progress) {
-						view._updateItemProgress(progress, index);
-					}).then(function(pUrl) {
-						view._updateItemProgress(1, index);
-						item.set("prefetched", pUrl);
-						return view;
-					}, function(err) {
-						view._updateItemProgress(0, index);
-						item.set("error", err);
-						return view;
-					});
+					return _loadImageAsObjectURL(item.get("original"), 
+						function(progress) {
+							view._updateItemProgress(progress, index);
+							item.set("progress", progress);
+						})
+					.then(
+						function(pUrl) {
+							view._updateItemProgress(1, index);
+							item.set({ prefetched: pUrl, progress: 1 });
+							// item.set("prefetched", pUrl);
+							return view;
+						},
+						function(err) {
+							view._updateItemProgress(0, index);
+							item.set({ error: err, progress: 0 });
+							// item.set("error", err);
+							return view;
+						}
+					);
 				}
 			});
 		}, Promise.resolve(view));
@@ -537,6 +542,9 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/** @override initial value */
 	_playbackRequested: true,
 	
+	/** @type {Boolean} internal store */
+	_paused: true,
+	
 	/** @override */
 	_isMediaPaused: function() {
 		return this._paused;
@@ -544,7 +552,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 	
 	/** @override */
 	_playMedia: function() {
-		console.log("%s::_playMedia() paused:%s requested:%s", this.cid, this.paused, this.playbackRequested);
+		// console.log("%s::_playMedia() paused:%s requested:%s", this.cid, this.paused, this.playbackRequested);
 		if (!this._paused) return;
 		this._paused = false;
 		// this.playbackState = "media";
@@ -559,16 +567,13 @@ var SequenceRenderer = PlayableRenderer.extend({
 	
 	/** @override */
 	_pauseMedia: function() {
-		console.log("%s::_pauseMedia() paused:%s requested:%s", this.cid, this.paused, this.playbackRequested);
+		// console.log("%s::_pauseMedia() paused:%s requested:%s", this.cid, this.paused, this.playbackRequested);
 		if (this._paused) return;
 		this._paused = true;
 		if (this.timer.getStatus() === "started") {
 			this.timer.pause();
 		}
 	},
-	
-	/** @type {Boolean} internal store */
-	_paused: true,
 	
 	/* --------------------------- *
 	/* sequence private
@@ -582,7 +587,20 @@ var SequenceRenderer = PlayableRenderer.extend({
 		this.progressMeter.valueTo(this.sources.selectedIndex + 1, duration, "amount");
 	},
 	
-	_onTimerPause: function () {
+	_onTimerPause: function (duration) {
+		// var meterDur = this.progressMeter._valueData["amount"]._duration - this.progressMeter._valueData["amount"]._elapsedTime;
+		// var meterVal = this.progressMeter.getRenderedValue("amount");
+		// var timerVal = (this._sequenceInterval - duration) / this._sequenceInterval + this.sources.selectedIndex;
+		// 
+		// console.log("%s::_onTimerPause [interval:%sms]\n\tmeter:%s (%sms)\n\ttimer:%s (%sms)\n\tdiffs:%s (%sms)",
+		// 		this.cid, this._sequenceInterval,
+		// 		meterVal, meterDur,
+		// 		timerVal, duration,
+		// 		Math.abs(meterVal-timerVal), Math.abs(meterDur-duration));
+				
+		// this.progressMeter.valueTo(timerVal);
+		// this.progressMeter.valueTo(meterVal);
+		
 		this.progressMeter.valueTo(this.progressMeter.getRenderedValue("amount"));
 	},
 	

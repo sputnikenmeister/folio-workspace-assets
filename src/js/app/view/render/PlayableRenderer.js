@@ -19,7 +19,7 @@ var prefixedEvent = require("utils/prefixedEvent");
 // var stackBlurRGB = require("utils/canvas/bitmap/stackBlurRGB");
 // var stackBlurMono = require("utils/canvas/bitmap/stackBlurMono");
 // var getAverageRGBA = require("utils/canvas/bitmap/getAverageRGBA");
-var getAverageRGB = require("utils/canvas/bitmap/getAverageRGB");
+// var getAverageRGB = require("utils/canvas/bitmap/getAverageRGB");
 
 var _sharedCanvas = null;
 var getSharedCanvas =  function() {
@@ -33,22 +33,35 @@ var getSharedCanvas =  function() {
 var visibilityStateProp = prefixedProperty("visibilityState", document);
 var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden");
 
+function logAttachInfo(view, name, level) {
+	if (["log", "info", "warn", "error"].indexOf(level) != -1) {
+		level = "log";
+	}
+	console[level].call(console, "%s::%s [parent:%s %s %s depth:%s]", view.cid, name, view.parentView && view.parentView.cid, view.attached? "attached" : "detached", view._viewPhase, view.viewDepth);
+	
+}
+
 /**
  * @constructor
  * @type {module:app/view/render/PlayableRenderer}
  */
 var PlayableRenderer = MediaRenderer.extend({
 	
+	/** @type {string} */
+	cidPrefix: "playableRenderer",
+	
 	/** @type {string|Function} */
 	className: MediaRenderer.prototype.className + " playable-renderer",
 	
 	properties: {
 		paused: {
+			/** @return {Boolean} */
 			get: function() {
 				return this._isMediaPaused();
 			}
 		},
 		playbackRequested: {
+			/** @return {Boolean} */
 			get: function() {
 				return this._playbackRequested;
 			},
@@ -57,8 +70,15 @@ var PlayableRenderer = MediaRenderer.extend({
 			}
 		},
 		playToggle: {
+			/** @return {HTMLElement} */
 			get: function() {
-				return this.getPlayToggle();
+				return this._playToggle || (this._playToggle = this.el.querySelector(".play-toggle"));
+			}
+		},
+		overlay: {
+			/** @return {HTMLElement} */
+			get: function() {
+				return this._overlay || (this._overlay = this.el.querySelector(".overlay"));
 			}
 		}
 	},
@@ -67,26 +87,26 @@ var PlayableRenderer = MediaRenderer.extend({
 	initialize: function (opts) {
 		MediaRenderer.prototype.initialize.apply(this, arguments);
 		_.bindAll(this, 
-			"_onUserPlaybackToggle",
+			"_onPlaybackToggle",
 			"_onVisibilityChange"
 		);
-		// this.playbackState = "user-play";
 		this._setPlaybackRequested(this._playbackRequested);
-		// this.userState = this.playbackRequested? "playing":"paused";
+		// this.listenTo(this, "view:parentChange", function(newParent, oldParent) {
+		// 	// logAttachInfo(this, "[view:parentChange]", "info");
+		// 	console.info("%s::[view:parentChange] '%s' to '%s'", this.cid, oldParent && oldParent.cid, newParent && newParent.cid);
+		// });
 	},
 	
+	// /** @override */
 	// initializeAsync: function() {
-	// 	// _.bindAll(this, "_onUserPlaybackToggle", "_onVisibilityChange");
-	// 	// this._playbackRequested = false;
-	// 	// this.playbackState = "user-play";
-	// 	
 	// 	return MediaRenderer.prototype.initialize.initializeAsync.apply(this, arguments);
 	// },
 	
 	// /** @override */
 	// remove: function() {
 	// 	MediaRenderer.prototype.remove.apply(this, arguments);
-	// }
+	// 	return this;
+	// },
 	
 	/* --------------------------- *
 	/* children/layout
@@ -97,7 +117,6 @@ var PlayableRenderer = MediaRenderer.extend({
 	// 	this.placeholder = this.el.querySelector(".placeholder");
 	// 	this.content = this.el.querySelector(".content");
 	// 	this.image = this.content.querySelector("img.current");
-	// 	this._playToggle = this.el.querySelector(".play-toggle");
 	// },
 	
 	/* --------------------------- *
@@ -107,78 +126,158 @@ var PlayableRenderer = MediaRenderer.extend({
 	/** @override */
 	setEnabled: function(enabled) {
 		MediaRenderer.prototype.setEnabled.apply(this, arguments);
-		if (enabled) {
+		// this._validatePlayback(enabled);
+		// if (enabled) {
 			this._validatePlayback();
-		} else {
-			// if selected, pause media
-			this.model.selected && this.togglePlayback(false);
-		}
+		// } else {
+		// 	// if selected, pause media
+		// 	this.model.selected && this.togglePlayback(false);
+		// 	// this.togglePlayback(false);
+		// }
 	},
 	
 	/* ---------------------------
 	/* selection handlers
-	/* when model is selected, click toggles playback
 	/* --------------------------- */
 	
 	addSelectionListeners: function() {
+		if (this._viewPhase != "initialized")
+			throw new Error(this.cid + "::addSelectionListeners called while " + this._viewPhase);
+		
+		// logAttachInfo(this, "addSelectionListeners", "log");
+		// this.listenTo(this, "view:removed", this.removeSelectionListeners);
 		this.listenTo(this.model, "selected", this._onModelSelected);
 		this.listenTo(this.model, "deselected", this._onModelDeselected);
-		this.model.selected && this._onModelSelected();
+		if (this.model.selected) {
+			this._onModelSelected();
+		}
 	},
 	
-	removeSelectionListeners: function() {
-		this.stopListening(this.model, "selected", this._onModelSelected);
-		this.stopListening(this.model, "deselected", this._onModelDeselected);
-		this.model.selected && this._onModelDeselected();
-	},
+	// removeSelectionListeners: function() {
+	// 	// logAttachInfo(this, "removeSelectionListeners", "log");
+	// 	this.stopListening(this, "view:removed", this.removeSelectionListeners);
+	// 	this.stopListening(this.model, "selected", this._onModelSelected);
+	// 	this.stopListening(this.model, "deselected", this._onModelDeselected);
+	// 	if (this.model.selected) {
+	// 		this._onModelDeselected();
+	// 	}
+	// },
 	
-	/* model selected
+	/* model selected handlers:
+	/* model selection toggles playback
 	/* --------------------------- */
 	
 	_onModelSelected: function() {
-		this._addSelectedHandlers();
+		// logAttachInfo(this, "_onModelSelected", "log");
+		// this._addParentListeners();
+		this.listenTo(this, "view:parentChange", this._onParentChange);
+		if (this.parentView) this._onParentChange(this.parentView, null);
+		
+		this._addDOMListeners();
 		this._validatePlayback();
 	},
+	
 	_onModelDeselected: function() {
-		this._removeSelectedHandlers();
+		// logAttachInfo(this, "_onModelDeselected", "log");
+		// this._removeParentListeners();
+		this.stopListening(this, "view:parentChange", this._onParentChange);
+		if (this.parentView) this._onParentChange(null, this.parentView);
+		
+		this._removeDOMListeners();
 		this.togglePlayback(false);
+		// this._validatePlayback(this.model.selected);
+		// this._validatePlayback();
 	},
 	
-	_addSelectedHandlers: function() {
-		document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		this.getPlayToggle().addEventListener(this._toggleEvent, this._onUserPlaybackToggle, false);
-		this.listenTo(this.parentView, "view:scrollstart", this._onScrollStart);
-		this.listenTo(this.parentView, "view:scrollend", this._onScrollEnd);
-		
-		this.listenTo(this, "view:removed", this.removeSelectionHandlers);
-	},
-	_removeSelectedHandlers: function() {
-		document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		this.getPlayToggle().removeEventListener(this._toggleEvent, this._onUserPlaybackToggle, false);
-		this.stopListening(this.parentView, "view:scrollstart", this._onScrollStart);
-		this.stopListening(this.parentView, "view:scrollend", this._onScrollEnd);
-		
-		this.stopListening(this, "view:removed", this.removeSelectionHandlers);
-	},
-	
-	/* _onScrollChange
+	/* view:parentChange handlers 3
 	/* --------------------------- */
-	_onScrollStart: function() {
-		this.togglePlayback(false);
+	
+	_onParentChange: function(newParent, oldParent) {
+		// console.log("[scroll] %s::_onParentChange '%s' to '%s'", this.cid, oldParent && oldParent.cid, newParent && newParent.cid);
+		if (oldParent) this.stopListening(oldParent, "view:scrollstart view:scrollend", this._onScrollChange);
+		if (newParent) this.listenTo(newParent, "view:scrollstart view:scrollend", this._onScrollChange);
 	},
 	
-	_onScrollEnd: function() {
-		this._validatePlayback();
+	_onScrollChange: function() {
+		if (this.parentView === null) {
+			this.togglePlayback(false);
+			throw new Error(this.cid + "::_onScrollChange parentView is null");
+		}
+		// console.log("[scroll] %s::_onScrollChange %s.scrolling: %s", this.cid, this.parentView.cid, this.parentView.scrolling);
+		
+		// this._validatePlayback(!this.parentView.scrolling);
+		// if (!this.parentView.scrolling) {
+			this._validatePlayback();
+		// } else {
+		// 	this.togglePlayback(false);
+		// }
 	},
 	
-	/* dom events
+	/* view:parentChange handlers
+	/* --------------------------- */
+	
+	// _addParentListeners:function() {
+	// 	if (!this.parentView) {
+	// 		logAttachInfo(this, "_addParentListeners", "error");
+	// 		return;
+	// 	}
+	// 	this.listenTo(this, "view:remove", this._removeParentListeners);
+	// 	this.listenTo(this.parentView, "view:remove", this._removeParentListeners);
+	// 	this.listenTo(this.parentView, "view:scrollstart", this._onScrollStart);
+	// 	this.listenTo(this.parentView, "view:scrollend", this._onScrollEnd);
+	// },
+	// 
+	// _removeParentListeners: function(view) {
+	// 	if (!this.parentView) {
+	// 		logAttachInfo(this, "_removeParentListeners", "error");
+	// 		return;
+	// 	}
+	// 	if (view !== void 0) {
+	// 		logAttachInfo(this, "_removeParentListeners [event source view]", "info");
+	// 		// console.info("%s[playable]::_removeParentListeners event source view: %s", this.cid, view && view.cid);
+	// 	}
+	// 	
+	// 	this.stopListening(this, "view:remove", this._removeParentListeners);
+	// 	this.stopListening(this.parentView, "view:remove", this._removeParentListeners);
+	// 	this.stopListening(this.parentView, "view:scrollstart", this._onScrollStart);
+	// 	this.stopListening(this.parentView, "view:scrollend", this._onScrollEnd);
+	// },
+	
+	// /* view:scrollstart view:scrollend
+	// /* --------------------------- */
+	// _onScrollStart: function() {
+	// 	this.togglePlayback(false);
+	// },
+	// 
+	// _onScrollEnd: function() {
+	// 	this._validatePlayback();
+	// },
+	
+	/* listen to DOM events
+	/* --------------------------- */
+	
+	_addDOMListeners: function() {
+		this.listenTo(this, "view:removed", this._removeDOMListeners);
+		document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
+		this.playToggle.addEventListener(this._toggleEvent, this._onPlaybackToggle, false);
+	},
+	
+	_removeDOMListeners: function() {
+		this.stopListening(this, "view:removed", this._removeDOMListeners);
+		document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
+		this.playToggle.removeEventListener(this._toggleEvent, this._onPlaybackToggle, false);
+	},
+	
+	/* visibility dom event
 	/* --------------------------- */
 	_onVisibilityChange: function(ev) {
-		if (document[visibilityStateProp] === "hidden") {
-			this.togglePlayback(false);
-		} else {
+		// this._validatePlayback(!document[visibilityHiddenProp]);
+		// this._validatePlayback(document[visibilityStateProp] != "hidden");
+		// if (document[visibilityStateProp] != "hidden") {
 			this._validatePlayback();
-		}
+		// } else {
+		// 	this.togglePlayback(false);
+		// }
 	},
 	
 	/* --------------------------- *
@@ -188,29 +287,49 @@ var PlayableRenderer = MediaRenderer.extend({
 	/** @type {String} */
 	_toggleEvent: "mouseup",
 	
-	/** @return {HTMLElement} */
-	getPlayToggle: function () {
-		return this._playToggle || (this._playToggle = this.el.querySelector(".play-toggle"));
-	},
-	
-	_onUserPlaybackToggle: function(ev) {
-		// console.log("%s::_onUserPlaybackToggle[%s] defaultPrevented: %s", this.cid, ev.type, ev.defaultPrevented);
+	_onPlaybackToggle: function(ev) {
+		// console.log("%s::_onPlaybackToggle[%s] defaultPrevented: %s", this.cid, ev.type, ev.defaultPrevented);
 		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
 		if (!ev.defaultPrevented && !ev.button) {
 			ev.preventDefault();
 			this.playbackRequested = !this.playbackRequested;
-			
-			if (this.playbackRequested) {
-				this._validatePlayback();
-			} else {
-				this.togglePlayback(false);
-			}
 		}
 	},
 	
+	/* --------------------------- *
+	/* playbackRequested
+	/* --------------------------- */
+	
+	/** @type {Boolean?} */
+	_playbackRequested: null,
+	
+	_setPlaybackRequested: function(value) {
+		this._playbackRequested = value;
+		
+		var classList = this.content.classList;
+		classList.toggle("playing", value === true);
+		classList.toggle("paused", value === false);
+		classList.toggle("requested", value === true || value === false);
+		
+		// this._validatePlayback(this.playbackRequested);
+		// if (this.playbackRequested) {
+			this._validatePlayback();
+		// } else {
+		// 	this.togglePlayback(false);
+		// }
+	},
+	
+	/* --------------------------- *
+	/* togglePlayback
+	/* --------------------------- */
+	
 	/** @override */
 	togglePlayback: function(newPlayState) {
-		console.log("%s::togglePlayback(%s) paused:%s requested:%s", this.cid, newPlayState, this._isMediaPaused(), this.playbackRequested);
+		// console.log("[scroll] %s::togglePlayback [%s -> %s] (requested: %s)", this.cid, 
+		// 		(this._isMediaPaused()? "pause" : "play"),
+		// 		(newPlayState? "play" : "pause"),
+		// 		this.playbackRequested
+		// 	);
 		if (_.isBoolean(newPlayState) && newPlayState !== this._isMediaPaused()) {
 			return; // requested state is current, do nothing
 		} else {
@@ -223,46 +342,32 @@ var PlayableRenderer = MediaRenderer.extend({
 		}
 	},
 	
-	/** @type {Boolean?} */
-	_playbackRequested: null,
+	_canResumePlayback: function() {
+		return !!(
+			this.enabled &&
+			this.model.selected &&
+			this.playbackRequested &&
+			(this.mediaState === "ready") &&
+			this.attached &&
+			(this.parentView !== null) && 
+			(!this.parentView.scrolling) &&
+			(document[visibilityStateProp] != "hidden")
+		);
+	},
 	
-	_setPlaybackRequested: function(value) {
-		this._playbackRequested = value;
-		var classList = this.content.classList;
-		classList.toggle("playing", value === true);
-		classList.toggle("paused", value === false);
-		classList.toggle("requested", value === true || value === false);
+	_validatePlayback: function(shortcircuit) {
+		// a 'shortcircuit' boolean argument can be passed, and if false, 
+		// skip _canResumePlayback and pause playback right away
+		if (arguments.length != 0 && !shortcircuit) {
+			this.togglePlayback(false);
+		} else {
+			this.togglePlayback(this._canResumePlayback());
+		}
 	},
 	
 	/* --------------------------- *
-	/* togglePlayback
+	/* abstract
 	/* --------------------------- */
-	
-	_canResumePlayback: function() {
-		var retval = !!(this.enabled &&
-			this.model.selected &&
-			this.playbackRequested &&
-			this.mediaState === "ready" &&
-			!this.parentView.scrolling &&
-			document[visibilityStateProp] !== "hidden");
-		console.log("%s::_canResumePlayback", this.cid, retval
-			// ,{
-			// 	"enabled": this.enabled,
-			// 	"selected": (!!this.model.selected),
-			// 	"playbackRequested": this.playbackRequested,
-			// 	"!scrolling": !this.parentView.scrolling,
-			// 	"mediaState": this.mediaState,
-			// 	"visibility": document[visibilityStateProp]
-			// }
-		);
-		return retval;
-	},
-	
-	_validatePlayback: function() {
-		if (this._canResumePlayback()) {
-			this.togglePlayback(true);
-		}
-	},
 	
 	_isMediaPaused: function() {
 		console.warn("%s::_isMediaPaused Not implemented", this.cid);
@@ -276,8 +381,6 @@ var PlayableRenderer = MediaRenderer.extend({
 	_pauseMedia: function() {
 		console.warn("%s::_pauseMedia Not implemented", this.cid);
 	},
-	
-	
 	
 	/* --------------------------- *
 	/* util
@@ -432,5 +535,35 @@ var PlayableRenderer = MediaRenderer.extend({
 		// targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
 	}*/
 });
+
+// if (DEBUG) {
+// 
+// PlayableRenderer = (function(PlayableRenderer) {
+// 	if (!PlayableRenderer.LOG_TO_SCREEN) return PlayableRenderer;
+// 	
+// 	/** @type {module:underscore.strings/lpad} */
+// 	var lpad = require("underscore.string/lpad");
+// 	
+// 	return PlayableRenderer.extend({
+// 		_canResumePlayback: function() {
+// 			var retval = PlayableRenderer.prototype._canResumePlayback.apply(this.arguments);
+// 			console.log("[scroll] %s::_canResumePlayback():%s", this.cid, retval,
+// 			{
+// 				"enabled": this.enabled,
+// 				"selected": (!!this.model.selected),
+// 				"playbackRequested": this.playbackRequested,
+// 				"attached": this.attached,
+// 				"parentView": (this.parentView && this.parentView.cid),
+// 				"!scrolling": (this.parentView && !this.parentView.scrolling),
+// 				"mediaState": this.mediaState,
+// 				// "!document.hidden": !document[visibilityHiddenProp],
+// 				"visibilityState": document[visibilityStateProp]
+// 			});
+// 			return retval;
+// 		},
+// 	});
+// })(PlayableRenderer);
+// 
+// }
 
 module.exports = PlayableRenderer;

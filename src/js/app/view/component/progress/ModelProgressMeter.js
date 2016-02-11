@@ -131,6 +131,8 @@ var ModelProgressMeterProto = {
 		
 		o._duration = duration || 0;
 		o._startTime = -1;
+		o._elapsedTime = 0;
+		
 		o._maxVal = maxVal;
 		// if (maxVal !== void 0) o._maxVal = maxVal;
 		// o._maxVal = this._maxValues[key];
@@ -146,6 +148,7 @@ var ModelProgressMeterProto = {
 			
 			o._duration = duration || 0;
 			o._startTime = -1;
+			o._elapsedTime = 0;
 			return true;
 		}
 		return false;
@@ -229,6 +232,7 @@ var ModelProgressMeterProto = {
 			o._startTime = tstamp;
 		}
 		var elapsed = tstamp - o._startTime;
+		o._elapsedTime = elapsed;
 		o._lastRenderedValue = o._renderedValue;
 		if (elapsed < o._duration) {
 			if (o._maxVal && o._valueDelta < 0) {

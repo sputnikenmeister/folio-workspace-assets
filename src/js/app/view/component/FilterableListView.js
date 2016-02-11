@@ -85,7 +85,7 @@ var FilterableListView = View.extend({
 		// 	this.skipTransitions = true;
 		// 	this.invalidateSize();
 		// }
-		this.listenTo(this, "view:added", function() {
+		this.listenTo(this, "view:attached", function() {
 			this.skipTransitions = true;
 			this.invalidateSize();
 			this.renderNow();
@@ -102,24 +102,23 @@ var FilterableListView = View.extend({
 	/* Render
 	/* --------------------------- */
 	
-	// // /** @override */
+	// /** @override */
 	// render: function () {
-	// 	if (this.domPhase === "created") {
+	// 	if (!this.attached) {
 	// 		if (!this._renderPending) {
 	// 			this._renderPending = true;
-	// 			this.listenTo(this, "view:added", this.render);
+	// 			this.listenTo(this, "view:attached", this.render);
 	// 		}
 	// 	} else {
 	// 		if (this._renderPending) {
 	// 			this._renderPending = false;
-	// 			this.stopListening(this, "view:added", this.render);
+	// 			this.stopListening(this, "view:attached", this.render);
 	// 		}
-	// 		if (this.domPhase === "added") {
-	// 			this.skipTransitions = true;
-	// 			// this._layoutChanged = true;
-	// 			this.invalidateSize();
-	// 			this.renderNow();
-	// 		}
+	// 		this._delta = 0;
+	// 		this.skipTransitions = true;
+	// 		this.invalidateSize();
+	// 		// this.invalidateLayout();
+	// 		this.renderNow();
 	// 	}
 	// 	return this;
 	// },
@@ -128,7 +127,7 @@ var FilterableListView = View.extend({
 	renderFrame: function () {
 		// collapsed transition flag
 		if (this._collapsedTransitioning)
-			console.warn("%s::renderFrame collapse transition interrupted", this.cid);
+			console.warn("%s::renderFrame collapsed transition interrupted", this.cid);
 		
 		if (this.skipTransitions) {
 			this.el.classList.add("skip-transitions");
@@ -213,7 +212,7 @@ var FilterableListView = View.extend({
 	},
 	
 	/* --------------------------- *
-	/* Collapse
+	/* Collapsed
 	/* --------------------------- */
 	
 	/** @private */

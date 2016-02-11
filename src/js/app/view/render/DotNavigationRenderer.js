@@ -17,6 +17,8 @@ var ClickableRenderer = require("app/view/render/ClickableRenderer");
  */
 var DotNavigationRenderer = ClickableRenderer.extend({
 
+	/** @type {string} */
+	cidPrefix: "dotRenderer",
 	/** @override */
 	tagName: "li",
 	/** @override */

@@ -49,7 +49,7 @@ _.extend(Timer.prototype, Events, {
 		// 		this.trigger("tick", this.getDuration())
 		// 	}.bind(this), +this._options.tick * 1000)
 		// }
-		this._start = Date.now();
+		this._start = _now();
 		this._status = "started";
 		this.trigger(evName, this.getDuration());
 		return this;
@@ -59,10 +59,10 @@ _.extend(Timer.prototype, Events, {
 		if (this._status !== "started") {
 			return this;
 		}
-		this._duration -= (Date.now() - this._start);
+		this._duration -= (_now() - this._start);
 		clear.call(this, false);
 		this._status = "paused";
-		this.trigger("pause");
+		this.trigger("pause", this.getDuration());
 		return this;
 	},
 
@@ -78,7 +78,7 @@ _.extend(Timer.prototype, Events, {
 
 	getDuration: function() {
 		if (this._status === "started") {
-			return this._duration - (Date.now() - this._start);
+			return this._duration - (_now() - this._start);
 		}
 		if (this._status === "paused") {
 			return this._duration;
@@ -90,6 +90,10 @@ _.extend(Timer.prototype, Events, {
 		return this._status;
 	},
 });
+
+var _now = window.performance? 
+	window.performance.now.bind(window.performance):
+	Date.now.bind(Date);
 
 function end() {
 	clear.call(this);
@@ -104,5 +108,35 @@ function clear(clearDuration) {
 		this._duration = 0;
 	}
 }
+
+// Object.defineProperties(Timer.prototype, {
+// 	duration: {
+// 		enumerable: true,
+// 		get: function() {
+// 			return this.getDuration();
+// 		}
+// 	},
+// 	status: {
+// 		enumerable: true,
+// 		get: function() {
+// 			return this.getStatus();
+// 		}
+// 	}
+// });
+// 
+// Object.defineProperties(Timer, {
+// 	STOPPED: {
+// 		enumerable: true,
+// 		value: "stopped"
+// 	},
+// 	STARTED: {
+// 		enumerable: true,
+// 		value: "started"
+// 	},
+// 	PAUSED: {
+// 		enumerable: true,
+// 		value: "paused"
+// 	},
+// });
 
 module.exports = Timer;

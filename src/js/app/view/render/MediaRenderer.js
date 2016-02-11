@@ -77,8 +77,10 @@ var MediaRenderer = CarouselRenderer.extend({
 	whenInitializeError: function(err) {
 		if (err instanceof CarouselRenderer.ViewError) {
 			// NOTE: ignore ViewError type
-			// console.log(this.cid, err.name, err.message);
+			// console.log("%s::whenInitializeError", err.view.cid, err.message);
 			return;
+		} else if (err instanceof Error) {
+			console.error(err.stack);
 		}
 		this.renderMediaError(err);
 		this.placeholder.removeAttribute("data-progress");
@@ -216,12 +218,16 @@ var MediaRenderer = CarouselRenderer.extend({
 	},
 },{
 	LOG_TO_SCREEN: true,
+	
 	/** @type {module:app/view/promise/whenSelectionIsContiguous} */
 	whenSelectionIsContiguous: require("app/view/promise/whenSelectionIsContiguous"),
+	
 	// /** @type {module:app/view/promise/whenSelectTransitionEnds} */
 	// whenSelectTransitionEnds: require("app/view/promise/whenSelectTransitionEnds"),
+	
 	/** @type {module:app/view/promise/whenScrollingEnds} */
 	whenScrollingEnds: require("app/view/promise/whenScrollingEnds"),
+	
 	/** @type {module:app/view/promise/whenDefaultImageLoads} */
 	whenDefaultImageLoads: require("app/view/promise/whenDefaultImageLoads"), 
 });

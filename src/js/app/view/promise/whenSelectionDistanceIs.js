@@ -1,7 +1,7 @@
 /** @type {module:app/view/base/ViewError} */
 var ViewError = require("app/view/base/ViewError");
 
-var logMessage = "%s::whenSelectionDistanceIs [%s]: %s";
+// var logMessage = "%s::whenSelectionDistanceIs [%s]: %s";
 
 /**
 * @param {module:app/view/base/View}
@@ -37,7 +37,7 @@ module.exports = function(view, distance) {
 			};
 			var rejectOnRemove = function(view) {
 				cleanupOnSettle();
-				reject(new ViewError(view, new Error("whenSelectionDistanceIs: view was removed ("+ view.cid +")")));
+				reject(new ViewError(view, new Error("whenSelectionDistanceIs: view was removed")));
 			};
 			collection.on("select:one select:none", resolveOnSelect);
 			view.on("view:removed", rejectOnRemove);

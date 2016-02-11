@@ -25,7 +25,8 @@ var SelectableListView = View.extend({
 	className: "list selectable",
 	/** @type {module:app/view/component/DefaultSelectableRenderer} */
 	renderer: DefaultSelectableRenderer,
-
+	
+	/** @override */
 	initialize: function (options) {
 		this._enabled = true;
 		this._childrenInvalid = true;
@@ -37,11 +38,19 @@ var SelectableListView = View.extend({
 		this.listenTo(this.collection, "add remove reset", this._onCollectionChange);
 	},
 	
+	/** @override */
+	remove: function() {
+		this.removeChildren();
+		View.prototype.remove.apply(this, arguments);
+		return this;
+	},
+	
 	_onCollectionChange: function(ev) {
 		this._childrenInvalid = true;
 		this.render();
 	},
 	
+	/** @override */
 	render: function () {
 		if (this._childrenInvalid) {
 			this._childrenInvalid = false;
@@ -50,6 +59,7 @@ var SelectableListView = View.extend({
 		return this;
 	},
 	
+	/** @override */
 	setEnabled: function(enabled) {
 		if (this._enabled !== enabled) {
 			this._enabled = enabled;
