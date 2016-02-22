@@ -187,7 +187,19 @@ function TransformItem(el, id) {
 	this._pendingPromises = [];
 }
 
-TransformItem.prototype = Object.create({
+var TransformItemProps = {
+	transition: { get: function() { return this._transition; } },
+	
+	capturedChanged: { get: function() { return this._capturedChanged; } },
+	capturedX: { get: function() { return this._capturedX; } },
+	capturedY: { get: function() { return this._capturedY; } },
+	
+	hasOffset: { get: function() { return this._hasOffset; } },
+	offsetX: { get: function() { return this._offsetX; } },
+	offsetY: { get: function() { return this._offsetY; } },
+};
+
+var TransformItemProto = {
 	
 	/* -------------------------------
 	/* Public
@@ -318,6 +330,7 @@ TransformItem.prototype = Object.create({
 			var lastX = (this._renderedX !== null? this._renderedX : this._capturedX),
 				lastY = (this._renderedY !== null? this._renderedY : this._capturedY);
 				
+			// this._validateTransition();
 			this._validateCapture();
 			this._validateOffset();
 			
@@ -328,6 +341,7 @@ TransformItem.prototype = Object.create({
 				this._hasTransition && console.info("tx[%s]::validate unchanged: last:[%i,%i] curr:[%i,%i]", this.el.id || this.id, lastX, lastY, currX, currY);
 				// console.info("tx[%s]::validate unchanged: last:[%f,%f] curr:[%f,%f] render:[%f,%f] captured[%f,%f]", this.el.id || this.id, lastX, lastY, currX, currY, this._renderedX, this._renderedY, this._capturedX, this._capturedY);
 				this.clearTransition();
+				// this._validateTransition();
 			}
 			this._validateTransition();
 		} else {
@@ -485,25 +499,11 @@ TransformItem.prototype = Object.create({
 		}
 		return values;
 	},
-},
-{
-	transition: {
-		get: function() {
-			return this._transition;
-		}
-	},
-	
-	capturedX: {
-		get: function() {
-			return this._capturedX;
-		}
-	},
-	
-	capturedY: {
-		get: function() {
-			return this._capturedY;
-		}
-	},
-});
+};
+
+TransformItem.prototype = Object.create(TransformItemProto, TransformItemProps);
+
+delete TransformItemProto;
+delete TransformItemProps;
 
 module.exports = TransformItem;

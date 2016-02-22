@@ -39,16 +39,18 @@ var ContentView = require("app/view/ContentView");
 var AppStateModel = Backbone.Model.extend({
 	defaults: {
 		bundle: null,
+		withBundle: false,
 		media: null,
+		withMedia: false,
 		collapsed: false
 	},
-	mutators: {
-		bundle: {
-			set: function (key, value, options, set) {
-				set(key, value, options);
-			},
-		},
-	},
+	// mutators: {
+	// 	bundle: {
+	// 		set: function (key, value, options, set) {
+	// 			set(key, value, options);
+	// 		},
+	// 	},
+	// },
 });
 
 var AppView = {
@@ -98,26 +100,33 @@ var AppViewProto = {
 		this.listenTo(controller, "change:after", function(bundle, media) {
 			this.model.set({
 				bundle: bundle || null,
+				withBundle: !!bundle,
 				media: media || null,
+				withMedia: !!media,
+				// reset collapsed on change
 				collapsed: !!bundle
 			});
 		});
 		
 		/* initialize controller listeners */
 		// this.listenToOnce(controller, "change:after", this._afterFirstChange);
-		this.listenTo(controller, "change:before", this._beforeChange);
-		this.listenToOnce(controller, "all", this._appReady);
+		// this.listenTo(controller, "change:before", this._beforeChange);
+		this.listenToOnce(controller, "route", this._appReady);
+		// this.listenTo(controller, "all", this._appReadyTrace);
 		// this.listenToOnce(controller, "change:after", this._appReady);
 		
+		// this.listenTo(this.model, "all", function() {
+		// 	var args = [].slice.apply(arguments);
+		// 	console.log("%s::[model %s]", this.cid, args.shift(), args);
+		// });
+		
 		this.listenTo(this.model, "change", this._beforeModelChange); /* FIXME */
+		
 		/* initialize views */
 		this.navigationView = new NavigationView({ el: "#navigation", model: this.model });
 		this.contentView = new ContentView({ el: "#content", model: this.model });
 		
-		this.listenTo(this.model, "change", this._afterModelChange); /* FIXME */
-		
-		// this.listenTo(this.navigationView, "collapsed:change", this._onNavigationCollapsed);
-		// this.listenTo(this.contentView, "collapsed:change", this._onContentCollapsed);
+		// this.listenTo(this.model, "change", this._afterModelChange); /* FIXME */
 		
 		// start router, which will request appropiate state
 		Backbone.history.start({ pushState: false, hashChange: true });
@@ -128,12 +137,24 @@ var AppViewProto = {
 	/* --------------------------- */
 	
 	_beforeModelChange: function() {
-		console.log("%s::_beforeModelChange", this.cid, this.model.changed);
+		// console.log("%s::_beforeModelChange", this.cid);
+		console.group(this.cid + "::_beforeModelChange changed:");
+		Object.keys(this.model.changed).forEach(function(key) {
+			console.log("\t%s: %s -> %s", key, this.model._previousAttributes[key], this.model.changed[key]);
+		}, this);
+		console.groupEnd();
+		
+		if (this.model.changed.hasOwnProperty("bundle") || this.model.changed.hasOwnProperty("media")) {
+		// if (this.model.changed.bundle !== void 0 || this.model.changed.media !== void 0) {
+			this._controllerChanged = true;
+			this.requestRender();
+			// this.renderNow(true);
+		}
 	},
 	
-	_afterModelChange: function() {
-		console.log("%s::_afterModelChange", this.cid, this.model.changed);
-	},
+	// _afterModelChange: function() {
+	// 	console.log("%s::_afterModelChange", this.cid, this.model.changed);
+	// },
 	
 	// _onNavigationCollapsed: function(value) {
 	// 	console.log("%s::_onNavigationCollapsed content old -> new", this.cid, this.contentView.collapsed, value);
@@ -145,15 +166,15 @@ var AppViewProto = {
 	// 	this.navigationView.collapsed = value;
 	// },
 	
-	_beforeChange: function(bundle, media) {
-		console.log("%s::_beforeChange", this.cid);
-		
-		var viewCids = Object.keys(View.instances);
-		console.info("%s::_beforeChange stats: %i views", this.cid, viewCids.length, viewCids);
-		
-		this._controllerChanged = true;
-		this.requestRender();
-	},
+	// _beforeChange: function(bundle, media) {
+	// 	console.log("%s::_beforeChange", this.cid);
+	// 	
+	// 	var viewCids = Object.keys(View.instances);
+	// 	console.info("%s::_beforeChange stats: %i views", this.cid, viewCids.length, viewCids);
+	// 	
+	// 	this._controllerChanged = true;
+	// 	this.requestRender();
+	// },
 	
 	/* -------------------------------
 	/* opt A
@@ -173,7 +194,16 @@ var AppViewProto = {
 			this.requestAnimationFrame(this.renderAppReady);
 			// this.renderAppReady();
 			// this._sizeChanged = true;
+			// this.stopListening(controller, "all", this._appReadyTrace);
+			// this.listenTo(controller, "route", this._appReadyTrace);
 		}
+		// if (this.model.hasChanged()) {
+		// 	this.setImmediate(function() {
+		// 		console.log("%s::requestRender [commit model]", this.cid, this.model.hasChanged());
+		// 		this.model.set({}, { silent: true });
+		// 		console.log("%s::requestRender [commit model]", this.cid, this.model.hasChanged());
+		// 	});
+		// }
 	},
 	
 	/* -------------------------------
@@ -239,7 +269,8 @@ var AppViewProto = {
 		// this.requestAnimationFrame(function() {
 			// console.log("%s::renderAppReady[-2]", this.cid);
 			// this.requestAnimationFrame(function() {
-				console.log("%s::renderAppReady[-1]", this.cid);
+				// console.log("%s::renderAppReady[-1]", this.cid);
+				console.log("%s::_appReady", this.cid, arguments[0]);
 				// this.renderAppReady();
 				this._sizeChanged = true;
 				this._appReadyChanged = true;
@@ -248,6 +279,10 @@ var AppViewProto = {
 			// });
 		// });
 	},
+	
+	// _appReadyTrace: function() {
+	// 	console.log("%s::_appReady [trace]", this.cid, arguments[0]);
+	// },
 	
 	renderAppReady: function() {
 		console.log("%s::renderAppReady", this.cid);
@@ -262,8 +297,11 @@ var AppViewProto = {
 	renderControllerChange: function() {
 		console.log("%s::renderControllerChange", this.cid);
 		
-		var bundle = bundles.selected;
-		var media = bundle? bundles.selected.get("media").selected : null;
+		// var bundle = bundles.selected;
+		// var media = bundle? bundles.selected.get("media").selected : null;
+		
+		var bundle = this.model.get("bundle");
+		var media = this.model.get("media");
 		
 		this.renderModelClasses(bundle, media);
 		this.renderDocTitle(bundle, media);
@@ -363,7 +401,7 @@ if (DEBUG) {
 	// var init = AppViewProto.initialize;
 	AppViewProto.initialize = (function(fn) {
 		return function() {
-			this.el.appendChild((new DebugToolbar({id: "debug-toolbar", collection: bundles})).render().el);
+			this.el.appendChild((new DebugToolbar({id: "debug-toolbar", collection: bundles, model: this.model})).render().el);
 			return fn.apply(this, arguments);
 		};
 	})(AppViewProto.initialize);

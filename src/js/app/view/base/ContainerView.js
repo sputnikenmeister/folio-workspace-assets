@@ -2,13 +2,6 @@
 /* @module app/view/base/ContainerView
 /*/
 
-/** @type {module:backbone} */
-var Backbone = require("backbone");
-/** @type {module:underscore} */
-var _ = require("underscore");
-
-/** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
 /** @type {module:utils/TransformHelper} */
@@ -16,50 +9,28 @@ var TransformHelper = require("utils/TransformHelper");
 /** @type {module:app/view/base/TouchManager} */
 var TouchManager = require("app/view/base/TouchManager");
 
-/** @type {module:app/control/Controller} */
-var controller = require("app/control/Controller");
-
 /**
 /* @constructor
 /* @type {module:app/view/base/ContainerView}
 /*/
 module.exports = View.extend({
 	
-	className: "container container-expanded",
+	/** @override */
+	className: "container",
 	
-	properties: {
-		collapsed: {
-			get: function() {
-				return this._collapsed;
-			},
-			set: function(collapsed) {
-				this._setCollapsed(collapsed);
-			}
-		}
-	},
-	
+	/** @override */
 	initialize: function (options) {
 		this.transforms = new TransformHelper();
 		this.touch = TouchManager.getInstance();
 	},
 	
-	renderCollapsed: function() {
-		this.el.classList.toggle("container-collapsed", this._collapsed);
-		this.el.classList.toggle("container-expanded", !this._collapsed);
-	},
-	
-	/* -------------------------------
-	/* collapse
-	/* ------------------------------- */
-	
-	_collapsed: false,
-	
-	_setCollapsed: function(collapsed) {
-		if (this._collapsed !== collapsed) {
-			this._collapsed = collapsed;
-			this._collapsedChanged = true;
-			this.requestRender();
-			this.trigger("collapsed:change", collapsed);
+	/** @override */
+	properties: {
+		collapsed: {
+			get: function() {
+				throw new Error("deprecated");
+				// return this._collapsed;
+			},
 		}
 	},
 });

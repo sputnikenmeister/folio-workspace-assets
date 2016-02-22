@@ -436,8 +436,8 @@ var ViewProto = {
 	_elementDetached: function() {
 		if (!this.attached || (this._viewPhase == "disposing") || (this._viewPhase == "disposed")) {
 			logAttachInfo(this, "_elementDetached", "error");
-		} else {
-			// logAttachInfo(this, "_elementDetached", "log");
+		// } else {
+		// 	logAttachInfo(this, "_elementDetached", "log");
 		}
 		this._attached = false;
 		this._viewDepth = null;
@@ -446,33 +446,6 @@ var ViewProto = {
 			this.remove();
 		}
 	},
-	
-	// _addToParentView: function() {
-	// 	this._attached = true;
-	// 	this._setParentView(View.findByDescendant(this.el.parentElement));
-	// 	// this._viewDepth = this._getViewDepth();
-	// 	
-	// 	// var parentView = View.findByDescendant(this.el.parentElement);
-	// 	// this._attached = true;
-	// 	// if (parentView) {
-	// 	// 	this._parentView = parentView;
-	// 	// 	this._parentView.childViews[this.cid] = this;
-	// 	// 	this.viewDepth = this._parentView.viewDepth + 1;
-	// 	// } else {
-	// 	// 	this.viewDepth = 0;
-	// 	// }
-	// },
-	
-	// _removeFromParentView: function() {
-	// 	// if (this._parentView && (this.cid in this._parentView.childViews)) {
-	// 	// 	delete this._parentView.childViews[this.cid];
-	// 	// 	this._parentView = null;
-	// 	// 	this.viewDepth = NaN;
-	// 	// }
-	// 	this._attached = false;
-	// 	this._setParentView(null);
-	// 	// this._viewDepth = this._getViewDepth();
-	// },
 	
 	/* -------------------------------
 	/* parentView
@@ -577,6 +550,10 @@ var ViewProto = {
 		return FrameQueue.cancel(id);
 	},
 	
+	setImmediate: function(callback) {
+		View.setImmediate(callback.bind(this));
+	},
+	
 	/* -------------------------------
 	/* simple render deferring
 	/* ------------------------------- */
@@ -590,7 +567,6 @@ var ViewProto = {
 				console.log("%s::_applyRender ID:%i", this.cid, this._frameQueueId);
 			}
 		}
-		
 		this._frameQueueId = -1;
 		this.renderFrame(tstamp);
 	},
@@ -617,6 +593,7 @@ var ViewProto = {
 	_requestRender: function() {
 		if (this._frameQueueId == -1) {
 			this._frameQueueId = FrameQueue.request(this._applyRender, isNaN(this.viewDepth)? Number.MAX_VALUE : this.viewDepth);
+			// this._frameQueueId = FrameQueue.request(this._applyRender, 10);
 			// if (!this._skipLog && !FrameQueue.running)
 			// 	console.log("%s::_requestRender ID:%i rescheduled", this.cid, this._frameQueueId);
 		}
@@ -632,10 +609,13 @@ var ViewProto = {
 	},
 
 	renderNow: function(alwaysRun) {
+		// /* jshint -W059 */
+		// var callee = arguments;
+		// /* jshint +W059 */
+		// console.log("%s::renderNow(%s) [synchronous]", this.cid, !!(alwaysRun), callee);
+		// console.trace();
+		
 		if (this._frameQueueId != -1) {
-			// /* jshint -W059 */
-			// console.warn("%s::renderNow (raf:%i)", this.cid, this._frameQueueId, _queueRafId, arguments.callee);
-			// /* jshint +W059 */
 			var cancelId = this._cancelRender();
 			alwaysRun = true;
 		}

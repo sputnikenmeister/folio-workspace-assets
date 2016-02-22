@@ -40,12 +40,9 @@ var bundleDescTemplate = require("./template/CollectionStack.Bundle.hbs");
 /** @type {Function} */
 var mediaCaptionTemplate = require("./template/CollectionStack.Media.hbs");
 
-// /** @type {module:app/view/base/FrameQueue} */
-// var FrameQueue = require("app/view/base/FrameQueue2");
-
-var transitionEnd = ContainerView.prefixedEvent("transitionend");
-var transformProp = ContainerView.prefixedProperty("transform");
-var transitionProp = ContainerView.prefixedProperty("transition");
+var transitionEnd = View.prefixedEvent("transitionend");
+var transformProp = View.prefixedProperty("transform");
+var transitionProp = View.prefixedProperty("transition");
 
 var tx = Globals.transitions;
 
@@ -58,43 +55,32 @@ var ContentView = ContainerView.extend({
 	/** @override */
 	cidPrefix: "contentView",
 	
+	/** @override */
+	className: "container-x container-expanded",
+	
+	/** @override */
 	events: {
 		"transitionend .adding-child": "_onAddedTransitionEnd",
 		"transitionend .removing-child": "_onRemovedTransitionEnd",
 		// "transitionend": "_onTransitionEnd",
 	},
 	
+	/** @override */
 	initialize: function (options) {
 		ContainerView.prototype.initialize.apply(this, arguments);
 		
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
 		
+		this.listenTo(this.model, "change", this._onModelChange);
+		
+		// disconnect children before last change
+		// this.listenTo(bundles, "deselect:one", this._onDeselectOneBundle);
+		
 		this.skipTransitions = true;
 		this.itemViews = [];
 		
-		this.progressWrapper = this.createProgressWrapper(),
+		// this.progressWrapper = this.createProgressWrapper(),
 		// this.el.appendChild(this.progressWrapper.el);
-		
-		this.listenTo(this.model, "change", this._onModelChange);
-		
-		this.bundleListeners = {
-			"select:one": this._onSelectOne,
-			"select:none": this._onSelectNone,
-			"deselect:one": this._onDeselectOne,
-			"deselect:none": this._onDeselectNone,
-		};
-		this.mediaListeners = {
-			"select:one": this._onSelectMedia,
-			"select:none": this._onSelectMedia,
-			"deselect:one": this._onDeselectMedia,
-			"deselect:none": this._onDeselectMedia,
-		};
-		this.listenTo(controller, {
-			"change:before": this._beforeChange,
-			"change:after": this._afterChange
-		});
-		this.listenTo(this, "collapsed:change", this._onCollapsedChange);
-		this.listenTo(bundles, this.bundleListeners);
 	},
 	
 	/* --------------------------- *
@@ -102,77 +88,123 @@ var ContentView = ContainerView.extend({
 	/* --------------------------- */
 	
 	renderFrame: function(tstamp) {
+		// flags
+		var childrenChanged = this._modelChanged && this.model.hasChanged("bundle");
+		var collapsedChanged = this._modelChanged && this.model.hasChanged("collapsed");
+		var sizeChanged = !!(this._renderFlags & ContainerView.RENDER_INVALID);
+		var transformsChanged = this._modelChanged || this._transformsChanged || collapsedChanged || this.skipTransitions || sizeChanged;
 		
-		this._transformsChanged = this._transformsChanged || this._collapsedChanged || this.skipTransitions || (this._renderFlags &= ~ContainerView.RENDER_INVALID);
+		// values
+		var collapsedValue = this.model.get("collapsed");
 		
-		if (this._childrenChanged) {
-			this.renderChildren();
+		// debug
+		console.log("%s::renderFrame model:%s tx:%s skip:%s size:%s", this.cid,
+			this._modelChanged,
+			this._transformsChanged,
+			this.skipTransitions,
+			sizeChanged
+		);
+		if (this._modelChanged) {
+			console.group(this.cid + "::renderFrame model changed:");
+			Object.keys(this.model.changed).forEach(function(key) {
+				console.log("\t%s: %s -> %s", key, this.model._previousAttributes[key], this.model.changed[key]);
+			}, this);
+			console.groupEnd();
 		}
 		
-		if (this._collapsedChanged) {
-			this.renderCollapsed();
+		// model:children
+		// - - - - - - - - - - - - - - - - -
+		if (childrenChanged) {
+			if (bundles.lastSelected) {
+				this.removeChildren(bundles.lastSelected);
+			}
+			if (bundles.selected) {
+				this.createChildren(bundles.selected);
+			}
 		}
 		
-		if (this._renderFlags & ContainerView.RENDER_INVALID) {
+		// model:collapsed
+		// - - - - - - - - - - - - - - - - -
+		if (collapsedChanged) {
+			this.el.classList.toggle("container-collapsed", collapsedValue);
+			this.el.classList.toggle("container-expanded", !collapsedValue);
+		}
+		
+		// size
+		// - - - - - - - - - - - - - - - - -
+		if (sizeChanged) {
 			this.transforms.clearAllCaptures();
 		}
 		
-		if (this._transformsChanged)
-		{
-			this._transformsChanged = false;
+		// transforms
+		// - - - - - - - - - - - - - - - - -
+		if (transformsChanged) {
 			this.el.classList.remove("container-changing");
-			
-			if (this.skipTransitions)
-			{
+			if (this.skipTransitions) {
 				this.transforms.stopAllTransitions();
 				this.el.classList.remove("container-changed");
-				
-				if (!this._childrenChanged)
-				{
-					this.transforms.clearAllOffsets();
-					if (this._collapsedChanged)
-					{
-						this._setChildrenEnabled(this.collapsed);
+				if (!childrenChanged) {
+					// this.transforms.clearAllOffsets();
+					if (collapsedChanged) {
+						this._setChildrenEnabled(collapsedValue);
 					}
 				}
-			}
-			else
-			{
-				if (!this._childrenChanged)
-				{
-					this.transforms.clearAllOffsets();
-					if (this._collapsedChanged)
-					{
+			} else {
+				if (!childrenChanged) {
+					if (collapsedChanged) {
+						var afterTransitionsFn;
 						this.el.classList.add("container-changed");
-						var afterTransitions;
-						if (this.collapsed) {
+						// this.transforms.clearAllOffsets();
+						if (collapsedValue) {
 							// container-collapsed, enable last
-							afterTransitions = function() {
+							afterTransitionsFn = function() {
 								this._setChildrenEnabled(true);
 								this.el.classList.remove("container-changed");
 							};
 							this.transforms.runAllTransitions(tx.LAST);
 						} else {
 							// container-expanded, disable first
-							afterTransitions = function() {
+							afterTransitionsFn = function() {
 								this.el.classList.remove("container-changed");
 							};
 							this._setChildrenEnabled(false);
 							this.transforms.runAllTransitions(tx.FIRST);
 						}
-						afterTransitions = afterTransitions.bind(this);
-						this.transforms.whenAllTransitionsEnd().then(afterTransitions, afterTransitions);
-					}
-					else {
-						// unchanged
-						this.transforms.runAllTransitions(tx.NOW);
+						afterTransitionsFn = afterTransitionsFn.bind(this);
+						this.transforms.whenAllTransitionsEnd().then(afterTransitionsFn, afterTransitionsFn);
+					} else {
+						this.transforms.items.forEach(function(o) {
+							if (o.hasOffset) {
+								// o.clearOffset();
+								o.runTransition(tx.NOW);
+							}
+						});
+						// this.transforms.clearAllOffsets();
+						// this.transforms.runAllTransitions(tx.NOW);
 					}
 				}
 			}
+			// DEBUG
+			// console.table(this.transforms.items, ["id", "_hasOffset", "_transitionValue"]);
+			console.group(this.cid + "::renderFrame transitions:");
+			if (this.skipTransitions) {
+				console.log("[skipping]");
+			} else {
+				this.transforms.items.forEach(function(o) {
+					var args = [ "\t%s: %s", o.el.id || o.id, o.transition.name || o.transition ];
+					if (o.hasOffset) {
+						args.push("[hasOffset]", o.offsetX, o.offsetY);
+					} 
+					console.log.apply(console, args);
+				}, this);
+			}
+			console.groupEnd();
+			
+			this.transforms.clearAllOffsets();
 			this.transforms.validate();
 		}
 		
-		if (this._renderFlags & ContainerView.RENDER_INVALID) {
+		if (sizeChanged) {
 			this.itemViews.forEach(function(view) {
 				view.invalidateSize();
 				if (this.skipTransitions) {
@@ -182,24 +214,8 @@ var ContentView = ContainerView.extend({
 			}, this);
 		}
 		
-		this.skipTransitions = this._childrenChanged = this._transformsChanged = this._collapsedChanged = false;
+		this.skipTransitions = this._transformsChanged = this._modelChanged = false;
 		this._renderFlags &= ~ContainerView.RENDER_INVALID;
-	},
-	
-	renderChildren: function() {
-		if (bundles.lastSelected) {
-			// this.purgeChildren();
-			this.removeChildren(bundles.lastSelected);
-		}
-		if (bundles.selected) {
-			this.createChildren(bundles.selected);
-		}
-	},
-	
-	invalidateChildren: function() {
-		this._childrenChanged = true;
-		this.requestRender();
-		// this.renderNow();
 	},
 	
 	invalidateTransforms: function() {
@@ -218,89 +234,27 @@ var ContentView = ContainerView.extend({
 	/* --------------------------- */
 	
 	_onModelChange: function() {
-		console.log("%s::_onModelChange", this.cid, this.model.changed);
+		if (this.model.hasChanged("withBundle")) {
+			if (this.model.get("withBundle")) {
+				this.touch.on("vpanstart", this._onVPanStart);
+			} else {
+				this.touch.off("vpanstart", this._onVPanStart);
+			}
+		}
+		this._modelChanged = true;
+		this.requestRender();
 	},
 	
 	/* --------------------------- *
-	/* bundle model handlers
+	/* bundle collection handlers
 	/* --------------------------- */
 	
-	_onDeselectOne: function(bundle) {
-		this.stopListening(bundle.get("media"), this.mediaListeners);
-		this.itemViews.forEach(function(view) {
-			view.stopListening(view.collection);
-			controller.stopListening(view);
-		}, this);
-		
-		// this.purgeChildren();
-		// this.removeChildren(bundle);
-		// this.invalidateChildren();
-	},
-	
-	_onDeselectNone: function() {
-		this.touch.on("vpanstart", this._onVPanStart);
-	},
-	
-	_onSelectOne: function(bundle) {
-		this.listenTo(bundle.get("media"), this.mediaListeners);
-		// this.createChildren(bundle);
-		this.invalidateChildren();
-		// this.renderChildren();
-		// this.collapsed = true;
-	},
-	
-	_onSelectNone: function() {
-		this.touch.off("vpanstart", this._onVPanStart);
-		this.invalidateChildren();
-		// this.renderChildren();
-		// this.collapsed = false;
-	},
-	
-	/* --------------------------- *
-	/* media model handlers
-	/* --------------------------- */
-	
-	_onDeselectMedia: function(media) {
-		// if (!this.collapsed) {
-		// 	this.transforms.clearAllOffsets();
-		// 	this.transforms.runAllTransitions(tx.LAST);
-		// 	this.invalidateTransforms();
-		// }
-	},
-	
-	_onSelectMedia: function(media) {
-		// if (!this._bundleChanging) {
-		// 	this.collapsed = true;
-		// }
-	},
-	
-	/* -------------------------------
-	/* collapsed
-	/* ------------------------------- */
-	
-	_onCollapsedChange: function(collapsed) {
-		// NOTE: invalidateTransforms is called in ContainerView._setCollapsed
-		console.log("%s::_onCollapsedChange %s", this.cid, collapsed);
-		// if (!this._bundleChanging) {
-		// 	this._setChildrenEnabled(collapsed);
-		// }
-	},
-	
-	/* -------------------------------
-	/* Router -> before model change
-	/* ------------------------------- */
-	 
-	_beforeChange: function(bundle, media) {
-		// collapsed on every change, except when nothing is selected
-		this.collapsed = !!(bundle || media);
-		
-		// console.log("%s::_beforeChange", this.cid, arguments);
-		// this._bundleChanging = (bundle !== bundles.selected);
-		// this.invalidateTransforms();
-	},
-	
-	_afterChange: function(bundle, media) {
-	},
+	// _onDeselectOneBundle: function(bundle) {
+	// 	this.itemViews.forEach(function(view) {
+	// 		view.stopListening(view.collection);
+	// 		controller.stopListening(view);
+	// 	}, this);
+	// },
 	
 	/* -------------------------------
 	/* Vertical touch/move (_onVPan*)
@@ -311,18 +265,23 @@ var ContentView = ContainerView.extend({
 	_onVPanStart: function (ev) {
 		this.touch.on("vpanmove", this._onVPanMove);
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
+		
 		this.transforms.stopAllTransitions();
+		// this.transforms.clearAllOffsets();
+		// this.transforms.validate();
 		this.transforms.clearAllCaptures();
+		
 		this.el.classList.add("container-changing");
 		this._onVPanMove(ev);
 	},
 	
 	_onVPanMove: function (ev) {
+		var collapsedValue = this.model.get("collapsed");
 		var delta = ev.thresholdDeltaY;
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapsed/expand
-		var isValidDir = this.collapsed? (delta > 0) : (delta < 0);
-		var moveFactor = this.collapsed? Globals.VPAN_DRAG : 1 - Globals.VPAN_DRAG;
+		var isValidDir = collapsedValue? (delta > 0) : (delta < 0);
+		var moveFactor = collapsedValue? Globals.VPAN_DRAG : 1 - Globals.VPAN_DRAG;
 		
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
@@ -337,7 +296,7 @@ var ContentView = ContainerView.extend({
 		} else {
 			delta = (-delta) * Globals.VPAN_OUT_DRAG; // delta is opposite
 		}
-		delta *= this.collapsed? 1 : -1; // reapply sign
+		delta *= collapsedValue? 1 : -1; // reapply sign
 		
 		this.transforms.offsetAll(0, delta);
 		this.transforms.validate();
@@ -347,26 +306,22 @@ var ContentView = ContainerView.extend({
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
 		
-		// if (this.willCollapsedChange(ev)) {
-		// 	this.collapsed = !this.collapsed;
-		// } else {
-		// 	this.invalidateTransforms();
-		// }
-		// this.renderNow();
-		this._onVPanMove(ev);
+		// FIXME: model.collapsed may have already changed, _onVPanMove would run with wrong values:
+		// model.collapsed is changed in a setImmediate callback from NavigationView.
 		
-		if (this.willCollapsedChange(ev)) {
-			this.collapsed = !this.collapsed;
-		}
-		this.invalidateTransforms();
+		this._onVPanMove(ev);
+		this.setImmediate(function() {
+			this.invalidateTransforms();
+		});
 	},
 	
-	willCollapsedChange: function(ev) {
-		return ev.type == "vpanend"? this.collapsed?
-			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
-			ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
-			false;
-	},
+	// willCollapsedChange: function(ev) {
+	// 	var collapsedValue = this.model.get("collapsed");
+	// 	return ev.type == "vpanend"? collapsedValue?
+	// 		ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
+	// 		ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
+	// 		false;
+	// },
 	
 	/* -------------------------------
 	/* create/remove children on bundle selection
@@ -383,6 +338,9 @@ var ContentView = ContainerView.extend({
 		this.transforms.add(carousel.el, stack.el);
 		
 		this.itemViews.forEach(function(view) {
+			// view.listenToOnce(bundle, "deselect", function() {
+			// 	this.stopListening(this.collection);
+			// });
 			if (!this.skipTransitions) {
 				view.el.classList.add("adding-child");
 				view.el.style.opacity = 0;
@@ -412,6 +370,7 @@ var ContentView = ContainerView.extend({
 	},
 	
 	removeChildren: function (bundle) {
+		// this.purgeChildren();
 		// this.transforms.remove(this.carousel.el, this.captionStack.el);
 		this.itemViews.forEach(function(view, i, a) {
 			this.transforms.remove(view.el);
@@ -452,21 +411,21 @@ var ContentView = ContainerView.extend({
 		}
 	},
 	
-	purgeChildren: function() {
-		var i, el, els = this.el.querySelectorAll(".removing-child");
-		for (i = 0; i < els.length; i++) {
-			el = els.item(i);
-			if (el.parentElement === this.el) {
-				try {
-					console.error("%s::purgeChildren", this.cid, el.getAttribute("data-cid"));
-					ContainerView.findByElement(el).remove();
-				} catch (err) {
-					console.error("s::purgeChildren", this.cid, "orphaned element", err);
-					this.el.removeChild(el);
-				}
-			}
-		}
-	},
+	// purgeChildren: function() {
+	// 	var i, el, els = this.el.querySelectorAll(".removing-child");
+	// 	for (i = 0; i < els.length; i++) {
+	// 		el = els.item(i);
+	// 		if (el.parentElement === this.el) {
+	// 			try {
+	// 				console.error("%s::purgeChildren", this.cid, el.getAttribute("data-cid"));
+	// 				ContainerView.findByElement(el).remove();
+	// 			} catch (err) {
+	// 				console.error("s::purgeChildren", this.cid, "orphaned element", err);
+	// 				this.el.removeChild(el);
+	// 			}
+	// 		}
+	// 	}
+	// },
 	
 	/* -------------------------------
 	/* Components
@@ -505,7 +464,11 @@ var ContentView = ContainerView.extend({
 		controller.listenTo(view, {
 			"view:select:one": controller.selectMedia,
 			"view:select:none": controller.deselectMedia,
-			"view:removed": controller.stopListening
+			// "view:removed": controller.stopListening
+		});
+		view.listenTo(bundle, "deselected", function() {
+			this.stopListening(this.collection);
+			controller.stopListening(this);
 		});
 		return view;
 	},
@@ -519,13 +482,16 @@ var ContentView = ContainerView.extend({
 			collection: bundle.get("media"),
 			template: mediaCaptionTemplate
 		});
+		view.listenTo(bundle, "deselected", function() {
+			this.stopListening(this.collection);
+		});
 		return view;
 	},
 	
 	/**
 	/* media-dotnav
 	/*/
-	createMediaDotNavigation: function(bundle, media) {
+	createMediaDotNavigation: function(bundle) {
 		var view = new SelectableListView({
 			className: "media-dotnav dots-fontello color-fg05",
 			collection: bundle.get("media"),
@@ -534,7 +500,11 @@ var ContentView = ContainerView.extend({
 		controller.listenTo(view, {
 			"view:select:one": controller.selectMedia,
 			"view:select:none": controller.deselectMedia,
-			"view:removed": controller.stopListening
+			// "view:removed": controller.stopListening
+		});
+		view.listenTo(bundle, "deselected", function() {
+			this.stopListening(this.collection);
+			controller.stopListening(this);
 		});
 		return view;
 	},

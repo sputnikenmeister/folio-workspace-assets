@@ -6,8 +6,9 @@
 #debug-toolbar {
 	z-index: 999;
 	position: fixed;
-	top: 0; right: 0;
-	// width: 100%;// prevents dotnav mouse events
+	top: 0;
+	// right: 0;
+	width: 100%;// prevents dotnav mouse events
 	.debug-links {
 		direction: rtl;
 	}
@@ -15,11 +16,16 @@
 		text-decoration: underline;
 	}
 	&:not(.show-links) {
-		opacity: 0.25;
-		#test-results {
+		#links-toggle {
+			opacity: 0.33;
+		}
+		&:not(.show-tx) #app-state {
 			display: none;
 		}
 		.debug-links > dd {
+			display: none;
+		}
+		#test-results {
 			display: none;
 		}
 	}
@@ -69,6 +75,31 @@
 			}
 		}
 	}
+	
+	#app-state {
+		// display: inline-block;
+		// position: absolute;
+		// top: 2rem; right: 0rem;
+		// padding: 0.5rem 1rem;
+		
+		font-size: 85%;
+		line-height: 1.17647059;// inverse of 0.85
+		font-weight: 700;
+		// font: 700 85%/1.17647059 $mono_fallback;
+		// font: bold 85%/1 "Consolas", "Menlo", monospace;
+		
+		letter-spacing: -1px;
+		direction: ltr;
+		& > span {
+			// padding: 0; margin: 1em 0; border: 1px solid transparent;
+			padding: 1em 0;
+			
+			&.has-value { text-transform: uppercase; }
+			// &:not(.has-value) { text-decoration: line-through; }
+			&.has-changed { text-decoration: underline overline; } // line-through
+			// &:not(.has-changed) { opacity: 0.5; }
+		}
+	}
 }
 
 #debug-toolbar dl {
@@ -96,6 +127,7 @@
 			padding: 1em 0.75em;
 			display: inline-block;
 			vertical-align: middle;
+			direction: ltr;
 		}
 	}
 	dt + dd {
@@ -138,6 +170,7 @@
 			margin-top: -0.1rem;
 		}
 	}
+	
 }
 
 .without-media #debug-toolbar {

@@ -367,12 +367,14 @@ var CarouselProto = {
 	
 	_logFlags: function(callerName) {
 		var flags = [];
-		callerName || (callerName = "_logFlags");
+		
 		if (this._renderFlags & CHILDREN_INVALID) flags.push("CHILDREN");
 		if (this._renderFlags & CLASSES_INVALID) flags.push("CLASSES");
 		if (this._renderFlags & SIZE_INVALID) flags.push("SIZE");
 		if (this._renderFlags & LAYOUT_INVALID) flags.push("LAYOUT");
-		console.log("%s::%s attached:%s flags:[%s]", this.cid, callerName, this.attached, flags.join(", "));
+		
+		console.log("%s::%s delta:%s attch:%s flags:[%s]", this.cid, callerName || "_logFlags",
+			this._delta, this.attached, flags.join(", "));
 	},
 	
 	/* Render: now   ------------- */
@@ -630,8 +632,13 @@ var CarouselProto = {
 		this.itemViews.each(function (view) {
 			metrics = this.metrics[view.cid];
 			pos = Math.floor(this._getScrollOffset(delta, metrics, sMetrics));
-			view.el.style[transformProperty] = (this.direction & HORIZONTAL)?
-					"translate3d(" + pos + "px,0,0)" : "translate3d(0," + pos + "px,0)";
+			view.metrics.translateX = (this.direction & HORIZONTAL)? pos : 0;
+			view.metrics.translateY = (this.direction & HORIZONTAL)? 0 : pos;
+			view.metrics._transform = "translate3d(" + view.metrics.translateX + "px," + view.metrics.translateY + "px,0)";
+			view.el.style[transformProperty] = view.metrics._transform;
+			// view.el.style[transformProperty] = (this.direction & HORIZONTAL)?
+			// 	"translate3d(" + pos + "px,0,0)":
+			// 	"translate3d(0," + pos + "px,0)";
 		}, this);
 		
 		this.el.classList.toggle("skip-transitions", skipTransitions);
@@ -677,14 +684,8 @@ var CarouselProto = {
 			this._touchEventsEnabled = enable;
 			if (enable) {
 				this.touch.on("tap panstart panmove panend pancancel", this._onTouchEvent);
-				// this.touch.on("tap", this._onTouchEvent);
-				// this.touch.on("panstart panmove", this._onTouchEvent);
-				// this.touch.on("panend pancancel", this._onTouchEvent);
 			} else {
 				this.touch.off("tap panstart panmove panend pancancel", this._onTouchEvent);
-				// this.touch.off("tap", this._onTouchEvent);
-				// this.touch.off("panstart panmove", this._onTouchEvent);
-				// this.touch.off("panend pancancel", this._onTouchEvent);
 			}
 		}
 	},
@@ -757,12 +758,15 @@ var CarouselProto = {
 		this._panCandidateView = void 0;
 		this.el.classList.remove("panning");
 		
-		if (this._renderRafId !== -1) {
-			this.scrollBy(0, Carousel.ANIMATED);
-			this.renderNow();
-		} else {
-			this._scrollBy(0, Carousel.ANIMATED);
-		}
+		this.scrollBy(0, Carousel.ANIMATED);
+		this.selectFromView();
+		
+		// if (this._renderRafId !== -1) {
+		// 	this.scrollBy(0, Carousel.ANIMATED);
+		// 	this.renderNow();
+		// } else {
+		// 	this._scrollBy(0, Carousel.ANIMATED);
+		// }
 	},
 	
 	/* --------------------------- *

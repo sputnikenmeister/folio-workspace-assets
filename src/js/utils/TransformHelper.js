@@ -26,46 +26,14 @@ function TransformHelper() {
 TransformHelper.prototype = Object.create({
 	
 	/* -------------------------------
-	/* Public
+	/* Private
 	/* ------------------------------- */
 	
-	has: function(el) {
-		return el.eid && this._itemsById[el.eid] !== void 0;
-	},
-	
-	get: function(el) {
+	_get: function(el) {
 		if (this.has(el)) {
 			return this._itemsById[el.eid];
 		} else {
 			return this._add(el);
-		}
-	},
-	
-	add: function() {
-		var i, j, el;
-		for (i = 0; i < arguments.length; ++i) {
-			el = arguments[i];
-			if (el.length) {
-				for (j = 0; j < el.length; ++j) {
-					this.get(el[j]);
-				}
-			} else {
-				this.get(el);
-			}
-		}
-	},
-	
-	remove: function() {
-		var i, j, el;
-		for (i = 0; i < arguments.length; ++i) {
-			el = arguments[i];
-			if (el.length) {
-				for (j = 0; j < el.length; ++j) {
-					this._remove(el[j]);
-				}
-			} else {
-				this._remove(el);
-			}
 		}
 	},
 	
@@ -94,9 +62,95 @@ TransformHelper.prototype = Object.create({
 		}
 	},
 	
+	_invoke: function(funcName, args, startIndex) {
+		var i, ii, j, jj, el, o, rr;
+		var funcArgs = null;
+		if (startIndex !== void 0) {
+			funcArgs = slice.call(args, 0, startIndex);
+		} else {
+			startIndex = 0;
+		}
+		for (i = startIndex, ii = args.length, rr = []; i < ii; ++i) {
+			el = args[i];
+			// iterate on NodeList, Arguments, Array...
+			if (el.length) {
+				for (j = 0, jj = el.length; j < jj; ++j) {
+					o = this._get(el[j]);
+					rr.push(o[funcName].apply(o, funcArgs));
+				}
+			} else {
+				o = this._get(el);
+				rr.push(o[funcName].apply(o, funcArgs));
+			}
+		}
+		return rr;
+	},
+	
+	/* -------------------------------
+	/* Public
+	/* ------------------------------- */
+	
+	has: function(el) {
+		return el.eid && this._itemsById[el.eid] !== void 0;
+	},
+	
+	getItems: function() {
+		var i, j, el, ret = [];
+		for (i = 0; i < arguments.length; ++i) {
+			el = arguments[i];
+			if (el.length) {
+				for (j = 0; j < el.length; ++j) {
+					ret.push(this._get(el[j]));
+				}
+			} else {
+				ret.push(this._get(el));
+			}
+		}
+		return ret;
+	},
+	
+	get: function(el) {
+		return this._get(el);
+	},
+	
+	add: function() {
+		var i, j, el;
+		for (i = 0; i < arguments.length; ++i) {
+			el = arguments[i];
+			if (el.length) {
+				for (j = 0; j < el.length; ++j) {
+					this._get(el[j]);
+				}
+			} else {
+				this._get(el);
+			}
+		}
+	},
+	
+	remove: function() {
+		var i, j, el;
+		for (i = 0; i < arguments.length; ++i) {
+			el = arguments[i];
+			if (el.length) {
+				for (j = 0; j < el.length; ++j) {
+					this._remove(el[j]);
+				}
+			} else {
+				this._remove(el);
+			}
+		}
+	},
+	
 	/* --------------------------------
 	/* public
 	/* -------------------------------- */
+	
+	/* public: single arg
+	/* - - - - - - - - - - - - - - - - */
+	
+	hasOffset: function(el) {
+		return this.has(el)? this._itemsById[el.eid].hasOffset : (void 0);
+	},
 	
 	/* public: capture
 	/* - - - - - - - - - - - - - - - - */
@@ -127,7 +181,6 @@ TransformHelper.prototype = Object.create({
 	
 	/* public: offset
 	/* - - - - - - - - - - - - - - - - */
-	
 	offset: function(x, y) {
 		this._invoke("offset", arguments, 2);
 	},
@@ -203,34 +256,6 @@ TransformHelper.prototype = Object.create({
 		// return keys.length != 0? Promise.all(keys.map(function(key) {
 		// 	return this._itemsById[key].whenTransitionEnds();
 		// }, this)) : Promise.resolve(null);
-	},
-	
-	/* -------------------------------
-	/* private utils
-	/* ------------------------------- */
-	
-	_invoke: function(funcName, args, startIndex) {
-		var i, ii, j, jj, el, o, rr;
-		var funcArgs = null;
-		if (startIndex !== void 0) {
-			funcArgs = slice.call(args, 0, startIndex);
-		} else {
-			startIndex = 0;
-		}
-		for (i = startIndex, ii = args.length, rr = []; i < ii; ++i) {
-			el = args[i];
-			// iterate on NodeList, Arguments, Array...
-			if (el.length) {
-				for (j = 0, jj = el.length; j < jj; ++j) {
-					o = this.get(el[j]);
-					rr.push(o[funcName].apply(o, funcArgs));
-				}
-			} else {
-				o = this.get(el);
-				rr.push(o[funcName].apply(o, funcArgs));
-			}
-		}
-		return rr;
 	},
 	
 	/* -------------------------------

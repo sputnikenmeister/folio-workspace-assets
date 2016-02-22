@@ -19,10 +19,13 @@ var SelectableListView = View.extend({
 	
 	/** @type {string} */
 	cidPrefix: "selectableList",
+	
 	/** @override */
 	tagName: "ul",
+	
 	/** @override */
 	className: "list selectable",
+	
 	/** @type {module:app/view/component/DefaultSelectableRenderer} */
 	renderer: DefaultSelectableRenderer,
 	

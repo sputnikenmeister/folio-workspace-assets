@@ -15,6 +15,7 @@ if (/Firefox/.test(window.navigator.userAgent)) {
 		if (typeof arguments[1] == "string") arguments[1] = console.prefix + arguments[1];
 		return shift.apply(arguments).apply(console, arguments);
 	};
+	console.group = _.wrap(console.group, logWrapFn);
 	console.log = _.wrap(console.log, logWrapFn);
 	console.info = _.wrap(console.info, logWrapFn);
 	console.warn = _.wrap(console.warn, logWrapFn);
@@ -141,10 +142,10 @@ window.addEventListener("load", function(ev) {
 		// 	console.log("WebFont::loading");
 		// },
 		fontactive: function(familyName, variantFvd) {
-			console.log("WebFont::fontactive %s %s", familyName, variantFvd);
+			console.log("WebFont::fontactive '%s' (%s)", familyName, variantFvd);
 		},
 		fontinactive: function(familyName, variantFvd) {
-			console.log("WebFont::fontinactive %s %s", familyName, variantFvd);
+			console.log("WebFont::fontinactive '%s' (%s)", familyName, variantFvd);
 		},
 		// fontloading: function(familyName, variantDesc) {
 		// 	console.log("WebFont::fontloading", familyName, JSON.stringify(variantDesc, null, " "));

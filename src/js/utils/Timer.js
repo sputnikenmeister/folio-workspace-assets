@@ -109,34 +109,34 @@ function clear(clearDuration) {
 	}
 }
 
-// Object.defineProperties(Timer.prototype, {
-// 	duration: {
-// 		enumerable: true,
-// 		get: function() {
-// 			return this.getDuration();
-// 		}
-// 	},
-// 	status: {
-// 		enumerable: true,
-// 		get: function() {
-// 			return this.getStatus();
-// 		}
-// 	}
-// });
-// 
-// Object.defineProperties(Timer, {
-// 	STOPPED: {
-// 		enumerable: true,
-// 		value: "stopped"
-// 	},
-// 	STARTED: {
-// 		enumerable: true,
-// 		value: "started"
-// 	},
-// 	PAUSED: {
-// 		enumerable: true,
-// 		value: "paused"
-// 	},
-// });
+Object.defineProperties(Timer.prototype, {
+	duration: {
+		enumerable: true,
+		get: function() {
+			return this.getDuration();
+		}
+	},
+	status: {
+		enumerable: true,
+		get: function() {
+			return this.getStatus();
+		}
+	}
+});
+
+Object.defineProperties(Timer, {
+	STOPPED: {
+		enumerable: true,
+		value: "stopped"
+	},
+	STARTED: {
+		enumerable: true,
+		value: "started"
+	},
+	PAUSED: {
+		enumerable: true,
+		value: "paused"
+	},
+});
 
 module.exports = Timer;

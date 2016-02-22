@@ -62,6 +62,24 @@ RequestQueue.prototype = Object.create({
 	// 	return this.items.forEach(fn, context);
 	// },
 	
+	indexes: function() {
+		// .map(function(o, i, a) {
+		// 	return this[o.index];
+		// }, this._items);
+		var items = this._priorities.concat();
+		items.sort(function(a, b) {
+			if (a.priority > b.priority)
+				return 1;
+			if (a.priority < b.priority)
+				return -1;
+			return 0;
+		});
+		items.forEach(function(o, i, a) {
+			a[i] = o.index;
+		}, this);
+		return items;
+	},
+	
 	items: function() {
 		// .map(function(o, i, a) {
 		// 	return this[o.index];
@@ -119,7 +137,13 @@ var _runQueue = function(tstamp) {
 	_currQueue = _nextQueue;
 	_nextQueue = new RequestQueue(_currQueue.offset + _currQueue.length);
 	
-	_currQueue.items().forEach(function(fn, i, a) {
+	// _currQueue.items().forEach(function(fn, i, a) {
+	// 	if (fn !== null) {
+	// 		fn(tstamp);
+	// 	}
+	// });
+	_currQueue.indexes().forEach(function(index, i, a) {
+		var fn = _currQueue._items[index];
 		if (fn !== null) {
 			fn(tstamp);
 		}
@@ -183,12 +207,12 @@ var FrameQueue = Object.create({
 	}
 });
 
-// if (DEBUG) {
-// 	/** @type {module:underscore} */
-// 	var _ = require("underscore");
-// 	
-// 	console.info("Using app/view/base/FrameQueue");
-// 	
+if (DEBUG) {
+	/** @type {module:underscore} */
+	var _ = require("underscore");
+	
+	console.info("Using app/view/base/FrameQueue");
+	
 // 	// // log frame exec time
 // 	// var _now = window.performance? 
 // 	// 	window.performance.now.bind(window.performance) :
@@ -212,35 +236,35 @@ var FrameQueue = Object.create({
 // 		console.log("[Frame exit]\n---\n");
 // 		return retval;
 // 	});
-// 	
-// 	// use log prefix
-// 	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
-// 		var retval, logprefix;
-// 		logprefix = console.prefix;
-// 		console.prefix += "[raf:" + _rafId + "] ";
-// 		retval = fn(tstamp);
-// 		console.prefix = logprefix;
-// 		return retval;
-// 	});
-// 	
-// 	FrameQueue.cancel = _.wrap(FrameQueue.cancel, function(fn, id) {
-// 		if ((_currQueue !== null) && (_currQueue.offset >= id) && (id < _nextQueue.offset)) {
-// 			console.info("FrameQueue::cancel ID:%i in running range (%i-%i)", id, _currQueue.offset, _nextQueue.offset - 1);
-// 		}
-// 		var rafId = _rafId;
-// 		var retval = fn(id);
-// 		if (retval === void 0) {
-// 			console.warn("FrameQueue::cancel ID:%i not found", id);
-// 		} else if (retval === null) {
-// 			console.warn("FrameQueue::cancel ID:%i already cancelled", id);
-// 		} else {
-// 			if (!_running && _nextQueue.numItems == 0) {
-// 				console.info("FrameQueue::cancel raf:%i cancelled (ID:%i cancelled, empty queue)", rafId, id);
-// 			}
-// 		}
-// 		return retval;
-// 	});
-// }
+	
+	// use log prefix
+	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
+		var retval, logprefix;
+		logprefix = console.prefix;
+		console.prefix += "[raf:" + _rafId + "] ";
+		retval = fn(tstamp);
+		console.prefix = logprefix;
+		return retval;
+	});
+	
+	// FrameQueue.cancel = _.wrap(FrameQueue.cancel, function(fn, id) {
+	// 	if ((_currQueue !== null) && (_currQueue.offset >= id) && (id < _nextQueue.offset)) {
+	// 		console.info("FrameQueue::cancel ID:%i in running range (%i-%i)", id, _currQueue.offset, _nextQueue.offset - 1);
+	// 	}
+	// 	var rafId = _rafId;
+	// 	var retval = fn(id);
+	// 	if (retval === void 0) {
+	// 		console.warn("FrameQueue::cancel ID:%i not found", id);
+	// 	} else if (retval === null) {
+	// 		console.warn("FrameQueue::cancel ID:%i already cancelled", id);
+	// 	} else {
+	// 		if (!_running && _nextQueue.numItems == 0) {
+	// 			console.info("FrameQueue::cancel raf:%i cancelled (ID:%i cancelled, empty queue)", rafId, id);
+	// 		}
+	// 	}
+	// 	return retval;
+	// });
+}
 
 
 module.exports = FrameQueue;

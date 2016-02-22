@@ -21,8 +21,10 @@ var GroupingListView = FilterableListView.extend({
 	
 	/** @type {string} */
 	cidPrefix: "groupingList",
+	
 	/** @override */
 	tagName: "dl",
+	
 	/** @override */
 	className: "grouped",
 	
@@ -45,6 +47,15 @@ var GroupingListView = FilterableListView.extend({
 	
 	// renderLayout: function () {
 	// 	return FilterableListView.prototype.renderLayout.apply(this, arguments);
+	// },
+	
+	// _applyRender: function() {
+	// 	console.trace();
+	// 	return FilterableListView.prototype._applyRender.call(this, arguments);
+	// },
+	
+	// renderNow: function() {
+	// 	return FilterableListView.prototype.renderNow.call(this, arguments);
 	// },
 	
 	_refreshGroups: function() {
