@@ -9,10 +9,19 @@ var Color = require("color");
 
 /** @type {module:app/view/MediaRenderer} */
 var MediaRenderer = require("app/view/render/MediaRenderer");
+// /** @type {module:app/view/component/ProgressMeter} */
+// var ProgressMeter = require("app/view/component/ProgressMeter");
+
 /** @type {Function} */
 var prefixedProperty = require("utils/prefixedProperty");
 /** @type {Function} */
 var prefixedEvent = require("utils/prefixedEvent");
+
+// var visibilityHiddenProp = prefixedProperty("hidden", document);
+/** @type {String} */
+var visibilityStateProp = prefixedProperty("visibilityState", document);
+/** @type {String} */
+var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden");
 
 /** @type {Function} */
 // var duotone = require("utils/canvas/bitmap/duotone");
@@ -21,17 +30,15 @@ var prefixedEvent = require("utils/prefixedEvent");
 // var getAverageRGBA = require("utils/canvas/bitmap/getAverageRGBA");
 // var getAverageRGB = require("utils/canvas/bitmap/getAverageRGB");
 
+/** @type {HTMLCanvasElement} */
 var _sharedCanvas = null;
+/** @return {HTMLCanvasElement} */
 var getSharedCanvas =  function() {
 	if (_sharedCanvas === null) {
 		_sharedCanvas = document.createElement("canvas");
 	}
 	return _sharedCanvas;
 };
-
-// var visibilityHiddenProp = prefixedProperty("hidden", document);
-var visibilityStateProp = prefixedProperty("visibilityState", document);
-var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden");
 
 function logAttachInfo(view, name, level) {
 	if (["log", "info", "warn", "error"].indexOf(level) != -1) {

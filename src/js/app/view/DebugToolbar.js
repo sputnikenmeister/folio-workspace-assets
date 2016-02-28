@@ -28,7 +28,7 @@ var DebugToolbar = Backbone.View.extend({
 	/** @override */
 	tagName: "div",
 	/** @override */
-	className: "toolbar color-fg05",
+	className: "toolbar",
 	/** @override */
 	template: viewTemplate,
 	
@@ -96,6 +96,8 @@ var DebugToolbar = Backbone.View.extend({
 		for (i = 0, ii = els.length; i < ii; i++) {
 			el = els[i];
 			prop = el.getAttribute("data-prop");
+			el.classList.toggle("color-reverse", this.model.hasChanged(prop));
+			// el.classList.toggle("color-reverse", this.model.get(prop));
 			el.classList.toggle("has-changed", this.model.hasChanged(prop));
 			el.classList.toggle("has-value", this.model.get(prop));
 		}

@@ -20,8 +20,8 @@ var Backbone = require("backbone");
 var Globals = require("app/control/Globals");
 /** @type {module:app/view/render/PlayableRenderer} */
 var PlayableRenderer = require("app/view/render/PlayableRenderer");
-/** @type {module:app/view/component/progress/ProgressMeter} */
-var ProgressMeter = require("app/view/component/progress/ProgressMeter");
+/** @type {module:app/view/component/ProgressMeter} */
+var ProgressMeter = require("app/view/component/ProgressMeter");
 /** @type {module:utils/prefixedStyleName} */
 var prefixedStyleName = require("utils/prefixedStyleName");
 /** @type {module:utils/prefixedEvent} */

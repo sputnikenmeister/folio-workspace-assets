@@ -133,21 +133,6 @@ var applyEventPrefixes = function(events) {
 	return events;
 };
 
-// var getViewDepth = function(view) {
-// 	if (!view) {
-// 		return null;
-// 	}
-// 	if (view.attached) {
-// 		if (view.parentView === null) {
-// 			return 0;
-// 		} else {
-// 			return view.parentView.viewDepth + 1;
-// 		}
-// 	} else {
-// 		return NaN;
-// 	}
-// };
-
 var getViewDepth = function(view) {	
 	if (!view) {
 		return null;
@@ -179,17 +164,18 @@ var View = {
 	NONE_INVALID: 0,
 	/** @const */
 	CHILDREN_INVALID: 1,
-	/** @const */
-	PROPS_INVALID: 2,
 	
 	/** @const */
-	RENDER_INVALID: 8 | 16,
+	MODEL_INVALID: 2,
 	/** @const */
-	CLASSES_INVALID: 4,
+	STYLES_INVALID: 4,
 	/** @const */
 	SIZE_INVALID: 8,
 	/** @const */
 	LAYOUT_INVALID: 16,
+	
+	/** @const */
+	RENDER_INVALID: 8 | 16,
 	
 	/** @type {module:app/view/base/ViewError} */
 	ViewError: require("app/view/base/ViewError"),
@@ -251,9 +237,22 @@ var View = {
 		return Backbone.View.extend.apply(this, arguments);
 	},
 	
-	// get viewsByCid() {
-	// 	return _viewsByCid;
-	// },
+	_flagsToStrings: ["-"],
+	
+	flagsToString: function(flags) {
+		var s = View._flagsToStrings[flags | 0];
+		if (!s) {
+			s = [];
+			if (flags & View.CHILDREN_INVALID) s.push("children");
+			if (flags & View.MODEL_INVALID) s.push("model");
+			if (flags & View.STYLES_INVALID) s.push("styles");
+			if (flags & View.SIZE_INVALID) s.push("size");
+			if (flags & View.LAYOUT_INVALID) s.push("layout");
+			View._flagsToStrings[flags] = s = s.join(" ");
+		}
+		return s;
+		// return (flags | 0).toString(2);
+	},
 };
 
 Object.defineProperty(View, "instances", {
@@ -324,8 +323,6 @@ var ViewProto = {
 	* @type {module:app/view/base/View}
 	*/
 	constructor: function(options) {
-		// this._frameQueueId = -1;
-		// this.parentView = null;
 		this.childViews = {};
 		this._applyRender = this._applyRender.bind(this);
 		
@@ -555,20 +552,26 @@ var ViewProto = {
 	},
 	
 	/* -------------------------------
-	/* simple render deferring
+	/* deferred render: private methods
 	/* ------------------------------- */
 	
 	/** @private */
 	_applyRender: function (tstamp) {
+		
 		if (!this._skipLog) {
-			if (this._frameQueueId == -1) {
-				console.log("%s::_applyRender [synchronous]", this.cid);
-			} else {
-				console.log("%s::_applyRender ID:%i", this.cid, this._frameQueueId);
-			}
+			console.log("%s::_applyRender [flags: %s (%s)] [%s, %s]", this.cid,
+				View.flagsToString(this._renderFlags), this._renderFlags,
+				(this.attached? "attached" : "detached"),
+				(this._frameQueueId != -1? "async " + this._frameQueueId : "sync")
+			);
 		}
+		var flags = this._renderFlags; 
+		this._renderFlags = 0;
 		this._frameQueueId = -1;
-		this.renderFrame(tstamp);
+		this._renderFlags |= this.renderFrame(tstamp, flags);
+		if (this._renderFlags != 0) {
+			console.warn("%s::_applyRender [returned] flags: %s", this.cid, View.flagsToString(this._renderFlags), this._renderFlags);
+		}
 	},
 	
 	_cancelRender: function() {
@@ -599,13 +602,22 @@ var ViewProto = {
 		}
 	},
 	
-	requestRender: function() {
+	/* -------------------------------
+	/* render: 'protected' & 'abstract' methods
+	/* ------------------------------- */
+	
+	requestRender: function(flags) {
+		if (flags !== void 0) {
+			this._renderFlags |= flags;
+		}
 		this._requestRender();
+		return this;
 	},
 	
 	/** @abstract */
-	renderFrame: function (tstamp) {
+	renderFrame: function (tstamp, flags) {
 		// subclasses should override this method
+		this._renderFlags = 0;
 	},
 
 	renderNow: function(alwaysRun) {
@@ -629,14 +641,33 @@ var ViewProto = {
 		return this.renderNow(true);
 	},
 	
+	/* -------------------------------
+	/* render bitwise flags
+	/* - check: this._renderFlags & flags
+	/* - add: this._renderFlags |= flags
+	/* - remove: this._renderFlags &= ~flags
+	/* ------------------------------- */
+	
+	/* flag helpers ------------------ */
+	
+	invalidateChildren: function() {
+		// this._renderFlags |= View.CHILDREN_INVALID;
+		return this.requestRender(View.CHILDREN_INVALID);
+	},
+	
+	invalidateModel: function() {
+		// this._renderFlags |= (View.MODEL_INVALID | View.LAYOUT_INVALID);
+		return this.requestRender(View.MODEL_INVALID | View.LAYOUT_INVALID);
+	},
+	
 	invalidateSize: function() {
-		this._renderFlags |= (View.SIZE_INVALID | View.LAYOUT_INVALID);
-		this.requestRender();
+		// this._renderFlags |= (View.SIZE_INVALID | View.LAYOUT_INVALID);
+		return this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
 	},
 	
 	invalidateLayout: function() {
-		this._renderFlags |= View.LAYOUT_INVALID;
-		this.requestRender();
+		// this._renderFlags |= View.LAYOUT_INVALID;
+		return this.requestRender(View.LAYOUT_INVALID);
 	},
 	
 	/* -------------------------------
@@ -662,8 +693,3 @@ var ViewProto = {
 };
 
 module.exports = Backbone.View.extend(ViewProto, View);
-
-
-// Object.defineProperty(module.exports, "instances", {
-// 	value: _viewsByCid
-// });

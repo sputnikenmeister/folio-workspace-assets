@@ -12,6 +12,11 @@ var Hammer = require("hammerjs");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
+/** @type {module:utils/TransformHelper} */
+var TransformHelper = require("utils/TransformHelper");
+/** @type {module:app/view/base/TouchManager} */
+var TouchManager = require("app/view/base/TouchManager");
+
 /** @type {module:app/control/Controller} */
 var controller = require("app/control/Controller");
 /** @type {module:app/model/collection/TypeCollection} */
@@ -23,14 +28,14 @@ var bundles = require("app/model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
-/** @type {module:app/view/base/ContainerView} */
-var ContainerView = require("app/view/base/ContainerView");
 /** @type {module:app/view/component/FilterableListView} */
 var FilterableListView = require("app/view/component/FilterableListView");
 /** @type {module:app/view/component/GroupingListView} */
 var GroupingListView = require("app/view/component/GroupingListView");
 /** @type {module:app/view/component/CollectionPager} */
 var CollectionPager = require("app/view/component/CollectionPager");
+/** @type {module:app/view/component/CollectionPager} */
+var GraphView = require("app/view/component/GraphView");
 
 /** @type {module:utils/css/parseTransformMatrix} */
 var parseMatrix = require("utils/css/parseTransformMatrix");
@@ -43,7 +48,7 @@ var tx = Globals.transitions;
 /* @constructor
 /* @type {module:app/view/NavigationView}
 /*/
-var NavigationView = ContainerView.extend({
+var NavigationView = View.extend({
 	
 	/** @override */
 	cidPrefix: "navigationView",
@@ -53,76 +58,51 @@ var NavigationView = ContainerView.extend({
 	
 	/** @override */
 	initialize: function (options) {
-		ContainerView.prototype.initialize.apply(this, arguments);
-		
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
 		_.bindAll(this, "_onHPanStart", "_onHPanMove", "_onHPanFinal");
-		_.bindAll(this, "_beginTransformObserve", "_endTransformObserve", "_onTransformMutation");
+		
+		this.itemViews = [];
+		this.transforms = new TransformHelper();
+		this.touch = TouchManager.getInstance();
 		
 		this.listenTo(this.model, "change", this._onModelChange);
 		
 		this.sitename = this.createSitenameButton();
+		this.transforms.add(this.sitename.el);
+		
 		this.bundleList = this.createBundleList();
+		this.transforms.add(this.bundleList.el, this.bundleList.wrapper);
+		this.itemViews.push(this.bundleList);
+		
 		this.keywordList = this.createKeywordList();
 		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group span");
-		this.itemViews = [this.bundleList, this.keywordList];
+		this.transforms.add(this.hGroupings, this.keywordList.el, this.keywordList.wrapper);
+		this.itemViews.push(this.keywordList);
 		
-		this.transforms.add(
-			this.sitename.el,
-			this.bundleList.el,
-			this.bundleList.wrapper,
-			this.hGroupings,
-			this.keywordList.el,
-			this.keywordList.wrapper
-		);
-		
-		this._debugTx = this.transforms.getItems(
-			this.bundleList.el,
-			this.keywordList.el,
-			this.sitename.el,
-			this.bundleList.wrapper,
-			this.keywordList.wrapper,
-			this.hGroupings.item(0)
-		);
-		
-		// this.skipTransitions = true;
+		// this.graph = this.createGraphView();
+		// this.itemViews.push(this.graph);
+		// this.transforms.add(this.graph.el);
 	},
 	
 	/* --------------------------- *
 	/* Render
 	/* --------------------------- */
 	
-	renderFrame: function(tstamp) {
-		// flags
-		var collapsedChanged = this._modelChanged && this.model.hasChanged("collapsed");
-		var sizeChanged = !!(this._renderFlags & ContainerView.RENDER_INVALID);
-		var transformsChanged = this._modelChanged || this._transformsChanged || this.skipTransitions || sizeChanged;
-		
+	renderFrame: function(tstamp, flags) {
 		// values
 		var collapsed = this.model.get("collapsed");
+		var collapsedChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("collapsed");
 		
-		// // debug
-		// console.log("%s::renderFrame model:%s tx:%s skip:%s size:%s", this.cid,
-		// 	this._modelChanged,
-		// 	this._transformsChanged,
-		// 	this.skipTransitions,
-		// 	sizeChanged
-		// );
-		// if (this._modelChanged) {
-		// 	console.group(this.cid + "::renderFrame model changed:");
-		// 	Object.keys(this.model.changed).forEach(function(key) {
-		// 		console.log("\t%s: %s -> %s", key, this.model._previousAttributes[key], this.model.changed[key]);
-		// 	}, this);
-		// 	console.groupEnd();
-		// }
+		// flags
+		var sizeChanged = !!(flags & View.RENDER_INVALID);
+		var transformsChanged = !!(flags & (View.MODEL_INVALID | View.SIZE_INVALID | View.LAYOUT_INVALID));
+		transformsChanged = transformsChanged || this._transformsChanged || this.skipTransitions;
 		
-		// model:collapsed
+		// classes
 		// - - - - - - - - - - - - - - - - -
 		if (collapsedChanged) {
 			this.el.classList.toggle("container-collapsed", collapsed);
 			this.el.classList.toggle("container-expanded", !collapsed);
-			// this.bundleList.collapsed = collapsed;
-			// this.keywordList.collapsed = collapsed;
 		}
 		
 		// transforms
@@ -133,98 +113,66 @@ var NavigationView = ContainerView.extend({
 				this.transforms.validate();
 				this.transforms.clearAllOffsets();
 			} else {
-				this.renderTransitions();
+				this.renderTransitions(flags);
 			}
-			
-			// DEBUG
 			console.group(this.cid + "::renderFrame transitions:");
 			if (this.skipTransitions) {
-				console.log("[skipTransitions]");
+				console.log("[skipping]");
 			} else {
-				this._debugTx.forEach(function(tx) {
-					var args = [ "\t%s: %s", tx.el.id || tx.id, tx.transition.name || tx.transition ];
-					if (tx.hasOffset) args.push("[hasOffset]");
-					console.log.apply(console, args);
+				this.transforms.items.forEach(function(o) {
+					console.log("\t%s: %s", o.el.id || o.id, o.transition.name || o.transition);
 				}, this);
 			}
 			console.groupEnd();
 			
-			// // this.bundleList.el, this.keywordList.el ,this.bundleList.wrapper, this.keywordList.wrapper
-			// this.transforms.clearOffset(this.bundleList.el, this.keywordList.el, this.keywordList.wrapper);
-			// if (sizeChanged) {
-			// 	this.transforms.clearCapture(this.bundleList.el, this.keywordList.el);
-			// }
-			// this.transforms.clearAllCaptures();
-			
 			this.transforms.validate();
-			
-			// console.group(this.cid + "::renderFrame captureChanged:");
-			// this._debugTx.forEach(function(tx) {
-			// 	tx.clearCapture();
-			// 	tx.capture();
-			// 	if (tx.capturedChanged) {
-			// 		console.log("\t(*) %s: %s\n\t\t<< %s\n\t\t>> %s",
-			// 			tx.el.id || tx.id,
-			// 			tx.transition.name || tx.transition,
-			// 			tx._currCapture.transform,
-			// 			tx._lastCapture.transform);
-			// 	} else {
-			// 		console.log("\t( ) %s: %s\n\t\t%s",
-			// 			tx.el.id || tx.id,
-			// 			tx.transition.name || tx.transition,
-			// 			tx._currCapture.transform);
-			// 	}
-			// }, this);
-			// console.groupEnd();
 		}
-		// model:collapsed
+		
+		// children props
 		// - - - - - - - - - - - - - - - - -
 		if (collapsedChanged) {
-			// this.el.classList.toggle("container-collapsed", collapsed);
-			// this.el.classList.toggle("container-expanded", !collapsed);
 			this.bundleList.collapsed = collapsed;
 			this.keywordList.collapsed = collapsed;
+			this.graph && this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
 		}
 		
-		this.itemViews.forEach(function(view) {
-			if (sizeChanged)
-				view.invalidateSize();
-			if (view.invalidated) {
+		// this.itemViews.forEach(function(view) {
+		// 	if (sizeChanged)
+		// 		view.invalidateSize();
+		// 	if (view.invalidated) {
+		// 		view.skipTransitions = this.skipTransitions;
+		// 		view.renderNow();
+		// 	}
+		// }, this);
+		
+		if (sizeChanged)
+			this.itemViews.forEach(function(view) {
 				view.skipTransitions = this.skipTransitions;
+				view.invalidateSize();
 				view.renderNow();
-			}
 		}, this);
 		
-		// if (sizeChanged) {
-		// 	this.itemViews.forEach(function(view) {
-		// 		view.invalidateSize();
-		// 		if (this.skipTransitions) {
-		// 			view.skipTransitions = this.skipTransitions;
-		// 			view.renderNow();
-		// 		}
-		// 	}, this);
-		// }
-		
-		this.skipTransitions = this._transformsChanged = this._modelChanged = false;
-		this._renderFlags &= ~ContainerView.RENDER_INVALID;
+		this.skipTransitions = this._transformsChanged = false;
 	},
 	
 	/* -------------------------------
 	/* renderTransitions
 	/* ------------------------------- */
 		
-	renderTransitions: function() {
+	renderTransitions: function(flags) {
+		var modelChanged = (flags & View.MODEL_INVALID);
 		// bundle
 		var withBundle = this.model.get("withBundle");
-		var bundleChanged = this._modelChanged && this.model.hasChanged("bundle");
-		var withBundleChanged = this._modelChanged && this.model.hasChanged("withBundle");
+		var bundleChanged = modelChanged && this.model.hasChanged("bundle");
+		var withBundleChanged = modelChanged && this.model.hasChanged("withBundle");
 		// media
 		var withMedia = this.model.get("withMedia");
-		var mediaChanged = this._modelChanged && this.model.hasChanged("media");
-		var withMediaChanged = this._modelChanged && this.model.hasChanged("withMedia");
+		var mediaChanged = modelChanged && this.model.hasChanged("media");
+		var withMediaChanged = modelChanged && this.model.hasChanged("withMedia");
 		// collapsed
 		var collapsed = this.model.get("collapsed");
-		var collapsedChanged = this._modelChanged && this.model.hasChanged("collapsed");
+		var collapsedChanged = modelChanged && this.model.hasChanged("collapsed");
+		
 		
 		// Vertical translation:
 		// bundleList, keywordList
@@ -240,8 +188,10 @@ var NavigationView = ContainerView.extend({
 			bListTf.clearOffset();
 		}
 		/* this.keywordList */
+		// var isDesktopLayout = Globals.BREAKPOINTS["desktop-small"].matches;
 		var kListTf = this.transforms.get(this.keywordList.el);
-		if (withBundleChanged || (collapsedChanged && (bListTf.hasOffset || Globals.BREAKPOINTS["desktop-small"].matches))) {
+		if (withBundleChanged || (collapsedChanged && kListTf.hasOffset) ||
+			(collapsedChanged && Globals.BREAKPOINTS["desktop-small"].matches)) {
 			kListTf.runTransition(tx.BETWEEN);
 		} else if (kListTf.hasOffset) {
 			kListTf.runTransition(tx.NOW);
@@ -249,6 +199,16 @@ var NavigationView = ContainerView.extend({
 		if (kListTf.hasOffset) {
 			kListTf.clearOffset();
 		}
+		// /* this.graph */
+		// var graphTf = this.transforms.get(this.graph.el);
+		// if (withBundleChanged || (collapsedChanged && graphTf.hasOffset)) {
+		// 	graphTf.runTransition(tx.BETWEEN);
+		// } else if (graphTf.hasOffset) {
+		// 	graphTf.runTransition(tx.NOW);
+		// }
+		// if (graphTf.hasOffset) {
+		// 	graphTf.clearOffset();
+		// }
 		
 		// Horizontal translation:
 		// sitename, wrappers (bundleList, keywordList), groups (keywordList)
@@ -259,30 +219,27 @@ var NavigationView = ContainerView.extend({
 			if (collapsedChanged) {
 				if (withBundleChanged) {
 					if (withMediaChanged)
-						kWrapTf.runTransition(withBundle? tx.LAST:tx.FIRST);
+						kWrapTf.runTransition(withBundle? tx.LAST : tx.FIRST);
 				} else {
 					if (withMedia)
-						kWrapTf.runTransition(collapsed? tx.LAST:tx.FIRST);
+						kWrapTf.runTransition(collapsed? tx.LAST : tx.FIRST);
 				}
 			} else {
 				if (!withBundleChanged && withMediaChanged)
-					kWrapTf.runTransition(bundleChanged? tx.BETWEEN:tx.NOW);
+					kWrapTf.runTransition(bundleChanged? tx.BETWEEN : tx.NOW);
 			}
 			if (kWrapTf.hasOffset) {
 				kWrapTf.clearOffset();
 			}
-			
 			/* this.bundleList.wrapper */
 			if (collapsedChanged ^ withBundleChanged) { // either but not both
 				// invert condition if collapsedChanged
 				this.transforms.runTransition(collapsed ^ collapsedChanged? tx.FIRST : tx.LAST, this.bundleList.wrapper);
 			}
-			
 			/* this.hGroupings */
 			if (collapsedChanged) {
 				this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.hGroupings);
 			}
-			
 			/* this.sitename.el */
 			if (withBundleChanged) {
 				this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
@@ -303,17 +260,12 @@ var NavigationView = ContainerView.extend({
 	
 	_onModelChange: function() {
 		if (this.model.hasChanged("collapsed")) {
-			var collapsed = this.model.get("collapsed");
-			// this._collapsed = collapsed;
-			if (collapsed) {
+			if (this.model.get("collapsed")) {
 				this.stopListening(this.keywordList, "view:select:one view:select:none", this._onSelectAnyKeyword);
-				// clear keyword selection when collapsing
-				this._onSelectAnyKeyword(null);
+				this._onSelectAnyKeyword(null); // clear keyword selection when collapsing
 			} else {
 				this.listenTo(this.keywordList, "view:select:one view:select:none", this._onSelectAnyKeyword);
 			}
-			// this.bundleList.collapsed = collapsed;
-			// this.keywordList.collapsed = collapsed;
 		}
 		if (this.model.hasChanged("bundle")) {
 			this.keywordList.refresh();
@@ -322,15 +274,12 @@ var NavigationView = ContainerView.extend({
 			if (this.model.get("withBundle")) {
 				this.touch.on("vpanstart", this._onVPanStart);
 				this.touch.on("panstart", this._onHPanStart);
-				// this.touch.on("panstart", this._beginTransformObserve);
 			} else {
 				this.touch.off("vpanstart", this._onVPanStart);
 				this.touch.off("panstart", this._onHPanStart);
-				// this.touch.off("panstart", this._beginTransformObserve);
 			}
 		}
-		this._modelChanged = true;
-		this.requestRender();
+		this.requestRender(View.MODEL_INVALID);
 	},
 	
 	/* --------------------------- *
@@ -340,61 +289,6 @@ var NavigationView = ContainerView.extend({
 	_onSelectAnyKeyword: function(keyword) {
 		keywords.select(keyword);
 		this.bundleList.refresh();
-	},
-	
-	/* -------------------------------
-	/* Horizontal touch/move (MutationObserver)
-	/* ------------------------------- */
-	
-	_beginTransformObserve: function() {
-		if (!(Globals.BREAKPOINTS["desktop-small"].matches && this.model.get("bundle").get("media").selectedIndex <= 0 && this.model.get("collapsed"))) {
-			return;
-		}
-		var target = document.querySelector(".carousel > .empty-item");
-		if (target === null) {
-			return;
-		}
-		if (!this._transformObserver) {
-			this._transformObserver = new MutationObserver(this._onTransformMutation);
-		}
-		this._transformObserver.observe(target, { attributes: true, attributeFilter: ["style"] });
-		this.touch.on("panend pancancel", this._endTransformObserve);
-		this.transforms.get(this.keywordList.wrapper)
-			.stopTransition()
-			.clearOffset()
-			.clearCapture()
-			.validate();
-	},
-		
-	_endTransformObserve: function() {
-		this._transformObserver.disconnect();
-		this.touch.off("panend pancancel", this._endTransformObserve);
-		this.transforms.get(this.keywordList.wrapper)
-			.clearOffset()
-			.runTransition(tx.NOW)
-			.validate();
-	},
-	
-	_onTransformMutation: function(mutations) {
-		var tView, tMetrics, tCss, dTxObj, pos;
-		
-		// this.keywordList.wrapper.style[prefixedProperty("transform")];
-		// transform = mutations[0].target.style.getPropertyValue(prefixedProperty("transform"));
-		
-		tView = View.findByElement(mutations[0].target);
-		if (tView) {
-			tMetrics = tView.metrics;
-			dTxObj = this.transforms.get(this.keywordList.wrapper);
-			console.log("%s::_onTransformMutation [withMedia: %s] target: (%f\+%f) %f wrapper: (%f) %f", this.cid,
-				this.model.has("media"),
-				tMetrics.translateX, tMetrics.width, tMetrics.translateX + tMetrics.width,
-				dTxObj.capturedX, tMetrics.translateX - dTxObj.capturedX,
-				tMetrics
-			);
-			
-			this.transforms.offset(tMetrics.translateX - dTxObj.capturedX, void 0, this.keywordList.wrapper);
-			this.transforms.validate();
-		}
 	},
 	
 	/* -------------------------------
@@ -424,9 +318,11 @@ var NavigationView = ContainerView.extend({
 		// var HPAN_DRAG = 0.75;
 		var HPAN_DRAG = 720/920;
 		var delta = ev.thresholdDeltaX;
+		// var mediaItems = this.model.get("bundle").get("media");
 		
-		// if (this.model.get("withMedia")) {
-		if (this.model.get("withMedia") ^ this._modelChanged) {
+		if (this.model.get("withMedia")) {
+		// if (this.model.get("withMedia") ^ (this._renderFlags & View.MODEL_INVALID)) {
+		// if (mediaItems.selected !== null) {
 			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT)? HPAN_DRAG : 0.0;
 		// if (bundles.selected.get("media").selectedIndex == -1) {
 		} else {//if (media.selectedIndex == 0) {
@@ -440,19 +336,17 @@ var NavigationView = ContainerView.extend({
 		this.touch.off("panmove", this._onHPanMove);
 		this.touch.off("panend pancancel", this._onHPanFinal);
 		
-		if (!this._modelChanged) {
-			this.transforms.get(this.keywordList.wrapper)
-				.clearOffset()
-				.runTransition(tx.NOW)
-				.validate();
+		/* NOTE: if there is no model change, set tx here. Otherwise just wait for render */ 
+		var kTf = this.transforms.get(this.keywordList.wrapper);
+		if (!(this._renderFlags & View.MODEL_INVALID) && kTf.hasOffset) {
+			if (kTf.offsetX != 0) {
+				kTf.runTransition(tx.NOW);
+			}
+			kTf.clearOffset().validate();
+			// kTf.clearOffset().runTransition(tx.NOW).validate();
 			// this.transforms.clearOffset(this.keywordList.wrapper);
 			// this.transforms.runTransition(tx.NOW, this.keywordList.wrapper);
 			// this.transforms.validate();
-		} else {
-			/* NOTE: if there is a model change, just wait for render */ 
-			// this._onHPanMove(ev);
-			// this._transformsChanged = true;
-			// this.requestRender();
 		}
 	},
 	
@@ -514,7 +408,6 @@ var NavigationView = ContainerView.extend({
 				this._transformsChanged = true;
 				this.requestRender();
 			}
-			// this.invalidateTransforms();
 		});
 	},
 	
@@ -551,28 +444,14 @@ var NavigationView = ContainerView.extend({
 			el: "#bundle-list",
 			collection: bundles,
 			collapsed: false,
-			// filterKey: "bIds", filterBy: keywords.selected,
 			filterFn: function(bundle, index, arr) {
 				return keywords.selected? bundle.get("kIds").indexOf(keywords.selected.id) !== -1 : false;
 			},
 		});
 		controller.listenTo(view, {
-			// "view:removed": controller.stopListening
 			"view:select:one": controller.selectBundle,
 			"view:select:none": controller.deselectBundle,
 		});
-		// this.listenTo(view, {
-		// 	// "view:removed": this.stopListening,
-		// 	"view:select:none": function() {
-		// 		if (bundles.selected && !this.collapsed) {
-		// 			this.collapsed = true;
-		// 			// this.invalidateTransforms();
-		// 		}
-		// 	},
-		// });
-		// this.listenTo(view, "all", function(evName, model) {
-		// 	console.log("%s::[%s] model: %s", view.cid, evName, model? model.cid: model);
-		// });
 		view.wrapper = view.el.parentElement;
 		return view;
 	},
@@ -585,37 +464,97 @@ var NavigationView = ContainerView.extend({
 			el: "#keyword-list",
 			collection: keywords,
 			collapsed: false,
-			// filterKey: "kIds", filterBy: bundles.selected,
 			filterFn: function(item, idx, arr) {
 				return bundles.selected? (bundles.selected.get("kIds").indexOf(item.id) !== -1) : false;
 			},
-			// groupings: {collection: types, key: "tIds"},
 			groupingFn: function(item, idx, arr) {
 				return types.get(item.get("tId"));
 			},
 		});
-		// this.listenTo(view, "all", function(evName, model) {
-		// 	console.log("%s::[%s] model: %s", view.cid, evName, model? model.cid: model);
-		// });
 		this.listenTo(view, "view:select:one view:select:none", this._onSelectAnyKeyword);
 		view.wrapper = view.el.parentElement;
 		return view;
 	},
+	
+	createGraphView: function() {
+		var view = new GraphView({
+			id: "nav-graph",
+			model: new Backbone.Model({ a: bundles, b: keywords })
+		});
+		this.el.appendChild(view.el);
+		return view;
+	},
+	
+	/* -------------------------------
+	/* Horizontal touch/move (MutationObserver)
+	/* ------------------------------- */
+	
+	/*
+	_beginTransformObserve: function() {
+		if (!(Globals.BREAKPOINTS["desktop-small"].matches && this.model.get("bundle").get("media").selectedIndex <= 0 && this.model.get("collapsed"))) {
+			return;
+		}
+		var target = document.querySelector(".carousel > .empty-item");
+		if (target === null) {
+			return;
+		}
+		if (!this._transformObserver) {
+			this._transformObserver = new MutationObserver(this._onTransformMutation);
+		}
+		this._transformObserver.observe(target, { attributes: true, attributeFilter: ["style"] });
+		this.touch.on("panend pancancel", this._endTransformObserve);
+		this.transforms.get(this.keywordList.wrapper)
+			.stopTransition()
+			.clearOffset()
+			.clearCapture()
+			.validate();
+	},
+		
+	_endTransformObserve: function() {
+		this._transformObserver.disconnect();
+		this.touch.off("panend pancancel", this._endTransformObserve);
+		this.transforms.get(this.keywordList.wrapper)
+			.clearOffset()
+			.runTransition(tx.NOW)
+			.validate();
+	},
+	
+	_onTransformMutation: function(mutations) {
+		var tView, tMetrics, tCss, dTxObj, pos;
+		
+		// this.keywordList.wrapper.style[prefixedProperty("transform")];
+		// transform = mutations[0].target.style.getPropertyValue(prefixedProperty("transform"));
+		
+		tView = View.findByElement(mutations[0].target);
+		if (tView) {
+			tMetrics = tView.metrics;
+			dTxObj = this.transforms.get(this.keywordList.wrapper);
+			console.log("%s::_onTransformMutation [withMedia: %s] target: (%f\+%f) %f wrapper: (%f) %f", this.cid,
+				this.model.has("media"),
+				tMetrics.translateX, tMetrics.width, tMetrics.translateX + tMetrics.width,
+				dTxObj.capturedX, tMetrics.translateX - dTxObj.capturedX,
+				tMetrics
+			);
+			
+			this.transforms.offset(tMetrics.translateX - dTxObj.capturedX, void 0, this.keywordList.wrapper);
+			this.transforms.validate();
+		}
+	}, */
 	
 	/* -------------------------------
 	/* getKeywordWrapperTx
 	/* ------------------------------- */
 	// getKeywordWrapperTx: function() {
 	// 	// bundle
-	// 	var bundleChanged = this._modelChanged && this.model.hasChanged("bundle");
-	// 	var withBundleChanged = this._modelChanged && this.model.hasChanged("withBundle");
+	// 	var bundleChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("bundle");
+	// 	var withBundleChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("withBundle");
 	// 	var withBundle = this.model.get("withBundle");
 	// 	// media
-	// 	var mediaChanged = this._modelChanged && this.model.hasChanged("media");
-	// 	var withMediaChanged = this._modelChanged && this.model.hasChanged("withMedia");
+	// 	var mediaChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("media");
+	// 	var withMediaChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("withMedia");
 	// 	var withMedia = this.model.get("withMedia");
 	// 	// collapsed
-	// 	var collapsedChanged = this._modelChanged && this.model.hasChanged("collapsed");
+	// 	var collapsedChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("collapsed");
 	// 	var collapsed = this.model.get("collapsed");
 	// 	
 	// 	// Horizontal translation: sitename, wrappers (bundleList, keywordList), groups (keywordList)

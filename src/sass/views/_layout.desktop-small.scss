@@ -100,6 +100,13 @@
 		transform: move(0, 0);
 	}
 	
+	// nav-graph
+	// - - - - - - - - - - - - - - - - - -
+	#nav-graph {
+		left: $aside_width_large;
+		width: $main_width_large - $aside_width_large;
+	}
+	
 	// -----------------------------------
 	// content
 	// -----------------------------------

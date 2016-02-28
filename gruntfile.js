@@ -1,6 +1,8 @@
 /*global module*/
 module.exports = function (grunt) {
 	"use strict";
+	
+	var _ = require("underscore");
 
 	grunt.config("pkg", grunt.file.readJSON("package.json"));
 	
@@ -37,25 +39,24 @@ module.exports = function (grunt) {
 	/* Main Targets
 	/* -------------------------------- */
 	
+	grunt.registerTask("deps-styles", ["copy:resources", "copy:sources", "compass:fonts"]);
+	grunt.registerTask("deps-js", ["modernizr-build:production"]);
 	
-	grunt.registerTask("build-debug-styles", ["compass:debug", "autoprefixer:debug"]);
-	grunt.registerTask("build-dist-styles", ["compass:dist", "compass:fonts", "autoprefixer:dist"]);
+	grunt.registerTask("debug-styles", ["compass:debug", "autoprefixer:debug"]);
+	grunt.registerTask("debug-vendor", ["browserify:vendor", "exorcise:vendor"]);
+	grunt.registerTask("debug-client", ["browserify:client", "exorcise:client"]);
+	grunt.registerTask("debug", ["debug-vendor", "debug-client", "debug-styles"]);
 	
-	grunt.registerTask("build-debug-vendor", ["browserify:vendor", "exorcise:vendor"]);
-	grunt.registerTask("build-debug-client", ["browserify:client", "exorcise:client"]);
+	grunt.registerTask("dist-styles", ["compass:dist", "compass:fonts", "autoprefixer:dist"]);
+	grunt.registerTask("dist-js",  ["browserify:dist", "uglify:dist"]);
+	grunt.registerTask("dist",  ["dist-js", "dist-styles"]);
 	
-	grunt.registerTask("build-deps", ["modernizr-build:production"]);
-	grunt.registerTask("build-debug", ["build-debug-vendor", "build-debug-client","build-debug-styles"]);
-	grunt.registerTask("build-dist",  ["browserify:dist", "uglify:dist", "build-dist-styles"]);
-	
-	// grunt.registerTask("clean-all", ["clean:build", "compass:clean"]);
-	grunt.registerTask("build", ["build-debug", "build-dist"]);
-	grunt.registerTask("rebuild", ["clean:build", "compass:clean", "build-deps", "build"]);
-	
-	grunt.registerTask("build-watch", ["browserify:watch-client", "browserify:watch-vendor", "watch"]);
-	
+	grunt.registerTask("clean-all", ["clean:js", "clean:css", "compass:clean"]);
+	grunt.registerTask("build", ["debug", "dist"]);
+	grunt.registerTask("rebuild", ["clean-all", "deps-js", "build"]);
 	// Default task
-	grunt.registerTask("default", ["build-watch"]);
+	grunt.registerTask("default", ["browserify:watch-client", "browserify:watch-vendor", "watch"]);
+	// grunt.registerTask("default", ["build-watch"]);
 	
 	/* --------------------------------
 	/* watch
@@ -70,16 +71,12 @@ module.exports = function (grunt) {
 		"reload-config": {
 			// options: { spawn: true },
 			files: ["gruntfile.js", "package.json"],
-			tasks: ["clean-all", 
+			tasks: ["clean-all",
+				"modernizr-build:production", 
 				"compass:fonts", "compass:debug", "autoprefixer:debug", 
-				"modernizr-build:production", "browserify:vendor", "browserify:client"
+				"browserify:vendor", "browserify:client"
 			],
 		},
-		// "build-fonts": {
-		// 	tasks: ["compass:fonts"],
-		// 	files: ["src/sass/fonts.scss", "src/sass/fonts/*.scss",
-		// 		"<%= paths.src.generated %>/sass/fonts/*.scss"],
-		// },
 		"build-styles": {
 			tasks: ["compass:debug", "autoprefixer:debug"],
 			files: ["src/sass/**/*.scss", "src/sass/**/*.json"],
@@ -90,23 +87,14 @@ module.exports = function (grunt) {
 		},
 		"process-vendor": {
 			tasks: ["exorcise:vendor"],
+			// files: ["build/tasks/browserify.vendor/*.js"],
 			files: ["js/<%= paths.filebase.debugVendorJs %>.js"],
 		},
 		"process-client": {
 			tasks: ["exorcise:client"],
+			// files: ["build/tasks/browserify.client/*.js"],
 			files: ["js/<%= paths.filebase.debugClientJs %>.js"],
 		},
-		// "copy-module-resources": {
-		// 	tasks: ["copy:resources", "copy:sources"],
-		// 	files: [
-		// 		"node_modules/@folio/**/*.scss",
-		// 		"node_modules/@folio/**/<%= paths.ext.fonts %>"
-		// 	]
-		// },
-		// "build-styles-svg":{
-		// 	tasks: ["compass:clean", "compass:debug", "autoprefixer:debug"],
-		// 	files: ["images/**/*.svg"]
-		// },
 	});
 
 	/* --------------------------------
@@ -114,11 +102,9 @@ module.exports = function (grunt) {
 	/* -------------------------------- */
 
 	grunt.loadNpmTasks("grunt-contrib-clean");
-	grunt.config("clean.build", {
-		src: [
-			"./js/*",
-			"./css/*"
-		]
+	grunt.config("clean", {
+		js: { src: ["./js/*" ] },
+		css: { src: ["./css/*" ] },
 	});
 
 	/* --------------------------------
@@ -232,6 +218,7 @@ module.exports = function (grunt) {
 	
 	/* browserify:vendor */
 	grunt.config("browserify.vendor", {
+		// dest: "./build/tasks/browserify.vendor/<%= paths.filebase.debugVendorJs %>.js",
 		dest: "./js/<%= paths.filebase.debugVendorJs %>.js",
 		src: [],
 		options: {
@@ -254,7 +241,8 @@ module.exports = function (grunt) {
 			],
 			alias: [
 				// "./node_modules/webcomponents.js/MutationObserver.js:mutationobserver-polyfill",
-				"./build/generated/js/modernizr-dist.js:Modernizr",
+				"./build/generated/js/modernizr-dist.js:modernizr-dist",
+				"./src/js/shims/modernizr-shim.js:Modernizr",
 				"./src/js/shims/fullscreen.js:fullscreen-polyfill",
 				"./src/js/shims/matchesSelector.js:matches-polyfill",
 				"./src/js/shims/requestAnimationFrame.js:raf-polyfill",
@@ -262,42 +250,40 @@ module.exports = function (grunt) {
 		},
 	});
 	
-	// var remapify = require("remapify");
-	
 	/* browserify:client */
 	grunt.config("browserify.client", {
 		dest: "./js/<%= paths.filebase.debugClientJs %>.js",
-		src: [
-			"./src/js/app/App.js",
-		],
+		// dest: "./build/tasks/browserify.client/<%= paths.filebase.debugClientJs %>.js",
+		src: [ "./src/js/app/App.js" ],
 		options: {
+			browserifyOptions: {
+				debug: true,
+				fullPaths: false,
+				insertGlobalVars: {
+					DEBUG: function(file, dir) {
+						return true;
+					}
+				}
+			},
 			transform: [
 				["hbsfy", { extensions: ["hbs"] }],
 				// ["node-underscorify", { extensions: ["tpl"] }],
 			],
 			plugin: [
-				["remapify", [
-					{
-						src: "./**/*.js",
-						expose: "app",
-						cwd: "./src/js/app",
-					},
-					{
-						// src: "**/*.js",
-						src: "./**/*.js",
-						expose: "utils",
-						cwd: "./src/js/utils",
-					},
-				]]
+				["remapify",
+					[
+						{
+							expose: "app",
+							cwd: "./src/js/app",
+							src: "./**/*.js",
+						},{
+							expose: "utils",
+							cwd: "./src/js/utils",
+							src: "./**/*.js",
+						}
+					]
+				]
 			],
-			// preBundleCB: function (b) {
-			// 	b.plugin(remapify, [{
-			// 		src: "**/*.js",
-			// 		expose: "",
-			// 		cwd: "./src/js",
-			// 		// cwd: __dirname + "./src/js",
-			// 	}]);
-			// }
 		}
 	});
 	/* NOTE: Add requires and aliased requires from vendor as externals in client */
@@ -312,13 +298,6 @@ module.exports = function (grunt) {
 		}).concat(grunt.config("browserify.vendor.options.require"));
 		
 	}()));
-	// grunt.log.verbose.subhead("Vendor Externals");
-	// grunt.log.verbose.writeln(grunt.config("browserify.client.options.external").join(", "));
-	
-	/* browserify:watchable */
-	// Duplicate browserify.client task for watch
-	// grunt.config("browserify.watchable", grunt.config("browserify.client"));
-	// grunt.config("browserify.watchable.options.watch", true);
 	
 	grunt.config("browserify.watch-vendor", grunt.config("browserify.vendor"));
 	grunt.config("browserify.watch-vendor.options.watch", true);
@@ -336,49 +315,17 @@ module.exports = function (grunt) {
 		vendor: {
 			files: {
 				"./js/<%= paths.filebase.debugVendorJs %>.js.map": ["./js/<%= paths.filebase.debugVendorJs %>.js"]
+				// "./js/<%= paths.filebase.debugVendorJs %>.js.map": [ grunt.config("browserify.vendor.dest") ]
 			}
 		},
 		client: {
 			files: {
 				"./js/<%= paths.filebase.debugClientJs %>.js.map": ["./js/<%= paths.filebase.debugClientJs %>.js"]
+				// "./js/<%= paths.filebase.debugClientJs %>.js.map": [ grunt.config("browserify.client.dest") ]
 			}
 		},
 	});
 
-	/* Uglify */
-	grunt.loadNpmTasks("grunt-contrib-uglify");
-	// grunt.config("uglify", {
-	// 	options: {},
-	// 	vendor: {
-	// 		options: {
-	// 			mangle: false,
-	// 			beautify: true,
-	// 			sourceMap: true,
-	// 			sourceMapIn: "./js/<%= paths.filebase.debugVendorJs %>.js.map",
-	// 			sourceMapIncludeSources: false,
-	// 		},
-	// 		files: {
-	// 			"./js/<%= paths.filebase.debugVendorJs %>.js": ["./js/<%= paths.filebase.debugVendorJs %>.js"]
-	// 		}
-	// 	},
-	// 	client: {
-	// 		options: {
-	// 			mangle: false,
-	// 			beautify: true,
-	// 			sourceMap: true,
-	// 			sourceMapIn: "./js/<%= paths.filebase.debugClientJs %>.js.map",
-	// 			sourceMapIncludeSources: false,
-	// 			compress: {
-	// 				global_defs: {
-	// 					DEBUG: true
-	// 				}
-	// 			}
-	// 		},
-	// 		files: {
-	// 			"./js/<%= paths.filebase.debugClientJs %>.js": ["./js/<%= paths.filebase.debugClientJs %>.js"]
-	// 		}
-	// 	},
-	// });
 
 	/* --------------------------------
 	/* dist
@@ -400,37 +347,55 @@ module.exports = function (grunt) {
 	});
 	
 	grunt.config("browserify.dist", {
-		src: [
-			"./src/js/app/App.js"
-		],
+		src: [ "./src/js/app/App.js" ],
 		dest: "./js/<%= paths.filebase.distJs %>.js",
-		options: {
-			browserifyOptions: {
-				fullPaths: false,
-				debug: false
+		// dest: "./build/tasks/browserify.dist/<%= paths.filebase.distJs %>.js",
+		options: _.defaults({
+				external: [],
+				browserifyOptions: {
+					debug: false,
+					fullPaths: false,
+					// insertGlobalVars: {
+					// 	DEBUG: function(file, dir) {
+					// 		return false;
+					// 	}
+					// }
+				},
 			},
-			exclude: grunt.config("browserify.vendor.options.exclude"),
-			alias: grunt.config("browserify.vendor.options.alias"),
-			require: grunt.config("browserify.vendor.options.require"),
-			transform: grunt.config("browserify.client.options.transform"),
-			plugin: grunt.config("browserify.client.options.plugin"),
-		}
+			grunt.config("browserify.vendor.options"), 
+			grunt.config("browserify.client.options")
+		),
+		// options: {
+		// 	browserifyOptions: {
+		// 		fullPaths: false,
+		// 		debug: false
+		// 	},
+		// 	exclude: grunt.config("browserify.vendor.options.exclude"),
+		// 	require: grunt.config("browserify.vendor.options.require"),
+		// 	alias: grunt.config("browserify.vendor.options.alias"),
+		// 	
+		// 	transform: grunt.config("browserify.client.options.transform"),
+		// 	plugin: grunt.config("browserify.client.options.plugin"),
+		// },
 	});
 
+	/* Uglify */
+	grunt.loadNpmTasks("grunt-contrib-uglify");
 	grunt.config("uglify.dist", {
 		options: {
 			mangle: true,
 			sourceMap: false,
 			compress: {
+				dead_code: true,
+				drop_console: true,
 				global_defs: {
 					"DEBUG": false
 				},
-				dead_code: true,
-				drop_console: true
 			}
 		},
 		files: {
 			"js/<%= paths.filebase.distJs %>.js": ["./js/<%= paths.filebase.distJs %>.js"]
+			// "js/<%= paths.filebase.distJs %>.js": [grunt.config("browserify.dist.dest")]
 		}
 	});
 	

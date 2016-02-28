@@ -15,7 +15,7 @@ module.exports = function(bootstrap) {
 	var keywords = bootstrap["keywords-all"];
 	var bundles = bootstrap["bundles-all"];
 	var media = bootstrap["media-all"];
-
+	
 	// Attach media to their bundles
 	var mediaByBundle = _.groupBy(media, "bId");
 	

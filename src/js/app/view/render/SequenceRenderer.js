@@ -22,8 +22,8 @@ var SelectableCollection = require("app/model/SelectableCollection");
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
 
-/** @type {module:app/view/component/progress/ProgressMeter} */
-var ProgressMeter = require("app/view/component/progress/ProgressMeter");
+/** @type {module:app/view/component/ProgressMeter} */
+var ProgressMeter = require("app/view/component/ProgressMeter");
 
 /** @type {module:utils/Timer} */
 var Timer = require("utils/Timer");
@@ -474,8 +474,9 @@ var SequenceRenderer = PlayableRenderer.extend({
 	
 	_updateItemProgress: function(progress, index) {
 		this._sourceProgressByIdx[index] = progress;
-		if (this.progressMeter)
+		if (this.progressMeter) {
 			this.progressMeter.valueTo(this._sourceProgressByIdx, 300, "available");
+		}
 	},
 	
 	/* ---------------------------
@@ -497,7 +498,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 	_playMedia: function() {
 		if (!this._paused) return;
 		this._paused = false;
-		// if (this.timer.getStatus() === "paused") {
 		if (this.timer.status == Timer.PAUSED) {
 			this.timer.start(); // resume, actually
 		} else {
@@ -509,7 +509,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 	_pauseMedia: function() {
 		if (this._paused) return;
 		this._paused = true;
-		// if (this.timer.getStatus() === "started") {
 		if (this.timer.status == Timer.STARTED) {
 			this.timer.pause();
 		}
@@ -543,7 +542,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// this.progressMeter.valueTo(timerVal);
 		// this.progressMeter.valueTo(meterVal);
 		
-		this.progressMeter.valueTo(this.progressMeter.getRenderedValue("amount"));
+		this.progressMeter.valueTo(this.progressMeter.getRenderedValue("amount"), 0, "amount");
 	},
 	
 	_onTimerEnd: function() {
@@ -558,7 +557,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		
 		var showNextView = function() {
 			context.requestAnimationFrame(function() {
-				// context.content.classList.remove("waiting");
+				context.content.classList.remove("waiting");
 				if (!context._paused) {
 				// if (context.playbackRequested) {
 					context.content.classList.toggle("playback-error", nextSource.has("error"));
@@ -576,7 +575,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 			this.content.classList.add("waiting");
 			this.listenTo(nextSource, "change:prefetched change:error", function() {
 				this.stopListening(nextSource, "change:prefetched change:error");
-				context.content.classList.remove("waiting");
+				// context.content.classList.remove("waiting");
 				// nextView = context._getItemRenderer(nextSource).el;
 				_whenImageLoads(nextView.el).then(showNextView, showNextView);
 			});

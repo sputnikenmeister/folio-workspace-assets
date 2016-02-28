@@ -86,15 +86,15 @@ module.exports = View.extend({
 		elt.innerHTML = this.template(item.toJSON());
 		return (elt.childElementCount == 1)? elt.children[0]: elt;
 	},
-
+	
 	/* --------------------------- *
 	/* render
 	/* --------------------------- */
-
-	renderFrame: function () {
+	
+	renderFrame: function(tstamp, flags) {
 		this.render();
 	},
-
+	
 	render: function () {
 		if (this.skipTransitions) {
 			// remove

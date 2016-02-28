@@ -63,6 +63,8 @@ module.exports = BaseItem.extend({
 		// sources: function() { return new SourceCollection(); },
 	},
 	
+	getters: ["name", "bundle", "source", "sources"],
+	
 	mutators: {
 		// domid: function() {
 		// 	return "m" + this.id;

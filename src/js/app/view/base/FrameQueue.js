@@ -211,7 +211,7 @@ if (DEBUG) {
 	/** @type {module:underscore} */
 	var _ = require("underscore");
 	
-	console.info("Using app/view/base/FrameQueue");
+	// console.info("Using app/view/base/FrameQueue");
 	
 // 	// // log frame exec time
 // 	// var _now = window.performance? 

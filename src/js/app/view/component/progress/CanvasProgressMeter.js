@@ -44,7 +44,6 @@ var ARC_DEFAULTS = {
 	// "wait": 			{ lineWidth: 3.0, radiusOffset: 0, lineDash: [1.0, 3.0] },
 	// "wait": 			{ lineWidth: 0.8, radiusOffset: -3, lineDash: [2, 4] },
 };
-var SIZE_OR_LAYOUT = ModelProgressMeter.SIZE_INVALID | ModelProgressMeter.LAYOUT_INVALID;
 
 /**
 * @constructor
@@ -266,7 +265,7 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	},*/
 	
 	/** @override */
-	renderFrame: function(tstamp) {
+	renderFrame: function(tstamp, flags) {
 		// if (!this.attached) {
 		// 	if (this._canvasChanged) {
 		// 		this._canvasChanged = false;
@@ -283,10 +282,9 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		// 	this._valuesChanged = true;
 		// }
 		
-		if (!this.attached) return;
+		if (!this.attached) return flags;
 		
-		if (this._renderFlags & SIZE_OR_LAYOUT) {
-			this._renderFlags &= ~SIZE_OR_LAYOUT;
+		if (flags & ModelProgressMeter.RENDER_INVALID) {
 			this._updateCanvas();
 			this._valuesChanged = true;
 		}

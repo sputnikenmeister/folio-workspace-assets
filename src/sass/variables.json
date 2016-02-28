@@ -6,11 +6,10 @@
 	"transitions": {
 		"min_delay_ms": "25",
 		"delay_interval_ms": "125",
-		"duration_ms": "350",
+		"duration_ms": "450",
 		"ease": "ease"
 	},
 	"breakpoints": {
-		"_unquoted": "only screen and (min-device-width : 320px) and (max-device-width : 480px)",
 		"smartphone": "only screen and (min-device-width : 320px) and (max-device-width : 480px)",
 		"smartphone-landscape": "only screen and (min-width : 321px)",
 		"smartphone-portrait": "only screen and (max-width : 320px)",

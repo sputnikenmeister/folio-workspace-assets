@@ -41,22 +41,9 @@ var GroupingListView = FilterableListView.extend({
 			this._groupingFn = options.groupingFn;
 			// this._groupItems = _.uniq(this.collection.map(this._groupingFn, this));
 			this._refreshGroups();
-			this._groupItems.forEach(this.assignGroupingView, this);
+			this._groupItems.forEach(this.createGroupingView, this);
 		}
 	},
-	
-	// renderLayout: function () {
-	// 	return FilterableListView.prototype.renderLayout.apply(this, arguments);
-	// },
-	
-	// _applyRender: function() {
-	// 	console.trace();
-	// 	return FilterableListView.prototype._applyRender.call(this, arguments);
-	// },
-	
-	// renderNow: function() {
-	// 	return FilterableListView.prototype.renderNow.call(this, arguments);
-	// },
 	
 	_refreshGroups: function() {
 		var group, groupIdx, groupSet = [], groupsByItemCid = {};
@@ -90,7 +77,7 @@ var GroupingListView = FilterableListView.extend({
 	},
 	
 	/** @private Create children views */
-	assignGroupingView: function (item) {
+	createGroupingView: function (item) {
 		var view = new this.groupingRenderer({
 			model: item,
 			el: this.el.querySelector(".list-group[data-id=\"" + item.id + "\"]")

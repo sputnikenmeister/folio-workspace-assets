@@ -75,6 +75,17 @@
 	transform: move(0, 0);
 }
 
+// nav-graph
+// - - - - - - - - - - - - - - - - - -
+#nav-graph {
+	@extend %nav_list;
+	left: $aside_width;
+	width: $main_width - $aside_width;
+}
+.container-collapsed #nav-graph {
+	opacity: 0;
+}
+
 // -----------------------------------
 // content
 // -----------------------------------

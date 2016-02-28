@@ -158,45 +158,8 @@ var ModelProgressMeterProto = {
 	/* render
 	/* --------------------------- */
 	
-	// /** @override */
-	// render: function () {
-	// 	// if (!this._rendering && this._valuesChanged) {
-	// 	if (this._valuesChanged) {
-	// 		this._valuesChanged = false;
-	// 	 	if (this._nextRafId === -1) {
-	// 			this._nextRafId = this.requestAnimationFrame(this.renderFrame);
-	// 		}
-	// 	}
-	// 	return this;
-	// },
-	// 
-	// /** @override */
-	// renderFrame: function(tstamp) {
-	// 	if (this._rendering) throw new Error("recursive call to renderFrame");
-	// 	this._rendering = true;
-	// 	
-	// 	var changedKeys = this._renderKeys;
-	// 	this._tstamp = tstamp;
-	// 	this._renderKeys = changedKeys.filter(this._renderValue, this);
-	// 	// this._renderKeys = changedKeys.filter(function(key) {
-	// 	// 	var dataObj = this._valueData[key];
-	// 	// 	if (Array.isArray(dataObj)) {
-	// 	// 		return dataObj.reduce(function(continueNext, o, index, arr) {
-	// 	// 			return this.interpolateNumber(tstamp, o) || continueNext;
-	// 	// 		}.bind(this), false);
-	// 	// 	} else {
-	// 	// 		return this.interpolateNumber(tstamp, dataObj);
-	// 	// 	}
-	// 	// }, this);
-	// 	this.redraw(changedKeys);
-	// 	this._nextRafId = this._renderKeys.length?
-	// 		this.requestAnimationFrame(this.renderFrame) : -1;
-	// 	
-	// 	this._rendering = false;
-	// },
-	
 	/** @override */
-	renderFrame: function(tstamp) {
+	renderFrame: function(tstamp, flags) {
 		if (this._valuesChanged) {
 			this._valuesChanged = false;
 		

@@ -46,7 +46,8 @@ var MAX_SELECT_THRESHOLD = 50;
 
 /** @const */
 var CHILDREN_INVALID = View.CHILDREN_INVALID,
-	CLASSES_INVALID = View.CLASSES_INVALID,
+	STYLES_INVALID = View.STYLES_INVALID,
+	MODEL_INVALID = View.MODEL_INVALID,
 	SIZE_INVALID = View.SIZE_INVALID,
 	LAYOUT_INVALID = View.LAYOUT_INVALID;
 
@@ -328,72 +329,29 @@ var CarouselProto = {
 	// 	return this;
 	// },
 	
-	_renderFlags: 0,
-	
-	_attachedMask: SIZE_INVALID | LAYOUT_INVALID,
-	
 	/** @override */
-	renderFrame: function () {
-		this._logFlags("renderFrame");
-		
-		// if (this._renderFlags & CLASSES_INVALID) {
-		// 	this._renderFlags &= ~CLASSES_INVALID;
+	renderFrame: function (tstamp, flags) {
+		// if (flags & STYLES_INVALID) {
 		// 	this._renderEnabled();
 		// 	// this.el.classList.toggle("disabled", !this.enabled);
 		// }
-		if (this._renderFlags & CHILDREN_INVALID) {
-			this._renderFlags &= ~CHILDREN_INVALID;
+		if (flags & CHILDREN_INVALID) {
+			flags &= ~CHILDREN_INVALID;
 			this._createChildren();
 		}
-		
-		if (!this.attached && (this._renderFlags & this._attachedMask)) {
-			var flags = this._renderFlags;
-			this._renderFlags &= ~this._attachedMask;
+		if (!this.attached && (flags & (SIZE_INVALID | LAYOUT_INVALID))) {
 			this.listenToOnce(this, "view:attached", function() {
-				this._renderFlags = flags;
-				this.requestRender();
+				this.invalidateSize();
 			});
 		} else {
-			if (this._renderFlags & SIZE_INVALID) {
-				this._renderFlags &= ~SIZE_INVALID;
+			if (flags & SIZE_INVALID) {
 				this._measure();
 			}
-			if (this._renderFlags & LAYOUT_INVALID) {
-				this._renderFlags &= ~LAYOUT_INVALID;
+			if (flags & LAYOUT_INVALID) {
 				this._scrollBy(this._delta, this.skipTransitions);
 			}
 		}
 	},
-	
-	_logFlags: function(callerName) {
-		var flags = [];
-		
-		if (this._renderFlags & CHILDREN_INVALID) flags.push("CHILDREN");
-		if (this._renderFlags & CLASSES_INVALID) flags.push("CLASSES");
-		if (this._renderFlags & SIZE_INVALID) flags.push("SIZE");
-		if (this._renderFlags & LAYOUT_INVALID) flags.push("LAYOUT");
-		
-		console.log("%s::%s delta:%s attch:%s flags:[%s]", this.cid, callerName || "_logFlags",
-			this._delta, this.attached, flags.join(", "));
-	},
-	
-	/* Render: now   ------------- */
-	
-	invalidateChildren: function() {
-		// this._createChildren();
-		this._renderFlags |= CHILDREN_INVALID;
-		this.requestRender();
-	},
-	
-	// invalidateSize: function() {
-	// 	this._renderFlags |= (SIZE_INVALID | LAYOUT_INVALID);
-	// 	this.requestRender();
-	// },
-	// 
-	// invalidateLayout: function() {
-	// 	this._renderFlags |= LAYOUT_INVALID;
-	// 	this.requestRender();
-	// },
 	
 	/* --------------------------- *
 	/* enabled
@@ -414,7 +372,7 @@ var CarouselProto = {
 			// toggle events immediately
 			this._toggleTouchEvents(enabled);
 			// dom manipulation on render (_renderEnabled)
-			// this._renderFlags |= CLASSES_INVALID;
+			// this._renderFlags |= STYLES_INVALID;
 			// this.requestRender();
 			
 			this.el.classList.toggle("disabled", !this.enabled);

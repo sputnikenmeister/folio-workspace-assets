@@ -3,45 +3,61 @@
 /*/
 "use strict";
 
-
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-// if (DEBUG) {
-if (/Firefox/.test(window.navigator.userAgent)) {
-	console.prefix = "# ";
-	var shift = [].shift;
-	var logWrapFn = function() {
-		if (typeof arguments[1] == "string") arguments[1] = console.prefix + arguments[1];
-		return shift.apply(arguments).apply(console, arguments);
-	};
-	console.group = _.wrap(console.group, logWrapFn);
-	console.log = _.wrap(console.log, logWrapFn);
-	console.info = _.wrap(console.info, logWrapFn);
-	console.warn = _.wrap(console.warn, logWrapFn);
-	console.error = _.wrap(console.error, logWrapFn);
+if (DEBUG) {
+	if (/Firefox/.test(window.navigator.userAgent)) {
+		console.prefix = "# ";
+		var shift = [].shift;
+		var logWrapFn = function() {
+			if (typeof arguments[1] == "string") arguments[1] = console.prefix + arguments[1];
+			return shift.apply(arguments).apply(console, arguments);
+		};
+		console.group = _.wrap(console.group, logWrapFn);
+		console.log = _.wrap(console.log, logWrapFn);
+		console.info = _.wrap(console.info, logWrapFn);
+		console.warn = _.wrap(console.warn, logWrapFn);
+		console.error = _.wrap(console.error, logWrapFn);
+	}
+	// handle error events on some platforms and production
+	if (/iPad|iPhone/.test(window.navigator.userAgent)) {
+		window.addEventListener("error", function() {
+			var args = Array.prototype.slice.apply(arguments),
+				el = document.createElement("div"),
+				html = "";
+			_.extend(el.style, {
+				fontfamily: "monospace",
+				display: "block",
+				position: "absolute",
+				zIndex: "999",
+				backgroundColor: "white",
+				color: "black",
+				width: "calc(100% - 3em)",
+				bottom: "0",
+				margin: "1em 1.5em",
+				padding: "1em 1.5em",
+				outline: "0.5em solid red",
+				outlineOffset: "0.5em",
+				boxSizing: "border-box",
+				overflow: "hidden",
+			});
+			html +=  "<pre><b>location:<b> " + window.location + "</pre>";
+			html += "<pre><b>event:<b> " + JSON.stringify(args.shift(), null, " ") + "</pre>";
+			if (args.length) html += "<pre><b>rest:<b> " + JSON.stringify(args, null, " ") + "</pre>";
+			el.innerHTML = html;
+			document.body.appendChild(el);
+		});
+	} else { 
+		window.addEventListener("error", function(ev) {
+			console.error("Uncaught Error", ev);
+		});
+	}
 }
-// }
 
-console.log("App first statement");
+console.log("App first statement (DEBUG: %s)", DEBUG);
 
 require("Modernizr");
-Modernizr._config.classPrefix = "has-";
-Modernizr._config.enableClasses = false;
-Modernizr.addTest("weakmap", function () { 
-	return window.WeakMap !== void 0; 
-});
-/* jshint -W117 */
-Modernizr.addTest("strictmode", function() {
-	try { undeclaredVar = 1; }
-	catch (e) { return true; }
-	return false;
-});
-/* jshint +W117 */
-
-// Modernizr.promises || require("es6-promise").polyfill();
-// Modernizr.classlist || require("classlist-polyfill");
-// Modernizr.raf || require("raf-polyfill");
 
 require("es6-promise").polyfill();
 require("classlist-polyfill");
@@ -56,48 +72,13 @@ require("backbone.babysitter");
 require("Backbone.Mutators");
 require("hammerjs");
 
-// handle error events on some platforms and production
-if (/iPad|iPhone/.test(window.navigator.userAgent)) {
-	window.addEventListener("error", function() {
-		var args = Array.prototype.slice.apply(arguments),
-			el = document.createElement("div"),
-			html = "";
-		_.extend(el.style, {
-			fontfamily: "monospace",
-			display: "block",
-			position: "absolute",
-			zIndex: "999",
-			backgroundColor: "white",
-			color: "black",
-			width: "calc(100% - 3em)",
-			bottom: "0",
-			margin: "1em 1.5em",
-			padding: "1em 1.5em",
-			outline: "0.5em solid red",
-			outlineOffset: "0.5em",
-			boxSizing: "border-box",
-			overflow: "hidden",
-		});
-		html +=  "<pre><b>location:<b> " + window.location + "</pre>";
-		html += "<pre><b>event: <b> " + JSON.stringify(args.shift(), null, " ") + "</pre>";
-		html += "<pre><b>rest: <b> " + JSON.stringify(args, null, " ") + "</pre>";
-		el.innerHTML = html;
-		document.body.appendChild(el);
-		
-		// window.alert(ev.type + ": " + JSON.stringify(ev, null, " "));
-	});
-// } else if (!window.DEBUG) { 
-} else { 
-	window.addEventListener("error", function(ev) {
-		console.error("Uncaught Error", ev);
-	});
-}
+// document.addEventListener('DOMContentLoaded', function() {
+// });
 
 window.addEventListener("load", function(ev) {
-// document.addEventListener('DOMContentLoaded', function() {
 	try {
 		// process bootstrap data, let errors go up the stack
-		require("app/model/bootstrap")(window.bootstrap);
+		require("app/model/helper/bootstrap")(window.bootstrap);
 	// } catch (err) {
 	// 	// document.body.innerHTML = "<h1>Oops... </h1>";
 	// 	// document.documentElement.classList.remove("app-initial");
@@ -134,19 +115,19 @@ window.addEventListener("load", function(ev) {
 			console.log("WebFont::active"); 
 			AppView.getInstance();
 		},
+		fontactive: function(familyName, variantFvd) {
+			console.log("WebFont::fontactive '%s' (%s)", familyName, variantFvd);
+		},
 		inactive: function() {
 			console.log("WebFont::inactive");
 			AppView.getInstance();
 		},
-		// loading: function() {
-		// 	console.log("WebFont::loading");
-		// },
-		fontactive: function(familyName, variantFvd) {
-			console.log("WebFont::fontactive '%s' (%s)", familyName, variantFvd);
-		},
 		fontinactive: function(familyName, variantFvd) {
 			console.log("WebFont::fontinactive '%s' (%s)", familyName, variantFvd);
 		},
+		// loading: function() {
+		// 	console.log("WebFont::loading");
+		// },
 		// fontloading: function(familyName, variantDesc) {
 		// 	console.log("WebFont::fontloading", familyName, JSON.stringify(variantDesc, null, " "));
 		// },

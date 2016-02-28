@@ -125,7 +125,7 @@ var AbstractProgressMeterProto = {
 	/* private
 	/* --------------------------- */
 	
-	renderFrame: function(tstamp) {
+	renderFrame: function(tstamp, flags) {
 		if (this._startTime < 0) {
 			this._startTime = tstamp;
 		}

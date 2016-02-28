@@ -3,21 +3,22 @@
 * @requires module:backbone
 */
 
-/** @type {module:backbone} */
-var Backbone = require("backbone");
-/** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
-
+// /** @type {module:backbone} */
+// var Backbone = require("backbone");
+// /** @type {module:app/control/Globals} */
+// var Globals = require("app/control/Globals");
 /** @type {module:app/model/item/SourceItem} */
 var BaseItem = require("app/model/BaseItem");
 
+/** @type {String} */
 var noCacheSuffix = "?" + Date.now();
 
 /**
  * @constructor
  * @type {module:app/model/item/SourceItem}
  */
-module.exports = Backbone.Model.extend({
+// module.exports = Backbone.Model.extend({
+module.exports = BaseItem.extend({
 	
 	/** @type {Object} */
 	defaults: {
@@ -26,6 +27,8 @@ module.exports = Backbone.Model.extend({
 		w: null,
 		h: null,
 	},
+	
+	getters: [ "src", "original" ],
 	
 	mutators: {
 		// domid: function() {

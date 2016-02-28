@@ -7,6 +7,11 @@ var _ = require("underscore");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
+/** @type {module:utils/TransformHelper} */
+var TransformHelper = require("utils/TransformHelper");
+/** @type {module:app/view/base/TouchManager} */
+var TouchManager = require("app/view/base/TouchManager");
+
 /** @type {module:app/control/Controller} */
 var controller = require("app/control/Controller");
 /** @type {module:app/model/collection/BundleCollection} */
@@ -14,8 +19,6 @@ var bundles = require("app/model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
-/** @type {module:app/view/base/ContainerView} */
-var ContainerView = require("app/view/base/ContainerView");
 /** @type {module:app/view/component/CollectionStack} */
 var CollectionStack = require("app/view/component/CollectionStack");
 /** @type {module:app/view/component/CollectionStack} */
@@ -32,8 +35,8 @@ var ImageRenderer = require("app/view/render/ImageRenderer");
 var VideoRenderer = require("app/view/render/VideoRenderer");
 /** @type {module:app/view/render/SequenceRenderer} */
 var SequenceRenderer = require("app/view/render/SequenceRenderer");
-/** @type {module:app/view/component/progress/ProgressMeter} */
-var ProgressMeter = require("app/view/component/progress/ProgressMeter");
+// /** @type {module:app/view/component/ProgressMeter} */
+// var ProgressMeter = require("app/view/component/ProgressMeter");
 
 /** @type {Function} */
 var bundleDescTemplate = require("./template/CollectionStack.Bundle.hbs");
@@ -50,7 +53,7 @@ var tx = Globals.transitions;
  * @constructor
  * @type {module:app/view/ContentView}
  */
-var ContentView = ContainerView.extend({
+var ContentView = View.extend({
 	
 	/** @override */
 	cidPrefix: "contentView",
@@ -67,9 +70,10 @@ var ContentView = ContainerView.extend({
 	
 	/** @override */
 	initialize: function (options) {
-		ContainerView.prototype.initialize.apply(this, arguments);
-		
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
+		
+		this.transforms = new TransformHelper();
+		this.touch = TouchManager.getInstance();
 		
 		this.listenTo(this.model, "change", this._onModelChange);
 		
@@ -87,30 +91,25 @@ var ContentView = ContainerView.extend({
 	/* Render
 	/* --------------------------- */
 	
-	renderFrame: function(tstamp) {
-		// flags
-		var childrenChanged = this._modelChanged && this.model.hasChanged("bundle");
-		var collapsedChanged = this._modelChanged && this.model.hasChanged("collapsed");
-		var sizeChanged = !!(this._renderFlags & ContainerView.RENDER_INVALID);
-		var transformsChanged = this._modelChanged || this._transformsChanged || collapsedChanged || this.skipTransitions || sizeChanged;
-		
+	renderFrame: function(tstamp, flags) {
 		// values
-		var collapsedValue = this.model.get("collapsed");
+		var collapsed = this.model.get("collapsed");
+		var collapsedChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("collapsed");
+		var childrenChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("bundle");
+		
+		// flags
+		var sizeChanged = !!(flags & View.SIZE_INVALID);
+		var transformsChanged = !!(flags & (View.MODEL_INVALID | View.SIZE_INVALID | View.LAYOUT_INVALID));
+		transformsChanged = transformsChanged || this._transformsChanged || this.skipTransitions;
 		
 		// debug
-		console.log("%s::renderFrame model:%s tx:%s skip:%s size:%s", this.cid,
-			this._modelChanged,
-			this._transformsChanged,
-			this.skipTransitions,
-			sizeChanged
-		);
-		if (this._modelChanged) {
-			console.group(this.cid + "::renderFrame model changed:");
-			Object.keys(this.model.changed).forEach(function(key) {
-				console.log("\t%s: %s -> %s", key, this.model._previousAttributes[key], this.model.changed[key]);
-			}, this);
-			console.groupEnd();
-		}
+		// if (flags & View.MODEL_INVALID) {
+		// 	console.group(this.cid + "::renderFrame model changed:");
+		// 	Object.keys(this.model.changed).forEach(function(key) {
+		// 		console.log("\t%s: %s -> %s", key, this.model._previousAttributes[key], this.model.changed[key]);
+		// 	}, this);
+		// 	console.groupEnd();
+		// }
 		
 		// model:children
 		// - - - - - - - - - - - - - - - - -
@@ -126,8 +125,8 @@ var ContentView = ContainerView.extend({
 		// model:collapsed
 		// - - - - - - - - - - - - - - - - -
 		if (collapsedChanged) {
-			this.el.classList.toggle("container-collapsed", collapsedValue);
-			this.el.classList.toggle("container-expanded", !collapsedValue);
+			this.el.classList.toggle("container-collapsed", collapsed);
+			this.el.classList.toggle("container-expanded", !collapsed);
 		}
 		
 		// size
@@ -146,7 +145,7 @@ var ContentView = ContainerView.extend({
 				if (!childrenChanged) {
 					// this.transforms.clearAllOffsets();
 					if (collapsedChanged) {
-						this._setChildrenEnabled(collapsedValue);
+						this._setChildrenEnabled(collapsed);
 					}
 				}
 			} else {
@@ -155,7 +154,7 @@ var ContentView = ContainerView.extend({
 						var afterTransitionsFn;
 						this.el.classList.add("container-changed");
 						// this.transforms.clearAllOffsets();
-						if (collapsedValue) {
+						if (collapsed) {
 							// container-collapsed, enable last
 							afterTransitionsFn = function() {
 								this._setChildrenEnabled(true);
@@ -175,8 +174,8 @@ var ContentView = ContainerView.extend({
 					} else {
 						this.transforms.items.forEach(function(o) {
 							if (o.hasOffset) {
-								// o.clearOffset();
 								o.runTransition(tx.NOW);
+								// o.clearOffset();
 							}
 						});
 						// this.transforms.clearAllOffsets();
@@ -184,21 +183,18 @@ var ContentView = ContainerView.extend({
 					}
 				}
 			}
-			// DEBUG
-			// console.table(this.transforms.items, ["id", "_hasOffset", "_transitionValue"]);
-			console.group(this.cid + "::renderFrame transitions:");
-			if (this.skipTransitions) {
-				console.log("[skipping]");
-			} else {
-				this.transforms.items.forEach(function(o) {
-					var args = [ "\t%s: %s", o.el.id || o.id, o.transition.name || o.transition ];
-					if (o.hasOffset) {
-						args.push("[hasOffset]", o.offsetX, o.offsetY);
-					} 
-					console.log.apply(console, args);
-				}, this);
-			}
-			console.groupEnd();
+			// debug
+			// console.group(this.cid + "::renderFrame transitions:");
+			// if (!this.skipTransitions) {
+			// 	console.log("[skipping]");
+			// } else {
+			// 	this.transforms.items.forEach(function(o) {
+			// 		var args = [ "\t%s: %s", o.el.id || o.id, o.transition.name || o.transition ];
+			// 		if (o.hasOffset) args.push("[hasOffset]", o.offsetX, o.offsetY);
+			// 		console.log.apply(console, args);
+			// 	}, this);
+			// }
+			// console.groupEnd();
 			
 			this.transforms.clearAllOffsets();
 			this.transforms.validate();
@@ -206,21 +202,13 @@ var ContentView = ContainerView.extend({
 		
 		if (sizeChanged) {
 			this.itemViews.forEach(function(view) {
+				view.skipTransitions = this.skipTransitions;
 				view.invalidateSize();
-				if (this.skipTransitions) {
-					view.skipTransitions = this.skipTransitions;
-					view.renderNow(true);
-				}
+				view.renderNow();
 			}, this);
 		}
 		
-		this.skipTransitions = this._transformsChanged = this._modelChanged = false;
-		this._renderFlags &= ~ContainerView.RENDER_INVALID;
-	},
-	
-	invalidateTransforms: function() {
-		this._transformsChanged = true;
-		this.requestRender();
+		this.skipTransitions = this._transformsChanged = false;
 	},
 	
 	_setChildrenEnabled: function(enabled) {
@@ -241,20 +229,8 @@ var ContentView = ContainerView.extend({
 				this.touch.off("vpanstart", this._onVPanStart);
 			}
 		}
-		this._modelChanged = true;
-		this.requestRender();
+		this.requestRender(View.MODEL_INVALID);
 	},
-	
-	/* --------------------------- *
-	/* bundle collection handlers
-	/* --------------------------- */
-	
-	// _onDeselectOneBundle: function(bundle) {
-	// 	this.itemViews.forEach(function(view) {
-	// 		view.stopListening(view.collection);
-	// 		controller.stopListening(view);
-	// 	}, this);
-	// },
 	
 	/* -------------------------------
 	/* Vertical touch/move (_onVPan*)
@@ -276,12 +252,12 @@ var ContentView = ContainerView.extend({
 	},
 	
 	_onVPanMove: function (ev) {
-		var collapsedValue = this.model.get("collapsed");
+		var collapsed = this.model.get("collapsed");
 		var delta = ev.thresholdDeltaY;
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapsed/expand
-		var isValidDir = collapsedValue? (delta > 0) : (delta < 0);
-		var moveFactor = collapsedValue? Globals.VPAN_DRAG : 1 - Globals.VPAN_DRAG;
+		var isValidDir = collapsed? (delta > 0) : (delta < 0);
+		var moveFactor = collapsed? Globals.VPAN_DRAG : 1 - Globals.VPAN_DRAG;
 		
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
@@ -296,7 +272,7 @@ var ContentView = ContainerView.extend({
 		} else {
 			delta = (-delta) * Globals.VPAN_OUT_DRAG; // delta is opposite
 		}
-		delta *= collapsedValue? 1 : -1; // reapply sign
+		delta *= collapsed? 1 : -1; // reapply sign
 		
 		this.transforms.offsetAll(0, delta);
 		this.transforms.validate();
@@ -311,13 +287,14 @@ var ContentView = ContainerView.extend({
 		
 		this._onVPanMove(ev);
 		this.setImmediate(function() {
-			this.invalidateTransforms();
+			this._transformsChanged = true;
+			this.requestRender();
 		});
 	},
 	
 	// willCollapsedChange: function(ev) {
-	// 	var collapsedValue = this.model.get("collapsed");
-	// 	return ev.type == "vpanend"? collapsedValue?
+	// 	var collapsed = this.model.get("collapsed");
+	// 	return ev.type == "vpanend"? collapsed?
 	// 		ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
 	// 		ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
 	// 		false;
@@ -418,7 +395,7 @@ var ContentView = ContainerView.extend({
 	// 		if (el.parentElement === this.el) {
 	// 			try {
 	// 				console.error("%s::purgeChildren", this.cid, el.getAttribute("data-cid"));
-	// 				ContainerView.findByElement(el).remove();
+	// 				View.findByElement(el).remove();
 	// 			} catch (err) {
 	// 				console.error("s::purgeChildren", this.cid, "orphaned element", err);
 	// 				this.el.removeChild(el);

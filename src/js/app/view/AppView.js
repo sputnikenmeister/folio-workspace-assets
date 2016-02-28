@@ -24,6 +24,8 @@ var TouchManager = require("app/view/base/TouchManager");
 var bundles = require("app/model/collection/BundleCollection");
 /** @type {module:app/control/Controller} */
 var controller = require("app/control/Controller");
+/** @type {module:app/model/AppState} */
+var AppState = require("app/model/AppState");
 
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
@@ -36,28 +38,11 @@ var ContentView = require("app/view/ContentView");
 // var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden");
 // var visibilityStateProp = prefixedProperty("visibilityState", document);
 
-var AppStateModel = Backbone.Model.extend({
-	defaults: {
-		bundle: null,
-		withBundle: false,
-		media: null,
-		withMedia: false,
-		collapsed: false
-	},
-	// mutators: {
-	// 	bundle: {
-	// 		set: function (key, value, options, set) {
-	// 			set(key, value, options);
-	// 		},
-	// 	},
-	// },
-});
-
 var AppView = {
 	getInstance: function() {
 		if (!(window.app instanceof this)) {
 			window.app = new (this)({
-				model: new AppStateModel()
+				model: new AppState()
 			});
 		}
 		return window.app;
@@ -68,17 +53,14 @@ var AppViewProto = {
 	
 	/** @override */
 	cidPrefix: "app",
-	
 	/** @override */
 	el: "body",
-	
-	// /** @override */
-	// className: "without-bundle without-media",
+	/** @override */
+	className: "without-bundle without-media",
+	/** @override */
+	model: AppState,
 	
 	/** @override */
-	model: AppStateModel,
-	// model: new Backbone.Model({bundle: null, media: null, collapsed: false}),
-	
 	events: {
 		"visibilitychange": function(ev) { console.log(ev.type) ;},
 		"fullscreenchange": function(ev) { console.log(ev.type) ;},
@@ -91,36 +73,14 @@ var AppViewProto = {
 		/* create single hammerjs manager */
 		this.touch = TouchManager.init(document.querySelector("#container"));
 		
-		// // render on resize, onorientationchange, visibilitychange
+		/* render on resize, onorientationchange, visibilitychange */
 		this._onResize = this._onResize.bind(this);// _.bindAll(this, "_onResize");
 		window.addEventListener("orientationchange", this._onResize, false);
 		window.addEventListener("resize", _.debounce(this._onResize, 100, false/* immediate? */), false);
 		
-		/*  update model on controller event */
-		this.listenTo(controller, "change:after", function(bundle, media) {
-			this.model.set({
-				bundle: bundle || null,
-				withBundle: !!bundle,
-				media: media || null,
-				withMedia: !!media,
-				// reset collapsed on change
-				collapsed: !!bundle
-			});
-		});
-		
-		/* initialize controller listeners */
-		// this.listenToOnce(controller, "change:after", this._afterFirstChange);
-		// this.listenTo(controller, "change:before", this._beforeChange);
-		this.listenToOnce(controller, "route", this._appReady);
-		// this.listenTo(controller, "all", this._appReadyTrace);
-		// this.listenToOnce(controller, "change:after", this._appReady);
-		
-		// this.listenTo(this.model, "all", function() {
-		// 	var args = [].slice.apply(arguments);
-		// 	console.log("%s::[model %s]", this.cid, args.shift(), args);
-		// });
-		
-		this.listenTo(this.model, "change", this._beforeModelChange); /* FIXME */
+		/* initialize controller/model listeners BEFORE views register their own */
+		this.listenTo(controller, "change:after", this._afterControllerChanged);
+		this.listenTo(this.model, "change", this._onModelChange); /* FIXME */
 		
 		/* initialize views */
 		this.navigationView = new NavigationView({ el: "#navigation", model: this.model });
@@ -128,27 +88,51 @@ var AppViewProto = {
 		
 		// this.listenTo(this.model, "change", this._afterModelChange); /* FIXME */
 		
+		/* startup listener */
+		this.listenToOnce(controller, "route", this._appStart);
 		// start router, which will request appropiate state
 		Backbone.history.start({ pushState: false, hashChange: true });
+	},
+	
+	/* -------------------------------
+	/* _appStart
+	/* ------------------------------- */
+	
+	_appStart: function() {
+		console.log("%s::_appStart", this.cid, arguments[0]);
+		this._appStartChanged = true;
+		this.requestRender(View.MODEL_INVALID | View.SIZE_INVALID);
 	},
 	
 	/* --------------------------- *
 	/* model changed
 	/* --------------------------- */
 	
-	_beforeModelChange: function() {
-		// console.log("%s::_beforeModelChange", this.cid);
-		console.group(this.cid + "::_beforeModelChange changed:");
-		Object.keys(this.model.changed).forEach(function(key) {
-			console.log("\t%s: %s -> %s", key, this.model._previousAttributes[key], this.model.changed[key]);
+	_afterControllerChanged: function(bundle, media) {
+		/* update model on controller event */
+		console.log("%s::[controller change:after]", this.cid);
+		this.model.set({
+			bundle: bundle || null,
+			withBundle: !!bundle,
+			media: media || null,
+			withMedia: !!media,
+			collapsed: !!bundle // reset collapsed on bundle change
+		});
+	},
+	
+	/* --------------------------- *
+	/* model changed
+	/* --------------------------- */
+	
+	_onModelChange: function() {
+		console.group(this.cid + "::_onModelChange changed:");
+		Object.keys(this.model.changedAttributes()).forEach(function(key) {
+			console.log("\t%s: %s -> %s", key, this.model.previous(key), this.model.get(key));
 		}, this);
 		console.groupEnd();
 		
-		if (this.model.changed.hasOwnProperty("bundle") || this.model.changed.hasOwnProperty("media")) {
-		// if (this.model.changed.bundle !== void 0 || this.model.changed.media !== void 0) {
-			this._controllerChanged = true;
-			this.requestRender();
-			// this.renderNow(true);
+		if (this.model.hasChanged("bundle") || this.model.hasChanged("media")) {
+			this.requestRender(View.MODEL_INVALID);
 		}
 	},
 	
@@ -156,46 +140,31 @@ var AppViewProto = {
 	// 	console.log("%s::_afterModelChange", this.cid, this.model.changed);
 	// },
 	
-	// _onNavigationCollapsed: function(value) {
-	// 	console.log("%s::_onNavigationCollapsed content old -> new", this.cid, this.contentView.collapsed, value);
-	// 	this.contentView.collapsed = value;
-	// },
-	// 
-	// _onContentCollapsed: function(value) {
-	// 	console.log("%s::_onContentCollapsed nav old -> new", this.cid, this.navigationView.collapsed, value);
-	// 	this.navigationView.collapsed = value;
-	// },
-	
-	// _beforeChange: function(bundle, media) {
-	// 	console.log("%s::_beforeChange", this.cid);
-	// 	
-	// 	var viewCids = Object.keys(View.instances);
-	// 	console.info("%s::_beforeChange stats: %i views", this.cid, viewCids.length, viewCids);
-	// 	
-	// 	this._controllerChanged = true;
-	// 	this.requestRender();
-	// },
-	
 	/* -------------------------------
-	/* opt A
+	/* resize
 	/* ------------------------------- */
 	
-	renderFrame: function(tstamp) {
-		if (this._controllerChanged) {
-			this._controllerChanged = false;
-			this.renderControllerChange();
+	_onResize: function() {
+		console.log("%s::_onResize", this.cid);
+		
+		this.requestRender(View.SIZE_INVALID).renderNow();
+		// this.invalidateSize();
+	},
+	
+	/* -------------------------------
+	/* render
+	/* ------------------------------- */
+	
+	renderFrame: function(tstamp, flags) {
+		if (flags & View.MODEL_INVALID) {
+			this.renderModelChange();
 		}
-		if (this._sizeChanged) {
-			this._sizeChanged = false;
+		if (flags & View.SIZE_INVALID) {
 			this.renderResize();
 		}
-		if (this._appReadyChanged) {
-			this._appReadyChanged = false;
-			this.requestAnimationFrame(this.renderAppReady);
-			// this.renderAppReady();
-			// this._sizeChanged = true;
-			// this.stopListening(controller, "all", this._appReadyTrace);
-			// this.listenTo(controller, "route", this._appReadyTrace);
+		if (this._appStartChanged) {
+			this._appStartChanged = false;
+			this.requestAnimationFrame(this.renderAppStart);
 		}
 		// if (this.model.hasChanged()) {
 		// 	this.setImmediate(function() {
@@ -206,21 +175,10 @@ var AppViewProto = {
 		// }
 	},
 	
-	/* -------------------------------
-	/* resize
-	/* ------------------------------- */
-	
-	// _onResize_immediate: function() {
-	// 	console.log("%s::_onResize_immediate", this.cid);
-	// 	document.body.scrollTop = 0;
-	// },
-	
-	_onResize: function() {
-		console.log("%s::_onResize", this.cid);
-		// this.renderResize();
-		this._sizeChanged = true;
-		// this.requestRender();
-		this.renderNow(true);
+	renderAppStart: function() {
+		console.log("%s::renderAppStart", this.cid);
+		document.documentElement.classList.remove("app-initial");
+		// document.documentElement.classList.add("app-ready");
 	},
 	
 	renderResize: function() {
@@ -236,69 +194,16 @@ var AppViewProto = {
 			view.invalidateSize();
 			view.renderNow();
 		}
-		
-		// this.navigationView.render();
-		// this.contentView.render();
-		
-		// var viewCids = [];
-		// var renderView = function(view) {
-		// 	view.skipTransitions = true;
-		// 	view.renderNow();
-		// 	view.render();
-		// 	for (var childId in view.childViews) {
-		// 		renderView(view.childViews[childId]);
-		// 	}
-		// 	// view.skipTransitions = false;
-		// 	// viewCids.push(view.cid);
-		// };
-		// renderView(this.navigationView);
-		// renderView(this.contentView);
-		// console.log("%s::_onResize", this.cid, viewCids);
-	},
-	
-	
-	/* -------------------------------
-	/* _appReady
-	/* ------------------------------- */
-	
-	_appReady: function() {
-		// NOTE: Change to .app-ready:
-		// Wait one frame for views to be rendered. Some may trigger transitions,
-		// but they are skipped while in .app-initial. Wait one more frame for 
-		// everything to render in it's final state, then finally change to .app-ready.
-		// this.requestAnimationFrame(function() {
-			// console.log("%s::renderAppReady[-2]", this.cid);
-			// this.requestAnimationFrame(function() {
-				// console.log("%s::renderAppReady[-1]", this.cid);
-				console.log("%s::_appReady", this.cid, arguments[0]);
-				// this.renderAppReady();
-				this._sizeChanged = true;
-				this._appReadyChanged = true;
-				this.requestRender();
-				// this.renderNow();
-			// });
-		// });
-	},
-	
-	// _appReadyTrace: function() {
-	// 	console.log("%s::_appReady [trace]", this.cid, arguments[0]);
-	// },
-	
-	renderAppReady: function() {
-		console.log("%s::renderAppReady", this.cid);
-		document.documentElement.classList.remove("app-initial");
-		// document.documentElement.classList.add("app-ready");
 	},
 	
 	/* -------------------------------
 	/* body classes etc
 	/* ------------------------------- */
 	
-	renderControllerChange: function() {
-		console.log("%s::renderControllerChange", this.cid);
-		
-		// var bundle = bundles.selected;
-		// var media = bundle? bundles.selected.get("media").selected : null;
+	// _controllerChanged: true,
+	
+	renderModelChange: function() {
+		console.log("%s::renderModelChange", this.cid);
 		
 		var bundle = this.model.get("bundle");
 		var media = this.model.get("media");
@@ -311,15 +216,58 @@ var AppViewProto = {
 		// Set browser title
 		var docTitle = "Portfolio";
 		if (bundle) {
-			docTitle += " - " + stripTags(bundle.get("name"));
+			docTitle += " - " + bundle.get("name");
 			if (media) {
-				docTitle += ": " + stripTags(media.get("name"));
+				docTitle += ": " + media.get("name");
 			}
 		}
 		document.title = docTitle;
 	},
 	
 	renderModelClasses: function(bundle, media) {
+		// classList target
+		var cls = this.el.classList;
+		var attrValue = null, hasDarkBg = false;
+		
+		// Set state classes
+		if (this.model.hasChanged("withBundle")) {
+			cls.toggle("with-bundle", this.model.get("withBundle"));
+			cls.toggle("without-bundle", !this.model.get("withBundle"));
+		}
+		if (this.model.hasChanged("withMedia")) {
+			cls.toggle("with-media", this.model.get("withMedia"));
+			cls.toggle("without-media", !this.model.get("withMedia"));
+		}
+		
+		// Set bundle class
+		if (this.model.hasChanged("bundle")) {
+			attrValue = this.model.previous("bundle");
+			if (attrValue) {
+				cls.remove(attrValue.get("domid"));
+			}
+			attrValue = this.model.get("bundle");
+			if (attrValue) {
+				cls.add(attrValue.get("domid"));
+				hasDarkBg = hasDarkBg || attrValue.colors.hasDarkBg;
+			}
+		}
+		// Set media class
+		if (this.model.hasChanged("media")) {
+			attrValue = this.model.previous("media");
+			if (attrValue) {
+				cls.remove(attrValue.get("domid"));
+			}
+			attrValue = this.model.get("media");
+			if (attrValue) {
+				cls.add(attrValue.get("domid"));
+				hasDarkBg = hasDarkBg || attrValue.colors.hasDarkBg;
+			}
+		}
+		// Set color-dark class
+		cls.toggle("color-dark", hasDarkBg);
+	},
+	
+	renderModelClasses2: function(bundle, media) {
 		// classList target
 		var cls = this.el.classList;
 		
@@ -348,51 +296,6 @@ var AppViewProto = {
 			(media && media.colors.hasDarkBg) ||
 			(bundle && bundle.colors.hasDarkBg));
 	},
-	
-
-	
-	// renderModelClasses: function(bundle, media) {
-	// 	// Set state classes
-	// 	var cls = this.el.classList;
-	// 	// Set bundle class
-	// 	if (this._lastBundle !== bundle) {
-	// 		if (this._lastBundle) cls.remove(this._lastBundle.get("domid"));
-	// 		if (bundle) cls.add(bundle.get("domid"));
-	// 		this._lastBundle = bundle;
-	// 	}
-	// 	// Set media class
-	// 	if (this._lastMedia !== media) {
-	// 		if (this._lastMedia) cls.remove(this._lastMedia.get("domid"));
-	// 		if (media) cls.add(media.get("domid"));
-	// 		this._lastMedia = media;
-	// 	}
-	// 	cls.toggle("color-dark", (media && media.colors.hasDarkBg) || (bundle && bundle.colors.hasDarkBg));
-	// },
-	
-	/* -------------------------------
-	/* opt A
-	/* ------------------------------- */
-	
-	// render: function() {
-	// 	// console.log("%s::render [%s]", this.cid, (arguments[0] instanceof window.Event? arguments[0].type : "direct call"));
-	// 	document.documentElement.classList.toggle("desktop-small", this.breakpoints["desktop-small"].matches);
-	// 	this.navigationView.render();
-	// 	this.contentView.render();
-	// 	return this;
-	// },
-	// _onResize: function() { 
-	// 	this.render();
-	// },
-	// _afterFirstChange: function(bundle, media) {
-	// 	this.listenTo(controller, "change:before", this._afterChangeDeferred);
-	// 	this.renderControllerChange(bundle, media);
-	// 	this.render();
-	// },
-	// _afterChangeDeferred: function(bundle, media) {
-	// 	this.requestAnimationFrame(function() {
-	// 		this.renderControllerChange(bundle, media);
-	// 	});
-	// },
 };
 
 if (DEBUG) {
@@ -401,6 +304,12 @@ if (DEBUG) {
 	// var init = AppViewProto.initialize;
 	AppViewProto.initialize = (function(fn) {
 		return function() {
+			
+			// this.listenTo(this.model, "all", function() {
+			// 	var args = [].slice.apply(arguments);
+			// 	console.log("%s::[model %s]", this.cid, args.shift(), args);
+			// });
+			
 			this.el.appendChild((new DebugToolbar({id: "debug-toolbar", collection: bundles, model: this.model})).render().el);
 			return fn.apply(this, arguments);
 		};

@@ -6,15 +6,17 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
+
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
 /** @type {module:app/view/component/ClickableRenderer} */
 var ClickableRenderer = require("app/view/render/ClickableRenderer");
 /** @type {module:utils/prefixedProperty} */
 var prefixedProperty = require("utils/prefixedProperty");
+/** @type {module:utils/css/getBoxEdgeStyles} */
+var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
 var diff = function(a1, a2) {
 	return a1.reduce(function(res, o, i, a) {
@@ -23,11 +25,16 @@ var diff = function(a1, a2) {
 	}, []);
 };
 
+var translateCssValue =  function(x, y) {
+	return "translate3d(" + x + "px, " + y + "px ,0px)";
+};
+
+/** @const */
 var transformProp = prefixedProperty("transform");
 
 /** @const */
 var CHILDREN_INVALID = View.CHILDREN_INVALID,
-	CLASSES_INVALID = View.CLASSES_INVALID,
+	STYLES_INVALID = View.STYLES_INVALID,
 	SIZE_INVALID = View.SIZE_INVALID,
 	LAYOUT_INVALID = View.LAYOUT_INVALID,
 	RENDER_INVALID = View.RENDER_INVALID;
@@ -68,12 +75,14 @@ var FilterableListView = View.extend({
 	
 	/** @override */
 	initialize: function (options) {
+		this._metrics = {};
+		this._itemMetrics = [];
 		this.itemViews = new Container();
 		this.renderer = options.renderer || FilterableListView.defaultRenderer;
 		
 		this.skipTransitions = true;
 		// create children
-		this.collection.each(this.assignItemView, this);
+		this.collection.each(this.createItemView, this);
 		if (options.filterFn) {
 			this._filterFn = options.filterFn;
 			this.refresh();
@@ -81,10 +90,7 @@ var FilterableListView = View.extend({
 		this.setSelection(this.collection.selected);
 		this.setCollapsed((_.isBoolean(options.collapsed)? options.collapsed : false));
 		
-		// if (this.attached) {
-		// 	this.skipTransitions = true;
-		// 	this.invalidateSize();
-		// }
+		// will trigger on return if this.el is already attached
 		this.listenTo(this, "view:attached", function() {
 			this.skipTransitions = true;
 			this.invalidateSize();
@@ -102,29 +108,8 @@ var FilterableListView = View.extend({
 	/* Render
 	/* --------------------------- */
 	
-	// /** @override */
-	// render: function () {
-	// 	if (!this.attached) {
-	// 		if (!this._renderPending) {
-	// 			this._renderPending = true;
-	// 			this.listenTo(this, "view:attached", this.render);
-	// 		}
-	// 	} else {
-	// 		if (this._renderPending) {
-	// 			this._renderPending = false;
-	// 			this.stopListening(this, "view:attached", this.render);
-	// 		}
-	// 		this._delta = 0;
-	// 		this.skipTransitions = true;
-	// 		this.invalidateSize();
-	// 		// this.invalidateLayout();
-	// 		this.renderNow();
-	// 	}
-	// 	return this;
-	// },
-	
 	/** @override */
-	renderFrame: function () {
+	renderFrame: function (tstamp, flags) {
 		// collapsed transition flag
 		if (this._collapsedTransitioning)
 			console.warn("%s::renderFrame collapsed transition interrupted", this.cid);
@@ -139,7 +124,7 @@ var FilterableListView = View.extend({
 		this.el.classList.toggle("collapsed-changed", this._collapsedTransitioning);
 		
 		if (this._collapsedChanged || this._selectionChanged || this._filterChanged) {
-			this._renderFlags |= View.RENDER_INVALID;
+			flags |= View.RENDER_INVALID;
 		}
 		if (this._collapsedChanged) {
 			this.el.classList.toggle("collapsed", this._collapsed);
@@ -150,40 +135,54 @@ var FilterableListView = View.extend({
 		if (this._filterChanged) {
 			this.renderFilterFn();
 		}
-		if (this._renderFlags & View.RENDER_INVALID) {
+		if (flags & View.SIZE_INVALID) {
+			this.measure();
+		}
+		if (flags & View.RENDER_INVALID) {
 			this.renderLayout();
 		}
 		this.skipTransitions = this._collapsedChanged = this._selectionChanged = this._filterChanged = false;
-		this._renderFlags &= ~View.RENDER_INVALID;
+	},
+	
+	measure: function() {
+		var i, ii, el, els, m, mm;
+		els = this.el.children;
+		ii = els.length;
+		mm = this._itemMetrics;
+		
+		// measure
+		for (i = 0; i < ii; i++) {
+			mm[i] = _.pick(els[i], "offsetTop", "offsetHeight");
+		}
+		this._metrics = getBoxEdgeStyles(this.el, this._metrics);
 	},
 	
 	renderLayout: function() {
-		// console.log("%s::renderLayout", this.cid);
-		var s = window.getComputedStyle(this.el);
-		var posX = parseFloat(s.paddingLeft);
-		var posY = parseFloat(s.paddingTop);
+		var i, ii, el, els, m, mm;
+		els = this.el.children;
+		ii = els.length;
+		mm = this._itemMetrics;
 		
-		var el = this.el.firstElementChild, idx = 0;
-		var els = [], tx = [], includeHeigth;
+		var posX, posY;
+		posX = this._metrics.paddingLeft;
+		posY = this._metrics.paddingTop;
 		
-		do {
-			includeHeigth = !(this._collapsed && el.classList.contains("excluded"));
-			if (includeHeigth && el.offsetHeight == 0) {
-				posY -= el.offsetTop;
+		// render
+		for (i = 0; i < ii; i++) {
+			el = els[i];
+			m = mm[i];
+			
+			if (!this._collapsed || !el.classList.contains("excluded")) {
+				if (m.offsetHeight == 0)
+					posY -= m.offsetTop;
+				el.style[transformProp] = translateCssValue(posX, posY);
+				posY += m.offsetHeight + m.offsetTop;
+			} else {
+				el.style[transformProp] = translateCssValue(posX, posY);
 			}
-			els[idx] = el;
-			tx[idx] = "translate3d(" + posX + "px," + posY + "px, 0px)";
-			idx++;
-			if (includeHeigth) {
-				posY += el.offsetHeight + el.offsetTop;
-			}
-		} while (el = el.nextElementSibling);
-		
-		for (var i = 0; i < idx; i++) {
-			els[i].style[transformProp] = tx[i];
 		}
 		
-		posY += parseFloat(s.paddingBottom);
+		posY += this._metrics.paddingBottom;
 		this.el.style.height = (posY > 0)? posY + "px" : "";
 	},
 	
@@ -192,7 +191,7 @@ var FilterableListView = View.extend({
 	/* --------------------------- */
 	 
 	/** @private */
-	assignItemView: function (item, index) {
+	createItemView: function (item, index) {
 		var view = new this.renderer({
 			model: item,
 			el: this.el.querySelector(".list-item[data-id=\"" + item.id + "\"]")

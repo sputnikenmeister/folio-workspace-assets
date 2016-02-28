@@ -60,10 +60,9 @@ module.exports = BaseItem.extend({
 		// kIds: function() { return []; },
 	},
 	
+	getters: ["name", "media"],
+	
 	mutators: {
-		// domid: function() {
-		// 	return "b" + this.id;
-		// },
 		text: function () {
 			return stripTags(this.get("desc"));
 		},

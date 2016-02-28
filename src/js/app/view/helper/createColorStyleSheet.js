@@ -53,9 +53,8 @@ module.exports = function() {
 		
 		fgColorVal = fgColor.rgbString();
 		bgColorVal = bgColor.rgbString();
-		// inverted fg/bg colors (slightly muted)
-		revFgColorVal = bgColor.clone().mix(fgColor, 0.1).rgbString();
-		revBgColorVal = fgColor.clone().mix(bgColor, 0.1).rgbString();
+		// revFgColorVal = bgColor.clone().mix(fgColor, 0.9).rgbString();
+		// revBgColorVal = fgColor.clone().mix(bgColor, 0.6).rgbString();
 		revSelector = bodySelector + " .color-reverse";
 		
 		// .color-fg .color-bg
@@ -64,13 +63,13 @@ module.exports = function() {
 		Styles.createCSSRule(bodySelector + " .color-fg", s);
 		s = { "background-color": bgColorVal };
 		Styles.createCSSRule(bodySelector + " .color-bg", s);
-		
-		// inverted html
-		s = { "color" : revFgColorVal };
+		// html inverted text/background
+		s = { "color" : bgColorVal };// s = { "color" : revFgColorVal };
 		s["-webkit-font-smoothing"] = (hasDarkBg? "auto" : "antialiased");
 		Styles.createCSSRule(revSelector + " .color-fg", s);
 		Styles.createCSSRule(revSelector + ".color-fg", s);
-		s = { "background-color" : revBgColorVal };
+		
+		s = { "background-color" : fgColorVal };// s = { "background-color" : revBgColorVal };
 		Styles.createCSSRule(revSelector + " .color-bg", s);
 		Styles.createCSSRule(revSelector + ".color-bg", s);
 		
