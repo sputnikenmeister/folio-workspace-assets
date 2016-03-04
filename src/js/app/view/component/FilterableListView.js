@@ -32,13 +32,6 @@ var translateCssValue =  function(x, y) {
 /** @const */
 var transformProp = prefixedProperty("transform");
 
-/** @const */
-var CHILDREN_INVALID = View.CHILDREN_INVALID,
-	STYLES_INVALID = View.STYLES_INVALID,
-	SIZE_INVALID = View.SIZE_INVALID,
-	LAYOUT_INVALID = View.LAYOUT_INVALID,
-	RENDER_INVALID = View.RENDER_INVALID;
-
 /**
 /* @constructor
 /* @type {module:app/view/component/SelectableCollectionView}
@@ -52,6 +45,17 @@ var FilterableListView = View.extend({
 	/** @override */
 	className: "list selectable filterable",
 	
+	/** @override */
+	defaults: {
+		collapsed: true,
+		filterFn: null,
+		renderer: ClickableRenderer.extend({
+			/** @override */
+			cidPrefix: "listItem",
+		}),
+	},
+	
+	/** @override */
 	properties: {
 		collapsed: {
 			get: function() {
@@ -63,6 +67,7 @@ var FilterableListView = View.extend({
 		}
 	},
 	
+	/** @override */
 	events: {
 		"transitionend .list-item": function(ev) {
 			if (this._collapsedTransitioning && ev.propertyName === "visibility" /*&& this.el.classList.contains("collapsed-changed")*/) {
@@ -78,23 +83,21 @@ var FilterableListView = View.extend({
 		this._metrics = {};
 		this._itemMetrics = [];
 		this.itemViews = new Container();
-		this.renderer = options.renderer || FilterableListView.defaultRenderer;
 		
-		this.skipTransitions = true;
-		// create children
+		_.defaults(options, this.defaults);
+		this.renderer = options.renderer;
+		this._filterFn = options.filterFn;
+		
 		this.collection.each(this.createItemView, this);
-		if (options.filterFn) {
-			this._filterFn = options.filterFn;
-			this.refresh();
-		}
+		this.refresh();
 		this.setSelection(this.collection.selected);
-		this.setCollapsed((_.isBoolean(options.collapsed)? options.collapsed : false));
+		this.setCollapsed(options.collapsed);
 		
 		// will trigger on return if this.el is already attached
+		// this.skipTransitions = true;
 		this.listenTo(this, "view:attached", function() {
 			this.skipTransitions = true;
-			this.invalidateSize();
-			this.renderNow();
+			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);//.renderNow();
 		});
 		
 		this.listenTo(this.collection, "select:one select:none", this.setSelection);
@@ -114,34 +117,47 @@ var FilterableListView = View.extend({
 		if (this._collapsedTransitioning)
 			console.warn("%s::renderFrame collapsed transition interrupted", this.cid);
 		
+		this._collapsedTransitioning = !this.skipTransitions && this._collapsedChanged;
+		
+		// this.el.classList.toggle("animate", !this.skipTransitions);
+		this.el.classList.toggle("collapsed-changed", this._collapsedTransitioning);
+		this.el.classList.toggle("skip-transitions", this.skipTransitions);
 		if (this.skipTransitions) {
-			this.el.classList.add("skip-transitions");
-			this.requestAnimationFrame(function() {
-				this.el.classList.remove("skip-transitions");
+			this.skipTransitions = false;
+			// Invalidate again after frame render loop to reapply transforms:
+			// that should kill any running transitions.
+			this.setImmediate(function() {
+				this.requestRender(View.LAYOUT_INVALID);
 			});
 		}
-		this._collapsedTransitioning = !this.skipTransitions && this._collapsedChanged;
-		this.el.classList.toggle("collapsed-changed", this._collapsedTransitioning);
 		
 		if (this._collapsedChanged || this._selectionChanged || this._filterChanged) {
-			flags |= View.RENDER_INVALID;
+			flags |= View.LAYOUT_INVALID;
+			flags |= View.SIZE_INVALID;
 		}
+		
 		if (this._collapsedChanged) {
+			// flags |= View.SIZE_INVALID;
 			this.el.classList.toggle("collapsed", this._collapsed);
 		}
 		if (this._selectionChanged) {
+			// flags |= View.SIZE_INVALID;
+			// flags |= this._collapsed? View.SIZE_INVALID : View.LAYOUT_INVALID;
 			this.renderSelection(this.collection.selected, this.collection.lastSelected);
 		}
 		if (this._filterChanged) {
+			// flags |= View.SIZE_INVALID;
+			// flags |= this._collapsed? View.SIZE_INVALID : View.LAYOUT_INVALID;
 			this.renderFilterFn();
 		}
+		
 		if (flags & View.SIZE_INVALID) {
 			this.measure();
 		}
-		if (flags & View.RENDER_INVALID) {
+		if (flags & (View.LAYOUT_INVALID | View.SIZE_INVALID)) {
 			this.renderLayout();
 		}
-		this.skipTransitions = this._collapsedChanged = this._selectionChanged = this._filterChanged = false;
+		this._collapsedChanged = this._selectionChanged = this._filterChanged = false;
 	},
 	
 	measure: function() {
@@ -167,18 +183,23 @@ var FilterableListView = View.extend({
 		posX = this._metrics.paddingLeft;
 		posY = this._metrics.paddingTop;
 		
+		var selectedView;
+		if (this.collection.selected) {
+			selectedView = this.itemViews.findByModel(this.collection.selected);
+		}
+		
 		// render
 		for (i = 0; i < ii; i++) {
 			el = els[i];
 			m = mm[i];
 			
-			if (!this._collapsed || !el.classList.contains("excluded")) {
+			if (this._collapsed && (el.classList.contains("excluded") || (selectedView && selectedView.el !== el))) {
+				el.style[transformProp] = translateCssValue(posX, posY);
+			} else {
 				if (m.offsetHeight == 0)
 					posY -= m.offsetTop;
 				el.style[transformProp] = translateCssValue(posX, posY);
 				posY += m.offsetHeight + m.offsetTop;
-			} else {
-				el.style[transformProp] = translateCssValue(posX, posY);
 			}
 		}
 		
@@ -237,8 +258,8 @@ var FilterableListView = View.extend({
 	
 	/** @param {Backbone.Model|null} */
 	setSelection: function (item) {
-		this._selectionChanged = true;
 		this._selectedItem = item;
+		this._selectionChanged = true;
 		this._requestRender();
 	},
 	
@@ -257,8 +278,10 @@ var FilterableListView = View.extend({
 	/* --------------------------- */
 	
 	refresh: function() {
-		this._filterChanged = true;
-		this.requestRender();
+		if (this._filterFn) {
+			this._filterChanged = true;
+			this.requestRender();
+		}
 	},
 	
 	renderFilterFn: function() {
@@ -288,11 +311,6 @@ var FilterableListView = View.extend({
 		return this._allItems || (this._allItems = this.collection.slice());
 	},
 	
-}, {
-	defaultRenderer: ClickableRenderer.extend({
-		/** @override */
-		cidPrefix: "listItem",
-	}),
 });
 
 module.exports = FilterableListView;

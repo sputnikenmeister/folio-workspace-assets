@@ -164,21 +164,6 @@
 		// [ justify-content: flex-start | flex-end ]
 		direction: rtl;
 		bottom: 100%;// top: -3.5rem;
-		@include media(desktop-small) {
-			direction: ltr;
-			-webkit-flex-direction: column;
-			-ms-flex-direction: column;
-			flex-direction: column;
-			top: 0; left: 100%;
-			// top: -9.5rem; right: -$hu; 
-			width: auto; height: calc(100% + 1rem);
-			margin: -0.5rem 1.25rem;
-			& > * {
-				padding: 0.5rem 0rem;
-				// &:first-child { padding-inline-start: 0; }
-				// &:last-child { padding-inline-end: 0; }
-			}
-		}
 	}
 	
 	// .control-box > *
@@ -289,6 +274,8 @@
 // VideoRenderer
 // -----------------------------------
 .video-renderer {
+	// Closest to 680px at 16:9 -> 672x378
+	// .content { max-width: 672px; }
 	.crop-box {
 		overflow: hidden;
 		video, .poster {

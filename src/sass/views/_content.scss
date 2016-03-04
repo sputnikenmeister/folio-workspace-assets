@@ -1,168 +1,27 @@
-// -----------------------------------
+// ///////////////////////////////////
 // Content
-// -----------------------------------
+// ///////////////////////////////////
 
-// #content {
-// 	& > .current {
-// 		opacity: 1;
-// 		transition: opacity #{$duration - 0.001s} $ease #{$delay*1 + 0.001s};
-// 	}
-// 	& > .removing {
-// 		opacity: 0;
-// 		transition: opacity #{$duration - 0.001s} $ease #{$delay*0 + 0.001s};
-// 	}
-// 	&.skip-transitions {
-// 		& > .current,
-// 		& > .removing {
-// 			transition: none 0s;
-// 		}
-// 	}
-// }
-
+// media-caption-stack
 // - - - - - - - - - - - - - - - - - -
+@import "components/stack";
+
+// image-carousel
+// - - - - - - - - - - - - - - - - - -
+@import "components/carousel";
+
+// media-dotnav
+// - - - - - - - - - - - - - - - - - -
+@import "components/selectable.dots-fontface.scss";
+
 // leaf elements
 // - - - - - - - - - - - - - - - - - -
-
-.carousel-item.empty-item .content p,
+.empty-item .content p,
 .stack .content {
 	@extend %leaf-content;
 }
 
-.carousel-item.media-item {
-	.sizing {
-		margin-left: $hu;
-		margin-right: $hu;
-	}
+.media-item .sizing {
+	margin-left: $hu;
+	margin-right: $hu;
 }
-
-// - - - - - - - - - - - - - - - - - -
-// media-caption-stack
-// - - - - - - - - - - - - - - - - - -
-
-@import "components/_stack";
-
-.media-caption-stack {
-	.content {
-		// position: relative;
-		margin: 1.5rem auto;
-		// top: 1.5rem;
-		// position: absolute;
-		// display: block;
-		p {
-			margin-left: -1px;
-			@include heading_font($size: 20px, $weight: 300, $lead: 26px);
-			//@include heading_font($size: 1.666rem, $weight: 300, $lead: 2rem);
-		}
-	}
-	@include media(desktop-small) {
-		.content {
-			p {
-				@include heading_font($weight: 300);//, $lead: 0.990);
-			}
-		}
-	}
-}
-
-// -----------------------------------
-// Carousel(s)
-// -----------------------------------
-
-@import "components/_carousel";
-
-// - - - - - - - - - - - - - - - - - -
-// image-carousel
-// - - - - - - - - - - - - - - - - - -
-
-.media-carousel {
-	position: absolute;
-	overflow: hidden;
-	// box-sizing: content-box;
-	// top: 0;
-	// height: 100%;
-	// height: calc(100% - 3rem);
-	bottom: 0;
-	padding-top: 4.5rem;
-	padding-bottom: 4.5rem;//1.5rem;
-	.carousel-item {
-		// padding-top: 1.5rem;
-		// padding-bottom: 1.5rem;
-		height: calc(100% - 9rem);//3rem);
-	}
-	.empty-item {
-		overflow: hidden;
-		height: auto;
-		max-height: calc(100% - 9rem);
-		// .content, .content-disabled {
-			p {
-				// height: 100%;
-				// overflow: hidden;
-				// transform: translate3d(-1.5px,0,0);
-				margin-left: -1.5px;
-				margin-top: 0;
-				margin-bottom: 9px;
-				@include heading_font($weight: 300, $size: 22px, $lead: 24px);
-				&:first-child { margin-top: 0; }
-				
-				@include media(desktop-small) {
-					font-size: 28px;
-					line-height: 30px;
-					&:first-child { margin-top: -4px; }
-				}
-			}
-		// }
-		// @include media(desktop-small) {
-		// 	.content, .content-disabled {
-		// 		p {
-		// 			font-size: 28px;
-		// 			line-height: 30px;
-		// 			&:first-child { margin-top: -4px; }
-		// 		}
-		// 	}
-		// 	.content-disabled {
-		// 		display: block;
-		// 	}
-		// }
-	}
-	// @include media(desktop-small) {
-	// 		.content, .content-disabled {
-	// 			p {
-	// 				font-size: 28px;
-	// 				line-height: 30px;
-	// 				&:first-child { margin-top: -4px; }
-	// 			}
-	// 		}
-	// }
-}
-
-// - - - - - - - - - - - - - - - - - -
-// image-pager
-// - - - - - - - - - - - - - - - - - -
-
-@import "components/_selectable.dots-fontface.scss";
-.media-dotnav {
-	// position: absolute;
-	// top: -1.5rem; height: 1.5rem;
-	// top: -3rem;
-	height: 1.5rem;
-}
-
-// - - - - - - - - - - - - - - - - - -
-// label-carousel
-// - - - - - - - - - - - - - - - - - -
-
-// .label-carousel {
-// 	position: absolute;
-// 	padding-top: 0;
-// 	padding-bottom: 0;
-// 	//top: -1.5rem;
-// 	.carousel-item {
-// 		.content {
-// 			@include heading_font($size: 20px, $weight: 300, $lead: 24px);
-// 			//margin-left: -1px; margin-right: -1px;
-// 			transform: translateX(-1px);
-// 		}
-// 	}
-// 	.empty-item {
-// 		height: 100%;
-// 	}
-// }

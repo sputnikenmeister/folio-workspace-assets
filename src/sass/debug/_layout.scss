@@ -56,10 +56,10 @@ $darkolivegreen:	darkolivegreen;
 	#sitename, .transform-wrapper {
 		// height: 1rem;
 		width: $aside_width;
-		height: $nav_height_portrait;
+		height: $nHeightPort;
 		@include media(desktop-small) {
 			width: $aside_width_large;
-			height: $nav_height_landscape;
+			height: $nHeightLand;
 		}
 	}
 	#sitename, .transform-wrapper {

@@ -103,8 +103,9 @@ var CanvasProgressMeter = View.extend({
 		this._ctx = this.el.getContext("2d");
 		
 		this.listenTo(this, "view:attached", function(){
-			this.invalidateSize();
-			this.renderNow();
+			// this.invalidateSize();
+			// this.renderNow();
+			view.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
 		});
 	},
 
@@ -209,7 +210,7 @@ var CanvasProgressMeter = View.extend({
 	renderFrame: function(tstamp, flags) {
 		if (!this.attached) return;
 		
-		if (flags & View.RENDER_INVALID) {
+		if (flags & View.SIZE_INVALID) {
 			this._updateCanvas();
 			this._needsRedraw = true;
 		}

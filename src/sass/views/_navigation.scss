@@ -1,11 +1,10 @@
-// -----------------------------------
-// Navigation
-// -----------------------------------
 
-// - - - - - - - - - - - - - - - - - -
+// ///////////////////////////////////
+// Navigation
+// ///////////////////////////////////
+
 // leaf elements
 // - - - - - - - - - - - - - - - - - -
-
 #site-name, .list-item, .list-group {
 	@extend %leaf-content;
 }
@@ -14,10 +13,7 @@
 // - - - - - - - - - - - - - - - - - -
 #site-name {
 	@include heading_font();
-	position: relative;
-	display: inline-block;
-	top: 1.5rem;
-	min-height: 2rem;
+	// margin-left: -1px;
 }
 
 #site-name a {
@@ -29,25 +25,24 @@
 	// }
 }
 
-// -----------------------------------
 // FilterableList
 // -----------------------------------
-@import "../components/_filterable";
+@import "components/filterable";
 
 // bundle-list
 // - - - - - - - - - - - - - - - - - -
 #bundle-list {
 	@include heading_font();
-	min-height: 4.5rem;
-	padding-top: 1.5rem;
-	padding-bottom: 1.5rem;
+	// min-height: 4.5rem;
+	// padding-top: 1.5rem;
+	// padding-bottom: 1.5rem;
 	.list-item {
-		height: 2rem;
-		width: 100%;
+		// height: 2rem;
+		// width: 100%;
 		white-space: nowrap;
 		a {
 			display: inline-block;
-			margin-left: -1px;
+			// margin-left: -1px;
 		}
 		.completed {
 			display: none;
@@ -63,22 +58,23 @@
 // - - - - - - - - - - - - - - - - - -
 #keyword-list {
 	// margin-top: -0.25rem;
-	padding-top: 1.25rem;
-	padding-bottom: 1.5rem;
+	// padding-top: 1.25rem;
+	// padding-bottom: 1.5rem;
 	.list-item {
 		white-space: nowrap;
 		a {
 			display: inline-block;
-			margin-left: -1px;
+			// margin-left: -1px;
 			font-size: 13px;
 		}
 	}
 	.list-group {
 		// NOTE: in js, this value is ignored when height is zero
 		margin-top: 0.5rem; 
+		white-space: nowrap;
 		.name {//span {
 			display: inline-block;
-			margin-left: -1px;
+			// margin-left: -1px;
 			@include small_caps($lead: 1.5rem);
 		}
 	}
@@ -87,7 +83,6 @@
 // - - - - - - - - - - - - - - - - - -
 // TEMP
 // - - - - - - - - - - - - - - - - - -
-
 #keyword-list  {
 	.list-item.selected {
 		.name {

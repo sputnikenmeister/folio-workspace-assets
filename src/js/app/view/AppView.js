@@ -191,8 +191,9 @@ var AppViewProto = {
 		for (ccid in this.childViews) {
 			view = this.childViews[ccid];
 			view.skipTransitions = true;
-			view.invalidateSize();
-			view.renderNow();
+			// view.invalidateSize();
+			// view.renderNow();
+			view.requestRender(View.SIZE_INVALID).renderNow();
 		}
 	},
 	
@@ -301,19 +302,41 @@ var AppViewProto = {
 if (DEBUG) {
 	/** @type {module:app/view/DebugToolbar} */
 	var DebugToolbar = require("app/view/DebugToolbar");
-	// var init = AppViewProto.initialize;
+	
 	AppViewProto.initialize = (function(fn) {
 		return function() {
-			
-			// this.listenTo(this.model, "all", function() {
-			// 	var args = [].slice.apply(arguments);
-			// 	console.log("%s::[model %s]", this.cid, args.shift(), args);
-			// });
-			
+			// var retVal = fn.apply(this, arguments);
 			this.el.appendChild((new DebugToolbar({id: "debug-toolbar", collection: bundles, model: this.model})).render().el);
+			this.listenTo(this.model, "change:layoutName", function() {
+				this.requestRender(View.SIZE_INVALID);//.renderNow();
+			});
+			// return retVal;
 			return fn.apply(this, arguments);
 		};
 	})(AppViewProto.initialize);
+	
+	// AppViewProto.renderFrame = (function(fn) {
+	// 	return function() {
+	// 		// var retVal = fn.apply(this, arguments); return retVal;
+	// 		console.log(this.model);
+	// 		var layoutName;
+	// 		if (View.SIZE_INVALID && this.model.hasChanged("layoutName")) {
+	// 			
+	// 				var prev = this.model.previous("layoutName");
+	// 				var curr = this.model.get("layoutName");
+	// 				if (prev) document.body.classList.remove(prev);
+	// 				if (curr) document.body.classList.add(curr);
+	// 				
+	// 			// if (layoutName = this.model.previous("layoutName")) {
+	// 			// 	document.body.classList.remove(layoutName);
+	// 			// }
+	// 			// if (layoutName = this.model.get("layoutName")) {
+	// 			// 	document.body.classList.add(layoutName);
+	// 			// }
+	// 		}
+	// 		return fn.apply(this, arguments);
+	// 	};
+	// })(AppViewProto.renderFrame);
 	
 	// AppViewProto.initialize = _.wrap(AppViewProto.initialize, function(fn) {
 	// 	this.el.appendChild((new DebugToolbar({id: "debug-toolbar", collection: bundles})).render().el);

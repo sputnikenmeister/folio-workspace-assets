@@ -12,6 +12,8 @@ var Container = require("backbone.babysitter");
 var View = require("app/view/base/View");
 /** @type {module:app/view/component/FilterableListView} */
 var FilterableListView = require("app/view/component/FilterableListView");
+/** @type {module:app/view/component/ClickableRenderer} */
+var ClickableRenderer = require("app/view/render/ClickableRenderer");
 
 /**
  * @constructor
@@ -32,32 +34,60 @@ var GroupingListView = FilterableListView.extend({
 	_groupingFn: null,//function() { return null; },
 	
 	/** @override */
+	defaults: _.defaults({
+	// defaults: {
+		renderer: ClickableRenderer.extend({
+			/** @override */
+			cidPrefix: "groupingListItem",
+			/** @override */
+			tagName: "dl",
+			/** @override */
+			className: "list-item list-node",
+		}),
+		groupingRenderer: View.extend({
+			/** @override */
+			cidPrefix: "groupingListGroup",
+			/** @override */
+			tagName: "dt",
+			/** @override */
+			className: "list-group list-node",
+		}),
+		groupingFn: null,
+	// },
+	}, FilterableListView.prototype.defaults),
+	
+	/** @override */
 	initialize: function (options) {
 		FilterableListView.prototype.initialize.apply(this, arguments);
 		
-		this.groupingRenderer = options.groupingRenderer || GroupingListView.defaultGroupRenderer;
+		this._groupItems = [];
+		this._groupsByItemCid = {};
 		
-		if (options.groupingFn) {
-			this._groupingFn = options.groupingFn;
-			// this._groupItems = _.uniq(this.collection.map(this._groupingFn, this));
-			this._refreshGroups();
+		this._groupingFn = options.groupingFn;
+		this.groupingRenderer = options.groupingRenderer;// || GroupingListView.defaultGroupRenderer;
+		
+		this._refreshGroups();
+		if (this._groupingFn) {
 			this._groupItems.forEach(this.createGroupingView, this);
 		}
 	},
 	
 	_refreshGroups: function() {
-		var group, groupIdx, groupSet = [], groupsByItemCid = {};
-		this.collection.forEach(function(item) {
-			group = this._groupingFn.apply(null, arguments);
-			groupIdx = groupSet.indexOf(group);
-			if (groupIdx == -1) {
-				groupIdx = groupSet.length;
-				groupSet[groupIdx] = group;
-			}
-			groupsByItemCid[item.cid] = group;
-		}, this);
-		this._groupItems = groupSet;
-		this._groupsByItemCid = groupsByItemCid;
+		// this._groupItems = _.uniq(this.collection.map(this._groupingFn, this));
+		this._groupItems.length = 0;
+		if (this._groupingFn) {
+			this.collection.forEach(function(item) {
+				var groupObj = this._groupingFn.apply(null, arguments);
+				if (groupObj && this._groupItems.indexOf(groupObj) == -1) {
+					this._groupItems.push(groupObj);
+				}
+				this._groupsByItemCid[item.cid] = groupObj;
+			}, this);
+		} else {
+			this.collection.forEach(function(item) {
+				this._groupsByItemCid[item.cid] = null;
+			}, this);
+		}
 	},
 	
 	renderFilterFn: function() {
@@ -86,19 +116,6 @@ var GroupingListView = FilterableListView.extend({
 		return view;
 	},
 
-}, {
-	/**
-	/* @constructor
-	/* @type {module:app/view/component/GroupingListView.defaultGroupRenderer}
-	/*/
-	defaultGroupRenderer: View.extend({
-		/** @override */
-		cidPrefix: "listGroup",
-		/** @override */
-		tagName: "dt",
-		/** @override */
-		className: "list-group",
-	})
 });
 
 module.exports = GroupingListView;

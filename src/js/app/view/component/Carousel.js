@@ -44,12 +44,12 @@ var cssToPx = function (cssVal, el) {
 /** @const */
 var MAX_SELECT_THRESHOLD = 50;
 
-/** @const */
-var CHILDREN_INVALID = View.CHILDREN_INVALID,
-	STYLES_INVALID = View.STYLES_INVALID,
-	MODEL_INVALID = View.MODEL_INVALID,
-	SIZE_INVALID = View.SIZE_INVALID,
-	LAYOUT_INVALID = View.LAYOUT_INVALID;
+// /** @const */
+// var CHILDREN_INVALID = View.CHILDREN_INVALID,
+// 	STYLES_INVALID = View.STYLES_INVALID,
+// 	MODEL_INVALID = View.MODEL_INVALID,
+// 	SIZE_INVALID = View.SIZE_INVALID,
+// 	LAYOUT_INVALID = View.LAYOUT_INVALID;
 
 var VERTICAL = Hammer.DIRECTION_VERTICAL,
 	HORIZONTAL = Hammer.DIRECTION_HORIZONTAL;
@@ -199,27 +199,15 @@ var CarouselProto = {
 		/* create children and props */
 		this.setEnabled(true);
 		this.skipTransitions = true;
-		
-		// this._createChildren();
-		// if (this.attached) {
-		// 	this.skipTransitions = true;
-		// 	this.invalidateSize();
-		// }
-		// this.listenTo(this, "view:attached", function() {
-		// 	this.skipTransitions = true;
-		// 	this.invalidateSize();
-		// 	this.renderNow();
-		// });
-		
-		/* CHILDREN_INVALID | SIZE_INVALID | LAYOUT_INVALID */
-		this._renderFlags = CHILDREN_INVALID;
+		this._renderFlags = View.CHILDREN_INVALID;
 		// this.invalidateChildren();
 		
 		this.listenTo(this, "view:attached", function() {
 			this.skipTransitions = true;
-			this.invalidateSize();
+			// this.invalidateSize();
 			// this.renderNow();
 			// this.requestRender();
+			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
 		});
 		
 		/* collection listeners */
@@ -331,25 +319,22 @@ var CarouselProto = {
 	
 	/** @override */
 	renderFrame: function (tstamp, flags) {
-		// if (flags & STYLES_INVALID) {
-		// 	this._renderEnabled();
-		// 	// this.el.classList.toggle("disabled", !this.enabled);
-		// }
-		if (flags & CHILDREN_INVALID) {
-			flags &= ~CHILDREN_INVALID;
+		if (flags & View.CHILDREN_INVALID) {
 			this._createChildren();
+			// clear this flag now: render may be deferred until attached
+			flags &= ~View.CHILDREN_INVALID;
 		}
-		if (!this.attached && (flags & (SIZE_INVALID | LAYOUT_INVALID))) {
-			this.listenToOnce(this, "view:attached", function() {
-				this.invalidateSize();
-			});
-		} else {
-			if (flags & SIZE_INVALID) {
+		if (this.attached) {
+			if (flags & View.SIZE_INVALID) {
 				this._measure();
 			}
-			if (flags & LAYOUT_INVALID) {
+			if (flags & (View.LAYOUT_INVALID | View.SIZE_INVALID)) {
 				this._scrollBy(this._delta, this.skipTransitions);
 			}
+		} else if (flags) {
+			this.listenToOnce(this, "view:attached", function() {
+				this.requestRender(flags);
+			});
 		}
 	},
 	
@@ -372,7 +357,7 @@ var CarouselProto = {
 			// toggle events immediately
 			this._toggleTouchEvents(enabled);
 			// dom manipulation on render (_renderEnabled)
-			// this._renderFlags |= STYLES_INVALID;
+			// this._renderFlags |= View.STYLES_INVALID;
 			// this.requestRender();
 			
 			this.el.classList.toggle("disabled", !this.enabled);
@@ -580,7 +565,8 @@ var CarouselProto = {
 	scrollBy: function (delta, skipTransitions) {
 		this._delta = delta || 0;
 		this.skipTransitions = !!skipTransitions;
-		this.invalidateLayout();
+		// this.invalidateLayout();
+		this.requestRender(View.LAYOUT_INVALID);
 	},
 	
 	_scrollBy: function (delta, skipTransitions) {
@@ -863,7 +849,8 @@ var CarouselProto = {
 	/** @private */
 	_onReset: function () {
 		// this._createChildren();
-		this.invalidateChildren();
+		// this.invalidateChildren();
+		this.requestRender(View.CHILDREN_INVALID | View.MODEL_INVALID);
 	},
 	
 	

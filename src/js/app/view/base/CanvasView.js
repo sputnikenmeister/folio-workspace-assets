@@ -80,8 +80,9 @@ var CanvasView = View.extend({
 		this._ctx = this.el.getContext("2d");
 		
 		this.listenTo(this, "view:attached", function(){
-			this.invalidateSize();
+			// this.invalidateSize();
 			// this.renderNow();
+			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
 		});
 	},
 

@@ -44,23 +44,27 @@ var Controller = Backbone.Router.extend({
 	/* --------------------------- */
 
 	selectMedia: function (media) {
-		this._changeSelection(media.get("bundle"), media);
-		this._updateLocation();
+		this._goToLocation(media.get("bundle"), media);
+		// this._changeSelection(media.get("bundle"), media);
+		// this._updateLocation();
 	},
 
 	selectBundle: function (bundle) {
-		this._changeSelection(bundle);
-		this._updateLocation();
+		this._goToLocation(bundle);
+		// this._changeSelection(bundle);
+		// this._updateLocation();
 	},
 	
 	deselectMedia: function () {
-		this._changeSelection(bundles.selected);
-		this._updateLocation();
+		this._goToLocation(bundles.selected);
+		// this._changeSelection(bundles.selected);
+		// this._updateLocation();
 	},
 	
 	deselectBundle: function () {
-		this._changeSelection();
-		this._updateLocation();
+		this._goToLocation();
+		// this._changeSelection();
+		// this._updateLocation();
 	},
 	
 	/** Update location when navigation happens internally */

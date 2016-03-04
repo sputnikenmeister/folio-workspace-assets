@@ -178,12 +178,9 @@ var ContentView = View.extend({
 								// o.clearOffset();
 							}
 						});
-						// this.transforms.clearAllOffsets();
-						// this.transforms.runAllTransitions(tx.NOW);
 					}
 				}
 			}
-			// debug
 			// console.group(this.cid + "::renderFrame transitions:");
 			// if (!this.skipTransitions) {
 			// 	console.log("[skipping]");
@@ -196,18 +193,19 @@ var ContentView = View.extend({
 			// }
 			// console.groupEnd();
 			
-			this.transforms.clearAllOffsets();
+			if (!childrenChanged) {
+				this.transforms.clearAllOffsets();
+			}
 			this.transforms.validate();
 		}
-		
 		if (sizeChanged) {
 			this.itemViews.forEach(function(view) {
 				view.skipTransitions = this.skipTransitions;
-				view.invalidateSize();
-				view.renderNow();
+				// view.invalidateSize();
+				// view.renderNow();
+				view.requestRender(View.SIZE_INVALID).renderNow();
 			}, this);
 		}
-		
 		this.skipTransitions = this._transformsChanged = false;
 	},
 	

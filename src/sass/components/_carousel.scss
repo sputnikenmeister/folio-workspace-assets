@@ -52,7 +52,7 @@
 	
 // .empty-item .content
 // - - - - - - - - - - - - - - - - - -
-.carousel-item.empty-item {
+.empty-item {
 	.content {
 		transition: tx(opacity, 0.5, 0);
 		opacity: 0.15;

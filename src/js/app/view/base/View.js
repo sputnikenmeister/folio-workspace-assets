@@ -175,7 +175,7 @@ var View = {
 	LAYOUT_INVALID: 16,
 	
 	/** @const */
-	RENDER_INVALID: 8 | 16,
+	// RENDER_INVALID: 8 | 16,
 	
 	/** @type {module:app/view/base/ViewError} */
 	ViewError: require("app/view/base/ViewError"),
@@ -531,12 +531,12 @@ var ViewProto = {
 	/* requestAnimationFrame
 	/* ------------------------------- */
 	
-	requestAnimationFrame: function(callback, priority) {
+	requestAnimationFrame: function(callback, priority, ctx) {
 		// var retval = FrameQueue.request(callback.bind(this), priority);
 		// if (!this._skipLog)
 		// 	console.log("%s::requestAnimationFrame ID:%i requested", this.cid, retval);
 		// return retval;
-		return FrameQueue.request(callback.bind(this), priority);
+		return FrameQueue.request(callback.bind(ctx || this), priority);
 	},
 	
 	cancelAnimationFrame: function(id) {
@@ -547,8 +547,8 @@ var ViewProto = {
 		return FrameQueue.cancel(id);
 	},
 	
-	setImmediate: function(callback) {
-		View.setImmediate(callback.bind(this));
+	setImmediate: function(callback, ctx) {
+		View.setImmediate(callback.bind(ctx || this));
 	},
 	
 	/* -------------------------------
@@ -559,10 +559,11 @@ var ViewProto = {
 	_applyRender: function (tstamp) {
 		
 		if (!this._skipLog) {
-			console.log("%s::_applyRender [flags: %s (%s)] [%s, %s]", this.cid,
-				View.flagsToString(this._renderFlags), this._renderFlags,
+			console.log("%s::_applyRender [flags: %s] [%s, %s, %s]", this.cid,
+				View.flagsToString(this._renderFlags),
+				(this._frameQueueId != -1? "async #" + this._frameQueueId : "sync"),
 				(this.attached? "attached" : "detached"),
-				(this._frameQueueId != -1? "async " + this._frameQueueId : "sync")
+				(this.skipTransitions? "skip":"run") +" transitions"
 			);
 		}
 		var flags = this._renderFlags; 
@@ -650,25 +651,25 @@ var ViewProto = {
 	
 	/* flag helpers ------------------ */
 	
-	invalidateChildren: function() {
-		// this._renderFlags |= View.CHILDREN_INVALID;
-		return this.requestRender(View.CHILDREN_INVALID);
-	},
-	
-	invalidateModel: function() {
-		// this._renderFlags |= (View.MODEL_INVALID | View.LAYOUT_INVALID);
-		return this.requestRender(View.MODEL_INVALID | View.LAYOUT_INVALID);
-	},
-	
-	invalidateSize: function() {
-		// this._renderFlags |= (View.SIZE_INVALID | View.LAYOUT_INVALID);
-		return this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
-	},
-	
-	invalidateLayout: function() {
-		// this._renderFlags |= View.LAYOUT_INVALID;
-		return this.requestRender(View.LAYOUT_INVALID);
-	},
+	// invalidateChildren: function() {
+	// 	// this._renderFlags |= View.CHILDREN_INVALID;
+	// 	return this.requestRender(View.CHILDREN_INVALID);
+	// },
+	// 
+	// invalidateModel: function() {
+	// 	// this._renderFlags |= (View.MODEL_INVALID | View.LAYOUT_INVALID);
+	// 	return this.requestRender(View.MODEL_INVALID | View.LAYOUT_INVALID);
+	// },
+	// 
+	// invalidateSize: function() {
+	// 	// this._renderFlags |= (View.SIZE_INVALID | View.LAYOUT_INVALID);
+	// 	return this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
+	// },
+	// 
+	// invalidateLayout: function() {
+	// 	// this._renderFlags |= View.LAYOUT_INVALID;
+	// 	return this.requestRender(View.LAYOUT_INVALID);
+	// },
 	
 	/* -------------------------------
 	/* common abstract

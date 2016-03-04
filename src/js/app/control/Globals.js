@@ -6,7 +6,7 @@ var _ = require("underscore");
 
 module.exports = (function () {
 	// reusable vars
-	var o, s;
+	var o, s, so;
 	// global hash
 	var g = {};
 	// SASS <--> JS shared hash
@@ -34,13 +34,6 @@ module.exports = (function () {
 	g.HORIZONTAL_STEP			=	parseFloat(sass.units["hu_px"]);
 	g.VERTICAL_STEP				=	parseFloat(sass.units["vu_px"]);
 	
-	// timing, easing
-	// - - - - - - - - - - - - - - - - -
-	g.TRANSITION_DELAY_INTERVAL	=	parseFloat(sass.transitions["delay_interval_ms"]);
-	g.TRANSITION_DURATION		=	parseFloat(sass.transitions["duration_ms"]);
-	g.TRANSITION_MIN_DELAY		=	parseFloat(sass.transitions["min_delay_ms"]);
-	g.TRANSITION_EASE			=	sass.transitions["ease"];
-	g.TRANSITION_DELAY			=	g.TRANSITION_DURATION + g.TRANSITION_DELAY_INTERVAL;
 	
 	// paths, networking
 	// - - - - - - - - - - - - - - - - -
@@ -74,53 +67,43 @@ module.exports = (function () {
 	g.PLAY_CHAR = String.fromCharCode(0x23F5);
 	g.STOP_CHAR = String.fromCharCode(0x23F9);
 	
+	// timing, easing
+	// - - - - - - - - - - - - - - - - -
+	g.TRANSITION_DELAY_INTERVAL	=	parseFloat(sass.transitions["delay_interval_ms"]);
+	g.TRANSITION_DURATION		=	parseFloat(sass.transitions["duration_ms"]);
+	g.TRANSITION_MIN_DELAY		=	parseFloat(sass.transitions["min_delay_ms"]);
+	g.TRANSITION_EASE			=	sass.transitions["ease"];
+	g.TRANSITION_DELAY			=	g.TRANSITION_DURATION + g.TRANSITION_DELAY_INTERVAL;
+	
 	// css transition presets
 	// TODO: get rid of this
 	// - - - - - - - - - - - - - - - - -
+	var txDur = g.TRANSITION_DURATION,
+		txDelay = g.TRANSITION_DELAY,
+		txMinDelay = g.TRANSITION_MIN_DELAY;
 	
 	o = {};
 	
-	o.NONE = {
-		easing: "step-start",
-		duration: 0,
-		delay: 0,
-	};
-	o.NOW = {
-		easing: g.TRANSITION_EASE,
-		duration: g.TRANSITION_DURATION,
-		delay: 0,
-	};
-	o.UNSET = _.defaults({ cssText: "" }, o.NONE);
+	o.NONE = 	{ delay: 0, duration: 0, easing: "step-start" };
+	o.NOW = 	{ delay: 0, duration: txDur, easing: g.TRANSITION_EASE };
+	o.UNSET = 	_.defaults({ cssText: "" }, o.NONE);
 	
-	o.FIRST = {
-		easing: g.TRANSITION_EASE,
-		duration: g.TRANSITION_DURATION - g.TRANSITION_MIN_DELAY,
-		delay: g.TRANSITION_DELAY * 0 + g.TRANSITION_MIN_DELAY,
-	};
-	o.BETWEEN = _.defaults({
-		delay: g.TRANSITION_DELAY * 1 + g.TRANSITION_MIN_DELAY
-	}, o.FIRST);
-	o.LAST = _.defaults({
-		delay: g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY
-	}, o.FIRST);
-	o.AFTER = _.defaults({
-		delay: g.TRANSITION_DELAY * 2 + g.TRANSITION_MIN_DELAY
-	}, o.FIRST);
+	var txAligned = 	_.defaults({duration: txDur - txMinDelay}, o.NOW);
+	o.FIRST = 			_.defaults({delay: txDelay*0.0 + txMinDelay}, txAligned);
+	// o.FIRST_LATE = 		_.defaults({delay: txDelay*0.0 + txMinDelay*2}, txAligned);
+	o.FIRST_LATE = 		_.defaults({delay: txDelay*0.5 + txMinDelay}, txAligned);
+	o.BETWEEN = 		_.defaults({delay: txDelay*1.0 + txMinDelay}, txAligned);
+	// o.LAST_EARLY = 		_.defaults({delay: txDelay*2.0 + txMinDelay*0}, txAligned);
+	o.LAST_EARLY = 		_.defaults({delay: txDelay*1.5 + txMinDelay}, txAligned);
+	o.LAST = 			_.defaults({delay: txDelay*2.0 + txMinDelay}, txAligned);
+	o.AFTER = 			_.defaults({delay: txDelay*2.0 + txMinDelay}, txAligned);
 	
-	// var easing = "ease-in";
-	// o.FIRST_LINEAR = _.defaults({ easing: easing }, o.FIRST);
-	// o.BETWEEN_LINEAR = _.defaults({ easing: easing }, o.BETWEEN);
-	// o.LAST_LINEAR = _.defaults({ easing: easing }, o.LAST);
-	
-	var so, transToCSS = function(o) {
-		return o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
-	};
 	for (s in o) {
 		so = o[s];
 		so.name = s;
-		so.className = "tx-" + s.toLowerCase();
+		so.className = "tx-" + s.replace("_", "-").toLowerCase();
 		if (!so.hasOwnProperty("cssText")) {
-			so.cssText = transToCSS(so);
+			so.cssText = so.duration/1000 + "s " + so.easing + " " + so.delay/1000 + "s";
 		}
 	}
 	g.transitions = o;

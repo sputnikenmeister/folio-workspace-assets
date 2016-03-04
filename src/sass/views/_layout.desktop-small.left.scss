@@ -1,0 +1,110 @@
+// ///////////////////////////////////
+// media query : $desktop-small
+// ///////////////////////////////////
+
+// layout variables
+// - - - - - - - - - - - - - - - - - -
+
+@include media(desktop-small) { .left-layout {
+// -----------------------------------
+// navigation
+// -----------------------------------
+
+// nav_list
+// -----------------------------------
+
+// bundle-list
+// - - - - - - - - - - - - - - - - - -
+
+// keyword-list
+// - - - - - - - - - - - - - - - - - -
+
+// keyword-list list-group
+// - - - - - - - - - - - - - - - - - -
+
+// site-name
+// - - - - - - - - - - - - - - - - - -
+
+// transform-wrappers
+// -----------------------------------
+
+// site-name-wrapper
+// - - - - - - - - - - - - - - - - - -
+&.without-bundle #site-name {
+	top: $nHeightLand;
+}
+
+// bundle-list-wrapper
+// - - - - - - - - - - - - - - - - - -
+#bundle-list-wrapper {
+	transform: move($aside_width_large, 0);
+}
+&.with-bundle #bundle-list-wrapper {
+	transform: move(0, 0);
+}
+&.with-bundle .container-expanded #bundle-list-wrapper {
+	transform: move($aside_width_large, 0);
+}
+
+// keyword-list-wrapper
+// - - - - - - - - - - - - - - - - - -
+
+// nav-graph
+// - - - - - - - - - - - - - - - - - -
+
+// -----------------------------------
+// content
+// -----------------------------------
+
+// image-carousel
+// - - - - - - - - - - - - - - - - - -
+.media-carousel {
+	.carousel-item.media-item {
+		margin-left: $aside_width_large;
+	}
+}
+// .disabled .empty-item transitions
+.disabled .carousel-item.empty-item .content {
+	// transition: tx(transform, 1, 1), tx(opacity, 3, 0);
+	transition: tx(transform, 1, 0, step-end), tx(opacity, 0.5, 0) !important;
+}
+:not(.scrolling) .carousel-item.empty-item.selected .content {
+	transform: move(0, 0); //opacity: 1;
+}
+.disabled .carousel-item.empty-item.selected .content {
+	transform: move($aside_width_large, 0); //opacity: 0.5;
+}
+.container-changed .carousel-item.empty-item.selected .content {
+	opacity: 0 !important;
+	// transition: tx(transform, 1, 0, step-end), tx(opacity, 1, 0) !important;
+}
+
+.playable-renderer {
+	.top-bar {
+		top: 0;
+		right: 100%;
+	}
+}
+
+// media-caption-stack
+// - - - - - - - - - - - - - - - - - -
+.media-caption-stack {
+	top: $nTopLand;
+	margin-top: 0;
+	// transform: move(0, 0);
+	.content {
+		margin-left: $aside_width_large;
+		// margin-right: 0;
+	}
+}
+
+// media-dotnav
+// - - - - - - - - - - - - - - - - - -
+
+// - - - - - - - - - - - - - - - - - -
+// NOTE: typeface overrides
+// - - - - - - - - - - - - - - - - - -
+// .media-caption-stack .content > * {}
+
+}// end layout
+}// end media-query

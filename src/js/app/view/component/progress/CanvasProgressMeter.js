@@ -139,8 +139,9 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		// 	this.listenToOnce(this, "view:attached", this._updateCanvas);
 		// }
 		this.listenTo(this, "view:attached", function(){
-			this.invalidateSize();
-			this.renderNow();
+			// this.invalidateSize();
+			// this.renderNow();
+			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
 		});
 	},
 
@@ -284,7 +285,7 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		
 		if (!this.attached) return flags;
 		
-		if (flags & ModelProgressMeter.RENDER_INVALID) {
+		if (flags & ModelProgressMeter.SIZE_INVALID) {
 			this._updateCanvas();
 			this._valuesChanged = true;
 		}

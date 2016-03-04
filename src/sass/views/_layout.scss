@@ -5,8 +5,7 @@
 // - - - - - - - - - - - - - - - - - -
 // Abstract rules
 // - - - - - - - - - - - - - - - - - -
-@import "../includes/media-queries";
-@import "../includes/transitions";
+@import "includes/transitions";
 
 // -----------------------------------
 // Root container
@@ -20,10 +19,6 @@ html, body {
 	height: 100%;
 	display: block;
 	overflow: hidden;
-	min-width: $page_width;
-	@include media(desktop-small) {
-		min-width: $page_width_large;
-	}
 }
 
 // initialize fade-in
@@ -75,6 +70,9 @@ body, .color-tx {
 			.list {
 				z-index: 1;
 			}
+			&#bundle-list-wrapper {
+				z-index: 2;
+			}
 		}
 	}
 	#content {
@@ -98,17 +96,6 @@ body, .color-tx {
 // Layout utilities
 // ///////////////////////////////////
 
-// layout variables
-// - - - - - - - - - - - - - - - - - -
-$header_height_landscape: 1.25rem;
-$header_height_portrait: 2.25rem;
-$nav_height_landscape: 9rem;
-$nav_height_portrait: 15rem;//13.5rem;//14.25rem;
-$nav_height_landscape_right: $nav_height_landscape + 1.5rem;
-$footer_height: 3rem;
-
-$nav_collapse_extra: map-get($temp, collapse_offset) * 1px;//28rem;
-
 // translate wrapper function
 // - - - - - - - - - - - - - - - - - -
 @function move($x: 0, $y: 0) {
@@ -127,34 +114,20 @@ $nav_collapse_extra: map-get($temp, collapse_offset) * 1px;//28rem;
 	}
 }
 
-// nav_list
-// -----------------------------------
-%nav_list {
-	position: absolute;
-	display: inline-block;
-	// will-change: transform;
-	transform-style: preserve-3d;
-	transform: move(0, #{$nav_height_portrait - 4.5rem});
-}
-.with-bundle %nav_list {
-	// padding-top: 1.5rem;
-	transform: move(0, 0);
-}
-
-.transform-wrapper {
-	// will-change: transform;
-}
-
 // ///////////////////////////////////
 // component defaults
 // ///////////////////////////////////
 
-@import "navigation";
-@import "content";
+@import "views/navigation";
+@import "views/content";
 
 // ///////////////////////////////////
 // media queries
 // ///////////////////////////////////
 
-@import "layout.default";
-@import "layout.desktop-small";
+@import "includes/media-queries";
+@import "views/layout.default";
+@import "views/layout.desktop-small";
+@import "views/layout.desktop-small.default";
+@import "views/layout.desktop-small.left";
+@import "views/layout.desktop-small.right";
