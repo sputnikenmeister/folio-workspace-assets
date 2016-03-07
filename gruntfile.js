@@ -403,22 +403,22 @@ module.exports = function (grunt) {
 	/* resources
 	/* -------------------------------- */
 	
-	/* generate-favicon
+	/* generate-favicons
 	* - - - - - - - - - - - - - - - - - */
 	
 	// grunt.loadNpmTasks("grunt-contrib-clean"); // NOTE: already loaded above
-	grunt.config("clean.favicon", {
+	grunt.config("clean.favicons", {
 		src: [
-			"<%= paths.src.generated %>/resources/favicon",
-			"./images/favicon"
+			"<%= paths.src.generated %>/resources/favicons",
+			"./images/favicons"
 		]
 	});
 	grunt.loadNpmTasks("grunt-svg2png");
-	grunt.config("svg2png.favicon", {
+	grunt.config("svg2png.favicons", {
 		files: [{
-			cwd: "src/resources/favicon/",
+			cwd: "src/resources/favicons/",
 			src: "IMG_0139_*.svg",
-			dest: "<%= paths.src.generated %>/resources/favicon/"
+			dest: "<%= paths.src.generated %>/resources/favicons/"
 		}]
 	});
 	grunt.loadNpmTasks("grunt-favicons");
@@ -426,32 +426,42 @@ module.exports = function (grunt) {
 		options: {
 			trueColor: true,
 			tileBlackWhite: false,
-			html: "<%= paths.src.generated %>/resources/favicon/favicon.html",
-			HTMLPrefix: "/workspace/assets/images/favicon/"
 		},
 		steampunk: {
 			options: {
 				appleTouchPadding: 10,
 				appleTouchBackgroundColor: "#FEFCE7",
 				tileColor: "#FEFCE7",
+				html: "<%= paths.src.generated %>/resources/favicons/steampunk.html",
+				HTMLPrefix: "/workspace/assets/images/favicons/steampunk/",
 			},
-			src: "src/resources/favicon/steampunk.png",
-			dest: "images/favicon"
+			src: "src/resources/favicons/steampunk.png",
+			dest: "images/favicons/steampunk"
 		},
-		img_0139: {
+		img_0139_square: {
 			options: {
+			html: "<%= paths.src.generated %>/resources/favicons/img_0139_square.html",
+			HTMLPrefix: "/workspace/assets/images/favicons/square/",
 				appleTouchPadding: 0,
-				// firefox: true,
-				// firefoxRound: true,
 			},
-			src: "<%= paths.src.generated %>/resources/favicon/IMG_0139_fav.png",
-			dest: "images/favicon",
+			src: "<%= paths.src.generated %>/resources/favicons/img_0139_square.png",
+			dest: "images/favicons/square",
+		},
+		img_0139_circle: {
+			options: {
+				html: "<%= paths.src.generated %>/resources/favicons/img_0139_circle.html",
+				HTMLPrefix: "/workspace/assets/images/favicons/circle/",
+				appleTouchPadding: 0,
+			},
+			src: "<%= paths.src.generated %>/resources/favicons/IMG_0139_circle.png",
+			dest: "images/favicons/circle",
 		},
 	});
-	grunt.registerTask("generate-favicon", [
-		"clean:favicon",
-		"svg2png:favicon",
-		"favicons:img_0139",
+	grunt.registerTask("generate-favicons", [
+		"clean:favicons",
+		"svg2png:favicons",
+		"favicons:img_0139_square",
+		"favicons:img_0139_circle",
 		// "favicons:steampunk",
 	]);
 	
