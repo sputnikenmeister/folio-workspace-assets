@@ -134,9 +134,11 @@ var DebugToolbar = Backbone.View.extend({
 	
 	initializeClassToggle: function (key, toggleEl, targetEl, callback) {
 		var hasCallback = _.isFunction(callback);
+		
 		this.initializeToggle(key, toggleEl, function(key, toggleValue) {
 			targetEl.classList.toggle(key, toggleValue);
 			toggleEl.classList.toggle("toggle-enabled", toggleValue);
+			toggleEl.classList.toggle("color-reverse", toggleValue);
 			hasCallback && callback.apply(this, arguments);
 		});
 	},

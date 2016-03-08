@@ -19,6 +19,8 @@ module.exports = BaseItem.extend({
 	defaults: {
 		name: "",
 		handle: "",
+		// get kIds() { return []; },
+		// get keywords() { return []; },
 	},
 
 });

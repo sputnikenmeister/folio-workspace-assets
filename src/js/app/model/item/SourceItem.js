@@ -31,9 +31,6 @@ module.exports = BaseItem.extend({
 	getters: [ "src", "original" ],
 	
 	mutators: {
-		// domid: function() {
-		// 	return "s" + this.cid;
-		// },
 		src: {
 			set: function (key, value, options, set) {
 				if (DEBUG) {

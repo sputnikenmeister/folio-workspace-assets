@@ -80,6 +80,7 @@ module.exports = (function () {
 	// - - - - - - - - - - - - - - - - -
 	var txDur = g.TRANSITION_DURATION,
 		txDelay = g.TRANSITION_DELAY,
+		txIntDelay = g.TRANSITION_DELAY_INTERVAL,
 		txMinDelay = g.TRANSITION_MIN_DELAY;
 	
 	o = {};
@@ -90,13 +91,18 @@ module.exports = (function () {
 	
 	var txAligned = 	_.defaults({duration: txDur - txMinDelay}, o.NOW);
 	o.FIRST = 			_.defaults({delay: txDelay*0.0 + txMinDelay}, txAligned);
-	// o.FIRST_LATE = 		_.defaults({delay: txDelay*0.0 + txMinDelay*2}, txAligned);
-	o.FIRST_LATE = 		_.defaults({delay: txDelay*0.5 + txMinDelay}, txAligned);
 	o.BETWEEN = 		_.defaults({delay: txDelay*1.0 + txMinDelay}, txAligned);
-	// o.LAST_EARLY = 		_.defaults({delay: txDelay*2.0 + txMinDelay*0}, txAligned);
-	o.LAST_EARLY = 		_.defaults({delay: txDelay*1.5 + txMinDelay}, txAligned);
 	o.LAST = 			_.defaults({delay: txDelay*2.0 + txMinDelay}, txAligned);
 	o.AFTER = 			_.defaults({delay: txDelay*2.0 + txMinDelay}, txAligned);
+	
+	o.BETWEEN_EARLY = 		_.defaults({delay: txDelay*1 + txMinDelay - txIntDelay}, txAligned);
+	o.BETWEEN_LATE = 		_.defaults({delay: txDelay*1 + txMinDelay + txIntDelay}, txAligned);
+	
+	o.FIRST_LATE = 		_.defaults({delay: txDelay*0.5 + txMinDelay}, txAligned);
+	o.LAST_EARLY = 		_.defaults({delay: txDelay*1.5 + txMinDelay}, txAligned);
+	// o.FIRST_LATE = 		_.defaults({delay: txDelay*0.0 + txMinDelay*2}, txAligned);
+	// o.LAST_EARLY = 		_.defaults({delay: txDelay*2.0 + txMinDelay*0}, txAligned);
+	// o.AFTER = 			_.defaults({delay: txDelay*2.0 + txMinDelay}, txAligned);
 	
 	for (s in o) {
 		so = o[s];

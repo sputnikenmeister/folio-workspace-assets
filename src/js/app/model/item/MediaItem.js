@@ -53,30 +53,25 @@ module.exports = BaseItem.extend({
 	
 	/** @type {Object} */
 	defaults: {
+		name: "<p><em>Untitled</em></p>",
 		o: 0,
 		bId: -1,
-		desc: "<p><em>Untitled</em></p>",
 		srcIdx: 0,
 		get srcset() { return []; },
 		get sources() { return new SourceCollection(); },
-		// srcset: function() { return []; },
-		// sources: function() { return new SourceCollection(); },
 	},
 	
 	getters: ["name", "bundle", "source", "sources"],
 	
 	mutators: {
-		// domid: function() {
-		// 	return "m" + this.id;
-		// },
-		name: function () {
-			return this.get("text") || this.get("src");
+		desc: function () {
+			return this.get("name");
 		},
 		handle: function () {
 			return this.get("src");
 		},
 		text: function () {
-			return stripTags(this.get("desc"));
+			return stripTags(this.get("name"));
 		},
 		attrs: {
 			set: function (key, value, opts, set) {
@@ -98,27 +93,6 @@ module.exports = BaseItem.extend({
 				return this.get("sources").at(this.get("srcIdx"));
 			},
 		},
-		// src: {
-		// 	transient: true,
-		// 	get: function() {
-		// 		return this.has("source")? this.get("source").get("src") : "";
-		// 		// return this.get("source").get("src");
-		// 	},
-		// },
-		// w: {
-		// 	transient: true,
-		// 	get: function() {
-		// 		return this.has("source")? this.get("source").get("w") : 0;
-		// 		// return this.get("source").get("w");
-		// 	},
-		// },
-		// h: { 
-		// 	transient: true,
-		// 	get: function() {
-		// 		return this.has("source")? this.get("source").get("h") : 0;
-		// 		// return this.get("source").get("h");
-		// 	},
-		// },
 	},
 	
 	initialize: function() {
@@ -129,9 +103,6 @@ module.exports = BaseItem.extend({
 	},
 	
 	attrs: function() {
-		// if (this._attrs === void 0) {
-		// 	this._attrs = _.defaults({}, this.get("attrs"), this.get("bundle").attrs());
-		// }
 		return this._attrs || (this._attrs = _.defaults({}, this.get("attrs"), this.get("bundle").attrs()));
 	},
 	

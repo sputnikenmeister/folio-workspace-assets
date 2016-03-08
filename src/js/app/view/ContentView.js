@@ -39,9 +39,9 @@ var SequenceRenderer = require("app/view/render/SequenceRenderer");
 // var ProgressMeter = require("app/view/component/ProgressMeter");
 
 /** @type {Function} */
-var bundleDescTemplate = require("./template/CollectionStack.Bundle.hbs");
+var bundleStackTemplate = require("./template/CollectionStack.Bundle.hbs");
 /** @type {Function} */
-var mediaCaptionTemplate = require("./template/CollectionStack.Media.hbs");
+var mediaStackTemplate = require("./template/CollectionStack.Media.hbs");
 
 var transitionEnd = View.prefixedEvent("transitionend");
 var transformProp = View.prefixedProperty("transform");
@@ -415,7 +415,7 @@ var ContentView = View.extend({
 		var EmptyRenderer = CarouselRenderer.extend({
 			className: "carousel-item empty-item",
 			model: bundle,
-			template: bundleDescTemplate,
+			template: bundleStackTemplate,
 		});
 		var rendererFunction = function(item, index, arr) {
 			if (index === -1) {
@@ -455,7 +455,7 @@ var ContentView = View.extend({
 		var view = new CollectionStack({
 			className: "media-caption-stack",
 			collection: bundle.get("media"),
-			template: mediaCaptionTemplate
+			template: mediaStackTemplate
 		});
 		view.listenTo(bundle, "deselected", function() {
 			this.stopListening(this.collection);

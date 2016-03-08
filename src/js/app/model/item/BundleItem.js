@@ -24,6 +24,9 @@ var stripTags = require("utils/strings/stripTags");
 // /** @type {module:app/utils/strings/parseTaglist} */
 // var parseSymAttrs = require("app/model/parseSymAttrs");
 
+// /** @type {module:app/model/collection/KeywordCollection} */
+// var keywords = require("app/model/collection/KeywordCollection");
+
 // Globals.DEFAULT_COLORS["color"];
 // Globals.DEFAULT_COLORS["background-color"];
 var attrsDefault = _.defaults({ "has-colors": "defaults" }, Globals.DEFAULT_COLORS);
@@ -57,7 +60,7 @@ module.exports = BaseItem.extend({
 		desc: "",
 		completed: 0,
 		get kIds() { return []; },
-		// kIds: function() { return []; },
+		// get keywords() { return []; },
 	},
 	
 	getters: ["name", "media"],
@@ -66,7 +69,19 @@ module.exports = BaseItem.extend({
 		text: function () {
 			return stripTags(this.get("desc"));
 		},
+		// kIds: {
+		// 	set: function (key, value, options, set) {
+		// 		if (Array.isArray(value)) {
+		// 			set("keywords", value.map(function(id) {
+		// 				var obj = keywords.get(id);
+		// 				return obj;
+		// 			}, this), options;
+		// 		}
+		// 		set(key, value, options);
+		// 	},
+		// },
 		media: {
+			transient: true,
 			set: function (key, value, options, set) {
 				if (Array.isArray(value)) {
 					value.forEach(function(o) {
@@ -76,7 +91,6 @@ module.exports = BaseItem.extend({
 				}
 				set(key, value, options);
 			},
-			transient: true
 		},
 	},
 
@@ -89,15 +103,6 @@ module.exports = BaseItem.extend({
 	},
 	
 	attrs: function() {
-		// if (this._attrs === void 0) {
-		// 	this._attrs = _.defaults({}, this.get("attrs"), attrsDefault);
-		// }
 		return this._attrs || (this._attrs = _.defaults({}, this.get("attrs"), attrsDefault));
 	},
-	
-	// /** @override */
-	// toString: function () {
-	// 	return this.id;
-	// },
-
 });
