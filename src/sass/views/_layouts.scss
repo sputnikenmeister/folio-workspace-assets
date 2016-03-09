@@ -115,19 +115,19 @@ body, .color-tx {
 }
 
 // ///////////////////////////////////
-// component defaults
+// components
 // ///////////////////////////////////
 
 @import "views/navigation";
 @import "views/content";
 
 // ///////////////////////////////////
-// media queries
+// media queries / layouts
 // ///////////////////////////////////
 
 @import "includes/media-queries";
-@import "views/layout.default";
-@import "views/layout.desktop-small";
-@import "views/layout.desktop-small.default";
-@import "views/layout.desktop-small.left";
-@import "views/layout.desktop-small.right";
+@import "views/layouts/default";
+@import "views/layouts/desktop-small";
+@import "views/layouts/desktop-small.default";
+@import "views/layouts/desktop-small.left";
+@import "views/layouts/desktop-small.right";
