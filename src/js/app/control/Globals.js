@@ -95,8 +95,8 @@ module.exports = (function () {
 	o.LAST = 			_.defaults({delay: txDelay*2.0 + txMinDelay}, txAligned);
 	o.AFTER = 			_.defaults({delay: txDelay*2.0 + txMinDelay}, txAligned);
 	
-	o.BETWEEN_EARLY = 		_.defaults({delay: txDelay*1 + txMinDelay - txIntDelay}, txAligned);
-	o.BETWEEN_LATE = 		_.defaults({delay: txDelay*1 + txMinDelay + txIntDelay}, txAligned);
+	o.BETWEEN_EARLY = 		_.defaults({delay: txDelay*1 + txMinDelay - 60}, txAligned);
+	o.BETWEEN_LATE = 		_.defaults({delay: txDelay*1 + txMinDelay + 60}, txAligned);
 	
 	o.FIRST_LATE = 		_.defaults({delay: txDelay*0.5 + txMinDelay}, txAligned);
 	o.LAST_EARLY = 		_.defaults({delay: txDelay*1.5 + txMinDelay}, txAligned);

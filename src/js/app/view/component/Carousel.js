@@ -346,11 +346,6 @@ var CarouselProto = {
 	_enabled: undefined,
 	
 	/** @override */
-	isEnabled: function () {
-		return this._enabled;
-	},
-	
-	/** @override */
 	setEnabled: function(enabled) {
 		if (this._enabled !== enabled) {
 			this._enabled = enabled;

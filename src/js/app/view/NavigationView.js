@@ -67,24 +67,22 @@ var NavigationView = View.extend({
 		
 		this.listenTo(this.model, "change", this._onModelChange);
 		
-		this.sitename = this.createSitenameButton();
-		this.transforms.add(this.sitename.el);
-		
-		this.bundleList = this.createBundleList();
-		this.transforms.add(this.bundleList.el);
-		this.itemViews.push(this.bundleList);
-		
-		this.keywordList = this.createKeywordList();
-		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group span");
-		this.transforms.add(this.hGroupings, this.keywordList.el);
-		this.itemViews.push(this.keywordList);
-		
 		// this.graph = this.createGraphView();
 		// this.itemViews.push(this.graph);
 		// this.transforms.add(this.graph.el);
 		
-		// add wrappers last
-		this.transforms.add(this.bundleList.wrapper, this.keywordList.wrapper);
+		this.keywordList = this.createKeywordList();
+		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group span");
+		this.transforms.add(this.hGroupings, this.keywordList.el, this.keywordList.wrapper);
+		this.itemViews.push(this.keywordList);
+		
+		this.bundleList = this.createBundleList();
+		this.transforms.add(this.bundleList.el, this.bundleList.wrapper);
+		this.itemViews.push(this.bundleList);
+		
+		this.sitename = this.createSitenameButton();
+		this.transforms.add(this.sitename.wrapper, this.sitename.el);
+		// this.transforms.add(this.sitename.el.firstElementChild, this.sitename.el);
 	},
 	
 	/* --------------------------- *
@@ -163,6 +161,7 @@ var NavigationView = View.extend({
 				this.keywordList.requestRender(View.SIZE_INVALID);
 			}
 		}
+		
 		this.itemViews.forEach(function(view) {
 			view.skipTransitions = view.skipTransitions || this.skipTransitions;
 			if (flags & View.SIZE_INVALID) {
@@ -196,45 +195,23 @@ var NavigationView = View.extend({
 		// collapsed
 		var collapsed = this.model.get("collapsed");
 		var collapsedChanged = modelChanged && this.model.hasChanged("collapsed");
+		// layoutName
+		var layoutName = Globals.BREAKPOINTS["desktop-small"].matches? this.model.get("layoutName") : "";
 		
-		
-		// Vertical translation:
-		// bundleList, keywordList
-		// - - - - - - - - - - - - - - - - -
-		/* this.sitename.el */
-		if (withBundleChanged) {
-			// this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
-			this.transforms.runTransition(collapsed? tx.FIRST_LATE : tx.LAST_EARLY, this.sitename.el);
-		} else if (collapsedChanged && Globals.BREAKPOINTS["desktop-small"].matches) {
-			this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.sitename.el);
-		}
-		
-		/* this.bundleList */
+		/* this.bundleList.el */
 		var bListTf = this.transforms.get(this.bundleList.el);
-		// if (withBundleChanged || (collapsedChanged && bListTf.hasOffset)) {
-		// 	bListTf.runTransition(tx.BETWEEN);
-		// } else
 		if (bListTf.hasOffset) {
-			bListTf.runTransition(collapsedChanged? tx.BETWEEN : tx.NOW);
-		}
-		if (bListTf.hasOffset) {
-			bListTf.clearOffset();
+			bListTf.runTransition(collapsedChanged? tx.BETWEEN : tx.NOW).clearOffset();
 		}
 		
-		/* this.keywordList */
-		// var isDesktopLayout = Globals.BREAKPOINTS["desktop-small"].matches;
+		/* this.keywordList.el */
 		var kListTf = this.transforms.get(this.keywordList.el);
-		// if (collapsedChanged || (collapsedChanged && (kListTf.hasOffset || Globals.BREAKPOINTS["desktop-small"].matches))) {
-		// 	kListTf.runTransition(tx.BETWEEN);
-		// } else
 		if (kListTf.hasOffset) {
-			kListTf.runTransition(collapsedChanged? tx.BETWEEN : tx.NOW);
+			kListTf.runTransition(collapsedChanged? tx.BETWEEN : tx.NOW).clearOffset();
 			// kListTf.runTransition(tx.NOW);
 		}
-		if (kListTf.hasOffset) {
-			kListTf.clearOffset();
-		}
-		// /* this.graph */
+		
+		// /* this.graph.el */
 		// var graphTf = this.transforms.get(this.graph.el);
 		// if (withBundleChanged || (collapsedChanged && graphTf.hasOffset)) {
 		// 	graphTf.runTransition(tx.BETWEEN);
@@ -245,55 +222,68 @@ var NavigationView = View.extend({
 		// 	graphTf.clearOffset();
 		// }
 		
-		// Horizontal translation:
-		// sitename, wrappers (bundleList, keywordList), groups (keywordList)
-		// - - - - - - - - - - - - - - - - -
-		if (Globals.BREAKPOINTS["desktop-small"].matches) {
-			/* this.keywordList.wrapper */
-			var kWrapTf = this.transforms.get(this.keywordList.wrapper);
-			if (collapsedChanged) {
-				if (withBundleChanged) {
-					if (withMediaChanged)
-						kWrapTf.runTransition(withBundle? tx.LAST : tx.FIRST);
+		// if (layout == "default-layout" || layout == "left-layout") {}
+		switch (layoutName) {
+			case "left-layout":
+			case "default-layout":
+				/* this.keywordList.wrapper */
+				var kWrapTf = this.transforms.get(this.keywordList.wrapper);
+				if (collapsedChanged) {
+					if (withBundleChanged) {
+						if (withMediaChanged)
+							kWrapTf.runTransition(withBundle? tx.LAST : tx.FIRST);
+					} else {
+						if (withMedia)
+							kWrapTf.runTransition(collapsed? tx.LAST : tx.FIRST);
+					}
 				} else {
-					if (withMedia)
-						kWrapTf.runTransition(collapsed? tx.LAST : tx.FIRST);
+					if (!withBundleChanged && withMediaChanged)
+						kWrapTf.runTransition(bundleChanged? tx.BETWEEN : tx.NOW);
 				}
-			} else {
-				if (!withBundleChanged && withMediaChanged)
-					kWrapTf.runTransition(bundleChanged? tx.BETWEEN : tx.NOW);
-			}
-			if (kWrapTf.hasOffset) {
-				kWrapTf.clearOffset();
-			}
-			/* this.hGroupings */
-			if (collapsedChanged) {
-				this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.hGroupings);
-			}
-			
-			/* this.bundleList.wrapper */
-			if (collapsedChanged ^ withBundleChanged) { // either but not both
-				// invert condition if collapsedChanged
-				this.transforms.runTransition(collapsed ^ collapsedChanged? tx.FIRST : tx.LAST, this.bundleList.wrapper);
-			}
-			// /* this.sitename.el */
-			// if (withBundleChanged) {
-			// 	// this.transforms.runTransition(collapsed? tx.FIRST : tx.LAST, this.sitename.el);
-			// 	this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
-			// } else if (collapsedChanged) {
-			// 	this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.sitename.el);
-			// 	// this.transforms.runTransition(collapsed? tx.FIRST : tx.LAST, this.sitename.el);
-			// }
-			// // if (collapsedChanged || withBundleChanged) { // either but not both
-			// // 	// invert condition if withBundleChanged
-			// // 	this.transforms.runTransition(collapsed ^ withBundleChanged? tx.LAST : tx.FIRST, this.sitename.el);
-			// // }
-		} else {
-			// /* this.sitename.el */
-			// if (withBundleChanged) {
-			// 	// this.transforms.runTransition(collapsed? tx.FIRST : tx.LAST, this.sitename.el);
-			// 	this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
-			// }
+				if (kWrapTf.hasOffset) {
+					kWrapTf.clearOffset();
+				}
+				// continue
+			case "right-layout":
+				if (collapsedChanged) { /* this.hGroupings */
+					this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.hGroupings);
+				}
+				break;
+		}
+		
+		// if (layout == "left-layout") {} else if (layout == "default-layout" || layout == "right-layout") {} else {}
+		switch (layoutName) {
+			case "left-layout":
+				if (collapsedChanged) { /* this.bundleList.wrapper */
+					this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.bundleList.wrapper);
+				}
+				if (collapsedChanged) { /* this.sitename.el */
+					this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.sitename.el);
+				}
+				if (withBundleChanged) { /* this.sitename.wrapper */
+					this.transforms.runTransition(tx.BETWEEN, this.sitename.wrapper);
+					// NOTE: when changing to collapsed, tx tends to fire early, so use BETWEEN_LATE
+					// this.transforms.runTransition(collapsed? tx.BETWEEN_LATE : tx.BETWEEN, this.sitename.el);
+				}
+				break;
+			case "default-layout":
+				if (collapsedChanged ^ withBundleChanged) { /* this.bundleList.wrapper */
+					// if either but not both, then invert condition if collapsedChanged
+					this.transforms.runTransition(collapsed ^ collapsedChanged? tx.FIRST : tx.LAST, this.bundleList.wrapper);
+				}
+				// continue
+			case "right-layout":
+				if (withBundleChanged) { /* this.sitename.el */
+					this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
+				} else if (collapsedChanged) {
+					this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.sitename.el);
+				}
+				break;
+			default:
+				if (withBundleChanged) { /* this.sitename.el */
+					this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
+				}
+				break;
 		}
 	},
 	
@@ -344,20 +334,23 @@ var NavigationView = View.extend({
 	/* ------------------------------- */
 		
 	_onHPanStart: function(ev) {
-		if (Globals.BREAKPOINTS["desktop-small"].matches && this.model.get("bundle").get("media").selectedIndex <= 0 && this.model.get("collapsed")) {
+		this.transforms.get(this.keywordList.wrapper)
+			.stopTransition()
+			.clearOffset()
+			.validate();
+		if (this.model.get("layoutName") != "left-layout" &&
+			this.model.get("layoutName") != "default-layout") {
+			return;
+		}
+		if (Globals.BREAKPOINTS["desktop-small"].matches &&
+			this.model.get("bundle").get("media").selectedIndex <= 0 &&
+			this.model.get("collapsed")
+		) {
+			this.transforms.get(this.keywordList.wrapper).clearCapture();
+			this._onHPanMove(ev);
+			
 			this.touch.on("panmove", this._onHPanMove);
 			this.touch.on("panend pancancel", this._onHPanFinal);
-			
-			this.transforms.get(this.keywordList.wrapper)
-				.stopTransition()
-				.clearOffset()
-				.validate()
-				.clearCapture();
-			// this.transforms.stopTransition(this.keywordList.wrapper);
-			// this.transforms.clearOffset(this.keywordList.wrapper);
-			// this.transforms.validate();
-			// this.transforms.clearCapture(this.keywordList.wrapper);
-			this._onHPanMove(ev);
 		}
 	},
 	
@@ -514,9 +507,11 @@ var NavigationView = View.extend({
 			collection: keywords,
 			collapsed: false,
 			filterFn: function(item, idx, arr) {
+				// return !!(item.get("bundle").selected);
 				return bundles.selected? (bundles.selected.get("kIds").indexOf(item.id) !== -1) : false;
 			},
 			groupingFn: function(item, idx, arr) {
+				// return item.get("type");
 				return types.get(item.get("tId"));
 			},
 		});

@@ -19,12 +19,12 @@ var _prefixedStyleName = function(style, styleObj) {
 	for (var i = 0; i < _prefixNum; i++) {
 		prefixedStyle = "-" + prefixes[i] + "-" + style;
 		// prefixedStyle = prefixes[i] + style;
-		if (prefixedStyle in style) {
+		if (prefixedStyle in styleObj) {
 			console.log("CSS style '%s' found as '%s'", style, prefixedStyle);
 			return prefixedStyle;
 		}
 	}
-	console.error("CSS style '%s' not found", style);
+	console.warn("CSS style '%s' not found", style);
 	return null;
 };
 

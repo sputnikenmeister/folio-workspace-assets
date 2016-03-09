@@ -100,7 +100,7 @@ var DebugToolbar = Backbone.View.extend({
 			if (value)
 				document.body.classList.add(value);
 			Cookies.set(cookieKey, value);
-			console.info("%s::init layout-name value:'%s' previous:'%s'\n\tdoc:'%s'", this.cid, value, previousValue, document.body.className);
+			// console.info("%s::init layout-name value:'%s' previous:'%s'\n\tdoc:'%s'", this.cid, value, previousValue, document.body.className);
 		});
 		
 		layoutSelectEl.addEventListener("change", function(ev) {
@@ -115,8 +115,7 @@ var DebugToolbar = Backbone.View.extend({
 		}
 		layoutSelectEl.value = cookieValue;
 		this.model.set("layoutName", cookieValue);
-		
-		console.info("%s::init layout-name cookie:'%s' model:'%s' select:'%s'\n\tdoc:'%s'", this.cid, Cookies.get(cookieKey), this.model.get("layoutName"), layoutSelectEl.value, document.body.className);
+		// console.info("%s::init layout-name cookie:'%s' model:'%s' select:'%s'\n\tdoc:'%s'", this.cid, Cookies.get(cookieKey), this.model.get("layoutName"), layoutSelectEl.value, document.body.className);
 	},
 	
 	initializeToggle: function (key, toggleEl, callback) {

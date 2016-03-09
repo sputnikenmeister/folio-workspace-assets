@@ -310,7 +310,7 @@ var ViewProto = {
 		},
 		enabled: {
 			get: function() {
-				return this.isEnabled();
+				return this._enabled;
 			},
 			set: function(enabled) {
 				this.setEnabled(enabled);
@@ -557,7 +557,6 @@ var ViewProto = {
 	
 	/** @private */
 	_applyRender: function (tstamp) {
-		
 		if (!this._skipLog) {
 			console.log("%s::_applyRender [flags: %s] [%s, %s, %s]", this.cid,
 				View.flagsToString(this._renderFlags),
@@ -570,6 +569,7 @@ var ViewProto = {
 		this._renderFlags = 0;
 		this._frameQueueId = -1;
 		this._renderFlags |= this.renderFrame(tstamp, flags);
+		
 		if (this._renderFlags != 0) {
 			console.warn("%s::_applyRender [returned] flags: %s", this.cid, View.flagsToString(this._renderFlags), this._renderFlags);
 		}
@@ -604,7 +604,7 @@ var ViewProto = {
 	},
 	
 	/* -------------------------------
-	/* render: 'protected' & 'abstract' methods
+	/* render: public / abstract methods
 	/* ------------------------------- */
 	
 	requestRender: function(flags) {
@@ -618,28 +618,19 @@ var ViewProto = {
 	/** @abstract */
 	renderFrame: function (tstamp, flags) {
 		// subclasses should override this method
-		this._renderFlags = 0;
+		return View.NONE_INVALID;
 	},
 
 	renderNow: function(alwaysRun) {
-		// /* jshint -W059 */
-		// var callee = arguments;
-		// /* jshint +W059 */
-		// console.log("%s::renderNow(%s) [synchronous]", this.cid, !!(alwaysRun), callee);
-		// console.trace();
-		
 		if (this._frameQueueId != -1) {
 			var cancelId = this._cancelRender();
 			alwaysRun = true;
 		}
-		if (alwaysRun === true) {
+		// if (alwaysRun === true) {
+		if (alwaysRun) {
 			this._applyRender(_now());
 		}
 		return this;
-	},
-	
-	render: function() {
-		return this.renderNow(true);
 	},
 	
 	/* -------------------------------
@@ -649,27 +640,23 @@ var ViewProto = {
 	/* - remove: this._renderFlags &= ~flags
 	/* ------------------------------- */
 	
-	/* flag helpers ------------------ */
+	/* helpers ------------------ */
 	
-	// invalidateChildren: function() {
-	// 	// this._renderFlags |= View.CHILDREN_INVALID;
-	// 	return this.requestRender(View.CHILDREN_INVALID);
-	// },
-	// 
-	// invalidateModel: function() {
-	// 	// this._renderFlags |= (View.MODEL_INVALID | View.LAYOUT_INVALID);
-	// 	return this.requestRender(View.MODEL_INVALID | View.LAYOUT_INVALID);
-	// },
-	// 
-	// invalidateSize: function() {
-	// 	// this._renderFlags |= (View.SIZE_INVALID | View.LAYOUT_INVALID);
-	// 	return this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
-	// },
-	// 
-	// invalidateLayout: function() {
-	// 	// this._renderFlags |= View.LAYOUT_INVALID;
-	// 	return this.requestRender(View.LAYOUT_INVALID);
-	// },
+	requestChildrenRender: function(flags, now, force) {
+		var ccid, view;
+		for (ccid in this.childViews) {
+			view = this.childViews[ccid];
+			view.skipTransitions = !!(flags & View.SIZE_INVALID);
+			view.requestRender(flags);
+			if (now) {
+				view.renderNow(force);
+			}
+		}
+	},
+	
+	render: function() {
+		return this.renderNow(true);
+	},
 	
 	/* -------------------------------
 	/* common abstract
@@ -677,13 +664,6 @@ var ViewProto = {
 	
 	/** @private */
 	_enabled: undefined,
-	
-	/**
-	/* @return {?Boolean}
-	/*/
-	isEnabled: function () {
-		return this._enabled;
-	},
 	
 	/**
 	/* @param {Boolean}

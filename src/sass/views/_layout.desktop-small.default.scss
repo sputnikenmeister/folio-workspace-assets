@@ -5,7 +5,7 @@
 // layout variables
 // - - - - - - - - - - - - - - - - - -
 
-@include media(desktop-small) { .default-layout {
+@include media(desktop-small) { &.default-layout {
 	
 #container {
 	min-width: $page_width_large;

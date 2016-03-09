@@ -25,11 +25,12 @@ $nHeightLand: 9rem;
 // nav_list
 // -----------------------------------
 %nav_list {
-	transform: move(0, 0.1px);
-}
-.with-bundle %nav_list {
 	transform: move(0, 0);
+	// transform: move(0, 0.1px);
 }
+// .with-bundle %nav_list {
+// 	transform: move(0, 0);
+// }
 
 // bundle-list
 // - - - - - - - - - - - - - - - - - -
@@ -37,7 +38,7 @@ $nHeightLand: 9rem;
 	width: $aside_width_large;
 	padding-top: $nHeightLand;
 }
-.with-bundle #bundle-list {
+&.with-bundle #bundle-list {
 	padding-top: 1.5rem;
 }
 
@@ -45,12 +46,12 @@ $nHeightLand: 9rem;
 // - - - - - - - - - - - - - - - - - -
 #keyword-list {
 	width: $aside_width_large;
-	padding-top: #{$nHeightLand - 0.25rem};
+	padding-top: $nHeightLand - 0.25rem;
 }
-.with-bundle #keyword-list {
-	padding-top: #{$nHeightLand - 0.25rem + 1rem};
+&.with-bundle #keyword-list {
+	padding-top: $nHeightLand - 0.25rem + 1rem;
 }
-.with-bundle .container-expanded #keyword-list {
+&.with-bundle .container-expanded #keyword-list {
 	padding-top: 1.25rem;
 }
 
@@ -59,8 +60,9 @@ $nHeightLand: 9rem;
 #keyword-list .list-group {
 	width: calc(100% - #{$gutter});
 	height: 0;
+	// transform-style: flat;
 }
-.with-bundle .navigation:not(.container-expanded) #keyword-list .list-group {
+&.with-bundle .navigation:not(.container-expanded) #keyword-list .list-group {
 	height: 1.5rem;
 	span {
 		transform: move(0, 0);
@@ -69,15 +71,17 @@ $nHeightLand: 9rem;
 
 // site-name
 // - - - - - - - - - - - - - - - - - -
-.with-bundle .container-expanded #site-name {
-	transform: move(-1px, 0);
+&.with-bundle .container-expanded #site-name {
+// &.with-bundle .container-expanded #site-name-wrapper {
+	transform: move(0, 0);
 }
 
 // transform-wrappers
 // -----------------------------------
 .transform-wrapper {
-	transform-style: preserve-3d;
 	transform: move(0, 0);
+	// transform-style: preserve-3d;
+	// transform-style: flat;
 }
 
 // site-name-wrapper
@@ -85,7 +89,7 @@ $nHeightLand: 9rem;
 
 // bundle-list-wrapper
 // - - - - - - - - - - - - - - - - - -
-.with-bundle .container-expanded #bundle-list-wrapper {
+&.with-bundle .container-expanded #bundle-list-wrapper {
 	transform: move($aside_width_large, 0);
 }
 
@@ -94,10 +98,10 @@ $nHeightLand: 9rem;
 #keyword-list-wrapper {
 	left: $main_width_large;
 }
-.with-media #keyword-list-wrapper {
+&.with-media #keyword-list-wrapper {
 	transform: move(-$main_width_large, 0);
 }
-.with-bundle .container-expanded #keyword-list-wrapper {
+&.with-bundle .container-expanded #keyword-list-wrapper {
 	transform: move(0, 0);
 }
 

@@ -1,11 +1,12 @@
 // ///////////////////////////////////
-// media query : $desktop-small
+// media query : desktop-small .left-layout
 // ///////////////////////////////////
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
+$nTopNoBundle: 4.5rem;
 
-@include media(desktop-small) { .left-layout {
+@include media(desktop-small) { &.left-layout {
 // -----------------------------------
 // navigation
 // -----------------------------------
@@ -15,24 +16,36 @@
 
 // bundle-list
 // - - - - - - - - - - - - - - - - - -
+&.without-bundle #bundle-list {
+	padding-top: $nTopNoBundle;
+}
 
 // keyword-list
 // - - - - - - - - - - - - - - - - - -
+&.without-bundle #keyword-list {
+	padding-top: $nTopNoBundle - 0.25rem;
+}
 
 // keyword-list list-group
 // - - - - - - - - - - - - - - - - - -
 
 // site-name
 // - - - - - - - - - - - - - - - - - -
+#site-name-wrapper {
+// #site-name {
+	display: inline-block;
+	transform: move(0, $nTopNoBundle - 1.5rem);
+}
+&.with-bundle #site-name-wrapper {
+// &.with-bundle #site-name {
+	transform: move(0, 0);
+}
 
 // transform-wrappers
 // -----------------------------------
 
 // site-name-wrapper
 // - - - - - - - - - - - - - - - - - -
-&.without-bundle #site-name {
-	top: $nHeightLand;
-}
 
 // bundle-list-wrapper
 // - - - - - - - - - - - - - - - - - -

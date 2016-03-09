@@ -60,28 +60,36 @@ var GroupingListView = FilterableListView.extend({
 	initialize: function (options) {
 		FilterableListView.prototype.initialize.apply(this, arguments);
 		
-		this._groupItems = [];
+		this._groups = [];
+		// this._groupItems = [];
 		this._groupsByItemCid = {};
 		
 		this._groupingFn = options.groupingFn;
-		this.groupingRenderer = options.groupingRenderer;// || GroupingListView.defaultGroupRenderer;
+		this.groupingRenderer = options.groupingRenderer;
 		
 		this._refreshGroups();
 		if (this._groupingFn) {
-			this._groupItems.forEach(this.createGroupingView, this);
+			this._groups.forEach(this.createGroupingView, this);
 		}
 	},
 	
 	_refreshGroups: function() {
-		// this._groupItems = _.uniq(this.collection.map(this._groupingFn, this));
-		this._groupItems.length = 0;
+		// this._groups = _.uniq(this.collection.map(this._groupingFn, this));
+		this._groups.length = 0;
+		// this._groupItems.length = 0;
 		if (this._groupingFn) {
 			this.collection.forEach(function(item) {
-				var groupObj = this._groupingFn.apply(null, arguments);
-				if (groupObj && this._groupItems.indexOf(groupObj) == -1) {
-					this._groupItems.push(groupObj);
+				var gIdx, gObj = this._groupingFn.apply(null, arguments);
+				if (gObj) {
+					gIdx = this._groups.indexOf(gObj);
+					if (gIdx == -1) {
+						gIdx = this._groups.length;
+						this._groups[gIdx] = gObj;
+						// this._groupItems[gIdx] = [];
+					}
+					// this._groupItems[gIdx].push(item);
 				}
-				this._groupsByItemCid[item.cid] = groupObj;
+				this._groupsByItemCid[item.cid] = gObj;
 			}, this);
 		} else {
 			this.collection.forEach(function(item) {
@@ -94,16 +102,16 @@ var GroupingListView = FilterableListView.extend({
 		FilterableListView.prototype.renderFilterFn.apply(this, arguments);
 		
 		if (this._groupingFn) {
-			// groups = this._filteredItems.map(this._groupingFn, this);
-			var groups = this._filteredItems.map(function(item) {
+			var filteredGroups = this._filteredItems.map(function(item) {
 				return this._groupsByItemCid[item.cid];
 			}, this);
-			this._groupItems.forEach(function (group, index, arr) {
-				this.itemViews.findByModel(group).el.classList.toggle("excluded", groups.indexOf(group) == -1);
-				// this.itemViews.findByModel(group).el.classList.toggle("excluded",!_.contains(groups, group));
+			this._groups.forEach(function (group ) {
+				this.itemViews.findByModel(group).el.classList.toggle("excluded", filteredGroups.indexOf(group) == -1);
 			}, this);
+			// this._groupsExclusionIndex = this._groups.map(function (group) {
+			// 	return groups.indexOf(group) == -1);
+			// }, this);
 		}
-		// console.log("%s::renderFilterFn\n\tgroups: [%s]", this.cid, (groupIds? groupIds.join(", "): ""));
 	},
 	
 	/** @private Create children views */
@@ -112,8 +120,20 @@ var GroupingListView = FilterableListView.extend({
 			model: item,
 			el: this.el.querySelector(".list-group[data-id=\"" + item.id + "\"]")
 		});
-		this.itemViews.add(view);//, item.id);
+		this.itemViews.add(view);
 		return view;
+	},
+	
+	/* --------------------------- *
+	/* Filter 2
+	/* --------------------------- */
+	
+	computeFiltered: function() {
+		FilterableListView.prototype.computeFiltered.apply(this, arguments);
+	},
+	
+	renderFiltered: function() {
+		FilterableListView.prototype.renderFiltered.apply(this, arguments);
 	},
 
 });

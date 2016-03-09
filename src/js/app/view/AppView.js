@@ -68,7 +68,7 @@ var AppViewProto = {
 	
 	/** @override */
 	initialize: function (options) {
-		document.documentElement.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
+		// document.documentElement.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
 		
 		/* create single hammerjs manager */
 		this.touch = TouchManager.init(document.querySelector("#container"));
@@ -85,8 +85,6 @@ var AppViewProto = {
 		/* initialize views */
 		this.navigationView = new NavigationView({ el: "#navigation", model: this.model });
 		this.contentView = new ContentView({ el: "#content", model: this.model });
-		
-		// this.listenTo(this.model, "change", this._afterModelChange); /* FIXME */
 		
 		/* startup listener */
 		this.listenToOnce(controller, "route", this._appStart);
@@ -136,19 +134,13 @@ var AppViewProto = {
 		}
 	},
 	
-	// _afterModelChange: function() {
-	// 	console.log("%s::_afterModelChange", this.cid, this.model.changed);
-	// },
-	
 	/* -------------------------------
 	/* resize
 	/* ------------------------------- */
 	
 	_onResize: function() {
 		console.log("%s::_onResize", this.cid);
-		
 		this.requestRender(View.SIZE_INVALID).renderNow();
-		// this.invalidateSize();
 	},
 	
 	/* -------------------------------
@@ -166,13 +158,6 @@ var AppViewProto = {
 			this._appStartChanged = false;
 			this.requestAnimationFrame(this.renderAppStart);
 		}
-		// if (this.model.hasChanged()) {
-		// 	this.setImmediate(function() {
-		// 		console.log("%s::requestRender [commit model]", this.cid, this.model.hasChanged());
-		// 		this.model.set({}, { silent: true });
-		// 		console.log("%s::requestRender [commit model]", this.cid, this.model.hasChanged());
-		// 	});
-		// }
 	},
 	
 	renderAppStart: function() {
@@ -184,17 +169,18 @@ var AppViewProto = {
 	renderResize: function() {
 		console.log("%s::renderResize", this.cid);
 		document.body.scrollTop = 0;
-		document.documentElement.classList.toggle("desktop-small",
-			Globals.BREAKPOINTS["desktop-small"].matches);
+		document.body.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
 		
-		var ccid, view;
-		for (ccid in this.childViews) {
-			view = this.childViews[ccid];
-			view.skipTransitions = true;
-			// view.invalidateSize();
-			// view.renderNow();
-			view.requestRender(View.SIZE_INVALID).renderNow();
-		}
+		this.requestChildrenRender(View.SIZE_INVALID, true);
+		
+		// var ccid, view;
+		// for (ccid in this.childViews) {
+		// 	view = this.childViews[ccid];
+		// 	view.skipTransitions = true;
+		// 	// view.invalidateSize();
+		// 	// view.renderNow();
+		// 	view.requestRender(View.SIZE_INVALID).renderNow();
+		// }
 	},
 	
 	/* -------------------------------
@@ -209,90 +195,65 @@ var AppViewProto = {
 		var bundle = this.model.get("bundle");
 		var media = this.model.get("media");
 		
-		this.renderModelClasses(bundle, media);
-		this.renderDocTitle(bundle, media);
+		this.updateDocumentTitle(bundle, media);
+		this.updateClassList(bundle, media);
 	},
 	
-	renderDocTitle: function(bundle, media) {
+	updateDocumentTitle: function(bundle, media) {
 		// Set browser title
 		var docTitle = "Portfolio";
 		if (bundle) {
-			docTitle += " - " + bundle.get("name");
+			docTitle += " - " + stripTags(bundle.get("name"));
 			if (media) {
-				docTitle += ": " + media.get("name");
+				docTitle += ": " + stripTags(media.get("name"));
 			}
 		}
 		document.title = docTitle;
 	},
 	
-	renderModelClasses: function(bundle, media) {
+	updateClassList: function(bundle, media) {
 		// classList target
 		var cls = this.el.classList;
-		var attrValue = null, hasDarkBg = false;
-		
-		// Set state classes
-		if (this.model.hasChanged("withBundle")) {
-			cls.toggle("with-bundle", this.model.get("withBundle"));
-			cls.toggle("without-bundle", !this.model.get("withBundle"));
-		}
-		if (this.model.hasChanged("withMedia")) {
-			cls.toggle("with-media", this.model.get("withMedia"));
-			cls.toggle("without-media", !this.model.get("withMedia"));
-		}
-		
-		// Set bundle class
-		if (this.model.hasChanged("bundle")) {
-			attrValue = this.model.previous("bundle");
-			if (attrValue) {
-				cls.remove(attrValue.get("domid"));
-			}
-			attrValue = this.model.get("bundle");
-			if (attrValue) {
-				cls.add(attrValue.get("domid"));
-				hasDarkBg = hasDarkBg || attrValue.colors.hasDarkBg;
-			}
-		}
-		// Set media class
-		if (this.model.hasChanged("media")) {
-			attrValue = this.model.previous("media");
-			if (attrValue) {
-				cls.remove(attrValue.get("domid"));
-			}
-			attrValue = this.model.get("media");
-			if (attrValue) {
-				cls.add(attrValue.get("domid"));
-				hasDarkBg = hasDarkBg || attrValue.colors.hasDarkBg;
-			}
-		}
-		// Set color-dark class
-		cls.toggle("color-dark", hasDarkBg);
-	},
-	
-	renderModelClasses2: function(bundle, media) {
-		// classList target
-		var cls = this.el.classList;
+		var prevAttr = null, hasDarkBg = false;
 		
 		// Set state classes
 		cls.toggle("with-bundle", !!bundle);
 		cls.toggle("without-bundle", !bundle);
 		cls.toggle("with-media", !!media);
 		cls.toggle("without-media", !media);
+		// if (this.model.hasChanged("withBundle")) {
+		// 	cls.toggle("with-bundle", this.model.get("withBundle"));
+		// 	cls.toggle("without-bundle", !this.model.get("withBundle"));
+		// }
+		// if (this.model.hasChanged("withMedia")) {
+		// 	cls.toggle("with-media", this.model.get("withMedia"));
+		// 	cls.toggle("without-media", !this.model.get("withMedia"));
+		// }
 		
 		// Set bundle class
-		var bDomId = bundle? bundle.get("domid") : null;
-		if (bDomId != this._bundleDomId) {
-			if (this._bundleDomId) cls.remove(this._bundleDomId);
-			if (bDomId) cls.add(bDomId);
-			this._bundleDomId = bDomId;
+		if (this.model.hasChanged("bundle")) {
+			prevAttr = this.model.previous("bundle");
+			if (prevAttr) {
+				cls.remove(prevAttr.get("domid"));
+			}
+			if (bundle) {
+				cls.add(bundle.get("domid"));
+				// hasDarkBg = hasDarkBg || bundle.colors.hasDarkBg;
+			}
 		}
 		// Set media class
-		var mDomId = media? media.get("domid") : null;
-		if (mDomId != this._mediaDomId) {
-			if (this._mediaDomId) cls.remove(this._mediaDomId);
-			if (mDomId) cls.add(mDomId);
-			this._mediaDomId = mDomId;
+		if (this.model.hasChanged("media")) {
+			prevAttr = this.model.previous("media");
+			if (prevAttr) {
+				cls.remove(prevAttr.get("domid"));
+			}
+			if (media) {
+				cls.add(media.get("domid"));
+				// hasDarkBg = hasDarkBg || media.colors.hasDarkBg;
+			}
 		}
 		// Set color-dark class
+		// cls.toggle("color-dark", hasDarkBg);
 		cls.toggle("color-dark", 
 			(media && media.colors.hasDarkBg) ||
 			(bundle && bundle.colors.hasDarkBg));
@@ -305,12 +266,15 @@ if (DEBUG) {
 	
 	AppViewProto.initialize = (function(fn) {
 		return function() {
-			// var retVal = fn.apply(this, arguments);
-			this.el.appendChild((new DebugToolbar({id: "debug-toolbar", collection: bundles, model: this.model})).render().el);
+			var view = new DebugToolbar({
+				id: "debug-toolbar",
+				model: this.model
+			});
+			this.el.appendChild(view.render().el);
+			
 			this.listenTo(this.model, "change:layoutName", function() {
 				this.requestRender(View.SIZE_INVALID);//.renderNow();
 			});
-			// return retVal;
 			return fn.apply(this, arguments);
 		};
 	})(AppViewProto.initialize);

@@ -28,6 +28,9 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 %nav_list {
 	position: absolute;
 	display: inline-block;
+	// transform-style: flat;
+	// transform-style: preserve-3d;
+	// transform: move(0,0);
 }
 
 // bundle-list
@@ -85,9 +88,10 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 #site-name {
 	position: relative;
 	display: inline-block;
-	top: 1.5rem;
-	min-height: 2rem;
+	// top: 1.5rem;
+	// min-height: 2rem;
 	transform: move(0, 0);
+	padding: 1.5rem $hu;
 }
 .with-bundle #site-name {
 	transform: move(-100%, 0);
@@ -104,7 +108,12 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 #site-name-wrapper {
 	left: 0;
 	width: 100%;
+	// width: auto;
+	// transform: move(0, 0);
 }
+// .with-bundle #site-name-wrapper {
+// 	transform: move(-100%, 0);
+// }
 
 // bundle-list-wrapper
 // - - - - - - - - - - - - - - - - - -
@@ -153,18 +162,17 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 	overflow: hidden;
 	width: 100%;
 	min-width: $page_width;
-	
 	bottom: 0;
+	
 	top: $nTopPort + $nHeightPort;
-	// top: 1.25rem; padding-top: 16.5rem;
-	
-	// box-sizing: content-box;
-	// height: 100%;
-	// height: calc(100% - 3rem);
-	
 	padding-top: 4.5rem;
 	padding-bottom: 4.5rem;
 	$carousel-item-height: calc(100% - 9rem);
+	
+	// top: 0;//$nTopPort;
+	// padding-top: $nTopPort + $nHeightPort;
+	// padding-bottom: 4.5rem;
+	// $carousel-item-height: calc(100% - #{$nHeightPort + 4.5rem});
 	
 	.carousel-item {
 		// padding-top: 1.5rem;

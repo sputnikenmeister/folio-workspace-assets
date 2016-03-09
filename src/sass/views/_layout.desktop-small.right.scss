@@ -6,7 +6,7 @@
 // - - - - - - - - - - - - - - - - - -
 $nHeightLandRight: $nHeightLand + 1.5rem;
 
-@include media(desktop-small) { .right-layout {
+@include media(desktop-small) { &.right-layout {
 // #content:after {
 // 	top: $nTopLand + $nHeightLandRight;
 // }

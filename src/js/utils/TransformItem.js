@@ -106,8 +106,9 @@ var propDefaults = {
 	"opacity": "1",
 	"visibility": "visible",
 	"transform": "matrix(1, 0, 0, 1, 0, 0)",
-	// "transformStyle": "",
+	"transformStyle": "",
 	"transition": "",
+	// "willChange": "",
 	// "transitionDuration": "0s",
 	// "transitionDelay": "0s",
 	// "transitionProperty": "none",
@@ -211,8 +212,8 @@ var TransformItemProto = {
 		// NOTE: style property may have been modified; clearOffset(element) should
 		// be called explicitly if clean up is required.
 		this.el.removeEventListener(transitionEnd, this._onTransitionEnd, false);
-		rejectAll(this._pendingPromises, this.id);
-		rejectAll(this._promises, this.id);
+		rejectAll(this._pendingPromises, this.el);
+		rejectAll(this._promises, this.el);
 		// delete this.el.eid;
 	},
 
@@ -439,14 +440,14 @@ var TransformItemProto = {
 			// prepare _promises and push in new ones
 			this._promises = this._pendingPromises;
 			// whatever still here is to be rejected. reuse array
-			this._pendingPromises = rejectAll(reject, this.id);
+			this._pendingPromises = rejectAll(reject, this.el);
 			
 			this._transitionRunning = this._hasTransition;
 			this._setCSSProp("transition", this._transitionValue);
 			
 			if (!this._hasTransition) {
 				// no transition, resolve now
-				resolveAll(this._promises, this.id);
+				resolveAll(this._promises, this.el);
 			}
 		}
 	},
@@ -458,9 +459,8 @@ var TransformItemProto = {
 		if (this._transitionRunning && (this.el === ev.target) &&
 				(this._transition.property == ev.propertyName)) {
 			this._transitionRunning = false;
-			// this._setCSSProp("transition", NO_TRANSITION);
 			this._removeCSSProp("transition");
-			resolveAll(this._promises, this.id);
+			resolveAll(this._promises, this.el);
 		}
 	},
 	

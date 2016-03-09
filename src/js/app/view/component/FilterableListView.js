@@ -48,7 +48,9 @@ var FilterableListView = View.extend({
 	/** @override */
 	defaults: {
 		collapsed: true,
-		filterFn: null,
+		filterFn: function() {
+			return true;
+		},
 		renderer: ClickableRenderer.extend({
 			/** @override */
 			cidPrefix: "listItem",
@@ -62,7 +64,7 @@ var FilterableListView = View.extend({
 				return this._collapsed;
 			},
 			set: function(value) {
-				this.setCollapsed(value);
+				this._setCollapsed(value);
 			}
 		}
 	},
@@ -90,8 +92,8 @@ var FilterableListView = View.extend({
 		
 		this.collection.each(this.createItemView, this);
 		this.refresh();
-		this.setSelection(this.collection.selected);
-		this.setCollapsed(options.collapsed);
+		this._setSelection(this.collection.selected);
+		this._setCollapsed(options.collapsed);
 		
 		// will trigger on return if this.el is already attached
 		// this.skipTransitions = true;
@@ -100,7 +102,7 @@ var FilterableListView = View.extend({
 			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);//.renderNow();
 		});
 		
-		this.listenTo(this.collection, "select:one select:none", this.setSelection);
+		this.listenTo(this.collection, "select:one select:none", this._setSelection);
 		this.listenTo(this.collection, "reset", function() {
 			this._allItems = null;
 			throw new Error("not implemented");
@@ -130,27 +132,18 @@ var FilterableListView = View.extend({
 				this.requestRender(View.LAYOUT_INVALID);
 			});
 		}
-		
-		if (this._collapsedChanged || this._selectionChanged || this._filterChanged) {
-			flags |= View.LAYOUT_INVALID;
-			flags |= View.SIZE_INVALID;
-		}
-		
 		if (this._collapsedChanged) {
-			// flags |= View.SIZE_INVALID;
+			flags |= View.SIZE_INVALID;
 			this.el.classList.toggle("collapsed", this._collapsed);
 		}
 		if (this._selectionChanged) {
-			// flags |= View.SIZE_INVALID;
-			// flags |= this._collapsed? View.SIZE_INVALID : View.LAYOUT_INVALID;
+			flags |= View.LAYOUT_INVALID;
 			this.renderSelection(this.collection.selected, this.collection.lastSelected);
 		}
 		if (this._filterChanged) {
-			// flags |= View.SIZE_INVALID;
-			// flags |= this._collapsed? View.SIZE_INVALID : View.LAYOUT_INVALID;
+			flags |= View.LAYOUT_INVALID;
 			this.renderFilterFn();
 		}
-		
 		if (flags & View.SIZE_INVALID) {
 			this.measure();
 		}
@@ -241,7 +234,7 @@ var FilterableListView = View.extend({
 	/**
 	/* @param {Boolean}
 	/*/
-	setCollapsed: function (collapsed) {
+	_setCollapsed: function (collapsed) {
 		if (collapsed !== this._collapsed) {
 			this._collapsed = collapsed;
 			this._collapsedChanged = true;
@@ -257,7 +250,7 @@ var FilterableListView = View.extend({
 	_selectedItem: undefined,
 	
 	/** @param {Backbone.Model|null} */
-	setSelection: function (item) {
+	_setSelection: function (item) {
 		this._selectedItem = item;
 		this._selectionChanged = true;
 		this._requestRender();
@@ -295,13 +288,13 @@ var FilterableListView = View.extend({
 		var hasOld = !!(oldItems && oldItems.length);
 		
 		if (hasNew) {
-			diff((hasOld? oldItems : this._getAllItems()), newItems).forEach(function(id) {
-				this.itemViews.findByModel(id).el.classList.add("excluded");
+			diff((hasOld? oldItems : this._getAllItems()), newItems).forEach(function(item) {
+				this.itemViews.findByModel(item).el.classList.add("excluded");
 			}, this);
 		}
 		if (hasOld) {
-			diff((hasNew? newItems : this._getAllItems()), oldItems).forEach(function(id) {
-				this.itemViews.findByModel(id).el.classList.remove("excluded");
+			diff((hasNew? newItems : this._getAllItems()), oldItems).forEach(function(item) {
+				this.itemViews.findByModel(item).el.classList.remove("excluded");
 			}, this);
 		}
 		this.el.classList.toggle("has-excluded", hasNew);
@@ -309,6 +302,20 @@ var FilterableListView = View.extend({
 	
 	_getAllItems: function() {
 		return this._allItems || (this._allItems = this.collection.slice());
+	},
+	
+	/* --------------------------- *
+	/* Filter 2
+	/* --------------------------- */
+	
+	computeFiltered: function() {
+		this._filterResult = this.collection.map(this._filterFn, this);
+	},
+	
+	renderFiltered: function() {
+		this.collection.forEach(function(item, index) {
+			this.itemViews.findByModel(item).el.classList.toggle("excluded", !this._filterResult[index]);
+		}, this);
 	},
 	
 });

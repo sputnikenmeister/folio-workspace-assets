@@ -5,20 +5,13 @@
 // Sync'd with sass-json-vars plugin
 @import "variables.json";
 
-// Size base units
-$hu: 					map-get($units, hu_px) * 1px;
-$vu: 					map-get($units, vu_px) * 1px;
-// Time base units (transitions/animations)
-$min_delay:				map-get($transitions, min_delay_ms) * 0.001s;
-$delay_interval:		map-get($transitions, delay_interval_ms) * 0.001s;
-$duration: 				map-get($transitions, duration_ms) * 0.001s;
-$ease:					map-get($transitions, ease);
-// transition/animation timing function
-$delay: 				$duration + $delay_interval;
-
 // ------------------------------------
 // Layout
 // ------------------------------------
+
+// Size base units
+$hu: 					map-get($units, hu_px) * 1px;
+$vu: 					map-get($units, vu_px) * 1px;
 
 $gutter: 				2 * $hu;
 $page_margin_left: 		2 * $hu;
