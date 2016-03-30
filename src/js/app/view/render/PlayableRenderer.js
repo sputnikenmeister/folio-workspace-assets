@@ -98,7 +98,7 @@ var PlayableRenderer = MediaRenderer.extend({
 			"_onVisibilityChange"
 		);
 		this._setPlaybackRequested(this._playbackRequested);
-		// this.listenTo(this, "view:parentChange", function(newParent, oldParent) {
+		// this.listenTo(this, "view:parentChange", function(childView, newParent, oldParent) {
 		// 	// logAttachInfo(this, "[view:parentChange]", "info");
 		// 	console.info("%s::[view:parentChange] '%s' to '%s'", this.cid, oldParent && oldParent.cid, newParent && newParent.cid);
 		// });
@@ -178,7 +178,7 @@ var PlayableRenderer = MediaRenderer.extend({
 		// logAttachInfo(this, "_onModelSelected", "log");
 		// this._addParentListeners();
 		this.listenTo(this, "view:parentChange", this._onParentChange);
-		if (this.parentView) this._onParentChange(this.parentView, null);
+		if (this.parentView) this._onParentChange(this, this.parentView, null);
 		
 		this._addDOMListeners();
 		this._validatePlayback();
@@ -188,7 +188,7 @@ var PlayableRenderer = MediaRenderer.extend({
 		// logAttachInfo(this, "_onModelDeselected", "log");
 		// this._removeParentListeners();
 		this.stopListening(this, "view:parentChange", this._onParentChange);
-		if (this.parentView) this._onParentChange(null, this.parentView);
+		if (this.parentView) this._onParentChange(this, null, this.parentView);
 		
 		this._removeDOMListeners();
 		this.togglePlayback(false);
@@ -199,7 +199,7 @@ var PlayableRenderer = MediaRenderer.extend({
 	/* view:parentChange handlers 3
 	/* --------------------------- */
 	
-	_onParentChange: function(newParent, oldParent) {
+	_onParentChange: function(childView, newParent, oldParent) {
 		// console.log("[scroll] %s::_onParentChange '%s' to '%s'", this.cid, oldParent && oldParent.cid, newParent && newParent.cid);
 		if (oldParent) this.stopListening(oldParent, "view:scrollstart view:scrollend", this._onScrollChange);
 		if (newParent) this.listenTo(newParent, "view:scrollstart view:scrollend", this._onScrollChange);

@@ -53,7 +53,8 @@ $darkolivegreen:	darkolivegreen;
 	// *[style*="transition"] {
 	// 	@include debug_outline(1px, dotted, $darkseagreen);
 	// }
-	#sitename, .transform-wrapper {
+	// #sitename,
+	.transform-wrapper {
 		// height: 1rem;
 		width: $aside_width;
 		height: $nHeightPort;
@@ -98,12 +99,14 @@ $darkolivegreen:	darkolivegreen;
 	// }
 	
 	#navigation {
-		// @include debug_outline($width: 0.25rem, $style: solid, $color: $lightcoral);
+		.graph {
+			@include debug_outline(1px, dashed, transparentize($darkseagreen, 0.25));
+		}
 		#site-name-wrapper, .list {
 			// @include debug_outline_thick($color: $lightcoral);
 			background-color: transparentize($lightcoral, 0.9);
 		}
-		#site-name a, .list .name {
+		#site-name a, .list .label {
 			background-color: transparentize($lightcoral, 0.7);
 		}
 	}

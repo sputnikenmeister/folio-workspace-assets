@@ -5,7 +5,7 @@
 	},
 	"transitions": {
 		"min_delay_ms": "20",
-		"delay_interval_ms": "100",
+		"delay_interval_ms": "120",
 		"duration_ms": "400",
 		"ease": "ease"
 	},

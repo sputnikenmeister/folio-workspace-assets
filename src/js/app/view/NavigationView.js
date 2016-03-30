@@ -37,8 +37,6 @@ var CollectionPager = require("app/view/component/CollectionPager");
 /** @type {module:app/view/component/CollectionPager} */
 var GraphView = require("app/view/component/GraphView");
 
-/** @type {module:utils/css/parseTransformMatrix} */
-var parseMatrix = require("utils/css/parseTransformMatrix");
 /** @type {module:utils/prefixedProperty} */
 var prefixedProperty = require("utils/prefixedProperty");
 
@@ -60,6 +58,7 @@ var NavigationView = View.extend({
 	initialize: function (options) {
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
 		_.bindAll(this, "_onHPanStart", "_onHPanMove", "_onHPanFinal");
+		_.bindAll(this, "_whenTransitionsEnd", "_whenTransitionsAbort");
 		
 		this.itemViews = [];
 		this.transforms = new TransformHelper();
@@ -67,12 +66,8 @@ var NavigationView = View.extend({
 		
 		this.listenTo(this.model, "change", this._onModelChange);
 		
-		// this.graph = this.createGraphView();
-		// this.itemViews.push(this.graph);
-		// this.transforms.add(this.graph.el);
-		
 		this.keywordList = this.createKeywordList();
-		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group span");
+		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group .label");
 		this.transforms.add(this.hGroupings, this.keywordList.el, this.keywordList.wrapper);
 		this.itemViews.push(this.keywordList);
 		
@@ -83,6 +78,35 @@ var NavigationView = View.extend({
 		this.sitename = this.createSitenameButton();
 		this.transforms.add(this.sitename.wrapper, this.sitename.el);
 		// this.transforms.add(this.sitename.el.firstElementChild, this.sitename.el);
+		
+		this.graph = this.createGraphView(this.bundleList, this.keywordList);
+		// this.transforms.add(this.graph.el);
+		// this.itemViews.push(this.graph);
+		// this.listenTo(this.graph, {
+		// 	"canvas:update": this._onGraphUpdate,
+		// 	"canvas:redraw": this._onGraphRedraw,
+		// });
+		
+		this.listenTo(this.graph, "view:render:before", function(view, flags) {
+			// console.info("%s:[%s view:render:before]", this.cid, view.cid);
+			if (flags & View.SIZE_INVALID) {
+				// console.info("%s:[%s view:render:before] bundleList height", this.cid, view.cid, this.bundleList.el.style.height);
+				this.graph.el.style.height = this.bundleList.el.style.height;
+				// this.graph.el.style.opacity = this.bundleList.collapsed? "0": "1";
+				// view.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
+			}
+		});
+		// this.listenTo(this.bundleList, "view:render:after", function(view, flags) {
+		// 	console.info("%s:[%s view:render:after]", this.cid, view.cid, flags & View.SIZE_INVALID);
+		// 	if (flags & View.SIZE_INVALID) {
+		// 		// console.info("%s:[%s view:render:after] bundleList height", this.cid, view.cid, this.bundleList.el.style.height);
+		// 		// this.graph.el.style.height = this.bundleList.el.style.height;
+		// 		this.graph.el.style.opacity = this.bundleList.collapsed? 0 : 1;
+		// 		this.graph.requestRender(View.SIZE_INVALID).renderNow();
+		// 	}
+		// });
+		// this.listenTo(this.bundleList, "view:render:after", this._onListResize);
+		// this.listenTo(this.keywordList, "view:render:after", this._onListResize);
 	},
 	
 	/* --------------------------- *
@@ -90,71 +114,14 @@ var NavigationView = View.extend({
 	/* --------------------------- */
 	
 	renderFrame: function(tstamp, flags) {
-		// values
-		var collapsed = this.model.get("collapsed");
-		var collapsedChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("collapsed");
-		
-		// flags
-		var sizeChanged = !!(flags & View.SIZE_INVALID);
-		var transformsChanged = !!(flags & (View.MODEL_INVALID | View.SIZE_INVALID | View.LAYOUT_INVALID));
-		transformsChanged = transformsChanged || this._transformsChanged || this.skipTransitions;
-		
-		// classes
-		// - - - - - - - - - - - - - - - - -
-		if (collapsedChanged) {
-			this.el.classList.toggle("container-collapsed", collapsed);
-			this.el.classList.toggle("container-expanded", !collapsed);
-		}
-		
-		// transforms
-		// - - - - - - - - - - - - - - - - -
-		if (transformsChanged) {
-			if (this.skipTransitions) {
-				this.transforms.stopAllTransitions();
-				this.transforms.validate();
-				this.transforms.clearAllOffsets();
-			} else {
-				this.renderTransitions(flags);
-			}
-			console.group(this.cid + "::renderFrame transitions:");
-			if (this.skipTransitions) {
-				console.log("[skipping]");
-			} else {
-				this.transforms.items.forEach(function(o) {
-					console.log("\t%s: %s", o.el.id || o.id, o.transition.name || o.transition);
-				}, this);
-			}
-			console.groupEnd();
-			
-			this.transforms.validate();
-		}
-		
-		// children A
-		// - - - - - - - - - - - - - - - - -
-		// if (collapsedChanged) {
-		// 	this.bundleList.collapsed = collapsed;
-		// 	this.keywordList.collapsed = collapsed;
-		// 	this.graph && this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
-		// }
-		// 
-		// if (sizeChanged)
-		// 	this.itemViews.forEach(function(view) {
-		// 		// view.skipTransitions = this.skipTransitions;
-		// 		// view.invalidateSize();
-		// 		// view.renderNow();
-		// 		view.skipTransitions = true;
-		// 		view.requestRender(View.SIZE_INVALID).renderNow();
-		// }, this);
-		
-		// children B
-		// - - - - - - - - - - - - - - - - -
-		// var value;
 		if (flags & View.MODEL_INVALID) {
 			if (this.model.hasChanged("collapsed")) {
-				// value = this.model.get("collapsed");
-				// this.bundleList.collapsed = value;
-				// this.keywordList.collapsed = value;
-				this.graph && this.graph.requestRender(View.SIZE_INVALID);
+				this.el.classList.toggle("container-collapsed", this.model.get("collapsed"));
+				this.el.classList.toggle("container-expanded", !this.model.get("collapsed"));
+			}
+			if (this.model.hasChanged("collapsed") || this.model.hasChanged("withBundle")) {
+				this.el.classList.add("container-changing");
+				// this.transforms.promise().then(this._whenTransitionsEnd, this._whenTransitionsAbort);
 			}
 			if (this.model.hasChanged("bundle")) {
 				this.bundleList.requestRender(View.SIZE_INVALID);
@@ -162,20 +129,72 @@ var NavigationView = View.extend({
 			}
 		}
 		
+		// transforms
+		// - - - - - - - - - - - - - - - - -
+		if (this.skipTransitions || (flags & (View.MODEL_INVALID | View.SIZE_INVALID | View.LAYOUT_INVALID))) {
+		// if (transformsChanged) {
+			if (this.skipTransitions) {
+				this.transforms.stopAllTransitions();
+				this.transforms.validate();
+				this.transforms.clearAllOffsets();
+			} else {
+				this.renderTransitions(flags);
+			}
+			// console.group(this.cid + "::renderFrame transitions:");
+			// if (this.skipTransitions) {
+			// 	console.log("[skipping]");
+			// } else {
+			// 	this.transforms.items.forEach(function(o) {
+			// 		console.log("\t%s: %s", o.el.id || o.id, o.transition.name || o.transition);
+			// 	}, this);
+			// }
+			// console.groupEnd();
+			// this.transforms.clearAllOffsets();
+			
+			// if (this.model.hasChanged("collapsed") || this.model.hasChanged("withBundle")) {
+			// 	this.transforms.promise().then(this._whenTransitionsEnd, this._whenTransitionsAbort);
+			// }
+			this.transforms.validate();
+		}
+		
+		if (flags & View.MODEL_INVALID) {
+			if ((this.model.hasChanged("collapsed") && !this.model.get("collapsed")) || (this.model.hasChanged("withBundle") && !this.model.get("withBundle"))) {
+				// this.el.classList.add("container-changing");
+				this.transforms.promise().then(this._whenTransitionsEnd, this._whenTransitionsAbort);
+			}
+		}
+		
+		// children loop
+		// - - - - - - - - - - - - - - - - -
 		this.itemViews.forEach(function(view) {
 			view.skipTransitions = view.skipTransitions || this.skipTransitions;
 			if (flags & View.SIZE_INVALID) {
 				view.requestRender(View.SIZE_INVALID);
 			}
-			// if (transformsChanged) {
-			// 	view.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
-			// }
 			if (!view.skipTransitions) {
 				view.renderNow();
 			}
 		}, this);
 		
-		this.skipTransitions = this._transformsChanged = false;
+		if (flags & (View.SIZE_INVALID | ~View.MODEL_INVALID)) {
+			this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
+			if (!this.skipTransitions) {
+				this.graph.renderNow();
+			}
+		}
+		
+		this.skipTransitions = false;
+	},
+	
+	_whenTransitionsEnd: function(result) {
+		console.info("%s::_whenTransitionsEnd", this.cid, result);
+		
+		this.el.classList.remove("container-changing");
+		this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
+	},
+	
+	_whenTransitionsAbort: function(reason) {
+		console.warn("%s::_whenTransitionsAbort", this.cid, reason);
 	},
 	
 	/* -------------------------------
@@ -198,17 +217,17 @@ var NavigationView = View.extend({
 		// layoutName
 		var layoutName = Globals.BREAKPOINTS["desktop-small"].matches? this.model.get("layoutName") : "";
 		
+		var tf;
 		/* this.bundleList.el */
-		var bListTf = this.transforms.get(this.bundleList.el);
-		if (bListTf.hasOffset) {
-			bListTf.runTransition(collapsedChanged? tx.BETWEEN : tx.NOW).clearOffset();
+		tf = this.transforms.get(this.bundleList.el);
+		if (tf.hasOffset) {
+			tf.runTransition(collapsedChanged? tx.BETWEEN : tx.NOW);//.clearOffset();
 		}
 		
 		/* this.keywordList.el */
-		var kListTf = this.transforms.get(this.keywordList.el);
-		if (kListTf.hasOffset) {
-			kListTf.runTransition(collapsedChanged? tx.BETWEEN : tx.NOW).clearOffset();
-			// kListTf.runTransition(tx.NOW);
+		tf = this.transforms.get(this.keywordList.el);
+		if (tf.hasOffset) {
+			tf.runTransition(collapsedChanged? tx.BETWEEN : tx.NOW);//.clearOffset();
 		}
 		
 		// /* this.graph.el */
@@ -227,22 +246,22 @@ var NavigationView = View.extend({
 			case "left-layout":
 			case "default-layout":
 				/* this.keywordList.wrapper */
-				var kWrapTf = this.transforms.get(this.keywordList.wrapper);
+				tf = this.transforms.get(this.keywordList.wrapper);
 				if (collapsedChanged) {
 					if (withBundleChanged) {
 						if (withMediaChanged)
-							kWrapTf.runTransition(withBundle? tx.LAST : tx.FIRST);
+							tf.runTransition(withBundle? tx.LAST : tx.FIRST);
 					} else {
 						if (withMedia)
-							kWrapTf.runTransition(collapsed? tx.LAST : tx.FIRST);
+							tf.runTransition(collapsed? tx.LAST : tx.FIRST);
 					}
 				} else {
 					if (!withBundleChanged && withMediaChanged)
-						kWrapTf.runTransition(bundleChanged? tx.BETWEEN : tx.NOW);
+						tf.runTransition(bundleChanged? tx.BETWEEN : tx.NOW);
 				}
-				if (kWrapTf.hasOffset) {
-					kWrapTf.clearOffset();
-				}
+				// if (tf.hasOffset) {
+				// 	tf.clearOffset();
+				// }
 				// continue
 			case "right-layout":
 				if (collapsedChanged) { /* this.hGroupings */
@@ -273,7 +292,14 @@ var NavigationView = View.extend({
 				}
 				// continue
 			case "right-layout":
-				if (withBundleChanged) { /* this.sitename.el */
+				// if (collapsedChanged) { 
+				// if (withBundleChanged) { /* this.sitename.el */
+				// 	this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.sitename.el);
+				// } else if (collapsedChanged) {
+				// 	this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
+				// }
+				// }
+				if (withBundleChanged && collapsedChanged) { /* this.sitename.el */
 					this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
 				} else if (collapsedChanged) {
 					this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.sitename.el);
@@ -285,6 +311,7 @@ var NavigationView = View.extend({
 				}
 				break;
 		}
+		this.transforms.clearOffset(this.bundleList.el, this.keywordList.el, this.keywordList.wrapper);
 	},
 	
 	/* --------------------------- *
@@ -301,6 +328,7 @@ var NavigationView = View.extend({
 		}
 		if (this.model.hasChanged("bundle")) {
 			this.keywordList.refresh();
+			this.graph && this.graph.requestRender(View.SIZE_INVALID);
 		}
 		if (this.model.hasChanged("withBundle")) {
 			if (this.model.get("withBundle")) {
@@ -310,6 +338,7 @@ var NavigationView = View.extend({
 				this.touch.off("vpanstart", this._onVPanStart);
 				this.touch.off("panstart", this._onHPanStart);
 			}
+			// this.graph.valueTo()
 		}
 		this.requestRender(View.MODEL_INVALID);
 	},
@@ -327,6 +356,10 @@ var NavigationView = View.extend({
 	_onKeywordSelect: function(keyword) {
 		// use collection listener to avoid redundant refresh calls
 		this.bundleList.refresh();
+		if (!this.model.get("collapsed") && this.graph) {
+			// this.graph.requestRender(View.SIZE_INVALID & View.LAYOUT_INVALID);
+			this.graph.requestRender(View.LAYOUT_INVALID);
+		}
 	},
 	
 	/* -------------------------------
@@ -446,8 +479,7 @@ var NavigationView = View.extend({
 			if (this.willCollapsedChange(ev)) {
 				this.model.set("collapsed", !this.model.get("collapsed"));
 			} else {
-				this._transformsChanged = true;
-				this.requestRender();
+				this.requestRender(View.LAYOUT_INVALID);
 			}
 		});
 	},
@@ -520,11 +552,14 @@ var NavigationView = View.extend({
 		return view;
 	},
 	
-	createGraphView: function() {
+	createGraphView: function(listA, listB) {
 		var view = new GraphView({
 			id: "nav-graph",
-			model: new Backbone.Model({ a: bundles, b: keywords })
+			listA: listA,
+			listB: listB,
+			model: this.model
 		});
+		// view.styleData = {};
 		this.el.appendChild(view.el);
 		return view;
 	},
@@ -583,126 +618,8 @@ var NavigationView = View.extend({
 			this.transforms.offset(tMetrics.translateX - dTxObj.capturedX, void 0, this.keywordList.wrapper);
 			this.transforms.validate();
 		}
-	}, */
-	
-	/* -------------------------------
-	/* getKeywordWrapperTx
-	/* ------------------------------- */
-	// getKeywordWrapperTx: function() {
-	// 	// bundle
-	// 	var bundleChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("bundle");
-	// 	var withBundleChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("withBundle");
-	// 	var withBundle = this.model.get("withBundle");
-	// 	// media
-	// 	var mediaChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("media");
-	// 	var withMediaChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("withMedia");
-	// 	var withMedia = this.model.get("withMedia");
-	// 	// collapsed
-	// 	var collapsedChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("collapsed");
-	// 	var collapsed = this.model.get("collapsed");
-	// 	
-	// 	// Horizontal translation: sitename, wrappers (bundleList, keywordList), groups (keywordList)
-	// 	// - - - - - - - - - - - - - - - - -
-	// 	var kWrapTx;
-	// 	
-	// 	if (Globals.BREAKPOINTS["desktop-small"].matches) {
-	// 		/* kWrapTx 1 */ /*
-	// 		if (withMediaChanged) {
-	// 			if (withBundleChanged) {
-	// 				if (withBundle) {
-	// 					kWrapTx = tx.LAST;
-	// 				} else {
-	// 					if (collapsedChanged) {
-	// 						kWrapTx = tx.FIRST;
-	// 					}
-	// 				}
-	// 			} else if (collapsedChanged) {
-	// 				if (collapsed) {
-	// 					if (withMedia) {
-	// 						kWrapTx = tx.LAST;
-	// 					}
-	// 				}
-	// 			} else {
-	// 				kWrapTx = bundleChanged? tx.BETWEEN : tx.NOW;
-	// 			}
-	// 		} else if (collapsedChanged) {
-	// 			if (withMedia) {
-	// 				kWrapTx = collapsed? tx.LAST : tx.FIRST;
-	// 			}
-	// 		}*/
-	// 		
-	// 		/* kWrapTx 2 */ /*
-	// 		if ( withMediaChanged &&  withBundleChanged &&  withBundle) kWrapTx = tx.LAST;//A
-	// 		if ( collapsedChanged &&  withBundleChanged &&  withMediaChanged && !withBundle) kWrapTx = tx.FIRST;//B
-	// 		if (!collapsedChanged && !withBundleChanged &&  withMediaChanged &&  bundleChanged) kWrapTx = tx.BETWEEN;//D
-	// 		if (!collapsedChanged && !withBundleChanged &&  withMediaChanged && !bundleChanged) kWrapTx = tx.NOW;//E
-	// 		if ( collapsedChanged && !withBundleChanged &&  withMediaChanged &&  collapsed && withMedia) kWrapTx = tx.LAST;//C
-	// 		if ( collapsedChanged && !withBundleChanged && !withMediaChanged &&  collapsed && withMedia) kWrapTx = tx.LAST;//F
-	// 		if ( collapsedChanged && !withBundleChanged && !withMediaChanged && !collapsed && withMedia) kWrapTx = tx.FIRST;//G
-	// 		if (withBundleChanged) {
-	// 			if (withMediaChanged) {
-	// 				if (withBundle) {
-	// 					kWrapTx = tx.LAST; //A
-	// 				} else {
-	// 					if (collapsedChanged) {
-	// 						kWrapTx = tx.FIRST;//B
-	// 					}
-	// 				}
-	// 			}
-	// 		} else if (withMediaChanged) {
-	// 			if (collapsedChanged) {
-	// 				if (collapsed) {
-	// 					if (withMedia) {
-	// 						kWrapTx = tx.LAST;//C
-	// 					}
-	// 				}
-	// 			} else {
-	// 				kWrapTx = bundleChanged?
-	// 					tx.BETWEEN://D
-	// 					tx.NOW;//E
-	// 				// kWrapTx = bundleChanged? tx.BETWEEN : null;
-	// 			}
-	// 		} else if (collapsedChanged) {
-	// 			if (withMedia) {
-	// 				kWrapTx = collapsed?
-	// 					tx.LAST://F
-	// 					tx.FIRST;//G
-	// 			}
-	// 		}*/
-	// 		
-	// 		/* kWrapTx 3 */
-	// 		// if (kWrapTx) {
-	// 		// 	var flags = {
-	// 		// 		withBundle: withBundle,
-	// 		// 		withMedia: withMedia,
-	// 		// 		collapsed: collapsed,
-	// 		// 		withBundleChanged: withBundleChanged,
-	// 		// 		withMediaChanged: withMediaChanged,
-	// 		// 		collapsedChanged: collapsedChanged,
-	// 		// 	};
-	// 		// 	console.log("%s::renderFrame kWrap -- %s", this.cid, JSON.stringify(flags));
-	// 		// }
-	// 		// var l = function(msg, txName) {
-	// 		// 	txName = (kWrapTx && kWrapTx.name) || txName || "none";
-	// 		// 	console.log("%s::renderFrame kWrap %s, %s", this.cid, txName, msg);
-	// 		// }.bind(this);
-	// 		
-	// 		if ( collapsedChanged	&&  withMediaChanged	&&  withBundleChanged) { kWrapTx = withBundle? tx.LAST:tx.FIRST; l("A/B", (withBundle?"to":"from") + " withBundle"); }//A/B
-	// 		// if (						withMediaChanged	&&  withBundleChanged	&&  withBundle)						{ /*kWrapTx = tx.LAST;*/		l("A", "NONE"); }//A
-	// 		// if ( collapsedChanged	&&  withMediaChanged	&&  withBundleChanged	&& !withBundle)					{ /*kWrapTx = tx.FIRST;*/		l("B", "NONE"); }//B
-	// 		
-	// 		if ( collapsedChanged	&& !withBundleChanged	&& withMedia) { kWrapTx = collapsed? tx.LAST:tx.FIRST; l((collapsed? "C/F":"G"), (collapsed?"to":"from") + " collapsed"); }//C/F/G
-	// 		// if ( collapsedChanged	&& !withMediaChanged	&& !withBundleChanged	&&  withMedia	&& !collapsed)		{ /*kWrapTx = tx.FIRST;*/		l("G", "NONE"); }//G
-	// 		// if ( collapsedChanged							&& !withBundleChanged	&&  withMedia	&&  collapsed)		{ /*kWrapTx = tx.LAST;*/		l("C/F", "NONE"); }//C/F
-	// 		// if ( collapsedChanged	&&  withMediaChanged	&& !withBundleChanged	&&  withMedia	&&  collapsed)	{ /*kWrapTx = tx.LAST;*/		l("C", "NONE"); }//C
-	// 		// if ( collapsedChanged	&& !withMediaChanged	&& !withBundleChanged	&&  withMedia	&&  collapsed)	{ /*kWrapTx = tx.LAST;*/		l("F", "NONE"); }//F
-	// 		
-	// 		if (!collapsedChanged	&&  withMediaChanged	&& !withBundleChanged) { kWrapTx = bundleChanged? tx.BETWEEN:tx.NOW; l("D/E"); }	//D/E
-	// 		// if (!collapsedChanged	&&  withMediaChanged	&& !withBundleChanged	&&  bundleChanged)					{ kWrapTx = tx.BETWEEN; l("D"); }	//D
-	// 		// if (!collapsedChanged	&&  withMediaChanged	&& !withBundleChanged	&& !bundleChanged)					{ kWrapTx = tx.NOW; l("E"); }		//E
-	// 	}
-	// 	return kWrapTx;
-	// }
+	},
+	*/
 });
 
 module.exports = NavigationView;

@@ -26,8 +26,32 @@
 }
 
 // FilterableList
-// -----------------------------------
+// ===================================
 @import "components/filterable";
+
+.list-item {
+	white-space: nowrap;
+	a {
+		// line-height: 0;
+		display: inline-block;
+	}
+	.label {
+		line-height: 0;
+		// display: inline-block;
+	}
+	// a:after {
+	// 	content: '';
+	// 	// height: 100%;
+	// 	outline: 1px solid red;
+	// 	display: inline-block;
+	// }
+}
+.list-group {
+	white-space: nowrap;
+	.label {
+		display: inline-block;
+	}
+}
 
 // bundle-list
 // - - - - - - - - - - - - - - - - - -
@@ -39,13 +63,13 @@
 	.list-item {
 		// height: 2rem;
 		// width: 100%;
-		white-space: nowrap;
+		// white-space: nowrap;
 		a {
-			display: inline-block;
-			// margin-left: -1px;
 		}
 		.completed {
 			display: none;
+		}
+		.label {
 		}
 		em {
 			font-style: normal;
@@ -61,10 +85,14 @@
 	// padding-top: 1.25rem;
 	// padding-bottom: 1.5rem;
 	.list-item {
-		white-space: nowrap;
+		// white-space: nowrap;
 		a {
-			display: inline-block;
-			// margin-left: -1px;
+			// font-size: 13px;
+			// display: inline-block;
+		}
+		.label {
+			// line-height: 1.5rem;
+			// line-height: 0;
 			font-size: 13px;
 		}
 	}
@@ -72,59 +100,60 @@
 		// NOTE: in js, this value is ignored when height is zero
 		margin-top: 0.5rem; 
 		white-space: nowrap;
-		.name {//span {
+		.label {//span {
 			display: inline-block;
-			// margin-left: -1px;
-			@include small_caps($lead: 1.5rem);
+			@include small_caps($lead: 0);//1.5rem);
 		}
 	}
 }
 
+// relational bundles/keywords
+// ===================================
+
+.no-canvas {
+	// keyword-to-bundles
+	// - - - - - - - - - - - - - - - - - -
+	.with-bundle #keyword-list:not(.collapsed) .list-item.selected .label {
+		text-decoration: underline;
+	}
+	.with-bundle #bundle-list.has-excluded:not(.collapsed) .list-item:not(.excluded) .label {
+		text-decoration: underline;
+	}
+
+	// bundle-to-keywords
+	// - - - - - - - - - - - - - - - - - -
+	.list-item .label {
+		transition: tx(color, 1, 0.5);//steps(16)
+	}
+	.with-bundle #bundle-list:not(.collapsed) .list-item.selected .label {
+		color: $link_color;
+	}
+	.with-bundle #keyword-list.has-excluded:not(.collapsed) .list-item:not(.excluded) {
+		color: $link_color;
+	}
+}
+
+// bundle-to-keywords - asterisk
 // - - - - - - - - - - - - - - - - - -
-// TEMP
-// - - - - - - - - - - - - - - - - - -
-#keyword-list  {
-	.list-item.selected {
-		.name {
-			text-decoration: underline;
-		}
-	}
-}
-#bundle-list.has-excluded:not(.collapsed) {
-	.list-item:not(.excluded) {
-		.name {
-			text-decoration: underline;
-		}
-	}
-}
-
-#keyword-list .list-item:before {
-	content: "*";
-	position: absolute;
-	display: inline-block;
-	top: 0.375em; left: 0;
-	width: 0.5em; height: 0.5em;
-	opacity: 0;
-	font-size: 1.25em;
-	line-height: 0.75em;
-}
-
-.with-bundle {
-	#keyword-list {
-		.list-item:before {
-			transition: tx(opacity, 1, 1);//$duration $ease $delay;
-		}
-		&:not(.collapsed) .list-item:not(.excluded):before {
-			opacity: 1;
-		}
-	}
-	#bundle-list {
-		// .list-item.selected .name {
-		.list-item .name {
-			transition: tx(color, 1, 0);//steps(16)
-		}
-		&:not(.collapsed) .list-item.selected .name {
-			color: $link_color;
-		}
-	}
-}
+// #keyword-list .list-item:before {
+// 	content: "*";
+// 	position: absolute;
+// 	display: inline-block;
+// 	vertical-align: baseline;
+// 	opacity: 0;
+// 	transition: tx(opacity, 1, 1);
+// }
+// .with-bundle #keyword-list:not(.collapsed) .list-item:not(.excluded):before {
+// 	opacity: 1;
+// }
+// .with-bundle {
+// 	#bundle-list {
+// 		// .list-item.selected .name {
+// 		.list-item .label {
+// 			transition: tx(color, 1, 0.5);//steps(16)
+// 		}
+// 		&:not(.collapsed) .list-item.selected .label {
+// 			color: $link_color;
+// 		}
+// 	}
+// }

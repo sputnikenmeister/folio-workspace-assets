@@ -12,9 +12,10 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 	min-width: $page_width;
 }
 
-// -----------------------------------
+// ///////////////////////////////////
 // navigation
-// -----------------------------------
+// ///////////////////////////////////
+
 #navigation {
 	position: relative;
 	margin: 0 auto;
@@ -29,12 +30,18 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 	position: absolute;
 	display: inline-block;
 	// transform-style: flat;
-	// transform-style: preserve-3d;
+	transform-style: preserve-3d;
 	// transform: move(0,0);
+}
+.transform-wrapper {
+	// @extend %nav_list;
+	position: absolute;
+	display: inline-block;
+	transform-style: preserve-3d;
 }
 
 // bundle-list
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 #bundle-list {
 	@extend %nav_list;
 	width: $main_width - $aside_width;
@@ -50,9 +57,14 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 .with-bundle #bundle-list {
 	padding-top: 1.5rem;
 }
+// bundle-list-wrapper
+// - - - - - - - - - - - - - - - - - -
+#bundle-list-wrapper {
+	left: 0;
+}
 
 // keyword-list
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 #keyword-list {
 	@extend %nav_list;
 	width: $aside_width;
@@ -66,6 +78,13 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 }
 .with-bundle #keyword-list {
 	padding-top: 1.25rem;
+}
+
+// keyword-list-wrapper
+// - - - - - - - - - - - - - - - - - -
+#keyword-list-wrapper {
+	left: $main_width;
+	transform: move(0, 0);
 }
 
 // keyword-list list-group
@@ -84,7 +103,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 }
 
 // site-name
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 #site-name {
 	position: relative;
 	display: inline-block;
@@ -96,13 +115,6 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 .with-bundle #site-name {
 	transform: move(-100%, 0);
 }
-
-// transform-wrappers
-// -----------------------------------
-.transform-wrapper {
-	@extend %nav_list;
-}
-
 // site-name-wrapper
 // - - - - - - - - - - - - - - - - - -
 #site-name-wrapper {
@@ -115,33 +127,33 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 // 	transform: move(-100%, 0);
 // }
 
-// bundle-list-wrapper
-// - - - - - - - - - - - - - - - - - -
-#bundle-list-wrapper {
-	left: 0;
-}
-
-// keyword-list-wrapper
-// - - - - - - - - - - - - - - - - - -
-#keyword-list-wrapper {
-	left: $main_width;
-	transform: move(0, 0);
-}
 
 // nav-graph
 // - - - - - - - - - - - - - - - - - -
 #nav-graph {
 	@extend %nav_list;
-	left: $aside_width;
-	width: $main_width - $aside_width;
+	// box-sizing: border-box;
+	box-sizing: content-box;
+	// padding: 1.5rem 0;
+	padding: 0;
+	// right: 0;
+	width: $page_width;
+	// height: 12rem;
+	
+	transition: tx(opacity, 1, 0);
+	opacity: 0;
+	@at-root .container-expanded:not(.container-changing) & {
+		opacity: 1;
+	}
 }
 .container-collapsed #nav-graph {
 	opacity: 0;
 }
 
-// -----------------------------------
+// ///////////////////////////////////
 // content
-// -----------------------------------
+// ///////////////////////////////////
+
 #content {
 	overflow: hidden;
 	position: absolute;
@@ -150,7 +162,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 }
 
 // image-carousel
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 .media-carousel {
 	position: absolute;
 	transform: move(0,0);
@@ -216,7 +228,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 }
 
 // media-caption-stack
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 .media-caption-stack {
 	position: relative;
 	width: $page_width;
@@ -243,7 +255,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 }
 
 // media-dotnav
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 .media-dotnav {
 	font-size: 1.15rem;
 	text-align: center;

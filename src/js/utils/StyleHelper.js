@@ -6,10 +6,10 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {module:utils/strings/camelToDashed} */
+// /** @type {module:utils/strings/camelToDashed} */
 // var camelToDashed = require("./strings/camelToDashed");
 
-// /** @type {module:utils/strings/dashedToCamel} */
+/** @type {module:utils/strings/dashedToCamel} */
 var camelCase = require("./strings/dashedToCamel");
 // var camelCase = jQuery.camelCase;
 
@@ -44,8 +44,9 @@ var refreshCSSRule = function(selector) {
 };
 
 /**
- * @param [selector]
- */
+* @param {String} [selector]
+* @return {CSSRule}
+*/
 var getCSSRule = function (selector) {
 	if (!_.isEmpty(selector)) {
 		_aliases[selector] !== void 0 && (selector = _aliases[selector]);
@@ -56,31 +57,42 @@ var getCSSRule = function (selector) {
 	}
 };
 
+/**
+* @return {CSSRule}
+*/
 var findCSSRule = function (selector) {
-	var match = null;
-	for (var i = document.styleSheets.length; i > 0 && match === null; --i) {
-		match = _.findWhere(document.styleSheets[i].cssRules, {selectorText: selector});
+	var sheets = document.styleSheets, match = null;
+	for (var i = sheets.length; i > 0 && match === null; --i) {
+		match = _.findWhere(sheets[i].cssRules, {selectorText: selector});
 	}
 	return match;
 };
+
+/**
+* @return {CSSRule}
+*/
 var findCSSRule2 = function (selector) {
-	return [].slice.call(document.styleSheets).reduce(
+	return Array.prototype.slice.call(document.styleSheets).reduce(
+	// return Array.prototype.reduce.call(document.styleSheets,
 		function (prev, styleSheet) {
 			if (styleSheet.cssRules) {
-				return prev + [].slice.call(styleSheet.cssRules).reduce(
+				return prev + Array.prototype.slice.call(styleSheet.cssRules).reduce(
+				// return prev + Array.prototype.reduce.call(styleSheet.cssRules,
 					function (prev, cssRule) {
 						return prev + cssRule.cssText;
-					});
+					}
+				);
 			} else {
 				return prev;
 			}
-		});
+		}
+	);
 };
 
 /**
- * @param [selector]
- * @param [propName]
- */
+* @param {String} [selector]
+* @param {String} [propName]
+*/
 var getCSSProperty = function (selector, propName) {
 	try {
 		return getCSSRule(selector).style[camelCase(propName)];
@@ -90,10 +102,10 @@ var getCSSProperty = function (selector, propName) {
 };
 
 /**
- * @param [selector]
- * @param [propName]
- * @param [value]
- */
+* @param [selector]
+* @param [propName]
+* @param [value]
+*/
 var setCSSProperty = function (selector, propName, value) {
 	var name = camelCase(propName),
 		key = selector + "$$" + propName,
@@ -103,9 +115,9 @@ var setCSSProperty = function (selector, propName, value) {
 };
 
 /**
- * @param [selector]
- * @param [style]
- */
+* @param [selector]
+* @param [style]
+*/
 var createCSSRule = function (selector, style) {
 	var cssText = "";
 	for (var prop in style) {

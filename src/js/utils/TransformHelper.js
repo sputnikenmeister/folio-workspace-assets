@@ -162,9 +162,6 @@ TransformHelper.prototype = Object.create({
 		for (var i = 0, ii = this._items.length; i < ii; i++) {
 			this._items[i].capture();
 		}
-		// for (var i in this._itemsById) {
-		// 	this._itemsById[i].capture();
-		// }
 	},
 	
 	clearCapture: function () {
@@ -174,9 +171,6 @@ TransformHelper.prototype = Object.create({
 		for (var i = 0, ii = this._items.length; i < ii; i++) {
 			this._items[i].clearCapture();
 		}
-		// for (var i in this._itemsById) {
-		// 	this._itemsById[i].clearCapture();
-		// }
 	},
 	
 	/* public: offset
@@ -188,9 +182,6 @@ TransformHelper.prototype = Object.create({
 		for (var i = 0, ii = this._items.length; i < ii; i++) {
 			this._items[i].offset(x, y);
 		}
-		// for (var i in this._itemsById) {
-		// 	this._itemsById[i].offset(x, y);
-		// }
 	},
 	
 	clearOffset: function() {
@@ -200,9 +191,6 @@ TransformHelper.prototype = Object.create({
 		for (var i = 0, ii = this._items.length; i < ii; i++) {
 			this._items[i].clearOffset();
 		}
-		// for (var i in this._itemsById) {
-		// 	this._itemsById[i].clearOffset();
-		// }
 	},
 	
 	/* public: transitions
@@ -215,9 +203,6 @@ TransformHelper.prototype = Object.create({
 		for (var i = 0, ii = this._items.length; i < ii; i++) {
 			this._items[i].runTransition(transition);
 		}
-		// for (var i in this._itemsById) {
-		// 	this._itemsById[i].runTransition(transition);
-		// }
 	},
 	
 	clearTransition: function() {
@@ -227,9 +212,6 @@ TransformHelper.prototype = Object.create({
 		for (var i = 0, ii = this._items.length; i < ii; i++) {
 			this._items[i].clearTransition();
 		}
-		// for (var i in this._itemsById) {
-		// 	this._itemsById[i].clearCapture();
-		// }
 	},
 	
 	stopTransition: function() {
@@ -239,23 +221,24 @@ TransformHelper.prototype = Object.create({
 		for (var i = 0, ii = this._items.length; i < ii; i++) {
 			this._items[i].stopTransition();
 		}
-		// for (var i in this._itemsById) {
-		// 	this._itemsById[i].stopTransition();
-		// }
 	},
 	
 	whenTransitionEnds: function() {
 		var res = this._invoke("whenTransitionEnds", arguments);
-		return res.length != 0? Promise.all(res) : Promise.resolve(null);
+		return res.length != 0?
+			Promise.all(res) :
+			Promise.resolve(null);
 	},
 	whenAllTransitionsEnd: function() {
 		return (this._items.length != 0)? Promise.all(this._items.map(function(o) {
 			return o.whenTransitionEnds();
 		})) : Promise.resolve(null);
-		// var keys = Object.keys(this._itemsById);
-		// return keys.length != 0? Promise.all(keys.map(function(key) {
-		// 	return this._itemsById[key].whenTransitionEnds();
-		// }, this)) : Promise.resolve(null);
+	},
+	
+	promise: function() {
+		return arguments.length == 0?
+			this.whenAllTransitionsEnd() :
+			this.whenTransitionEnds.call(this, arguments);
 	},
 	
 	/* -------------------------------
@@ -266,9 +249,6 @@ TransformHelper.prototype = Object.create({
 		for (var i = 0, ii = this._items.length; i < ii; i++) {
 			this._items[i].validate();
 		}
-		// for (var i in this._itemsById) {
-		// 	this._itemsById[i].validate();
-		// }
 	},
 },
 {

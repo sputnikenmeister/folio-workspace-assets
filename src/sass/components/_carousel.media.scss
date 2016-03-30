@@ -2,7 +2,7 @@
 // .media-item
 // -----------------------------------
 .media-item {
-	img, video {
+	img {
 		object-fit: cover;
 		&:focus {
 			outline: 0 none;

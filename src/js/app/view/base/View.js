@@ -323,6 +323,7 @@ var ViewProto = {
 	* @type {module:app/view/base/View}
 	*/
 	constructor: function(options) {
+		this.transform = {};
 		this.childViews = {};
 		this._applyRender = this._applyRender.bind(this);
 		
@@ -472,7 +473,7 @@ var ViewProto = {
 			newParent.childViews[this.cid] = this;
 		}
 		if (!silent)
-			this.trigger("view:parentChange", newParent, oldParent);
+			this.trigger("view:parentChange", this, newParent, oldParent);
 	},
 	
 	whenAttached: function() {
@@ -565,10 +566,13 @@ var ViewProto = {
 				(this.skipTransitions? "skip":"run") +" transitions"
 			);
 		}
+		
 		var flags = this._renderFlags; 
+		this.trigger("view:render:before", this, flags);
 		this._renderFlags = 0;
 		this._frameQueueId = -1;
 		this._renderFlags |= this.renderFrame(tstamp, flags);
+		this.trigger("view:render:after", this, flags);
 		
 		if (this._renderFlags != 0) {
 			console.warn("%s::_applyRender [returned] flags: %s", this.cid, View.flagsToString(this._renderFlags), this._renderFlags);

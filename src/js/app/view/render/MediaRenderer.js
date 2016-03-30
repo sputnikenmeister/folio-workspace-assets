@@ -159,13 +159,17 @@ var MediaRenderer = CarouselRenderer.extend({
 			cw = sw;
 			ch = sh;
 		} else if ((pcw / pch) < (sw / sh)) {
+			// constrain height
 			cw = pcw;
 			cs = cw / sw;
-			ch = Math.floor(cs * sh);
+			// ch = cs * sh;
+			ch = Math.round(cs * sh);
 		} else {
+			// constrain width
 			ch = pch;
 			cs = ch / sh;
-			cw = Math.floor(cs * sw);
+			// cw = cs * sw;
+			cw = Math.round(cs * sw);
 		}
 		
 		this.metrics.content.x = cx;

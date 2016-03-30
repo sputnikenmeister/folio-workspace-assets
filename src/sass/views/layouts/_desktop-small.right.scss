@@ -11,21 +11,24 @@ $nHeightLandRight: $nHeightLand + 1.5rem;
 // 	top: $nTopLand + $nHeightLandRight;
 // }
 
-// -----------------------------------
+// ///////////////////////////////////
 // navigation
-// -----------------------------------
+// ///////////////////////////////////
 
 // nav_list
 // -----------------------------------
 
 // bundle-list
+// ===================================
+
+// bundle-list-wrapper
 // - - - - - - - - - - - - - - - - - -
+&.with-bundle .container-expanded #bundle-list-wrapper {
+	transform: move(0, 0);
+}
 
 // keyword-list
-// - - - - - - - - - - - - - - - - - -
-
-// keyword-list
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 #keyword-list {
 	// padding-top: #{$nHeightLand + 4.25rem};
 }
@@ -35,46 +38,34 @@ $nHeightLandRight: $nHeightLand + 1.5rem;
 &.with-bundle .container-expanded #keyword-list {
 	padding-top: 1.25rem;
 }
-
+// keyword-list-wrapper
+// - - - - - - - - - - - - - - - - - -
+&.with-bundle #keyword-list-wrapper {
+	transform: move(0, 0);
+}
 // keyword-list list-group
 // - - - - - - - - - - - - - - - - - -
 
 // site-name
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 &.with-bundle .container-expanded #site-name {
 	transform: move(-100%, 0);
 }
-
-// transform-wrappers
-// -----------------------------------
-
 // site-name-wrapper
 // - - - - - - - - - - - - - - - - - -
 // #site-name-wrapper {
 // 	height: $nHeightLand_right;
 // }
 
-// bundle-list-wrapper
-// - - - - - - - - - - - - - - - - - -
-&.with-bundle .container-expanded #bundle-list-wrapper {
-	transform: move(0, 0);
-}
-
-// keyword-list-wrapper
-// - - - - - - - - - - - - - - - - - -
-&.with-bundle #keyword-list-wrapper {
-	transform: move(0, 0);
-}
-
 // nav-graph
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 
-// -----------------------------------
+// ///////////////////////////////////
 // content
-// -----------------------------------
+// ///////////////////////////////////
 
 // image-carousel
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 .media-carousel {
 	top: $nTopLand + $nHeightLandRight - 3rem;
 	.media-item {
@@ -92,7 +83,7 @@ $nHeightLandRight: $nHeightLand + 1.5rem;
 }
 
 // media-caption-stack
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 .media-caption-stack {
 	top: $nTopLand + $nHeightLandRight;
 	margin-top: -2.5rem;
@@ -108,7 +99,7 @@ $nHeightLandRight: $nHeightLand + 1.5rem;
 }
 
 // media-dotnav
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 
 }// end layout
 }// end media-query

@@ -12,7 +12,8 @@ var AppState = Backbone.Model.extend({
 		withBundle: false,
 		media: null,
 		withMedia: false,
-		collapsed: false
+		collapsed: false,
+		layoutName: "default-layout"
 	},
 
 	// /** @type {module:app/model/collection/TypeCollection} */

@@ -5,8 +5,8 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-// /** @type {module:color} */
-// var Color = require("color");
+/** @type {module:color} */
+var Color = require("color");
 
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
@@ -17,7 +17,7 @@ var Interpolator = require("app/view/base/Interpolator");
 /** @type {module:utils/css/getBoxEdgeStyles} */
 var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
-var MIN_CANVAS_RATIO = 2;
+var MIN_CANVAS_RATIO = 2;// /Firefox/.test(window.navigator.userAgent)? 2 : 1;
 
 /**
 * @constructor
@@ -32,13 +32,23 @@ var CanvasView = View.extend({
 	/** @type {string} */
 	className: "canvas-view",
 	
-	// properties: {
-	// 	context: {
-	// 		get: function() {
-	// 			return this._ctx;
-	// 		}
-	// 	}
-	// },
+	properties: {
+		context: {
+			get: function() {
+				return this._ctx;
+			}
+		},
+		interpolator: {
+			get: function() {
+				return this._interpolator;
+			}
+		},
+		canvasRatio: {
+			get: function() {
+				return this._canvasRatio;
+			}
+		},
+	},
 	
 	/** @type {Object} */
 	defaults: {
@@ -61,9 +71,11 @@ var CanvasView = View.extend({
 		this._interpolator = new Interpolator(options.values, options.maxValues);
 		
 		// render props
-		this._color = options.color;
-		this._backgroundColor = options.backgroundColor;
+		// this._color = options.color;
+		// this._backgroundColor = options.backgroundColor;
 		this._useOpaque = options.useOpaque;
+		
+		this._options = _.pick(options, "color", "backgroundColor");
 		
 		// // mozOpaque
 		// // --------------------------------
@@ -79,52 +91,59 @@ var CanvasView = View.extend({
 		// --------------------------------
 		this._ctx = this.el.getContext("2d");
 		
-		this.listenTo(this, "view:attached", function(){
-			// this.invalidateSize();
-			// this.renderNow();
-			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
-		});
-	},
-
-	_updateCanvas: function() {
-		var s, m, w, h;
-		
-		s = getComputedStyle(this.el);
-		m = getBoxEdgeStyles(s);
-		w = this.el.offsetWidth;
-		h = this.el.offsetHeight;
-		
-		console.log("%s::_updateCanvas css: %fpx x %fpx offsetSize: %fpx x %fpx", this.cid,
-			m.width, m.height, w, h);
-		
-		// adjust html-box size
-		// --------------------------------
-		// if (m.boxSizing === "border-box") {
-			w -= m.paddingLeft + m.paddingRight + m.borderLeftWidth + m.borderRightWidth;
-			h -= m.paddingTop + m.paddingBottom + m.borderTopWidth + m.borderBottomWidth;
-		// }
-		this.el.style.width = w + "px";
-		this.el.style.height = h + "px";
-		
 		// adjust canvas size to pixel ratio
 		// upscale the canvas if the two ratios don't match
 		// --------------------------------
 		var ratio = MIN_CANVAS_RATIO;
 		var ctxRatio = this._ctx.webkitBackingStorePixelRatio || 1;
 		if (window.devicePixelRatio !== ctxRatio) {
-			ratio = Math.max(window.devicePixelRatio / ctxRatio, MIN_CANVAS_RATIO);
+			// ratio = Math.max(window.devicePixelRatio / ctxRatio, MIN_CANVAS_RATIO);
+			ratio = window.devicePixelRatio / ctxRatio;
+			ratio = Math.max(ratio, MIN_CANVAS_RATIO);
 		}
 		this._canvasRatio = ratio;
+		// console.log("%s::init canvasRatio: %f", this.cid, this._canvasRatio);
 		
-		this._canvasWidth = w*ratio;
-		this._canvasHeigth = h*ratio;
-		this.el.width = this._canvasWidth;
-		this.el.height = this._canvasHeigth;
+		this.listenTo(this, "view:attached", function(){
+			// this.invalidateSize();
+			// this.renderNow();
+			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
+		});
+	},
+	
+	// _computeCanvasRatio: function() {
+	// 	var ratio = MIN_CANVAS_RATIO;
+	// 	var ctxRatio = this._ctx.webkitBackingStorePixelRatio || 1;
+	// 	if (window.devicePixelRatio !== ctxRatio) {
+	// 		// ratio = Math.max(window.devicePixelRatio / ctxRatio, MIN_CANVAS_RATIO);
+	// 		ratio = window.devicePixelRatio / ctxRatio;
+	// 		ratio = Math.max(ratio, MIN_CANVAS_RATIO);
+	// 	}
+	// 	this._canvasRatio = ratio;
+	// },
+
+	_updateCanvas: function() {
+		// adjust canvas size to pixel ratio
+		// upscale the canvas if the two ratios don't match
+		// --------------------------------
+		var s, m, w, h, edgeW, edgeH;
+		
+		s = getComputedStyle(this.el);
+		m = getBoxEdgeStyles(s);
+		edgeW = m.paddingLeft + m.paddingRight + m.borderLeftWidth + m.borderRightWidth;
+		edgeH = m.paddingTop + m.paddingBottom + m.borderTopWidth + m.borderBottomWidth;
+		w = this.el.offsetWidth;
+		h = this.el.offsetHeight;
+		
+		this.el.width = this._canvasWidth = (w - edgeW) * this._canvasRatio;
+		this.el.height = this._canvasHeigth = (h - edgeH) * this._canvasRatio;
+		// this.el.style.height = h + "px";
+		// this.el.style.width = w + "px";
 		
 		// colors
 		// --------------------------------
-		this._color || (this._color = (s.color || Globals.DEFAULT_COLORS["color"]));
-		this._backgroundColor || (this._backgroundColor = (s.backgroundColor || Globals.DEFAULT_COLORS["background-color"]));
+		this._color = s.color || this._options.color || Globals.DEFAULT_COLORS["color"];
+		this._backgroundColor = s.backgroundColor || this._options.backgroundColor || Globals.DEFAULT_COLORS["background-color"];
 		
 		// mozOpaque
 		// --------------------------------
@@ -135,11 +154,13 @@ var CanvasView = View.extend({
 		
 		// fontSize
 		// --------------------------------
-		this._fontSize = parseFloat(s.fontSize) * ratio;
+		this._fontSize = parseFloat(s.fontSize) * this._canvasRatio;
 		this._fontFamily = s.fontFamily;
 		
-		// save canvas context
+		// prepare canvas context
 		// --------------------------------
+		this._ctx.restore();
+		
 		this._ctx.font = [s.fontWeight, s.fontStyle, this._fontSize + "px/1", s.fontFamily].join(" ");
 		this._ctx.textAlign = "left";
 		this._ctx.lineCap = "butt";
@@ -147,7 +168,21 @@ var CanvasView = View.extend({
 		this._ctx.strokeStyle = this._color;
 		this._ctx.fillStyle = this._color;
 		
+		this.updateCanvas(this._ctx);
 		this._ctx.save();
+		
+		// console.group(this.cid+"::_updateCanvas");
+		// console.log("ratio:    %f (min: %f, device: %f, context: %s)", this._canvasRatio, MIN_CANVAS_RATIO, window.devicePixelRatio, this._ctx.webkitBackingStorePixelRatio || "(webkit-only)");
+		// console.log("colors:   fg: %s bg: %s", this._color, this._backgroundColor);
+		// console.log("style:    %s, %s, padding: %s (%s)", s.width, s.height, s.padding, s.boxSizing);
+		// console.log("box:      %f x %f px", m.width, m.height);
+		// console.log("measured: %f x %f px", w, h);
+		// console.log("canvas:   %f x %f px", this._canvasWidth, this._canvasHeigth);
+		// console.groupEnd();
+	},
+	
+	updateCanvas: function() {
+		
 	},
 	
 	_getFontMetrics: function(str) {
@@ -196,58 +231,13 @@ var CanvasView = View.extend({
 			flags |= View.LAYOUT_INVALID;
 			this._interpolator.interpolate(tstamp);
 		}
-		if (flags & View.LAYOUT_INVALID) {
-			this.redraw(this._ctx, this._interpolator.renderedKeys);
+		if (flags & (View.LAYOUT_INVALID | View.SIZE_INVALID)) {
+			this.redraw(this._ctx, this._interpolator);
 			if (this._interpolator.valuesChanged) {
 				this.requestRender();
 			}
 		}
 	},
-	
-	// /** @override */
-	// renderFrame2: function(tstamp) {
-	// 	if (!this.attached) return;
-	// 	
-	// 	if (this._renderFlags & View.RENDER_INVALID) {
-	// 		this._renderFlags &= ~View.RENDER_INVALID;
-	// 		this._updateCanvas();
-	// 		this._needsRedraw = true;
-	// 	}
-	// 	if (this._interpolator.valuesChanged) {
-	// 		this._interpolator.interpolate(tstamp);
-	// 		this._needsRedraw = true;
-	// 	}
-	// 	if (this._needsRedraw) {
-	// 		this._needsRedraw = false;
-	// 		this.redraw(this._interpolator.renderedKeys);
-	// 	}
-	// 	if (this._interpolator.valuesChanged) {
-	// 		this.requestRender();
-	// 	}
-	// },
-	
-	// /** @override */
-	// renderFrame3: function(tstamp, flags) {
-	// 	if (!this.attached) {
-	// 		return flags;
-	// 	}
-	// 	var needsRedraw = false;
-	// 	
-	// 	if (flags & View.SIZE_INVALID) {
-	// 		needsRedraw = true;
-	// 		this._updateCanvas();
-	// 	}
-	// 	if (this._interpolator.valuesChanged) {
-	// 		needsRedraw = true;
-	// 		this._interpolator.interpolate(tstamp);
-	// 		if (this._interpolator.valuesChanged) {
-	// 			this.requestRender();
-	// 		}
-	// 	}
-	// 	if (needsRedraw) {
-	// 		this.redraw(this._interpolator.renderedKeys);
-	// 	}
-	// },
 	
 	/* --------------------------- *
 	/* public

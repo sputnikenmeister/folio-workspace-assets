@@ -154,46 +154,68 @@ var FilterableListView = View.extend({
 	},
 	
 	measure: function() {
-		var i, ii, el, els, m, mm;
-		els = this.el.children;
-		ii = els.length;
-		mm = this._itemMetrics;
+		// var i, ii, el, els, m, mm;
+		// els = this.el.children;
+		// ii = els.length;
+		// mm = this._itemMetrics;
+		// for (i = 0; i < ii; i++) {
+		// 	mm[i] = _.pick(els[i], "offsetTop", "offsetHeight");
+		// }
 		
-		// measure
-		for (i = 0; i < ii; i++) {
-			mm[i] = _.pick(els[i], "offsetTop", "offsetHeight");
-		}
 		this._metrics = getBoxEdgeStyles(this.el, this._metrics);
+		
+		// var itemEl, itemView, baseline = 0;
+		// if (itemEl = this.el.querySelector(".list-item:not(.excluded) .label")) {
+		// 	// itemView = this.itemViews.findByCid(itemEl.cid);
+		// 	var elA = itemEl, elB = itemEl.parentElement;
+		// 	var yA = elA.offsetTop,
+		// 		hA = elA.offsetHeight,
+		// 		yB = elB.offsetTop,
+		// 		hB = elB.offsetHeight;
+		// 	baseline = ((yA + hA) - (yB + hB));
+		// 	console.log("%s::measure fontSize: %spx (%s+%s)-(%s+%s)=%s", this.cid, this._metrics.fontSize,
+		// 		yA, hA, yB, hB, baseline
+		// 	);
+		// }
+		
+		this.itemViews.forEach(function(view) {
+			if (!view._metrics) view._metrics = {};
+			// view._metrics.baseline = this._metrics.fontSize - baseline;
+			view._metrics.offsetTop = view.el.offsetTop;
+			view._metrics.offsetHeight = view.el.offsetHeight;
+			view._metrics.offsetLeft = view.el.offsetLeft;
+			view._metrics.offsetWidth = view.el.offsetWidth;
+			if (!this._collapsed && view.label) {
+				view._metrics.textLeft = view.label.offsetLeft;
+				view._metrics.textWidth = view.label.offsetWidth;
+			} else {
+				view._metrics.textLeft = view._metrics.offsetLeft;
+				view._metrics.textWidth = view._metrics.offsetWidth;
+			}
+		}, this);
+		
+		// this._metrics.baseline = this._metrics.fontSize - baseline;
 	},
 	
 	renderLayout: function() {
-		var i, ii, el, els, m, mm;
-		els = this.el.children;
-		ii = els.length;
-		mm = this._itemMetrics;
-		
 		var posX, posY;
 		posX = this._metrics.paddingLeft;
 		posY = this._metrics.paddingTop;
 		
-		var selectedView;
-		if (this.collection.selected) {
-			selectedView = this.itemViews.findByModel(this.collection.selected);
-		}
-		
-		// render
-		for (i = 0; i < ii; i++) {
-			el = els[i];
-			m = mm[i];
-			
-			if (this._collapsed && (el.classList.contains("excluded") || (selectedView && selectedView.el !== el))) {
-				el.style[transformProp] = translateCssValue(posX, posY);
+		for (var i = 0, ii = this.el.children.length; i < ii; i++) {
+			var view = this.itemViews.findByCid(this.el.children[i].cid);
+			if (((this.collection.selected && !view.model.selected) ||
+					view.el.classList.contains("excluded")) && this._collapsed) {
+				view.transform.tx = posX;
+				view.transform.ty = posY;
 			} else {
-				if (m.offsetHeight == 0)
-					posY -= m.offsetTop;
-				el.style[transformProp] = translateCssValue(posX, posY);
-				posY += m.offsetHeight + m.offsetTop;
+				if (view._metrics.offsetHeight == 0)
+					posY -= view._metrics.offsetTop;
+				view.transform.tx = posX;
+				view.transform.ty = posY;
+				posY += view._metrics.offsetHeight + view._metrics.offsetTop;
 			}
+			view.el.style[transformProp] = translateCssValue(view.transform.tx, view.transform.ty);
 		}
 		
 		posY += this._metrics.paddingBottom;
@@ -287,6 +309,8 @@ var FilterableListView = View.extend({
 		var hasNew = !!(newItems && newItems.length);
 		var hasOld = !!(oldItems && oldItems.length);
 		
+		console.log("%s::renderFilterFn", this.cid, newItems);
+		
 		if (hasNew) {
 			diff((hasOld? oldItems : this._getAllItems()), newItems).forEach(function(item) {
 				this.itemViews.findByModel(item).el.classList.add("excluded");
@@ -308,15 +332,15 @@ var FilterableListView = View.extend({
 	/* Filter 2
 	/* --------------------------- */
 	
-	computeFiltered: function() {
-		this._filterResult = this.collection.map(this._filterFn, this);
-	},
-	
-	renderFiltered: function() {
-		this.collection.forEach(function(item, index) {
-			this.itemViews.findByModel(item).el.classList.toggle("excluded", !this._filterResult[index]);
-		}, this);
-	},
+	// computeFiltered: function() {
+	// 	this._filterResult = this.collection.map(this._filterFn, this);
+	// },
+	// 
+	// renderFiltered: function() {
+	// 	this.collection.forEach(function(item, index) {
+	// 		this.itemViews.findByModel(item).el.classList.toggle("excluded", !this._filterResult[index]);
+	// 	}, this);
+	// },
 	
 });
 

@@ -327,7 +327,7 @@ var VideoRenderer = PlayableRenderer.extend({
 			console.warn(this.cid, "WTF! got video data, but cannot seek, calling load()");
 			// this._logMessage("call:load", "got video data, but cannot seek, calling load()", "orange");
 			this.video.load();
-			this.video.currentTime = 0;
+			// this.video.currentTime = 0;
 		} else if (this.video.ended) {
 			this.video.currentTime = this.video.seekable.start(0);
 		}

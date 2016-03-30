@@ -276,12 +276,25 @@
 .video-renderer {
 	// Closest to 680px at 16:9 -> 672x378
 	// .content { max-width: 672px; }
+	video {
+		outline: 0 none;
+		// object-fit: none;
+		// background-color: #00CC00;
+	}
 	.crop-box {
 		overflow: hidden;
+		// background-color: #FF00FF;
 		video, .poster {
 			position: absolute;
-			// top: -1px;
+			// top: 0; left: 0;
 			margin-top: -1px;
+			// margin-left: -1px;
+			
+			// top: -5px;
+			// left: -5px;
+			// height: calc(100% + 10px);
+			// width: calc(100% + 10px);
+			
 			// margin-bottom: -1px;
 			// left: 0;
 			// border-width: 0; margin: 0; padding: 0;

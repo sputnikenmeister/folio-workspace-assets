@@ -10,14 +10,14 @@
 .list {
 	position: relative;
 	// transform-style: flat;
-	// transform-style: preserve-3d;
+	transform-style: preserve-3d;
 	.list-item, .list-group {
 		// position: static;
 		position: absolute;
 		display: block;
 		top: 0; left: 0;
 		transform: translate3d(0,0,0);
-		// transform-style: preserve-3d;
+		transform-style: preserve-3d;
 	}
 }
 
