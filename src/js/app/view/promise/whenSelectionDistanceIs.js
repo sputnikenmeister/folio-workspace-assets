@@ -4,9 +4,9 @@ var ViewError = require("app/view/base/ViewError");
 // var logMessage = "%s::whenSelectionDistanceIs [%s]: %s";
 
 /**
-* @param {module:app/view/base/View}
-* @param {number} distance
-*/
+ * @param {module:app/view/base/View}
+ * @param {number} distance
+ */
 module.exports = function(view, distance) {
 	return new Promise(function(resolve, reject) {
 		// if (!(view.model && view.model.collection)) {
@@ -14,11 +14,11 @@ module.exports = function(view, distance) {
 		// }
 		var model = view.model;
 		var collection = model.collection;
-		
+
 		var check = function(n) { // Check indices for contiguity
 			return Math.abs(collection.indexOf(model) - collection.selectedIndex) <= distance;
 		};
-		
+
 		if (check()) {
 			// console.log(logMessage, view.cid, "resolve", "sync");
 			resolve(view);

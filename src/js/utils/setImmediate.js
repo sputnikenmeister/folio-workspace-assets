@@ -28,12 +28,12 @@ if (/Trident|Edge/.test(navigator.userAgent)) {
 	// dangerous in the polyfilled environment due to requiring that the
 	// observed script element be in the document.
 	setImmediate = setTimeout;
-	
+
 	// If some other browser ever implements it, let's prefer their native
 	// implementation:
 } else if (window.setImmediate) {
 	setImmediate = window.setImmediate;
-	
+
 	// Otherwise, we fall back to postMessage as a means of emulating the next
 	// task semantics of setImmediate.
 } else {

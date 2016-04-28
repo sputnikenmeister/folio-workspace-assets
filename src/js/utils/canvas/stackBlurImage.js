@@ -3,27 +3,28 @@ var stackBlurRGB = require("./bitmap/stackBlurRGB");
 var stackBlurMono = require("./bitmap/stackBlurMono");
 var duotone = require("./bitmap/duotone");
 
-module.exports = function ( src, canvas, width, height, opts ) {
+module.exports = function(src, canvas, width, height, opts) {
 	opts || (opts = {});
-	
+
 	var w = width || src.naturalWidth || src.videoWidth || src.width;
 	var h = height || src.naturalHeight || src.videoHeight || src.height;
-	
-	canvas.style.width  = w + "px";
+
+	canvas.style.width = w + "px";
 	canvas.style.height = h + "px";
 	canvas.width = w;
 	canvas.height = h;
-	
-	var top_x = 0, top_y = 0;
+
+	var top_x = 0,
+		top_y = 0;
 	var context, imageData;
-	
+
 	context = canvas.getContext("2d");
-	context.clearRect( 0, 0, w, h );
-	context.drawImage( src, 0, 0, w, h );
-	
+	context.clearRect(0, 0, w, h);
+	context.drawImage(src, 0, 0, w, h);
+
 	imageData = context.getImageData(top_x, top_y, w, h);
 	// imageData = duotone(imageData, opts);
-	
+
 	switch (opts.filter) {
 		case "duo":
 			imageData = duotone(imageData, opts);
@@ -38,7 +39,7 @@ module.exports = function ( src, canvas, width, height, opts ) {
 			imageData = stackBlurMono(imageData, opts);
 			break;
 	}
-	
+
 	context.putImageData(imageData, top_x, top_y);
 };
 

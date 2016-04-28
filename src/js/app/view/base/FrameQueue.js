@@ -20,7 +20,7 @@ RequestQueue.prototype = Object.create({
 	enqueue: function(item, priority) {
 		var i = this._items.length;
 		this._items[i] = item;
-		this._priorities[i] = { 
+		this._priorities[i] = {
 			priority: (priority | 0),
 			index: i
 		};
@@ -28,25 +28,25 @@ RequestQueue.prototype = Object.create({
 		// console.log("FrameQueue::RequestQueue::enqueue() [numItems:%i] ID:%i", this._numItems, this._offset + i);
 		return this._offset + i;
 	},
-	
+
 	contains: function(index) {
 		index -= this.offset;
 		return 0 <= index && index < this._items.length;
 	},
-	
+
 	skip: function(index) {
 		var i, item;
 		i = index - this._offset;
 		if (0 > i || i >= this._items.length) {
-		// 	console.warn("FrameQueue::RequestQueue::skip(id:%i) out of range (%i-%i)", index, this._offset, this._offset + (this._numItems - 1));
+			// 	console.warn("FrameQueue::RequestQueue::skip(id:%i) out of range (%i-%i)", index, this._offset, this._offset + (this._numItems - 1));
 			return void 0;
 		}
 		item = this._items[i];
 		if (item !== null) {
-		// if (item = this._items[i]) {
+			// if (item = this._items[i]) {
 			this._items[i] = null;
 			this._numItems--;
-			
+
 			// if (this._numItems == 0) {
 			// 	this._empty(this._offset + this._items.length);
 			// }
@@ -57,11 +57,11 @@ RequestQueue.prototype = Object.create({
 		// }
 		return item;
 	},
-	
+
 	// forEach: function(fn, context) {
 	// 	return this.items.forEach(fn, context);
 	// },
-	
+
 	indexes: function() {
 		// .map(function(o, i, a) {
 		// 	return this[o.index];
@@ -79,7 +79,7 @@ RequestQueue.prototype = Object.create({
 		}, this);
 		return items;
 	},
-	
+
 	items: function() {
 		// .map(function(o, i, a) {
 		// 	return this[o.index];
@@ -97,7 +97,7 @@ RequestQueue.prototype = Object.create({
 		}, this);
 		return items;
 	},
-	
+
 	_empty: function(offset) {
 		this._offset = offset;
 		this._items.length = 0;
@@ -105,18 +105,24 @@ RequestQueue.prototype = Object.create({
 		this._numItems = 0;
 	}
 }, {
-	
-	offset: { get: function() {
-		return this._offset;
-	}},
-	
-	length: { get: function() {
-		return this._items.length;
-	}},
-	
-	numItems: { get: function() {
-		return this._numItems;
-	}},
+
+	offset: {
+		get: function() {
+			return this._offset;
+		}
+	},
+
+	length: {
+		get: function() {
+			return this._items.length;
+		}
+	},
+
+	numItems: {
+		get: function() {
+			return this._numItems;
+		}
+	},
 });
 
 var _nextQueue = new RequestQueue(0);
@@ -131,12 +137,12 @@ var _rafId = -1;
 /*/
 var _runQueue = function(tstamp) {
 	if (_running) throw new Error("wtf!!!");
-	
+
 	_rafId = -1;
 	_running = true;
 	_currQueue = _nextQueue;
 	_nextQueue = new RequestQueue(_currQueue.offset + _currQueue.length);
-	
+
 	// _currQueue.items().forEach(function(fn, i, a) {
 	// 	if (fn !== null) {
 	// 		fn(tstamp);
@@ -150,7 +156,7 @@ var _runQueue = function(tstamp) {
 	});
 	_running = false;
 	_currQueue = null;
-	
+
 	if (_nextQueue.numItems > 0) {
 		_rafId = window.requestAnimationFrame(_runQueue);
 	}
@@ -181,7 +187,7 @@ var FrameQueue = Object.create({
 		}
 		return _nextQueue.enqueue(fn, priority);
 	},
-	
+
 	/**
 	/* @param id {int}
 	/* @return {Function?}
@@ -201,7 +207,7 @@ var FrameQueue = Object.create({
 	},
 }, {
 	running: {
-		get: function () {
+		get: function() {
 			return _running;
 		}
 	}
@@ -210,33 +216,33 @@ var FrameQueue = Object.create({
 if (DEBUG) {
 	/** @type {module:underscore} */
 	var _ = require("underscore");
-	
+
 	// console.info("Using app/view/base/FrameQueue");
-	
-// 	// // log frame exec time
-// 	// var _now = window.performance? 
-// 	// 	window.performance.now.bind(window.performance) :
-// 	// 	Date.now.bind(Date);
-// 	// _runQueue = _.wrap(_runQueue, function(fn, tstamp) {
-// 	// 	var retval, tframe;
-// 	// 	console.log("[FRAME BEGIN] [%ims] %i items [ids:%i-%i]", tstamp, _nextQueue.numItems, _nextQueue.offset, _nextQueue.offset + _nextQueue.length);
-// 	// 	tframe = _now();
-// 	// 	retval = fn(tstamp);
-// 	// 	tframe = _now() - tframe;
-// 	// 	console.log("[FRAME ENDED] [%ims] took %ims\n---\n", tstamp + tframe, tframe);
-// 	// 	if (_nextQueue.numItems != 0) console.info("[FRAME ENDED] %i items scheduled for [raf:%i]", _nextQueue.numItems, _rafId);
-// 	// 	return retval;
-// 	// });
-// 	
-// 	// log frame end
-// 	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
-// 		var retval;
-// 		console.log("FrameQueue::_runQueue %i items (ID range:%i-%i)", _nextQueue.numItems, _nextQueue.offset, _nextQueue.offset + _nextQueue.length - 1);
-// 		retval = fn(tstamp);
-// 		console.log("[Frame exit]\n---\n");
-// 		return retval;
-// 	});
-	
+
+	// 	// // log frame exec time
+	// 	// var _now = window.performance? 
+	// 	// 	window.performance.now.bind(window.performance) :
+	// 	// 	Date.now.bind(Date);
+	// 	// _runQueue = _.wrap(_runQueue, function(fn, tstamp) {
+	// 	// 	var retval, tframe;
+	// 	// 	console.log("[FRAME BEGIN] [%ims] %i items [ids:%i-%i]", tstamp, _nextQueue.numItems, _nextQueue.offset, _nextQueue.offset + _nextQueue.length);
+	// 	// 	tframe = _now();
+	// 	// 	retval = fn(tstamp);
+	// 	// 	tframe = _now() - tframe;
+	// 	// 	console.log("[FRAME ENDED] [%ims] took %ims\n---\n", tstamp + tframe, tframe);
+	// 	// 	if (_nextQueue.numItems != 0) console.info("[FRAME ENDED] %i items scheduled for [raf:%i]", _nextQueue.numItems, _rafId);
+	// 	// 	return retval;
+	// 	// });
+	// 	
+	// 	// log frame end
+	// 	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
+	// 		var retval;
+	// 		console.log("FrameQueue::_runQueue %i items (ID range:%i-%i)", _nextQueue.numItems, _nextQueue.offset, _nextQueue.offset + _nextQueue.length - 1);
+	// 		retval = fn(tstamp);
+	// 		console.log("[Frame exit]\n---\n");
+	// 		return retval;
+	// 	});
+
 	// use log prefix
 	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
 		var retval, logprefix;
@@ -246,7 +252,7 @@ if (DEBUG) {
 		console.prefix = logprefix;
 		return retval;
 	});
-	
+
 	// FrameQueue.cancel = _.wrap(FrameQueue.cancel, function(fn, id) {
 	// 	if ((_currQueue !== null) && (_currQueue.offset >= id) && (id < _nextQueue.offset)) {
 	// 		console.info("FrameQueue::cancel ID:%i in running range (%i-%i)", id, _currQueue.offset, _nextQueue.offset - 1);

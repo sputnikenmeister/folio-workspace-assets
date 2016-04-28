@@ -3,13 +3,13 @@
  * @param {Object} style object
  * @returns {String|Undefined} prefixed event
  */
-module.exports = (function (style) {
+module.exports = (function(style) {
 	var prop, map = {
-		"transition" : "transitionend",
-		"WebkitTransition" : "webkitTransitionEnd",
-		"MozTransition" : "transitionend",
+		"transition": "transitionend",
+		"WebkitTransition": "webkitTransitionEnd",
+		"MozTransition": "transitionend",
 		// "msTransition" : "MSTransitionEnd",
-		"OTransition" : "oTransitionEnd"
+		"OTransition": "oTransitionEnd"
 	};
 	for (prop in map) {
 		if (prop in style) {

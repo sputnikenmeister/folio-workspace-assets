@@ -22,22 +22,22 @@ var LabelRenderer = require("app/view/render/LabelRenderer");
  * @type {module:app/view/component/GroupingListView}
  */
 var GroupingListView = FilterableListView.extend({
-	
+
 	/** @type {string} */
 	cidPrefix: "groupingList",
-	
+
 	/** @override */
 	tagName: "dl",
-	
+
 	/** @override */
 	className: "grouped",
-	
+
 	/** @type {Function|null} empty array */
-	_groupingFn: null,//function() { return null; },
-	
+	_groupingFn: null, //function() { return null; },
+
 	/** @override */
 	defaults: _.defaults({
-	// defaults: {
+		// defaults: {
 		renderer: ClickableRenderer.extend({
 			/** @override */
 			cidPrefix: "groupingListItem",
@@ -55,9 +55,9 @@ var GroupingListView = FilterableListView.extend({
 			className: "list-group list-label",
 		}),
 		groupingFn: null,
-	// },
+		// },
 	}, FilterableListView.prototype.defaults),
-	
+
 	properties: {
 		groups: {
 			get: function() {
@@ -65,24 +65,24 @@ var GroupingListView = FilterableListView.extend({
 			}
 		}
 	},
-	
+
 	/** @override */
-	initialize: function (options) {
+	initialize: function(options) {
 		FilterableListView.prototype.initialize.apply(this, arguments);
-		
+
 		this._groups = [];
 		// this._groupItems = [];
 		this._groupsByItemCid = {};
-		
+
 		this._groupingFn = options.groupingFn;
 		this.groupingRenderer = options.groupingRenderer;
-		
+
 		this._refreshGroups();
 		if (this._groupingFn) {
 			this._groups.forEach(this.createGroupingView, this);
 		}
 	},
-	
+
 	_refreshGroups: function() {
 		// this._groups = _.uniq(this.collection.map(this._groupingFn, this));
 		this._groups.length = 0;
@@ -107,20 +107,20 @@ var GroupingListView = FilterableListView.extend({
 			}, this);
 		}
 	},
-	
+
 	renderFilterFn: function() {
 		FilterableListView.prototype.renderFilterFn.apply(this, arguments);
-		
+
 		if (this._groupingFn) {
 			if (this._filteredItems.length == 0) {
-				this._groups.forEach(function (group) {
+				this._groups.forEach(function(group) {
 					this.itemViews.findByModel(group).el.classList.remove("excluded");
 				}, this);
 			} else {
 				var filteredGroups = this._filteredItems.map(function(item) {
 					return this._groupsByItemCid[item.cid];
 				}, this);
-				this._groups.forEach(function (group) {
+				this._groups.forEach(function(group) {
 					this.itemViews.findByModel(group).el.classList.toggle("excluded", filteredGroups.indexOf(group) == -1);
 				}, this);
 			}
@@ -129,9 +129,9 @@ var GroupingListView = FilterableListView.extend({
 			// }, this);
 		}
 	},
-	
+
 	/** @private Create children views */
-	createGroupingView: function (item) {
+	createGroupingView: function(item) {
 		var view = new this.groupingRenderer({
 			model: item,
 			el: this.el.querySelector(".list-group[data-id=\"" + item.id + "\"]")
@@ -139,11 +139,11 @@ var GroupingListView = FilterableListView.extend({
 		this.itemViews.add(view);
 		return view;
 	},
-	
+
 	/* --------------------------- *
 	/* Filter 2
 	/* --------------------------- */
-	
+
 	// computeFiltered: function() {
 	// 	FilterableListView.prototype.computeFiltered.apply(this, arguments);
 	// },

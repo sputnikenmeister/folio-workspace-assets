@@ -3,7 +3,7 @@
 /*/
 
 /** @type {module:utils/prefixes} */
-var prefixes = require("./prefixes");//.map(function(prefix) { return "-" + prefix + "-"; });
+var prefixes = require("./prefixes"); //.map(function(prefix) { return "-" + prefix + "-"; });
 /** @type {Number} prefix count */
 var _prefixNum = prefixes.length;
 /** @type {Array} cached values */
@@ -11,7 +11,7 @@ var _cache = {};
 
 var _prefixedStyleName = function(style, styleObj) {
 	var prefixedStyle;
-	
+
 	if (style in styleObj) {
 		console.log("CSS style '%s' found unprefixed", style);
 		return style;
@@ -34,7 +34,7 @@ var _prefixedStyleName = function(style, styleObj) {
  * @param {Object} look-up style object
  * @returns {String|Undefined} prefixed
  */
-module.exports = function (style, styleObj) {
+module.exports = function(style, styleObj) {
 	// return _cache[style] || (_cache[style] = _prefixedStyleName_reverse(style, styleObj || document.body.style));
 	return _cache[style] || (_cache[style] = _prefixedStyleName(style, styleObj || document.body.style));
 };

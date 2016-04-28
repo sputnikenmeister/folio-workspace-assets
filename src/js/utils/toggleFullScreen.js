@@ -1,5 +1,5 @@
-module.exports = function (el) {
-// var _export =  function (el) {
+module.exports = function(el) {
+	// var _export =  function (el) {
 	el || (el = document.documentElement);
 	if (!document.fullscreenElement && // alternative standard method
 		!document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) { // current working methods
@@ -10,7 +10,7 @@ module.exports = function (el) {
 		} else if (el.mozRequestFullScreen) {
 			el.mozRequestFullScreen();
 		} else if (el.webkitRequestFullscreen) {
-			el.webkitRequestFullscreen();//window.Element.ALLOW_KEYBOARD_INPUT);
+			el.webkitRequestFullscreen(); //window.Element.ALLOW_KEYBOARD_INPUT);
 		}
 	} else {
 		if (document.exitFullscreen) {

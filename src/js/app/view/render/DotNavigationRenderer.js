@@ -27,19 +27,19 @@ var DotNavigationRenderer = ClickableRenderer.extend({
 	template: viewTemplate,
 
 	/** @override */
-	initialize: function (options) {
+	initialize: function(options) {
 		this.listenTo(this.model, "selected deselected", this.renderClassList);
 		this.renderClassList();
 	},
 
 	/** @override */
-	render: function () {
+	render: function() {
 		this.el.innerHTML = this.template(this.model.toJSON());
 		this.renderClassList();
 		return this;
 	},
-	
-	renderClassList: function () {
+
+	renderClassList: function() {
 		this.el.classList.toggle("selected", this.model.selected);
 	},
 });

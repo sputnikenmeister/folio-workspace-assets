@@ -1,7 +1,7 @@
 /**
-* @module app/model/collection/TypeCollection
-* @requires module:backbone
-*/
+ * @module app/model/collection/TypeCollection
+ * @requires module:backbone
+ */
 
 /** @type {module:backbone} */
 var Backbone = require("backbone");

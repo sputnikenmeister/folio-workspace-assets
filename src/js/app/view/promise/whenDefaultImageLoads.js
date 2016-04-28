@@ -22,13 +22,16 @@ module.exports = function(view) {
 					});
 		} else {
 			view.mediaState = "pending";
-			
+
 			var sUrl = source.get("original");
-			var progressFn = function (progress) {
+			var progressFn = function(progress) {
 				// console.log(logMessage, view.cid, "progress", progress);
 				view.updateMediaProgress(progress, sUrl);
 			};
-			progressFn = _.throttle(progressFn, 100, {leading: true, trailing: false});
+			progressFn = _.throttle(progressFn, 100, {
+				leading: true,
+				trailing: false
+			});
 			_loadImageAsObjectURL(sUrl, progressFn)
 				.then(
 					function(url) {
@@ -43,10 +46,12 @@ module.exports = function(view) {
 				.then(
 					function(targetEl) {
 						// console.log(logMessage, view.cid, "resolved", targetEl.src);
-						view.on("view:removed", function() { 
+						view.on("view:removed", function() {
 							var prefetched = source.get("prefetched");
 							if (prefetched && /^blob\:/.test(prefetched)) {
-								source.unset("prefetched", { silent: true });
+								source.unset("prefetched", {
+									silent: true
+								});
 								URL.revokeObjectURL(prefetched);
 							}
 						});
@@ -54,8 +59,8 @@ module.exports = function(view) {
 						// view.updateMediaProgress(imageUrl, "complete");
 						resolve(view);
 					},
-				// 	})
-				// .catch(
+					// 	})
+					// .catch(
 					function(err) {
 						// console.warn(logMessage, view.cid, "rejected", err.message);
 						// view.placeholder.removeAttribute("data-progress");

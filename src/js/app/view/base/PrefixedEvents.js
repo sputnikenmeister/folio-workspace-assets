@@ -13,12 +13,20 @@ for (var eventName in eventMap) {
 	if (eventName === eventMap[eventName]) {
 		delete eventMap[eventName];
 	} else {
-		Object.defineProperty(eventMap, eventName, { value: eventMap[eventName], enumerable: true });
-		Object.defineProperty(eventMap, eventNum, { value: eventName, enumerable: false });
+		Object.defineProperty(eventMap, eventName, {
+			value: eventMap[eventName],
+			enumerable: true
+		});
+		Object.defineProperty(eventMap, eventNum, {
+			value: eventName,
+			enumerable: false
+		});
 		eventNum++;
 	}
 }
-Object.defineProperty(eventMap, "length", { value: eventNum });
+Object.defineProperty(eventMap, "length", {
+	value: eventNum
+});
 
 if (DEBUG) {
 	console.log("prefixes enabled for %i events", eventMap.length, Object.keys(eventMap));

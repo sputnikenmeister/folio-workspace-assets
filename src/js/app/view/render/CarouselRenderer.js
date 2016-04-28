@@ -16,7 +16,7 @@ var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
  * @type {module:app/view/render/CarouselRenderer}
  */
 var CarouselRenderer = View.extend({
-	
+
 	/** @type {string} */
 	cidPrefix: "carouselRenderer",
 	/** @override */
@@ -25,22 +25,22 @@ var CarouselRenderer = View.extend({
 	className: "carousel-item",
 	/** @override */
 	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
-	
+
 	properties: {
 		content: {
-			get: function() { 
+			get: function() {
 				return this._content || (this._content = this.el.querySelector(".content"));
 			},
 		},
 		sizing: {
-			get: function() { 
+			get: function() {
 				return this._sizing || (this._sizing = this.el.querySelector(".sizing"));
 			},
 		}
 	},
-	
+
 	/** @override */
-	initialize: function (options) {
+	initialize: function(options) {
 		options.parentView && (this.parentView = options.parentView);
 		this.metrics = {};
 		this.metrics.content = {};
@@ -48,45 +48,45 @@ var CarouselRenderer = View.extend({
 		// this.enabled = !!options.enabled; // force bool
 		this.setEnabled(!!options.enabled);
 	},
-	
+
 	createChildren: function() {
 		this.el.innerHTML = this.template(this.model.toJSON());
 	},
-	
+
 	/** @return {HTMLElement} */
-	getSizingEl: function () {
+	getSizingEl: function() {
 		return this._sizing || (this._sizing = this.el.querySelector(".sizing"));
 	},
-	
+
 	/** @return {HTMLElement} */
-	getContentEl: function () {
+	getContentEl: function() {
 		return this._content || (this._content = this.el.querySelector(".content"));
 	},
-	
+
 	/** @return {this} */
-	measure: function () {
+	measure: function() {
 		var sizing = this.getSizingEl();
-		
+
 		this.metrics = getBoxEdgeStyles(this.el, this.metrics);
 		this.metrics.content = getBoxEdgeStyles(this.getContentEl(), this.metrics.content);
-		
+
 		sizing.style.maxWidth = "";
 		sizing.style.maxHeight = "";
-		
+
 		this.metrics.content.x = sizing.offsetLeft + sizing.clientLeft;
 		this.metrics.content.y = sizing.offsetTop + sizing.clientTop;
 		this.metrics.content.width = sizing.clientWidth;
 		this.metrics.content.height = sizing.clientHeight;
-		
+
 		return this;
 	},
-	
+
 	/** @override */
 	render: function() {
 		this.measure();
 		return this;
 	},
-	
+
 	getSelectionDistance: function() {
 		return Math.abs(this.model.collection.indexOf(this.model) - this.model.collection.selectedIndex);
 	},

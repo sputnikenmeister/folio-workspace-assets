@@ -41,7 +41,7 @@ _.extend(Timer.prototype, Events, {
 		if (this._timeout && this._status === "started") {
 			return this;
 		}
-		var evName = (this._status === "stopped")? "start":"resume";
+		var evName = (this._status === "stopped") ? "start" : "resume";
 		this._duration = duration || this._duration;
 		this._timeout = window.setTimeout(end.bind(this), this._duration);
 		// if (typeof this._options.ontick === "function") {
@@ -91,8 +91,8 @@ _.extend(Timer.prototype, Events, {
 	},
 });
 
-var _now = window.performance? 
-	window.performance.now.bind(window.performance):
+var _now = window.performance ?
+	window.performance.now.bind(window.performance) :
 	Date.now.bind(Date);
 
 function end() {

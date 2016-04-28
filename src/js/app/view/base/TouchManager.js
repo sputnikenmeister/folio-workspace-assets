@@ -24,14 +24,14 @@ var instance = null;
 function createInstance(el) {
 	var recognizers = [];
 	var manager = new Hammer.Manager(el);
-	
+
 	var hpan = new SmoothPan({
-	// var hpan = new Hammer.Pan({
+		// var hpan = new Hammer.Pan({
 		threshold: Globals.THRESHOLD,
 		direction: Hammer.DIRECTION_HORIZONTAL,
 	});
 	recognizers.push(hpan);
-	
+
 	var vpan = new SmoothPan({
 		event: "vpan",
 		threshold: Globals.THRESHOLD,
@@ -39,7 +39,7 @@ function createInstance(el) {
 	});
 	recognizers.push(vpan);
 	vpan.requireFailure(hpan);
-	
+
 	var tap = new Hammer.Tap({
 		// threshold: Globals.THRESHOLD - 1,
 		// interval: 50,
@@ -47,7 +47,7 @@ function createInstance(el) {
 	});
 	recognizers.push(tap);
 	tap.recognizeWith(hpan);
-	
+
 	manager.add(recognizers);
 	// manager.set({ domevents: true});
 	return manager;
@@ -97,11 +97,11 @@ var bubblingHandlers = {};
 /* Static public
 /* ------------------------------- */
 var TouchManager = {
-	
+
 	init: function(target) {
 		if (instance === null) {
 			instance = createInstance(target);
-			
+
 			var eventName, el = instance.element;
 			for (eventName in touchHandlers) {
 				if (touchHandlers.hasOwnProperty(eventName)) {
@@ -123,7 +123,7 @@ var TouchManager = {
 		}
 		return instance;
 	},
-	
+
 	destroy: function() {
 		if (instance !== null) {
 			var eventName, el = instance.element;
@@ -143,7 +143,7 @@ var TouchManager = {
 			console.warn("no instance to destroy");
 		}
 	},
-	
+
 	getInstance: function() {
 		if (instance === null) {
 			console.error("TouchManager has not been initialized");

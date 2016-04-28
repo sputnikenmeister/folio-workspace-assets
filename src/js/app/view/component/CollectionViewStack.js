@@ -31,8 +31,8 @@ module.exports = View.extend({
 	/** @override */
 	className: "view-stack",
 
-	initialize: function (options) {
-//		_.bindAll(this, "renderFrame");
+	initialize: function(options) {
+		//		_.bindAll(this, "renderFrame");
 		// options
 		options.renderer && (this.renderer = options.renderer);
 		options.emptyRenderer && (this.emptyRenderer = options.emptyRenderer);
@@ -45,9 +45,9 @@ module.exports = View.extend({
 		this.skipTransitions = true;
 
 		_.bindAll(this, "_onTouch", "_onResize");
-		this.hammer = (options.hammer)? options.hammer : this.createHammer();
+		this.hammer = (options.hammer) ? options.hammer : this.createHammer();
 		this.hammer.on("panstart panmove panend pancancel tap", this._onTouch);
-//		Backbone.$(window).on("orientationchange resize", this._onResize);
+		//		Backbone.$(window).on("orientationchange resize", this._onResize);
 
 		this.listenTo(this.collection, {
 			"reset": this._onCollectionReset,
@@ -65,8 +65,8 @@ module.exports = View.extend({
 		}
 	},
 
-	remove: function () {
-//		Backbone.$(window).off("orientationchange resize", this._onResize);
+	remove: function() {
+		//		Backbone.$(window).off("orientationchange resize", this._onResize);
 		this.hammer.off("panstart panmove panend pancancel tap", this._onTouch);
 		if (this._hammerIsLocal) this.hammer.destroy();
 		this.removeChildren();
@@ -84,25 +84,25 @@ module.exports = View.extend({
 	_createContentElement: function(item) {
 		var elt = document.createElement("div");
 		elt.innerHTML = this.template(item.toJSON());
-		return (elt.childElementCount == 1)? elt.children[0]: elt;
+		return (elt.childElementCount == 1) ? elt.children[0] : elt;
 	},
-	
+
 	/* --------------------------- *
 	/* render
 	/* --------------------------- */
-	
+
 	renderFrame: function(tstamp, flags) {
 		this.render();
 	},
-	
-	render: function () {
+
+	render: function() {
 		if (this.skipTransitions) {
 			// remove
 			if (this.$content) {
 				this.$el.removeAttr("style");
 				this.$content
 					.stop()
-//					.clearQueue()
+					//					.clearQueue()
 					.remove();
 				delete this.$content;
 			}
@@ -115,7 +115,7 @@ module.exports = View.extend({
 			if (this.$content) {
 				// Get content's size while still in the flow
 				var content = this.$content[0];
-				var contentRect = {//_.extend({
+				var contentRect = { //_.extend({
 					top: content.offsetTop,
 					left: content.offsetLeft,
 					width: content.offsetWidth,
@@ -133,11 +133,13 @@ module.exports = View.extend({
 
 				// Fade it out
 				this.$content
-//					.stop()
+					//					.stop()
 					.clearQueue()
 					.css(contentRect)
 					.delay(Globals.TRANSITION_DELAY)
-					.transit({opacity: 0})
+					.transit({
+						opacity: 0
+					})
 					.promise().always(function($content) {
 						$content.parent().removeAttr("style");
 						$content.remove();
@@ -147,10 +149,14 @@ module.exports = View.extend({
 			if (this._selectedItem) {
 				this.$content = this.$createContentElement(this._selectedItem);
 				this.$content
-					.css({opacity: 0})
+					.css({
+						opacity: 0
+					})
 					.delay(Globals.TRANSITION_DELAY * 2)
 					.prependTo(this.el)
-					.transit({opacity: 1});
+					.transit({
+						opacity: 1
+					});
 			}
 		}
 		return this;
@@ -164,7 +170,7 @@ module.exports = View.extend({
 		this.skipTransitions = true;
 	},
 
-	_onDeselectOne: function (model) {
+	_onDeselectOne: function(model) {
 		// clear only if a different model hasn't been set
 		if (this._selectedItem && this._selectedItem === model) {
 			this._selectedItem = null;

@@ -54,54 +54,54 @@ var tx = Globals.transitions;
  * @type {module:app/view/ContentView}
  */
 var ContentView = View.extend({
-	
+
 	/** @override */
 	cidPrefix: "contentView",
-	
+
 	/** @override */
 	className: "container-x container-expanded",
-	
+
 	/** @override */
 	events: {
 		"transitionend .adding-child": "_onAddedTransitionEnd",
 		"transitionend .removing-child": "_onRemovedTransitionEnd",
 		// "transitionend": "_onTransitionEnd",
 	},
-	
+
 	/** @override */
-	initialize: function (options) {
+	initialize: function(options) {
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
-		
+
 		this.transforms = new TransformHelper();
 		this.touch = TouchManager.getInstance();
-		
+
 		this.listenTo(this.model, "change", this._onModelChange);
-		
+
 		// disconnect children before last change
 		// this.listenTo(bundles, "deselect:one", this._onDeselectOneBundle);
-		
+
 		this.skipTransitions = true;
 		this.itemViews = [];
-		
+
 		// this.progressWrapper = this.createProgressWrapper(),
 		// this.el.appendChild(this.progressWrapper.el);
 	},
-	
+
 	/* --------------------------- *
 	/* Render
 	/* --------------------------- */
-	
+
 	renderFrame: function(tstamp, flags) {
 		// values
 		var collapsed = this.model.get("collapsed");
 		var collapsedChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("collapsed");
 		var childrenChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("bundle");
-		
+
 		// flags
 		var sizeChanged = !!(flags & View.SIZE_INVALID);
 		var transformsChanged = !!(flags & (View.MODEL_INVALID | View.SIZE_INVALID | View.LAYOUT_INVALID));
 		transformsChanged = transformsChanged || this._transformsChanged || this.skipTransitions;
-		
+
 		// debug
 		// if (flags & View.MODEL_INVALID) {
 		// 	console.group(this.cid + "::renderFrame model changed:");
@@ -110,7 +110,7 @@ var ContentView = View.extend({
 		// 	}, this);
 		// 	console.groupEnd();
 		// }
-		
+
 		// model:children
 		// - - - - - - - - - - - - - - - - -
 		if (childrenChanged) {
@@ -121,20 +121,20 @@ var ContentView = View.extend({
 				this.createChildren(bundles.selected);
 			}
 		}
-		
+
 		// model:collapsed
 		// - - - - - - - - - - - - - - - - -
 		if (collapsedChanged) {
 			this.el.classList.toggle("container-collapsed", collapsed);
 			this.el.classList.toggle("container-expanded", !collapsed);
 		}
-		
+
 		// size
 		// - - - - - - - - - - - - - - - - -
 		if (sizeChanged) {
 			this.transforms.clearAllCaptures();
 		}
-		
+
 		// transforms
 		// - - - - - - - - - - - - - - - - -
 		if (transformsChanged) {
@@ -192,7 +192,7 @@ var ContentView = View.extend({
 			// 	}, this);
 			// }
 			// console.groupEnd();
-			
+
 			if (!childrenChanged) {
 				this.transforms.clearAllOffsets();
 			}
@@ -208,17 +208,17 @@ var ContentView = View.extend({
 		}
 		this.skipTransitions = this._transformsChanged = false;
 	},
-	
+
 	_setChildrenEnabled: function(enabled) {
 		this.itemViews.forEach(function(view) {
 			view.setEnabled(enabled);
 		});
 	},
-	
+
 	/* --------------------------- *
 	/* model changed
 	/* --------------------------- */
-	
+
 	_onModelChange: function() {
 		if (this.model.hasChanged("withBundle")) {
 			if (this.model.get("withBundle")) {
@@ -229,38 +229,38 @@ var ContentView = View.extend({
 		}
 		this.requestRender(View.MODEL_INVALID);
 	},
-	
+
 	/* -------------------------------
 	/* Vertical touch/move (_onVPan*)
 	/* ------------------------------- */
-	
+
 	_collapsedOffsetY: Globals.COLLAPSE_OFFSET,
-	
-	_onVPanStart: function (ev) {
+
+	_onVPanStart: function(ev) {
 		this.touch.on("vpanmove", this._onVPanMove);
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
-		
+
 		this.transforms.stopAllTransitions();
 		// this.transforms.clearAllOffsets();
 		// this.transforms.validate();
 		this.transforms.clearAllCaptures();
-		
+
 		this.el.classList.add("container-changing");
 		this._onVPanMove(ev);
 	},
-	
-	_onVPanMove: function (ev) {
+
+	_onVPanMove: function(ev) {
 		var collapsed = this.model.get("collapsed");
 		var delta = ev.thresholdDeltaY;
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
 		// check if direction is aligned with collapsed/expand
-		var isValidDir = collapsed? (delta > 0) : (delta < 0);
-		var moveFactor = collapsed? Globals.VPAN_DRAG : 1 - Globals.VPAN_DRAG;
-		
+		var isValidDir = collapsed ? (delta > 0) : (delta < 0);
+		var moveFactor = collapsed ? Globals.VPAN_DRAG : 1 - Globals.VPAN_DRAG;
+
 		delta = Math.abs(delta); // remove sign
 		delta *= moveFactor;
 		maxDelta *= moveFactor;
-		
+
 		if (isValidDir) {
 			if (delta > maxDelta) { // overshooting
 				delta = ((delta - maxDelta) * Globals.VPAN_OUT_DRAG) + maxDelta;
@@ -270,26 +270,26 @@ var ContentView = View.extend({
 		} else {
 			delta = (-delta) * Globals.VPAN_OUT_DRAG; // delta is opposite
 		}
-		delta *= collapsed? 1 : -1; // reapply sign
-		
+		delta *= collapsed ? 1 : -1; // reapply sign
+
 		this.transforms.offsetAll(0, delta);
 		this.transforms.validate();
 	},
-	
+
 	_onVPanFinal: function(ev) {
 		this.touch.off("vpanmove", this._onVPanMove);
 		this.touch.off("vpanend vpancancel", this._onVPanFinal);
-		
+
 		// FIXME: model.collapsed may have already changed, _onVPanMove would run with wrong values:
 		// model.collapsed is changed in a setImmediate callback from NavigationView.
-		
+
 		this._onVPanMove(ev);
 		this.setImmediate(function() {
 			this._transformsChanged = true;
 			this.requestRender();
 		});
 	},
-	
+
 	// willCollapsedChange: function(ev) {
 	// 	var collapsed = this.model.get("collapsed");
 	// 	return ev.type == "vpanend"? collapsed?
@@ -297,21 +297,21 @@ var ContentView = View.extend({
 	// 		ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
 	// 		false;
 	// },
-	
+
 	/* -------------------------------
 	/* create/remove children on bundle selection
 	/* ------------------------------- */
-	
+
 	/** Create children on bundle select */
-	createChildren: function (bundle) {
+	createChildren: function(bundle) {
 		// will be attached to dom in this order
 		var stack = this.createMediaCaptionStack(bundle),
 			carousel = this.createMediaCarousel(bundle),
 			dotNav = this.createMediaDotNavigation(bundle);
-		
+
 		this.itemViews.push(stack, carousel, dotNav);
 		this.transforms.add(carousel.el, stack.el);
-		
+
 		this.itemViews.forEach(function(view) {
 			// view.listenToOnce(bundle, "deselect", function() {
 			// 	this.stopListening(this.collection);
@@ -330,7 +330,7 @@ var ContentView = View.extend({
 			this.el.appendChild(view.el);
 			view.render();
 		}, this);
-		
+
 		if (!this.skipTransitions) {
 			this.requestAnimationFrame(function() {
 				console.log("%s::createChildren::[callback:requestAnimationFrame]", this.cid);
@@ -343,8 +343,8 @@ var ContentView = View.extend({
 			});
 		}
 	},
-	
-	removeChildren: function (bundle) {
+
+	removeChildren: function(bundle) {
 		// this.purgeChildren();
 		// this.transforms.remove(this.carousel.el, this.captionStack.el);
 		this.itemViews.forEach(function(view, i, a) {
@@ -367,7 +367,7 @@ var ContentView = View.extend({
 		}, this);
 		this.itemViews.length = 0;
 	},
-	
+
 	_onAddedTransitionEnd: function(ev) {
 		if (ev.target.cid && this.childViews.hasOwnProperty(ev.target.cid)) {
 			console.log("%s::_onAddedTransitionEnd [view:%s] [prop:%s] [ev:%s]", this.cid, ev.target.cid, ev.propertyName, ev.type);
@@ -376,7 +376,7 @@ var ContentView = View.extend({
 			view.el.style.removeProperty(transitionProp);
 		}
 	},
-	
+
 	_onRemovedTransitionEnd: function(ev) {
 		if (ev.target.cid && this.childViews.hasOwnProperty(ev.target.cid)) {
 			console.log("%s::_onRemovedTransitionEnd [view:%s] [prop:%s] [ev:%s]", this.cid, ev.target.cid, ev.propertyName, ev.type);
@@ -385,7 +385,7 @@ var ContentView = View.extend({
 			view.remove();
 		}
 	},
-	
+
 	// purgeChildren: function() {
 	// 	var i, el, els = this.el.querySelectorAll(".removing-child");
 	// 	for (i = 0; i < els.length; i++) {
@@ -401,17 +401,17 @@ var ContentView = View.extend({
 	// 		}
 	// 	}
 	// },
-	
+
 	/* -------------------------------
 	/* Components
 	/* ------------------------------- */
-	
+
 	/**
 	/* media-carousel
 	/*/
 	createMediaCarousel: function(bundle) {
 		// Create carousel
-		var classname = "media-carousel " + bundle.get("domid"); 
+		var classname = "media-carousel " + bundle.get("domid");
 		var EmptyRenderer = CarouselRenderer.extend({
 			className: "carousel-item empty-item",
 			model: bundle,
@@ -422,17 +422,20 @@ var ContentView = View.extend({
 				return EmptyRenderer;
 			}
 			switch (item.attr("@renderer")) {
-				case "video": return VideoRenderer;
-				case "sequence": return SequenceRenderer;
-				// case "image": return ImageRenderer;
-				default: return ImageRenderer;
+				case "video":
+					return VideoRenderer;
+				case "sequence":
+					return SequenceRenderer;
+					// case "image": return ImageRenderer;
+				default:
+					return ImageRenderer;
 			}
 		};
 		var view = new Carousel({
 			className: classname,
 			collection: bundle.get("media"),
 			rendererFunction: rendererFunction,
-			requireSelection: false, 
+			requireSelection: false,
 			direction: Carousel.DIRECTION_HORIZONTAL,
 			touch: this.touch,
 		});
@@ -447,7 +450,7 @@ var ContentView = View.extend({
 		});
 		return view;
 	},
-	
+
 	/**
 	/* media-caption-stack
 	/*/
@@ -462,7 +465,7 @@ var ContentView = View.extend({
 		});
 		return view;
 	},
-	
+
 	/**
 	/* media-dotnav
 	/*/
@@ -483,7 +486,7 @@ var ContentView = View.extend({
 		});
 		return view;
 	},
-	
+
 	createProgressWrapper: function() {
 		// var view = new ProgressMeter({
 		// 	id: "media-progress-wrapper",

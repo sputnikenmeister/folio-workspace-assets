@@ -37,7 +37,7 @@ var ContentView = require("app/view/ContentView");
 var AppView = {
 	getInstance: function() {
 		if (!(window.app instanceof this)) {
-			window.app = new (this)({
+			window.app = new(this)({
 				model: new AppState()
 			});
 		}
@@ -46,7 +46,7 @@ var AppView = {
 };
 
 var AppViewProto = {
-	
+
 	/** @override */
 	cidPrefix: "app",
 	/** @override */
@@ -55,55 +55,70 @@ var AppViewProto = {
 	className: "without-bundle without-media",
 	/** @override */
 	model: AppState,
-	
+
 	/** @override */
 	events: {
-		"visibilitychange": function(ev) { console.log(ev.type) ;},
-		"fullscreenchange": function(ev) { console.log(ev.type) ;},
+		"visibilitychange": function(ev) {
+			console.log(ev.type);
+		},
+		"fullscreenchange": function(ev) {
+			console.log(ev.type);
+		},
 	},
-	
+
 	/** @override */
-	initialize: function (options) {
+	initialize: function(options) {
 		// document.documentElement.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
-		
+
 		/* prevent touch overscroll on iOS */
-		document.addEventListener("touchmove", function(ev) { ev.preventDefault(); }, false);
+		document.addEventListener("touchmove", function(ev) {
+			ev.preventDefault();
+		}, false);
 		/* create single hammerjs manager */
-		this.touch = TouchManager.init(this.el);//document.body);//document.querySelector("#container")
-		
+		this.touch = TouchManager.init(this.el); //document.body);//document.querySelector("#container")
+
 		/* render on resize, onorientationchange, visibilitychange */
-		this._onResize = this._onResize.bind(this);// _.bindAll(this, "_onResize");
+		this._onResize = this._onResize.bind(this); // _.bindAll(this, "_onResize");
 		window.addEventListener("orientationchange", this._onResize, false);
-		window.addEventListener("resize", _.debounce(this._onResize, 100, false/* immediate? */), false);
-		
+		window.addEventListener("resize", _.debounce(this._onResize, 100, false /* immediate? */ ), false);
+
 		/* initialize controller/model listeners BEFORE views register their own */
 		this.listenTo(controller, "change:after", this._afterControllerChanged);
 		this.listenTo(this.model, "change", this._onModelChange); /* FIXME */
-		
+
 		/* initialize views */
-		this.navigationView = new NavigationView({ el: "#navigation", model: this.model });
-		this.contentView = new ContentView({ el: "#content", model: this.model });
-		
+		this.navigationView = new NavigationView({
+			el: "#navigation",
+			model: this.model
+		});
+		this.contentView = new ContentView({
+			el: "#content",
+			model: this.model
+		});
+
 		/* startup listener */
 		this.listenToOnce(controller, "route", this._appStart);
 		// start router, which will request appropiate state
-		Backbone.history.start({ pushState: false, hashChange: true });
+		Backbone.history.start({
+			pushState: false,
+			hashChange: true
+		});
 	},
-	
+
 	/* -------------------------------
 	/* _appStart
 	/* ------------------------------- */
-	
+
 	_appStart: function() {
 		console.log("%s::_appStart", this.cid, arguments[0]);
 		this._appStartChanged = true;
 		this.requestRender(View.MODEL_INVALID | View.SIZE_INVALID);
 	},
-	
+
 	/* --------------------------- *
 	/* model changed
 	/* --------------------------- */
-	
+
 	_afterControllerChanged: function(bundle, media) {
 		/* update model on controller event */
 		console.log("%s::[controller change:after]", this.cid);
@@ -115,36 +130,36 @@ var AppViewProto = {
 			collapsed: !!bundle // reset collapsed on bundle change
 		});
 	},
-	
+
 	/* --------------------------- *
 	/* model changed
 	/* --------------------------- */
-	
+
 	_onModelChange: function() {
 		console.group(this.cid + "::_onModelChange changed:");
 		Object.keys(this.model.changedAttributes()).forEach(function(key) {
 			console.log("\t%s: %s -> %s", key, this.model.previous(key), this.model.get(key));
 		}, this);
 		console.groupEnd();
-		
+
 		if (this.model.hasChanged("bundle") || this.model.hasChanged("media")) {
 			this.requestRender(View.MODEL_INVALID);
 		}
 	},
-	
+
 	/* -------------------------------
 	/* resize
 	/* ------------------------------- */
-	
+
 	_onResize: function() {
 		console.log("%s::_onResize", this.cid);
 		this.requestRender(View.SIZE_INVALID).renderNow();
 	},
-	
+
 	/* -------------------------------
 	/* render
 	/* ------------------------------- */
-	
+
 	renderFrame: function(tstamp, flags) {
 		if (flags & View.MODEL_INVALID) {
 			this.renderModelChange();
@@ -157,20 +172,20 @@ var AppViewProto = {
 			this.requestAnimationFrame(this.renderAppStart);
 		}
 	},
-	
+
 	renderAppStart: function() {
 		console.log("%s::renderAppStart", this.cid);
 		document.documentElement.classList.remove("app-initial");
 		// document.documentElement.classList.add("app-ready");
 	},
-	
+
 	renderResize: function() {
 		console.log("%s::renderResize", this.cid);
 		document.body.scrollTop = 0;
 		document.body.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
-		
+
 		this.requestChildrenRender(View.SIZE_INVALID, true);
-		
+
 		// var ccid, view;
 		// for (ccid in this.childViews) {
 		// 	view = this.childViews[ccid];
@@ -180,23 +195,23 @@ var AppViewProto = {
 		// 	view.requestRender(View.SIZE_INVALID).renderNow();
 		// }
 	},
-	
+
 	/* -------------------------------
 	/* body classes etc
 	/* ------------------------------- */
-	
+
 	// _controllerChanged: true,
-	
+
 	renderModelChange: function() {
 		console.log("%s::renderModelChange", this.cid);
-		
+
 		var bundle = this.model.get("bundle");
 		var media = this.model.get("media");
-		
+
 		this.updateDocumentTitle(bundle, media);
 		this.updateClassList(bundle, media);
 	},
-	
+
 	updateDocumentTitle: function(bundle, media) {
 		// Set browser title
 		var docTitle = "Portfolio";
@@ -208,12 +223,13 @@ var AppViewProto = {
 		}
 		document.title = docTitle;
 	},
-	
+
 	updateClassList: function(bundle, media) {
 		// classList target
 		var cls = this.el.classList;
-		var prevAttr = null, hasDarkBg = false;
-		
+		var prevAttr = null,
+			hasDarkBg = false;
+
 		// Set state classes
 		cls.toggle("with-bundle", !!bundle);
 		cls.toggle("without-bundle", !bundle);
@@ -227,7 +243,7 @@ var AppViewProto = {
 		// 	cls.toggle("with-media", this.model.get("withMedia"));
 		// 	cls.toggle("without-media", !this.model.get("withMedia"));
 		// }
-		
+
 		// Set bundle class
 		if (this.model.hasChanged("bundle")) {
 			prevAttr = this.model.previous("bundle");
@@ -252,7 +268,7 @@ var AppViewProto = {
 		}
 		// Set color-dark class
 		// cls.toggle("color-dark", hasDarkBg);
-		cls.toggle("color-dark", 
+		cls.toggle("color-dark",
 			(media && media.colors.hasDarkBg) ||
 			(bundle && bundle.colors.hasDarkBg));
 	},
@@ -261,7 +277,7 @@ var AppViewProto = {
 if (DEBUG) {
 	/** @type {module:app/view/DebugToolbar} */
 	var DebugToolbar = require("app/view/DebugToolbar");
-	
+
 	AppViewProto.initialize = (function(fn) {
 		return function() {
 			var view = new DebugToolbar({
@@ -269,14 +285,14 @@ if (DEBUG) {
 				model: this.model
 			});
 			this.el.appendChild(view.render().el);
-			
+
 			this.listenTo(this.model, "change:layoutName", function() {
-				this.requestRender(View.SIZE_INVALID);//.renderNow();
+				this.requestRender(View.SIZE_INVALID); //.renderNow();
 			});
 			return fn.apply(this, arguments);
 		};
 	})(AppViewProto.initialize);
-	
+
 	// AppViewProto.renderFrame = (function(fn) {
 	// 	return function() {
 	// 		// var retVal = fn.apply(this, arguments); return retVal;
@@ -299,7 +315,7 @@ if (DEBUG) {
 	// 		return fn.apply(this, arguments);
 	// 	};
 	// })(AppViewProto.renderFrame);
-	
+
 	// AppViewProto.initialize = _.wrap(AppViewProto.initialize, function(fn) {
 	// 	this.el.appendChild((new DebugToolbar({id: "debug-toolbar", collection: bundles})).render().el);
 	// 	// wrapped fn is first argument, so call shift result directly with (already shifted) arguments

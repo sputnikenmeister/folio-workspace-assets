@@ -37,7 +37,7 @@ var getTransitionValues = function(v, t) {
 Transition.getComputedDuration = function(element, property) {
 	var sProp, sDelay, sDur;
 	var s = window.getComputedStyle(element);
-	
+
 	sProp = s[prefixedProperty("transition-property")];
 	if (sProp == "none" || (sProp != "all" && sProp.indexOf(property) === -1)) {
 		return 0;

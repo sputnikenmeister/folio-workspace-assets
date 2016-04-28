@@ -32,7 +32,7 @@ var getTransitionValues = function(v, t) {
 module.exports = function(v, t, p) {
 	var sProp, sDelay, sDur;
 	var s = window.getComputedStyle(t);
-	
+
 	sProp = s.getPropertyValue(v.getPrefixedStyle("transition-property"));
 	if (sProp == "none" || (sProp != "all" && sProp.indexOf(p) === -1)) {
 		return 0;

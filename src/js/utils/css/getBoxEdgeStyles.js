@@ -2,16 +2,16 @@
 
 // var parseSize = require("./parseSize");
 
-var CSS_BOX_PROPS = [ 
+var CSS_BOX_PROPS = [
 	"boxSizing", "position", "objectFit"
 ];
 var CSS_EDGE_PROPS = [
-	"marginTop","marginBottom","marginLeft","marginRight",
-	"borderTopWidth","borderBottomWidth","borderLeftWidth","borderRightWidth",
-	"paddingTop","paddingBottom","paddingLeft","paddingRight",
+	"marginTop", "marginBottom", "marginLeft", "marginRight",
+	"borderTopWidth", "borderBottomWidth", "borderLeftWidth", "borderRightWidth",
+	"paddingTop", "paddingBottom", "paddingLeft", "paddingRight",
 ];
-var CSS_POS_PROPS = [ "top", "bottom", "left", "right"];
-var CSS_SIZE_PROPS = [ "width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"];
+var CSS_POS_PROPS = ["top", "bottom", "left", "right"];
+var CSS_SIZE_PROPS = ["width", "height", "minWidth", "minHeight", "maxWidth", "maxHeight"];
 var CSS_ALL_PROPS = CSS_EDGE_PROPS.concat(CSS_SIZE_PROPS, CSS_POS_PROPS);
 
 // var COMPUTED_PROPS = [
@@ -36,16 +36,16 @@ module.exports = function(s, m, includeSizePos) {
 	}
 	var v, p, i, ii, emPx, remPx;
 	m || (m = {});
-	
+
 	emPx = m.fontSize = parseFloat(s.fontSize);
-	
+
 	for (i = 0, ii = CSS_BOX_PROPS.length; i < ii; i++) {
 		p = CSS_BOX_PROPS[i];
 		if (p in s) {
 			m[p] = s[p];
 		}
 	}
-	var cssProps = includeSizePos? CSS_EDGE_PROPS: CSS_ALL_PROPS;
+	var cssProps = includeSizePos ? CSS_EDGE_PROPS : CSS_ALL_PROPS;
 	for (i = 0, ii = cssProps.length; i < ii; i++) {
 		p = cssProps[i];
 		m["_" + p] = s[p];
@@ -61,7 +61,7 @@ module.exports = function(s, m, includeSizePos) {
 				console.warn("Ignoring value", p, v[1], v[2]);
 				m[p] = null;
 			}
-		}// else {
+		} // else {
 		//	console.warn("Ignoring unitless value", p, v);
 		//}
 	}

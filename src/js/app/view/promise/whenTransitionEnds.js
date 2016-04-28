@@ -14,7 +14,7 @@ var ViewError = require("app/view/base/ViewError");
 var getComputedTimeout = function(v, t, p) {
 	var sProp, sDelay, sDur;
 	var s = window.getComputedStyle(t);
-	
+
 	sProp = s[prefixedProperty("transitionProperty", t.style)];
 	// sProp = s.getPropertyValue(v.getPrefixedStyle("transition-property"));
 	if (sProp == "none" || (sProp != "all" && sProp.indexOf(p) === -1)) {
@@ -29,7 +29,7 @@ var getComputedTimeout = function(v, t, p) {
 };
 
 // var idSeed = 0;
-var timeoutMargin = 200;// NOTE: ms delay timeout to catch late transitionend events
+var timeoutMargin = 200; // NOTE: ms delay timeout to catch late transitionend events
 var logMessage = "%s::whenTransitionEnds [%s]: %s";
 
 module.exports = function(view, target, prop, timeout) {
@@ -37,7 +37,7 @@ module.exports = function(view, target, prop, timeout) {
 		var resolveOnEvent, rejectOnRemove, timeoutId, cleanupOnSettle;
 		var tt = timeout || getComputedTimeout(view, target, prop);
 		prop = prefixedStyleName(prop);
-		
+
 		// transition is 0s, resolve immediately
 		if (tt === 0) {
 			// console.log(logMessage, view.cid, "resolved", "sync");
@@ -50,7 +50,7 @@ module.exports = function(view, target, prop, timeout) {
 				target.removeEventListener(transitionEnd, resolveOnEvent, false);
 				view.off("view:removed", rejectOnRemove);
 			};
-			
+
 			// resolve on event
 			resolveOnEvent = function(ev) {
 				if (ev.target === target && prop == ev.propertyName) {
@@ -60,15 +60,15 @@ module.exports = function(view, target, prop, timeout) {
 				}
 			};
 			target.addEventListener(transitionEnd, resolveOnEvent, false);
-			
+
 			// resolve on timeout
-			timeoutId = window.setTimeout(function () {
+			timeoutId = window.setTimeout(function() {
 				console.warn(logMessage, view.cid, "resolved", "timeout", timeoutId);
 				timeoutId = null;
 				cleanupOnSettle();
 				resolve(view);
 			}, tt + timeoutMargin);
-			
+
 			// resolve on view removal
 			rejectOnRemove = function() {
 				cleanupOnSettle();

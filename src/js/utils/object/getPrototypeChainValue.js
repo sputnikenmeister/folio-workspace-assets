@@ -1,13 +1,12 @@
-
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-var getPrototypeChainValue = function (obj, propName, root) {
+var getPrototypeChainValue = function(obj, propName, root) {
 	var objVal, protoVal, proto;
-	
+
 	proto = Object.getPrototypeOf(obj);
 	root || (root = Object.prototype);
-	
+
 	if (proto && proto !== root) {
 		protoVal = getPrototypeChainValue(proto, propName, root);
 	}

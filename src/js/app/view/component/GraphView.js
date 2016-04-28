@@ -92,12 +92,33 @@ var GraphView = CanvasView.extend({
 		};
 	},
 
+	_setStyle: function(s) {
+		var ctx = this._ctx;
+		if (typeof s == "string") {
+			s = this._styleData[s];
+		}
+		if (typeof s == "object") {
+			for (var p in s) {
+				switch (typeof ctx[p]) {
+					case "undefined":
+						break;
+					case "function":
+						if (Array.isArray(s[p])) ctx[p].apply(ctx, s[p]);
+						else ctx[p].call(ctx, s[p]);
+						break;
+					default:
+						ctx[p] = s[p];
+				}
+			}
+		}
+	},
+
 	_updateMetrics: function() {
 		var bounds = this.el.getBoundingClientRect();
 		this._ctx.setTransform(this._canvasRatio, 0, 0, this._canvasRatio, -bounds.left * this._canvasRatio - 0.5, -bounds.top * this._canvasRatio - 0.5);
-		
+
 		var listView, listRect, listPos;
-		
+
 		listView = this._listA;
 		listRect = listView.el.getBoundingClientRect();
 		// listPos = listView.itemViews.map(function(view, i) {
@@ -128,27 +149,6 @@ var GraphView = CanvasView.extend({
 				rect = view.label.getBoundingClientRect();
 				this._minB = Math.min(this._minB, rect.left);
 				//this._rectB.left + view.transform.tx + view._metrics.textLeft);
-			}
-		}
-	},
-
-	_setStyle: function(s) {
-		var ctx = this._ctx;
-		if (typeof s == "string") {
-			s = this._styleData[s];
-		}
-		if (typeof s == "object") {
-			for (var p in s) {
-				switch (typeof ctx[p]) {
-					case "undefined":
-						break;
-					case "function":
-						if (Array.isArray(s[p])) ctx[p].apply(ctx, s[p]);
-						else ctx[p].call(ctx, s[p]);
-						break;
-					default:
-						ctx[p] = s[p];
-				}
 			}
 		}
 	},
@@ -196,7 +196,7 @@ var GraphView = CanvasView.extend({
 		var rInc = 4,
 			rBase = 8,
 			xMargin = rBase * 2; // line-element separation in px
-		
+
 		// keyword to bundles
 		elB = this._listB.el.querySelector(".list-item.selected .label");
 		if (elB) {
@@ -212,7 +212,7 @@ var GraphView = CanvasView.extend({
 
 			els = this._listA.el.querySelectorAll(".list-item:not(.excluded) .label");
 			numEls = els.length;
-			
+
 			// elsPos = [];
 			// for (i = 0; i < numEls; i++) {
 			// 	rectA = els.item(i).getBoundingClientRect();
@@ -275,7 +275,7 @@ var GraphView = CanvasView.extend({
 
 			els = this._listB.el.querySelectorAll(".list-item:not(.excluded) .label");
 			numEls = els.length;
-			
+
 			r0 = (els.length) / 2;
 			cx0 = x1 + r0;
 			// ro = els.length * roInc * 0.5;

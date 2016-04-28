@@ -1,4 +1,3 @@
-
 module.exports = function(view) {
 	return new Promise(function(resolve, reject) {
 		if (view.attached) {

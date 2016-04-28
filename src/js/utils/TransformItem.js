@@ -1,6 +1,6 @@
 /* -------------------------------
-* Imports
-* ------------------------------- */
+ * Imports
+ * ------------------------------- */
 
 /** @type {module:underscore} */
 var _ = require("underscore");
@@ -13,7 +13,7 @@ var prefixedStyleName = require("utils/prefixedStyleName");
 var prefixedEvent = require("utils/prefixedEvent");
 
 /** @type {String} */
-var transitionEnd = prefixedEvent("transitionend");//require("utils/event/transitionEnd");
+var transitionEnd = prefixedEvent("transitionend"); //require("utils/event/transitionEnd");
 /** @type {Function} */
 var slice = Array.prototype.slice;
 
@@ -86,7 +86,7 @@ var translateTemplate = function(o) {
 	return "translate3d(" + o._renderedX + "px, " + o._renderedY + "px, 0px)";
 };
 var transitionTemplate = function(o) {
-	return o.property + " " + o.duration/1000 + "s " + o.easing + " " + o.delay/1000 + "s";
+	return o.property + " " + o.duration / 1000 + "s " + o.easing + " " + o.delay / 1000 + "s";
 };
 
 var UNSET_TRANSITION = {
@@ -158,54 +158,82 @@ var rejectAll = function(pp, reason) {
  */
 function TransformItem(el, id) {
 	_.bindAll(this, "_onTransitionEnd");
-	
+
 	this.el = el;
 	this.id = id;
 	this.el.eid = id;
 	this.el.addEventListener(transitionEnd, this._onTransitionEnd, false);
-	
+
 	this._captureInvalid = false;
 	this._capturedChanged = false;
 	this._capturedX = null;
 	this._capturedY = null;
 	this._currCapture = {};
 	this._lastCapture = {};
-	
+
 	this._hasOffset = false;
 	this._offsetInvalid = false;
 	this._offsetX = null;
 	this._offsetY = null;
-	
+
 	this._renderedX = null;
 	this._renderedY = null;
-	
+
 	this._hasTransition = false;
 	this._transitionInvalid = false;
 	this._transitionRunning = false;
-	this._transition = _.extend({}, UNSET_TRANSITION);//{};
-	
+	this._transition = _.extend({}, UNSET_TRANSITION); //{};
+
 	this._promises = [];
 	this._pendingPromises = [];
 }
 
 var TransformItemProps = {
-	transition: { get: function() { return this._transition; } },
-	
-	capturedChanged: { get: function() { return this._capturedChanged; } },
-	capturedX: { get: function() { return this._capturedX; } },
-	capturedY: { get: function() { return this._capturedY; } },
-	
-	hasOffset: { get: function() { return this._hasOffset; } },
-	offsetX: { get: function() { return this._offsetX; } },
-	offsetY: { get: function() { return this._offsetY; } },
+	transition: {
+		get: function() {
+			return this._transition;
+		}
+	},
+
+	capturedChanged: {
+		get: function() {
+			return this._capturedChanged;
+		}
+	},
+	capturedX: {
+		get: function() {
+			return this._capturedX;
+		}
+	},
+	capturedY: {
+		get: function() {
+			return this._capturedY;
+		}
+	},
+
+	hasOffset: {
+		get: function() {
+			return this._hasOffset;
+		}
+	},
+	offsetX: {
+		get: function() {
+			return this._offsetX;
+		}
+	},
+	offsetY: {
+		get: function() {
+			return this._offsetY;
+		}
+	},
 };
 
 var TransformItemProto = {
-	
+
 	/* -------------------------------
 	/* Public
 	/* ------------------------------- */
-	
+
 	/* destroy
 	/* - - - - - - - - - - - - - - - - */
 	destroy: function() {
@@ -224,19 +252,19 @@ var TransformItemProto = {
 		this._validateCapture();
 		return this;
 	},
-	
+
 	clearCapture: function() {
 		// console.log("tx[%s]::clearCapture", this.id);
 		// this._hasOffset = false;
 		this._captureInvalid = true;
 		return this;
 	},
-	
+
 	/* offset/clear
 	/* - - - - - - - - - - - - - - - - */
 	offset: function(x, y) {
 		// console.log("tx[%s]::offset", this.id);
-		
+
 		this._hasOffset = true;
 		this._offsetInvalid = true;
 		this._offsetX = x || 0;
@@ -244,11 +272,11 @@ var TransformItemProto = {
 		// if (this.immediate) this._validateOffset();
 		return this;
 	},
-	
+
 	clearOffset: function() {
 		if (this._hasOffset) {
 			// console.log("tx[%s]::clearOffset", this.id);
-			
+
 			this._hasOffset = false;
 			this._offsetInvalid = true;
 			this._offsetX = null;
@@ -259,11 +287,11 @@ var TransformItemProto = {
 		}
 		return this;
 	},
-	
+
 	/* transitions
 	/* - - - - - - - - - - - - - - - - */
 	runTransition: function(transition) {
-		if (!transition) {// || (transition.duration + transition.delay) == 0) {
+		if (!transition) { // || (transition.duration + transition.delay) == 0) {
 			return this.clearTransition();
 		}
 		var lastValue = this._transitionValue;
@@ -271,40 +299,40 @@ var TransformItemProto = {
 		this._transition.property = styleNames["transform"];
 		this._transition = _.extend(this._transition, transition);
 		this._transitionValue = transitionTemplate(this._transition);
-		
+
 		if (this._transitionInvalid) {
 			console.warn("tx[%s]::runTransition set over (%s:'%s' => %s:'%s')", this.id,
 				lastName, lastValue, this._transition.name, this._transitionValue);
 		}
-		
+
 		this._hasTransition = true;
 		this._transitionInvalid = true;
 		// if (this.immediate) this._validateTransition();
 		return this;
 	},
-	
+
 	clearTransition: function() {
 		this._transition = _.extend(this._transition, UNSET_TRANSITION);
 		this._transitionValue = NO_TRANSITION;
-		
+
 		this._hasTransition = false;
 		this._transitionInvalid = true;
 		// if (this.immediate) this._validateTransition();
 		return this;
 	},
-	
+
 	stopTransition: function() {
 		// this._transition.name = "[none]";
 		// this._transition.property = "none";
 		this._transition = _.extend(this._transition, UNSET_TRANSITION);
-		this._transitionValue =  NO_TRANSITION;
-		
+		this._transitionValue = NO_TRANSITION;
+
 		this._hasTransition = false;
 		this._transitionInvalid = true;
 		// if (this.immediate) this._validateTransition();
 		return this;
 	},
-	
+
 	whenTransitionEnds: function() {
 		var d, p, pp;
 		if (this._transitionInvalid || this._transitionRunning) {
@@ -313,31 +341,31 @@ var TransformItemProto = {
 				d.resolve = resolve;
 				d.reject = reject;
 			});
-			pp = this._transitionInvalid? this._pendingPromises: this._promises;
+			pp = this._transitionInvalid ? this._pendingPromises : this._promises;
 			pp.push(d);
 		} else {
 			p = Promise.resolve(this.el);
 		}
 		return p;
 	},
-	
+
 	/* validation
 	/* - - - - - - - - - - - - - - - - */
 	validate: function() {
 		// this.el.removeEventListener(transitionEnd, this._onTransitionEnd, false);
 		this._ignoreEvent = true;
-		
+
 		if (this._captureInvalid) {
-			var lastX = (this._renderedX !== null? this._renderedX : this._capturedX),
-				lastY = (this._renderedY !== null? this._renderedY : this._capturedY);
-				
+			var lastX = (this._renderedX !== null ? this._renderedX : this._capturedX),
+				lastY = (this._renderedY !== null ? this._renderedY : this._capturedY);
+
 			// this._validateTransition();
 			this._validateCapture();
 			this._validateOffset();
-			
-			var currX = (this._renderedX !== null? this._renderedX : this._capturedX),
-				currY = (this._renderedY !== null? this._renderedY : this._capturedY);
-				
+
+			var currX = (this._renderedX !== null ? this._renderedX : this._capturedX),
+				currY = (this._renderedY !== null ? this._renderedY : this._capturedY);
+
 			if (lastX === currX && lastY === currY) {
 				this._hasTransition && console.info("tx[%s]::validate unchanged: last:[%i,%i] curr:[%i,%i]", this.el.id || this.id, lastX, lastY, currX, currY);
 				// console.info("tx[%s]::validate unchanged: last:[%f,%f] curr:[%f,%f] render:[%f,%f] captured[%f,%f]", this.el.id || this.id, lastX, lastY, currX, currY, this._renderedX, this._renderedY, this._capturedX, this._capturedY);
@@ -350,33 +378,33 @@ var TransformItemProto = {
 			this._validateTransition();
 			this._validateOffset();
 		}
-		
+
 		// this.el.addEventListener(transitionEnd, this._onTransitionEnd, false);
 		this._ignoreEvent = false;
-		
+
 		// if (this._capturedChanged) {
 		// 	console.error("tx[%s]::validate capture changed: [%f,%f]", this.id, this._capturedX, this._capturedY);
 		// }
 		this._capturedChanged = false;
 		return this;
 	},
-	
+
 	/* -------------------------------
 	/* Private
 	/* ------------------------------- */
-	
+
 	_validateCapture: function() {
 		if (!this._captureInvalid) {
 			return;
 		}
 		var computed, capturedValues;
 		var transformValue = null;
-		
+
 		if (this._hasOffset && !this._offsetInvalid) {
 			// this is an explicit call to capture() instead of a subcall from _validateOffset()
 			transformValue = this._getCSSProp("transform");
 			if (transformValue === "") {
-				console.error("tx[%s]::_capture valid offset (%i,$i) but transformValue=\"\"", this.id,  this._offsetX, this._offsetY);
+				console.error("tx[%s]::_capture valid offset (%i,$i) but transformValue=\"\"", this.id, this._offsetX, this._offsetY);
 			}
 			this._removeCSSProp("transform");
 		}
@@ -384,7 +412,7 @@ var TransformItemProto = {
 		// NOTE: reusing object, all props will be overwritten
 		this._lastCapture = this._currCapture;
 		this._currCapture = this._getComputedCSSProps();
-		
+
 		if (this._currCapture.transform !== this._lastCapture.transform) {
 			var m, mm, ret = {};
 			mm = this._currCapture.transform.match(/(matrix|matrix3d)\(([^\)]+)\)/);
@@ -409,7 +437,7 @@ var TransformItemProto = {
 		}
 		this._captureInvalid = false;
 	},
-	
+
 	_validateOffset: function() {
 		if (this._offsetInvalid) {
 			// this._validateCapture();
@@ -429,22 +457,22 @@ var TransformItemProto = {
 			}
 		}
 	},
-	
+
 	_validateTransition: function() {
 		if (this._transitionInvalid) {
 			// this._validateCapture();
 			this._transitionInvalid = false;
-			
+
 			// save promises made while invalid
 			var reject = this._promises;
 			// prepare _promises and push in new ones
 			this._promises = this._pendingPromises;
 			// whatever still here is to be rejected. reuse array
 			this._pendingPromises = rejectAll(reject, this.el);
-			
+
 			this._transitionRunning = this._hasTransition;
 			this._setCSSProp("transition", this._transitionValue);
-			
+
 			if (!this._hasTransition) {
 				// no transition, resolve now
 				resolveAll(this._promises, this.el);
@@ -457,40 +485,40 @@ var TransformItemProto = {
 			return;
 		}
 		if (this._transitionRunning && (this.el === ev.target) &&
-				(this._transition.property == ev.propertyName)) {
+			(this._transition.property == ev.propertyName)) {
 			this._transitionRunning = false;
 			this._removeCSSProp("transition");
 			resolveAll(this._promises, this.el);
 		}
 	},
-	
+
 	/* -------------------------------
 	/* CSS
 	/* ------------------------------- */
-	
+
 	_getCSSProp: function(prop) {
 		return this.el.style[propNames[prop]];
 		// return this.el.style[prefixedProperty(prop)];
 		// return this.el.style.getPropertyValue(styleNames[prop]);
 	},
-	
+
 	_setCSSProp: function(prop, value) {
 		if (prop === "transition" && value == NO_TRANSITION) {
 			value = "";
 		}
-		if (value === null || value === void 0 || value === "" ) {
+		if (value === null || value === void 0 || value === "") {
 			this._removeCSSProp(prop);
 		} else {
 			this.el.style[propNames[prop]] = value;
 			// this.el.style.setProperty(styleNames[prop], value);
 		}
 	},
-	
+
 	_removeCSSProp: function(prop) {
 		this.el.style[propNames[prop]] = "";
 		// this.el.style.removeProperty(styleNames[prop]);
 	},
-	
+
 	_getComputedCSSProps: function() {
 		var values = {};
 		var computed = window.getComputedStyle(this.el);

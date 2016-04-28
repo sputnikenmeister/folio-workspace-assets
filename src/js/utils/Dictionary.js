@@ -28,7 +28,7 @@ Dictionary.prototype.add = function(key, value) {
 	//retrieve the bucket at this particular index in our storage, if one exists
 	//[[ [k,v], [k,v], [k,v] ] , [ [k,v], [k,v] ]	 [ [k,v] ] ]
 	var bucket = this._storage[index];
-		//does a bucket exist or do we get undefined when trying to retrieve said index?
+	//does a bucket exist or do we get undefined when trying to retrieve said index?
 	if (!bucket) {
 		//create the bucket
 		bucket = [];

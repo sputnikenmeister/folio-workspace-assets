@@ -1,19 +1,19 @@
 /**
-* @module app/view/render/LabelRenderer
-*/
+ * @module app/view/render/LabelRenderer
+ */
 
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
 
 /**
-* @constructor
-* @type {module:app/view/render/LabelRenderer}
-*/
+ * @constructor
+ * @type {module:app/view/render/LabelRenderer}
+ */
 var LabelRenderer = View.extend({
-	
+
 	/** @type {string} */
 	cidPrefix: "labelRenderer",
-	
+
 	properties: {
 		label: {
 			get: function() {
@@ -31,11 +31,11 @@ var LabelRenderer = View.extend({
 		// 	}
 		// },
 	},
-	
+
 	/* -------------------------------
 	/* measure
 	/* ------------------------------- */
-	
+
 	// _measuredWidth: null,
 	// _measuredHeight: null,
 	// measure: function() {},

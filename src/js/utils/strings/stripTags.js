@@ -1,3 +1,3 @@
-module.exports = function (s) {
+module.exports = function(s) {
 	return s.replace(/<[^>]+>/g, "");
 };

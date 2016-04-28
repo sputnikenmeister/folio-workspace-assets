@@ -1,6 +1,6 @@
 /**
-* @module app/model/item/TypeItem
-*/
+ * @module app/model/item/TypeItem
+ */
 
 // /** @type {module:backbone} */
 // var Backbone = require("backbone");
@@ -12,9 +12,9 @@ var BaseItem = require("app/model/BaseItem");
  * @type {module:app/model/item/TypeItem}
  */
 module.exports = BaseItem.extend({
-	
+
 	_domPrefix: "t",
-	
+
 	/** @type {Object} */
 	defaults: {
 		name: "",

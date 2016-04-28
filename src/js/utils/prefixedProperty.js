@@ -11,7 +11,7 @@ var _cache = {};
 
 var _prefixedProperty = function(prop, obj) {
 	var prefixedProp, camelProp;
-	
+
 	if (prop in obj) {
 		console.log("Property '%s' found unprefixed", prop);
 		return prop;
@@ -34,6 +34,6 @@ var _prefixedProperty = function(prop, obj) {
  * @param {Object} look-up object
  * @returns {String|null} prefixed
  */
-module.exports = function (prop, obj) {
+module.exports = function(prop, obj) {
 	return _cache[prop] || (_cache[prop] = _prefixedProperty(prop, obj || document.body.style));
 };

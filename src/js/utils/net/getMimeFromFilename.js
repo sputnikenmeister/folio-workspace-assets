@@ -11,11 +11,11 @@
 	request.send();
 */
 
-var MIME_TYPES = { 
-	png: "image\/png", 
+var MIME_TYPES = {
+	png: "image\/png",
 	jpg: "image\/jpeg"
 };
-module.exports = function (filename) {
+module.exports = function(filename) {
 	try {
 		return MIME_TYPES[filename.match(/\w+$/)[0].toLowerCase()];
 	} catch (ex) {

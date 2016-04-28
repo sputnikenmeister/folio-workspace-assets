@@ -24,11 +24,11 @@ function TransformHelper() {
 }
 
 TransformHelper.prototype = Object.create({
-	
+
 	/* -------------------------------
 	/* Private
 	/* ------------------------------- */
-	
+
 	_get: function(el) {
 		if (this.has(el)) {
 			return this._itemsById[el.eid];
@@ -36,7 +36,7 @@ TransformHelper.prototype = Object.create({
 			return this._add(el);
 		}
 	},
-	
+
 	_add: function(el) {
 		var item, id;
 		// id = el.eid || el.cid || el.id;
@@ -52,7 +52,7 @@ TransformHelper.prototype = Object.create({
 		this._items.push(item);
 		return item;
 	},
-	
+
 	_remove: function(el) {
 		if (this.has(el)) {
 			var o = this._itemsById[el.eid];
@@ -61,7 +61,7 @@ TransformHelper.prototype = Object.create({
 			delete this._itemsById[el.eid];
 		}
 	},
-	
+
 	_invoke: function(funcName, args, startIndex) {
 		var i, ii, j, jj, el, o, rr;
 		var funcArgs = null;
@@ -85,15 +85,15 @@ TransformHelper.prototype = Object.create({
 		}
 		return rr;
 	},
-	
+
 	/* -------------------------------
 	/* Public
 	/* ------------------------------- */
-	
+
 	has: function(el) {
 		return el.eid && this._itemsById[el.eid] !== void 0;
 	},
-	
+
 	getItems: function() {
 		var i, j, el, ret = [];
 		for (i = 0; i < arguments.length; ++i) {
@@ -108,11 +108,11 @@ TransformHelper.prototype = Object.create({
 		}
 		return ret;
 	},
-	
+
 	get: function(el) {
 		return this._get(el);
 	},
-	
+
 	add: function() {
 		var i, j, el;
 		for (i = 0; i < arguments.length; ++i) {
@@ -126,7 +126,7 @@ TransformHelper.prototype = Object.create({
 			}
 		}
 	},
-	
+
 	remove: function() {
 		var i, j, el;
 		for (i = 0; i < arguments.length; ++i) {
@@ -140,31 +140,31 @@ TransformHelper.prototype = Object.create({
 			}
 		}
 	},
-	
+
 	/* --------------------------------
 	/* public
 	/* -------------------------------- */
-	
+
 	/* public: single arg
 	/* - - - - - - - - - - - - - - - - */
-	
+
 	hasOffset: function(el) {
-		return this.has(el)? this._itemsById[el.eid].hasOffset : (void 0);
+		return this.has(el) ? this._itemsById[el.eid].hasOffset : (void 0);
 	},
-	
+
 	/* public: capture
 	/* - - - - - - - - - - - - - - - - */
-	
-	capture: function () {
+
+	capture: function() {
 		this._invoke("capture", arguments);
 	},
-	captureAll: function () {
+	captureAll: function() {
 		for (var i = 0, ii = this._items.length; i < ii; i++) {
 			this._items[i].capture();
 		}
 	},
-	
-	clearCapture: function () {
+
+	clearCapture: function() {
 		this._invoke("clearCapture", arguments);
 	},
 	clearAllCaptures: function() {
@@ -172,7 +172,7 @@ TransformHelper.prototype = Object.create({
 			this._items[i].clearCapture();
 		}
 	},
-	
+
 	/* public: offset
 	/* - - - - - - - - - - - - - - - - */
 	offset: function(x, y) {
@@ -183,7 +183,7 @@ TransformHelper.prototype = Object.create({
 			this._items[i].offset(x, y);
 		}
 	},
-	
+
 	clearOffset: function() {
 		this._invoke("clearOffset", arguments);
 	},
@@ -192,10 +192,10 @@ TransformHelper.prototype = Object.create({
 			this._items[i].clearOffset();
 		}
 	},
-	
+
 	/* public: transitions
 	/* - - - - - - - - - - - - - - - - */
-	
+
 	runTransition: function(transition) {
 		this._invoke("runTransition", arguments, 1);
 	},
@@ -204,7 +204,7 @@ TransformHelper.prototype = Object.create({
 			this._items[i].runTransition(transition);
 		}
 	},
-	
+
 	clearTransition: function() {
 		this._invoke("clearTransition", arguments);
 	},
@@ -213,7 +213,7 @@ TransformHelper.prototype = Object.create({
 			this._items[i].clearTransition();
 		}
 	},
-	
+
 	stopTransition: function() {
 		this._invoke("stopTransition", arguments);
 	},
@@ -222,36 +222,35 @@ TransformHelper.prototype = Object.create({
 			this._items[i].stopTransition();
 		}
 	},
-	
+
 	whenTransitionEnds: function() {
 		var res = this._invoke("whenTransitionEnds", arguments);
-		return res.length != 0?
+		return res.length != 0 ?
 			Promise.all(res) :
 			Promise.resolve(null);
 	},
 	whenAllTransitionsEnd: function() {
-		return (this._items.length != 0)? Promise.all(this._items.map(function(o) {
+		return (this._items.length != 0) ? Promise.all(this._items.map(function(o) {
 			return o.whenTransitionEnds();
 		})) : Promise.resolve(null);
 	},
-	
+
 	promise: function() {
-		return arguments.length == 0?
+		return arguments.length == 0 ?
 			this.whenAllTransitionsEnd() :
 			this.whenTransitionEnds.call(this, arguments);
 	},
-	
+
 	/* -------------------------------
 	/* validation
 	/* ------------------------------- */
-	
-	validate: function () {
+
+	validate: function() {
 		for (var i = 0, ii = this._items.length; i < ii; i++) {
 			this._items[i].validate();
 		}
 	},
-},
-{
+}, {
 	items: {
 		get: function() {
 			return this._items;

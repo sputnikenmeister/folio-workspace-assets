@@ -1,7 +1,7 @@
 /**
-* @module app/model/collection/BundleCollection
-* @requires module:backbone
-*/
+ * @module app/model/collection/BundleCollection
+ * @requires module:backbone
+ */
 
 /** @type {module:app/model/SelectableCollection} */
 var SelectableCollection = require("app/model/SelectableCollection");

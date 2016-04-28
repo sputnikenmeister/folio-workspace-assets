@@ -24,7 +24,7 @@ module.exports = function(image, resolveEmpty) {
 				}
 			};
 			handlers.abort = handlers.error;
-			var removeEventListeners = function () {
+			var removeEventListeners = function() {
 				for (var event in handlers) {
 					if (handlers.hasOwnProperty(event)) {
 						image.removeEventListener(event, handlers[event], false);

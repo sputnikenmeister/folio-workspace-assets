@@ -1,7 +1,7 @@
 /* global HTMLElement, MutationObserver */
 /**
-* @module app/view/base/View
-*/
+ * @module app/view/base/View
+ */
 
 /** @type {module:backbone} */
 var Backbone = require("backbone");
@@ -23,12 +23,13 @@ function addChildViews(el) {
 			if (!view.attached) {
 				// console.log("View::[attached (parent)] %s", view.cid);
 				view._elementAttached();
-			// } else {
-			// 	console.warn("View::[attached (parent)] %s (ignored)", view.cid);
+				// } else {
+				// 	console.warn("View::[attached (parent)] %s (ignored)", view.cid);
 			}
 		}
 	}
 }
+
 function removeChildViews(el) {
 	var view, els = el.querySelectorAll("*[data-cid]");
 	for (var i = 0, ii = els.length; i < ii; i++) {
@@ -59,8 +60,8 @@ var observer = new MutationObserver(function(mm) {
 					if (!view.attached) {
 						// console.log("View::[attached (childList)] %s", view.cid);
 						view._elementAttached();
-					// } else {
-					// 	console.warn("View::[attached (childList)] %s (ignored)", view.cid);
+						// } else {
+						// 	console.warn("View::[attached (childList)] %s (ignored)", view.cid);
 					}
 				}
 				if (e instanceof HTMLElement) addChildViews(e);
@@ -85,8 +86,8 @@ var observer = new MutationObserver(function(mm) {
 				if (!view.attached) {
 					// console.log("View::[attached (attribute)] %s", view.cid);
 					view._elementAttached();
-				// } else {
-				// 	console.warn("View::[attached (attribute)] %s (ignored)", view.cid);
+					// } else {
+					// 	console.warn("View::[attached (attribute)] %s (ignored)", view.cid);
 				}
 			}
 			// else {
@@ -113,8 +114,8 @@ var FrameQueue = require("app/view/base/FrameQueue");
 /** @type {module:app/view/base/PrefixedEvents} */
 var PrefixedEvents = require("app/view/base/PrefixedEvents");
 
-var _now = window.performance? 
-	window.performance.now.bind(window.performance):
+var _now = window.performance ?
+	window.performance.now.bind(window.performance) :
 	Date.now.bind(Date);
 // var _now = window.performance? 
 // 	function() { return window.performance.now(); }: 
@@ -133,7 +134,7 @@ var applyEventPrefixes = function(events) {
 	return events;
 };
 
-var getViewDepth = function(view) {	
+var getViewDepth = function(view) {
 	if (!view) {
 		return null;
 	}
@@ -150,7 +151,7 @@ function logAttachInfo(view, name, level) {
 	if (["log", "info", "warn", "error"].indexOf(level) != -1) {
 		level = "log";
 	}
-	console[level].call(console, "%s::%s [parent:%s %s %s depth:%s]", view.cid, name, view.parentView && view.parentView.cid, view.attached? "attached" : "detached", view._viewPhase, view.viewDepth);
+	console[level].call(console, "%s::%s [parent:%s %s %s depth:%s]", view.cid, name, view.parentView && view.parentView.cid, view.attached ? "attached" : "detached", view._viewPhase, view.viewDepth);
 }
 
 /* -------------------------------
@@ -159,12 +160,12 @@ function logAttachInfo(view, name, level) {
 
 
 var View = {
-	
+
 	/** @const */
 	NONE_INVALID: 0,
 	/** @const */
 	CHILDREN_INVALID: 1,
-	
+
 	/** @const */
 	MODEL_INVALID: 2,
 	/** @const */
@@ -173,28 +174,28 @@ var View = {
 	SIZE_INVALID: 8,
 	/** @const */
 	LAYOUT_INVALID: 16,
-	
+
 	/** @const */
 	// RENDER_INVALID: 8 | 16,
-	
+
 	/** @type {module:app/view/base/ViewError} */
 	ViewError: require("app/view/base/ViewError"),
-	
+
 	/** @type {module:utils/prefixedProperty} */
 	prefixedProperty: require("utils/prefixedProperty"),
-	
+
 	/** @type {module:utils/prefixedStyleName} */
 	prefixedStyleName: require("utils/prefixedStyleName"),
-	
+
 	/** @type {module:utils/prefixedEvent} */
 	prefixedEvent: require("utils/prefixedEvent"),
-	
+
 	/** @type {module:utils/setImmediate} */
 	setImmediate: require("utils/setImmediate"),
-	
+
 	/** @type {module:app/view/promise/whenViewIsAttached} */
 	whenViewIsAttached: require("app/view/promise/whenViewIsAttached"),
-	
+
 	/**
 	/* @param el {HTMLElement}
 	/* @return {module:app/view/base/View}
@@ -205,7 +206,7 @@ var View = {
 		}
 		return null;
 	},
-	
+
 	/**
 	/* @param el {HTMLElement}
 	/* @return {module:app/view/base/View}
@@ -218,7 +219,7 @@ var View = {
 		} while (el = el.parentElement);
 		return null;
 	},
-	
+
 	/** @override */
 	extend: function(proto, obj) {
 		if (PrefixedEvents.length && proto.events) {
@@ -236,9 +237,9 @@ var View = {
 		}
 		return Backbone.View.extend.apply(this, arguments);
 	},
-	
+
 	_flagsToStrings: ["-"],
-	
+
 	flagsToString: function(flags) {
 		var s = View._flagsToStrings[flags | 0];
 		if (!s) {
@@ -265,7 +266,7 @@ Object.defineProperty(View, "instances", {
 /* ------------------------------- */
 
 var ViewProto = {
-	
+
 	/** @type {string} */
 	cidPrefix: "view",
 	/** @type {Boolean} */
@@ -280,7 +281,7 @@ var ViewProto = {
 	_frameQueueId: -1,
 	/** @type {int} */
 	_renderFlags: 0,
-	
+
 	/** @type {object} */
 	properties: {
 		cid: {
@@ -317,16 +318,16 @@ var ViewProto = {
 			}
 		},
 	},
-	
+
 	/**
-	* @constructor
-	* @type {module:app/view/base/View}
-	*/
+	 * @constructor
+	 * @type {module:app/view/base/View}
+	 */
 	constructor: function(options) {
 		this.transform = {};
 		this.childViews = {};
 		this._applyRender = this._applyRender.bind(this);
-		
+
 		if (this.properties) {
 			// Object.defineProperties(this, getPrototypeChainValue(this, "properties", Backbone.View));
 			Object.defineProperties(this, this.properties);
@@ -338,10 +339,10 @@ var ViewProto = {
 			this._setParentView(options.parentView, true);
 		}
 		Backbone.View.apply(this, arguments);
-		
+
 		// console.log("%s::initialize viewPhase:[%s => initialized]", this.cid, this._viewPhase);
 		this._viewPhase = "initialized";
-		
+
 		if (this.parentView !== null) {
 			this.trigger("view:parentChange", this.parentView, null);
 		}
@@ -349,11 +350,11 @@ var ViewProto = {
 			this.trigger("view:attached", this);
 		}
 	},
-	
+
 	/* -------------------------------
 	/* remove
 	/* ------------------------------- */
-	
+
 	/** @override */
 	remove: function() {
 		if (this._viewPhase == "disposing") {
@@ -361,26 +362,26 @@ var ViewProto = {
 		} else {
 			// logAttachInfo(this, "remove", "log");
 		}
-		
+
 		// before removal
 		this._viewPhase = "disposing";
 		this._cancelRender();
-		
+
 		// call Backbone impl
 		// Backbone.View.prototype.remove.apply(this, arguments);
-		
+
 		// NOTE: from Backbone impl
 		this.$el.remove(); // from Backbone impl
-		
+
 		this._attached = false;
 		this.trigger("view:removed", this);
-		
+
 		// remove parent/child references
 		this._setParentView(null);
-		
+
 		// NOTE: from Backbone impl. No more events after this
 		this.stopListening();
-		
+
 		// check for invalidations that may have been triggered by "view:removed"
 		if (this.invalidated) {
 			console.warn("%s::remove invalidated after remove()", this.cid);
@@ -402,23 +403,23 @@ var ViewProto = {
 		this._viewPhase = "disposed";
 		return this;
 	},
-	
+
 	/* -------------------------------
 	/* _elementAttached _elementDetached
 	/* ------------------------------- */
-	
+
 	_elementAttached: function() {
 		// this._addToParentView();
 		this._attached = true;
 		this._viewDepth = null;
 		this._setParentView(View.findByDescendant(this.el.parentElement));
-		
+
 		// if (this.parentView) {
 		// 	console.log("[attach] [%i] %s > %s::_elementAttached", this.viewDepth, this.parentView.cid, this.cid);
 		// } else {
 		// 	console.log("[attach] [%i] %s::_elementAttached", this.viewDepth, this.cid);
 		// }
-		
+
 		// if (this._viewPhase == "initializing") {
 		// 	// this.trigger("view:attached", this);
 		// } else
@@ -430,25 +431,25 @@ var ViewProto = {
 			this.trigger("view:replaced", this);
 		}
 	},
-	
+
 	_elementDetached: function() {
 		if (!this.attached || (this._viewPhase == "disposing") || (this._viewPhase == "disposed")) {
 			logAttachInfo(this, "_elementDetached", "error");
-		// } else {
-		// 	logAttachInfo(this, "_elementDetached", "log");
+			// } else {
+			// 	logAttachInfo(this, "_elementDetached", "log");
 		}
 		this._attached = false;
 		this._viewDepth = null;
-		
+
 		if (this._viewPhase != "disposing" || this._viewPhase == "disposed") {
 			this.remove();
 		}
 	},
-	
+
 	/* -------------------------------
 	/* parentView
 	/* ------------------------------- */
-	
+
 	_setParentView: function(newParent, silent) {
 		if (newParent === void 0) {
 			console.warn("$s::_setParentView invalid value '%s'", this.cid, newParent);
@@ -456,10 +457,10 @@ var ViewProto = {
 		}
 		var oldParent = this._parentView;
 		this._parentView = newParent;
-		
+
 		// force update of _viewDepth
-		this._viewDepth = null;//getViewDepth(this);
-		
+		this._viewDepth = null; //getViewDepth(this);
+
 		// skip the rest if arg is the same
 		if (newParent === oldParent) {
 			return;
@@ -475,11 +476,11 @@ var ViewProto = {
 		if (!silent)
 			this.trigger("view:parentChange", this, newParent, oldParent);
 	},
-	
+
 	whenAttached: function() {
 		return View.whenViewIsAttached(this);
 	},
-	
+
 	_getViewDepth: function() {
 		if (this._viewDepth === null) {
 			this._viewDepth = getViewDepth(this);
@@ -487,11 +488,11 @@ var ViewProto = {
 		return this._viewDepth;
 		// return getViewDepth(this);
 	},
-	
+
 	/* -------------------------------
 	/* Backbone.View overrides
 	/* ------------------------------- */
-	
+
 	/** @override */
 	setElement: function(element, delegate) {
 		// setElement always initializes this.el, so check it to be non-null before calling super
@@ -510,28 +511,28 @@ var ViewProto = {
 			// Merge classes specified by this view with the ones already in the element,
 			// as backbone will not:
 			if (this.className) {
-				_.result(this, "className").split(" ").forEach(function (item) {
+				_.result(this, "className").split(" ").forEach(function(item) {
 					this.el.classList.add(item);
 				}, this);
 			}
 		} else {
 			Backbone.View.prototype.setElement.apply(this, arguments);
 		}
-		
+
 		if (this.el === void 0) {
 			throw new Error("Backbone view has no element");
 		}
 		_viewsByCid[this.cid] = this;
 		this.el.cid = this.cid;
 		this.el.setAttribute("data-cid", this.cid);
-		
+
 		return this;
 	},
-	
+
 	/* -------------------------------
 	/* requestAnimationFrame
 	/* ------------------------------- */
-	
+
 	requestAnimationFrame: function(callback, priority, ctx) {
 		// var retval = FrameQueue.request(callback.bind(this), priority);
 		// if (!this._skipLog)
@@ -539,7 +540,7 @@ var ViewProto = {
 		// return retval;
 		return FrameQueue.request(callback.bind(ctx || this), priority);
 	},
-	
+
 	cancelAnimationFrame: function(id) {
 		// var retval = FrameQueue.cancel(id);
 		// if (!this._skipLog)
@@ -547,70 +548,70 @@ var ViewProto = {
 		// return retval;
 		return FrameQueue.cancel(id);
 	},
-	
+
 	setImmediate: function(callback, ctx) {
 		View.setImmediate(callback.bind(ctx || this));
 	},
-	
+
 	/* -------------------------------
 	/* deferred render: private methods
 	/* ------------------------------- */
-	
+
 	/** @private */
-	_applyRender: function (tstamp) {
+	_applyRender: function(tstamp) {
 		if (!this._skipLog) {
 			console.log("%s::_applyRender [flags: %s] [%s, %s, %s]", this.cid,
 				View.flagsToString(this._renderFlags),
-				(this._frameQueueId != -1? "async #" + this._frameQueueId : "sync"),
-				(this.attached? "attached" : "detached"),
-				(this.skipTransitions? "skip":"run") +" transitions"
+				(this._frameQueueId != -1 ? "async #" + this._frameQueueId : "sync"),
+				(this.attached ? "attached" : "detached"),
+				(this.skipTransitions ? "skip" : "run") + " transitions"
 			);
 		}
-		
-		var flags = this._renderFlags; 
+
+		var flags = this._renderFlags;
 		this.trigger("view:render:before", this, flags);
 		this._renderFlags = 0;
 		this._frameQueueId = -1;
 		this._renderFlags |= this.renderFrame(tstamp, flags);
 		this.trigger("view:render:after", this, flags);
-		
+
 		if (this._renderFlags != 0) {
 			console.warn("%s::_applyRender [returned] flags: %s", this.cid, View.flagsToString(this._renderFlags), this._renderFlags);
 		}
 	},
-	
+
 	_cancelRender: function() {
 		if (this._frameQueueId != -1) {
 			var cancelId, cancelFn;
-			
+
 			cancelId = this._frameQueueId;
 			this._frameQueueId = -1;
 			cancelFn = FrameQueue.cancel(cancelId);
-			
+
 			if (cancelFn === void 0) {
 				console.warn("%s::_cancelRender ID:%i not found", this.cid, cancelId);
 			} else if (cancelFn === null) {
 				console.warn("%s::_cancelRender ID:%i already cancelled", this.cid, cancelId);
-			// } else {
-			// 	if (!this._skipLog && !FrameQueue.running)
-			// 		console.log("%s::_cancelRender ID:%i cancelled", this.cid, cancelId);
+				// } else {
+				// 	if (!this._skipLog && !FrameQueue.running)
+				// 		console.log("%s::_cancelRender ID:%i cancelled", this.cid, cancelId);
 			}
 		}
 	},
-	
+
 	_requestRender: function() {
 		if (this._frameQueueId == -1) {
-			this._frameQueueId = FrameQueue.request(this._applyRender, isNaN(this.viewDepth)? Number.MAX_VALUE : this.viewDepth);
+			this._frameQueueId = FrameQueue.request(this._applyRender, isNaN(this.viewDepth) ? Number.MAX_VALUE : this.viewDepth);
 			// this._frameQueueId = FrameQueue.request(this._applyRender, 10);
 			// if (!this._skipLog && !FrameQueue.running)
 			// 	console.log("%s::_requestRender ID:%i rescheduled", this.cid, this._frameQueueId);
 		}
 	},
-	
+
 	/* -------------------------------
 	/* render: public / abstract methods
 	/* ------------------------------- */
-	
+
 	requestRender: function(flags) {
 		if (flags !== void 0) {
 			this._renderFlags |= flags;
@@ -618,9 +619,9 @@ var ViewProto = {
 		this._requestRender();
 		return this;
 	},
-	
+
 	/** @abstract */
-	renderFrame: function (tstamp, flags) {
+	renderFrame: function(tstamp, flags) {
 		// subclasses should override this method
 		return View.NONE_INVALID;
 	},
@@ -636,16 +637,16 @@ var ViewProto = {
 		}
 		return this;
 	},
-	
+
 	/* -------------------------------
 	/* render bitwise flags
 	/* - check: this._renderFlags & flags
 	/* - add: this._renderFlags |= flags
 	/* - remove: this._renderFlags &= ~flags
 	/* ------------------------------- */
-	
+
 	/* helpers ------------------ */
-	
+
 	requestChildrenRender: function(flags, now, force) {
 		var ccid, view;
 		for (ccid in this.childViews) {
@@ -657,18 +658,18 @@ var ViewProto = {
 			}
 		}
 	},
-	
+
 	render: function() {
 		return this.renderNow(true);
 	},
-	
+
 	/* -------------------------------
 	/* common abstract
 	/* ------------------------------- */
-	
+
 	/** @private */
 	_enabled: undefined,
-	
+
 	/**
 	/* @param {Boolean}
 	/*/

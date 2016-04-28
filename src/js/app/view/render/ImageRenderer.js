@@ -23,64 +23,64 @@ var viewTemplate = require("./ImageRenderer.hbs");
  * @type {module:app/view/render/ImageRenderer}
  */
 var ImageRenderer = MediaRenderer.extend({
-	
+
 	/** @type {string} */
 	cidPrefix: "imageRenderer",
 	/** @type {string} */
 	className: MediaRenderer.prototype.className + " image-renderer",
 	/** @type {Function} */
 	template: viewTemplate,
-	
+
 	/** @override */
-	initialize: function (opts) {
+	initialize: function(opts) {
 		MediaRenderer.prototype.initialize.apply(this, arguments);
 		// this.createChildren();
 		// this.initializeAsync();
 	},
-	
+
 	/* --------------------------- *
 	/* children/layout
 	/* --------------------------- */
-	
+
 	/** @override */
 	createChildren: function() {
 		MediaRenderer.prototype.createChildren.apply(this, arguments);
 		// this.el.innerHTML = this.template(this.model.toJSON());
 		this.placeholder = this.el.querySelector(".placeholder");
 	},
-	
+
 	/** @override */
-	render: function () {
+	render: function() {
 		MediaRenderer.prototype.render.apply(this, arguments);
-		
+
 		// this.measure();
-		
+
 		var img = this.getDefaultImage();
 		img.setAttribute("width", this.metrics.media.width);
 		img.setAttribute("height", this.metrics.media.height);
-		
+
 		var content = this.getContentEl();
 		content.style.left = this.metrics.content.x + "px";
 		content.style.top = this.metrics.content.y + "px";
-		
+
 		// var sizing = this.getSizingEl();
 		// sizing.style.maxWidth = this.metrics.content.width + "px";
 		// sizing.style.maxHeight = this.metrics.content.height + "px";
-		
+
 		return this;
 	},
-	
+
 	/* --------------------------- *
 	/* initializeAsync
 	/* --------------------------- */
-	
+
 	initializeAsync: function() {
 		return MediaRenderer.prototype.initializeAsync.apply(this, arguments)
-		// return MediaRenderer.whenSelectionIsContiguous(this)
-		// // return Promise.resolve(this)
-		// // 	.then(MediaRenderer.whenSelectionIsContiguous)
-		// 	.then(MediaRenderer.whenSelectTransitionEnds)
-		// 	.then(MediaRenderer.whenDefaultImageLoads)
+			// return MediaRenderer.whenSelectionIsContiguous(this)
+			// // return Promise.resolve(this)
+			// // 	.then(MediaRenderer.whenSelectionIsContiguous)
+			// 	.then(MediaRenderer.whenSelectTransitionEnds)
+			// 	.then(MediaRenderer.whenDefaultImageLoads)
 			// .then(
 			// 	function(view) {
 			// 		view.mediaState = "ready";
@@ -96,7 +96,7 @@ var ImageRenderer = MediaRenderer.extend({
 			// 			this.mediaState = "error";
 			// 		}
 			// 	}.bind(this))
-			;
+		;
 	},
 });
 

@@ -1,7 +1,7 @@
 /**
-* @module app/model/item/SourceItem
-* @requires module:backbone
-*/
+ * @module app/model/item/SourceItem
+ * @requires module:backbone
+ */
 
 // /** @type {module:backbone} */
 // var Backbone = require("backbone");
@@ -19,7 +19,7 @@ var noCacheSuffix = "?" + Date.now();
  */
 // module.exports = Backbone.Model.extend({
 module.exports = BaseItem.extend({
-	
+
 	/** @type {Object} */
 	defaults: {
 		src: null,
@@ -27,12 +27,12 @@ module.exports = BaseItem.extend({
 		w: null,
 		h: null,
 	},
-	
-	getters: [ "src", "original" ],
-	
+
+	getters: ["src", "original"],
+
 	mutators: {
 		src: {
-			set: function (key, value, options, set) {
+			set: function(key, value, options, set) {
 				if (DEBUG) {
 					value += noCacheSuffix;
 				}
@@ -67,7 +67,7 @@ module.exports = BaseItem.extend({
 		// 	},
 		// },
 	},
-	
+
 	// initialize: function() {
 	// 	if (DEBUG) {
 	// 		var cb = function() {

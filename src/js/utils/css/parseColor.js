@@ -1,4 +1,4 @@
-var toRGBString =  function() {
+var toRGBString = function() {
 	var s = this.r + ", " + this.g + ", " + this.b;
 	if (this.hasOwnProperty("a")) {
 		return "rgba(" + s + ", " + this.a + ")";
@@ -6,7 +6,7 @@ var toRGBString =  function() {
 		return "rgb(" + s + ")";
 	}
 };
-var toHSLString =  function() {
+var toHSLString = function() {
 	var s = this.h + ", " + this.s + "%, " + this.l + "%";
 	if (this.hasOwnProperty("a")) {
 		return "hsla(" + s + ", " + this.a + ")";
@@ -26,10 +26,10 @@ module.exports = function(str) {
 		res.toColorString = toRGBString.bind(res);
 	} else if (m = /(hsla?|rgba?)\(([^\)]+)\)/.exec(str)) {
 		res = {};
-		for (var i=0, k=m[1], v=m[2].split(","); i < k.length; i++) {
+		for (var i = 0, k = m[1], v = m[2].split(","); i < k.length; i++) {
 			res[k.charAt(i)] = parseInt(v[i], 10) || parseFloat(v[i], 10);
 		}
-		res.toColorString = (res.hasOwnProperty("h")? toHSLString : toRGBString).bind(res);
+		res.toColorString = (res.hasOwnProperty("h") ? toHSLString : toRGBString).bind(res);
 	}
 	return res;
 };

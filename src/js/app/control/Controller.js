@@ -28,45 +28,45 @@ var Controller = Backbone.Router.extend({
 	routes: {
 		"bundles/:bundleHandle(/:mediaIndex)": "toBundleItem",
 		"bundles": "toBundleCollection",
-		"": function () {
+		"": function() {
 			this.navigate("bundles", {
-				trigger: true, replace: true
+				trigger: true,
+				replace: true
 			});
 		}
 	},
 
 	/** @override */
-	initialize: function (options) {
-	},
+	initialize: function(options) {},
 
 	/* ---------------------------
 	/* Public command methods
 	/* --------------------------- */
 
-	selectMedia: function (media) {
+	selectMedia: function(media) {
 		this._goToLocation(media.get("bundle"), media);
 		// this._changeSelection(media.get("bundle"), media);
 		// this._updateLocation();
 	},
 
-	selectBundle: function (bundle) {
+	selectBundle: function(bundle) {
 		this._goToLocation(bundle);
 		// this._changeSelection(bundle);
 		// this._updateLocation();
 	},
-	
-	deselectMedia: function () {
+
+	deselectMedia: function() {
 		this._goToLocation(bundles.selected);
 		// this._changeSelection(bundles.selected);
 		// this._updateLocation();
 	},
-	
-	deselectBundle: function () {
+
+	deselectBundle: function() {
 		this._goToLocation();
 		// this._changeSelection();
 		// this._updateLocation();
 	},
-	
+
 	/** Update location when navigation happens internally */
 	_updateLocation: function() {
 		var bundle, media;
@@ -74,9 +74,11 @@ var Controller = Backbone.Router.extend({
 		if (bundle) {
 			media = bundle.get("media").selected;
 		}
-		this.navigate(this._getLocation(bundle, media), {trigger: false});
+		this.navigate(this._getLocation(bundle, media), {
+			trigger: false
+		});
 	},
-	
+
 	_getLocation: function(bundle, media) {
 		var mediaIndex, location = [];
 		location.push("bundles");
@@ -92,18 +94,22 @@ var Controller = Backbone.Router.extend({
 		// location.push("");
 		return location.join("/");
 	},
-	
+
 	_goToLocation: function(bundle, media) {
-		this.navigate(this._getLocation(bundle, media), {trigger: true});
+		this.navigate(this._getLocation(bundle, media), {
+			trigger: true
+		});
 	},
-	
+
 	/* --------------------------- *
 	/* Router handlers (browser address changes)
 	/* --------------------------- */
-	
-	toBundleItem: function (bundleHandle, mediaIndex) {
+
+	toBundleItem: function(bundleHandle, mediaIndex) {
 		var bundle, media;
-		bundle = bundles.findWhere({handle: bundleHandle});
+		bundle = bundles.findWhere({
+			handle: bundleHandle
+		});
 		if (!bundle) {
 			throw new Error("Cannot find bundle with handle \"" + bundleHandle + "\"");
 		}
@@ -116,14 +122,14 @@ var Controller = Backbone.Router.extend({
 		this._changeSelection(bundle, media);
 	},
 
-	toBundleCollection: function () {
+	toBundleCollection: function() {
 		this._changeSelection();
 	},
-	
+
 	/* -------------------------------
 	/* Select Bundle/media
 	/* ------------------------------- */
-	
+
 	/*
 	/* NOTE: Selection order
 	/* - Apply media selection to *incoming bundle*, as not to trigger
@@ -133,27 +139,27 @@ var Controller = Backbone.Router.extend({
 	/*	normally listen to the selected bundle only, so if the bundle is changing,
 	/*	they will not be listening to media selection changes yet.
 	/*/
-	_changeSelection: function (bundle, media) {
+	_changeSelection: function(bundle, media) {
 		if (bundle === void 0) bundle = null;
 		if (media === void 0) media = null;
-		
+
 		var lastBundle = bundles.selected;
-		var lastMedia = lastBundle? lastBundle.get("media").selected : null;
-		
+		var lastMedia = lastBundle ? lastBundle.get("media").selected : null;
+
 		console.log("Controller::_changeSelection bundle:[%s => %s] media:[%s => %s]",
-			(lastBundle? lastBundle.cid : lastBundle), (bundle? bundle.cid : bundle),
-			(lastMedia? lastMedia.cid : lastMedia), (media? media.cid : bundle)
+			(lastBundle ? lastBundle.cid : lastBundle), (bundle ? bundle.cid : bundle),
+			(lastMedia ? lastMedia.cid : lastMedia), (media ? media.cid : bundle)
 		);
-		
+
 		if (lastBundle === bundle && lastMedia === media) {
 			return;
 		}
-		
+
 		this.trigger("change:before", bundle, media);
-		
+
 		bundle && bundle.get("media").select(media);
 		bundles.select(bundle);
-		
+
 		this.trigger("change:after", bundle, media);
 	},
 });

@@ -1,7 +1,7 @@
 /**
-* @module app/model/BaseItem
-* @requires module:backbone
-*/
+ * @module app/model/BaseItem
+ * @requires module:backbone
+ */
 
 /** @type {module:backbone} */
 var Backbone = require("backbone");

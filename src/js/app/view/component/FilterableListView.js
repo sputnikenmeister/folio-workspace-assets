@@ -25,7 +25,7 @@ var diff = function(a1, a2) {
 	}, []);
 };
 
-var translateCssValue =  function(x, y) {
+var translateCssValue = function(x, y) {
 	return "translate3d(" + x + "px, " + y + "px ,0px)";
 };
 
@@ -37,14 +37,14 @@ var transformProp = prefixedProperty("transform");
 /* @type {module:app/view/component/SelectableCollectionView}
 /*/
 var FilterableListView = View.extend({
-	
+
 	/** @type {string} */
 	cidPrefix: "filterableList",
 	/** @override */
 	tagName: "ul",
 	/** @override */
 	className: "list selectable filterable",
-	
+
 	/** @override */
 	defaults: {
 		collapsed: true,
@@ -56,7 +56,7 @@ var FilterableListView = View.extend({
 			cidPrefix: "listItem",
 		}),
 	},
-	
+
 	/** @override */
 	properties: {
 		collapsed: {
@@ -68,40 +68,40 @@ var FilterableListView = View.extend({
 			}
 		}
 	},
-	
+
 	/** @override */
 	events: {
 		"transitionend .list-item": function(ev) {
-			if (this._collapsedTransitioning && ev.propertyName === "visibility" /*&& this.el.classList.contains("collapsed-changed")*/) {
+			if (this._collapsedTransitioning && ev.propertyName === "visibility" /*&& this.el.classList.contains("collapsed-changed")*/ ) {
 				this._collapsedTransitioning = false;
 				this.el.classList.remove("collapsed-changed");
 				// console.log("%s:::events[transitionend .list-item] collapsed-changed end", this.cid);
 			}
 		},
 	},
-	
+
 	/** @override */
-	initialize: function (options) {
+	initialize: function(options) {
 		this._metrics = {};
 		this._itemMetrics = [];
 		this.itemViews = new Container();
-		
+
 		_.defaults(options, this.defaults);
 		this.renderer = options.renderer;
 		this._filterFn = options.filterFn;
-		
+
 		this.collection.each(this.createItemView, this);
 		this.refresh();
 		this._setSelection(this.collection.selected);
 		this._setCollapsed(options.collapsed);
-		
+
 		// will trigger on return if this.el is already attached
 		// this.skipTransitions = true;
 		this.listenTo(this, "view:attached", function() {
 			this.skipTransitions = true;
-			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);//.renderNow();
+			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID); //.renderNow();
 		});
-		
+
 		this.listenTo(this.collection, "select:one select:none", this._setSelection);
 		this.listenTo(this.collection, "reset", function() {
 			this._allItems = null;
@@ -112,15 +112,15 @@ var FilterableListView = View.extend({
 	/* --------------------------- *
 	/* Render
 	/* --------------------------- */
-	
+
 	/** @override */
-	renderFrame: function (tstamp, flags) {
+	renderFrame: function(tstamp, flags) {
 		// collapsed transition flag
 		if (this._collapsedTransitioning)
 			console.warn("%s::renderFrame collapsed transition interrupted", this.cid);
-		
+
 		this._collapsedTransitioning = !this.skipTransitions && this._collapsedChanged;
-		
+
 		// this.el.classList.toggle("animate", !this.skipTransitions);
 		this.el.classList.toggle("collapsed-changed", this._collapsedTransitioning);
 		this.el.classList.toggle("skip-transitions", this.skipTransitions);
@@ -152,7 +152,7 @@ var FilterableListView = View.extend({
 		}
 		this._collapsedChanged = this._selectionChanged = this._filterChanged = false;
 	},
-	
+
 	measure: function() {
 		// var i, ii, el, els, m, mm;
 		// els = this.el.children;
@@ -161,9 +161,9 @@ var FilterableListView = View.extend({
 		// for (i = 0; i < ii; i++) {
 		// 	mm[i] = _.pick(els[i], "offsetTop", "offsetHeight");
 		// }
-		
+
 		this._metrics = getBoxEdgeStyles(this.el, this._metrics);
-		
+
 		// var itemEl, itemView, baseline = 0;
 		// if (itemEl = this.el.querySelector(".list-item:not(.excluded) .label")) {
 		// 	// itemView = this.itemViews.findByCid(itemEl.cid);
@@ -177,7 +177,7 @@ var FilterableListView = View.extend({
 		// 		yA, hA, yB, hB, baseline
 		// 	);
 		// }
-		
+
 		this.itemViews.forEach(function(view) {
 			if (!view._metrics) view._metrics = {};
 			// view._metrics.baseline = this._metrics.fontSize - baseline;
@@ -193,15 +193,15 @@ var FilterableListView = View.extend({
 				view._metrics.textWidth = view._metrics.offsetWidth;
 			}
 		}, this);
-		
+
 		// this._metrics.baseline = this._metrics.fontSize - baseline;
 	},
-	
+
 	renderLayout: function() {
 		var posX, posY;
 		posX = this._metrics.paddingLeft;
 		posY = this._metrics.paddingTop;
-		
+
 		for (var i = 0, ii = this.el.children.length; i < ii; i++) {
 			var view = this.itemViews.findByCid(this.el.children[i].cid);
 			if (((this.collection.selected && !view.model.selected) ||
@@ -217,17 +217,17 @@ var FilterableListView = View.extend({
 			}
 			view.el.style[transformProp] = translateCssValue(view.transform.tx, view.transform.ty);
 		}
-		
+
 		posY += this._metrics.paddingBottom;
-		this.el.style.height = (posY > 0)? posY + "px" : "";
+		this.el.style.height = (posY > 0) ? posY + "px" : "";
 	},
-	
+
 	/* --------------------------- *
 	/* Child views
 	/* --------------------------- */
-	 
+
 	/** @private */
-	createItemView: function (item, index) {
+	createItemView: function(item, index) {
 		var view = new this.renderer({
 			model: item,
 			el: this.el.querySelector(".list-item[data-id=\"" + item.id + "\"]")
@@ -236,50 +236,50 @@ var FilterableListView = View.extend({
 		this.listenTo(view, "renderer:click", this._onRendererClick);
 		return view;
 	},
-	
+
 	/** @private */
-	_onRendererClick: function (item) {
+	_onRendererClick: function(item) {
 		if (this.collection.selected !== item) {
 			this.trigger("view:select:one", item);
 		} else {
 			this.trigger("view:select:none");
 		}
 	},
-	
+
 	/* --------------------------- *
 	/* Collapsed
 	/* --------------------------- */
-	
+
 	/** @private */
 	_collapsed: undefined,
-	
+
 	/**
 	/* @param {Boolean}
 	/*/
-	_setCollapsed: function (collapsed) {
+	_setCollapsed: function(collapsed) {
 		if (collapsed !== this._collapsed) {
 			this._collapsed = collapsed;
 			this._collapsedChanged = true;
 			this.requestRender();
 		}
 	},
-	
+
 	/* --------------------------- *
 	/* Selection
 	/* --------------------------- */
-	
+
 	/** @private */
 	_selectedItem: undefined,
-	
+
 	/** @param {Backbone.Model|null} */
-	_setSelection: function (item) {
+	_setSelection: function(item) {
 		this._selectedItem = item;
 		this._selectionChanged = true;
 		this._requestRender();
 	},
-	
+
 	/** @private */
-	renderSelection: function (newItem, oldItem) {
+	renderSelection: function(newItem, oldItem) {
 		if (oldItem) {
 			this.itemViews.findByModel(oldItem).el.classList.remove("selected");
 		}
@@ -287,51 +287,51 @@ var FilterableListView = View.extend({
 			this.itemViews.findByModel(newItem).el.classList.add("selected");
 		}
 	},
-	
+
 	/* --------------------------- *
 	/* Filter
 	/* --------------------------- */
-	
+
 	refresh: function() {
 		if (this._filterFn) {
 			this._filterChanged = true;
 			this.requestRender();
 		}
 	},
-	
+
 	renderFilterFn: function() {
-		var items = this._filterFn? this.collection.filter(this._filterFn, this) : this._getAllItems();
+		var items = this._filterFn ? this.collection.filter(this._filterFn, this) : this._getAllItems();
 		this.renderFilters(items, this._filteredItems);
 		this._filteredItems = items;
 	},
-	
-	renderFilters: function (newItems, oldItems) {
+
+	renderFilters: function(newItems, oldItems) {
 		var hasNew = !!(newItems && newItems.length);
 		var hasOld = !!(oldItems && oldItems.length);
-		
+
 		console.log("%s::renderFilterFn", this.cid, newItems);
-		
+
 		if (hasNew) {
-			diff((hasOld? oldItems : this._getAllItems()), newItems).forEach(function(item) {
+			diff((hasOld ? oldItems : this._getAllItems()), newItems).forEach(function(item) {
 				this.itemViews.findByModel(item).el.classList.add("excluded");
 			}, this);
 		}
 		if (hasOld) {
-			diff((hasNew? newItems : this._getAllItems()), oldItems).forEach(function(item) {
+			diff((hasNew ? newItems : this._getAllItems()), oldItems).forEach(function(item) {
 				this.itemViews.findByModel(item).el.classList.remove("excluded");
 			}, this);
 		}
 		this.el.classList.toggle("has-excluded", hasNew);
 	},
-	
+
 	_getAllItems: function() {
 		return this._allItems || (this._allItems = this.collection.slice());
 	},
-	
+
 	/* --------------------------- *
 	/* Filter 2
 	/* --------------------------- */
-	
+
 	// computeFiltered: function() {
 	// 	this._filterResult = this.collection.map(this._filterFn, this);
 	// },
@@ -341,7 +341,7 @@ var FilterableListView = View.extend({
 	// 		this.itemViews.findByModel(item).el.classList.toggle("excluded", !this._filterResult[index]);
 	// 	}, this);
 	// },
-	
+
 });
 
 module.exports = FilterableListView;

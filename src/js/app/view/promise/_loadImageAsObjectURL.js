@@ -7,13 +7,13 @@ var classify = require("underscore.string/classify");
 // var errMsg = _.template("'<%= errName %>' ocurred during request <%= url %>");
 
 if (window.XMLHttpRequest && window.URL && window.Blob) {
-	module.exports = function (url, progressFn) {
+	module.exports = function(url, progressFn) {
 		return new Promise(function(resolve, reject) {
 			var request = new XMLHttpRequest();
 			request.open("GET", url, true);
 			// request.timeout = 10000; // in milliseconds
 			request.responseType = "blob";
-			
+
 			// if progressFn is supplied
 			// - - - - - - - - - - - - - - - - - -
 			if (progressFn) {
@@ -23,7 +23,7 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 			}
 			// resolved/success
 			// - - - - - - - - - - - - - - - - - -
-			request.onload = function (ev) {
+			request.onload = function(ev) {
 				// When the request loads, check whether it was successful
 				if (request.status == 200) {
 					// If successful, resolve the promise by passing back a reference url
@@ -39,7 +39,7 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 			};
 			// reject/failure
 			// - - - - - - - - - - - - - - - - - -
-			request.onerror = function (ev) {
+			request.onerror = function(ev) {
 				var err = new Error((ev.type + "_event").toUpperCase());
 				err.infoCode = -1;
 				err.infoSrc = url;
@@ -50,19 +50,19 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 			request.onabort = request.ontimeout = request.onerror;
 			// finally
 			// - - - - - - - - - - - - - - - - - -
-			request.onloadend = function () {
+			request.onloadend = function() {
 				request.onabort = request.ontimeout = request.onerror = void 0;
 				request.onload = request.onloadend = void 0;
 				if (progressFn) {
 					request.onprogress = void 0;
 				}
 			};
-			
+
 			request.send();
 		});
 	};
 } else {
-	module.exports = function (url) {
+	module.exports = function(url) {
 		return Promise.resolve(url);
 	};
 }

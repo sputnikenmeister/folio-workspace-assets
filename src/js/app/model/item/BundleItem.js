@@ -29,11 +29,14 @@ var stripTags = require("utils/strings/stripTags");
 
 // Globals.DEFAULT_COLORS["color"];
 // Globals.DEFAULT_COLORS["background-color"];
-var attrsDefault = _.defaults({ "has-colors": "defaults" }, Globals.DEFAULT_COLORS);
+var attrsDefault = _.defaults({
+	"has-colors": "defaults"
+}, Globals.DEFAULT_COLORS);
 
 /** @private */
 var MediaCollection = SelectableCollection.extend({
-	model: MediaItem, comparator: "o"
+	model: MediaItem,
+	comparator: "o"
 });
 
 /**
@@ -41,9 +44,9 @@ var MediaCollection = SelectableCollection.extend({
  * @type {module:app/model/item/BundleItem}
  */
 module.exports = BaseItem.extend({
-	
+
 	_domPrefix: "b",
-	
+
 	/** @type {Object|Function} */
 	// defaults: function() {
 	// 	return {
@@ -59,14 +62,16 @@ module.exports = BaseItem.extend({
 		handle: "",
 		desc: "",
 		completed: 0,
-		get kIds() { return []; },
+		get kIds() {
+			return [];
+		},
 		// get keywords() { return []; },
 	},
-	
+
 	getters: ["name", "media"],
-	
+
 	mutators: {
-		text: function () {
+		text: function() {
 			return stripTags(this.get("desc"));
 		},
 		// kIds: {
@@ -82,7 +87,7 @@ module.exports = BaseItem.extend({
 		// },
 		media: {
 			transient: true,
-			set: function (key, value, options, set) {
+			set: function(key, value, options, set) {
 				if (Array.isArray(value)) {
 					value.forEach(function(o) {
 						o.bundle = this;
@@ -94,14 +99,14 @@ module.exports = BaseItem.extend({
 		},
 	},
 
-	initialize: function (attrs, options) {
+	initialize: function(attrs, options) {
 		this.colors = {
 			fgColor: new Color(this.attr("color")),
 			bgColor: new Color(this.attr("background-color"))
 		};
 		this.colors.hasDarkBg = this.colors.fgColor.luminosity() > this.colors.bgColor.luminosity();
 	},
-	
+
 	attrs: function() {
 		return this._attrs || (this._attrs = _.defaults({}, this.get("attrs"), attrsDefault));
 	},

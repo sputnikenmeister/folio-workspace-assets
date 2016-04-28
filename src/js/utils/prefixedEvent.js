@@ -3,7 +3,7 @@ var lcPrefixes = [""].concat(require("./prefixes"));
 
 /** @type {Array} capitalized prefixes */
 var ucPrefixes = lcPrefixes.map(function(s) {
-	return (s === "")? s : s.charAt(0).toUpperCase() + s.substr(1);
+	return (s === "") ? s : s.charAt(0).toUpperCase() + s.substr(1);
 });
 
 /** @type {Object} specific event solvers */
@@ -13,13 +13,13 @@ var _solvers = {};
 var _cache = {};
 
 /**
-* @param {String} name Unprefixed event name
-* @param {?Object} obj Prefix test target
-* @param {?String} testProp Proxy property to test prefixes
-* @return {String|null}
-*/
+ * @param {String} name Unprefixed event name
+ * @param {?Object} obj Prefix test target
+ * @param {?String} testProp Proxy property to test prefixes
+ * @return {String|null}
+ */
 var _prefixedEvent = function(name, obj, testProp) {
-	var prefixes = /^[A-Z]/.test(name)? ucPrefixes : lcPrefixes;
+	var prefixes = /^[A-Z]/.test(name) ? ucPrefixes : lcPrefixes;
 	obj || (obj = document);
 	for (var i = 0; i < prefixes.length; i++) {
 		if (testProp) {
@@ -35,14 +35,15 @@ var _prefixedEvent = function(name, obj, testProp) {
 };
 
 // transitionend
-_solvers["transitionend"] = function () {
-	var prop, style = document.body.style, map = {
-		"transition" : "transitionend",
-		"WebkitTransition" : "webkitTransitionEnd",
-		"MozTransition" : "transitionend",
-		// "msTransition" : "MSTransitionEnd",
-		"OTransition" : "oTransitionEnd"
-	};
+_solvers["transitionend"] = function() {
+	var prop, style = document.body.style,
+		map = {
+			"transition": "transitionend",
+			"WebkitTransition": "webkitTransitionEnd",
+			"MozTransition": "transitionend",
+			// "msTransition" : "MSTransitionEnd",
+			"OTransition": "oTransitionEnd"
+		};
 	for (prop in map) {
 		if (prop in style) {
 			return map[prop];
@@ -57,9 +58,9 @@ _solvers["transitionend"] = function () {
  * @param {Object} look-up object
  * @returns {String|null} prefixed
  */
-module.exports = function (evName) {
+module.exports = function(evName) {
 	if (!_cache.hasOwnProperty(evName)) {
-		_cache[evName] = _solvers.hasOwnProperty(evName)? _solvers[evName]() : _prefixedEvent.apply(null, arguments);
+		_cache[evName] = _solvers.hasOwnProperty(evName) ? _solvers[evName]() : _prefixedEvent.apply(null, arguments);
 		if (_cache[evName] === null) {
 			console.warn("Event '%s' not found", evName);
 		} else {

@@ -10,16 +10,16 @@ var LabelRenderer = require("app/view/render/LabelRenderer");
  * @type {module:app/view/render/ClickableRenderer}
  */
 var ClickableRenderer = LabelRenderer.extend({
-	
+
 	/** @type {string} */
 	cidPrefix: "clickableRenderer",
-	
+
 	/** @override */
 	events: {
-		"click": function (ev) {
+		"click": function(ev) {
 			this.trigger("renderer:click", this.model);
 		},
-		"click a": function (ev) {
+		"click a": function(ev) {
 			ev.defaultPrevented || ev.preventDefault();
 		}
 	},

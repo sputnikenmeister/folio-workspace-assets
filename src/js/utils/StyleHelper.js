@@ -44,10 +44,10 @@ var refreshCSSRule = function(selector) {
 };
 
 /**
-* @param {String} [selector]
-* @return {CSSRule}
-*/
-var getCSSRule = function (selector) {
+ * @param {String} [selector]
+ * @return {CSSRule}
+ */
+var getCSSRule = function(selector) {
 	if (!_.isEmpty(selector)) {
 		_aliases[selector] !== void 0 && (selector = _aliases[selector]);
 		return _rules[selector] || (_rules[selector] = findCSSRule(selector));
@@ -58,27 +58,30 @@ var getCSSRule = function (selector) {
 };
 
 /**
-* @return {CSSRule}
-*/
-var findCSSRule = function (selector) {
-	var sheets = document.styleSheets, match = null;
+ * @return {CSSRule}
+ */
+var findCSSRule = function(selector) {
+	var sheets = document.styleSheets,
+		match = null;
 	for (var i = sheets.length; i > 0 && match === null; --i) {
-		match = _.findWhere(sheets[i].cssRules, {selectorText: selector});
+		match = _.findWhere(sheets[i].cssRules, {
+			selectorText: selector
+		});
 	}
 	return match;
 };
 
 /**
-* @return {CSSRule}
-*/
-var findCSSRule2 = function (selector) {
+ * @return {CSSRule}
+ */
+var findCSSRule2 = function(selector) {
 	return Array.prototype.slice.call(document.styleSheets).reduce(
-	// return Array.prototype.reduce.call(document.styleSheets,
-		function (prev, styleSheet) {
+		// return Array.prototype.reduce.call(document.styleSheets,
+		function(prev, styleSheet) {
 			if (styleSheet.cssRules) {
 				return prev + Array.prototype.slice.call(styleSheet.cssRules).reduce(
-				// return prev + Array.prototype.reduce.call(styleSheet.cssRules,
-					function (prev, cssRule) {
+					// return prev + Array.prototype.reduce.call(styleSheet.cssRules,
+					function(prev, cssRule) {
 						return prev + cssRule.cssText;
 					}
 				);
@@ -90,10 +93,10 @@ var findCSSRule2 = function (selector) {
 };
 
 /**
-* @param {String} [selector]
-* @param {String} [propName]
-*/
-var getCSSProperty = function (selector, propName) {
+ * @param {String} [selector]
+ * @param {String} [propName]
+ */
+var getCSSProperty = function(selector, propName) {
 	try {
 		return getCSSRule(selector).style[camelCase(propName)];
 	} catch (e) {
@@ -102,11 +105,11 @@ var getCSSProperty = function (selector, propName) {
 };
 
 /**
-* @param [selector]
-* @param [propName]
-* @param [value]
-*/
-var setCSSProperty = function (selector, propName, value) {
+ * @param [selector]
+ * @param [propName]
+ * @param [value]
+ */
+var setCSSProperty = function(selector, propName, value) {
 	var name = camelCase(propName),
 		key = selector + "$$" + propName,
 		rule = getCSSRule(selector);
@@ -115,15 +118,15 @@ var setCSSProperty = function (selector, propName, value) {
 };
 
 /**
-* @param [selector]
-* @param [style]
-*/
-var createCSSRule = function (selector, style) {
+ * @param [selector]
+ * @param [style]
+ */
+var createCSSRule = function(selector, style) {
 	var cssText = "";
 	for (var prop in style) {
 		cssText += prop + ":" + style[prop] + ";";
 	}
-	var sheet = getWorkSheet();//document.styleSheets[0];
+	var sheet = getWorkSheet(); //document.styleSheets[0];
 	sheet.insertRule(selector + "{" + cssText + "}", sheet.cssRules.length);
 };
 

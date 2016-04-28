@@ -1,7 +1,7 @@
 /**
-* @module app/model/BaseItem
-* @requires module:backbone
-*/
+ * @module app/model/BaseItem
+ * @requires module:backbone
+ */
 
 /** @type {module:backbone} */
 var Model = require("backbone").Model;
@@ -15,8 +15,8 @@ var stripTags = require("utils/strings/stripTags");
 // /** @type {module:app/model/parseSymAttrs} */
 //var parseSymAttrs = require("app/model/parseSymAttrs");
 
-var parseSymAttrs = function (s) {
-	return s.replace(/(\,|\;)/g, function (m) {
+var parseSymAttrs = function(s) {
+	return s.replace(/(\,|\;)/g, function(m) {
 		return (m == ",") ? ";" : ",";
 	});
 };
@@ -33,23 +33,25 @@ var toAttrsHash = function(obj, attr) {
 };
 
 var BaseItemProto = {
-	
+
 	_domPrefix: "_",
-	
+
 	/** @type {Object} */
 	defaults: {
 		// attrs: function() { return {}; },
-		get attrs() { return {}; },
+		get attrs() {
+			return {};
+		},
 	},
-	
+
 	getters: ["domid"],
-	
+
 	mutators: {
 		domid: function() {
 			return this._domId || (this._domId = this._domPrefix + this.id);
 		},
 		attrs: {
-			set: function (key, value, options, set) {
+			set: function(key, value, options, set) {
 				if (Array.isArray(value)) {
 					value = value.reduce(toAttrsHash, {});
 				}
@@ -61,15 +63,15 @@ var BaseItemProto = {
 			}
 		},
 	},
-	
+
 	attr: function(attr) {
 		return this.attrs()[attr];
 	},
-	
+
 	attrs: function() {
 		return this.get("attrs");
 	},
-	
+
 	toString: function() {
 		return this.get("domid");
 	}
@@ -79,7 +81,7 @@ var BaseItem = {
 	extend: function(proto, obj) {
 		var constr, propName, propDef;
 		for (propName in proto) {
-			if (proto.hasOwnProperty(propName) && _.isObject(proto[propName])) {//(Object.getPrototypeOf(proto[propName]) === Object.prototype)) {
+			if (proto.hasOwnProperty(propName) && _.isObject(proto[propName])) { //(Object.getPrototypeOf(proto[propName]) === Object.prototype)) {
 				_.defaults(proto[propName], BaseItemProto[propName]);
 				// console.log("BaseItem::extend '%s:%s' is Object\n%s", proto._domPrefix, p, JSON.stringify(proto[p]));
 			}
@@ -88,7 +90,7 @@ var BaseItem = {
 		// 	_.defaults(proto.properties, this.prototype.properties);
 		// }
 		constr = Model.extend.apply(this, arguments);
-		
+
 		if (Array.isArray(constr.prototype.getters)) {
 			constr.prototype.getters.forEach(function(getterName) {
 				Object.defineProperty(constr.prototype, getterName, {

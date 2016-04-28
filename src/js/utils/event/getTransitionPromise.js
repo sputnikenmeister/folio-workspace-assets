@@ -12,13 +12,14 @@ var Deferred = require("jquery").Deferred;
  * @param {Number} timeout
  */
 module.exports = function(target, prop, context, timeout) {
-	var deferred = new Deferred(), mixin = {};
+	var deferred = new Deferred(),
+		mixin = {};
 	var resolveArgs = [target];
 	var eventHandler, timeoutId;
-	
+
 	context || (context = window);
 	timeout || (timeout = 1000);
-	
+
 	// resolve on event
 	eventHandler = function(ev) {
 		if (ev.target === target && prop == ev.propertyName) {
@@ -27,7 +28,7 @@ module.exports = function(target, prop, context, timeout) {
 	};
 	target.addEventListener(transitionEnd, eventHandler, false);
 	// resolve on timeout
-	timeoutId = window.setTimeout(function () {
+	timeoutId = window.setTimeout(function() {
 		deferred.resolveWith(context, resolveArgs);
 	}, timeout);
 	// allow cancellation

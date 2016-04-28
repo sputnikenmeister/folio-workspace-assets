@@ -33,7 +33,7 @@ var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden"
 /** @type {HTMLCanvasElement} */
 var _sharedCanvas = null;
 /** @return {HTMLCanvasElement} */
-var getSharedCanvas =  function() {
+var getSharedCanvas = function() {
 	if (_sharedCanvas === null) {
 		_sharedCanvas = document.createElement("canvas");
 	}
@@ -44,8 +44,8 @@ function logAttachInfo(view, name, level) {
 	if (["log", "info", "warn", "error"].indexOf(level) != -1) {
 		level = "log";
 	}
-	console[level].call(console, "%s::%s [parent:%s %s %s depth:%s]", view.cid, name, view.parentView && view.parentView.cid, view.attached? "attached" : "detached", view._viewPhase, view.viewDepth);
-	
+	console[level].call(console, "%s::%s [parent:%s %s %s depth:%s]", view.cid, name, view.parentView && view.parentView.cid, view.attached ? "attached" : "detached", view._viewPhase, view.viewDepth);
+
 }
 
 /**
@@ -53,13 +53,13 @@ function logAttachInfo(view, name, level) {
  * @type {module:app/view/render/PlayableRenderer}
  */
 var PlayableRenderer = MediaRenderer.extend({
-	
+
 	/** @type {string} */
 	cidPrefix: "playableRenderer",
-	
+
 	/** @type {string|Function} */
 	className: MediaRenderer.prototype.className + " playable-renderer",
-	
+
 	properties: {
 		paused: {
 			/** @return {Boolean} */
@@ -89,11 +89,11 @@ var PlayableRenderer = MediaRenderer.extend({
 			}
 		}
 	},
-	
+
 	/** @override */
-	initialize: function (opts) {
+	initialize: function(opts) {
 		MediaRenderer.prototype.initialize.apply(this, arguments);
-		_.bindAll(this, 
+		_.bindAll(this,
 			"_onPlaybackToggle",
 			"_onVisibilityChange"
 		);
@@ -103,54 +103,54 @@ var PlayableRenderer = MediaRenderer.extend({
 		// 	console.info("%s::[view:parentChange] '%s' to '%s'", this.cid, oldParent && oldParent.cid, newParent && newParent.cid);
 		// });
 	},
-	
+
 	// /** @override */
 	// initializeAsync: function() {
 	// 	return MediaRenderer.prototype.initialize.initializeAsync.apply(this, arguments);
 	// },
-	
+
 	// /** @override */
 	// remove: function() {
 	// 	MediaRenderer.prototype.remove.apply(this, arguments);
 	// 	return this;
 	// },
-	
+
 	/* --------------------------- *
 	/* children/layout
 	/* --------------------------- */
-	
+
 	// createChildren: function() {
 	// 	this.el.innerHTML = this.template(this.model.toJSON());
 	// 	this.placeholder = this.el.querySelector(".placeholder");
 	// 	this.content = this.el.querySelector(".content");
 	// 	this.image = this.content.querySelector("img.current");
 	// },
-	
+
 	/* --------------------------- *
 	/* setEnabled
 	/* --------------------------- */
-	
+
 	/** @override */
 	setEnabled: function(enabled) {
 		MediaRenderer.prototype.setEnabled.apply(this, arguments);
 		// this._validatePlayback(enabled);
 		// if (enabled) {
-			this._validatePlayback();
+		this._validatePlayback();
 		// } else {
 		// 	// if selected, pause media
 		// 	this.model.selected && this.togglePlayback(false);
 		// 	// this.togglePlayback(false);
 		// }
 	},
-	
+
 	/* ---------------------------
 	/* selection handlers
 	/* --------------------------- */
-	
+
 	addSelectionListeners: function() {
 		if (this._viewPhase != "initialized")
 			throw new Error(this.cid + "::addSelectionListeners called while " + this._viewPhase);
-		
+
 		// logAttachInfo(this, "addSelectionListeners", "log");
 		// this.listenTo(this, "view:removed", this.removeSelectionListeners);
 		this.listenTo(this.model, "selected", this._onModelSelected);
@@ -159,7 +159,7 @@ var PlayableRenderer = MediaRenderer.extend({
 			this._onModelSelected();
 		}
 	},
-	
+
 	// removeSelectionListeners: function() {
 	// 	// logAttachInfo(this, "removeSelectionListeners", "log");
 	// 	this.stopListening(this, "view:removed", this.removeSelectionListeners);
@@ -169,60 +169,60 @@ var PlayableRenderer = MediaRenderer.extend({
 	// 		this._onModelDeselected();
 	// 	}
 	// },
-	
+
 	/* model selected handlers:
 	/* model selection toggles playback
 	/* --------------------------- */
-	
+
 	_onModelSelected: function() {
 		// logAttachInfo(this, "_onModelSelected", "log");
 		// this._addParentListeners();
 		this.listenTo(this, "view:parentChange", this._onParentChange);
 		if (this.parentView) this._onParentChange(this, this.parentView, null);
-		
+
 		this._addDOMListeners();
 		this._validatePlayback();
 	},
-	
+
 	_onModelDeselected: function() {
 		// logAttachInfo(this, "_onModelDeselected", "log");
 		// this._removeParentListeners();
 		this.stopListening(this, "view:parentChange", this._onParentChange);
 		if (this.parentView) this._onParentChange(this, null, this.parentView);
-		
+
 		this._removeDOMListeners();
 		this.togglePlayback(false);
 		// this._validatePlayback(this.model.selected);
 		// this._validatePlayback();
 	},
-	
+
 	/* view:parentChange handlers 3
 	/* --------------------------- */
-	
+
 	_onParentChange: function(childView, newParent, oldParent) {
 		// console.log("[scroll] %s::_onParentChange '%s' to '%s'", this.cid, oldParent && oldParent.cid, newParent && newParent.cid);
 		if (oldParent) this.stopListening(oldParent, "view:scrollstart view:scrollend", this._onScrollChange);
 		if (newParent) this.listenTo(newParent, "view:scrollstart view:scrollend", this._onScrollChange);
 	},
-	
+
 	_onScrollChange: function() {
 		if (this.parentView === null) {
 			this.togglePlayback(false);
 			throw new Error(this.cid + "::_onScrollChange parentView is null");
 		}
 		// console.log("[scroll] %s::_onScrollChange %s.scrolling: %s", this.cid, this.parentView.cid, this.parentView.scrolling);
-		
+
 		// this._validatePlayback(!this.parentView.scrolling);
 		// if (!this.parentView.scrolling) {
-			this._validatePlayback();
+		this._validatePlayback();
 		// } else {
 		// 	this.togglePlayback(false);
 		// }
 	},
-	
+
 	/* view:parentChange handlers
 	/* --------------------------- */
-	
+
 	// _addParentListeners:function() {
 	// 	if (!this.parentView) {
 	// 		logAttachInfo(this, "_addParentListeners", "error");
@@ -249,7 +249,7 @@ var PlayableRenderer = MediaRenderer.extend({
 	// 	this.stopListening(this.parentView, "view:scrollstart", this._onScrollStart);
 	// 	this.stopListening(this.parentView, "view:scrollend", this._onScrollEnd);
 	// },
-	
+
 	// /* view:scrollstart view:scrollend
 	// /* --------------------------- */
 	// _onScrollStart: function() {
@@ -259,41 +259,41 @@ var PlayableRenderer = MediaRenderer.extend({
 	// _onScrollEnd: function() {
 	// 	this._validatePlayback();
 	// },
-	
+
 	/* listen to DOM events
 	/* --------------------------- */
-	
+
 	_addDOMListeners: function() {
 		this.listenTo(this, "view:removed", this._removeDOMListeners);
 		document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
 		this.playToggle.addEventListener(this._toggleEvent, this._onPlaybackToggle, false);
 	},
-	
+
 	_removeDOMListeners: function() {
 		this.stopListening(this, "view:removed", this._removeDOMListeners);
 		document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
 		this.playToggle.removeEventListener(this._toggleEvent, this._onPlaybackToggle, false);
 	},
-	
+
 	/* visibility dom event
 	/* --------------------------- */
 	_onVisibilityChange: function(ev) {
 		// this._validatePlayback(!document[visibilityHiddenProp]);
 		// this._validatePlayback(document[visibilityStateProp] != "hidden");
 		// if (document[visibilityStateProp] != "hidden") {
-			this._validatePlayback();
+		this._validatePlayback();
 		// } else {
 		// 	this.togglePlayback(false);
 		// }
 	},
-	
+
 	/* --------------------------- *
 	/* play-toggle
 	/* --------------------------- */
-	
+
 	/** @type {String} */
 	_toggleEvent: "mouseup",
-	
+
 	_onPlaybackToggle: function(ev) {
 		// console.log("%s::_onPlaybackToggle[%s] defaultPrevented: %s", this.cid, ev.type, ev.defaultPrevented);
 		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
@@ -302,34 +302,34 @@ var PlayableRenderer = MediaRenderer.extend({
 			this.playbackRequested = !this.playbackRequested;
 		}
 	},
-	
+
 	/* --------------------------- *
 	/* playbackRequested
 	/* --------------------------- */
-	
+
 	/** @type {Boolean?} */
 	_playbackRequested: null,
-	
+
 	_setPlaybackRequested: function(value) {
 		this._playbackRequested = value;
-		
+
 		var classList = this.content.classList;
 		classList.toggle("playing", value === true);
 		classList.toggle("paused", value === false);
 		classList.toggle("requested", value === true || value === false);
-		
+
 		// this._validatePlayback(this.playbackRequested);
 		// if (this.playbackRequested) {
-			this._validatePlayback();
+		this._validatePlayback();
 		// } else {
 		// 	this.togglePlayback(false);
 		// }
 	},
-	
+
 	/* --------------------------- *
 	/* togglePlayback
 	/* --------------------------- */
-	
+
 	/** @override */
 	togglePlayback: function(newPlayState) {
 		// console.log("[scroll] %s::togglePlayback [%s -> %s] (requested: %s)", this.cid, 
@@ -348,7 +348,7 @@ var PlayableRenderer = MediaRenderer.extend({
 			this._pauseMedia();
 		}
 	},
-	
+
 	_canResumePlayback: function() {
 		return !!(
 			this.enabled &&
@@ -356,12 +356,12 @@ var PlayableRenderer = MediaRenderer.extend({
 			this.playbackRequested &&
 			(this.mediaState === "ready") &&
 			this.attached &&
-			(this.parentView !== null) && 
+			(this.parentView !== null) &&
 			(!this.parentView.scrolling) &&
 			(document[visibilityStateProp] != "hidden")
 		);
 	},
-	
+
 	_validatePlayback: function(shortcircuit) {
 		// a 'shortcircuit' boolean argument can be passed, and if false, 
 		// skip _canResumePlayback and pause playback right away
@@ -371,28 +371,28 @@ var PlayableRenderer = MediaRenderer.extend({
 			this.togglePlayback(this._canResumePlayback());
 		}
 	},
-	
+
 	/* --------------------------- *
 	/* abstract
 	/* --------------------------- */
-	
+
 	_isMediaPaused: function() {
 		console.warn("%s::_isMediaPaused Not implemented", this.cid);
 		return true;
 	},
-	
+
 	_playMedia: function() {
 		console.warn("%s::_playMedia Not implemented", this.cid);
 	},
-	
+
 	_pauseMedia: function() {
 		console.warn("%s::_pauseMedia Not implemented", this.cid);
 	},
-	
+
 	/* --------------------------- *
 	/* util
 	/* --------------------------- */
-	
+
 	updateOverlay: function(mediaEl, targetEl, rectEl) {
 		// // this method is not critical, just catch and log all errors
 		// try {
@@ -401,23 +401,24 @@ var PlayableRenderer = MediaRenderer.extend({
 		// 	console.error("%s::updateOverlay", this.cid, err);
 		// }
 	},
-	
+
 	_drawMediaElement: function(context, mediaEl, dest) {
 		// destination rect
 		// NOTE: mediaEl is expected to have the same dimensions in this.metrics.media 
 		mediaEl || (mediaEl = this.defaultImage);
 		dest || (dest = {
-			x: 0, y: 0,
+			x: 0,
+			y: 0,
 			width: this.metrics.media.width,
 			height: this.metrics.media.height
 		});
-			
+
 		// native/display scale
 		var sW = this.model.get("source").get("w"),
 			sH = this.model.get("source").get("h"),
-			rsX = sW/this.metrics.media.width,
-			rsY = sH/this.metrics.media.height;
-		
+			rsX = sW / this.metrics.media.width,
+			rsY = sH / this.metrics.media.height;
+
 		// dest, scaled to native
 		var src = {
 			x: Math.max(0, dest.x * rsX),
@@ -425,7 +426,7 @@ var PlayableRenderer = MediaRenderer.extend({
 			width: Math.min(sW, dest.width * rsX),
 			height: Math.min(sH, dest.height * rsY)
 		};
-		
+
 		// resize canvas
 		// var canvas = context.canvas;
 		// if (canvas.width !== dest.width || canvas.height !== dest.height) {
@@ -434,17 +435,17 @@ var PlayableRenderer = MediaRenderer.extend({
 		// }
 		context.canvas.width = dest.width;
 		context.canvas.height = dest.height;
-		
+
 		// copy image to canvas
 		context.clearRect(0, 0, dest.width, dest.height);
-		context.drawImage(mediaEl, 
+		context.drawImage(mediaEl,
 			src.x, src.y, src.width, src.height,
 			0, 0, dest.width, dest.height // destination rect
 		);
-		
+
 		return context;
 	},
-	
+
 	/*
 	_updateOverlay: function(mediaEl, targetEl, rectEl) {
 		// src/dest rects

@@ -10,36 +10,36 @@ var Deferred = require("jquery").Deferred;
  * @param
  * @return
  */
-module.exports = function (url, image, context) {
+module.exports = function(url, image, context) {
 	// @see https://github.com/mdn/promises-test/blob/gh-pages/index.html
 	var timeoutId, cleanup, mixin;
 	var deferred = new Deferred();
-	
+
 	var request = new XMLHttpRequest();
 	request.open("GET", url, true);
 	request.responseType = "blob";
 	context = context || image || request;
 	mixin = deferred;
-	
+
 	mixin.isXhr = true;
 	mixin.image = image;
 	mixin.source = request;
 	mixin.promise = _.wrap(mixin.promise, function(fn) {
-		timeoutId = window.setTimeout(function () {
+		timeoutId = window.setTimeout(function() {
 			timeoutId = null;
 			request.send.call(request);
 		}, 1);
 		return fn();
 	});
-	mixin.cancel = function () {
+	mixin.cancel = function() {
 		timeoutId && window.clearTimeout(timeoutId);
 		(0 < request.readyState < 4) && request.abort();
 		cleanup();
 	};
-	
+
 	// resolved/success
 	// - - - - - - - - - - - - - - - - - -
-	request.onload = function (ev) {
+	request.onload = function(ev) {
 		mixin.lastEvent = ev;
 		// When the request loads, check whether it was successful
 		if (request.status == 200) {
@@ -62,34 +62,34 @@ module.exports = function (url, image, context) {
 	};
 	// reject/failure
 	// - - - - - - - - - - - - - - - - - -
-	request.ontimeout = request.onerror = function (ev) {
+	request.ontimeout = request.onerror = function(ev) {
 		mixin.lastEvent = ev;
 		// Also deal with the case when the entire request fails to begin with
 		// This is probably a network error, so reject the promise with an appropriate message
 		deferred.rejectWith(context, [Error("There was a network error.")]);
 	};
 	//request.onabort = request.onerror;
-	request.onabort = function (ev) {
+	request.onabort = function(ev) {
 		mixin.lastEvent = ev;
 		console.warn("XHR Abort: " + url);
 		deferred.rejectWith(context, [Error("The request was aborted.")]);
 	};
-	
+
 	// notify/progress
 	// - - - - - - - - - - - - - - - - - -
-	request.onloadstart = function (ev) {
+	request.onloadstart = function(ev) {
 		mixin.lastEvent = ev;
 		deferred.notifyWith(context, ["loadstart"]);
 	};
-	request.onprogress = function (ev) {
+	request.onprogress = function(ev) {
 		if (request.readyState == 4) return;
 		mixin.lastEvent = ev;
 		deferred.notifyWith(context, [ev.loaded / ev.total]);
 	};
-	
+
 	// finally
 	// - - - - - - - - - - - - - - - - - -
-	cleanup = function () {
+	cleanup = function() {
 		console.log("XHR loadend: " + url);
 		request.onabort = request.ontimeout = request.onerror = void 0;
 		request.onloadstart = request.onprogress = void 0;
@@ -97,7 +97,7 @@ module.exports = function (url, image, context) {
 	};
 	request.onloadend = cleanup;
 	// deferred.always(cleanup);
-	
-	
+
+
 	return mixin;
 };
