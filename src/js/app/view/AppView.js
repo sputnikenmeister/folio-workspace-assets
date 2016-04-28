@@ -34,10 +34,6 @@ var NavigationView = require("app/view/NavigationView");
 /** @type {module:app/view/ContentView} */
 var ContentView = require("app/view/ContentView");
 
-// var visibilityHiddenProp = prefixedProperty("hidden", document);
-// var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden");
-// var visibilityStateProp = prefixedProperty("visibilityState", document);
-
 var AppView = {
 	getInstance: function() {
 		if (!(window.app instanceof this)) {
@@ -70,8 +66,10 @@ var AppViewProto = {
 	initialize: function (options) {
 		// document.documentElement.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
 		
+		/* prevent touch overscroll on iOS */
+		document.addEventListener("touchmove", function(ev) { ev.preventDefault(); }, false);
 		/* create single hammerjs manager */
-		this.touch = TouchManager.init(document.querySelector("#container"));
+		this.touch = TouchManager.init(this.el);//document.body);//document.querySelector("#container")
 		
 		/* render on resize, onorientationchange, visibilitychange */
 		this._onResize = this._onResize.bind(this);// _.bindAll(this, "_onResize");

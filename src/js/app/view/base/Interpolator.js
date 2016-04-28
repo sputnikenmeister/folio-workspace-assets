@@ -104,11 +104,12 @@ Interpolator.prototype = Object.create({
 		o._value = value;
 		o._startValue = value;
 		o._valueDelta = 0;
-		o._renderedValue = null;
 		
 		o._duration = duration || 0;
 		o._startTime = -1;
 		o._elapsedTime = 0;
+		
+		o._lastRenderedValue = o._renderedValue = null;
 		
 		o._maxVal = maxVal;
 		// if (maxVal !== void 0) o._maxVal = maxVal;
@@ -126,6 +127,9 @@ Interpolator.prototype = Object.create({
 			o._duration = duration || 0;
 			o._startTime = -1;
 			o._elapsedTime = 0;
+			
+			o._lastRenderedValue = o._renderedValue;
+			
 			return true;
 		}
 		return false;

@@ -127,11 +127,12 @@ var CanvasProgressMeter = CanvasView.extend({
 	/* --------------------------- */
 	
 	/** @override */
-	redraw: function(context, changed) {
+	redraw: function(context, interpolator) {
 		this._clearCanvas(-this._canvasWidth/2, -this._canvasHeigth/2, this._canvasWidth, this._canvasHeigth);
 		
-		var amountData = this._interpolator._valueData["amount"];
-		var availableData = this._interpolator._valueData["available"];
+		var loopValue = interpolator._valueData["_loop"]._renderedValue || 0;
+		var amountData = interpolator._valueData["amount"];
+		var availableData = interpolator._valueData["available"];
 		
 		var amountStyle = this._valueStyles["amount"];
 		var availableStyle = this._valueStyles["available"];
@@ -145,13 +146,19 @@ var CanvasProgressMeter = CanvasView.extend({
 		
 		// loop rotation
 		// --------------------------------
-		// trigger loop
-		if (changed && (changed.indexOf("amount") !== -1) && (amountData._lastRenderedValue > amountData._renderedValue)) {
-			this._interpolator.valueTo(1, 0, "_loop");
-			this._interpolator.valueTo(0, 750, "_loop");
-			this._interpolator.updateValue("_loop");
+		// if (interpolator.renderedKeys && (interpolator.renderedKeys.indexOf("amount") !== -1)) {
+		// 	console.log("%s::redraw (_loop) max: %s last: %s curr: %s", this.cid,
+		// 		amountData._maxVal,
+		// 		amountData._lastRenderedValue,
+		// 		amountData._renderedValue
+		// 	);
+		// }
+		if (interpolator.renderedKeys && (interpolator.renderedKeys.indexOf("amount") !== -1) && (amountData._lastRenderedValue > amountData._renderedValue)) {
+			// trigger loop
+			interpolator.valueTo(1, 0, "_loop");
+			interpolator.valueTo(0, 750, "_loop");
+			interpolator.updateValue("_loop");
 		}
-		var loopValue = this._interpolator._valueData["_loop"]._renderedValue || 0;
 		this._ctx.rotate(PI2 * ((1-loopValue) - 0.25));
 		
 		// amount arc
