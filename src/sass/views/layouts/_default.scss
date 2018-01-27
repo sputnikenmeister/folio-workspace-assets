@@ -99,6 +99,9 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 		// transform: move(-$list-group-width, 0);
 		width: 100%;
 		transform: move(-100%, 0);
+		box-sizing: border-box;
+		padding: 0 0.5em;
+		margin: 0 -0.5em;
 	}
 }
 
@@ -168,6 +171,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 	transform: move(0,0);
 	@at-root .container-expanded & {
 		transform: move(0, $nHeightCollapsed);
+		transform: move(0, calc(#{$nHeightCollapsed} + 3rem));
 	}
 }
 .media-carousel {
@@ -175,17 +179,17 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 	width: 100%;
 	min-width: $page_width;
 	bottom: 0;
-	
+
 	top: $nTopPort + $nHeightPort;
 	padding-top: 4.5rem;
 	padding-bottom: 4.5rem;
 	$carousel-item-height: calc(100% - 9rem);
-	
+
 	// top: 0;//$nTopPort;
 	// padding-top: $nTopPort + $nHeightPort;
 	// padding-bottom: 4.5rem;
 	// $carousel-item-height: calc(100% - #{$nHeightPort + 4.5rem});
-	
+
 	.carousel-item {
 		// padding-top: 1.5rem;
 		// padding-bottom: 1.5rem;

@@ -292,7 +292,7 @@ var NavigationView = View.extend({
 				}
 				// continue
 			case "right-layout":
-				// if (collapsedChanged) { 
+				// if (collapsedChanged) {
 				// if (withBundleChanged) { /* this.sitename.el */
 				// 	this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.sitename.el);
 				// } else if (collapsedChanged) {
@@ -434,10 +434,10 @@ var NavigationView = View.extend({
 		this.touch.on("vpanmove", this._onVPanMove);
 		this.touch.on("vpanend vpancancel", this._onVPanFinal);
 
-		this.transforms.stopTransition(this.bundleList.el, this.keywordList.el);
+		this.transforms.stopTransition(this.bundleList.el, this.keywordList.el); //, this.graph.el);
 		// this.transforms.clearOffset(this.bundleList.el, this.keywordList.el);
 		// this.transforms.validate();
-		this.transforms.clearCapture(this.bundleList.el, this.keywordList.el);
+		this.transforms.clearCapture(this.bundleList.el, this.keywordList.el); //, this.graph.el);
 
 		// this.el.classList.add("container-changing");
 		this._onVPanMove(ev);
@@ -466,7 +466,7 @@ var NavigationView = View.extend({
 		}
 		delta *= collapsed ? 0.5 : -1; // reapply sign
 
-		this.transforms.offset(0, delta, this.bundleList.el, this.keywordList.el);
+		this.transforms.offset(0, delta, this.bundleList.el, this.keywordList.el); //, this.graph.el);
 		this.transforms.validate();
 	},
 
@@ -557,7 +557,8 @@ var NavigationView = View.extend({
 			id: "nav-graph",
 			listA: listA,
 			listB: listB,
-			model: this.model
+			model: this.model,
+			useOpaque: true
 		});
 		// view.styleData = {};
 		this.el.appendChild(view.el);
@@ -588,7 +589,7 @@ var NavigationView = View.extend({
 			.clearCapture()
 			.validate();
 	},
-		
+
 	_endTransformObserve: function() {
 		this._transformObserver.disconnect();
 		this.touch.off("panend pancancel", this._endTransformObserve);
@@ -597,13 +598,13 @@ var NavigationView = View.extend({
 			.runTransition(tx.NOW)
 			.validate();
 	},
-	
+
 	_onTransformMutation: function(mutations) {
 		var tView, tMetrics, tCss, dTxObj, pos;
-		
+
 		// this.keywordList.wrapper.style[prefixedProperty("transform")];
 		// transform = mutations[0].target.style.getPropertyValue(prefixedProperty("transform"));
-		
+
 		tView = View.findByElement(mutations[0].target);
 		if (tView) {
 			tMetrics = tView.metrics;
@@ -614,7 +615,7 @@ var NavigationView = View.extend({
 				dTxObj.capturedX, tMetrics.translateX - dTxObj.capturedX,
 				tMetrics
 			);
-			
+
 			this.transforms.offset(tMetrics.translateX - dTxObj.capturedX, void 0, this.keywordList.wrapper);
 			this.transforms.validate();
 		}

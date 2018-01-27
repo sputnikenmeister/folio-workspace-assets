@@ -15,6 +15,8 @@ var arcData = require("utils/svg/arcData");
 /** @type {module:utils/ease/linear} */
 var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
+/** @type {module:app/view/base/View} */
+var View = require("app/view/base/View");
 /** @type {module:app/view/component/progress/ModelProgressMeter} */
 var ModelProgressMeter = require("app/view/component/progress/ModelProgressMeter");
 
