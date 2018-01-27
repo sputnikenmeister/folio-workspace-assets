@@ -5,8 +5,8 @@
 // layout variables
 // - - - - - - - - - - - - - - - - - -
 $nTopPort: 2.25rem;
-$nHeightPort: 12rem;//13.5rem;//14.25rem;
-$nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
+$nHeightPort: 12rem; //13.5rem;//14.25rem;
+$nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 
 #container {
 	min-width: $page_width;
@@ -130,7 +130,6 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 // 	transform: move(-100%, 0);
 // }
 
-
 // nav-graph
 // - - - - - - - - - - - - - - - - - -
 #nav-graph {
@@ -142,7 +141,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 	// right: 0;
 	width: $page_width;
 	// height: 12rem;
-	
+
 	transition: tx(opacity, 1, 0);
 	opacity: 0;
 	@at-root .container-expanded:not(.container-changing) & {
@@ -160,8 +159,10 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 #content {
 	overflow: hidden;
 	position: absolute;
-	top: 0; bottom: 0;//height: 100%;
-	left: 0; right: 0;//width: 100%;
+	top: 0;
+	bottom: 0; //height: 100%;
+	left: 0;
+	right: 0; //width: 100%;
 }
 
 // image-carousel
@@ -207,7 +208,8 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 		width: $page_width;
 	}
 	.playable-renderer .progress-meter {
-		top: -3.5rem; right: 0;
+		top: -3.5rem;
+		right: 0;
 	}
 	.empty-item p {
 		// height: 100%;
@@ -217,7 +219,9 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 		margin-top: 0;
 		margin-bottom: 9px;
 		@include heading_font($weight: 300, $size: 22px, $lead: 24px);
-		&:first-child { margin-top: 0; }
+		&:first-child {
+			margin-top: 0;
+		}
 	}
 }
 
@@ -238,7 +242,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 	width: $page_width;
 	margin: -0.75rem auto 0;
 	top: $nTopPort + $nHeightPort;
-	
+
 	transform: move(0, 0);
 	@at-root .container-expanded & {
 		transform: move(0, $nHeightCollapsed);
@@ -248,8 +252,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 	}
 	.content p {
 		margin-left: -1px;
-		@include heading_font($size: 20px,
-			$weight: 300, $lead: 26px);
+		@include heading_font($size: 20px, $weight: 300, $lead: 26px);
 		//@include heading_font($size: 1.666rem,
 		//	$weight: 300, $lead: 2rem);
 	}
@@ -263,24 +266,21 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 .media-dotnav {
 	font-size: 1.15rem;
 	text-align: center;
-	
+
 	margin: 0 auto;
 	padding: 0 $hu;
 	width: $page_width;
 	height: 1.5rem;
-	
+
 	position: absolute;
 	transform: move(0,0);
 	bottom: 0.75em;
 	left: 0;
 	right: 0;
-	
+
 	transition: tx(opacity, 1, 0);
 	opacity: 1;
-	@at-root .without-media &,
-		.container-expanded &,
-		.container-changing &,
-		.container-changed & {
+	@at-root .without-media &, .container-expanded &, .container-changing &, .container-changed & {
 		opacity: 0;
 	}
 }
@@ -310,7 +310,6 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px;//28rem;
 // 		opacity: 0;
 // 	}
 // }
-
 
 // #content:after {
 // 	position: absolute;

@@ -27,7 +27,7 @@
 			content: attr(data-logtype);
 		}
 		&[data-logrepeat]::before {
-			content: "[" attr(data-logrepeat) "]" attr(data-logtype);
+			content: '[' attr(data-logrepeat) ']' attr(data-logtype);
 		}
 	}
 }

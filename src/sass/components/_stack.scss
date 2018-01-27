@@ -6,8 +6,9 @@
 	& > .stack-item {
 		display: block;
 		position: absolute;
-		top: 0; left: 0;
-		
+		top: 0;
+		left: 0;
+
 		transition: tx(opacity, 1, 0);
 		opacity: 0;
 		&.current {
@@ -15,7 +16,8 @@
 		}
 	}
 	&.skip-transitions > .stack-item {
-		&, &.current {
+		&,
+		&.current {
 			@include skip_transitions;
 			// transition: none 0s ease 0s;
 		}

@@ -3,13 +3,16 @@
 // -----------------------------------
 
 .playable-renderer {
-	.media-size,
-	.content-size {
+	.content-size,
+	.media-size {
 		position: absolute;
 		display: inline-block;
 	}
 	.content > .content-size {
-		width: 100%; height: 100%; top: 0; left: 0;
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
 	}
 }
 
@@ -48,12 +51,20 @@
 }
 
 @keyframes flashEven {
-	from  { opacity: 1.00; }
-	50%  { opacity: 1.00; }
+	from {
+		opacity: 1.00;
+	}
+	50% {
+		opacity: 1.00;
+	}
 }
 @keyframes flashOdd {
-	from  { opacity: 1.00; }
-	50%  { opacity: 1.00; }
+	from {
+		opacity: 1.00;
+	}
+	50% {
+		opacity: 1.00;
+	}
 }
 // from { opacity: 0.00; }
 // 10%  { opacity: 1.00; }
@@ -67,12 +78,16 @@
 	// box/background position
 	// - - - - - - - - - - - - - - - - -
 	.play-toggle {
-		width: auto; height: auto;
-		top: 1em; bottom: 1em; left: 1em; right: 1em;
+		width: auto;
+		height: auto;
+		top: 1em;
+		bottom: 1em;
+		left: 1em;
+		right: 1em;
 		cursor: pointer;
 		display: block;
 		position: absolute;
-		
+
 		// background-size: 3.3rem 3.3rem;
 		background-size: 49px 49px;
 		// background-size: 111px 111px;
@@ -90,30 +105,50 @@
 	// 	// margin-left: $size/2; margin-top: $size/2;
 	// }
 	// .play-toggle-hitarea {} // hit-area
-	
+
 	// - - - - - - - - - - - - - - - - -
 	// symbols
 	// - - - - - - - - - - - - - - - - -
 	.paused:not(.started) .play-toggle,
-	.playing .play-toggle,
-	.play-toggle 					{ background-image: symbol-url("symbols/playback-play.svg"); }
-	.paused .play-toggle 			{ background-image: symbol-url("symbols/playback-pause.svg"); }
-	.playing.waiting .play-toggle 	{ background-image: symbol-url("symbols/playback-wait.svg"); }
-	.paused.ended .play-toggle 		{ background-image: symbol-url("symbols/playback-replay.svg"); }
-	
+	.play-toggle,
+	.playing .play-toggle {
+		background-image: symbol-url("symbols/playback-play.svg");
+	}
+	.paused .play-toggle {
+		background-image: symbol-url("symbols/playback-pause.svg");
+	}
+	.playing.waiting .play-toggle {
+		background-image: symbol-url("symbols/playback-wait.svg");
+	}
+	.paused.ended .play-toggle {
+		background-image: symbol-url("symbols/playback-replay.svg");
+	}
+
 	// - - - - - - - - - - - - - - - - -
 	// opacity animation
 	// - - - - - - - - - - - - - - - - -
 	// .play-toggle { opacity: 0; };
 	// :not(.started) .play-toggle { opacity: 1; }
-	.play-toggle { opacity: 1; };
+	.play-toggle {
+		opacity: 1;
+	};
 	.started {
-		.play-toggle { opacity: 0; };
-		&.playing.waiting .play-toggle { opacity: 1; }
-		&.paused.ended .play-toggle { opacity: 1; }
+		.play-toggle {
+			opacity: 0;
+		};
+		&.playing.waiting .play-toggle {
+			opacity: 1;
+		}
+		&.paused.ended .play-toggle {
+			opacity: 1;
+		}
 		@at-root :not(.scrolling) & {
-			&.playing .play-toggle { animation: $duration*2 $ease flashOdd; }
-			&.paused .play-toggle { animation: $duration*2 $ease flashEven; }
+			&.playing .play-toggle {
+				animation: $duration*2 $ease flashOdd;
+			}
+			&.paused .play-toggle {
+				animation: $duration*2 $ease flashEven;
+			}
 		}
 	}
 }
@@ -128,7 +163,7 @@
 		// right: 0;
 		// height: 4.5rem;
 	}
-	
+
 	// .control-box
 	// - - - - - - - - - - - - - - - - -
 	.control-box {
@@ -139,18 +174,20 @@
 		-ms-flex-direction: row;
 		flex-direction: row;
 		// align-items: center;
-		
+
 		& > * {
 			-webkit-flex: 0 1 auto;
 			-ms-flex: 0 1 auto;
 			flex: 0 1 auto;
-			padding: 0rem 0.5rem;
+			padding: 0 0.5rem;
 			align-self: center;
 		}
 	}
-	.top-bar, .bottom-bar {
+	.bottom-bar,
+	.top-bar {
 		position: absolute;
-		width: calc(100% + 1rem); height: auto;
+		width: calc(100% + 1rem);
+		height: auto;
 		margin: 1.25rem -0.5rem;
 	}
 	.bottom-bar {
@@ -163,21 +200,24 @@
 		// [ direction: rtl | ltr ]
 		// [ justify-content: flex-start | flex-end ]
 		direction: rtl;
-		bottom: 100%;// top: -3.5rem;
+		bottom: 100%; // top: -3.5rem;
 	}
-	
+
 	// .control-box > *
 	// - - - - - - - - - - - - - - - - -
 	// NOTE: Fade controls while scrolling ONLY. For other states
 	// (not-selected, disabled), an ancestor will be shown/hidden.
 	.control-box > * {
-		opacity: 0; visibility: hidden;
+		opacity: 0;
+		visibility: hidden;
 	}
 	&.ready.selected .control-box > * {
 		transition: tx(opacity, 1, 0), tx(visibility, 1, 0);
-		opacity: 1; visibility: visible;
+		opacity: 1;
+		visibility: visible;
 		@at-root .scrolling & {
-			opacity: 0; visibility: hidden;
+			opacity: 0;
+			visibility: hidden;
 		}
 		// @at-root .disabled & { }
 	}
@@ -210,7 +250,7 @@
 //  .playable-renderer children
 // - - - - - - - - - - - - - - - - - -
 .playable-renderer {
-	
+
 	// .fullscreen-toggle
 	// - - - - - - - - - - - - - - - - -
 	.fullscreen-toggle {
@@ -221,22 +261,23 @@
 			height: 1em;
 		}
 	}
-	
+
 	// .progress-meter
 	// - - - - - - - - - - - - - - - - -
 	.progress-meter {
-		font-family: "FolioFigures-Regular", monospace;
+		font-family: 'FolioFigures-Regular', monospace;
 		font-weight: normal;
 		box-sizing: content-box;
 		// width: 2.3rem; height: 2.3rem;
-		width: 2.8rem; height: 2.8rem;
+		width: 2.8rem;
+		height: 2.8rem;
 		// transition: tx(opacity, 1, 0);
 		// opacity: 0;
 	}
 	// @at-root :not(.scrolling) &.selected .progress-meter { 
 	// 	opacity: 1;
 	// }
-	
+
 	// .timeline | .timecode
 	// - - - - - - - - - - - - - - - - -
 	// .timecode {
@@ -284,17 +325,18 @@
 	.crop-box {
 		overflow: hidden;
 		// background-color: #FF00FF;
-		video, .poster {
+		.poster,
+		video {
 			position: absolute;
 			// top: 0; left: 0;
 			margin-top: -1px;
 			// margin-left: -1px;
-			
+
 			// top: -5px;
 			// left: -5px;
 			// height: calc(100% + 10px);
 			// width: calc(100% + 10px);
-			
+
 			// margin-bottom: -1px;
 			// left: 0;
 			// border-width: 0; margin: 0; padding: 0;
@@ -314,7 +356,7 @@
 	// }
 	.sequence {
 		// box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
-		
+
 		// position: absolute;
 		// width: 100%; height: 100%;
 		// border-radius: inherit;
@@ -324,9 +366,11 @@
 	// - - - - - - - - - - - - - - - - -
 	.sequence-step {
 		position: absolute;
-		top: 0; left: 0;
-		width: 100%; height: 100%;
-		
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+
 		// NOTE: current on top, z-index changed last, opacity tx in outgoing image
 		// z-index: 0; opacity: 0; visibility: hidden;
 		// transition: 
@@ -338,21 +382,19 @@
 		// 	// transition: z-index $duration*3 step-end;
 		// 	transition: tx(z-index, 3, 0, step-end);
 		// }
-		
+
 		// NOTE: current on top, z-index changed first, opacity tx in current image
 		visibility: hidden;
 		opacity: 0;
 		z-index: 0;
-		transition:
-			tx(visibility, 3, 0, step-end), 
-			tx(opacity, 3, 0, step-end);
+		transition: tx(visibility, 3, 0, step-end), tx(opacity, 3, 0, step-end);
 		&.current {
 			visibility: visible;
 			opacity: 1;
 			z-index: 1;
 			transition: tx(opacity, 1.5, 0.5);
 		}
-		
+
 		&.error {
 			// background-image: image-url("bg-missing-media.svg");
 			background-image: base64_encode("bg-missing-media.svg");
@@ -360,11 +402,9 @@
 		}
 	}
 	.playback-error .sequence-step:not(.current) {
-		transition:
-			tx(visibility, 3, 0, step-end), 
-			tx(opacity, 1.5, 0.5);
+		transition: tx(visibility, 3, 0, step-end), tx(opacity, 1.5, 0.5);
 	}
-	
+
 	// .media-border
 	// - - - - - - - - - - - - - - - - -
 	.media-border {
@@ -374,7 +414,7 @@
 	.playback-error .media-border {
 		opacity: 0;
 	}
-	
+
 	// .overlay
 	// - - - - - - - - - - - - - - - - -
 	.overlay {

@@ -7,17 +7,17 @@
 	display: block;
 	position: absolute;
 	@include user-select(none);
-	
+
 	// carousel animation
 	// - - - - - - - - - - - - - - - - - -
 	transform: translate3d(0,0,0);
 	transform-style: preserve-3d;
-	
+
 	transition: tx(transform, 1, -1);
 	@at-root .skip-transitions & {
 		@include skip_transitions;
 	}
-	
+
 	// cursor/pointer
 	// - - - - - - - - - - - - - - - - - -
 	.content {
@@ -26,13 +26,13 @@
 	&.selected .content {
 		cursor: grab;
 	}
-	@at-root .carousel.panning & .content { 
+	@at-root .carousel.panning & .content {
 		cursor: grabbing;
 	}
 	@at-root .carousel.disabled & .content {
 		cursor: default !important;
 	}
-	
+
 	// .content
 	// - - - - - - - - - - - - - - - - - -
 	.content {
@@ -54,7 +54,7 @@
 	// 	}
 	// }
 }
-	
+
 // .empty-item .content
 // - - - - - - - - - - - - - - - - - -
 .empty-item {
@@ -63,7 +63,8 @@
 		opacity: 0.15;
 		// color: silver;
 	}
-	&.selected, &.candidate {
+	&.candidate,
+	&.selected {
 		.content {
 			@at-root & {
 				opacity: 1.0;

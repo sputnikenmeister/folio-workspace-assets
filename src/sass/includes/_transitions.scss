@@ -2,12 +2,12 @@
 // Time base units
 // -----------------------------------
 
-$min_delay:				map-get($transitions, min_delay_ms) * 0.001s;
-$delay_interval:		map-get($transitions, delay_interval_ms) * 0.001s;
-$duration: 				map-get($transitions, duration_ms) * 0.001s;
-$ease:					map-get($transitions, ease);
+$min_delay: map-get($transitions, min_delay_ms) * 0.001s;
+$delay_interval: map-get($transitions, delay_interval_ms) * 0.001s;
+$duration: map-get($transitions, duration_ms) * 0.001s;
+$ease: map-get($transitions, ease);
 // transition/animation timing function
-$delay: 				$duration + $delay_interval;
+$delay: $duration + $delay_interval;
 
 // -----------------------------------
 // Transition definitions
@@ -24,7 +24,6 @@ $delay: 				$duration + $delay_interval;
 		@return $prop #{($duration * $duration_count) - $min_delay} $ease #{($delay * $delay_count) + $min_delay};
 	}
 }
-
 
 // .tx-none 		{ transition: transform 0s step-start 0s; }
 // .tx-now 		{ transition: transform $duration $ease 0s; }

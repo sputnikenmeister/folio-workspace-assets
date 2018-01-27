@@ -11,7 +11,8 @@
 // Root container
 // -----------------------------------
 
-html, body {
+body,
+html {
 	height: 100%;
 }
 #container {
@@ -24,9 +25,7 @@ html, body {
 // initialize fade-in
 // - - - - - - - - - - - - - - - - - -
 #container {
-	transition:
-		tx(opacity, 1, 1),
-		tx(visibility, 1, 1, step-start);
+	transition: tx(opacity, 1, 1), tx(visibility, 1, 1, step-start);
 }
 .app-initial * {
 	#container {
@@ -52,10 +51,9 @@ body {
 	color: lighten($color, 40%);
 	border-color: lighten($color, 60%);
 }
-body, .color-tx {
-	transition:
-		tx(background-color, 1, 1),
-		tx(color, 1, -1);
+.color-tx,
+body {
+	transition: tx(background-color, 1, 1), tx(color, 1, -1);
 }
 
 // -----------------------------------
@@ -80,7 +78,8 @@ body, .color-tx {
 		// z-index: 1;
 		@at-root .media-carousel {
 			z-index: 0;
-			&.scrolling, &.panning {
+			&.panning,
+			&.scrolling {
 				z-index: 2;
 			}
 			.carousel-item {
@@ -110,7 +109,8 @@ body, .color-tx {
 	box-sizing: border-box;
 	padding-left: $hu;
 	padding-right: $hu;
-	&, * {
+	&,
+	* {
 		@include user-select(none);
 	}
 }

@@ -5,19 +5,19 @@
  */
 
 /* lightblue: 		hsl(195, 53%, 79%) */
-$lightblue: 		hsla(195, 75%, 50%, 1);
+$lightblue: hsla(195, 75%, 50%, 1);
 /* deepbluesky: 	hsl(195, 100%, 50%) */
-$deepskyblue: 		hsla(195, 100%, 50%, 1);
+$deepskyblue: hsla(195, 100%, 50%, 1);
 /* lightcoral: 		hsl(6, 93%, 71%) */
-$lightcoral: 		hsla(6, 93%, 71%, 1);
+$lightcoral: hsla(6, 93%, 71%, 1);
 /* salmon: 			hsl(6, 93%, 71%) */
-$salmon: 			hsla(6, 93%, 71%, 1);
+$salmon: hsla(6, 93%, 71%, 1);
 /* thistle: 		hsl(300, 24%, 80%) */
-$thistle: 			hsla(300, 24%, 80%, 1);
+$thistle: hsla(300, 24%, 80%, 1);
 /* darkseagreen:	hsl(120, 25%, 65%) */
-$darkseagreen:		hsla(120, 25%, 65%, 1);
+$darkseagreen: hsla(120, 25%, 65%, 1);
 /* darkolivegreen:	hsl(???) */
-$darkolivegreen:	darkolivegreen;
+$darkolivegreen: darkolivegreen;
 
 @mixin debug_outline($width: 1px, $style: dashed, $color: inherit, $offset: null) {
 	outline: $width $style $color;
@@ -38,13 +38,12 @@ $darkolivegreen:	darkolivegreen;
 	background-color: transparent;
 	background-repeat: no-repeat;
 	background-position: calc(50% + 1px) 1px;
-	background-size: $page_width auto;//1600px;
+	background-size: $page_width auto; //1600px;
 	@include media(desktop-small) {
 		background-position: calc(50% + 1px) calc(-1rem + 1px);
-		background-size: $page_width_large auto;//1600px;
+		background-size: $page_width_large auto; //1600px;
 	}
 }
-
 
 // -----------------------------------
 // .debug-tx
@@ -63,7 +62,8 @@ $darkolivegreen:	darkolivegreen;
 			height: $nHeightLand;
 		}
 	}
-	#sitename, .transform-wrapper {
+	#sitename,
+	.transform-wrapper {
 		&[style*="transition"] {
 			@include debug_outline(2px, solid, transparentize($lightcoral, 0.35), -4px);
 			// background-color: transparentize($lightcoral, 0.5);
@@ -77,7 +77,8 @@ $darkolivegreen:	darkolivegreen;
 		@include debug_outline(2px, dashed, transparentize($lightcoral, 0.35));
 		// background-color: transparentize($lightblue, 0.5);
 	}
-	.stack, .carousel {
+	.carousel,
+	.stack {
 		&[style*="transition"] {
 			@include debug_outline(2px, dashed, transparentize($deepskyblue, 0.5));
 			outline-style: dashed !important;
@@ -97,16 +98,18 @@ $darkolivegreen:	darkolivegreen;
 	// 	// @include debug_outline($width: 1px, $style: dashed, $color: transparentize($darkseagreen, 0.2));
 	// 	background-color: transparentize($thistle, 0.8);
 	// }
-	
+
 	#navigation {
 		.graph {
 			@include debug_outline(1px, dashed, transparentize($darkseagreen, 0.25));
 		}
-		#site-name-wrapper, .list {
+		#site-name-wrapper,
+		.list {
 			// @include debug_outline_thick($color: $lightcoral);
 			background-color: transparentize($lightcoral, 0.9);
 		}
-		#site-name a, .list .label {
+		#site-name a,
+		.list .label {
 			background-color: transparentize($lightcoral, 0.7);
 		}
 	}

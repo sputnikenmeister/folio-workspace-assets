@@ -4,16 +4,18 @@
 	position: static;
 	line-height: 1;
 	padding: 0 0.5rem;
-	
+
 	// hide if there is only one item;
 	&:first-child:last-child {
 		visibility: hidden;
-		width: 0; margin: 0; padding: 0;
+		width: 0;
+		margin: 0;
+		padding: 0;
 	}
-	
+
 	& a:before {
 		// @include fontello_icon_base();
-		font: 85%/1 "FolioFigures-Regular", monospace;
+		font: 85%/1 'FolioFigures-Regular', monospace;
 		width: 1em;
 		display: inline-block;
 		text-align: center;
@@ -26,19 +28,26 @@
 	U+25CE 	BULLSEYE
 	U+25CF 	BLACK CIRCLE
 	*/
-	& a:before 							{ content: '\25CB'; }
-	&.selected a:before					{ content: '\25CF'; }
-	&.empty-item a:before				{ content: '\25A4'; }
+	& a:before {
+		content: '\25CB';
+	}
+	&.selected a:before {
+		content: '\25CF';
+	}
+	&.empty-item a:before {
+		content: '\25A4';
+	}
 
 	// show link cursor, except on selected
 	@include user-select(none);
 	cursor: pointer;
-	&.selected, &.selected a {
+	&.selected,
+	&.selected a {
 		cursor: default;
 	}
-	
-	.label { 
-		display: none; 
+
+	.label {
+		display: none;
 	}
 	// .label {
 	// 	font-weight: 600;
@@ -58,14 +67,14 @@
 	// 	visibility: visible;
 	// 	opacity: 1;
 	// }
-	
+
 	// &.selected .label {
 	// 	transition: visibility $duration $duration,
 	// 				opacity $duration $duration;
 	// 	visibility: visible;
 	// 	opacity: 1;
 	// }
-	
+
 	// .label.tooltip {
 	// 	position: absolute;
 	// 	top: -1.5em;

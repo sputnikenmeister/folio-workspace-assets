@@ -5,7 +5,9 @@
 
 // leaf elements
 // - - - - - - - - - - - - - - - - - -
-#site-name, .list-item, .list-group {
+#site-name,
+.list-group,
+.list-item {
 	@extend %leaf-content;
 }
 
@@ -64,13 +66,11 @@
 		// height: 2rem;
 		// width: 100%;
 		// white-space: nowrap;
-		a {
-		}
+		a {}
 		.completed {
 			display: none;
 		}
-		.label {
-		}
+		.label {}
 		em {
 			font-style: normal;
 			font-weight: 400;
@@ -98,11 +98,12 @@
 	}
 	.list-group {
 		// NOTE: in js, this value is ignored when height is zero
-		margin-top: 0.5rem; 
+		margin-top: 0.5rem;
 		white-space: nowrap;
-		.label {//span {
+		.label {
+			//span {
 			display: inline-block;
-			@include small_caps($lead: 0);//1.5rem);
+			@include small_caps($lead: 0); //1.5rem);
 		}
 	}
 }
@@ -123,7 +124,7 @@
 	// bundle-to-keywords
 	// - - - - - - - - - - - - - - - - - -
 	.list-item .label {
-		transition: tx(color, 1, 0.5);//steps(16)
+		transition: tx(color, 1, 0.5); //steps(16)
 	}
 	.with-bundle #bundle-list:not(.collapsed) .list-item.selected .label {
 		color: $link_color;

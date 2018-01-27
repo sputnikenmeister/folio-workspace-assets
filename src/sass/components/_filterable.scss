@@ -11,11 +11,13 @@
 	position: relative;
 	// transform-style: flat;
 	transform-style: preserve-3d;
-	.list-item, .list-group {
+	.list-group,
+	.list-item {
 		// position: static;
 		position: absolute;
 		display: block;
-		top: 0; left: 0;
+		top: 0;
+		left: 0;
 		transform: translate3d(0,0,0);
 		transform-style: preserve-3d;
 	}
@@ -49,13 +51,15 @@
 // #keyword-list (GroupingListView)
 // - - - - - - - - - - - - - - - - - -
 #keyword-list {
-	.list-item, .list-group {
+	.list-group,
+	.list-item {
 		visibility: visible;
 		opacity: 1;
 		// height: auto;
 	}
 	&.collapsed {
-		.list-item.excluded, .list-group.excluded {
+		.list-group.excluded,
+		.list-item.excluded {
 			visibility: hidden;
 			opacity: 0;
 			// height: 0;
@@ -67,29 +71,21 @@
 // transitions
 // - - - - - - - - - - - - - - - - - -
 
-%wait-move-fadein { // wait, expand, fadein (3 steps)
-	transition:
-		tx(visibility, 3, 0, step-start),
-		tx(opacity, 1, 2),
-		tx(transform, 1, 1);
+%wait-move-fadein {
+	// wait, expand, fadein (3 steps)
+	transition: tx(visibility, 3, 0, step-start), tx(opacity, 1, 2), tx(transform, 1, 1);
 }
-%fadeout-move-wait { // fadeout, collapse, wait (3 steps)
-	transition:
-		tx(visibility, 3, 0, step-end),
-		tx(opacity, 1, 0),
-		tx(transform, 1, 1, step-end);
+%fadeout-move-wait {
+	// fadeout, collapse, wait (3 steps)
+	transition: tx(visibility, 3, 0, step-end), tx(opacity, 1, 0), tx(transform, 1, 1, step-end);
 }
-%move-fadein { // expand, fadein (2 steps)
-	transition:
-		tx(visibility, 2, 0, step-start),
-		tx(opacity, 1, 1),
-		tx(transform, 1, 0);
+%move-fadein {
+	// expand, fadein (2 steps)
+	transition: tx(visibility, 2, 0, step-start), tx(opacity, 1, 1), tx(transform, 1, 0);
 }
-%fadeout-move { // fadeout, collapse (2 steps)
-	transition:
-		tx(visibility, 2, 0, step-end),
-		tx(opacity, 1, 0),
-		tx(transform, 1, 1);
+%fadeout-move {
+	// fadeout, collapse (2 steps)
+	transition: tx(visibility, 2, 0, step-end), tx(opacity, 1, 0), tx(transform, 1, 1);
 }
 
 // %wait-move-fadein, %fadeout-move-wait,
@@ -104,7 +100,7 @@
 // }
 
 .skip-transitions {
-	&.grouped .list-group, 
+	&.grouped .list-group,
 	&.list .list-item {
 		@include skip_transitions;
 		// @extend %skip-debug;
@@ -151,12 +147,14 @@
 
 // #keyword-list (GroupingListView)
 // - - - - - - - - - - - - - - - - - -
-#keyword-list  {
-	.list-group, .list-item {
+#keyword-list {
+	.list-group,
+	.list-item {
 		@extend %wait-move-fadein;
 	}
 	&.collapsed {
-		.list-group, .list-item {
+		.list-group,
+		.list-item {
 			&.excluded {
 				@extend %fadeout-move-wait;
 			}
