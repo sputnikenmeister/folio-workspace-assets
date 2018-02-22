@@ -131,7 +131,7 @@ var CanvasProgressMeter = CanvasView.extend({
 		// --------------------------------
 		// reset matrix and translate 0,0 to center
 		this._ctx.restore();
-		this._ctx.setTransform(1, 0, 0, 1, this._canvasWidth / 2, this._canvasHeigth / 2);
+		this._ctx.setTransform(1, 0, 0, 1, this._canvasWidth / 2, this._canvasHeight / 2);
 		this._ctx.save();
 	},
 
@@ -141,7 +141,7 @@ var CanvasProgressMeter = CanvasView.extend({
 
 	/** @override */
 	redraw: function(context, interpolator) {
-		this._clearCanvas(-this._canvasWidth / 2, -this._canvasHeigth / 2, this._canvasWidth, this._canvasHeigth);
+		this._clearCanvas(-this._canvasWidth / 2, -this._canvasHeight / 2, this._canvasWidth, this._canvasHeight);
 
 		var loopValue = interpolator._valueData["_loop"]._renderedValue || 0;
 		var amountData = interpolator._valueData["amount"];

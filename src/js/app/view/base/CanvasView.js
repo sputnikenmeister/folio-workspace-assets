@@ -140,7 +140,7 @@ var CanvasView = View.extend({
 		h = this.el.offsetHeight;
 
 		this.el.width = this._canvasWidth = (w - edgeW) * this._canvasRatio;
-		this.el.height = this._canvasHeigth = (h - edgeH) * this._canvasRatio;
+		this.el.height = this._canvasHeight = (h - edgeH) * this._canvasRatio;
 		// this.el.style.height = h + "px";
 		// this.el.style.width = w + "px";
 
@@ -181,7 +181,7 @@ var CanvasView = View.extend({
 		// console.log("style:    %s, %s, padding: %s (%s)", s.width, s.height, s.padding, s.boxSizing);
 		// console.log("box:      %f x %f px", m.width, m.height);
 		// console.log("measured: %f x %f px", w, h);
-		// console.log("canvas:   %f x %f px", this._canvasWidth, this._canvasHeigth);
+		// console.log("canvas:   %f x %f px", this._canvasWidth, this._canvasHeight);
 		// console.groupEnd();
 	},
 

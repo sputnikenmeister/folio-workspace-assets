@@ -94,14 +94,18 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 	height: 0;
 	// width: $list-group-width;
 	width: calc(100% - #{$gutter});
-	span {
+	.label {
 		// width: $list-group-width;
 		// transform: move(-$list-group-width, 0);
-		width: 100%;
+		// width: 100%;
 		transform: move(-100%, 0);
 		box-sizing: border-box;
-		padding: 0 0.5em;
-		margin: 0 -0.5em;
+		padding: 0 #{0.5*$hu};
+		margin: 0 #{-0.5*$hu};
+		& > span {
+			padding: 0.25rem #{0.5*$hu};
+			margin: -0.25rem #{-0.5*$hu};
+		}
 	}
 }
 
@@ -171,7 +175,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 	position: absolute;
 	transform: move(0,0);
 	@at-root .container-expanded & {
-		transform: move(0, $nHeightCollapsed);
+		// transform: move(0, $nHeightCollapsed);
 		transform: move(0, calc(#{$nHeightCollapsed} + 3rem));
 	}
 }
@@ -200,8 +204,9 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 		height: auto;
 		max-height: $carousel-item-height;
 		overflow: hidden;
-		// FIXME: empty-item narrow 9px adjust
-		width: $page_width/2 + $hu - 9px;
+		// FIXME: empty-item narrow px adjust
+		// width: $page_width/2 + $hu - 9px;
+		width: $main_width - 5px;
 	}
 	.media-item {
 		height: $carousel-item-height;

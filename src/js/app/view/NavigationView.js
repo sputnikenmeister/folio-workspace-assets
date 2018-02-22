@@ -176,18 +176,23 @@ var NavigationView = View.extend({
 			}
 		}, this);
 
-		if (flags & (View.SIZE_INVALID | ~View.MODEL_INVALID)) {
+		if ((flags & (View.SIZE_INVALID | ~View.MODEL_INVALID)) &&
+			!this.model.hasChanged("collapsed") && !this.model.get("withBundle")) {
 			this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
 			if (!this.skipTransitions) {
 				this.graph.renderNow();
 			}
+		} else if ((flags & View.SIZE_INVALID) && !this.model.get("collapsed")) {
+			/* NavigationView has resized while uncollapsed, but model is unchanged */
+			// console.info("%s::renderFrame", this.cid, "NavigationView has resized");
+			this.graph.requestRender(View.SIZE_INVALID); // | View.LAYOUT_INVALID);
 		}
 
 		this.skipTransitions = false;
 	},
 
 	_whenTransitionsEnd: function(result) {
-		console.info("%s::_whenTransitionsEnd", this.cid, result);
+		console.info("%s::_whenTransitionsEnd", this.cid); //, result);
 
 		this.el.classList.remove("container-changing");
 		this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
@@ -231,7 +236,12 @@ var NavigationView = View.extend({
 		}
 
 		// /* this.graph.el */
-		// var graphTf = this.transforms.get(this.graph.el);
+		var graphTf = this.transforms.get(this.graph.el);
+		if (graphTf && graphTf.hasOffset) {
+			graphTf.runTransition(collapsedChanged ? tx.BETWEEN : tx.NOW); //.clearOffset();
+			graphTf.clearOffset();
+		}
+
 		// if (withBundleChanged || (collapsedChanged && graphTf.hasOffset)) {
 		// 	graphTf.runTransition(tx.BETWEEN);
 		// } else if (graphTf.hasOffset) {
@@ -358,7 +368,9 @@ var NavigationView = View.extend({
 		this.bundleList.refresh();
 		if (!this.model.get("collapsed") && this.graph) {
 			// this.graph.requestRender(View.SIZE_INVALID & View.LAYOUT_INVALID);
-			this.graph.requestRender(View.LAYOUT_INVALID);
+			// this.graph.requestRender(View.LAYOUT_INVALID);
+			this.graph.valueTo(0, 0, "amount");
+			this.graph.valueTo(1, 500, "amount");
 		}
 	},
 
@@ -439,6 +451,10 @@ var NavigationView = View.extend({
 		// this.transforms.validate();
 		this.transforms.clearCapture(this.bundleList.el, this.keywordList.el); //, this.graph.el);
 
+		if (!this.model.get("collapsed")) {
+			this.transforms.stopTransition(this.graph.el);
+			this.transforms.clearCapture(this.graph.el);
+		}
 		// this.el.classList.add("container-changing");
 		this._onVPanMove(ev);
 	},
@@ -467,6 +483,8 @@ var NavigationView = View.extend({
 		delta *= collapsed ? 0.5 : -1; // reapply sign
 
 		this.transforms.offset(0, delta, this.bundleList.el, this.keywordList.el); //, this.graph.el);
+		if (!collapsed)
+			this.transforms.offset(0, delta, this.graph.el)
 		this.transforms.validate();
 	},
 
@@ -558,9 +576,10 @@ var NavigationView = View.extend({
 			listA: listA,
 			listB: listB,
 			model: this.model,
-			useOpaque: true
+			useOpaque: false
 		});
 		// view.styleData = {};
+		// this.bundleList.wrapper.appendChild(view.el);
 		this.el.appendChild(view.el);
 		return view;
 	},
