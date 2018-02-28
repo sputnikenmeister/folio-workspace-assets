@@ -39,6 +39,8 @@
 	}
 	.label {
 		line-height: 0;
+		margin: 0 #{-$hu * 0.75} 0 #{-$hu};
+		padding: 0 #{$hu * 0.75} 0 $hu;
 		// display: inline-block;
 	}
 	// a:after {

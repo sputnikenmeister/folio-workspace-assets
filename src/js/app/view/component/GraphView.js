@@ -27,12 +27,51 @@ var BEZIER_CIRCLE = 0.551915024494;
 var MIN_CANVAS_RATIO = 2;
 var PI2 = Math.PI * 2;
 
+var _dStyles = {
+	red: {
+		lineWidth: 1,
+		fillStyle: "rgba(255,127,127,0.35)",
+		strokeStyle: "rgba(255,127,127,0.35)",
+	},
+	blue: {
+		lineWidth: 1,
+		fillStyle: "rgba(127,127,255,0.35)",
+		strokeStyle: "rgba(127,127,255,0.35)",
+	}
+};
+
+function setStyle(ctx, s) {
+	if (typeof s != "object") return;
+	for (var p in s) {
+		switch (typeof ctx[p]) {
+			case "undefined":
+				break;
+			case "function":
+				if (Array.isArray(s[p])) ctx[p].apply(ctx, s[p]);
+				else ctx[p].call(ctx, s[p]);
+				break;
+			default:
+				ctx[p] = s[p];
+		}
+	}
+}
+
+function vGuide(ctx, x, s) {
+	ctx.save();
+	if (s) setStyle(ctx, s);
+	ctx.beginPath();
+	ctx.moveTo(x, 0);
+	ctx.lineTo(x, ctx.canvas.offsetHeight);
+	ctx.stroke();
+	ctx.restore();
+}
+
 function crosshair(ctx, x, y, r, s) {
 	ctx.save();
-	// if (s) {
-	//   setStyle(s);
-	// }
-	// if (s && styles[s].style != "vertical") {
+	if (s) {
+		setStyle(ctx, s);
+	}
+	// if (s && s.style != "vertical") {
 	ctx.translate(x, y);
 	ctx.rotate(Math.PI / 4);
 	// }
@@ -45,34 +84,34 @@ function crosshair(ctx, x, y, r, s) {
 	ctx.restore();
 }
 
-function circle(ctx, x, y, r, stroked, s) {
-	// ctx.save();
-	// if (s) setStyle(s);
+function circle(ctx, x, y, r, solid, s) {
+	ctx.save();
+	if (s) setStyle(ctx, s);
 	ctx.beginPath();
 	ctx.arc(x, y, r, 0, PI2);
 	ctx.closePath();
-	if (stroked) ctx.stroke();
-	else ctx.fill();
-	// ctx.restore();
+	if (solid) ctx.fill();
+	else ctx.stroke();
+	ctx.restore();
 }
 
-function square(ctx, x, y, r, stroked, s) {
+function square(ctx, x, y, r, solid, s) {
 	r = Math.floor(r / 2) * 2;
-	if (!stroked) r += 0.5;
-	// ctx.save();
-	// if (s) setStyle(s);
+	if (solid) r += 0.5;
+	ctx.save();
+	if (s) setStyle(ctx, s);
 	ctx.beginPath();
 	ctx.rect(x - r, y - r, r * 2, r * 2);
-	if (stroked) ctx.stroke();
-	else ctx.fill();
-	// ctx.restore();
+	if (solid) ctx.fill();
+	else ctx.stroke();
+	ctx.restore();
 }
 
 function arrowhead(ctx, x, y, r, a, stroked, s) {
 	ctx.save();
-	// if (s) {
-	//   setStyle(s);
-	// }
+	if (s) {
+		setStyle(ctx, s);
+	}
 	if (r < 10) {
 		ctx.setLineDash([]);
 	}
@@ -90,6 +129,54 @@ function arrowhead(ctx, x, y, r, a, stroked, s) {
 	else ctx.fill();
 	ctx.restore();
 }
+
+var hConnector_1 = function(ctx, x1, cx1, cy1, x2, cx2, cy2, r1, r2) {
+	ctx.beginPath();
+	ctx.moveTo(x1, cy1);
+	drawArcHConnector(ctx, cx1, cy1, cx2, cy2, r1, r2, 0);
+	ctx.lineTo(x2, cy2);
+	ctx.stroke();
+	crosshair(ctx, cx1, cy1, 4, _dStyles.red);
+	circle(ctx, cx2, cy2, 3, false, _dStyles.red);
+};
+var hConnector_2 = function(ctx, x1, cx1, cy1, x2, cx2, cy2, r1, r2) {
+	// circle(ctx, cx2, cy2, 3, false, _dStyles.blue);
+	if (x1 < x2) {
+		cx2 -= r2 - r1;
+	} else {
+		cx2 += r2 - r1
+	}
+	ctx.beginPath();
+	ctx.moveTo(x1, cy1);
+	drawArcHConnector(ctx, cx1, cy1, cx2, cy2, r1, r2, 1);
+	ctx.lineTo(x2, cy2);
+	ctx.stroke();
+	// crosshair(ctx, cx1, cy1, 3, _dStyles.red);
+	// circle(ctx, cx2, cy2, 3, false, _dStyles.red);
+};
+var hConnector_3 = function(ctx, x1, cx1, cy1, x2, cx2, cy2, r1, r2) {
+	// circle(ctx, cx2, cy2, 2, false, _dStyles.blue);
+	if (x1 < x2) {
+		cx2 -= r2 - r1;
+	} else {
+		cx2 += r2 - r1
+	}
+	ctx.beginPath();
+	ctx.moveTo(x2, cy2);
+	drawArcHConnector(ctx, cx2, cy2, cx1, cy1, r2, r1, 1);
+	ctx.lineTo(x1, cy1);
+	ctx.stroke();
+	// crosshair(ctx, cx1, cy1, 4, _dStyles.red);
+	// circle(ctx, cx2, cy2, 3, false, _dStyles.red);
+};
+var hConnector = hConnector_2;
+
+
+// context.beginPath();
+// context.moveTo(x2, cy2);
+// drawArcHConnector(context, cx2, cy2, cx1, cy1, r2, r1);
+// context.lineTo(x1, cy1);
+// context.stroke();
 
 /**
  * @constructor
@@ -133,16 +220,18 @@ var GraphView = CanvasView.extend({
 
 		this._listA = options.listA;
 		this._listB = options.listB;
+		this._dataA = {};
+		this._dataB = {};
 
 		// canvas commands stores
-		this._cmdsA;
-		this._cmdsB;
-		this._cmdsOutA;
-		this._cmdsOutB;
-		this._nodeMaxDeltaA;
-		this._nodeMaxDeltaB;
-		this._nodeMaxDeltaOutA;
-		this._nodeMaxDeltaOutB;
+		this._dataA.cmds;
+		this._dataB.cmds;
+		this._dataA.cmdsOut;
+		this._dataB.cmdsOut;
+		this._dataA.nodeMaxDelta;
+		this._dataB.nodeMaxDelta;
+		this._dataA.nodeMaxDeltaOut;
+		this._dataB.nodeMaxDeltaOut;
 
 		this.listenTo(this, "view:render:before", this._beforeViewRender);
 	},
@@ -162,6 +251,7 @@ var GraphView = CanvasView.extend({
 
 		var colorStr1;
 		var styleBase = {
+			lineWidth: 1,
 			radiusBase: 12, //6,
 			radiusIncrement: 3, //4,
 			margin: 20,
@@ -176,32 +266,29 @@ var GraphView = CanvasView.extend({
 			fillStyle: colorStr1,
 		}, styleBase);
 
-		this._styleData["hairline"] = _.defaults({
-			lineWidth: 0.5,
-			strokeStyle: this._color,
-		}, styleBase);
-
 		// colorStr1 = Globals.DEFAULT_COLORS["link-color"];
 		// colorStr1 = Color(this._color).alpha(0.35).rgbaString();
 		colorStr1 = Color(this._color).mix(bgColor, 0.15).hexString();
 		this._styleData["thick"] = _.defaults({
-			lineWidth: 2, //2.4, //3,
+			lineWidth: 3, //2.4, //3,
 			// radiusBase: 12,
-			// radiusIncrement: 3, //3.25,
+			radiusIncrement: 4, //3.25,
 			strokeStyle: colorStr1,
 			fillStyle: colorStr1,
 		}, styleBase);
 
-		this._styleData["debugRed"] = _.defaults({
+		this._styleData["hairline"] = _.defaults({
 			lineWidth: 0.5,
-			fillStyle: "rgba(255,127,127,0.75)",
-			strokeStyle: "rgba(255,127,127,0.75)",
+			strokeStyle: this._color,
 		}, styleBase);
-		this._styleData["debugBlue"] = _.defaults({
-			lineWidth: 0.5,
-			fillStyle: "rgba(127,127,255,0.75)",
-			strokeStyle: "rgba(127,127,255,0.75)",
-		}, styleBase);
+	},
+
+	_setStyle: function(s) {
+		var ctx = this._ctx;
+		if (typeof s == "string") {
+			s = this._styleData[s];
+		}
+		setStyle(this._ctx, s);
 	},
 
 	/* --------------------------- *
@@ -212,27 +299,24 @@ var GraphView = CanvasView.extend({
 		var bounds = this.el.getBoundingClientRect();
 		this._ctx.setTransform(this._canvasRatio, 0, 0, this._canvasRatio, -bounds.left * this._canvasRatio - 0.5, -bounds.top * this._canvasRatio - 0.5);
 
-		var listView, listRect, listPos;
+		var listView, listRect, listData;
 
-		listView = this._listA;
-		listRect = listView.el.getBoundingClientRect();
-		this._rectA = listRect;
-		this._minA = listRect.left + listRect.width;
-		// this._targetsA = this._measureListItems(listView);
+		this._dataA.rect = this._listA.el.getBoundingClientRect();
+		this._dataA.xMin = this._dataA.rect.right;
+		// this._dataA.targets = this._measureListItems(listView);
 
-		listView = this._listB;
-		listRect = listView.el.getBoundingClientRect();
-		this._rectB = listRect;
-		this._minB = listRect.left;
-		// this._targetsB = this._measureListItems(listView);
+		this._dataB.rect = this._listB.el.getBoundingClientRect();;
+		this._dataB.xMin = this._dataB.rect.left;
+		// this._dataB.targets = this._measureListItems(listView);
 
 		// connector minimum branch x2
-		var i, ii, view, rect;
+		var i, ii, itemView, itemRect, listView;
+		listView = this._listB;
 		for (i = 0, ii = listView.groups.length; i < ii; i++) {
-			view = listView.itemViews.findByModel(listView.groups[i]);
-			rect = (view.label || view.el).getBoundingClientRect();
-			this._minB = Math.min(this._minB, rect.left);
-			// if (view._metrics) this._rectB.left + view.transform.tx + view._metrics.textLeft;
+			itemView = listView.itemViews.findByModel(listView.groups[i]);
+			itemRect = (itemView.label || itemView.el).getBoundingClientRect();
+			this._dataB.xMin = Math.min(this._dataB.xMin, itemRect.left);
+			// if (itemView._metrics) this._dataB.rect.left + itemView.transform.tx + itemView._metrics.textLeft;
 		}
 	},
 
@@ -243,14 +327,15 @@ var GraphView = CanvasView.extend({
 	_beforeViewRender: function(view, flags) {
 		console.log("%s::_beforeViewRender [flags: %s]", this.cid, CanvasView.flagsToString(flags));
 		if (flags & (CanvasView.SIZE_INVALID | CanvasView.MODEL_INVALID)) {
-			this._cmdsOutA = this._cmdsA;
-			this._cmdsOutB = this._cmdsB;
-			this._cmdsA = null;
-			this._cmdsB = null;
-			this._nodeMaxDeltaOutA = this._nodeMaxDeltaA;
-			this._nodeMaxDeltaOutB = this._nodeMaxDeltaB;
-			this._nodeMaxDeltaA = null;
-			this._nodeMaxDeltaB = null;
+			this._dataA.cmdsOut = this._dataA.cmds;
+			this._dataA.cmds = null;
+			this._dataA.nodeMaxDeltaOut = this._dataA.nodeMaxDelta;
+			this._dataA.nodeMaxDelta = null;
+
+			this._dataB.cmdsOut = this._dataB.cmds;
+			this._dataB.cmds = null;
+			this._dataB.nodeMaxDeltaOut = this._dataB.nodeMaxDelta;
+			this._dataB.nodeMaxDelta = null;
 		}
 	},
 
@@ -264,21 +349,25 @@ var GraphView = CanvasView.extend({
 	},
 
 	_redraw_fromElements: function(context, interpolator) {
-		var i, els, numEls;
-		var elA, elB, rectA, rectB, xMin1, xMin2;
+		// var i, els, numEls;
+		// var elA, elB, rectA, rectB, xMin1, xMin2;
 
-		var x1, y1, x2, y2;
-		var cx1, cy1, r1;
-		var cx2, cy2, r2;
+		// var x1, y1, x2, y2;
+		// var cx1, cy1, r1;
+		// var cx2, cy2, r2;
 		// var cx0, cy0, r0;
 
 		// connector-to-element margin in px
-		var s, rInc, rBase, xMargin;
+		// var rInc, rBase, xMargin;
+		var i, s;
 
 		// keyword to bundles, right to left
-		if (this._cmdsB === null) {
-			this._cmdsB = [];
-			this._nodeMaxDeltaB = 0;
+		if (this._dataB.cmds === null) {
+			s = this._styleData["default"];
+			this._redrawConnectors(this._listB, this._dataB, this._listA, this._dataA, s.radiusBase, s.radiusIncrement);
+			/*
+			this._dataB.cmds = [];
+			this._dataB.nodeMaxDelta = 0;
 			elB = this._listB.el.querySelector(".list-item.selected .label");
 			if (elB) {
 				s = this._styleData["default"];
@@ -290,60 +379,53 @@ var GraphView = CanvasView.extend({
 				els = this._listA.el.querySelectorAll(".list-item:not(.excluded) .label");
 				numEls = els.length;
 
-				xMin1 = this._minB;
-				xMin2 = this._minA;
+				xMin1 = this._dataB.xMin;
+				xMin2 = this._dataA.xMin;
 				rectB = elB.getBoundingClientRect();
-				x1 = rectB.left - xMargin;
+				x1 = rectB.left; // - xMargin;
 				y1 = rectB.top + rectB.height / 2;
 				r2 = rBase;
-				cx1 = Math.min(x1, xMin1); // - xMargin);
+				cx1 = Math.min(x1, xMin1); // - xMargin);var elsPos, maxDistIdx, maxDist, rTotal;
 
-				/*
-				// r0 = rInc;
-				// cx0 = x1 - r0;
-				// cx0 = x1 - (rBase + numEls * rInc);
-
-				// var elsPos, maxDistIdx;
-				// elsPos = [];
-				// for (i = 0; i < numEls; i++) {
-				// 	rectA = els.item(i).getBoundingClientRect();
-				// 	x2 = rectA.left + rectA.width + xMargin;
-				// 	y2 = rectA.top + rectA.height / 2;
-				// 	elsPos[i] = { x: x2, y: y2 };
-				// }
-				// for (i = 0; i < numEls; ) {
-				// 	if (y1 < elsPos[i].y) break;
-				// 	else i++;
-				// }
-				// var maxDist = Math.max(i, (numEls - 1) - i);
+				elsPos = [];
+				for (i = 0; i < numEls; i++) {
+					rectA = els.item(i).getBoundingClientRect();
+					x2 = rectA.right; // + xMargin;
+					y2 = rectA.top + rectA.height / 2;
+					elsPos[i] = { x: x2, y: y2 };
+				}
+				for (i = 0; i < numEls;) {
+					if (y1 < elsPos[i].y) break;
+					else i++;
+				}
+				maxDist = Math.max(i, (numEls - 1) - i);
+				rTotal = rBase * 2 + rInc * maxDist;
 				// console.log("%s::_redraw_fromElements maxDist: %i (index: %i/%i)", this.cid, maxDist, i, numEls);
-				*/
 
 				for (i = 0; i < numEls; i++) {
 					// if (els.item(i) === elA) continue;
-					rectA = els.item(i).getBoundingClientRect();
-					x2 = rectA.left + rectA.width + xMargin;
-					cx2 = Math.max(x2, xMin2 + xMargin);
-					y2 = rectA.top + rectA.height / 2;
-					// x2 = elsPos[i].x;
-					// y2 = elsPos[i].y;
+					// rectA = els.item(i).getBoundingClientRect();
+					// x2 = rectA.right; // + xMargin;
+					// y2 = rectA.top + rectA.height / 2;
+					x2 = elsPos[i].x;
+					y2 = elsPos[i].y;
 					if (y1 > y2) {
-						r1 = rBase + i * rInc;
+						r1 = rBase + (i * rInc);
 					} else {
 						r1 = rBase + (numEls - (i + 1)) * rInc;
 					}
+					// r2 = rTotal - r1;
+					// cx2 = Math.max(x2, xMin2 - xMargin);
+					// cx2 = Math.max(x2, xMin2) + (r2 - r1);
+					cx2 = Math.max(x2, xMin2);
 					cy1 = y1 + (i - (numEls - 1) / 2) * rInc;
 					cy2 = y2;
 
 					// Find out longest node connection for setLineDash
-					this._nodeMaxDeltaB = Math.max(this._nodeMaxDeltaB, Math.abs(x1 - x2) + Math.abs(cy1 - cy2));
-					this._cmdsB.push(
-						context.beginPath.bind(context),
-						context.moveTo.bind(context, x1, cy1),
-						// drawArcHConnector.bind(undefined, context, cx1, cy1, cx2, cy2, r1, r2),
-						drawArcHConnector.bind(undefined, context, cx1, cy1, cx2 - (r1 - r2), cy2, r1, r2, 1),
-						context.lineTo.bind(context, x2, cy2),
-						context.stroke.bind(context)
+					this._dataB.nodeMaxDelta = Math.max(this._dataB.nodeMaxDelta, Math.abs(x1 - x2) + Math.abs(cy1 - cy2));
+					// add commands
+					this._dataB.cmds.push(
+						hConnector.bind(undefined, context, x1, cx1, cy1, x2, cx2, cy2, r1, r2)
 					);
 
 					// context.beginPath();
@@ -353,142 +435,248 @@ var GraphView = CanvasView.extend({
 					// // drawArcHConnector(context, cx1, cy1, cx2, cy2, r1, r2, 1);
 					// drawArcHConnector(context, cx1, cy1, cx2 - (r1 - r2), cy2, r1, r2, 1);
 					// context.lineTo(x2, cy2);
-					// /* reverse dir */
-					// // context.moveTo(x2, cy2);
-					// // drawArcHConnector(context, cx2, cy2, cx1, cy1, r2, r1);
-					// // context.lineTo(x1, cy1);
-					// context.stroke();
+
 				}
-			}
+			}*/
 		}
 
 		// bundle to keywords, left to right
-		if (this._cmdsA === null) {
-			this._cmdsA = [];
-			elA = this._listA.el.querySelector(".list-item.selected .label");
-			if (elA) {
-				s = this._styleData["thick"];
-				rInc = s.radiusIncrement;
-				rBase = s.radiusBase;
-				xMargin = s.margin;
-				this._setStyle(s);
-
-				xMin1 = this._minA;
-				xMin2 = this._minB;
-				rectA = elA.getBoundingClientRect();
-				x1 = rectA.left + rectA.width + xMargin;
-				y1 = rectA.top + rectA.height / 2;
-				cx1 = Math.max(x1, xMin1); // + xMargin);
-				r2 = rBase;
-
-				els = this._listB.el.querySelectorAll(".list-item:not(.excluded) .label");
-				numEls = els.length;
-				// r0 = rInc;
-				// cx0 = x1 + r0;
-
-				for (i = 0; i < numEls; i++) {
-					rectB = els.item(i).getBoundingClientRect();
-
-					x2 = rectB.left - xMargin;
-					y2 = rectB.top + rectB.height / 2;
-					if (y1 > y2) {
-						r1 = i * rInc + rBase;
-					} else {
-						r1 = (numEls - (i + 1)) * rInc + rBase;
-					}
-					cy1 = (i - (numEls - 1) / 2) * rInc + y1;
-					cx2 = Math.min(x2, xMin2 - xMargin);
-					cy2 = y2;
-
-					this._cmdsA.push(
-						context.beginPath.bind(context),
-						context.moveTo.bind(context, x1, cy1),
-						// drawArcHConnector.bind(undefined, context, cx1, cy1, cx2, cy2, r1, r2),
-						drawArcHConnector.bind(undefined, context, cx1, cy1, cx2 - (r2 - r1), cy2, r1, r2, 1),
-						context.lineTo.bind(context, x2, cy2),
-						context.stroke.bind(context)
-					);
-
-					// context.beginPath();
-					// // context.moveTo(x1, y1);
-					// // drawArcHConnector(context, x1, y1, x1 + rInc, cy1, 0, rInc);
-					// context.moveTo(x1, cy1);
-					// // drawArcHConnector(context, cx1, cy1, cx2, cy2, r1, r2);
-					// drawArcHConnector(context, cx1, cy1, cx2 - (r2 - r1), cy2, r1, r2, 1);
-					// context.lineTo(x2, cy2);
-					// context.stroke();
-
-					/* reverse dir */
-					// context.beginPath();
-					// context.moveTo(x2, cy2);
-					// drawArcHConnector(context, cx2, cy2, cx1, cy1, r2, r1);
-					// context.lineTo(x1, cy1);
-					// context.stroke();
-				}
-			}
+		if (this._dataA.cmds === null) {
+			s = this._styleData["thick"];
+			this._redrawConnectors(this._listA, this._dataA, this._listB, this._dataB, s.radiusBase, s.radiusIncrement);
+			// this._dataA.cmds = [];
+			// elA = this._listA.el.querySelector(".list-item.selected .label");
+			// if (elA) {
+			// 	s = this._styleData["thick"];
+			// 	rInc = s.radiusIncrement;
+			// 	rBase = s.radiusBase;
+			// 	xMargin = s.margin;
+			// 	this._setStyle(s);
+			//
+			// 	xMin1 = this._dataA.xMin;
+			// 	xMin2 = this._dataB.xMin;
+			// 	rectA = elA.getBoundingClientRect();
+			// 	x1 = rectA.left + rectA.width; // + xMargin;
+			// 	y1 = rectA.top + rectA.height / 2;
+			// 	cx1 = Math.max(x1, xMin1); // + xMargin);
+			// 	r2 = rBase;
+			//
+			// 	els = this._listB.el.querySelectorAll(".list-item:not(.excluded) .label");
+			// 	numEls = els.length;
+			// 	// r0 = rInc;
+			// 	// cx0 = x1 + r0;
+			//
+			// 	for (i = 0; i < numEls; i++) {
+			// 		rectB = els.item(i).getBoundingClientRect();
+			//
+			// 		x2 = rectB.left; // - xMargin;
+			// 		y2 = rectB.top + rectB.height / 2;
+			// 		if (y1 > y2) {
+			// 			r1 = rBase + (i * rInc);
+			// 		} else {
+			// 			r1 = rBase + (numEls - (i + 1)) * rInc;
+			// 		}
+			// 		// cx2 = Math.min(x2, xMin2 - xMargin);
+			// 		// cx2 = Math.min(x2, xMin2) - (r2 - r1);
+			// 		cx2 = Math.min(x2, xMin2);
+			// 		cy1 = y1 + (i - (numEls - 1) / 2) * rInc;
+			// 		cy2 = y2;
+			//
+			// 		// add commands
+			// 		this._dataA.cmds.push(
+			// 			hConnector.bind(undefined, context, x1, cx1, cy1, x2, cx2, cy2, r1, r2)
+			// 		);
+			// 		// this._dataA.cmds.push(
+			// 		// context.beginPath.bind(context),
+			// 		// context.moveTo.bind(context, x1, cy1),
+			// 		// // drawArcHConnector.bind(undefined, context, cx1, cy1, cx2, cy2, r1, r2),
+			// 		// drawArcHConnector.bind(undefined, context, cx1, cy1, cx2, cy2, r1, r2, 1),
+			// 		// context.lineTo.bind(context, x2, cy2),
+			// 		// context.stroke.bind(context)
+			// 		// );
+			//
+			//
+			// 		// context.beginPath();
+			// 		// // context.moveTo(x1, y1);
+			// 		// // drawArcHConnector(context, x1, y1, x1 + rInc, cy1, 0, rInc);
+			// 		// context.moveTo(x1, cy1);
+			// 		// // drawArcHConnector(context, cx1, cy1, cx2, cy2, r1, r2);
+			// 		// drawArcHConnector(context, cx1, cy1, cx2 - (r2 - r1), cy2, r1, r2, 1);
+			// 		// context.lineTo(x2, cy2);
+			// 		// context.stroke();
+			//
+			// 		/* reverse dir */
+			// 		// context.beginPath();
+			// 		// context.moveTo(x2, cy2);
+			// 		// drawArcHConnector(context, cx2, cy2, cx1, cy1, r2, r1);
+			// 		// context.lineTo(x1, cy1);
+			// 		// context.stroke();
+			// 	}
+			// }
 		}
 
-		if (this._cmdsA && this._cmdsA.length) {
+		/* draw */
+
+		// Some debugging aids
+		// vGuide(context, this._dataA.xMin, _dStyles.red);
+		// vGuide(context, this._dataB.xMin, _dStyles.blue);
+
+		if (this._dataA.cmds && this._dataA.cmds.length) {
 			s = this._styleData["thick"];
 			this._setStyle(s);
 
-			for (i = 0; i < this._cmdsA.length; i++) {
-				this._cmdsA[i].call();
+			for (i = 0; i < this._dataA.cmds.length; i++) {
+				this._dataA.cmds[i].call();
 			}
 		}
 
 		/* line dash value interpolation */
 		var lVal = interpolator._valueData["amount"]._renderedValue / interpolator._valueData["amount"]._maxVal;
 
-		if (this._cmdsB && this._cmdsB.length) {
+		if (this._dataB.cmds && this._dataB.cmds.length) {
 			s = this._styleData["default"];
 			this._setStyle(s);
 
-			// context.setLineDash([lVal * this._nodeMaxDeltaB, (1 - lVal) * this._nodeMaxDeltaB]);
-
-			context.lineDashOffset = this._nodeMaxDeltaB * (1 - lVal);
-			context.setLineDash([this._nodeMaxDeltaB, this._nodeMaxDeltaB]);
+			context.lineDashOffset = this._dataB.nodeMaxDelta * (1 - lVal);
+			context.setLineDash([this._dataB.nodeMaxDelta, this._dataB.nodeMaxDelta]);
 			context.save();
 			context.globalCompositeOperation = "destination-out";
 			context.lineWidth = s["radiusIncrement"] + s["lineWidth"];
-			for (i = 0; i < this._cmdsB.length; i++) {
-				this._cmdsB[i].call();
+			for (i = 0; i < this._dataB.cmds.length; i++) {
+				this._dataB.cmds[i].call();
 			}
 			context.restore();
 
-			for (i = 0; i < this._cmdsB.length; i++) {
-				this._cmdsB[i].call();
+			for (i = 0; i < this._dataB.cmds.length; i++) {
+				this._dataB.cmds[i].call();
 			}
 		}
 
-		if (this._cmdsOutB && this._cmdsOutB.length) {
+		if (this._dataB.cmdsOut && this._dataB.cmdsOut.length) {
 			s = this._styleData["default"];
 			this._setStyle(s);
 
-			context.lineDashOffset = this._nodeMaxDeltaOutB * (lVal);
-			context.setLineDash([this._nodeMaxDeltaOutB, this._nodeMaxDeltaOutB]);
+			context.lineDashOffset = this._dataB.nodeMaxDeltaOut * (lVal);
+			context.setLineDash([this._dataB.nodeMaxDeltaOut, this._dataB.nodeMaxDeltaOut]);
 			context.save();
 			context.globalCompositeOperation = "destination-out";
 			context.lineWidth = s["radiusIncrement"] + s["lineWidth"];
-			for (i = 0; i < this._cmdsOutB.length; i++) {
-				this._cmdsOutB[i].call();
+			for (i = 0; i < this._dataB.cmdsOut.length; i++) {
+				this._dataB.cmdsOut[i].call();
 			}
 			context.restore();
 
-			for (i = 0; i < this._cmdsOutB.length; i++) {
-				this._cmdsOutB[i].call();
+			for (i = 0; i < this._dataB.cmdsOut.length; i++) {
+				this._dataB.cmdsOut[i].call();
 			}
 		}
 
-		if (this._cmdsA || this._cmdsB || this._cmdsOutA || this._cmdsOutB) {
+		var els, numEls, rect;
+		if (this._dataA.cmds || this._dataB.cmds || this._dataA.cmdsOut || this._dataB.cmdsOut) {
 			els = this._listB.el.querySelectorAll(".list-group .label span");
 			numEls = els.length;
 			for (i = 0; i < numEls; i++) {
-				rectB = els.item(i).getBoundingClientRect();
-				context.clearRect(rectB.x, rectB.y, rectB.width, rectB.height);
+				rect = els.item(i).getBoundingClientRect();
+				context.clearRect(rect.left, rect.top, rect.width, rect.height);
 			}
 		}
 	},
+
+	_redrawConnectors: function(sList, sData, dList, dData, rBase, rInc) {
+		var cmds = [];
+		var nodeMaxDelta = 0;
+
+		var srcEl, destEl;
+		var els, numEls, i;
+		var sRect, dRect, ssRect, ddRect, sProp, dProp;
+
+		var x1, y1, x2, y2;
+		var cx1, cy1, r1;
+		var cx2, cy2, r2;
+
+		sRect = sList.el.getBoundingClientRect();
+		dRect = dList.el.getBoundingClientRect();
+
+		if (sRect.right < dRect.left) {
+			sProp = "right";
+			dProp = "left";
+		} else if (dRect.right < sRect.left) {
+			sProp = "left";
+			dProp = "right";
+		} else {
+			return;
+		}
+
+		srcEl = sList.el.querySelector(".list-item.selected .label");
+		if (srcEl) {
+			els = dList.el.querySelectorAll(".list-item:not(.excluded) .label");
+			numEls = els.length;
+
+			// xMin1 = this._dataB.xMin;
+			// xMin2 = this._dataA.xMin;
+			ssRect = srcEl.getBoundingClientRect();
+			x1 = ssRect[sProp] // - xMargin;
+			y1 = ssRect.top + ssRect.height / 2;
+			r2 = rBase;
+			// cx1 = Math.min(x1, xMin1); // - xMargin);
+			// cx1 = sRect[sProp];
+			cx1 = sData.xMin;
+
+			// var elsPos, maxDistIdx, maxDist, rTotal;
+			// elsPos = [];
+			// for (i = 0; i < numEls; i++) {
+			// 	rectA = els.item(i).getBoundingClientRect();
+			// 	x2 = rectA.right; // + xMargin;
+			// 	y2 = rectA.top + rectA.height / 2;
+			// 	elsPos[i] = { x: x2, y: y2 };
+			// }
+			// for (i = 0; i < numEls;) {
+			// 	if (y1 < elsPos[i].y) break;
+			// 	else i++;
+			// }
+			// maxDist = Math.max(i, (numEls - 1) - i);
+			// rTotal = rBase * 2 + rInc * maxDist;
+			// // console.log("%s::_redraw_fromElements maxDist: %i (index: %i/%i)", this.cid, maxDist, i, numEls);
+
+			for (i = 0; i < numEls; i++) {
+				ddRect = els.item(i).getBoundingClientRect();
+				x2 = ddRect[dProp];
+				y2 = ddRect.top + ddRect.height / 2;
+				if (y1 > y2) {
+					r1 = rBase + (i * rInc);
+				} else {
+					r1 = rBase + (numEls - (i + 1)) * rInc;
+				}
+				// r2 = rTotal - r1;
+				// cx2 = Math.max(x2, xMin2 - xMargin);
+				// cx2 = Math.max(x2, xMin2) + (r2 - r1);
+				// cx2 = dRect[dProp];
+				// cx2 = Math.min(x2, dData.xMin);
+				cx2 = dData.xMin;
+				cy1 = y1 + (i - (numEls - 1) / 2) * rInc;
+				cy2 = y2;
+
+				// Find out longest node connection for setLineDash
+				nodeMaxDelta = Math.max(nodeMaxDelta, Math.abs(x1 - x2) + Math.abs(cy1 - cy2));
+				// add commands
+				cmds.push(
+					hConnector.bind(undefined, this._ctx, x1, cx1, cy1, x2, cx2, cy2, r1, r2)
+				);
+
+				// context.beginPath();
+				// // context.moveTo(x1, y1);
+				// // drawArcHConnector(context, x1, y1, x1 - rInc, cy1, 0, rInc);
+				// context.moveTo(x1, cy1);
+				// // drawArcHConnector(context, cx1, cy1, cx2, cy2, r1, r2, 1);
+				// drawArcHConnector(context, cx1, cy1, cx2 - (r1 - r2), cy2, r1, r2, 1);
+				// context.lineTo(x2, cy2);
+
+			}
+		}
+		sData.nodeMaxDelta = nodeMaxDelta;
+		sData.cmds = cmds
+	},
+
 
 	_redraw_fromMetrics: function(context, interpolator) {
 		var i, ii, model, mCids;
@@ -514,8 +702,8 @@ var GraphView = CanvasView.extend({
 			rBase = s.radiusBase;
 			xMargin = s.margin;
 
-			xMin1 = this._minA;
-			xMin2 = this._minB;
+			xMin1 = this._dataA.xMin;
+			xMin2 = this._dataB.xMin;
 			idx = _.findIndex(this._targetsA, { mId: model.id });
 			metrics = this._targetsA[idx];
 			x1 = metrics.after - xMargin;
@@ -524,9 +712,7 @@ var GraphView = CanvasView.extend({
 			cx1 = Math.min(x1, xMin1);
 
 			ii = this._targetsB.length;
-			for (i = 0; i < ii; i++); {
-
-			}
+			for (i = 0; i < ii; i++); {}
 		}
 	},
 
@@ -535,10 +721,10 @@ var GraphView = CanvasView.extend({
 		var yMin, yMax, dx;
 		var s, roInc, m;
 
-		// var xMid = (this._minA + this._minB) / 2;
-		yMin = Math.min(this._rectA.top, this._rectB.top);
-		yMax = Math.max(this._rectA.top + this._rectA.height, this._rectB.top + this._rectB.height);
-		dx = Math.abs(this._minA - this._minB);
+		// var xMid = (this._dataA.xMin + this._dataB.xMin) / 2;
+		yMin = Math.min(this._dataA.rect.top, this._dataB.rect.top);
+		yMax = Math.max(this._dataA.rect.top + this._dataA.rect.height, this._dataB.rect.top + this._dataB.rect.height);
+		dx = Math.abs(this._dataA.xMin - this._dataB.xMin);
 
 		s = this._styleData["default"];
 		roInc = s.radiusIncrement;
@@ -556,23 +742,10 @@ var GraphView = CanvasView.extend({
 		var xMin1, xMin2;
 		var ro; // radius offset
 
-		xMin1 = this._minA;
-		xMin2 = this._minB;
+		xMin1 = this._dataA.xMin;
+		xMin2 = this._dataB.xMin;
 
 		this._setStyle(s);
-
-		// context.save();
-		// context.beginPath();
-		// context.moveTo(this._minA, yMin);
-		// context.lineTo(this._minA, yMax);
-		// context.moveTo(this._minB, yMin);
-		// context.lineTo(this._minB, yMax);
-		// context.moveTo(x1 + r1, yMin);
-		// context.lineTo(x1 + r1, yMax);
-		// context.lineWidth = 1;
-		// context.strokeStyle = "hsla(0, 50%, 50%, 0.2)";
-		// context.stroke();
-		// context.restore();
 
 		// bundle to keywords
 		if (model = this.model.get("bundle")) {
@@ -581,17 +754,16 @@ var GraphView = CanvasView.extend({
 				mCids = model.get("kIds");
 				numItems = mCids.length;
 
-				x1 = this._rectA.left + view.transform.tx + view._metrics.textLeft + view._metrics.textWidth;
-				y1 = this._rectA.top + view.transform.ty + view._metrics.offsetHeight / 2;
+				x1 = this._dataA.rect.left + view.transform.tx + view._metrics.textLeft + view._metrics.textWidth;
+				y1 = this._dataA.rect.top + view.transform.ty + view._metrics.offsetHeight / 2;
 				cx1 = Math.max(x1, xMin1);
 				ro = mCids.length * roInc * 0.5;
 
-				// context.setLineDash([1,1]);
 				for (i = 0; i < numItems; i++) {
 					view = this._listB.itemViews.findByModel(keywords.get(mCids[i]));
 					if (view._metrics) {
-						x2 = this._rectB.left + view.transform.tx + view._metrics.textLeft;
-						y2 = this._rectB.top + view.transform.ty + view._metrics.offsetHeight / 2;
+						x2 = this._dataB.rect.left + view.transform.tx + view._metrics.textLeft;
+						y2 = this._dataB.rect.top + view.transform.ty + view._metrics.offsetHeight / 2;
 						cx2 = Math.min(x2, xMin2);
 						cy1 = y1 + i * roInc;
 						cy2 = y2; // - i*roInc;
@@ -607,8 +779,8 @@ var GraphView = CanvasView.extend({
 			}
 		}
 
-		xMin1 = this._minB;
-		xMin2 = this._minA;
+		xMin1 = this._dataB.xMin;
+		xMin2 = this._dataA.xMin;
 
 		// keyword to bundles
 		if (model = this._listB.collection.selected) {
@@ -617,8 +789,8 @@ var GraphView = CanvasView.extend({
 				mCids = model.get("bIds");
 				numItems = mCids.length;
 
-				x1 = this._rectB.left + view.transform.tx + view._metrics.textLeft;
-				y1 = this._rectB.top + view.transform.ty + view._metrics.offsetHeight / 2;
+				x1 = this._dataB.rect.left + view.transform.tx + view._metrics.textLeft;
+				y1 = this._dataB.rect.top + view.transform.ty + view._metrics.offsetHeight / 2;
 				cx1 = Math.min(x1, xMin1);
 				ro = mCids.length * roInc * 0.5;
 
@@ -626,8 +798,8 @@ var GraphView = CanvasView.extend({
 				for (i = 0; i < numItems; i++) {
 					view = this._listA.itemViews.findByModel(this._listA.collection.get(mCids[i]));
 					if (view._metrics) {
-						x2 = this._rectA.left + view.transform.tx + view._metrics.textLeft + view._metrics.textWidth;
-						y2 = this._rectA.top + view.transform.ty + view._metrics.offsetHeight / 2;
+						x2 = this._dataA.rect.left + view.transform.tx + view._metrics.textLeft + view._metrics.textWidth;
+						y2 = this._dataA.rect.top + view.transform.ty + view._metrics.offsetHeight / 2;
 						cx2 = Math.max(x2, xMin2);
 						cy1 = y1 + i * roInc;
 						cy2 = y2; // + i*roInc;
@@ -639,27 +811,6 @@ var GraphView = CanvasView.extend({
 						context.lineTo(x2, cy2);
 						context.stroke();
 					}
-				}
-			}
-		}
-	},
-
-	_setStyle: function(s) {
-		var ctx = this._ctx;
-		if (typeof s == "string") {
-			s = this._styleData[s];
-		}
-		if (typeof s == "object") {
-			for (var p in s) {
-				switch (typeof ctx[p]) {
-					case "undefined":
-						break;
-					case "function":
-						if (Array.isArray(s[p])) ctx[p].apply(ctx, s[p]);
-						else ctx[p].call(ctx, s[p]);
-						break;
-					default:
-						ctx[p] = s[p];
 				}
 			}
 		}
@@ -687,7 +838,6 @@ var GraphView = CanvasView.extend({
 		retval.after = listRect.left + listRect.width;
 		return retval;
 	},
-
 });
 
 module.exports = GraphView;

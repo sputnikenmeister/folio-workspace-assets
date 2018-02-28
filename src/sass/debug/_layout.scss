@@ -109,7 +109,8 @@ $darkolivegreen: darkolivegreen;
 			background-color: transparentize($lightcoral, 0.9);
 		}
 		#site-name a,
-		.list .label {
+		.list .list-group .label span,
+		.list .list-item .label {
 			background-color: transparentize($lightcoral, 0.7);
 		}
 	}
