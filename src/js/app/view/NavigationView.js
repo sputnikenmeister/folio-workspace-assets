@@ -6,7 +6,7 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {module:backbone} */
-var Backbone = require("backbone");
+// var Backbone = require("backbone");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
 
@@ -33,12 +33,12 @@ var FilterableListView = require("app/view/component/FilterableListView");
 /** @type {module:app/view/component/GroupingListView} */
 var GroupingListView = require("app/view/component/GroupingListView");
 /** @type {module:app/view/component/CollectionPager} */
-var CollectionPager = require("app/view/component/CollectionPager");
+// var CollectionPager = require("app/view/component/CollectionPager");
 /** @type {module:app/view/component/CollectionPager} */
 var GraphView = require("app/view/component/GraphView");
 
 /** @type {module:utils/prefixedProperty} */
-var prefixedProperty = require("utils/prefixedProperty");
+// var prefixedProperty = require("utils/prefixedProperty");
 
 var tx = Globals.transitions;
 
@@ -475,7 +475,7 @@ var NavigationView = View.extend({
 			if (delta > maxDelta) { // overshooting
 				delta = ((delta - maxDelta) * Globals.VPAN_OUT_DRAG) + maxDelta;
 			} else { // no overshooting
-				delta = delta;
+				// delta = delta;
 			}
 		} else {
 			delta = (-delta) * Globals.VPAN_OUT_DRAG; // delta is opposite

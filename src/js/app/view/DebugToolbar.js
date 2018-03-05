@@ -8,6 +8,8 @@ var _ = require("underscore");
 var Backbone = require("backbone");
 /** @type {module:cookies-js} */
 var Cookies = require("cookies-js");
+/** @type {module:modernizr} */
+var Modernizr = require("Modernizr");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
@@ -42,8 +44,7 @@ var DebugToolbar = Backbone.View.extend({
 			navigator: window.navigator
 		});
 
-
-		/* toggle's target: container 
+		/* toggle's target: container
 		/* - - - - - - - - - - - - - - - - */
 		var container = document.body.querySelector("#container");
 
@@ -79,7 +80,7 @@ var DebugToolbar = Backbone.View.extend({
 	initializeLayoutSelect: function() {
 		var cookieKey = "layout-name";
 		var layoutSelectEl = this.el.querySelector("#select-layout select");
-		var docValue, cookieValue, selectValue;
+		var docValue, cookieValue; //, selectValue;
 		var values = [];
 
 		docValue = "";

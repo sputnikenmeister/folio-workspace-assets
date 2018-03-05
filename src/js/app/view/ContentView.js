@@ -265,7 +265,7 @@ var ContentView = View.extend({
 			if (delta > maxDelta) { // overshooting
 				delta = ((delta - maxDelta) * Globals.VPAN_OUT_DRAG) + maxDelta;
 			} else { // no overshooting
-				delta = delta;
+				// delta = delta;
 			}
 		} else {
 			delta = (-delta) * Globals.VPAN_OUT_DRAG; // delta is opposite

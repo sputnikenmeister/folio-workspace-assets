@@ -36,6 +36,10 @@ Interpolator.prototype = Object.create({
 	/* public interface
 	/* --------------------------- */
 
+	isAtTarget: function(key) {
+		return this._renderableKeys.indexOf(key) === -1;
+	},
+
 	getValue: function(key) {
 		return this._valueData[key]._value;
 	},
@@ -69,8 +73,8 @@ Interpolator.prototype = Object.create({
 	},
 
 	updateValue: function(key) {
-		// Call _interpolateValue only if needed. _interpolateValue() returns false once
-		// interpolation is done, in which case remove key from _renderableKeys.
+		// Call _interpolateValue only if needed. _interpolateValue() returns false
+		// once interpolation is done, in which case remove key from _renderableKeys.
 		var kIndex = this._renderableKeys.indexOf(key);
 		if (kIndex !== -1 && !this._interpolateValue(key)) {
 			this._renderableKeys.splice(kIndex, 1);
@@ -199,7 +203,6 @@ Interpolator.prototype = Object.create({
 	valuesChanged: {
 		get: function() {
 			return this._valuesChanged;
-			// return this._renderableKeys.length !== 0;
 		}
 	},
 	renderableKeys: {
