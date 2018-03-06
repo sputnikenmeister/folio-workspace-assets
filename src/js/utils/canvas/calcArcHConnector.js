@@ -2,7 +2,7 @@
  * @module utils/canvas/calcArcHConnector
  */
 
-module.exports = function(x1, y1, x2, y2, r1, r2, ro) {
+module.exports = function(x1, y1, r1, x2, y2, r2, ro) {
 	var qx = x2 > x1 ? 1 : -1;
 	var qy = y2 > y1 ? 1 : -1;
 	var dy = Math.abs(y2 - y1);
@@ -40,18 +40,20 @@ module.exports = function(x1, y1, x2, y2, r1, r2, ro) {
 		tx1 = tx - (ty * slope);
 		tx2 = (dy * slope) + tx1;
 
-		// // circle centers
-		// var ccx1, ccy1, ccx2, ccy2;
-		// ccx1 = 0;
-		// ccy1 = r1;
-		// ccx2 = c;
-		// ccy2 = dy - r2;
-		// // tangent perpendicular slope
-		// var slope = (ccy1 - ccy2) / (ccx2 - ccx1);
-		// var xSec = tx - (ty * slope);
-		// // tangent intersections
-		// tx1 = xSec;
-		// tx2 = (dy * slope) + xSec;
+		/*
+		// circle centers
+		var ccx1, ccy1, ccx2, ccy2;
+		ccx1 = 0;
+		ccy1 = r1;
+		ccx2 = c;
+		ccy2 = dy - r2;
+		// tangent perpendicular slope
+		var slope = (ccy1 - ccy2) / (ccx2 - ccx1);
+		var xSec = tx - (ty * slope);
+		// tangent intersections
+		tx1 = xSec;
+		tx2 = (dy * slope) + xSec;
+		*/
 	}
 
 	// offset arcTo's in x-axis
@@ -65,15 +67,7 @@ module.exports = function(x1, y1, x2, y2, r1, r2, ro) {
 		tx2 += ro;
 	}
 
-	tx1 = tx1 * qx + x1;
-	tx2 = tx2 * qx + x1;
-
-	// if (ctx) {
-	// 	ctx.arcTo(tx1, y1, tx2, y2, r1);
-	// 	ctx.arcTo(tx2, y2, x2, y2, r2);
-	// } else {
-	return [tx1, tx2];
-	// }
+	return [tx1 * qx + x1, tx2 * qx + x1, tx1, tx2];
 };
 
 /*
