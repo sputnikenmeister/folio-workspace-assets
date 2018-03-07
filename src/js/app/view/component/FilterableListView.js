@@ -242,7 +242,7 @@ var FilterableListView = View.extend({
 		if (this.collection.selected !== item) {
 			this.trigger("view:select:one", item);
 		} else {
-			this.trigger("view:select:none");
+			// this.trigger("view:select:none");
 		}
 	},
 

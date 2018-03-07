@@ -119,7 +119,8 @@ function initCarouselStyles(sheet, carouselSelector, attrs, fgColor, bgColor, ha
 	// text color luminosity is inverse from body, apply oposite rendering mode
 	s["color"] = bgColor.rgbString();
 	// s["color"]				= bgColor.clone()[hasDarkBg?"darken":"lighten"](0.045).rgbString();
-	s["background-color"] = bgColor.clone().mix(fgColor, 0.95).rgbString();
+	// s["background-color"] = bgColor.clone().mix(fgColor, 0.95).rgbString();
+	s["background-color"] = bgColor.clone().mix(fgColor, 0.8).alpha(0.3).rgbaString();
 	// s["background-color"]	= bgColor.clone()[hasDarkBg?"lighten":"darken"](0.03).rgbString();
 	("border-radius" in attrs) && (s["border-radius"] = attrs["border-radius"]);
 	insertCSSRule(sheet, carouselSelector + " .media-item .placeholder", s);

@@ -26,6 +26,7 @@
 		"background-color": "hsl(47, 5%, 95%)",
 		"link-color": "hsl(10, 80%, 50%)"
 	},
+	"layout_names": ["default-layout", "left-layout", "right-layout"],
 	"temp": {
 		"collapse_offset": "360"
 	}

@@ -9,12 +9,15 @@ module.exports = {
 		"commonjs": true
 	},
 	"globals": {
-		"DEBUG": false
+		/* define globals, disallow assignment */
+		"DEBUG": false,
+		"Modernizr": false
 	},
 	"rules": {
 		"no-cond-assign": "warn",
 		"no-console": "off",
 		"no-empty": "warn",
+		/* allow fallthrough in switch */
 		"no-fallthrough": "off",
 		"no-unused-vars": ["warn", { "args": "none" }],
 		"no-useless-escape": "warn"

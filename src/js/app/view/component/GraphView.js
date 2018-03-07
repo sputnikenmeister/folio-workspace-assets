@@ -24,12 +24,13 @@ var Globals = require("app/control/Globals");
 
 /** @type {module:utils/canvas/calcArcHConnector} */
 var calcArcHConnector = require("utils/canvas/calcArcHConnector");
-/** @type {module:utils/canvas/drawArcHConnector} */
-var drawArcHConnector = require("utils/canvas/drawArcHConnector");
+
+// /** @type {module:utils/canvas/calcArcHConnector} */
+// var CanvasHelper = require("utils/canvas/CanvasHelper");
 
 // var BEZIER_CIRCLE = 0.551915024494;
 // var MIN_CANVAS_RATIO = 2;
-var PI2 = Math.PI * 2;
+// var PI2 = Math.PI * 2;
 
 var styleBase = {
 	lineWidth: 1,
@@ -38,18 +39,23 @@ var styleBase = {
 	margin: 20,
 };
 
-var _dStyles = {
-	red: {
-		lineWidth: 1,
-		fillStyle: "rgba(255,127,127,0.5)",
-		strokeStyle: "rgba(255,127,127,0.5)",
-	},
-	blue: {
-		lineWidth: 1,
-		fillStyle: "rgba(127,127,255,0.5)",
-		strokeStyle: "rgba(127,127,255,0.5)",
-	}
-};
+// var _dStyles = {
+// 	red: {
+// 		lineWidth: 1,
+// 		fillStyle: "rgba(255,127,127,0.5)",
+// 		strokeStyle: "rgba(255,127,127,0.5)",
+// 		lineDashOffset: 0,
+// 		setLineDash: [[]]
+// 	},
+// 	blue: {
+// 		lineWidth: 1,
+// 		fillStyle: "rgba(127,127,255,0.5)",
+// 		strokeStyle: "rgba(127,127,255,0.5)",
+// 		lineDashOffset: 0,
+// 		setLineDash: [[]]
+// 	}
+// };
+
 
 function setStyle(ctx, s) {
 	if (typeof s != "object") return;
@@ -66,88 +72,6 @@ function setStyle(ctx, s) {
 		}
 	}
 }
-
-function vGuide(ctx, x, s) {
-	ctx.save();
-	if (s) setStyle(ctx, s);
-	ctx.beginPath();
-	ctx.moveTo(x, ctx.canvas.offsetTop);
-	ctx.lineTo(x, ctx.canvas.offsetHeight);
-	ctx.stroke();
-	ctx.restore();
-}
-
-function crosshair(ctx, x, y, r, s) {
-	ctx.save();
-	if (s) {
-		setStyle(ctx, s);
-	}
-	// if (s && s.style != "vertical") {
-	ctx.translate(x, y);
-	ctx.rotate(Math.PI / 4);
-	// }
-	ctx.beginPath();
-	ctx.moveTo(0, -r);
-	ctx.lineTo(0, r);
-	ctx.moveTo(-r, 0);
-	ctx.lineTo(r, 0);
-	ctx.stroke();
-	ctx.restore();
-}
-
-function circle(ctx, x, y, r, solid, s) {
-	ctx.save();
-	if (s) setStyle(ctx, s);
-	ctx.beginPath();
-	ctx.arc(x, y, r, 0, PI2);
-	ctx.closePath();
-	if (solid) ctx.fill();
-	else ctx.stroke();
-	ctx.restore();
-}
-
-function square(ctx, x, y, r, solid, s) {
-	r = Math.floor(r / 2) * 2;
-	if (solid) r += 0.5;
-	ctx.save();
-	if (s) setStyle(ctx, s);
-	ctx.beginPath();
-	ctx.rect(x - r, y - r, r * 2, r * 2);
-	if (solid) ctx.fill();
-	else ctx.stroke();
-	ctx.restore();
-}
-
-function arrowhead(ctx, x, y, r, a, stroked, s) {
-	ctx.save();
-	if (s) {
-		setStyle(ctx, s);
-	}
-	if (r < 10) {
-		ctx.setLineDash([]);
-	}
-	ctx.translate(x, y);
-	ctx.rotate((a || 0) - Math.PI * 0.5);
-	ctx.beginPath();
-	ctx.moveTo(0, 0);
-	// ctx.lineTo(-r, r * Math.SQRT1_2);
-	// ctx.lineTo(-r, -r * Math.SQRT1_2);
-	ctx.lineTo(-r * Math.SQRT2, r * Math.SQRT1_2);
-	ctx.arcTo(0, 0, -r * Math.SQRT2, -r * Math.SQRT1_2, r);
-	ctx.lineTo(0, 0);
-	if (stroked) ctx.stroke();
-	else ctx.fill();
-	ctx.restore();
-}
-
-// var hConnector = function(ctx, x2, cx2, cy2, x1, cx1, cy1, r2, r1, ro) {
-var hConnector = function(ctx, x1, cx1, cy1, x2, cx2, cy2, r1, r2, ro) {
-	ctx.beginPath();
-	ctx.moveTo(x1, cy1);
-	drawArcHConnector(ctx, cx1, cy1, cx2, cy2, r1, r2, ro);
-	ctx.lineTo(x2, cy2);
-	ctx.stroke();
-};
 
 /**
  * @constructor
@@ -250,22 +174,28 @@ var GraphView = CanvasView.extend({
 		this._ctx.setTransform(this._canvasRatio, 0, 0, this._canvasRatio, -bounds.left * this._canvasRatio - 0.5, -bounds.top * this._canvasRatio - 0.5);
 
 		// var i, ii, itemView, itemRect, listView, itemEls;
-		var i, itemEls;
+		var i, ii, itemEls;
 
 		this._dataA.rect = this._listA.el.getBoundingClientRect();
 		this._dataA.xMin = this._dataA.rect.left;
 		itemEls = this._listA.el.querySelectorAll(".label");
-		for (i = 0; i < itemEls.length; i++) {
+		for (i = 0, ii = itemEls.length; i < ii; i++) {
 			this._dataA.xMin = Math.max(this._dataA.xMin,
-				itemEls.item(i).getBoundingClientRect().right);
+				itemEls[i].getBoundingClientRect().right);
 		}
 
 		this._dataB.rect = this._listB.el.getBoundingClientRect();
 		this._dataB.xMin = this._dataB.rect.left;
 		itemEls = this._listB.el.querySelectorAll(".label");
-		for (i = 0; i < itemEls.length; i++) {
+		for (i = 0, ii = itemEls.length; i < ii; i++) {
 			this._dataB.xMin = Math.min(this._dataB.xMin,
-				itemEls.item(i).getBoundingClientRect().left);
+				itemEls[i].getBoundingClientRect().left);
+		}
+
+		this._groupRects = [];
+		itemEls = this._listB.el.querySelectorAll(".list-group .label span");
+		for (i = 0, ii = itemEls.length; i < ii; i++) {
+			this._groupRects[i] = itemEls[i].getBoundingClientRect();
 		}
 
 		// this._dataA.targets = this._measureListItems(listView);
@@ -286,8 +216,9 @@ var GraphView = CanvasView.extend({
 	/* --------------------------- */
 
 	_beforeViewRender: function(view, flags) {
-		console.log("%s::_beforeViewRender [flags: %s]", this.cid, CanvasView.flagsToString(flags));
 		if (flags & (CanvasView.SIZE_INVALID | CanvasView.MODEL_INVALID)) {
+			console.log("%s::_beforeViewRender [flags: %s]", this.cid, CanvasView.flagsToString(flags));
+
 			this._dataA.pointsOut = this._dataA.points;
 			this._dataA.maxLengthOut = this._dataA.maxLength;
 			this._dataA.points = null;
@@ -326,7 +257,7 @@ var GraphView = CanvasView.extend({
 	},
 
 	_redraw_fromElements: function(context, interpolator) {
-		var i, ii, s, p;
+		var i, ii, s, r;
 
 		// keyword to bundles, right to left
 		if (this._dataB.points === null) {
@@ -371,18 +302,21 @@ var GraphView = CanvasView.extend({
 			}
 			// if (DEBUG) {
 			// 	if (!interpolator._valuesChanged) {
+			// 		var p;
 			// 		for (i = 0; i < ii; i++) {
 			// 			p = this._dataB.points[i];
-			// 			crosshair(context, p.cx2, p.cy2, 5, _dStyles.red);
-			// 			circle(context, p.cx1, p.cy1, 1, true, _dStyles.blue);
+			// 			CanvasHelper.crosshair(context, p.cx2, p.cy2, 5, _dStyles.red);
+			// 			CanvasHelper.circle(context, p.cx1, p.cy1, 1, true, _dStyles.blue);
 			// 		}
 			// 	}
 			// }
 		}
 
-		// Some debugging aids
-		// vGuide(context, this._dataA.xMin, _dStyles.red);
-		// vGuide(context, this._dataB.xMin, _dStyles.blue);
+		// // Some debugging aids
+		// if (DEBUG) {
+		// 	CanvasHelper.vGuide(context, this._dataA.xMin, _dStyles.red);
+		// 	CanvasHelper.vGuide(context, this._dataB.xMin, _dStyles.blue);
+		// }
 
 		if (this._dataB.pointsOut && (ii = this._dataB.pointsOut.length)) {
 			s = this._dataB.s;
@@ -403,13 +337,11 @@ var GraphView = CanvasView.extend({
 			}
 		}
 
-		var els, rect;
 		if (this._dataA.points || this._dataB.points || this._dataA.pointsOut || this._dataB.pointsOut) {
-			els = this._listB.el.querySelectorAll(".list-group .label span");
-			ii = els.length;
+			ii = this._groupRects.length;
 			for (i = 0; i < ii; i++) {
-				rect = els[i].getBoundingClientRect();
-				context.clearRect(rect.left, rect.top, rect.width, rect.height);
+				r = this._groupRects[i];
+				context.clearRect(r.left, r.top, r.width, r.height);
 			}
 		}
 	},

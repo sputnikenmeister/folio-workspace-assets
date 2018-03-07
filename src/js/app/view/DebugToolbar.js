@@ -13,8 +13,11 @@ var Modernizr = require("Modernizr");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
-/** @type {module:app/control/Controller} */
+// /** @type {module:app/control/Controller} */
 // var controller = require("app/control/Controller");
+
+/** @type {module:app/view/base/View} */
+var View = require("app/view/base/View");
 
 /** @type {Function} */
 var viewTemplate = require("./template/DebugToolbar.hbs");
@@ -25,8 +28,10 @@ var mediaInfoTemplate = _.template("<%= w %> \u00D7 <%= h %>");
 // var appStateSymbols = { withBundle: "b", withMedia: "m", collapsed: "c"};
 // var appStateKeys = Object.keys(appStateSymbols);
 
-var DebugToolbar = Backbone.View.extend({
+var DebugToolbar = View.extend({
 
+	/** @override */
+	cidPrefix: "debugToolbar",
 	/** @override */
 	tagName: "div",
 	/** @override */
@@ -40,6 +45,7 @@ var DebugToolbar = Backbone.View.extend({
 		};
 
 		this.el.innerHTML = this.template({
+			layouts: Globals.LAYOUT_NAMES,
 			tests: Modernizr,
 			navigator: window.navigator
 		});
@@ -55,7 +61,7 @@ var DebugToolbar = Backbone.View.extend({
 		this.appStateEl = this.el.querySelector("#app-state");
 
 		/* toggle visibility
-		/* - - - - - - - - - - - - - - - - */
+				/* - - - - - - - - - - - - - - - - */
 		this.initializeClassToggle("show-links", this.el.querySelector(".debug-links #links-toggle"), this.el);
 		this.initializeClassToggle("show-tests", this.el.querySelector("#toggle-tests a"), this.el);
 		this.initializeClassToggle("hide-passed", this.el.querySelector("#toggle-passed"), this.el);
@@ -78,47 +84,35 @@ var DebugToolbar = Backbone.View.extend({
 	},
 
 	initializeLayoutSelect: function() {
-		var cookieKey = "layout-name";
 		var layoutSelectEl = this.el.querySelector("#select-layout select");
-		var docValue, cookieValue; //, selectValue;
-		var values = [];
-
-		docValue = "";
-		for (var val, i = 0; i < layoutSelectEl.children.length; i++) {
-			val = layoutSelectEl.children[i].value;
-			values.push(val);
-			if (document.body.classList.contains(val)) {
-				docValue = val;
-			}
-		}
-		// sync to docValue, so previous value is up-to-date on change
-		this.model.set("layoutName", docValue, {
-			silent: true
-		});
+		var cookieValue, cookieKey = "layout-name";
+		var modelValue, modelKey = "layoutName";
 
 		this.listenTo(this.model, "change:layoutName", function(model, value) {
-			var previousValue = model.previous("layoutName");
+			var previousValue = model.previous(modelKey);
 			if (previousValue)
 				document.body.classList.remove(previousValue);
 			if (value)
 				document.body.classList.add(value);
 			Cookies.set(cookieKey, value);
-			// console.info("%s::init layout-name value:'%s' previous:'%s'\n\tdoc:'%s'", this.cid, value, previousValue, document.body.className);
+			console.info("%s::[change:layoutName] layout-name value:'%s' previous:'%s'\n\tdoc:'%s'", this.cid, value, previousValue, document.body.className);
 		});
 
 		layoutSelectEl.addEventListener("change", function(ev) {
-			// console.info("%s:[change] value:'%s'", this.cid, ev.target.value, ev);
-			this.model.set("layoutName", ev.target.value);
+			console.info("%s:[change] value:'%s'", this.cid, ev.target.value, ev);
+			this.model.set(modelKey, ev.target.value);
 		}.bind(this), false);
 
+		modelValue = this.model.get(modelKey);
 		cookieValue = Cookies.get(cookieKey);
+
 		if (!cookieValue) {
-			Cookies.set(cookieKey, docValue);
-			cookieValue = docValue;
+			Cookies.set(cookieKey, modelValue);
+			cookieValue = modelValue;
 		}
 		layoutSelectEl.value = cookieValue;
-		this.model.set("layoutName", cookieValue);
-		// console.info("%s::init layout-name cookie:'%s' model:'%s' select:'%s'\n\tdoc:'%s'", this.cid, Cookies.get(cookieKey), this.model.get("layoutName"), layoutSelectEl.value, document.body.className);
+		this.model.set(modelKey, cookieValue);
+		console.info("%s::init layout-name cookie:'%s' model:'%s' select:'%s'\n\tdoc:'%s'", this.cid, Cookies.get(cookieKey), this.model.get(modelKey), layoutSelectEl.value, document.body.className);
 	},
 
 	initializeToggle: function(key, toggleEl, callback) {
@@ -147,7 +141,7 @@ var DebugToolbar = Backbone.View.extend({
 	},
 
 	_onModelChange: function() {
-		// console.log("%s::_onModelChange", this.cid, this.model.changedAttributes());
+		console.log("%s::_onModelChange changedAttributes:%o", this.cid, this.model.changedAttributes());
 		var i, ii, prop, el, els = this.appStateEl.children;
 		for (i = 0, ii = els.length; i < ii; i++) {
 			el = els[i];

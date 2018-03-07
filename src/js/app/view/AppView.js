@@ -69,6 +69,13 @@ var AppViewProto = {
 	/** @override */
 	initialize: function(options) {
 		// document.documentElement.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
+		/* sync to docValue, so previous value is up-to-date on change */
+		var docValue = _.find(Globals.LAYOUT_NAMES, function(s) {
+			return document.body.classList.contains(s);
+		});
+		this.model.set("layoutName", docValue, {
+			silent: true
+		});
 
 		/* prevent touch overscroll on iOS */
 		document.addEventListener("touchmove", function(ev) {
@@ -285,42 +292,12 @@ if (DEBUG) {
 				model: this.model
 			});
 			this.el.appendChild(view.render().el);
-
 			this.listenTo(this.model, "change:layoutName", function() {
 				this.requestRender(View.SIZE_INVALID); //.renderNow();
 			});
 			return fn.apply(this, arguments);
 		};
 	})(AppViewProto.initialize);
-
-	// AppViewProto.renderFrame = (function(fn) {
-	// 	return function() {
-	// 		// var retVal = fn.apply(this, arguments); return retVal;
-	// 		console.log(this.model);
-	// 		var layoutName;
-	// 		if (View.SIZE_INVALID && this.model.hasChanged("layoutName")) {
-	// 			
-	// 				var prev = this.model.previous("layoutName");
-	// 				var curr = this.model.get("layoutName");
-	// 				if (prev) document.body.classList.remove(prev);
-	// 				if (curr) document.body.classList.add(curr);
-	// 				
-	// 			// if (layoutName = this.model.previous("layoutName")) {
-	// 			// 	document.body.classList.remove(layoutName);
-	// 			// }
-	// 			// if (layoutName = this.model.get("layoutName")) {
-	// 			// 	document.body.classList.add(layoutName);
-	// 			// }
-	// 		}
-	// 		return fn.apply(this, arguments);
-	// 	};
-	// })(AppViewProto.renderFrame);
-
-	// AppViewProto.initialize = _.wrap(AppViewProto.initialize, function(fn) {
-	// 	this.el.appendChild((new DebugToolbar({id: "debug-toolbar", collection: bundles})).render().el);
-	// 	// wrapped fn is first argument, so call shift result directly with (already shifted) arguments
-	// 	Array.prototype.shift.apply(arguments).apply(this, arguments);
-	// });
 }
 
 /**

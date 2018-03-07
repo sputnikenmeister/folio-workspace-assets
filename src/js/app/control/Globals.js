@@ -30,6 +30,7 @@ module.exports = (function() {
 
 	// base colors, dimensions
 	// - - - - - - - - - - - - - - - - -
+	g.LAYOUT_NAMES = _.clone(sass.layout_names);
 	g.DEFAULT_COLORS = _.clone(sass.default_colors);
 	g.HORIZONTAL_STEP = parseFloat(sass.units["hu_px"]);
 	g.VERTICAL_STEP = parseFloat(sass.units["vu_px"]);
