@@ -175,6 +175,7 @@ var PlayableRenderer = MediaRenderer.extend({
 	/* --------------------------- */
 
 	_onModelSelected: function() {
+		console.log("%s::_onModelSelected _playbackRequested: %s, event: %s", this.cid, this._playbackRequested, this._toggleEvent);
 		// logAttachInfo(this, "_onModelSelected", "log");
 		// this._addParentListeners();
 		this.listenTo(this, "view:parentChange", this._onParentChange);
@@ -223,42 +224,43 @@ var PlayableRenderer = MediaRenderer.extend({
 	/* view:parentChange handlers
 	/* --------------------------- */
 
-	// _addParentListeners:function() {
-	// 	if (!this.parentView) {
-	// 		logAttachInfo(this, "_addParentListeners", "error");
-	// 		return;
-	// 	}
-	// 	this.listenTo(this, "view:remove", this._removeParentListeners);
-	// 	this.listenTo(this.parentView, "view:remove", this._removeParentListeners);
-	// 	this.listenTo(this.parentView, "view:scrollstart", this._onScrollStart);
-	// 	this.listenTo(this.parentView, "view:scrollend", this._onScrollEnd);
-	// },
-	// 
-	// _removeParentListeners: function(view) {
-	// 	if (!this.parentView) {
-	// 		logAttachInfo(this, "_removeParentListeners", "error");
-	// 		return;
-	// 	}
-	// 	if (view !== void 0) {
-	// 		logAttachInfo(this, "_removeParentListeners [event source view]", "info");
-	// 		// console.info("%s[playable]::_removeParentListeners event source view: %s", this.cid, view && view.cid);
-	// 	}
-	// 	
-	// 	this.stopListening(this, "view:remove", this._removeParentListeners);
-	// 	this.stopListening(this.parentView, "view:remove", this._removeParentListeners);
-	// 	this.stopListening(this.parentView, "view:scrollstart", this._onScrollStart);
-	// 	this.stopListening(this.parentView, "view:scrollend", this._onScrollEnd);
-	// },
+	/*_addParentListeners: function() {
+		if (!this.parentView) {
+			logAttachInfo(this, "_addParentListeners", "error");
+			return;
+		}
+		this.listenTo(this, "view:remove", this._removeParentListeners);
+		this.listenTo(this.parentView, "view:remove", this._removeParentListeners);
+		this.listenTo(this.parentView, "view:scrollstart", this._onScrollStart);
+		this.listenTo(this.parentView, "view:scrollend", this._onScrollEnd);
+	},
 
-	// /* view:scrollstart view:scrollend
-	// /* --------------------------- */
-	// _onScrollStart: function() {
-	// 	this.togglePlayback(false);
-	// },
-	// 
-	// _onScrollEnd: function() {
-	// 	this._validatePlayback();
-	// },
+	_removeParentListeners: function(view) {
+		if (!this.parentView) {
+			logAttachInfo(this, "_removeParentListeners", "error");
+			return;
+		}
+		if (view !== void 0) {
+			logAttachInfo(this, "_removeParentListeners [event source view]", "info");
+			// console.info("%s[playable]::_removeParentListeners event source view: %s", this.cid, view && view.cid);
+		}
+
+		this.stopListening(this, "view:remove", this._removeParentListeners);
+		this.stopListening(this.parentView, "view:remove", this._removeParentListeners);
+		this.stopListening(this.parentView, "view:scrollstart", this._onScrollStart);
+		this.stopListening(this.parentView, "view:scrollend", this._onScrollEnd);
+	},*/
+
+	/* view:scrollstart view:scrollend
+	/* --------------------------- */
+
+	/*_onScrollStart: function() {
+		this.togglePlayback(false);
+	},
+
+	_onScrollEnd: function() {
+		this._validatePlayback();
+	},*/
 
 	/* listen to DOM events
 	/* --------------------------- */
@@ -266,13 +268,13 @@ var PlayableRenderer = MediaRenderer.extend({
 	_addDOMListeners: function() {
 		this.listenTo(this, "view:removed", this._removeDOMListeners);
 		document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		this.playToggle.addEventListener(this._toggleEvent, this._onPlaybackToggle, false);
+		this.playToggle.addEventListener(this._toggleEvent, this._onPlaybackToggle, true);
 	},
 
 	_removeDOMListeners: function() {
 		this.stopListening(this, "view:removed", this._removeDOMListeners);
 		document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		this.playToggle.removeEventListener(this._toggleEvent, this._onPlaybackToggle, false);
+		this.playToggle.removeEventListener(this._toggleEvent, this._onPlaybackToggle, true);
 	},
 
 	/* visibility dom event
@@ -292,10 +294,10 @@ var PlayableRenderer = MediaRenderer.extend({
 	/* --------------------------- */
 
 	/** @type {String} */
-	_toggleEvent: "mouseup",
+	_toggleEvent: window.hasOwnProperty("onpointerup") ? "pointerup" : "mouseup",
 
 	_onPlaybackToggle: function(ev) {
-		// console.log("%s::_onPlaybackToggle[%s] defaultPrevented: %s", this.cid, ev.type, ev.defaultPrevented);
+		console.log("%s[%sabled]::_onPlaybackToggle[%s] defaultPrevented: %s", this.cid, this.enabled ? "en" : "dis", ev.type, ev.defaultPrevented);
 		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
 		if (!ev.defaultPrevented && !ev.button) {
 			ev.preventDefault();
@@ -332,7 +334,7 @@ var PlayableRenderer = MediaRenderer.extend({
 
 	/** @override */
 	togglePlayback: function(newPlayState) {
-		// console.log("[scroll] %s::togglePlayback [%s -> %s] (requested: %s)", this.cid, 
+		// console.log("[scroll] %s::togglePlayback [%s -> %s] (requested: %s)", this.cid,
 		// 		(this._isMediaPaused()? "pause" : "play"),
 		// 		(newPlayState? "play" : "pause"),
 		// 		this.playbackRequested
@@ -404,7 +406,7 @@ var PlayableRenderer = MediaRenderer.extend({
 
 	_drawMediaElement: function(context, mediaEl, dest) {
 		// destination rect
-		// NOTE: mediaEl is expected to have the same dimensions in this.metrics.media 
+		// NOTE: mediaEl is expected to have the same dimensions in this.metrics.media
 		mediaEl || (mediaEl = this.defaultImage);
 		dest || (dest = {
 			x: 0,
@@ -451,7 +453,7 @@ var PlayableRenderer = MediaRenderer.extend({
 		// src/dest rects
 		// ------------------------------
 		rectEl || (rectEl = targetEl);
-		
+
 		// NOTE: does not work with svg element
 		// var tRect = rectEl.getBoundingClientRect();
 		// var cRect = mediaEl.getBoundingClientRect();
@@ -459,17 +461,17 @@ var PlayableRenderer = MediaRenderer.extend({
 		// 	tY = tRect.y - cRect.y,
 		// 	tW = tRect.width,
 		// 	tH = tRect.height;
-		
+
 		// target bounds
 		var tX = rectEl.offsetLeft,
 			tY = rectEl.offsetTop,
 			tW = rectEl.offsetWidth,
 			tH = rectEl.offsetHeight;
-		
+
 		if (tX === void 0 || tY === void 0 || tW === void 0 || tH === void 0) {
 			return;
 		}
-			
+
 		// destination rect
 		var RECT_GROW = 20;
 		var dest = {
@@ -478,13 +480,13 @@ var PlayableRenderer = MediaRenderer.extend({
 			width: tW + RECT_GROW * 2,
 			height: tH + RECT_GROW * 2
 		};
-			
+
 		// native/display scale
 		var sW = this.model.get("w"),
 			sH = this.model.get("h"),
 			rsX = sW/this.metrics.media.width,
 			rsY = sH/this.metrics.media.height;
-		
+
 		// dest, scaled to native
 		var src = {
 			x: Math.max(0, dest.x * rsX),
@@ -492,15 +494,15 @@ var PlayableRenderer = MediaRenderer.extend({
 			width: Math.min(sW, dest.width * rsX),
 			height: Math.min(sH, dest.height * rsY)
 		};
-		
+
 		// Copy image to canvas
 		// ------------------------------
 		var canvas, context, imageData;
-		
+
 		// canvas = document.createElement("canvas");
 		// canvas.style.width  = dest.width + "px";
 		// canvas.style.height = dest.height + "px";
-		
+
 		canvas = getSharedCanvas();
 		if (canvas.width !== dest.width || canvas.height !== dest.height) {
 			canvas.width = dest.width;
@@ -508,50 +510,50 @@ var PlayableRenderer = MediaRenderer.extend({
 		}
 		context = canvas.getContext("2d");
 		context.clearRect(0, 0, dest.width, dest.height);
-		context.drawImage(mediaEl, 
+		context.drawImage(mediaEl,
 			src.x, src.y, src.width, src.height,
 			0, 0, dest.width, dest.height // destination rect
 		);
 		imageData = context.getImageData(0, 0, dest.width, dest.height);
-		
+
 		var avgColor = Color().rgb(getAverageRGB(imageData));
 		// var avgHex = avgColor.hexString(), els = this.el.querySelectorAll("img, video");
 		// for (var i = 0; i < els.length; i++) {
 		// 	els.item(i).style.backgroundColor = avgHex;
 		// }
-		
+
 		targetEl.classList.toggle("over-dark", avgColor.dark());
-		
+
 		// console.log("%s::updateOverlay() avgColor:%s (%s)", this.cid, avgColor.rgbString(), avgColor.dark()?"dark":"light", targetEl);
-			
+
 		// Color, filter opts
 		// ------------------------------
-		
+
 		// this.fgColor || (this.fgColor = new Color(this.model.attr("color")));
 		// this.bgColor || (this.bgColor = new Color(this.model.attr("background-color")));
-		// 
+		//
 		// var opts = { radius: 20 };
 		// var isFgDark = this.fgColor.luminosity() < this.bgColor.luminosity();
 		// opts.x00 = isFgDark? this.fgColor.clone().lighten(0.5) : this.bgColor.clone().darken(0.5);
 		// opts.xFF = isFgDark? this.bgColor.clone().lighten(0.5) : this.fgColor.clone().darken(0.5);
-		// 
+		//
 		// stackBlurMono(imageData, opts);
 		// duotone(imageData, opts);
 		// stackBlurRGB(imageData, { radius: 20 });
-		// 
+		//
 		// context.putImageData(imageData, 0, 0);
 		// targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
 	}*/
 });
 
 // if (DEBUG) {
-// 
+//
 // PlayableRenderer = (function(PlayableRenderer) {
 // 	if (!PlayableRenderer.LOG_TO_SCREEN) return PlayableRenderer;
-// 	
+//
 // 	/** @type {module:underscore.strings/lpad} */
 // 	var lpad = require("underscore.string/lpad");
-// 	
+//
 // 	return PlayableRenderer.extend({
 // 		_canResumePlayback: function() {
 // 			var retval = PlayableRenderer.prototype._canResumePlayback.apply(this.arguments);
@@ -571,7 +573,7 @@ var PlayableRenderer = MediaRenderer.extend({
 // 		},
 // 	});
 // })(PlayableRenderer);
-// 
+//
 // }
 
 module.exports = PlayableRenderer;

@@ -10,23 +10,19 @@
 		"ease": "ease"
 	},
 	"breakpoints": {
-		"smartphone": "only screen and (min-device-width : 320px) and (max-device-width : 480px)",
-		"smartphone-landscape": "only screen and (min-width : 321px)",
-		"smartphone-portrait": "only screen and (max-width : 320px)",
-		"ipad-landscape": "only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : landscape)",
-		"ipad-portrait": "only screen and (min-device-width : 768px) and (max-device-width : 1024px) and (orientation : portrait)",
-		"ipad": "only screen and (min-device-width : 768px) and (max-device-width : 1024px)",
-		"desktop-small": "only screen and (min-width : 1024px)",
-		"desktop-medium": "only screen and (min-width : 1224px)",
-		"desktop-large": "only screen and (min-width : 1824px)",
-		"iphone4": "only screen and (min-device-pixel-ratio : 1.5)"
+		"mobile": "not screen and (min-width: 704px) and (min-height: 540px)",
+		"unsupported": "not screen and (min-width: 704px)",
+		"desktop-small": "only screen and (min-width: 1024px)",
+		"desktop-medium": "only screen and (min-width: 1224px)",
+		"desktop-large": "only screen and (min-width: 1824px)"
 	},
 	"default_colors": {
 		"color": "hsl(47, 5%, 15%)",
 		"background-color": "hsl(47, 5%, 95%)",
-		"link-color": "hsl(10, 80%, 50%)"
+		"--link-color": "hsl(10, 80%, 50%)",
+		"--alt-background-color": "unset"
 	},
-	"layout_names": ["default-layout", "left-layout", "right-layout"],
+	"layout_names": ["left-layout", "default-layout", "right-layout"],
 	"temp": {
 		"collapse_offset": "360"
 	}

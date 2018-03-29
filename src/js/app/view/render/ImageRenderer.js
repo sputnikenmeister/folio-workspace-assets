@@ -2,15 +2,15 @@
  * @module app/view/render/ImageRenderer
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
+// /** @type {module:underscore} */
+// var _ = require("underscore");
+// /** @type {module:backbone} */
+// var Backbone = require("backbone");
 
-/** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
-/** @type {module:app/model/item/MediaItem} */
-var MediaItem = require("app/model/item/MediaItem");
+// /** @type {module:app/control/Globals} */
+// var Globals = require("app/control/Globals");
+// /** @type {module:app/model/item/MediaItem} */
+// var MediaItem = require("app/model/item/MediaItem");
 
 /** @type {module:app/view/MediaRenderer} */
 var MediaRenderer = require("./MediaRenderer");
@@ -76,26 +76,26 @@ var ImageRenderer = MediaRenderer.extend({
 
 	initializeAsync: function() {
 		return MediaRenderer.prototype.initializeAsync.apply(this, arguments)
-			// return MediaRenderer.whenSelectionIsContiguous(this)
-			// // return Promise.resolve(this)
-			// // 	.then(MediaRenderer.whenSelectionIsContiguous)
-			// 	.then(MediaRenderer.whenSelectTransitionEnds)
-			// 	.then(MediaRenderer.whenDefaultImageLoads)
-			// .then(
-			// 	function(view) {
-			// 		view.mediaState = "ready";
-			// 	})
-			// .catch(
-			// 	function(err) {
-			// 		if (err instanceof ViewError) {
-			// 			// NOTE: ignore ViewError type
-			// 			// console.log(err.view.cid, err.view.model.cid, "ImageRenderer: " + err.message);
-			// 		} else {
-			// 			console.error(this.cid, err.name, err);
-			// 			this.placeholder.innerHTML = "<p class=\"color-fg\" style=\"position:absolute;bottom:0;padding:3rem;\"><strong>" + err.name + "</strong> " + err.message + "</p>";
-			// 			this.mediaState = "error";
-			// 		}
-			// 	}.bind(this))
+		// return MediaRenderer.whenSelectionIsContiguous(this)
+		// // return Promise.resolve(this)
+		// // 	.then(MediaRenderer.whenSelectionIsContiguous)
+		// 	.then(MediaRenderer.whenSelectTransitionEnds)
+		// 	.then(MediaRenderer.whenDefaultImageLoads)
+		// .then(
+		// 	function(view) {
+		// 		view.mediaState = "ready";
+		// 	})
+		// .catch(
+		// 	function(err) {
+		// 		if (err instanceof ViewError) {
+		// 			// NOTE: ignore ViewError type
+		// 			// console.log(err.view.cid, err.view.model.cid, "ImageRenderer: " + err.message);
+		// 		} else {
+		// 			console.error(this.cid, err.name, err);
+		// 			this.placeholder.innerHTML = "<p class=\"color-fg\" style=\"position:absolute;bottom:0;padding:3rem;\"><strong>" + err.name + "</strong> " + err.message + "</p>";
+		// 			this.mediaState = "error";
+		// 		}
+		// 	}.bind(this))
 		;
 	},
 });

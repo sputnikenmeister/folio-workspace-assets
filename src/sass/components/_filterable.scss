@@ -3,14 +3,15 @@
 // GroupingListView
 // -----------------------------------
 
+@import "includes/transitions";
+
 // - - - - - - - - - - - - - - - - - -
 // .common
 // - - - - - - - - - - - - - - - - - -
 
 .list {
 	position: relative;
-	// transform-style: flat;
-	transform-style: preserve-3d;
+	// transform-style: preserve-3d;
 	.list-group,
 	.list-item {
 		// position: static;
@@ -18,8 +19,9 @@
 		display: block;
 		top: 0;
 		left: 0;
-		transform: translate3d(0,0,0);
-		transform-style: preserve-3d;
+		transform: move(0,0);
+		// transform: translate3d(0,0,0);
+		// transform-style: preserve-3d;
 	}
 }
 
@@ -46,6 +48,15 @@
 		// 	max-height: 1.5em;
 		// }
 	}
+	// &:not(.collapsed) .list-item.selected a::after {
+	// 	content: ' ';
+	// 	background-color: currentColor; //oldlace;
+	// 	display: block;
+	// 	height: 0.7em;
+	// 	width: auto;
+	// 	margin-top: -1.7rem;
+	// 	margin-left: 2px;
+	// }
 }
 
 // #keyword-list (GroupingListView)
@@ -65,6 +76,15 @@
 			// height: 0;
 		}
 	}
+	// &:not(.collapsed) .list-item.selected a::after {
+	// 	content: ' ';
+	// 	background-color: currentColor; //oldlace;
+	// 	display: block;
+	// 	width: auto;
+	// 	height: 0.8em;
+	// 	margin-top: -1.2rem;
+	// }
+
 }
 
 // - - - - - - - - - - - - - - - - - -
@@ -91,7 +111,7 @@
 // %wait-move-fadein, %fadeout-move-wait,
 // %move-fadein, %fadeout-move {
 // 	outline: 2px dashed rgba(63,127,63,0.5);
-// 	outline-offset: -2px; 
+// 	outline-offset: -2px;
 // }
 
 // %skip-debug {

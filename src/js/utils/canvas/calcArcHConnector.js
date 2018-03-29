@@ -12,7 +12,9 @@ module.exports = function(x1, y1, r1, x2, y2, r2, ro) {
 
 	if (dy < 1) {
 		// points are aligned horizontally, no arcs needed
-		return;
+		tx1 = 0;
+		tx2 = dx
+		// return [x1, x2];
 	}
 
 	if (dy >= rr && dx >= rr) {

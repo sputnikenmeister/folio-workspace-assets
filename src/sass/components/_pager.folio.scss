@@ -5,7 +5,7 @@
 	.button {
 		@include small_caps();
 		@include font_smoothing();
-		@include user-select(none);
+		@include user_select(none);
 		display: inline-block;
 		box-sizing: border-box;
 		white-space: nowrap;

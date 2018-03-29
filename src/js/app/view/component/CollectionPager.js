@@ -2,10 +2,10 @@
  * @module app/view/component/CollectionPager
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
+// /** @type {module:underscore} */
+// var _ = require("underscore");
+// /** @type {module:backbone} */
+// var Backbone = require("backbone");
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
 

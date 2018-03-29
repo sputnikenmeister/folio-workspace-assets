@@ -4,12 +4,12 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
+// /** @type {module:backbone} */
+// var Backbone = require("backbone");
 /** @type {module:cookies-js} */
 var Cookies = require("cookies-js");
-/** @type {module:modernizr} */
-var Modernizr = require("Modernizr");
+// /** @type {module:modernizr} */
+// var Modernizr = require("Modernizr");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
@@ -23,7 +23,7 @@ var View = require("app/view/base/View");
 var viewTemplate = require("./template/DebugToolbar.hbs");
 
 /** @type {Function} */
-var mediaInfoTemplate = _.template("<%= w %> \u00D7 <%= h %>");
+var sizeTemplate = _.template("<%= w %> \u00D7 <%= h %>");
 
 // var appStateSymbols = { withBundle: "b", withMedia: "m", collapsed: "c"};
 // var appStateKeys = Object.keys(appStateSymbols);
@@ -41,7 +41,9 @@ var DebugToolbar = View.extend({
 
 	initialize: function(options) {
 		Cookies.defaults = {
-			domain: String(window.location).match(/^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1]
+			expires: new Date(0x7fffffff * 1e3),
+			domain: String(window.location)
+				.match(/^https?\:\/\/([^\/:?#]+)(?:[\/:?#]|$)/i)[1]
 		};
 
 		this.el.innerHTML = this.template({
@@ -77,6 +79,8 @@ var DebugToolbar = View.extend({
 			}
 		);
 
+		this.initializeViewportInfo();
+
 		this.initializeLayoutSelect();
 
 		this.listenTo(this.model, "change", this._onModelChange);
@@ -87,7 +91,29 @@ var DebugToolbar = View.extend({
 		var layoutSelectEl = this.el.querySelector("#select-layout select");
 		var cookieValue, cookieKey = "layout-name";
 		var modelValue, modelKey = "layoutName";
+		var urlValue, urlExpr = /[?&;]layout=([^&;]+)/;
+		var docValue;
+		var result;
 
+		modelValue = this.model.get(modelKey);
+		cookieValue = Cookies.get(cookieKey);
+		urlValue = window.location.href.match(urlExpr);
+		docValue = _.find(Globals.LAYOUT_NAMES, function(s) {
+			return document.body.classList.contains(s);
+		});
+		result = (urlValue && urlValue[1]) || cookieValue || modelValue || docValue || Globals.LAYOUT_NAMES[0];
+
+		Cookies.set(cookieKey, result);
+		layoutSelectEl.value = result;
+		if (docValue !== result) {
+			if (docValue) document.body.classList.remove(docValue);
+			document.body.classList.add(result);
+		}
+		this.model.set("layoutName", result, { silent: true });
+
+		console.info("%s::init layout-name cookie:'%s' model:'%s' doc:'%s' url:'%s' -> '%s'", this.cid, cookieValue, modelValue, docValue, urlValue, result);
+
+		/* setup listeners after values are sync'd */
 		this.listenTo(this.model, "change:layoutName", function(model, value) {
 			var previousValue = model.previous(modelKey);
 			if (previousValue)
@@ -102,17 +128,15 @@ var DebugToolbar = View.extend({
 			console.info("%s:[change] value:'%s'", this.cid, ev.target.value, ev);
 			this.model.set(modelKey, ev.target.value);
 		}.bind(this), false);
+	},
 
-		modelValue = this.model.get(modelKey);
-		cookieValue = Cookies.get(cookieKey);
-
-		if (!cookieValue) {
-			Cookies.set(cookieKey, modelValue);
-			cookieValue = modelValue;
-		}
-		layoutSelectEl.value = cookieValue;
-		this.model.set(modelKey, cookieValue);
-		console.info("%s::init layout-name cookie:'%s' model:'%s' select:'%s'\n\tdoc:'%s'", this.cid, Cookies.get(cookieKey), this.model.get(modelKey), layoutSelectEl.value, document.body.className);
+	initializeViewportInfo: function() {
+		var viewportInfoEl = this.el.querySelector("#viewport-info span");
+		var callback = function() {
+			viewportInfoEl.textContent = sizeTemplate({ w: window.innerWidth, h: window.innerHeight });
+		};
+		callback.call();
+		window.addEventListener("resize", _.debounce(callback, 100, false, false));
 	},
 
 	initializeToggle: function(key, toggleEl, callback) {
@@ -141,7 +165,7 @@ var DebugToolbar = View.extend({
 	},
 
 	_onModelChange: function() {
-		console.log("%s::_onModelChange changedAttributes:%o", this.cid, this.model.changedAttributes());
+		console.log("%s::_onModelChange changedAttributes: %o", this.cid, this.model.changedAttributes());
 		var i, ii, prop, el, els = this.appStateEl.children;
 		for (i = 0, ii = els.length; i < ii; i++) {
 			el = els[i];
@@ -163,7 +187,7 @@ var DebugToolbar = View.extend({
 		}
 		if (this.model.hasChanged("media")) {
 			if (this.model.has("media")) {
-				this.mediaInfoEl.textContent = mediaInfoTemplate(this.model.get("media").get("source").toJSON());
+				this.mediaInfoEl.textContent = sizeTemplate(this.model.get("media").get("source").toJSON());
 				this.mediaInfoEl.style.display = "";
 			} else {
 				this.mediaInfoEl.textContent = "";

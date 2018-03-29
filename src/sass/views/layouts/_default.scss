@@ -4,9 +4,9 @@
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$nTopPort: 2.25rem;
-$nHeightPort: 12rem; //13.5rem;//14.25rem;
-$nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
+$nav_top_port: 2.25rem;
+$nav_height_port: 12rem; //13.5rem;//14.25rem;
+$nav_collapse_offset: map-get($temp, collapse_offset) * 1px; //28rem;
 
 #container {
 	min-width: $page_width;
@@ -19,9 +19,11 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 #navigation {
 	position: relative;
 	margin: 0 auto;
+
 	max-width: $page_width;
-	top: $nTopPort;
-	// padding-top: $nTopPort;
+	min-height: $nav_height_port;
+	// top: $nav_top_port;
+	padding-top: $nav_top_port;
 }
 
 // nav_list
@@ -29,15 +31,14 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 %nav_list {
 	position: absolute;
 	display: inline-block;
-	// transform-style: flat;
-	transform-style: preserve-3d;
+	// transform-style: preserve-3d;
 	// transform: move(0,0);
 }
 .transform-wrapper {
 	// @extend %nav_list;
 	position: absolute;
 	display: inline-block;
-	transform-style: preserve-3d;
+	// transform-style: preserve-3d;
 }
 
 // bundle-list
@@ -45,7 +46,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 #bundle-list {
 	@extend %nav_list;
 	width: $main_width - $aside_width;
-	padding-top: $nHeightPort;
+	padding-top: $nav_height_port;
 	padding-bottom: 1.5rem;
 	min-height: 4.5rem;
 	.list-item {
@@ -68,7 +69,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 #keyword-list {
 	@extend %nav_list;
 	width: $aside_width;
-	padding-top: #{$nHeightPort - 0.25rem};
+	padding-top: #{$nav_height_port - 0.25rem};
 	padding-bottom: 1.5rem;
 	.list-item {
 		// width: 100%;
@@ -89,14 +90,14 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 
 // keyword-list list-group
 // - - - - - - - - - - - - - - - - - -
-// $list-group-width: $aside_width - $gutter - $hu*2;
+$list_group_width: $aside_width - $gutter - $hu*2;
 #keyword-list .list-group {
 	height: 0;
-	// width: $list-group-width;
-	width: calc(100% - #{$gutter});
+	width: $list-group-width;
+	// width: calc(100% - #{$gutter});
 	.label {
-		// width: $list-group-width;
-		// transform: move(-$list-group-width, 0);
+		width: $list-group-width;
+		// transform: movel-$list_group_width, 0);
 		// width: 100%;
 		transform: move(-100%, 0);
 		box-sizing: border-box;
@@ -118,6 +119,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 	// min-height: 2rem;
 	transform: move(0, 0);
 	padding: 1.5rem $hu;
+	// left: $hu;
 }
 .with-bundle #site-name {
 	transform: move(-100%, 0);
@@ -175,8 +177,8 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 	position: absolute;
 	transform: move(0,0);
 	@at-root .container-expanded & {
-		// transform: move(0, $nHeightCollapsed);
-		transform: move(0, calc(#{$nHeightCollapsed} + 3rem));
+		transform: move(0, $nav_collapse_offset);
+		// transform: move(0, calc(#{$nav_collapse_offset} + 3rem));
 	}
 }
 .media-carousel {
@@ -185,15 +187,15 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 	min-width: $page_width;
 	bottom: 0;
 
-	top: $nTopPort + $nHeightPort;
+	top: $nav_top_port + $nav_height_port;
 	padding-top: 4.5rem;
 	padding-bottom: 4.5rem;
 	$carousel-item-height: calc(100% - 9rem);
 
-	// top: 0;//$nTopPort;
-	// padding-top: $nTopPort + $nHeightPort;
+	// top: 0;//$nav_top_port;
+	// padding-top: $nav_top_port + $nav_height_port;
 	// padding-bottom: 4.5rem;
-	// $carousel-item-height: calc(100% - #{$nHeightPort + 4.5rem});
+	// $carousel-item-height: calc(100% - #{$nav_height_port + 4.5rem});
 
 	.carousel-item {
 		// padding-top: 1.5rem;
@@ -246,11 +248,11 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 	position: relative;
 	width: $page_width;
 	margin: -0.75rem auto 0;
-	top: $nTopPort + $nHeightPort;
+	top: $nav_top_port + $nav_height_port;
 
 	transform: move(0, 0);
 	@at-root .container-expanded & {
-		transform: move(0, $nHeightCollapsed);
+		transform: move(0, $nav_collapse_offset);
 	}
 	.content {
 		margin: 1.5rem auto;
@@ -295,17 +297,17 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 // #media-progress-wrapper {
 // 	position: absolute;
 // 	transform: move(0,0);
-// 	
+//
 // 	right: calc(50% - #{$page_width/2});
 // 	top: 2.5rem;
 // 	margin: 0 $hu;
 // 	box-sizing: content-box;
 // 	// width: 34px; height: 34px;
 // 	width: 2.8rem; height: 2.8rem;
-// 	
+//
 // 	font-family: "FolioFigures-Regular", monospace;
 // 	font-weight: normal;
-// 	
+//
 // 	transition: tx(opacity, 1, 0);
 // 	opacity: 1;
 // 	@at-root .without-media &,
@@ -321,7 +323,7 @@ $nHeightCollapsed: map-get($temp, collapse_offset) * 1px; //28rem;
 // 	margin: 0 auto;
 // 	max-width: $page_width;
 // 	left: 0; right: 0;
-// 	top: $nTopPort + $nHeightPort; 
+// 	top: $nav_top_port + $nav_height_port;
 // 	height: 1px;
 // 	background-color: blue;
 // 	content: ' ';

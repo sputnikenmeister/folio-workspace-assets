@@ -43,7 +43,7 @@ var bundleStackTemplate = require("./template/CollectionStack.Bundle.hbs");
 /** @type {Function} */
 var mediaStackTemplate = require("./template/CollectionStack.Media.hbs");
 
-var transitionEnd = View.prefixedEvent("transitionend");
+// var transitionEnd = View.prefixedEvent("transitionend");
 var transformProp = View.prefixedProperty("transform");
 var transitionProp = View.prefixedProperty("transition");
 
@@ -70,7 +70,7 @@ var ContentView = View.extend({
 
 	/** @override */
 	initialize: function(options) {
-		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
+		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal", "_onCollapsedClick");
 
 		this.transforms = new TransformHelper();
 		this.touch = TouchManager.getInstance();
@@ -210,11 +210,27 @@ var ContentView = View.extend({
 	},
 
 	_setChildrenEnabled: function(enabled) {
+		// if (enabled) {
+		// 	this.el.removeEventListener("click", this._onCollapsedClick, false);
+		// } else {
+		// 	this.el.addEventListener("click", this._onCollapsedClick, false);
+		// }
 		this.itemViews.forEach(function(view) {
 			view.setEnabled(enabled);
 		});
 	},
 
+	_onCollapsedClick: function(ev) {
+		console.log("%s:[%s -> _onCollapsedClick] target: %s", this.cid, ev.type, ev.target);
+		if (!ev.defaultPrevented && this.model.get("withBundle") && !this.model.get("collapsed") && !this.enabled) {
+			// this.setImmediate(function() {
+			// this.setImmediate(function() {
+			ev.stopPropagation();
+			this.model.set("collapsed", true);
+			// });
+			// });
+		}
+	},
 	/* --------------------------- *
 	/* model changed
 	/* --------------------------- */
@@ -225,6 +241,13 @@ var ContentView = View.extend({
 				this.touch.on("vpanstart", this._onVPanStart);
 			} else {
 				this.touch.off("vpanstart", this._onVPanStart);
+			}
+		}
+		if (this.model.hasChanged("collapsed") || this.model.hasChanged("withBundle")) {
+			if (this.model.get("withBundle") && !this.model.get("collapsed")) {
+				this.el.addEventListener("click", this._onCollapsedClick, false);
+			} else {
+				this.el.removeEventListener("click", this._onCollapsedClick, false);
 			}
 		}
 		this.requestRender(View.MODEL_INVALID);
@@ -253,6 +276,7 @@ var ContentView = View.extend({
 		var collapsed = this.model.get("collapsed");
 		var delta = ev.thresholdDeltaY;
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+
 		// check if direction is aligned with collapsed/expand
 		var isValidDir = collapsed ? (delta > 0) : (delta < 0);
 		var moveFactor = collapsed ? Globals.VPAN_DRAG : 1 - Globals.VPAN_DRAG;
@@ -471,7 +495,7 @@ var ContentView = View.extend({
 	/*/
 	createMediaDotNavigation: function(bundle) {
 		var view = new SelectableListView({
-			className: "media-dotnav dots-fontello color-fg05",
+			className: "media-dotnav dots-fontface color-fg05",
 			collection: bundle.get("media"),
 			renderer: DotNavigationRenderer
 		});

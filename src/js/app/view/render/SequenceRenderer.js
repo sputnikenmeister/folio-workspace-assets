@@ -8,8 +8,8 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
+// /** @type {module:backbone} */
+// var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 
@@ -17,8 +17,8 @@ var Container = require("backbone.babysitter");
 var View = require("app/view/base/View");
 /** @type {module:app/view/render/PlayableRenderer} */
 var PlayableRenderer = require("app/view/render/PlayableRenderer");
-/** @type {module:app/model/SelectableCollection} */
-var SelectableCollection = require("app/model/SelectableCollection");
+// /** @type {module:app/model/SelectableCollection} */
+// var SelectableCollection = require("app/model/SelectableCollection");
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
 
@@ -27,10 +27,10 @@ var ProgressMeter = require("app/view/component/ProgressMeter");
 
 /** @type {module:utils/Timer} */
 var Timer = require("utils/Timer");
-/** @type {Function} */
-var transitionEnd = require("utils/event/transitionEnd");
-/** @type {module:utils/prefixedProperty} */
-var prefixed = require("utils/prefixedProperty");
+// /** @type {Function} */
+// var transitionEnd = require("utils/event/transitionEnd");
+// /** @type {module:utils/prefixedProperty} */
+// var prefixed = require("utils/prefixedProperty");
 
 /** @type {Function} */
 var _whenImageLoads = require("app/view/promise/_whenImageLoads");
@@ -140,13 +140,13 @@ var PrefetechedSourceRenderer = View.extend({
  * @type {module:app/view/render/SequenceRenderer.SimpleSourceRenderer}
  */
 // var SimpleSourceRenderer = View.extend({
-// 	
+//
 // 	cidPrefix: "sequenceStepRenderer",
 // 	/** @type {string} */
 // 	className: "sequence-step",
 // 	/** @type {string} */
 // 	tagName: "img",
-// 	
+//
 // 	/** @override */
 // 	initialize: function (options) {
 // 		// this.el.classList.toggle("current", this.model.hasOwnProperty("selected"));
@@ -162,7 +162,7 @@ var PrefetechedSourceRenderer = View.extend({
 // 		if (this.el.src === "") {
 // 			this.el.src = Globals.MEDIA_DIR + "/" + this.model.get("src");
 // 		}
-// 		
+//
 // 		if (this.model.has("error")) {
 // 			this._onModelError();
 // 		} else {
@@ -173,12 +173,12 @@ var PrefetechedSourceRenderer = View.extend({
 // 			// });
 // 		}
 // 	},
-// 	
+//
 // 	// _onModelSource: function() {
 // 	// 	this.el.src = Globals.MEDIA_DIR + "/" + this.model.get("src");
 // 	// 	// console.log("%s::change:src", this.cid, this.model.get("src"));
 // 	// },
-// 	
+//
 // 	_onModelError: function() {
 // 		var err = this.model.get("error");
 // 		var errEl = document.createElement("div");
@@ -279,7 +279,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 
 		// styles
 		// ---------------------------------
-		var s, attrs = this.model.get("attrs");
+		var s, attrs = this.model.attrs();
+		// var s, attrs = this.model.get("attrs");
 		s = _.pick(attrs, "box-shadow", "border", "border-radius");
 		_.extend(this.content.querySelector(".media-border").style, s);
 		s = _.pick(attrs, "border-radius");
@@ -343,7 +344,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// // ---------------------------------
 		// cssW = this.metrics.content.width + "px";
 		// cssH = this.metrics.content.height + "px";
-		// 
+		//
 		// els = this.el.querySelectorAll(".content-size");
 		// for (i = 0; i < els.length; i++) {
 		// 	el = els.item(i);
@@ -542,7 +543,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// var meterDur = this.progressMeter._valueData["amount"]._duration - this.progressMeter._valueData["amount"]._elapsedTime;
 		// var meterVal = this.progressMeter.getRenderedValue("amount");
 		// var timerVal = (this._sequenceInterval - duration) / this._sequenceInterval + this.sources.selectedIndex;
-		// 
+		//
 		// console.log("%s::_onTimerPause [interval:%sms]\n\tmeter:%s (%sms)\n\ttimer:%s (%sms)\n\tdiffs:%s (%sms)",
 		// 		this.cid, this._sequenceInterval,
 		// 		meterVal, meterDur,
@@ -614,18 +615,18 @@ var SequenceRenderer = PlayableRenderer.extend({
 	// 	var canvas = document.createElement("canvas");
 	// 	var context = canvas.getContext("2d");
 	// 	var imageData = this._drawMediaElement(context).getImageData(0, 0, canvas.width, canvas.height);
-	// 	
+	//
 	// 	var opts = { radius: 20 };
 	// 	var fgColor = new Color(this.model.attr("color"));
 	// 	var bgColor = new Color(this.model.attr("background-color"));
 	// 	var isFgDark = fgColor.luminosity() < bgColor.luminosity();
 	// 	opts.x00 = isFgDark? fgColor.clone().lighten(0.33) : bgColor.clone().darken(0.33);
 	// 	opts.xFF = isFgDark? bgColor.clone().lighten(0.33) : fgColor.clone().darken(0.33);
-	// 	
+	//
 	// 	stackBlurMono(imageData, opts);
 	// 	duotone(imageData, opts);
 	// 	// stackBlurRGB(imageData, opts);
-	// 	
+	//
 	// 	context.putImageData(imageData, 0, 0);
 	// 	return canvas.toDataURL();
 	// },

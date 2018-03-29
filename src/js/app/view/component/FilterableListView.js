@@ -4,8 +4,8 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
+// /** @type {module:backbone} */
+// var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 
@@ -25,16 +25,15 @@ var diff = function(a1, a2) {
 	}, []);
 };
 
-var translateCssValue = function(x, y) {
-	return "translate3d(" + x + "px, " + y + "px ,0px)";
-};
+/** @type {module:app/control/Globals.TRANSLATE_TEMPLATE} */
+var translateCssValue = require("app/control/Globals").TRANSLATE_TEMPLATE;
 
 /** @const */
 var transformProp = prefixedProperty("transform");
 
 /**
 /* @constructor
-/* @type {module:app/view/component/SelectableCollectionView}
+/* @type {module:app/view/component/FilterableListView}
 /*/
 var FilterableListView = View.extend({
 
@@ -238,10 +237,15 @@ var FilterableListView = View.extend({
 	},
 
 	/** @private */
-	_onRendererClick: function(item) {
+	_onRendererClick: function(item, ev) {
 		if (this.collection.selected !== item) {
 			this.trigger("view:select:one", item);
 		} else {
+			if (ev.altKey) {
+				this.trigger("view:select:none");
+			} else {
+				this.trigger("view:select:same", item);
+			}
 			// this.trigger("view:select:none");
 		}
 	},
@@ -280,11 +284,18 @@ var FilterableListView = View.extend({
 
 	/** @private */
 	renderSelection: function(newItem, oldItem) {
+		var view;
 		if (oldItem) {
-			this.itemViews.findByModel(oldItem).el.classList.remove("selected");
+			view = this.itemViews.findByModel(oldItem);
+			view.el.classList.remove("selected");
+			// view.label.classList.remove("color-fg");
+			// view.label.classList.remove("color-reverse");
 		}
 		if (newItem) {
-			this.itemViews.findByModel(newItem).el.classList.add("selected");
+			view = this.itemViews.findByModel(newItem);
+			view.el.classList.add("selected");
+			// view.label.classList.add("color-fg");
+			// view.label.classList.add("color-reverse");
 		}
 	},
 
@@ -335,7 +346,7 @@ var FilterableListView = View.extend({
 	// computeFiltered: function() {
 	// 	this._filterResult = this.collection.map(this._filterFn, this);
 	// },
-	// 
+	//
 	// renderFiltered: function() {
 	// 	this.collection.forEach(function(item, index) {
 	// 		this.itemViews.findByModel(item).el.classList.toggle("excluded", !this._filterResult[index]);

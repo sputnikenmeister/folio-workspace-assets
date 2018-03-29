@@ -17,10 +17,10 @@ $gutter: 2 * $hu;
 $page_margin_left: 2 * $hu;
 $page_margin_right: 2 * $hu;
 
-$page_width: 34 * $hu; //700px;
-$page_width_large: 47 * $hu; //940px;
-$aside_width: 10 * $hu;
-$aside_width_large: 12 * $hu;
+$page_width: 33 * $hu; //700px;
+$page_width_large: 44 * $hu; //940px;
+$aside_width: 11 * $hu;
+$aside_width_large: 11 * $hu;
 $main_width: $page_width - $aside_width;
 $main_width_large: $page_width_large - $aside_width_large;
 
@@ -33,10 +33,9 @@ $color: map-get($default_colors, color);
 $background_color: map-get($default_colors, background-color);
 
 // link-colors
-$link_color: map-get($default_colors, link-color);
 // $link_color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
-$link_hover_color: scale_color($link_color, $lightness: 15%); //hsl(10, 95%, 60%);
-$link_down_color: scale_color($link_color, $lightness: -15%); //hsl(10, 95%, 30%);
+// $link_hover_color: scale_color($link_color_value, $lightness: 15%); //hsl(10, 95%, 60%);
+// $link_down_color: scale_color($link_color_value, $lightness: -15%); //hsl(10, 95%, 30%);
 
 // selection-colors
 $selection_fgcolor: hsl(203, 100%, 50%);
@@ -44,6 +43,19 @@ $selection_bgcolor: hsl(203, 100%, 90%);
 
 // $royal_blue_color:	#204980;
 // $royal_ivory_color:	#FEFCE7;
+
+// CSS variables
+// - - - - - - - - - - - - - - - - - -
+$link_color_value: map-get($default_colors, --link-color);
+// $link_color: var(--link-color);
+// :root {
+// 	--link-color: #{$link_color_value};
+// }
+// $alt_bgcolor_value: map-get($default_colors, --alt-background-color);
+// $alt_bgcolor: var(--alt-background-color);
+// :root {
+// 	--alt-background-color: #{$alt_bgcolor_value};
+// }
 
 // ------------------------------------
 // Typefaces
@@ -150,25 +162,25 @@ $mono_font_family: $mono_fallback;
 // misc
 // ------------------------------------
 
-@mixin user-select($value) {
+@mixin user_select($value) {
 	-webkit-user-select: $value;
 	-moz-user-select: $value;
 	-ms-user-select: $value;
 }
 
-@mixin image-optimize-contrast {
+@mixin image_optimize_contrast {
 	image-rendering: optimizeSpeed;
 	/*   */
 	image-rendering: -moz-crisp-edges;
-	/* Firefox                        */
+	/* Firefox */
 	image-rendering: -o-crisp-edges;
-	/* Opera                          */
+	/* Opera */
 	image-rendering: -webkit-optimize-contrast;
 	/* Chrome (and eventually Safari) */
 	image-rendering: pixelated;
 	/* Chrome */
 	image-rendering: optimize-contrast;
-	/* CSS3 Proposed                  */
+	/* CSS3 Proposed */
 	-ms-interpolation-mode: nearest-neighbor;
-	/* IE8+                           */
+	/* IE8+ */
 }

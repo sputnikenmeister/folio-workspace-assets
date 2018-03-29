@@ -68,6 +68,12 @@ module.exports = (function() {
 	g.PLAY_CHAR = String.fromCharCode(0x23F5);
 	g.STOP_CHAR = String.fromCharCode(0x23F9);
 
+	// translate common template
+
+	g.TRANSLATE_TEMPLATE = function(x, y) {
+		return "translate(" + x + "px, " + y + "px)";
+		// return "translate3d(" + x + "px, " + y + "px ,0px)";
+	};
 	// timing, easing
 	// - - - - - - - - - - - - - - - - -
 	g.TRANSITION_DELAY_INTERVAL = parseFloat(sass.transitions["delay_interval_ms"]);
@@ -133,6 +139,7 @@ module.exports = (function() {
 	// o.LAST_EARLY = 		_.defaults({delay: txDelay*2.0 + txMinDelay*0}, txAligned);
 	// o.AFTER = 			_.defaults({delay: txDelay*2.0 + txMinDelay}, txAligned);
 
+	console.group("transitions");
 	for (s in o) {
 		so = o[s];
 		so.name = s;
@@ -140,7 +147,9 @@ module.exports = (function() {
 		if (!so.hasOwnProperty("cssText")) {
 			so.cssText = so.duration / 1000 + "s " + so.easing + " " + so.delay / 1000 + "s";
 		}
+		console.log("%s: %s", so.name, so.cssText);
 	}
+	console.groupEnd();
 	g.transitions = o;
 
 	return g;

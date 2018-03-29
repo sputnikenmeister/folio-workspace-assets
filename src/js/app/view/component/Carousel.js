@@ -4,8 +4,8 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
+// /** @type {module:backbone} */
+// var Backbone = require("backbone");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
 /** @type {module:backbone.babysitter} */
@@ -28,10 +28,11 @@ var prefixedStyleName = require("utils/prefixedStyleName");
 
 var transformStyleName = prefixedStyleName("transform");
 var transformProperty = prefixedProperty("transform");
+var translateTemplate = Globals.TRANSLATE_TEMPLATE;
 
-var cssToPx = function(cssVal, el) {
-	return parseInt(cssVal);
-};
+// var cssToPx = function(cssVal, el) {
+// 	return parseInt(cssVal);
+// };
 
 // var defaultRendererFunction = (function() {
 // 	var defaultRenderer = CarouselRenderer.extend({ className: "carousel-item default-renderer"}),
@@ -42,7 +43,7 @@ var cssToPx = function(cssVal, el) {
 // })();
 
 /** @const */
-var MAX_SELECT_THRESHOLD = 50;
+var MAX_SELECT_THRESHOLD = 20;
 
 // /** @const */
 // var CHILDREN_INVALID = View.CHILDREN_INVALID,
@@ -65,6 +66,7 @@ var VERTICAL = Hammer.DIRECTION_VERTICAL,
 // marginLeft: ["marginLeft","marginTop"],
 // marginRight: ["marginRight","marginBottom"],
 
+/*
 var HORIZONTAL_PROPS = {
 	pos: "x",
 	size: "width",
@@ -81,6 +83,7 @@ var VERTICAL_PROPS = {
 	marginBefore: "marginTop",
 	marginAfter: "marginBottom",
 };
+*/
 
 var isValidTouchManager = function(touch, direction) {
 	// var retval;
@@ -243,7 +246,7 @@ var CarouselProto = {
 	// 	if (options.direction === VERTICAL) {
 	// 		this.direction = VERTICAL;
 	// 	} // do nothing: the default is horizontal
-	// 
+	//
 	// 	// validate hammer instance or create local
 	// 	if ((touch = options.touch) && (pan = touch.get("pan"))) {
 	// 		// Override direction only if specific
@@ -317,7 +320,7 @@ var CarouselProto = {
 	// render: function () {
 	// 	this.measureLater();
 	// 	this.scrollBy(0, Carousel.IMMEDIATE);
-	// 	
+	//
 	// 	if (this.el.parentElement) {
 	// 		this.renderNow();
 	// 	}
@@ -511,7 +514,8 @@ var CarouselProto = {
 	},
 
 	measureItemView: function(view) {
-		var m, s, viewEl, sizeEl;
+		var m, viewEl;
+		// var s, sizeEl;
 
 		viewEl = view.el;
 		m = this.metrics[view.cid] || (this.metrics[view.cid] = {});
@@ -530,7 +534,7 @@ var CarouselProto = {
 			// var marginBefore = view.metrics[this.dirProp("marginLeft","marginTop")];
 			// var marginAfter = view.metrics[this.dirProp("marginRight","marginBottom")];
 			// var pos = view.metrics.content[this.dirProp("x","y")];
-			// 
+			//
 			// m.inner = view.metrics.content[this.dirProp("width","height")];
 			// m.before = marginBefore + pos;
 			// m.outer += marginBefore + marginAfter;
@@ -582,7 +586,7 @@ var CarouselProto = {
 			pos = Math.floor(this._getScrollOffset(delta, metrics, sMetrics));
 			view.metrics.translateX = (this.direction & HORIZONTAL) ? pos : 0;
 			view.metrics.translateY = (this.direction & HORIZONTAL) ? 0 : pos;
-			view.metrics._transform = "translate3d(" + view.metrics.translateX + "px," + view.metrics.translateY + "px,0)";
+			view.metrics._transform = translateTemplate(view.metrics.translateX, view.metrics.translateY);
 			view.el.style[transformProperty] = view.metrics._transform;
 			// view.el.style[transformProperty] = (this.direction & HORIZONTAL)?
 			// 	"translate3d(" + pos + "px,0,0)":
@@ -670,6 +674,7 @@ var CarouselProto = {
 	_onPanMove: function(ev) {
 		var view = (ev.offsetDirection & this._precedingDir) ? this._precedingView : this._followingView;
 		var delta = (this.direction & HORIZONTAL) ? ev.thresholdDeltaX : ev.thresholdDeltaY;
+		// var delta = (this.direction & HORIZONTAL) ? ev.deltaX : ev.deltaY;
 
 		if (this._panCandidateView !== view) {
 			this._panCandidateView && this._panCandidateView.el.classList.remove("candidate");
@@ -693,7 +698,7 @@ var CarouselProto = {
 		var scrollCandidate;
 		// NOTE: this delta is used for determining selection, NOT for layout
 		var delta = (this.direction & HORIZONTAL) ? ev.thresholdDeltaX : ev.thresholdDeltaY;
-		// var delta = (this.direction & HORIZONTAL)? ev.deltaX : ev.deltaY;
+		// var delta = (this.direction & HORIZONTAL) ? ev.deltaX : ev.deltaY;
 
 		if ((ev.type == "panend") &&
 			// pan direction (last event) and offsetDirection (whole gesture) must match
@@ -741,6 +746,20 @@ var CarouselProto = {
 	},
 
 	_onTap: function(ev) {
+		var targetView = View.findByDescendant(ev.target);
+		// if (!this.itemViews.contains(targetView)) {
+		// 	return;
+		// }
+		do {
+			if (this._selectedView === targetView) {
+				// console.log("%s tap ocurred on selected: %o", this.cid, targetView);
+				return;
+			} else if (this === targetView) {
+				// console.log("%s tap ocurred on carousel: %o", this.cid, targetView);
+				break;
+			}
+		} while ((targetView = targetView.parentView))
+
 		// this.selectFromView();
 
 		var bounds = this.el.getBoundingClientRect();
@@ -752,7 +771,9 @@ var CarouselProto = {
 		);
 
 		if (tapCandidate) {
+			console.log("%s::_onTap %o", this.cid, ev);
 			ev.preventDefault();
+			// ev.stopPropagation();
 
 			// this._scrollCandidateView = tapCandidate;
 			// this._setScrolling(true);
@@ -760,17 +781,15 @@ var CarouselProto = {
 			// this._scrollCandidateView.el.classList.add("candidate");
 			// this.selectFromView();
 
-			//// NOT using internalSelection	
+			//// NOT using internalSelection
 			// this.triggerSelectionEvents(tapCandidate, false);
 
-
-			//// using internalSelection
+			// using internalSelection
 			this._scrollCandidateView = tapCandidate;
 			this._setScrolling(true);
 			this.scrollBy(0, Carousel.ANIMATED);
 
 			this.triggerSelectionEvents(tapCandidate, true);
-
 			// this.renderNow();
 		}
 	},
@@ -871,7 +890,7 @@ var CarouselProto = {
 	// 	var metrics, pos;
 	// 	var sMetrics = this.metrics[(this._scrollCandidateView || this._selectedView).cid];
 	// 	var cMetrics = this.metrics[(this._panCandidateView || this._selectedView).cid];
-	// 	
+	//
 	// 	this.itemViews.each(function (view) {
 	// 		metrics = this.metrics[view.cid];
 	// 		pos = Math.floor(this._getScrollOffset(delta, metrics, sMetrics, cMetrics));
@@ -887,7 +906,7 @@ var CarouselProto = {
 	// _getScrollOffset2: function (delta, mCurr, mSel, mCan) {
 	// 	var offset = 0;
 	// 	var posInner = mCurr.posInner - mSel.posInner + delta;
-	// 	
+	//
 	// 	if (posInner < -mSel.inner) {
 	// 		offset = -(mCurr.before);
 	// 	} else if (posInner > mSel.inner) {
@@ -904,11 +923,11 @@ var CarouselProto = {
 
 	// captureSelectedOffset: function() {
 	// 	var val, view, cssval, m, mm;
-	// 	
+	//
 	// 	val = 0;
 	// 	view = this._scrollCandidateView || this._selectedView;
 	// 	cssval = getComputedStyle(view.el)[transformProperty];
-	// 	
+	//
 	// 	mm = cssval.match(/(matrix|matrix3d)\(([^\)]+)\)/);
 	// 	if (mm) {
 	// 		m = mm[2].split(",");
@@ -919,9 +938,9 @@ var CarouselProto = {
 	// 		}
 	// 		val = parseFloat(val);
 	// 	}
-	// 	
+	//
 	// 	console.log("%s::captureSelectedOffset", this.cid, cssval, val, cssval.match(/matrix\((?:\d\,){3}(\d)\,(\d)|matrix3d\((?:\d\,){11}(\d)\,(\d)/));
-	// 	
+	//
 	// 	return val;
 	// },
 

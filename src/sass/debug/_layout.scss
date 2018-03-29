@@ -37,11 +37,11 @@ $darkolivegreen: darkolivegreen;
 	background-image: image-url("debug/debug-background.svg");
 	background-color: transparent;
 	background-repeat: no-repeat;
-	background-position: calc(50% + 1px) 1px;
-	background-size: $page_width auto; //1600px;
+	background-position: 50% 0;
+	background-size: #{$page_width + $hu*2} 100%; //1600px;
 	@include media(desktop-small) {
-		background-position: calc(50% + 1px) calc(-1rem + 1px);
-		background-size: $page_width_large auto; //1600px;
+		// background-position: calc(50% + 1px) calc(-1rem + 1px);
+		background-size: #{$page_width_large + $hu*2} 100%; //1600px;
 	}
 }
 
@@ -53,14 +53,17 @@ $darkolivegreen: darkolivegreen;
 	// 	@include debug_outline(1px, dotted, $darkseagreen);
 	// }
 	// #sitename,
-	.transform-wrapper {
-		// height: 1rem;
-		width: $aside_width;
-		height: $nHeightPort;
-		@include media(desktop-small) {
-			width: $aside_width_large;
-			height: $nHeightLand;
-		}
+	// .transform-wrapper {
+	// 	// height: 1rem;
+	// 	width: $aside_width;
+	// 	height: $nav_height_port;
+	// 	@include media(desktop-small) {
+	// 		width: $aside_width_large;
+	// 		height: $nav_height_land;
+	// 	}
+	// }
+	#navigation.container-changing {
+		@include debug_outline(0.5rem, dashed, transparentize($lightcoral, 0.75));
 	}
 	#sitename,
 	.transform-wrapper {
@@ -100,8 +103,9 @@ $darkolivegreen: darkolivegreen;
 	// }
 
 	#navigation {
-		.graph {
-			@include debug_outline(1px, dashed, transparentize($darkseagreen, 0.25));
+		@include debug_outline(0.5rem, solid, transparentize($lightcoral, 0.75));
+		&.container-changing {
+			@include debug_outline(0.5rem, dashed, transparentize($lightcoral, 0.4));
 		}
 		#site-name-wrapper,
 		.list {
@@ -113,11 +117,14 @@ $darkolivegreen: darkolivegreen;
 		.list .list-item .label {
 			background-color: transparentize($lightcoral, 0.7);
 		}
+		.graph {
+			@include debug_outline(2px, dashed, transparentize($darkseagreen, 0.25), 0);
+		}
 	}
 	#content {
-		// @include debug_outline($width: 0.25rem, $style: solid, $color: $deepskyblue);
+		@include debug_outline(0.5rem, solid, transparentize($deepskyblue, 0.75));
 		&.container-changing {
-			@include debug_outline(0.5rem, dashed, transparentize($deepskyblue, 0.4), - 1rem);
+			@include debug_outline(0.5rem, dashed, transparentize($deepskyblue, 0.4));
 		}
 		// &[style*="transform"] {
 		// 	@include debug_outline(0.5rem, dashed, transparentize($deepskyblue, 0.4));
@@ -152,7 +159,7 @@ $darkolivegreen: darkolivegreen;
 		}
 		.carousel-item {
 			// @include debug_outline($color: $deepskyblue);
-			// @include debug_outline(1px, solid, transparentize($deepskyblue, 0.5));
+			@include debug_outline(1px, solid, transparentize($deepskyblue, 0.5));
 		}
 		.empty-item {
 			.content {

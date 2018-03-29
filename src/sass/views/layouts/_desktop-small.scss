@@ -4,14 +4,17 @@
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$nTopLand: 1.25rem;
-$nHeightLand: 9rem;
+$nav_top_land: 2.25rem;
+$nav_height_land: 9rem;
 
 @include media(desktop-small) {
 	// #content:after {
-	// 	top: $nTopLand + $nHeightLand; 
+	// 	top: $nav_top_land + $nav_height_land;
 	// 	max-width: $page_width_large;
 	// }
+	#container {
+		min-width: $page_width_large;
+	}
 
 	// ///////////////////////////////////
 	// navigation
@@ -19,8 +22,9 @@ $nHeightLand: 9rem;
 
 	#navigation {
 		max-width: $page_width_large;
-		top: $nTopLand;
-		// padding-top: $nTopLand;
+		min-height: $nav_top_land;
+		// top: $nav_top_land;
+		padding-top: $nav_top_land;
 	}
 
 	// nav_list
@@ -34,15 +38,14 @@ $nHeightLand: 9rem;
 	// }
 	.transform-wrapper {
 		transform: move(0, 0);
-		transform-style: preserve-3d;
-		// transform-style: flat;
+		// transform-style: preserve-3d;
 	}
 
 	// bundle-list
 	// ===================================
 	#bundle-list {
 		width: $aside_width_large;
-		padding-top: $nHeightLand;
+		padding-top: $nav_height_land;
 	}
 	&.with-bundle #bundle-list {
 		padding-top: 1.5rem;
@@ -58,10 +61,10 @@ $nHeightLand: 9rem;
 	// ===================================
 	#keyword-list {
 		width: $aside_width_large;
-		padding-top: $nHeightLand - 0.25rem;
+		padding-top: $nav_height_land - 0.25rem;
 	}
 	&.with-bundle #keyword-list {
-		padding-top: $nHeightLand - 0.25rem + 1rem;
+		padding-top: $nav_height_land - 0.25rem + 1rem;
 	}
 	&.with-bundle .container-expanded #keyword-list {
 		padding-top: 1.25rem;
@@ -123,7 +126,7 @@ $nHeightLand: 9rem;
 
 	.media-carousel {
 		min-width: $page_width_large;
-		top: $nTopLand + $nHeightLand - 3rem;
+		top: $nav_top_land + $nav_height_land - 3rem;
 
 		.carousel-item {
 			left: calc(50% - #{$page_width_large/2});
@@ -152,7 +155,7 @@ $nHeightLand: 9rem;
 			-webkit-flex-direction: column;
 			-ms-flex-direction: column;
 			flex-direction: column;
-			// top: -9.5rem; right: -$hu; 
+			// top: -9.5rem; right: -$hu;
 			direction: ltr;
 			width: auto;
 			height: calc(100% + 1rem);

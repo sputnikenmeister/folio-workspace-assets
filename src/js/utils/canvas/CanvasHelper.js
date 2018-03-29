@@ -70,7 +70,7 @@ module.exports = {
 		ctx.restore();
 	},
 
-	arrowhead: function(ctx, x, y, r, a, stroked, s) {
+	arrowhead: function(ctx, x, y, r, a, solid, s) {
 		ctx.save();
 		if (s) {
 			setStyle(ctx, s);
@@ -79,16 +79,18 @@ module.exports = {
 			ctx.setLineDash([]);
 		}
 		ctx.translate(x, y);
-		ctx.rotate((a || 0) - Math.PI * 0.5);
+		ctx.rotate(a); // - Math.PI * 0.5);
+		ctx.translate(r * 0.5, 0);
 		ctx.beginPath();
 		ctx.moveTo(0, 0);
 		// ctx.lineTo(-r, r * Math.SQRT1_2);
 		// ctx.lineTo(-r, -r * Math.SQRT1_2);
 		ctx.lineTo(-r * Math.SQRT2, r * Math.SQRT1_2);
 		ctx.arcTo(0, 0, -r * Math.SQRT2, -r * Math.SQRT1_2, r);
+		// ctx.quadraticCurveTo(0, 0, -r * Math.SQRT2, -r * Math.SQRT1_2);
 		ctx.lineTo(0, 0);
-		if (stroked) ctx.stroke();
-		else ctx.fill();
+		if (solid) ctx.fill();
+		else ctx.stroke();
 		ctx.restore();
 	}
 };

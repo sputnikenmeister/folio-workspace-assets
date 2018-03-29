@@ -14,16 +14,16 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
+// /** @type {module:backbone} */
+// var Backbone = require("backbone");
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
 /** @type {module:app/view/render/PlayableRenderer} */
 var PlayableRenderer = require("app/view/render/PlayableRenderer");
 /** @type {module:app/view/component/ProgressMeter} */
 var ProgressMeter = require("app/view/component/ProgressMeter");
-/** @type {module:utils/prefixedStyleName} */
-var prefixedStyleName = require("utils/prefixedStyleName");
+// /** @type {module:utils/prefixedStyleName} */
+// var prefixedStyleName = require("utils/prefixedStyleName");
 /** @type {module:utils/prefixedEvent} */
 var prefixedEvent = require("utils/prefixedEvent");
 
@@ -57,9 +57,15 @@ var VideoRenderer = PlayableRenderer.extend({
 	/** @type {Function} */
 	template: require("./VideoRenderer.hbs"),
 
-	events: {
-		"mouseup .fullscreen-toggle": "_onFullscreenToggle",
-	},
+	events: (function() {
+		return window.hasOwnProperty("onpointerup")
+			? { "pointerup .fullscreen-toggle": "_onFullscreenToggle" }
+			: { "mouseup .fullscreen-toggle": "_onFullscreenToggle" }
+	}()),
+
+	// events: {
+	// 	"click .fullscreen-toggle": "_onFullscreenToggle",
+	// },
 
 	// properties: {
 	// 	paused: {
@@ -157,7 +163,7 @@ var VideoRenderer = PlayableRenderer.extend({
 		// // ---------------------------------
 		// cssW = this.metrics.content.width + "px";
 		// cssH = this.metrics.content.height + "px";
-		// 
+		//
 		// els = this.el.querySelectorAll(".content-size");
 		// for (i = 0; i < els.length; i++) {
 		// 	el = els.item(i);
@@ -450,7 +456,8 @@ var VideoRenderer = PlayableRenderer.extend({
 
 	_onFullscreenToggle: function(ev) {
 		// NOTE: Ignore if MouseEvent.button is 0 or undefined (0: left-button)
-		if (!ev.defaultPrevented && !ev.button && this.model.selected) { //
+		if (!ev.defaultPrevented && !ev.button && this.model.selected) {
+			// ev.preventDefault();
 			try {
 				if (document.hasOwnProperty("fullscreenElement") &&
 					document.fullscreenElement !== this.video) {

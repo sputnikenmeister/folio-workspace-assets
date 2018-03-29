@@ -1,30 +1,30 @@
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
 
-/**
- * get a usable string, used as event postfix
- * @param {Const} state
- * @returns {String} state
- */
-function stateStr(state) {
-	if (state & Hammer.STATE_CANCELLED) {
-		return "cancel";
-	} else if (state & Hammer.STATE_ENDED) {
-		return "end";
-	} else if (state & Hammer.STATE_CHANGED) {
-		return "move";
-	} else if (state & Hammer.STATE_BEGAN) {
-		return "start";
-	}
-	return "";
-}
+// /**
+//  * get a usable string, used as event postfix
+//  * @param {Const} state
+//  * @returns {String} state
+//  */
+// function stateStr(state) {
+// 	if (state & Hammer.STATE_CANCELLED) {
+// 		return "cancel";
+// 	} else if (state & Hammer.STATE_ENDED) {
+// 		return "end";
+// 	} else if (state & Hammer.STATE_CHANGED) {
+// 		return "move";
+// 	} else if (state & Hammer.STATE_BEGAN) {
+// 		return "start";
+// 	}
+// 	return "";
+// }
 
 /**
  * direction cons to string
  * @param {Const} direction
  * @returns {String}
  */
-function directionStr(direction) {
+function dirStr(direction) {
 	if (direction == Hammer.DIRECTION_DOWN) {
 		return "down";
 	} else if (direction == Hammer.DIRECTION_UP) {
@@ -107,7 +107,7 @@ function directionStr(direction) {
 //		this.pX = input.deltaX;
 //		this.pY = input.deltaY;
 //
-//		var direction = directionStr(input.direction);
+//		var direction = dirStr(input.direction);
 //		if (direction) {
 //			this.manager.emit(this.options.event + direction, input);
 //		}
@@ -122,40 +122,41 @@ function directionStr(direction) {
  * @extends Hammer.Pan
  */
 function SmoothPan() {
-	Hammer.Pan.apply(this, arguments);
+	var ret = Hammer.Pan.apply(this, arguments);
 	this.thresholdOffsetX = null;
 	this.thresholdOffsetY = null;
 	this.thresholdOffset = null;
+	return ret;
 }
 
 Hammer.inherit(SmoothPan, Hammer.Pan, {
 	emit: function(input) {
 		// Inheritance breaks, so this code is taken from PanRecognizer.emit
-		//	this._super.emit.call(this, input); 				// Triggers infinite recursion
-		//	Hammer.Pan.prototype.emit.apply(this, arguments); 	// This breaks too
+		//	this._super.emit.call(this, input); // Triggers infinite recursion
+		//	Hammer.Pan.prototype.emit.apply(this, arguments); // This breaks too
 
 		var threshold = this.options.threshold;
 		var direction = input.direction;
 
 		if (this.state == Hammer.STATE_BEGAN) {
-			this.thresholdOffsetX = (direction & Hammer.DIRECTION_HORIZONTAL)? ((direction & Hammer.DIRECTION_LEFT)? threshold: -threshold) : 0;
-			this.thresholdOffsetY = (direction & Hammer.DIRECTION_VERTICAL)? ((direction & Hammer.DIRECTION_UP)? threshold: -threshold) : 0;
+			this.thresholdOffsetX = (direction & Hammer.DIRECTION_HORIZONTAL) ? ((direction & Hammer.DIRECTION_LEFT) ? threshold : -threshold) : 0;
+			this.thresholdOffsetY = (direction & Hammer.DIRECTION_VERTICAL) ? ((direction & Hammer.DIRECTION_UP) ? threshold : -threshold) : 0;
 			// this.thresholdOffset = (direction & Hammer.DIRECTION_HORIZONTAL)? input.thresholdOffsetX : input.thresholdOffsetY;
-			// console.log("RECOGNIZER STATE", directionStr(direction), stateStr(this.state), this.thresholdOffsetX);
+			// console.log("RECOGNIZER STATE", dirStr(direction), stateStr(this.state), this.thresholdOffsetX);
 		}
 		input.thresholdOffsetX = this.thresholdOffsetX;
 		input.thresholdOffsetY = this.thresholdOffsetY;
-		input.thresholdDeltaX = input.deltaX + this.thresholdOffsetX,
-		input.thresholdDeltaY = input.deltaY + this.thresholdOffsetY,
+		input.thresholdDeltaX = input.deltaX + this.thresholdOffsetX;
+		input.thresholdDeltaY = input.deltaY + this.thresholdOffsetY;
 
 		this.pX = input.deltaX;
 		this.pY = input.deltaY;
 
-		direction = directionStr(direction);
+		direction = dirStr(direction);
 		if (direction) {
 			this.manager.emit(this.options.event + direction, input);
 		}
-		Hammer.Recognizer.prototype.emit.apply(this, arguments);
+		return Hammer.Recognizer.prototype.emit.apply(this, arguments);
 	}
 });
 

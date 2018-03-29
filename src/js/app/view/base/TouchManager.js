@@ -2,15 +2,15 @@
  * @module app/view/base/TouchManager
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
+// /** @type {module:underscore} */
+// var _ = require("underscore");
+/** @type {module:app/control/Globals} */
+var Globals = require("app/control/Globals");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
 /** @type {module:utils/touch/SmoothPanRecognizer} */
-var SmoothPan = require("utils/touch/SmoothPanRecognizer");
-// var SmoothPan = Hammer.Pan;
-/** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+var Pan = require("utils/touch/SmoothPanRecognizer");
+// var Pan = Hammer.Pan;
 
 /* -------------------------------
 /* Static private
@@ -25,14 +25,14 @@ function createInstance(el) {
 	var recognizers = [];
 	var manager = new Hammer.Manager(el);
 
-	var hpan = new SmoothPan({
+	var hpan = new Pan({
 		// var hpan = new Hammer.Pan({
 		threshold: Globals.THRESHOLD,
 		direction: Hammer.DIRECTION_HORIZONTAL,
 	});
 	recognizers.push(hpan);
 
-	var vpan = new SmoothPan({
+	var vpan = new Pan({
 		event: "vpan",
 		threshold: Globals.THRESHOLD,
 		direction: Hammer.DIRECTION_VERTICAL,

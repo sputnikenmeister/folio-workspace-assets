@@ -27,7 +27,7 @@ html {
 #container {
 	transition: tx(opacity, 1, 1), tx(visibility, 1, 1, step-start);
 }
-.app-initial * {
+.app-initial {
 	#container {
 		visibility: hidden;
 		opacity: 0;
@@ -46,6 +46,7 @@ html {
 body {
 	color: $color;
 	background-color: $background_color;
+	overscroll-behavior: none;
 }
 .color-fg05 {
 	color: lighten($color, 40%);
@@ -96,13 +97,6 @@ body {
 // Layout utilities
 // ///////////////////////////////////
 
-// translate wrapper function
-// - - - - - - - - - - - - - - - - - -
-@function move($x: 0, $y: 0) {
-	@return translate3d($x, $y, 0);
-	// @return translate($x, $y);
-}
-
 // leaf elements
 // - - - - - - - - - - - - - - - - - -
 %leaf-content {
@@ -111,7 +105,7 @@ body {
 	padding-right: $hu;
 	&,
 	* {
-		@include user-select(none);
+		@include user_select(none);
 	}
 }
 
@@ -132,3 +126,4 @@ body {
 @import "views/layouts/desktop-small.default";
 @import "views/layouts/desktop-small.left";
 @import "views/layouts/desktop-small.right";
+@import "views/layouts/unsupported";

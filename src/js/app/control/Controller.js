@@ -2,15 +2,15 @@
 /* @module app/control/Controller
 /*/
 
-/** @type {module:underscore} */
-var _ = require("underscore");
+// /** @type {module:underscore} */
+// var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 
 // /** @type {module:app/model/collection/TypeCollection} */
 // var types = require("app/model/collection/TypeCollection");
-/** @type {module:app/model/collection/KeywordCollection} */
-var keywords = require("app/model/collection/KeywordCollection");
+// /** @type {module:app/model/collection/KeywordCollection} */
+// var keywords = require("app/model/collection/KeywordCollection");
 /** @type {module:app/model/collection/BundleCollection} */
 var bundles = require("app/model/collection/BundleCollection");
 
@@ -146,7 +146,7 @@ var Controller = Backbone.Router.extend({
 		var lastBundle = bundles.selected;
 		var lastMedia = lastBundle ? lastBundle.get("media").selected : null;
 
-		console.log("Controller::_changeSelection bundle:[%s => %s] media:[%s => %s]",
+		console.log("controller::_changeSelection bundle:[%s => %s] media:[%s => %s]",
 			(lastBundle ? lastBundle.cid : lastBundle), (bundle ? bundle.cid : bundle),
 			(lastMedia ? lastMedia.cid : lastMedia), (media ? media.cid : bundle)
 		);

@@ -4,12 +4,12 @@
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$nHeightLandRight: $nHeightLand + 1.5rem;
+$nav_height_landRight: $nav_height_land + 1.5rem;
 
 @include media(desktop-small) {
 	&.right-layout {
 		// #content:after {
-		// 	top: $nTopLand + $nHeightLandRight;
+		// 	top: $nav_top_land + $nav_height_landRight;
 		// }
 
 		// ///////////////////////////////////
@@ -31,10 +31,10 @@ $nHeightLandRight: $nHeightLand + 1.5rem;
 		// keyword-list
 		// ===================================
 		#keyword-list {
-			// padding-top: #{$nHeightLand + 4.25rem};
+			// padding-top: #{$nav_height_land + 4.25rem};
 		}
 		&.with-bundle #keyword-list {
-			padding-top: #{$nHeightLandRight - 0.25rem + 1rem};
+			padding-top: #{$nav_height_landRight - 0.25rem + 1rem};
 		}
 		&.with-bundle .container-expanded #keyword-list {
 			padding-top: 1.25rem;
@@ -55,7 +55,7 @@ $nHeightLandRight: $nHeightLand + 1.5rem;
 		// site-name-wrapper
 		// - - - - - - - - - - - - - - - - - -
 		// #site-name-wrapper {
-		// 	height: $nHeightLand_right;
+		// 	height: $nav_height_land_right;
 		// }
 
 		// nav-graph
@@ -68,7 +68,7 @@ $nHeightLandRight: $nHeightLand + 1.5rem;
 		// image-carousel
 		// ===================================
 		.media-carousel {
-			top: $nTopLand + $nHeightLandRight - 3rem;
+			top: $nav_top_land + $nav_height_landRight - 3rem;
 			.media-item {
 				margin-right: $aside_width_large;
 				// padding-right: $aside_width_large;
@@ -86,9 +86,9 @@ $nHeightLandRight: $nHeightLand + 1.5rem;
 		// media-caption-stack
 		// ===================================
 		.media-caption-stack {
-			top: $nTopLand + $nHeightLandRight;
+			top: $nav_top_land + $nav_height_landRight;
 			margin-top: -2.5rem;
-			// top: $nTopLand;
+			// top: $nav_top_land;
 			// margin-top: 0;
 			// .content {
 			// 	margin-left: 0;

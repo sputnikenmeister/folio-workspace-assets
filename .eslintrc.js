@@ -11,7 +11,8 @@ module.exports = {
 	"globals": {
 		/* define globals, disallow assignment */
 		"DEBUG": false,
-		"Modernizr": false
+		"Modernizr": false,
+		"Promise": false,
 	},
 	"rules": {
 		"no-cond-assign": "warn",
@@ -19,8 +20,9 @@ module.exports = {
 		"no-empty": "warn",
 		/* allow fallthrough in switch */
 		"no-fallthrough": "off",
+		"no-delete-var": "warn",
 		"no-unused-vars": ["warn", { "args": "none" }],
-		"no-useless-escape": "warn"
+		"no-useless-escape": "off", //"warn"
 		/*
 		"accessor-pairs": "error",
 		"array-bracket-newline": "off",

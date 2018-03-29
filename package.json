@@ -33,6 +33,7 @@
     "modernizr": "^3.0.0",
     "node-underscorify": "^0.0.14",
     "remapify": "^2.0.3",
+    "setimmediate": "^1.0.5",
     "underscore": "^1.4.4",
     "underscore.string": "^3.2.2",
     "webcomponents.js": "^0.7.2",

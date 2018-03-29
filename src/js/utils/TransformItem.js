@@ -14,8 +14,7 @@ var prefixedEvent = require("utils/prefixedEvent");
 
 /** @type {String} */
 var transitionEnd = prefixedEvent("transitionend"); //require("utils/event/transitionEnd");
-/** @type {Function} */
-var slice = Array.prototype.slice;
+// /** @type {Function} */// var slice = Array.prototype.slice;
 
 // /** @type {module:utils/debug/traceElement} */
 // var traceElt = require("./debug/traceElement");
@@ -81,10 +80,19 @@ var slice = Array.prototype.slice;
 
 var NO_TRANSITION = "none 0s step-start 0s";
 
-var translateTemplate = function(o) {
-	// return "translate(" + o._renderedX + "px, " + o._renderedY + "px)";
-	return "translate3d(" + o._renderedX + "px, " + o._renderedY + "px, 0px)";
-};
+
+// var translateTemplate = function(o) {
+// 	// return "translate(" + o._renderedX + "px, " + o._renderedY + "px)";
+// 	// return "translate3d(" + o._renderedX + "px, " + o._renderedY + "px, 0px)";
+// };
+
+var translateTemplate = (function() {
+	var fn = require("app/control/Globals").TRANSLATE_TEMPLATE;
+	return function(o) {
+		return fn(o._renderedX, o._renderedY);
+	};
+}());
+
 var transitionTemplate = function(o) {
 	return o.property + " " + o.duration / 1000 + "s " + o.easing + " " + o.delay / 1000 + "s";
 };

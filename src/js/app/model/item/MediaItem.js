@@ -97,13 +97,13 @@ module.exports = BaseItem.extend({
 
 	initialize: function() {
 		this._updateColors();
-		this.listenTo(this, "change:attrs", function() {
+		this.listenTo(this, "change:attrs change:bundle", function() {
 			this._attrs = null;
 		});
 	},
 
 	attrs: function() {
-		return this._attrs || (this._attrs = _.defaults({}, this.get("attrs"), this.get("bundle").attrs()));
+		return this._attrs || (this._attrs = _.defaults({}, this.get("bundle").attrs(), this.get("attrs")));
 	},
 
 	_updateColors: function() {

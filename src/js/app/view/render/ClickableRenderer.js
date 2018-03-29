@@ -17,7 +17,7 @@ var ClickableRenderer = LabelRenderer.extend({
 	/** @override */
 	events: {
 		"click": function(ev) {
-			this.trigger("renderer:click", this.model);
+			this.trigger("renderer:click", this.model, ev);
 		},
 		"click a": function(ev) {
 			ev.defaultPrevented || ev.preventDefault();

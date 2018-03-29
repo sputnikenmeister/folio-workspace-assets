@@ -1,17 +1,17 @@
 .carousel {
 	// position: relative;
-	// transform-style: flat;
-	transform-style: preserve-3d;
+	// transform-style: preserve-3d;
 }
 .carousel-item {
 	display: block;
 	position: absolute;
-	@include user-select(none);
+	@include user_select(none);
 
 	// carousel animation
 	// - - - - - - - - - - - - - - - - - -
-	transform: translate3d(0,0,0);
-	transform-style: preserve-3d;
+	transform: move(0,0);
+	// transform: translate3d(0,0,0);
+	// transform-style: preserve-3d;
 
 	transition: tx(transform, 1, -1);
 	@at-root .skip-transitions & {

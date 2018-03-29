@@ -1,0 +1,29 @@
+#unsupported {
+	display: none;
+}
+
+@include media(unsupported) {
+	#container {
+		// width: 320px;
+		min-width: unset;
+		visibility: visible;
+		opacity: 1;
+		#content,
+		#navigation {
+			display: none;
+		}
+		#unsupported {
+			display: block;
+			padding: 3.75rem $hu 1rem;
+			margin: 0 auto;
+			max-width: 640px;
+			box-sizing: content-box;
+			h1,
+			h2,
+			p {
+				@include heading_font();
+				margin-bottom: 1rem;
+			}
+		}
+	}
+}

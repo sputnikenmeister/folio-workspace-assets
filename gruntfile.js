@@ -16,7 +16,7 @@ module.exports = function(grunt) {
 		dest: {
 			js: "./js",
 			css: "./css",
-			// fonts:		"./images",
+			// fonts: "./images",
 		},
 		ext: {
 			fonts: "*.{eot,woff,woff2,svg,ttf,otf}",
@@ -147,7 +147,10 @@ module.exports = function(grunt) {
 	/* ---------------------------------
 	/* Style Sheets
 	/* --------------------------------- */
-	// NOTE: `gem install compass sass-json-vars`
+
+	/* NOTE: compass dependencies
+	 *`gem install compass sass-json-vars compass-import-once`
+	 */
 
 	/* compass
 	/* - - - - - - - - - - - - - - - - - */
@@ -155,6 +158,8 @@ module.exports = function(grunt) {
 	grunt.config("compass.options", {
 		require: [
 			"sass-json-vars",
+			"compass-import-once",
+			// "compass/import-once",
 			"./build/grunt/compass-encode.rb", // alternative to compass inline-image()
 		],
 		sassDir: "src/sass",
@@ -227,6 +232,7 @@ module.exports = function(grunt) {
 			],
 			require: [
 				"underscore",
+				"webfontloader",
 				// "underscore.string",
 				"backbone",
 				"backbone.native",
@@ -237,7 +243,6 @@ module.exports = function(grunt) {
 				"es6-promise",
 				"classlist-polyfill",
 				"cookies-js",
-				"webfontloader",
 			],
 			alias: [
 				// "./node_modules/webcomponents.js/MutationObserver.js:mutationobserver-polyfill",
@@ -246,6 +251,7 @@ module.exports = function(grunt) {
 				"./src/js/shims/fullscreen.js:fullscreen-polyfill",
 				"./src/js/shims/matchesSelector.js:matches-polyfill",
 				"./src/js/shims/requestAnimationFrame.js:raf-polyfill",
+				"./src/js/shims/math-sign-polyfill.js:math-sign-polyfill",
 			]
 		},
 	});
@@ -373,7 +379,7 @@ module.exports = function(grunt) {
 		// 	exclude: grunt.config("browserify.vendor.options.exclude"),
 		// 	require: grunt.config("browserify.vendor.options.require"),
 		// 	alias: grunt.config("browserify.vendor.options.alias"),
-		// 	
+		//
 		// 	transform: grunt.config("browserify.client.options.transform"),
 		// 	plugin: grunt.config("browserify.client.options.plugin"),
 		// },

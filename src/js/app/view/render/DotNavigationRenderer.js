@@ -2,10 +2,10 @@
  * @module app/view/render/DotNavigationRenderer
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
+// /** @type {module:underscore} */
+// var _ = require("underscore");
+// /** @type {module:backbone} */
+// var Backbone = require("backbone");
 /** @type {string} */
 var viewTemplate = require("./DotNavigationRenderer.hbs");
 /** @type {module:app/view/component/ClickableRenderer} */

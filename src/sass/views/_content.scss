@@ -14,6 +14,10 @@
 // - - - - - - - - - - - - - - - - - -
 @import "components/selectable.dots-fontface.scss";
 
+.dots-fontface .list-item a {
+	color: inherit;
+}
+
 // leaf elements
 // - - - - - - - - - - - - - - - - - -
 .empty-item .content p,

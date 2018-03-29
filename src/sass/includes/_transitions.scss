@@ -17,20 +17,29 @@ $delay: $duration + $delay_interval;
 	transition: none 0s 0s !important;
 }
 
+// translate wrapper function
+// - - - - - - - - - - - - - - - - - -
+@function move($x: 0, $y: 0) {
+	// @return translate3d($x, $y, 0);
+	@return translate($x, $y);
+}
+
+// transition function
+// - - - - - - - - - - - - - - - - - -
 @function tx($prop: all, $duration_count: 1, $delay_count: -1, $ease: $ease) {
 	@if $delay_count == -1 {
-		@return $prop #{$duration * $duration_count} $ease 0s;
+		@return $prop #{($duration * $duration_count) + ($delay_interval * ($duration_count - 1))} $ease 0s;
 	} @else {
-		@return $prop #{($duration * $duration_count) - $min_delay} $ease #{($delay * $delay_count) + $min_delay};
+		@return $prop #{($duration * $duration_count) + ($delay_interval * ($duration_count - 1)) - $min_delay} $ease #{($delay * $delay_count) + $min_delay};
 	}
 }
 
 // .tx-none 		{ transition: transform 0s step-start 0s; }
-// .tx-now 		{ transition: transform $duration $ease 0s; }
+// .tx-now 			{ transition: transform $duration $ease 0s; }
 // .tx-unset 		{ transition: unset; }
 // .tx-first 		{ transition: tx(transform, 1, 0); }
 // .tx-first-late 	{ transition: tx(transform, 1, 0.5); }
-// .tx-between 	{ transition: tx(transform, 1, 1); }
+// .tx-between 		{ transition: tx(transform, 1, 1); }
 // .tx-last-early 	{ transition: tx(transform, 1, 1.5); }
 // .tx-last 		{ transition: tx(transform, 1, 2); }
 // .tx-after 		{ transition: tx(transform, 1, 2); }

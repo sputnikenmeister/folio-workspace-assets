@@ -6,26 +6,26 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-/** @type {Function} */
-var Color = require("color");
+// /** @type {Function} */
+// var Color = require("color");
 
 /** @type {module:app/utils/debug/traceArgs} */
 var stripTags = require("utils/strings/stripTags");
-/** @type {Function} */
-var prefixedProperty = require("utils/prefixedProperty");
-/** @type {Function} */
-var prefixedEvent = require("utils/prefixedEvent");
+// /** @type {Function} */
+// var prefixedProperty = require("utils/prefixedProperty");
+// /** @type {Function} */
+// var prefixedEvent = require("utils/prefixedEvent");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
 /** @type {module:app/view/base/TouchManager} */
 var TouchManager = require("app/view/base/TouchManager");
-/** @type {module:app/model/collection/BundleCollection} */
-var bundles = require("app/model/collection/BundleCollection");
 /** @type {module:app/control/Controller} */
 var controller = require("app/control/Controller");
 /** @type {module:app/model/AppState} */
 var AppState = require("app/model/AppState");
+// /** @type {module:app/model/collection/BundleCollection} */
+// var bundles = require("app/model/collection/BundleCollection");
 
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
@@ -73,9 +73,9 @@ var AppViewProto = {
 		var docValue = _.find(Globals.LAYOUT_NAMES, function(s) {
 			return document.body.classList.contains(s);
 		});
-		this.model.set("layoutName", docValue, {
-			silent: true
-		});
+		if (docValue && (docValue !== this.model.get("layoutName"))) {
+			this.model.set("layoutName", docValue, { silent: true });
+		}
 
 		/* prevent touch overscroll on iOS */
 		document.addEventListener("touchmove", function(ev) {
@@ -145,9 +145,20 @@ var AppViewProto = {
 	_onModelChange: function() {
 		console.group(this.cid + "::_onModelChange changed:");
 		Object.keys(this.model.changedAttributes()).forEach(function(key) {
-			console.log("\t%s: %s -> %s", key, this.model.previous(key), this.model.get(key));
+			console.info("%s: %s -> %s", key, this.model.previous(key), this.model.get(key));
 		}, this);
 		console.groupEnd();
+
+		// var changelog = Object.keys(this.model.changedAttributes()).reduce(
+		// 	function(obj, key, idx, arr) {
+		// 		obj[key] = [this.model.previous(key), this.model.get(key)].join(" -> ");
+		// 		return obj;
+		// 	}.bind(this), {});
+		// var changelog = Object.keys(this.model.changedAttributes()).map(
+		// 	function(key, idx, arr) {
+		// 		return key + ": " + this.model.previous(key) + " -> " + this.model.get(key);
+		// 	}, this);
+		// console.info("%s::_onModelChange changed: %o", this.cid, changelog);
 
 		if (this.model.hasChanged("bundle") || this.model.hasChanged("media")) {
 			this.requestRender(View.MODEL_INVALID);
@@ -183,13 +194,23 @@ var AppViewProto = {
 	renderAppStart: function() {
 		console.log("%s::renderAppStart", this.cid);
 		document.documentElement.classList.remove("app-initial");
+		document.body.classList.remove("app-initial");
 		// document.documentElement.classList.add("app-ready");
 	},
 
 	renderResize: function() {
-		console.log("%s::renderResize", this.cid);
 		document.body.scrollTop = 0;
-		document.body.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
+		_.each(Globals.BREAKPOINTS, function(o, s) {
+			this.toggle(s, o.matches);
+		}, document.body.classList);
+
+		// var bb = _.filter(_.keys(Globals.BREAKPOINTS), function(s) {
+		// 	return this.contains(s);
+		// }, document.body.classList).join();
+		// console.log("%s::renderResize matches: %s", this.cid, bb);
+
+		// document.body.classList.toggle("tablet-portrait", Globals.BREAKPOINTS["tablet-portrait"].matches);
+		// document.body.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
 
 		this.requestChildrenRender(View.SIZE_INVALID, true);
 
@@ -234,8 +255,8 @@ var AppViewProto = {
 	updateClassList: function(bundle, media) {
 		// classList target
 		var cls = this.el.classList;
-		var prevAttr = null,
-			hasDarkBg = false;
+		var prevAttr = null;
+		// var hasDarkBg = false;
 
 		// Set state classes
 		cls.toggle("with-bundle", !!bundle);
@@ -287,6 +308,7 @@ if (DEBUG) {
 
 	AppViewProto.initialize = (function(fn) {
 		return function() {
+			// var ret = fn.apply(this, arguments);
 			var view = new DebugToolbar({
 				id: "debug-toolbar",
 				model: this.model
@@ -295,6 +317,7 @@ if (DEBUG) {
 			this.listenTo(this.model, "change:layoutName", function() {
 				this.requestRender(View.SIZE_INVALID); //.renderNow();
 			});
+			// return ret;
 			return fn.apply(this, arguments);
 		};
 	})(AppViewProto.initialize);

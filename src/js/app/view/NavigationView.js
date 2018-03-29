@@ -37,7 +37,7 @@ var GroupingListView = require("app/view/component/GroupingListView");
 /** @type {module:app/view/component/CollectionPager} */
 var GraphView = require("app/view/component/GraphView");
 
-/** @type {module:utils/prefixedProperty} */
+// /** @type {module:utils/prefixedProperty} */
 // var prefixedProperty = require("utils/prefixedProperty");
 
 var tx = Globals.transitions;
@@ -52,7 +52,7 @@ var NavigationView = View.extend({
 	cidPrefix: "navigationView",
 
 	/** @override */
-	className: "container-x container-expanded",
+	className: "container-expanded",
 
 	/** @override */
 	initialize: function(options) {
@@ -97,13 +97,13 @@ var NavigationView = View.extend({
 			}
 		});
 		// this.listenTo(this.bundleList, "view:render:after", function(view, flags) {
-		// 	console.info("%s:[%s view:render:after]", this.cid, view.cid, flags & View.SIZE_INVALID);
-		// 	if (flags & View.SIZE_INVALID) {
-		// 		// console.info("%s:[%s view:render:after] bundleList height", this.cid, view.cid, this.bundleList.el.style.height);
-		// 		// this.graph.el.style.height = this.bundleList.el.style.height;
-		// 		this.graph.el.style.opacity = this.bundleList.collapsed? 0 : 1;
-		// 		this.graph.requestRender(View.SIZE_INVALID).renderNow();
-		// 	}
+		// 	console.info("%s:[view:render:after %s]", this.cid, view.cid, View.flagsToString(flags & View.SIZE_INVALID));
+		// 		if (flags & View.SIZE_INVALID) {
+		// 			// console.info("%s:[%s view:render:after] bundleList height", this.cid, view.cid, this.bundleList.el.style.height);
+		// 			// this.graph.el.style.height = this.bundleList.el.style.height;
+		// 			this.graph.el.style.opacity = this.bundleList.collapsed? 0 : 1;
+		// 			this.graph.requestRender(View.SIZE_INVALID).renderNow();
+		// 	// 	}
 		// });
 		// this.listenTo(this.bundleList, "view:render:after", this._onListResize);
 		// this.listenTo(this.keywordList, "view:render:after", this._onListResize);
@@ -121,7 +121,6 @@ var NavigationView = View.extend({
 			}
 			if (this.model.hasChanged("collapsed") || this.model.hasChanged("withBundle")) {
 				this.el.classList.add("container-changing");
-				// this.transforms.promise().then(this._whenTransitionsEnd, this._whenTransitionsAbort);
 			}
 			if (this.model.hasChanged("bundle")) {
 				this.bundleList.requestRender(View.SIZE_INVALID);
@@ -131,7 +130,8 @@ var NavigationView = View.extend({
 
 		// transforms
 		// - - - - - - - - - - - - - - - - -
-		if (this.skipTransitions || (flags & (View.MODEL_INVALID | View.SIZE_INVALID | View.LAYOUT_INVALID))) {
+		if (this.skipTransitions ||
+			(flags & (View.MODEL_INVALID | View.SIZE_INVALID | View.LAYOUT_INVALID))) {
 			// if (transformsChanged) {
 			if (this.skipTransitions) {
 				this.transforms.stopAllTransitions();
@@ -158,7 +158,8 @@ var NavigationView = View.extend({
 		}
 
 		if (flags & View.MODEL_INVALID) {
-			if ((this.model.hasChanged("collapsed") && !this.model.get("collapsed")) || (this.model.hasChanged("withBundle") && !this.model.get("withBundle"))) {
+			if (this.model.hasChanged("collapsed") || this.model.hasChanged("withBundle")) {
+				//if ((this.model.hasChanged("collapsed") && !this.model.get("collapsed")) || (this.model.hasChanged("withBundle") && !this.model.get("withBundle"))) {
 				// this.el.classList.add("container-changing");
 				this.transforms.promise().then(this._whenTransitionsEnd, this._whenTransitionsAbort);
 			}
@@ -183,23 +184,26 @@ var NavigationView = View.extend({
 				this.graph.renderNow();
 			}
 		} else if ((flags & View.SIZE_INVALID) && !this.model.get("collapsed")) {
-			/* NavigationView has resized while uncollapsed, but model is unchanged */
+			/* NavigationView has resized while uncollapsed,
+			   but model is unchanged */
 			// console.info("%s::renderFrame", this.cid, "NavigationView has resized");
-			this.graph.requestRender(View.SIZE_INVALID); // | View.LAYOUT_INVALID);
+			this.graph.requestRender(View.SIZE_INVALID);
 		}
 
 		this.skipTransitions = false;
 	},
 
 	_whenTransitionsEnd: function(result) {
-		console.info("%s::_whenTransitionsEnd", this.cid); //, result);
+		console.info("%s::_whenTransitionsEnd", this.cid);
 
 		this.el.classList.remove("container-changing");
-		this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
+		if (!this.model.get("collapsed")) {
+			this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
+		}
 	},
 
 	_whenTransitionsAbort: function(reason) {
-		console.warn("%s::_whenTransitionsAbort", this.cid, reason);
+		console.warn("%s::_whenTransitionsAbort %o", this.cid, reason);
 	},
 
 	/* -------------------------------
@@ -208,50 +212,40 @@ var NavigationView = View.extend({
 
 	renderTransitions: function(flags) {
 		var modelChanged = (flags & View.MODEL_INVALID);
-		// bundle
+		/* bundle */
 		var withBundle = this.model.get("withBundle");
-		var bundleChanged = modelChanged && this.model.hasChanged("bundle");
 		var withBundleChanged = modelChanged && this.model.hasChanged("withBundle");
-		// media
+		var bundleChanged = modelChanged && this.model.hasChanged("bundle");
+		/* media */
 		var withMedia = this.model.get("withMedia");
-		var mediaChanged = modelChanged && this.model.hasChanged("media");
 		var withMediaChanged = modelChanged && this.model.hasChanged("withMedia");
-		// collapsed
+		//var mediaChanged = modelChanged && this.model.hasChanged("media");
+		/* collapsed */
 		var collapsed = this.model.get("collapsed");
 		var collapsedChanged = modelChanged && this.model.hasChanged("collapsed");
-		// layoutName
-		var layoutName = Globals.BREAKPOINTS["desktop-small"].matches ? this.model.get("layoutName") : "";
+		/* layoutName */
+		var layoutName = Globals.BREAKPOINTS["desktop-small"].matches ?
+			this.model.get("layoutName") : "";
 
 		var tf;
 		/* this.bundleList.el */
 		tf = this.transforms.get(this.bundleList.el);
 		if (tf.hasOffset) {
-			tf.runTransition(collapsedChanged ? tx.BETWEEN : tx.NOW); //.clearOffset();
+			tf.runTransition(collapsedChanged ? tx.BETWEEN : tx.NOW);
 		}
-
 		/* this.keywordList.el */
 		tf = this.transforms.get(this.keywordList.el);
 		if (tf.hasOffset) {
-			tf.runTransition(collapsedChanged ? tx.BETWEEN : tx.NOW); //.clearOffset();
+			tf.runTransition(collapsedChanged ? tx.BETWEEN : tx.NOW);
+		}
+		/* this.graph.el */
+		tf = this.transforms.get(this.graph.el);
+		if (tf && tf.hasOffset) {
+			tf.runTransition(collapsedChanged ? tx.BETWEEN : tx.NOW);
+			tf.clearOffset();
 		}
 
-		// /* this.graph.el */
-		var graphTf = this.transforms.get(this.graph.el);
-		if (graphTf && graphTf.hasOffset) {
-			graphTf.runTransition(collapsedChanged ? tx.BETWEEN : tx.NOW); //.clearOffset();
-			graphTf.clearOffset();
-		}
-
-		// if (withBundleChanged || (collapsedChanged && graphTf.hasOffset)) {
-		// 	graphTf.runTransition(tx.BETWEEN);
-		// } else if (graphTf.hasOffset) {
-		// 	graphTf.runTransition(tx.NOW);
-		// }
-		// if (graphTf.hasOffset) {
-		// 	graphTf.clearOffset();
-		// }
-
-		// if (layout == "default-layout" || layout == "left-layout") {}
+		/* Horizontal transitions*/
 		switch (layoutName) {
 			case "left-layout":
 			case "default-layout":
@@ -269,9 +263,6 @@ var NavigationView = View.extend({
 					if (!withBundleChanged && withMediaChanged)
 						tf.runTransition(bundleChanged ? tx.BETWEEN : tx.NOW);
 				}
-				// if (tf.hasOffset) {
-				// 	tf.clearOffset();
-				// }
 				// continue
 			case "right-layout":
 				if (collapsedChanged) { /* this.hGroupings */
@@ -280,7 +271,7 @@ var NavigationView = View.extend({
 				break;
 		}
 
-		// if (layout == "left-layout") {} else if (layout == "default-layout" || layout == "right-layout") {} else {}
+		/* Vertical transitions */
 		switch (layoutName) {
 			case "left-layout":
 				if (collapsedChanged) { /* this.bundleList.wrapper */
@@ -302,13 +293,6 @@ var NavigationView = View.extend({
 				}
 				// continue
 			case "right-layout":
-				// if (collapsedChanged) {
-				// if (withBundleChanged) { /* this.sitename.el */
-				// 	this.transforms.runTransition(collapsed? tx.LAST : tx.FIRST, this.sitename.el);
-				// } else if (collapsedChanged) {
-				// 	this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
-				// }
-				// }
 				if (withBundleChanged && collapsedChanged) { /* this.sitename.el */
 					this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
 				} else if (collapsedChanged) {
@@ -325,7 +309,7 @@ var NavigationView = View.extend({
 	},
 
 	/* --------------------------- *
-	/* model changed
+	/* own model changed
 	/* --------------------------- */
 
 	_onModelChange: function() {
@@ -338,19 +322,50 @@ var NavigationView = View.extend({
 		}
 		if (this.model.hasChanged("bundle")) {
 			this.keywordList.refresh();
-			this.graph && this.graph.requestRender(View.SIZE_INVALID);
+			// this.graph && this.graph.requestRender(View.SIZE_INVALID);
 		}
 		if (this.model.hasChanged("withBundle")) {
 			if (this.model.get("withBundle")) {
 				this.touch.on("vpanstart", this._onVPanStart);
 				this.touch.on("panstart", this._onHPanStart);
+				// this.touch.on("tap", this._onTap);
 			} else {
 				this.touch.off("vpanstart", this._onVPanStart);
 				this.touch.off("panstart", this._onHPanStart);
+				// this.touch.off("tap", this._onTap);
 			}
 			// this.graph.valueTo()
 		}
 		this.requestRender(View.MODEL_INVALID);
+	},
+
+	/*events: {
+		"click": function(ev) {
+			console.log("%s:[click] ev: %o", this.cid, ev);
+			if (!ev.defaultPrevented && this.model.get("withBundle")) {
+				this.setImmediate(function() {
+					this.transforms.offset(0, 1, this.graph.el);
+					this.transforms.validate();
+					this.setImmediate(function() {
+						this.model.set("collapsed", !this.model.get("collapsed"));
+					});
+				});
+			}
+		}
+	},*/
+
+
+	/* --------------------------- *
+	/* bundleList event
+	/* --------------------------- */
+
+	_onBundleListSame: function(bundle) {
+		this.transforms.offset(0, 1, this.graph.el);
+		this.transforms.validate();
+		this.setImmediate(function() {
+			this.model.set("collapsed", !this.model.get("collapsed"));
+		});
+
 	},
 
 	/* --------------------------- *
@@ -363,14 +378,17 @@ var NavigationView = View.extend({
 		}
 	},
 
+	/* --------------------------- *
+	/* keyword collection event
+	/* --------------------------- */
+
 	_onKeywordSelect: function(keyword) {
 		// use collection listener to avoid redundant refresh calls
 		this.bundleList.refresh();
 		if (!this.model.get("collapsed") && this.graph) {
-			// this.graph.requestRender(View.SIZE_INVALID & View.LAYOUT_INVALID);
-			// this.graph.requestRender(View.LAYOUT_INVALID);
 			this.graph.valueTo(0, 0, "amount");
-			this.graph.valueTo(1, 500, "amount");
+			this.graph.renderNow();
+			this.graph.valueTo(1, Globals.TRANSITION_DURATION, "amount");
 		}
 	},
 
@@ -383,14 +401,13 @@ var NavigationView = View.extend({
 			.stopTransition()
 			.clearOffset()
 			.validate();
-		if (this.model.get("layoutName") != "left-layout" &&
-			this.model.get("layoutName") != "default-layout") {
+		if (this.model.get("layoutName") != "left-layout"
+			&& this.model.get("layoutName") != "default-layout") {
 			return;
 		}
-		if (Globals.BREAKPOINTS["desktop-small"].matches &&
-			this.model.get("bundle").get("media").selectedIndex <= 0 &&
-			this.model.get("collapsed")
-		) {
+		if (Globals.BREAKPOINTS["desktop-small"].matches
+			&& this.model.get("bundle").get("media").selectedIndex <= 0
+			&& this.model.get("collapsed")) {
 			this.transforms.get(this.keywordList.wrapper).clearCapture();
 			this._onHPanMove(ev);
 
@@ -463,6 +480,7 @@ var NavigationView = View.extend({
 		var collapsed = this.model.get("collapsed");
 		var delta = ev.thresholdDeltaY;
 		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+
 		// check if direction is aligned with collapsed/expand
 		var isValidDir = collapsed ? (delta > 0) : (delta < 0);
 		var moveFactor = collapsed ? 1 - Globals.VPAN_DRAG : Globals.VPAN_DRAG;
@@ -504,8 +522,8 @@ var NavigationView = View.extend({
 
 	willCollapsedChange: function(ev) {
 		return ev.type == "vpanend" ? this.model.get("collapsed") ?
-			ev.thresholdDeltaY > Globals.COLLAPSE_THRESHOLD :
-			ev.thresholdDeltaY < -Globals.COLLAPSE_THRESHOLD :
+			ev.deltaY > Globals.COLLAPSE_THRESHOLD :
+			ev.deltaY < -Globals.COLLAPSE_THRESHOLD :
 			false;
 	},
 
@@ -541,8 +559,9 @@ var NavigationView = View.extend({
 		});
 		controller.listenTo(view, {
 			"view:select:one": controller.selectBundle,
-			"view:select:none": controller.deselectBundle,
+			"view:select:none": controller.deselectBundle
 		});
+		this.listenTo(view, "view:select:same", this._onBundleListSame);
 		this.listenTo(keywords, "select:one select:none", this._onKeywordSelect);
 		view.wrapper = view.el.parentElement;
 		return view;
@@ -567,6 +586,7 @@ var NavigationView = View.extend({
 		});
 		this.listenTo(view, "view:select:one view:select:none", this._onKeywordListChange);
 		view.wrapper = view.el.parentElement;
+
 		return view;
 	},
 
@@ -578,8 +598,6 @@ var NavigationView = View.extend({
 			model: this.model,
 			useOpaque: false
 		});
-		// view.styleData = {};
-		// this.bundleList.wrapper.appendChild(view.el);
 		this.el.appendChild(view.el);
 		return view;
 	},

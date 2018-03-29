@@ -42,16 +42,18 @@ if (DEBUG) {
 				boxSizing: "border-box",
 				overflow: "hidden",
 			});
-			html +=  "<pre><b>location:<b> " + window.location + "</pre>";
+			html += "<pre><b>location:<b> " + window.location + "</pre>";
 			html += "<pre><b>event:<b> " + JSON.stringify(args.shift(), null, " ") + "</pre>";
 			if (args.length) html += "<pre><b>rest:<b> " + JSON.stringify(args, null, " ") + "</pre>";
 			el.innerHTML = html;
 			document.body.appendChild(el);
 		});
-	} else { 
-		window.addEventListener("error", function(ev) {
-			console.error("Uncaught Error", ev);
-		});
+	} else {
+		if (!DEBUG) {
+			window.addEventListener("error", function(ev) {
+				console.error("Uncaught Error", ev);
+			});
+		}
 	}
 }
 
@@ -64,6 +66,8 @@ require("classlist-polyfill");
 require("raf-polyfill");
 require("matches-polyfill");
 require("fullscreen-polyfill");
+require("math-sign-polyfill");
+require("setimmediate");
 
 /** @type {module:backbone} */
 var Backbone = require("backbone");
@@ -79,24 +83,24 @@ window.addEventListener("load", function(ev) {
 	try {
 		// process bootstrap data, let errors go up the stack
 		require("app/model/helper/bootstrap")(window.bootstrap);
-	// } catch (err) {
-	// 	// document.body.innerHTML = "<h1>Oops... </h1>";
-	// 	// document.documentElement.classList.remove("app-initial");
-	// 	// document.documentElement.classList.add("app-error");
-	// 	throw new Error("bootstrap data is missing");
+		// } catch (err) {
+		// 	// document.body.innerHTML = "<h1>Oops... </h1>";
+		// 	// document.documentElement.classList.remove("app-initial");
+		// 	// document.documentElement.classList.add("app-error");
+		// 	throw new Error("bootstrap data is missing");
 	} finally {
 		// detele global var
-		delete window.bootstrap; 
+		delete window.bootstrap;
 	}
-	
+
 	require("app/view/template/_helpers");
 	// require("app/view/template/_partials");
 	/** @type {module:app/view/helper/createColorStyleSheet} */
 	require("app/view/helper/createColorStyleSheet").call();
-	
+
 	/** @type {module:app/view/AppView} */
 	var AppView = require("app/view/AppView");
-	
+
 	/** @type {module:webfontloader} */
 	var WebFont = require("webfontloader");
 	WebFont.load({
@@ -105,14 +109,14 @@ window.addEventListener("load", function(ev) {
 			families: [
 				"Franklin Gothic FS:n4,i4,n7,i7",
 				"ITCFranklinGothicStd-Compressed",
-				"FolioFigures-Regular", 
+				"FolioFigures-Regular",
 			],
-			testStrings: { 
+			testStrings: {
 				"FolioFigures-Regular": "hms"
 			},
 		},
-		active: function() { 
-			console.log("WebFont::active"); 
+		active: function() {
+			console.log("WebFont::active");
 			AppView.getInstance();
 		},
 		fontactive: function(familyName, variantFvd) {

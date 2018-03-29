@@ -3,7 +3,8 @@
 // -----------------------------------
 .media-item {
 	img {
-		object-fit: cover;
+		// object-fit: cover;
+		// object-fit: contain;
 		&:focus {
 			outline: 0 none;
 		}
@@ -52,14 +53,25 @@
 	// .placeholder:before
 	// - - - - - - - - - - - - - - - - -
 	.placeholder:before {
-		// @extend %placeholder-franklin-itc-cp;
-		font: 600 normal 12rem/1.2 'ITCFranklinGothicStd-Compressed', $grotesque_fallback;
-		// font-weight: 600; font-size: 12rem; line-height: 1.2;
-		letter-spacing: -0.01em;
-		margin: 2rem 3rem;
 		position: absolute;
 		top: 0;
 		left: 0;
+
+		// @extend %placeholder-franklin-itc-cp;
+		font-family: 'FolioFigures-Regular', monospace;
+		font-weight: normal;
+		font-size: 12rem;
+		line-height: 0.85;
+		letter-spacing: -0.05em;
+		margin: 0.25em;
+
+		// font: bold normal 12rem/1.2 'ITCFranklinGothicStd-Compressed', $grotesque_fallback;
+		// font-family: 'ITCFranklinGothicStd-Compressed', $grotesque_fallback;
+		// font-weight: bold;
+		// line-height: 1.2;
+		// font-size: 9rem; //12rem;
+		// letter-spacing: -0.01em;
+		// margin: 2rem 3rem;
 	}
 	.placeholder:before {
 		transition: tx(opacity, 1, 1); //$duration $ease $delay + 0.001s;

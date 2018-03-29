@@ -2,10 +2,10 @@
  * @module app/view/component/SelectableListView
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-/** @type {module:backbone} */
-var Backbone = require("backbone");
+// /** @type {module:underscore} */
+// var _ = require("underscore");
+// /** @type {module:backbone} */
+// var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
 /** @type {module:app/view/base/View} */

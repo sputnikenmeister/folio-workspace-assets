@@ -21,7 +21,9 @@ body {
 }
 
 a {
-	color: inherit;
+	// color: inherit;
+	color: $link_color_value;
+	// color: $link_color;
 	text-decoration: none;
 	-webkit-tap-highlight-color: initial;
 	&:focus {

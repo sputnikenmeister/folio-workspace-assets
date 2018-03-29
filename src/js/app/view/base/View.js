@@ -9,7 +9,7 @@ var Backbone = require("backbone");
 var _ = require("underscore");
 
 /* -------------------------------
-/* MutationObserver 
+/* MutationObserver
 /* ------------------------------- */
 
 var _cidSeed = 1;
@@ -117,12 +117,12 @@ var PrefixedEvents = require("app/view/base/PrefixedEvents");
 var _now = window.performance ?
 	window.performance.now.bind(window.performance) :
 	Date.now.bind(Date);
-// var _now = window.performance? 
-// 	function() { return window.performance.now(); }: 
+// var _now = window.performance?
+// 	function() { return window.performance.now(); }:
 // 	function() { return Date.now(); };
 
 var applyEventPrefixes = function(events) {
-	var selector, prefixed, unprefixed;
+	var selector, unprefixed;
 	for (selector in events) {
 		unprefixed = selector.match(/^\w+/i)[0];
 		if (PrefixedEvents.hasOwnProperty(unprefixed)) {
@@ -190,8 +190,8 @@ var View = {
 	/** @type {module:utils/prefixedEvent} */
 	prefixedEvent: require("utils/prefixedEvent"),
 
-	/** @type {module:utils/setImmediate} */
-	setImmediate: require("utils/setImmediate"),
+	// /** @type {module:utils/setImmediate} */
+	// setImmediate: require("utils/setImmediate"),
 
 	/** @type {module:app/view/promise/whenViewIsAttached} */
 	whenViewIsAttached: require("app/view/promise/whenViewIsAttached"),
@@ -216,7 +216,7 @@ var View = {
 			if (_viewsByCid[el.cid]) {
 				return _viewsByCid[el.cid];
 			}
-		} while (el = el.parentElement);
+		} while ((el = el.parentElement || el.parentNode));
 		return null;
 	},
 
@@ -486,7 +486,6 @@ var ViewProto = {
 			this._viewDepth = getViewDepth(this);
 		}
 		return this._viewDepth;
-		// return getViewDepth(this);
 	},
 
 	/* -------------------------------
@@ -534,23 +533,15 @@ var ViewProto = {
 	/* ------------------------------- */
 
 	requestAnimationFrame: function(callback, priority, ctx) {
-		// var retval = FrameQueue.request(callback.bind(this), priority);
-		// if (!this._skipLog)
-		// 	console.log("%s::requestAnimationFrame ID:%i requested", this.cid, retval);
-		// return retval;
 		return FrameQueue.request(callback.bind(ctx || this), priority);
 	},
 
 	cancelAnimationFrame: function(id) {
-		// var retval = FrameQueue.cancel(id);
-		// if (!this._skipLog)
-		// 	console.log("%s::requestAnimationFrame ID:%i cancelled", this.cid, id);
-		// return retval;
 		return FrameQueue.cancel(id);
 	},
 
 	setImmediate: function(callback, ctx) {
-		View.setImmediate(callback.bind(ctx || this));
+		window.setImmediate(callback.bind(ctx || this));
 	},
 
 	/* -------------------------------

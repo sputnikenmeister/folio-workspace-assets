@@ -11,11 +11,13 @@
 	}
 	.button:hover {
 		color: white;
+		background-color: $link_color_value;
 		background-color: $link_color;
 	}
 	.button:active {
-		color: white;
-		background-color: $link_down_color;
+		background-color: white;
+		color: $link_color_value;
+		color: $link_color;
 	}
 	.button:before {
 		text-align: center;

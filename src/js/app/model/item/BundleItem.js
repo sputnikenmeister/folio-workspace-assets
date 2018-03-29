@@ -102,7 +102,8 @@ module.exports = BaseItem.extend({
 	initialize: function(attrs, options) {
 		this.colors = {
 			fgColor: new Color(this.attr("color")),
-			bgColor: new Color(this.attr("background-color"))
+			bgColor: new Color(this.attr("background-color")),
+			lnColor: new Color(this.attr("--link-color")),
 		};
 		this.colors.hasDarkBg = this.colors.fgColor.luminosity() > this.colors.bgColor.luminosity();
 	},

@@ -5,8 +5,8 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:color} */
-var Color = require("color");
+// /** @type {module:color} */
+// var Color = require("color");
 
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
@@ -81,19 +81,22 @@ var CanvasView = View.extend({
 
 		this._options = _.pick(options, "color", "backgroundColor");
 
-		// // mozOpaque
-		// // --------------------------------
-		if (this._useOpaque) {
-			this._opaqueProp = Modernizr.prefixed("opaque", this.el, false);
-			if (this._opaqueProp) {
-				this.el.classList.add("color-bg");
-				// this.el[this._opaqueProp] = true;
-			}
-		}
+		// opaque background
+		// --------------------------------
+		var ctxOpts = {};
+		// if (this._useOpaque) {
+		// 	this._opaqueProp = Modernizr.prefixed("opaque", this.el, false);
+		// 	if (this._opaqueProp) {
+		// 		this.el[this._opaqueProp] = true;
+		// 	} else {
+		// 		ctxOpts.alpha = true;
+		// 	}
+		// 	this.el.classList.add("color-bg");
+		// }
 
 		// canvas' context init
 		// --------------------------------
-		this._ctx = this.el.getContext("2d");
+		this._ctx = this.el.getContext("2d", ctxOpts);
 
 		// adjust canvas size to pixel ratio
 		// upscale the canvas if the two ratios don't match
@@ -273,7 +276,7 @@ var CanvasView = View.extend({
 });
 
 if (DEBUG) {
-	CanvasView._skipLog = true;
+	CanvasView.prototype._skipLog = true;
 }
 
 module.exports = CanvasView;
