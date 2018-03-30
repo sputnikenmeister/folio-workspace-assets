@@ -46,7 +46,7 @@ module.exports = View.extend({
 
 		_.bindAll(this, "_onTouch", "_onResize");
 		this.hammer = (options.hammer) ? options.hammer : this.createHammer();
-		this.hammer.on("panstart panmove panend pancancel tap", this._onTouch);
+		this.hammer.on("hpanstart hpanmove hpanend hpancancel tap", this._onTouch);
 		//		Backbone.$(window).on("orientationchange resize", this._onResize);
 
 		this.listenTo(this.collection, {
@@ -67,7 +67,7 @@ module.exports = View.extend({
 
 	remove: function() {
 		//		Backbone.$(window).off("orientationchange resize", this._onResize);
-		this.hammer.off("panstart panmove panend pancancel tap", this._onTouch);
+		this.hammer.off("hpanstart hpanmove hpanend hpancancel tap", this._onTouch);
 		if (this._hammerIsLocal) this.hammer.destroy();
 		this.removeChildren();
 		DeferredView.prototype.remove.apply(this);

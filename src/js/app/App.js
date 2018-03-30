@@ -7,19 +7,21 @@
 var _ = require("underscore");
 
 if (DEBUG) {
-	if (/Firefox/.test(window.navigator.userAgent)) {
-		console.prefix = "# ";
-		var shift = [].shift;
-		var logWrapFn = function() {
-			if (typeof arguments[1] == "string") arguments[1] = console.prefix + arguments[1];
-			return shift.apply(arguments).apply(console, arguments);
-		};
-		console.group = _.wrap(console.group, logWrapFn);
-		console.log = _.wrap(console.log, logWrapFn);
-		console.info = _.wrap(console.info, logWrapFn);
-		console.warn = _.wrap(console.warn, logWrapFn);
-		console.error = _.wrap(console.error, logWrapFn);
-	}
+
+	// if (/Firefox/.test(window.navigator.userAgent)) {
+	// 	console.prefix = "# ";
+	// 	var shift = [].shift;
+	// 	var logWrapFn = function() {
+	// 		if (typeof arguments[1] == "string") arguments[1] = console.prefix + arguments[1];
+	// 		return shift.apply(arguments).apply(console, arguments);
+	// 	};
+	// 	console.group = _.wrap(console.group, logWrapFn);
+	// 	console.log = _.wrap(console.log, logWrapFn);
+	// 	console.info = _.wrap(console.info, logWrapFn);
+	// 	console.warn = _.wrap(console.warn, logWrapFn);
+	// 	console.error = _.wrap(console.error, logWrapFn);
+	// }
+
 	// handle error events on some platforms and production
 	if (/iPad|iPhone/.test(window.navigator.userAgent)) {
 		window.addEventListener("error", function() {

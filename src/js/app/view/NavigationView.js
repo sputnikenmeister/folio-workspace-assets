@@ -327,11 +327,11 @@ var NavigationView = View.extend({
 		if (this.model.hasChanged("withBundle")) {
 			if (this.model.get("withBundle")) {
 				this.touch.on("vpanstart", this._onVPanStart);
-				this.touch.on("panstart", this._onHPanStart);
+				this.touch.on("hpanstart", this._onHPanStart);
 				// this.touch.on("tap", this._onTap);
 			} else {
 				this.touch.off("vpanstart", this._onVPanStart);
-				this.touch.off("panstart", this._onHPanStart);
+				this.touch.off("hpanstart", this._onHPanStart);
 				// this.touch.off("tap", this._onTap);
 			}
 			// this.graph.valueTo()
@@ -411,8 +411,8 @@ var NavigationView = View.extend({
 			this.transforms.get(this.keywordList.wrapper).clearCapture();
 			this._onHPanMove(ev);
 
-			this.touch.on("panmove", this._onHPanMove);
-			this.touch.on("panend pancancel", this._onHPanFinal);
+			this.touch.on("hpanmove", this._onHPanMove);
+			this.touch.on("hpanend hpancancel", this._onHPanFinal);
 		}
 	},
 
@@ -420,24 +420,26 @@ var NavigationView = View.extend({
 		// var HPAN_DRAG = 1;
 		// var HPAN_DRAG = 0.75;
 		var HPAN_DRAG = 720 / 920;
-		var delta = ev.thresholdDeltaX;
+		var delta = ev.deltaX; //ev.thresholdDeltaX;
 		// var mediaItems = this.model.get("bundle").get("media");
 
 		if (this.model.get("withMedia")) {
 			// if (this.model.get("withMedia") ^ (this._renderFlags & View.MODEL_INVALID)) {
 			// if (mediaItems.selected !== null) {
-			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT) ? HPAN_DRAG : 0.0;
+			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT) ?
+				0.0 : HPAN_DRAG;
 			// if (bundles.selected.get("media").selectedIndex == -1) {
 		} else { //if (media.selectedIndex == 0) {
-			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT) ? Globals.HPAN_OUT_DRAG : HPAN_DRAG;
+			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT) ?
+				HPAN_DRAG : Globals.HPAN_OUT_DRAG;
 		}
 		this.transforms.offset(delta, void 0, this.keywordList.wrapper);
 		this.transforms.validate();
 	},
 
 	_onHPanFinal: function(ev) {
-		this.touch.off("panmove", this._onHPanMove);
-		this.touch.off("panend pancancel", this._onHPanFinal);
+		this.touch.off("hpanmove", this._onHPanMove);
+		this.touch.off("hpanend hpancancel", this._onHPanFinal);
 
 		/* NOTE: if there is no model change, set tx here. Otherwise just wait for render */
 		var kTf = this.transforms.get(this.keywordList.wrapper);
@@ -478,8 +480,8 @@ var NavigationView = View.extend({
 
 	_onVPanMove: function(ev) {
 		var collapsed = this.model.get("collapsed");
-		var delta = ev.thresholdDeltaY;
-		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+		var delta = ev.deltaY; //ev.thresholdDeltaY;
+		var maxDelta = this._collapsedOffsetY; // + Math.abs(ev.thresholdOffsetY);
 
 		// check if direction is aligned with collapsed/expand
 		var isValidDir = collapsed ? (delta > 0) : (delta < 0);
@@ -619,7 +621,7 @@ var NavigationView = View.extend({
 			this._transformObserver = new MutationObserver(this._onTransformMutation);
 		}
 		this._transformObserver.observe(target, { attributes: true, attributeFilter: ["style"] });
-		this.touch.on("panend pancancel", this._endTransformObserve);
+		this.touch.on("hpanend hpancancel", this._endTransformObserve);
 		this.transforms.get(this.keywordList.wrapper)
 			.stopTransition()
 			.clearOffset()
@@ -629,7 +631,7 @@ var NavigationView = View.extend({
 
 	_endTransformObserve: function() {
 		this._transformObserver.disconnect();
-		this.touch.off("panend pancancel", this._endTransformObserve);
+		this.touch.off("hpanend hpancancel", this._endTransformObserve);
 		this.transforms.get(this.keywordList.wrapper)
 			.clearOffset()
 			.runTransition(tx.NOW)

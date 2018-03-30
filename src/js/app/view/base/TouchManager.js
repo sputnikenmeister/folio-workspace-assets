@@ -20,38 +20,82 @@ var Pan = require("utils/touch/SmoothPanRecognizer");
  * @type {Hammer.Manager}
  */
 var instance = null;
-
-function createInstance(el) {
-	var recognizers = [];
-	var manager = new Hammer.Manager(el);
-
-	var hpan = new Pan({
-		// var hpan = new Hammer.Pan({
-		threshold: Globals.THRESHOLD,
+var createInstance = function(el) {
+	var manager, hpan, vpan, tap;
+	hpan = new Pan({
+		threshold: Globals.PAN_THRESHOLD,
 		direction: Hammer.DIRECTION_HORIZONTAL,
+		event: "hpan",
 	});
-	recognizers.push(hpan);
-
-	var vpan = new Pan({
-		event: "vpan",
-		threshold: Globals.THRESHOLD,
+	vpan = new Pan({
+		threshold: Globals.PAN_THRESHOLD,
 		direction: Hammer.DIRECTION_VERTICAL,
+		event: "vpan",
 	});
-	recognizers.push(vpan);
+	tap = new Hammer.Tap({
+		threshold: Globals.PAN_THRESHOLD - 1
+	});
+	manager = new Hammer.Manager(el);
+	manager.add([tap, hpan, vpan]);
 	vpan.requireFailure(hpan);
-
-	var tap = new Hammer.Tap({
-		// threshold: Globals.THRESHOLD - 1,
-		// interval: 50,
-		// time: 200,
-	});
-	recognizers.push(tap);
-	tap.recognizeWith(hpan);
-
-	manager.add(recognizers);
-	// manager.set({ domevents: true});
+	// manager.set({ domevents: true });
 	return manager;
-}
+};
+
+// function createInstance(el) {
+// 	var recognizers = [];
+// 	var manager = new Hammer.Manager(el);
+//
+// 	var hpan = new Pan({
+// 		event: "hpan",
+// 		threshold: Globals.THRESHOLD,
+// 		direction: Hammer.DIRECTION_HORIZONTAL
+// 	});
+//
+// 	var vpan = new Pan({
+// 		event: "vpan",
+// 		threshold: Globals.THRESHOLD,
+// 		direction: Hammer.DIRECTION_VERTICAL
+// 	});
+//
+// 	var tap = new Hammer.Tap();
+// 	// var tap = new Hammer.Tap({
+// 	// 	threshold: Globals.THRESHOLD - 1,
+// 	// 	interval: 50,
+// 	// 	time: 200
+// 	// });
+// 	recognizers.push(vpan);
+// 	recognizers.push(hpan);
+// 	recognizers.push(tap);
+// 	manager.add(recognizers);
+//
+// 	hpan.recognizeWith([vpan]);
+// 	hpan.requireFailure([vpan]);
+// 	tap.recognizeWith([vpan, hpan]);
+//
+// 	// tap.requireFailure(vpan);
+//
+// 	// manager.set({ domevents: true });
+// 	return manager;
+// }
+
+// function createInstance(el) {
+// 	return new Hammer(el, {
+// 		recognizers: [
+// 			[Hammer.Tap],
+// 			[Hammer.Pan, {
+// 				event: 'hpan',
+// 				direction: Hammer.DIRECTION_HORIZONTAL,
+// 				threshold: Globals.THRESHOLD
+// 			}],
+// 			[Hammer.Pan, {
+// 				event: 'vpan',
+// 				direction: Hammer.DIRECTION_VERTICAL,
+// 				threshold: Globals.THRESHOLD
+// 			}, ['hpan']]
+// 		]
+// 	});
+// }
 
 /*https://gist.githubusercontent.com/jtangelder/361052976f044200ea17/raw/f54c2cef78d59da3f38286fad683471e1c976072/PreventGhostClick.js*/
 
@@ -66,11 +110,15 @@ var lastTimeStamp = -1;
 var panSessionOpened = false;
 
 var touchHandlers = {
-	"panstart panend pancancel vpanstart vpanend vpancancel": function(hev) {
+	"vpanstart vpanend vpancancel hpanstart hpanend hpancancel": function(hev) {
+		// console.log("TouchManager:[%s]", hev.srcEvent.type);
 		panSessionOpened = !hev.isFinal;
 		if (hev.isFinal)
 			lastTimeStamp = hev.srcEvent.timeStamp;
-	}
+	},
+	// "hammer.input tap vpanmove hpanmove": function(hev) {
+	// 	console.log("TouchManager:[%s -> %s]", hev.srcEvent.type, hev.type);
+	// }
 };
 
 var captureHandlers = {
@@ -97,7 +145,6 @@ var bubblingHandlers = {};
 /* Static public
 /* ------------------------------- */
 var TouchManager = {
-
 	init: function(target) {
 		if (instance === null) {
 			instance = createInstance(target);

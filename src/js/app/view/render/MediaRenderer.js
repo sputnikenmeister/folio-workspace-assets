@@ -5,6 +5,8 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
+/** @type {module:underscore.strings/lpad} */
+var lpad = require("underscore.string/lpad");
 // /** @type {module:utils/css/getBoxEdgeStyles} */
 // var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
@@ -99,7 +101,7 @@ var MediaRenderer = CarouselRenderer.extend({
 
 	updateMediaProgress: function(progress, id) {
 		if (_.isNumber(progress)) {
-			this.placeholder.setAttribute("data-progress", (progress * 100).toFixed(0));
+			this.placeholder.setAttribute("data-progress", lpad(Math.floor(progress * 100), 2, '0'));
 		}
 		// else if (progress === "complete") {
 		// 	this.placeholder.removeAttribute("data-progress");
@@ -245,10 +247,10 @@ if (DEBUG) {
 
 		/** @type {Function} */
 		var Color = require("color");
-		/** @type {module:underscore.strings/lpad} */
-		var lpad = require("underscore.string/lpad");
-		/** @type {module:underscore.strings/rpad} */
-		var rpad = require("underscore.string/rpad");
+		// /** @type {module:underscore.string/lpad} */
+		// var lpad = require("underscore.string/lpad");
+		// /** @type {module:underscore.string/rpad} */
+		// var rpad = require("underscore.string/rpad");
 
 		return MediaRenderer.extend({
 

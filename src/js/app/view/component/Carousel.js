@@ -85,10 +85,28 @@ var VERTICAL_PROPS = {
 };
 */
 
+// var DIRECTION_NONE = 1;
+// var DIRECTION_LEFT = 2;
+// var DIRECTION_RIGHT = 4;
+// var DIRECTION_UP = 8;
+// var DIRECTION_DOWN = 16;
+
+function dirToStr(dir) {
+	if (dir === Hammer.DIRECTION_NONE) return 'NONE';
+	if (dir === Hammer.DIRECTION_LEFT) return 'LEFT';
+	if (dir === Hammer.DIRECTION_RIGHT) return 'RIGHT';
+	if (dir === Hammer.DIRECTION_UP) return 'UP';
+	if (dir === Hammer.DIRECTION_DOWN) return 'DOWN';
+	if (dir === Hammer.DIRECTION_HORIZONTAL) return 'HORIZONTAL';
+	if (dir === Hammer.DIRECTION_VERTICAL) return 'VERTICAL';
+	if (dir === Hammer.DIRECTION_ALL) return 'ALL';
+	return 'UNRECOGNIZED';
+}
+
 var isValidTouchManager = function(touch, direction) {
 	// var retval;
 	try {
-		return touch.get("pan").options.direction == direction;
+		return touch.get("hpan").options.direction == direction;
 	} catch (err) {
 		return false;
 	}
@@ -267,7 +285,7 @@ var CarouselProto = {
 		// this._scrollPendingAction && this._scrollPendingAction(true);
 		// if (this._enabled) {
 		// 	this.touch.off("tap", this._onTap);
-		// 	this.touch.off("panstart panmove panend pancancel", this._onPan);
+		// 	this.touch.off("hpanstart hpanmove hpanend hpancancel", this._onPan);
 		// }
 		this._toggleTouchEvents(false);
 		this.removeChildren();
@@ -578,9 +596,9 @@ var CarouselProto = {
 	},
 
 	_scrollBy: function(delta, skipTransitions) {
-		var metrics, pos;
-		var sMetrics = this.metrics[(this._scrollCandidateView || this._selectedView).cid];
+		var sMetrics, metrics, pos;
 
+		sMetrics = this.metrics[(this._scrollCandidateView || this._selectedView).cid];
 		this.itemViews.each(function(view) {
 			metrics = this.metrics[view.cid];
 			pos = Math.floor(this._getScrollOffset(delta, metrics, sMetrics));
@@ -598,9 +616,9 @@ var CarouselProto = {
 	},
 
 	_getScrollOffset: function(delta, mCurr, mSel) {
-		var pos = mCurr.pos - mSel.pos + delta;
-		var offset = 0;
+		var pos, offset = 0;
 
+		pos = mCurr.pos - mSel.pos + delta;
 		if (pos < 0) {
 			if (Math.abs(pos) < mCurr.outer) {
 				offset += (-mCurr.after) / mCurr.outer * pos;
@@ -618,7 +636,6 @@ var CarouselProto = {
 		return pos + offset;
 	},
 
-
 	_onScrollTransitionEnd: function(ev) {
 		if (ev.propertyName === transformStyleName && this.scrolling) {
 			console.log("%s::_onScrollTransitionEnd selected: %s", this.cid, ev.target.cid);
@@ -635,24 +652,25 @@ var CarouselProto = {
 		if (this._touchEventsEnabled !== enable) {
 			this._touchEventsEnabled = enable;
 			if (enable) {
-				this.touch.on("tap panstart panmove panend pancancel", this._onTouchEvent);
+				this.touch.on("hpanstart hpanmove hpanend hpancancel tap", this._onTouchEvent);
 			} else {
-				this.touch.off("tap panstart panmove panend pancancel", this._onTouchEvent);
+				this.touch.off("hpanstart hpanmove hpanend hpancancel tap", this._onTouchEvent);
 			}
 		}
 	},
 
 	_onTouchEvent: function(ev) {
+		// console.log("%s::_onTouchEvent", this.cid, ev.type);
 		switch (ev.type) {
 			case "tap":
 				return this._onTap(ev);
-			case "panstart":
+			case "hpanstart":
 				return this._onPanStart(ev);
-			case "panmove":
+			case "hpanmove":
 				return this._onPanMove(ev);
-			case "panend":
+			case "hpanend":
 				return this._onPanFinal(ev);
-			case "pancancel":
+			case "hpancancel":
 				return this._onPanFinal(ev);
 		}
 	},
@@ -672,7 +690,7 @@ var CarouselProto = {
 
 	/** @param {Object} ev */
 	_onPanMove: function(ev) {
-		var view = (ev.offsetDirection & this._precedingDir) ? this._precedingView : this._followingView;
+		var view = this.getViewAtPanDir(ev.offsetDirection);
 		var delta = (this.direction & HORIZONTAL) ? ev.thresholdDeltaX : ev.thresholdDeltaY;
 		// var delta = (this.direction & HORIZONTAL) ? ev.deltaX : ev.deltaY;
 
@@ -700,13 +718,14 @@ var CarouselProto = {
 		var delta = (this.direction & HORIZONTAL) ? ev.thresholdDeltaX : ev.thresholdDeltaY;
 		// var delta = (this.direction & HORIZONTAL) ? ev.deltaX : ev.deltaY;
 
-		if ((ev.type == "panend") &&
-			// pan direction (last event) and offsetDirection (whole gesture) must match
-			((ev.direction ^ ev.offsetDirection) & this.direction) &&
-			// gesture must overshoot selectThreshold
-			(Math.abs(delta) > this.selectThreshold)) {
-			// choose next scroll target
-			scrollCandidate = (ev.offsetDirection & this._precedingDir) ? this._precedingView : this._followingView;
+		if ((ev.type == "hpanend")
+			/* pan direction (current event) and offsetDirection (whole gesture) must match */
+			&& (ev.direction ^ ev.offsetDirection ^ this.direction)
+			// && (ev.direction & ev.offsetDirection & this.direction)
+			/* gesture must overshoot selectThreshold */
+			&& (Math.abs(delta) > this.selectThreshold)) {
+			/* choose next scroll target */
+			scrollCandidate = this.getViewAtPanDir(ev.offsetDirection);
 		}
 		this._scrollCandidateView = scrollCandidate || void 0;
 
@@ -730,6 +749,11 @@ var CarouselProto = {
 	/* --------------------------- *
 	/* touch event: tap
 	/* --------------------------- */
+
+	getViewAtPanDir: function(dir) {
+		// return (dir & this._precedingDir) ? this._precedingView : this._followingView;
+		return (dir & this._followingDir) ? this._precedingView : this._followingView;
+	},
 
 	/** @type {int} In pixels */
 	_tapGrow: 10,

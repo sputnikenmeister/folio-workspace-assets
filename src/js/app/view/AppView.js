@@ -78,11 +78,12 @@ var AppViewProto = {
 		}
 
 		/* prevent touch overscroll on iOS */
-		document.addEventListener("touchmove", function(ev) {
-			ev.preventDefault();
-		}, false);
+		// document.addEventListener("touchmove", function(ev) {
+		// 	ev.preventDefault();
+		// }, false);
 		/* create single hammerjs manager */
-		this.touch = TouchManager.init(this.el); //document.body);//document.querySelector("#container")
+		// this.touch = TouchManager.init(document.querySelector("#container"));
+		this.touch = TouchManager.init(this.el);
 
 		/* render on resize, onorientationchange, visibilitychange */
 		this._onResize = this._onResize.bind(this); // _.bindAll(this, "_onResize");

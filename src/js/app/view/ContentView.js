@@ -224,10 +224,10 @@ var ContentView = View.extend({
 		console.log("%s:[%s -> _onCollapsedClick] target: %s", this.cid, ev.type, ev.target);
 		if (!ev.defaultPrevented && this.model.get("withBundle") && !this.model.get("collapsed") && !this.enabled) {
 			// this.setImmediate(function() {
-			// this.setImmediate(function() {
-			ev.stopPropagation();
-			this.model.set("collapsed", true);
-			// });
+			this.setImmediate(function() {
+				ev.stopPropagation();
+				this.model.set("collapsed", true);
+			});
 			// });
 		}
 	},
@@ -274,8 +274,8 @@ var ContentView = View.extend({
 
 	_onVPanMove: function(ev) {
 		var collapsed = this.model.get("collapsed");
-		var delta = ev.thresholdDeltaY;
-		var maxDelta = this._collapsedOffsetY + Math.abs(ev.thresholdOffsetY);
+		var delta = ev.deltaY; //ev.thresholdDeltaY;
+		var maxDelta = this._collapsedOffsetY; // + Math.abs(ev.thresholdOffsetY);
 
 		// check if direction is aligned with collapsed/expand
 		var isValidDir = collapsed ? (delta > 0) : (delta < 0);

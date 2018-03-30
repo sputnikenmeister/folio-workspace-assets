@@ -56,22 +56,17 @@
 		position: absolute;
 		top: 0;
 		left: 0;
+		padding: 3rem;
 
-		// @extend %placeholder-franklin-itc-cp;
-		font-family: 'FolioFigures-Regular', monospace;
-		font-weight: normal;
-		font-size: 12rem;
-		line-height: 0.85;
-		letter-spacing: -0.05em;
-		margin: 0.25em;
-
-		// font: bold normal 12rem/1.2 'ITCFranklinGothicStd-Compressed', $grotesque_fallback;
-		// font-family: 'ITCFranklinGothicStd-Compressed', $grotesque_fallback;
-		// font-weight: bold;
-		// line-height: 1.2;
-		// font-size: 9rem; //12rem;
-		// letter-spacing: -0.01em;
-		// margin: 2rem 3rem;
+		font: bold normal 9rem/1.1 'ITCFranklinGothicStd-Compressed', $grotesque_fallback;
+		letter-spacing: -0.01em;
+	}
+	&.pending,
+	&.ready {
+		.placeholder:before {
+			font: normal normal 12rem/0.9 'FolioFigures-Regular', monospace;
+			letter-spacing: -0.05em;
+		}
 	}
 	.placeholder:before {
 		transition: tx(opacity, 1, 1); //$duration $ease $delay + 0.001s;
@@ -95,13 +90,13 @@
 		content: 'Waiting';
 	}
 	&.error .placeholder:before {
-		content: 'Error';
+		content: 'Error'; //'☹'
 	}
 	&.pending .placeholder:before {
-		content: '0%';
+		content: '00%';
 	}
 	&.ready .placeholder:before {
-		content: '100%';
+		content: '99%';
 	}
 	&.candidate,
 	&.selected,
@@ -111,6 +106,20 @@
 			// font-style: normal;
 		}
 	}
+	/*
+%
+PERCENT SIGN
+Unicode: U+0025, UTF-8: 25
+﹪
+SMALL PERCENT SIGN
+Unicode: U+FE6A, UTF-8: EF B9 AA
+％
+FULLWIDTH PERCENT SIGN
+Unicode: U+FF05, UTF-8: EF BC 85
+☹
+WHITE FROWNING FACE
+Unicode: U+2639, UTF-8: E2 98 B9
+*/
 }
 
 // -----------------------------------
@@ -163,8 +172,17 @@ $browser_height: 30px;
 
 // TEMP
 // - - - - - - - - - - - - - - - - - -
-.media-item .error-message {
-	position: absolute;
-	bottom: 0;
-	padding: 3rem;
+.media-item {
+	.error-message {
+		position: absolute;
+		bottom: 0;
+		padding: 3rem;
+		visibility: hidden;
+	}
+	:not(.panning) &,
+	:not(.scrolling) & {
+		&.selected .error-message {
+			visibility: visible;
+		}
+	}
 }

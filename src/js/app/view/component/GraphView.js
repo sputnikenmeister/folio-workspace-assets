@@ -439,7 +439,7 @@ var GraphView = CanvasView.extend({
 				p.r0 = a;
 				p.cx0 = p.x1 + (rMax0 - a) * qx;
 
-				tx = calcArcHConnector(p.cx1, p.cy1, p.r1, p.cx2, p.cy2, p.r2, 0.75);
+				tx = calcArcHConnector(p.cx1, p.cy1, p.r1, p.cx2, p.cy2, p.r2, 0.8);
 				p.tx1 = tx[0];
 				p.tx2 = tx[1];
 
