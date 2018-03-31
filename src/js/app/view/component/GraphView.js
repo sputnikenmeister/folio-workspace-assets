@@ -116,12 +116,11 @@ var GraphView = CanvasView.extend({
 	initialize: function(options) {
 		CanvasView.prototype.initialize.apply(this, arguments);
 
-		this._styleData = {};
-		this._listMetrics = {};
-
 		this._listA = options.listA;
 		this._listB = options.listB;
 		this._a2b = {
+			srcView: options.listA,
+			destView: options.listB,
 			s: _.defaults({
 				lineWidth: 1.5
 			}, styleBase),
@@ -131,6 +130,8 @@ var GraphView = CanvasView.extend({
 			}
 		};
 		this._b2a = {
+			srcView: options.listB,
+			destView: options.listA,
 			s: _.defaults({
 				lineWidth: 0.7,
 				// radiusIncrement: 1,
@@ -141,8 +142,24 @@ var GraphView = CanvasView.extend({
 			}
 		};
 		this.listenTo(this, "view:render:before", this._beforeViewRender);
-
+		// this._addListListeners(this._a2b);
+		// this._addListListeners(this._b2a);
 	},
+
+	// _addListListeners: function(d) {
+	// 	this.listenTo(d.srcView, {
+	// 		"select:one": function(model) {
+	// 			this.listenToOnce(d.destView, "view:render:after",
+	// 				function(view) {
+	// 					d.srcItem = d.srcView.collection.selected;
+	// 					d.destItems = d.destView.filteredItems;
+	// 				});
+	// 		},
+	// 		"select:none": function() {
+	// 			d.srcItem = d.destItems = null;
+	// 		}
+	// 	});
+	// },
 
 	/** @override */
 	updateCanvas: function(ctx) {
@@ -158,8 +175,8 @@ var GraphView = CanvasView.extend({
 		var b, bgColor, lnColor; //, altBgColor;
 		if (this.model.get("withBundle")) {
 			b = this.model.get("bundle");
-			lnColor = b.colors.lnColor;
-			bgColor = b.colors.bgColor;
+			lnColor = b.colors.lnColor.clone();
+			bgColor = b.colors.bgColor.clone();
 			// altBgColor = b.attrs["--alt-background-color"];
 		} else {
 			bgColor = Color(Globals.DEFAULT_COLORS["background-color"]);
@@ -193,27 +210,29 @@ var GraphView = CanvasView.extend({
 		var bounds = this.el.getBoundingClientRect();
 		this._ctx.setTransform(this._canvasRatio, 0, 0, this._canvasRatio, -bounds.left * this._canvasRatio - 0.5, -bounds.top * this._canvasRatio - 0.5);
 
-		// var i, ii, itemView, itemRect, listView, els;
 		var i, ii, els;
-		// var aRect, bRect;
-		// var aMin, bMin;
-		// var c, qx;
+		var aRect, bRect;
+		var aMin, bMin;
 
-		this._a2b.rect = this._listA.el.getBoundingClientRect();
-		this._a2b.xMin = this._a2b.rect.left;
+		aRect = this._listA.el.getBoundingClientRect();
+		aMin = aRect.left;
 		els = this._listA.el.querySelectorAll(".label");
 		for (i = 0, ii = els.length; i < ii; i++) {
-			this._a2b.xMin = Math.max(this._a2b.xMin,
+			aMin = Math.max(aMin,
 				els[i].getBoundingClientRect().right);
 		}
 
-		this._b2a.rect = this._listB.el.getBoundingClientRect();
-		this._b2a.xMin = this._b2a.rect.left;
+		bRect = this._listB.el.getBoundingClientRect();
+		bMin = bRect.left;
 		els = this._listB.el.querySelectorAll(".label");
 		for (i = 0, ii = els.length; i < ii; i++) {
-			this._b2a.xMin = Math.min(this._b2a.xMin,
+			bMin = Math.min(bMin,
 				els[i].getBoundingClientRect().left);
 		}
+		this._b2a.destRect = this._a2b.rect = aRect;
+		this._b2a.destMinX = this._a2b.xMin = aMin;
+		this._a2b.destRect = this._b2a.rect = bRect;
+		this._a2b.destMinX = this._b2a.xMin = bMin;
 
 		// var c = Math.abs(sData.xMin - dData.xMin) / 6;
 		// sMin = sData.xMin + c * qx;
@@ -300,10 +319,10 @@ var GraphView = CanvasView.extend({
 		// b2a: keyword to bundles, right to left
 		// a2b: bundle to keywords, left to right
 		if (this._b2a.points === null) {
-			this._computeConnectors(this._listB, this._b2a, this._listA, this._a2b);
+			this._computeConnectors2(this._b2a); //, this._listB, this._listA);
 		}
 		if (this._a2b.points === null) {
-			this._computeConnectors(this._listA, this._a2b, this._listB, this._b2a);
+			this._computeConnectors2(this._a2b); //, this._listA, this._listB);
 		}
 
 		/* line dash value interpolation */
@@ -356,60 +375,140 @@ var GraphView = CanvasView.extend({
 		// }
 	},
 
-	_computeConnectors: function(sList, sData, dList, dData) {
-		var sRect, dRect;
-		var qx, after, before;
-
-		sRect = sData.rect; //sList.el.getBoundingClientRect();
-		dRect = dData.rect; //dList.el.getBoundingClientRect();
-
-		if (sRect.right < dRect.left) {
-			qx = 1;
-			after = "right";
-			before = "left";
-		} else if (dRect.right < sRect.left) {
-			qx = -1;
-			after = "left";
-			before = "right";
-		} else {
-			return;
-		}
+	_computeConnectors2: function(d) {
+		var rBase = d.s.radiusBase;
+		var rInc = d.s.radiusIncrement;
+		var sMin = d.xMin;
+		var dMin = d.destMinX;
 
 		var lMax = 0;
 		var p, points = [];
-		var rBase = sData.s.radiusBase;
-		var rInc = sData.s.radiusIncrement;
-
-		// var c = Math.abs(sData.xMin - dData.xMin) / 4;
-		var sMin = sData.xMin; // + c * qx;
-		var dMin = dData.xMin; // - c * qx;
-
-		var ssEl, ddEls, ddNum, i;
-		var ssRect, ddRect;
-		var x1, y1, tx;
+		var qx, x1, y1, tx;
 		var si; // ssEl's number of items above in the Y axis
 
-		ssEl = sList.el.querySelector(".list-item.selected .label");
+		if (d.rect.right < d.destRect.left) {
+			qx = 1;
+		} else if (d.destRect.right < d.rect.left) {
+			qx = -1;
+		} else {
+			qx = 0;
+		}
 
+		var sView, ddView, ddItems, ddNum, i;
+		if (d.srcView.collection.selected && d.destView.filteredItems) {
+			sView = d.srcView.itemViews.findByModel(d.srcView.collection.selected);
+			x1 = d.rect.left + sView.transform.tx + sView._metrics.textLeft;
+			y1 = d.rect.top + sView.transform.ty + sView._metrics.offsetHeight / 2;
+			if (qx > 0) x1 += sView._metrics.textWidth;
+
+			ddItems = d.destView.filteredItems;
+			ddNum = d.destView.filteredItems.length;
+			for (i = 0; i < ddNum; i++) {
+				ddView = d.destView.itemViews.findByModel(ddItems[i]);
+				p = {};
+				p.x2 = d.destRect.left + ddView.transform.tx + ddView._metrics.textLeft;
+				p.y2 = d.destRect.top + ddView.transform.ty + ddView._metrics.offsetHeight / 2;
+				if (qx < 0) p.x2 += ddView._metrics.textWidth;
+
+				p.x1 = x1;
+				p.y1 = y1;
+				p.dx = x1 - p.x2;
+				p.dy = y1 - p.y2;
+				p.qx = qx;
+				points[i] = p;
+			}
+			points.sort(function(a, b) {
+				return a.y2 - b.y2;
+			});
+			si = 0;
+			for (i = 0; i < ddNum; i++) {
+				p = points[i];
+				p.di = p.dy > 0 ? i : ddNum - (i + 1);
+				si = Math.max(si, p.di);
+			}
+
+			var a, rMax0 = ddNum * 0.5 * rInc;
+			for (i = 0; i < ddNum; i++) {
+				p = points[i];
+				p.r1 = p.di * rInc + rBase;
+				p.r2 = rBase;
+				// p.r2 = (si - p.di) * rInc + rBase;
+
+				p.cx1 = sMin;
+				p.cx2 = dMin - ((si - p.di) * rInc) * qx;
+				// p.cx2 = dMin;
+
+				a = (i - (ddNum - 1) / 2) * rInc;
+				p.cy1 = p.y1 + a;
+				p.cy2 = p.y2;
+
+				a = Math.abs(a);
+				p.r0 = a;
+				p.cx0 = p.x1 + (rMax0 - a) * qx;
+
+				tx = calcArcHConnector(p.cx1, p.cy1, p.r1, p.cx2, p.cy2, p.r2, 0.8);
+				if (tx) {
+					p.tx1 = tx[0];
+					p.tx2 = tx[1];
+				} else {
+					p.tx1 = p.cx1;
+					p.tx2 = p.cx2;
+				}
+
+				// Find out longest node connection for setLineDash
+				lMax = Math.max(lMax, Math.abs(p.x1 - p.x2) + Math.abs(p.cy1 - p.cy2));
+			}
+			points.sort(function(a, b) {
+				return b.di - a.di; // Sort by distance to selected view
+			});
+		}
+		d.points = points;
+		d.maxLength = lMax;
+		d.xDir = qx;
+	},
+
+	/*_computeConnectors: function(d) {
+		var rBase = d.s.radiusBase;
+		var rInc = d.s.radiusIncrement;
+		var sMin = d.xMin;
+		var dMin = d.destMinX;
+
+		var lMax = 0;
+		var p, points = [];
+		var qx, x1, y1, tx;
+		var si; // ssEl's number of items above in the Y axis
+
+		if (d.rect.right < d.destRect.left) {
+			qx = 1;
+		} else if (d.destRect.right < d.rect.left) {
+			qx = -1;
+		} else {
+			qx = 0;
+		}
+
+		var ssEl, ddEls, ddNum, ssRect, ddRect, i;
+		ssEl = d.srcView.el.querySelector(".list-item.selected .label");
 		if (ssEl) {
 			ssRect = ssEl.getBoundingClientRect();
-			x1 = ssRect[after] // - xMargin;
+			x1 = ssRect.left;
+			if (qx > 0) x1 += ssRect.width;
 			y1 = ssRect.top + ssRect.height / 2;
 			// r2 = rBase;
-			// cx1 = sData.xMin;
+			// cx1 = d.xMin;
 
 			si = 0;
-			ddEls = dList.el.querySelectorAll(".list-item:not(.excluded) .label");
+			ddEls = d.destView.el.querySelectorAll(".list-item:not(.excluded) .label");
 			ddNum = ddEls.length;
-			// dx = Math.abs(sData.xMin - dData.xMin);
+			// dx = Math.abs(d.xMin - dData.xMin);
 
 			for (i = 0; i < ddNum; i++) {
 				p = {};
 				ddRect = ddEls[i].getBoundingClientRect();
+				p.x2 = ddRect.left;
+				if (qx < 0) p.x2 += ddRect.width;
+				p.y2 = ddRect.top + ddRect.height / 2;
 				p.x1 = x1;
 				p.y1 = y1;
-				p.x2 = ddRect[before];
-				p.y2 = ddRect.top + ddRect.height / 2;
 				p.dx = p.x1 - p.x2;
 				p.dy = p.y1 - p.y2;
 				p.qx = qx;
@@ -429,9 +528,9 @@ var GraphView = CanvasView.extend({
 
 				p.cx1 = sMin;
 				p.cx2 = dMin - ((si - p.di) * rInc) * qx;
-				// p.cx2 = dData.xMin;
+				// p.cx2 = dMin;
 
-				a = (i - (ddNum - 1) / 2) * rInc
+				a = (i - (ddNum - 1) / 2) * rInc;
 				p.cy1 = p.y1 + a;
 				p.cy2 = p.y2;
 
@@ -453,10 +552,10 @@ var GraphView = CanvasView.extend({
 				return b.di - a.di;
 			});
 		}
-		sData.points = points;
-		sData.maxLength = lMax;
-		sData.xDir = qx;
-	},
+		d.points = points;
+		d.maxLength = lMax;
+		d.xDir = qx;
+	},*/
 
 	_drawConnector: function(p) {
 		this._ctx.beginPath();
@@ -620,15 +719,13 @@ var GraphView = CanvasView.extend({
 			return {
 				vId: view.id,
 				mId: view.model.id,
-				before: listRect.left + view.transform.tx + view._metrics.textLeft,
-				after: listRect.left + view.transform.tx + view._metrics.textLeft + view._metrics.textWidth,
+				left: listRect.left + view.transform.tx + view._metrics.textLeft,
+				right: listRect.left + view.transform.tx + view._metrics.textLeft + view._metrics.textWidth,
 				y: listRect.top + view.transform.ty + view._metrics.offsetHeight / 2,
 			};
 		}, this);
 		retval.sort(function(a, b) {
-			if (a.y > b.y) return 1;
-			if (a.y < b.y) return -1;
-			return 0;
+			return a.y - b.y;
 		});
 		retval.before = listRect.left;
 		retval.after = listRect.left + listRect.width;

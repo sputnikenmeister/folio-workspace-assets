@@ -386,9 +386,12 @@ var NavigationView = View.extend({
 		// use collection listener to avoid redundant refresh calls
 		this.bundleList.refresh();
 		if (!this.model.get("collapsed") && this.graph) {
-			this.graph.valueTo(0, 0, "amount");
-			this.graph.renderNow();
-			this.graph.valueTo(1, Globals.TRANSITION_DURATION, "amount");
+			this.listenToOnce(this.bundleList, "view:render:after", function(view, flags) {
+				// console.log("%s::_onKeywordSelect -> %s:[view:render:after] flags:%s", this.cid, view.cid, View.flagsToString(flags));
+				this.graph.valueTo(0, 0, "amount");
+				// this.graph.renderNow();
+				this.graph.valueTo(1, Globals.TRANSITION_DURATION, "amount");
+			});
 		}
 	},
 

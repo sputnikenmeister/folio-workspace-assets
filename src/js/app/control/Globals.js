@@ -76,19 +76,21 @@ module.exports = (function() {
 	};
 	// timing, easing
 	// - - - - - - - - - - - - - - - - -
-	g.TRANSITION_DELAY_INTERVAL = parseFloat(sass.transitions["delay_interval_ms"]);
-	g.TRANSITION_DURATION = parseFloat(sass.transitions["duration_ms"]);
-	g.TRANSITION_MIN_DELAY = parseFloat(sass.transitions["min_delay_ms"]);
-	g.TRANSITION_EASE = sass.transitions["ease"];
-	g.TRANSITION_DELAY = g.TRANSITION_DURATION + g.TRANSITION_DELAY_INTERVAL;
+	var ease = g.TRANSITION_EASE = sass.transitions["ease"];
+	var duration = g.TRANSITION_DURATION = parseFloat(sass.transitions["duration_ms"]);
+	var delayInterval = g.TRANSITION_DELAY_INTERVAL = parseFloat(sass.transitions["delay_interval_ms"]);
+	var minDelay = g.TRANSITION_MIN_DELAY = parseFloat(sass.transitions["min_delay_ms"]);
+	var delay = g.TRANSITION_DELAY = g.TRANSITION_DURATION + g.TRANSITION_DELAY_INTERVAL;
 
 	// css transition presets
 	// TODO: get rid of this
 	// - - - - - - - - - - - - - - - - -
-	var txDur = g.TRANSITION_DURATION,
-		txDelay = g.TRANSITION_DELAY,
-		txIntDelay = g.TRANSITION_DELAY_INTERVAL,
-		txMinDelay = g.TRANSITION_MIN_DELAY;
+
+	// var tx = function(txo, durationCount, delayCount) {
+	// 	txo.duration = (duration * durationCount)
+	// 		+ (delayInterval * (durationCount - 1));
+	// 	txo.delay = (delay * delayCount) + minDelay;
+	// };
 
 	o = {};
 
@@ -99,41 +101,41 @@ module.exports = (function() {
 	};
 	o.NOW = {
 		delay: 0,
-		duration: txDur,
-		easing: g.TRANSITION_EASE
+		duration: duration,
+		easing: ease
 	};
 	o.UNSET = _.defaults({
 		cssText: ""
 	}, o.NONE);
 
 	var txAligned = _.defaults({
-		duration: txDur - txMinDelay
+		duration: duration - minDelay
 	}, o.NOW);
 	o.FIRST = _.defaults({
-		delay: txDelay * 0.0 + txMinDelay
+		delay: delay * 0.0 + minDelay
 	}, txAligned);
 	o.BETWEEN = _.defaults({
-		delay: txDelay * 1.0 + txMinDelay
+		delay: delay * 1.0 + minDelay
 	}, txAligned);
 	o.LAST = _.defaults({
-		delay: txDelay * 2.0 + txMinDelay
+		delay: delay * 2.0 + minDelay
 	}, txAligned);
 	o.AFTER = _.defaults({
-		delay: txDelay * 2.0 + txMinDelay
+		delay: delay * 2.0 + minDelay
 	}, txAligned);
 
 	o.BETWEEN_EARLY = _.defaults({
-		delay: txDelay * 1 + txMinDelay - 60
+		delay: delay * 1.0 + minDelay - 60
 	}, txAligned);
 	o.BETWEEN_LATE = _.defaults({
-		delay: txDelay * 1 + txMinDelay + 60
+		delay: delay * 1.0 + minDelay + 60
 	}, txAligned);
 
 	o.FIRST_LATE = _.defaults({
-		delay: txDelay * 0.5 + txMinDelay
+		delay: delay * 0.5 + minDelay
 	}, txAligned);
 	o.LAST_EARLY = _.defaults({
-		delay: txDelay * 1.5 + txMinDelay
+		delay: delay * 1.5 + minDelay
 	}, txAligned);
 	// o.FIRST_LATE = 		_.defaults({delay: txDelay*0.0 + txMinDelay*2}, txAligned);
 	// o.LAST_EARLY = 		_.defaults({delay: txDelay*2.0 + txMinDelay*0}, txAligned);

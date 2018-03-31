@@ -65,6 +65,11 @@ var FilterableListView = View.extend({
 			set: function(value) {
 				this._setCollapsed(value);
 			}
+		},
+		filteredItems: {
+			get: function() {
+				return this._filteredItems;
+			}
 		}
 	},
 
