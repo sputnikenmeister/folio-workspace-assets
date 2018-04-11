@@ -4,7 +4,7 @@
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$nTopNoBundle: 4.5rem;
+$nav_top_without_bundle: 4.5rem;
 
 @include media(desktop-small) {
 	&.left-layout {
@@ -18,7 +18,7 @@ $nTopNoBundle: 4.5rem;
 		// bundle-list
 		// ===================================
 		&.without-bundle #bundle-list {
-			padding-top: $nTopNoBundle;
+			padding-top: $nav_top_without_bundle;
 		}
 		// bundle-list-wrapper
 		// - - - - - - - - - - - - - - - - - -
@@ -39,7 +39,7 @@ $nTopNoBundle: 4.5rem;
 			width: $aside_width_large - $gutter;
 		}
 		&.without-bundle #keyword-list {
-			padding-top: $nTopNoBundle - 0.25rem;
+			padding-top: $nav_top_without_bundle - 0.25rem;
 		}
 		// keyword-list-wrapper
 		// - - - - - - - - - - - - - - - - - -
@@ -59,7 +59,7 @@ $nTopNoBundle: 4.5rem;
 		#site-name-wrapper {
 			// #site-name {
 			display: inline-block;
-			transform: move(0, $nTopNoBundle - 1.5rem);
+			transform: move(0, $nav_top_without_bundle - 1.5rem);
 		}
 		&.with-bundle #site-name-wrapper {
 			// &.with-bundle #site-name {

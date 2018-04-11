@@ -4,12 +4,12 @@
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$nav_height_landRight: $nav_height_land + 1.5rem;
+$nav_height_land_right: $nav_height_land + 1.5rem;
 
 @include media(desktop-small) {
 	&.right-layout {
 		// #content:after {
-		// 	top: $nav_top_land + $nav_height_landRight;
+		// 	top: $nav_top_land + $nav_height_land_right;
 		// }
 
 		// ///////////////////////////////////
@@ -34,7 +34,7 @@ $nav_height_landRight: $nav_height_land + 1.5rem;
 			// padding-top: #{$nav_height_land + 4.25rem};
 		}
 		&.with-bundle #keyword-list {
-			padding-top: #{$nav_height_landRight - 0.25rem + 1rem};
+			padding-top: #{$nav_height_land_right - 0.25rem + 1rem};
 		}
 		&.with-bundle .container-expanded #keyword-list {
 			padding-top: 1.25rem;
@@ -68,7 +68,7 @@ $nav_height_landRight: $nav_height_land + 1.5rem;
 		// image-carousel
 		// ===================================
 		.media-carousel {
-			top: $nav_top_land + $nav_height_landRight - 3rem;
+			top: $nav_top_land + $nav_height_land_right - 3rem;
 			.media-item {
 				margin-right: $aside_width_large;
 				// padding-right: $aside_width_large;
@@ -86,7 +86,7 @@ $nav_height_landRight: $nav_height_land + 1.5rem;
 		// media-caption-stack
 		// ===================================
 		.media-caption-stack {
-			top: $nav_top_land + $nav_height_landRight;
+			top: $nav_top_land + $nav_height_land_right;
 			margin-top: -2.5rem;
 			// top: $nav_top_land;
 			// margin-top: 0;

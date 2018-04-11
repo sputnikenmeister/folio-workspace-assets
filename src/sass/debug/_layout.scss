@@ -37,7 +37,7 @@ $darkolivegreen: darkolivegreen;
 	background-image: image-url("debug/debug-background.svg");
 	background-color: transparent;
 	background-repeat: no-repeat;
-	background-position: 50% 0;
+	background-position: 50% 0.25rem;
 	background-size: #{$page_width + $hu*2} 100%; //1600px;
 	@include media(desktop-small) {
 		// background-position: calc(50% + 1px) calc(-1rem + 1px);

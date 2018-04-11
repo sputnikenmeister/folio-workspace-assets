@@ -16,9 +16,16 @@ var TouchManager = require("app/view/base/TouchManager");
 var controller = require("app/control/Controller");
 /** @type {module:app/model/collection/BundleCollection} */
 var bundles = require("app/model/collection/BundleCollection");
+/** @type {module:app/model/collection/ArticleCollection} */
+var articles = require("app/model/collection/ArticleCollection");
+
+// /** @type {module:app/model/collection/BundleItem} */
+// var BundleItem = require("app/model/item/BundleItem");
 
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
+/** @type {module:app/view/component/ArticleView} */
+var ArticleView = require("app/view/component/ArticleView");
 /** @type {module:app/view/component/CollectionStack} */
 var CollectionStack = require("app/view/component/CollectionStack");
 /** @type {module:app/view/component/CollectionStack} */
@@ -27,7 +34,8 @@ var SelectableListView = require("app/view/component/SelectableListView");
 var DotNavigationRenderer = require("app/view/render/DotNavigationRenderer");
 /** @type {module:app/view/component/Carousel} */
 var Carousel = require("app/view/component/Carousel");
-/** @type {module:app/view/component/Carousel} */
+
+/** @type {module:app/view/render/CarouselRenderer} */
 var CarouselRenderer = require("app/view/render/CarouselRenderer");
 /** @type {module:app/view/render/ImageRenderer} */
 var ImageRenderer = require("app/view/render/ImageRenderer");
@@ -94,8 +102,10 @@ var ContentView = View.extend({
 	renderFrame: function(tstamp, flags) {
 		// values
 		var collapsed = this.model.get("collapsed");
-		var collapsedChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("collapsed");
-		var childrenChanged = (flags & View.MODEL_INVALID) && this.model.hasChanged("bundle");
+		var collapsedChanged = (flags & View.MODEL_INVALID)
+			&& this.model.hasChanged("collapsed");
+		var childrenChanged = (flags & View.MODEL_INVALID)
+			&& (this.model.hasChanged("bundle") || this.model.hasChanged("article"));
 
 		// flags
 		var sizeChanged = !!(flags & View.SIZE_INVALID);
@@ -103,6 +113,7 @@ var ContentView = View.extend({
 		transformsChanged = transformsChanged || this._transformsChanged || this.skipTransitions;
 
 		// debug
+		// - - - - - - - - - - - - - - - - -
 		// if (flags & View.MODEL_INVALID) {
 		// 	console.group(this.cid + "::renderFrame model changed:");
 		// 	Object.keys(this.model.changed).forEach(function(key) {
@@ -114,11 +125,12 @@ var ContentView = View.extend({
 		// model:children
 		// - - - - - - - - - - - - - - - - -
 		if (childrenChanged) {
-			if (bundles.lastSelected) {
-				this.removeChildren(bundles.lastSelected);
-			}
+			this.removeChildren();
 			if (bundles.selected) {
 				this.createChildren(bundles.selected);
+			} else
+			if (articles.selected) {
+				this.createChildren(articles.selected);
 			}
 		}
 
@@ -220,12 +232,14 @@ var ContentView = View.extend({
 		});
 	},
 
-	_onCollapsedClick: function(ev) {
-		console.log("%s:[%s -> _onCollapsedClick] target: %s", this.cid, ev.type, ev.target);
+	_onCollapsedEvent: function(ev) {
+		console.log("%s:[%s -> _onCollapsedEvent] target: %s", this.cid, ev.type, ev.target);
 		if (!ev.defaultPrevented && this.model.get("withBundle") && !this.model.get("collapsed") && !this.enabled) {
 			// this.setImmediate(function() {
+			// if (ev.type == "click") ev.stopPropagation();
+			ev.preventDefault();
 			this.setImmediate(function() {
-				ev.stopPropagation();
+				// if (ev.type == "click") ev.stopPropagation();
 				this.model.set("collapsed", true);
 			});
 			// });
@@ -245,9 +259,11 @@ var ContentView = View.extend({
 		}
 		if (this.model.hasChanged("collapsed") || this.model.hasChanged("withBundle")) {
 			if (this.model.get("withBundle") && !this.model.get("collapsed")) {
-				this.el.addEventListener("click", this._onCollapsedClick, false);
+				this.touch.on("hpanleft hpanright", this._onCollapsedEvent);
+				this.el.addEventListener("click", this._onCollapsedEvent, false);
 			} else {
-				this.el.removeEventListener("click", this._onCollapsedClick, false);
+				this.touch.off("hpanleft hpanright", this._onCollapsedEvent);
+				this.el.removeEventListener("click", this._onCollapsedEvent, false);
 			}
 		}
 		this.requestRender(View.MODEL_INVALID);

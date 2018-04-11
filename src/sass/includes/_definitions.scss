@@ -114,11 +114,11 @@ $mono_font_family: $mono_fallback;
 // h2 font-size: 2.14286rem; letter-spacing: -1px;
 
 //@mixin heading_font($size: 24px, $weight: 600, $lead: 24px) {
-@mixin heading_font($size: 1.99rem, $weight: 600, $lead: 1) {
+@mixin heading_font($size: 1.99rem, $weight: 600, $lead: 1, $track: -1px) {
 	font-size: $size;
 	font-weight: $weight;
 	line-height: $lead;
-	letter-spacing: -1px;
+	letter-spacing: $track;
 	@include text_rendering_legibility();
 	@include font_smoothing();
 }

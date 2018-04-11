@@ -4,7 +4,7 @@
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$nav_top_land: 2.25rem;
+$nav_top_land: 2.5rem;
 $nav_height_land: 9rem;
 
 @include media(desktop-small) {
@@ -22,7 +22,7 @@ $nav_height_land: 9rem;
 
 	#navigation {
 		max-width: $page_width_large;
-		min-height: $nav_top_land;
+		min-height: $nav_height_land;
 		// top: $nav_top_land;
 		padding-top: $nav_top_land;
 	}

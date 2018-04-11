@@ -54,7 +54,7 @@ body {
 }
 .color-tx,
 body {
-	transition: tx(background-color, 1, 1), tx(color, 1, -1);
+	transition: tx(background-color, 1, 1), tx(color, 1, 0);
 }
 
 // -----------------------------------

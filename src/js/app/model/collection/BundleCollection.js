@@ -1,6 +1,5 @@
 /**
  * @module app/model/collection/BundleCollection
- * @requires module:backbone
  */
 
 /** @type {module:app/model/SelectableCollection} */
@@ -11,7 +10,7 @@ var BundleItem = require("app/model/item/BundleItem");
 
 /**
  * @constructor
- * @type {module:app/model/collection/List}
+ * @type {module:app/model/collection/BundleCollection}
  */
 var BundleCollection = SelectableCollection.extend({
 

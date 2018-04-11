@@ -535,11 +535,43 @@ var TransformItemProto = {
 		}
 		return values;
 	},
-};
+}, {
+	transition: {
+		get: function() {
+			return this._transition;
+		}
+	},
+	capturedChanged: {
+		get: function() {
+			return this._capturedChanged;
+		}
+	},
+	capturedX: {
+		get: function() {
+			return this._capturedX;
+		}
+	},
+	capturedY: {
+		get: function() {
+			return this._capturedY;
+		}
+	},
 
-TransformItem.prototype = Object.create(TransformItemProto, TransformItemProps);
-
-delete TransformItemProto;
-delete TransformItemProps;
+	hasOffset: {
+		get: function() {
+			return this._hasOffset;
+		}
+	},
+	offsetX: {
+		get: function() {
+			return this._offsetX;
+		}
+	},
+	offsetY: {
+		get: function() {
+			return this._offsetY;
+		}
+	},
+});
 
 module.exports = TransformItem;

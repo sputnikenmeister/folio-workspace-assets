@@ -106,12 +106,13 @@ window.addEventListener("load", function(ev) {
 	/** @type {module:webfontloader} */
 	var WebFont = require("webfontloader");
 	WebFont.load({
+		async: true,
 		classes: false,
 		custom: {
 			families: [
 				"Franklin Gothic FS:n4,i4,n7,i7",
-				"ITCFranklinGothicStd-Compressed",
 				"FolioFigures-Regular",
+				"ITCFranklinGothicStd-Compressed",
 			],
 			testStrings: {
 				"FolioFigures-Regular": "hms"

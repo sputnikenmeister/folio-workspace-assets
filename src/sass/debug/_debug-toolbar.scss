@@ -170,14 +170,14 @@
 		}
 	}
 	dd:after {
-		content: ' ';
+		content: '';
 		display: inline-block;
-		width: 0;
+		width: 1px;
 		height: 0.75em;
 		background-color: currentColor;
-		margin-left: -2px;
-		border-left: currentColor solid 1px;
-		vertical-align: baseline;
+		position: absolute;
+		top: 50%;
+		margin-top: -0.375em;
 	}
 	dt + dd:after {
 		display: none;

@@ -5,7 +5,7 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:backbone} */
+// /** @type {module:backbone} */
 // var Backbone = require("backbone");
 /** @type {module:hammerjs} */
 var Hammer = require("hammerjs");
@@ -32,7 +32,7 @@ var View = require("app/view/base/View");
 var FilterableListView = require("app/view/component/FilterableListView");
 /** @type {module:app/view/component/GroupingListView} */
 var GroupingListView = require("app/view/component/GroupingListView");
-/** @type {module:app/view/component/CollectionPager} */
+// /** @type {module:app/view/component/CollectionPager} */
 // var CollectionPager = require("app/view/component/CollectionPager");
 /** @type {module:app/view/component/CollectionPager} */
 var GraphView = require("app/view/component/GraphView");
@@ -177,13 +177,16 @@ var NavigationView = View.extend({
 			}
 		}, this);
 
-		if ((flags & (View.SIZE_INVALID | ~View.MODEL_INVALID)) &&
-			!this.model.hasChanged("collapsed") && !this.model.get("withBundle")) {
+		if ((flags & (View.SIZE_INVALID | ~View.MODEL_INVALID))
+			&& !this.model.hasChanged("collapsed")
+			&& !this.model.get("withBundle")) {
+			/* collapsed has not changed, no bundle selected*/
 			this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
 			if (!this.skipTransitions) {
 				this.graph.renderNow();
 			}
-		} else if ((flags & View.SIZE_INVALID) && !this.model.get("collapsed")) {
+		} else if ((flags & View.SIZE_INVALID)
+			&& !this.model.get("collapsed")) {
 			/* NavigationView has resized while uncollapsed,
 			   but model is unchanged */
 			// console.info("%s::renderFrame", this.cid, "NavigationView has resized");
@@ -542,10 +545,12 @@ var NavigationView = View.extend({
 			events: {
 				"click a": function(domev) {
 					domev.defaultPrevented || domev.preventDefault();
-					controller.deselectBundle();
+					this.trigger("view:click");
+					// controller.deselectBundle();
 				}
 			}
 		});
+		this.listenTo(view, "view:click", this._onSitenameClick);
 		view.wrapper = view.el.parentElement;
 		return view;
 	},

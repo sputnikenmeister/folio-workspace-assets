@@ -15,6 +15,13 @@
 	& > pre {
 		font-family: $mono_fallback;
 		display: block;
+		&.log-header {
+			top: 0;
+			position: sticky;
+			// border-bottom: 1px solid currentColor;
+			padding-bottom: 0.25em;
+			box-shadow: 0 0 0 1px rgba(0,0,0,0.15); //, 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		}
 		&::before {
 			@include ellipsis(inline-block);
 			width: 8em;

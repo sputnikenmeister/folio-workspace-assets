@@ -443,7 +443,7 @@ var VideoRenderer = PlayableRenderer.extend({
 		var bRanges = this.video.buffered;
 		if (bRanges.length > 0) {
 			this._bufferedValue = bRanges.end(bRanges.length - 1);
-			if (this.progressMeter && ((this.video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) || (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && this.video.networkState == HTMLMediaElement.NETWORK_LOADING))) {
+			if (this.progressMeter && ((this.video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) /*|| (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && this.video.networkState == HTMLMediaElement.NETWORK_LOADING)*/ )) {
 				this.progressMeter.valueTo(this._bufferedValue, 300, "available");
 				// this.progressMeter.valueTo(this._bufferedValue, Math.max(0, 1000 * (this._bufferedValue - (this.progressMeter.getValue("available") | 0))), "available");
 			}
@@ -532,9 +532,9 @@ if (DEBUG) {
 		var rpad = require("underscore.string/rpad");
 
 		var fullscreenEvents = [
-		fullscreenChangeEvent, fullscreenErrorEvent,
-		"webkitbeginfullscreen", "webkitendfullscreen",
-	];
+			fullscreenChangeEvent, fullscreenErrorEvent,
+			"webkitbeginfullscreen", "webkitendfullscreen",
+		];
 
 		// var mediaEvents = [];
 		var mediaEvents = _.without(require("utils/event/mediaEventsEnum"), "resize", "error");
@@ -580,6 +580,11 @@ if (DEBUG) {
 		].join(" ");
 		};
 
+		var getVideoStatsCols = function() {
+			return "0000.000 [Current/Total] [Seekable   ] [Buffered   ] networkState readyState      Playing";
+			// return "0000.620 [t:  0.0  27.4] [s: 27.4 0/1] [b:  0.5 0/1] LOADING(2)   FUTURE_DATA(3)  :: (::)";
+		}
+
 		var formatVideoStats = function(video) {
 			var currTime = video.currentTime,
 				durTime = video.duration,
@@ -591,16 +596,16 @@ if (DEBUG) {
 			bRangeIdx = findRangeIndex(bRanges, currTime);
 			sRangeIdx = findRangeIndex(sRanges, currTime);
 			return [
-			"[t:" + lpad(currTime.toFixed(1), 5) +
-				" " + lpad((!isNaN(durTime) ? durTime.toFixed(1) : "-"), 5) + "]",
-			"[s:" + lpad((sRangeIdx >= 0 ? sRanges.end(sRangeIdx).toFixed(1) : "-"), 5) +
-				" " + (sRangeIdx >= 0 ? sRangeIdx : "-") + "/" + sRanges.length + "]",
-			"[b:" + lpad((bRangeIdx >= 0 ? bRanges.end(bRangeIdx).toFixed(1) : "-"), 5) +
-				" " + (bRangeIdx >= 0 ? bRangeIdx : "-") + "/" + bRanges.length + "]",
-			rpad(networkStateToString(video).substr(8), 12),
-			rpad(readyStateToString(video).substr(5), 15),
+				"[t:" + lpad(currTime.toFixed(1), 5) +
+					" " + lpad((!isNaN(durTime) ? durTime.toFixed(1) : "-"), 5) + "]",
+				"[s:" + lpad((sRangeIdx >= 0 ? sRanges.end(sRangeIdx).toFixed(1) : "-"), 5) +
+					" " + (sRangeIdx >= 0 ? sRangeIdx : "-") + "/" + sRanges.length + "]",
+				"[b:" + lpad((bRangeIdx >= 0 ? bRanges.end(bRangeIdx).toFixed(1) : "-"), 5) +
+					" " + (bRangeIdx >= 0 ? bRangeIdx : "-") + "/" + bRanges.length + "]",
+				rpad(networkStateToString(video).substr(8), 12),
+				rpad(readyStateToString(video).substr(5), 15),
 				(video.ended ? ">:" : (video.paused ? "::" : ">>")),
-		].join(" ");
+			].join(" ");
 		};
 
 		return VideoRenderer.extend({
@@ -628,6 +633,18 @@ if (DEBUG) {
 					this.__logColors[ev] = c.rgbString();
 				}
 				this.video.addEventListener("error", this.__handleMediaEvent, true);
+			},
+
+			/** @override */
+			createChildren: function() {
+				var ret = VideoRenderer.prototype.createChildren.apply(this, arguments);
+				this.__logHeaderEl = document.createElement("pre");
+				this.__logHeaderEl.className = "log-header color-bg";
+				// this.model.colors.fgColor.clone().mix(fgColor, 0.9).rgbString()
+				// this.model.colors.fgColor.clone().alpha
+				this.__logHeaderEl.textContent = getVideoStatsCols();
+				this.__logElement.appendChild(this.__logHeaderEl);
+				return ret;
 			},
 
 			/** @override */

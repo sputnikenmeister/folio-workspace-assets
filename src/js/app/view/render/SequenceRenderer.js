@@ -562,7 +562,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 
 		nextSource = this.sources.followingOrFirst();
 		// init next renderer
-		nextView = this._getItemRenderer(nextSource).el;
+		nextView = this._getItemRenderer(nextSource);
 		// init second next renderer
 		// this._getItemRenderer(this.sources.followingOrFirst(nextSource));
 
