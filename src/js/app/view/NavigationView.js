@@ -79,6 +79,9 @@ var NavigationView = View.extend({
 		this.transforms.add(this.sitename.wrapper, this.sitename.el);
 		// this.transforms.add(this.sitename.el.firstElementChild, this.sitename.el);
 
+		this.about = this.createAboutButton();
+		this.transforms.add(this.about.el);
+
 		this.graph = this.createGraphView(this.bundleList, this.keywordList);
 		// this.transforms.add(this.graph.el);
 		// this.itemViews.push(this.graph);
@@ -119,7 +122,9 @@ var NavigationView = View.extend({
 				this.el.classList.toggle("container-collapsed", this.model.get("collapsed"));
 				this.el.classList.toggle("container-expanded", !this.model.get("collapsed"));
 			}
-			if (this.model.hasChanged("collapsed") || this.model.hasChanged("withBundle")) {
+			if (this.model.hasChanged("collapsed")
+				|| this.model.hasChanged("withBundle")
+				|| this.model.hasChanged("withArticle")) {
 				this.el.classList.add("container-changing");
 			}
 			if (this.model.hasChanged("bundle")) {
@@ -140,20 +145,6 @@ var NavigationView = View.extend({
 			} else {
 				this.renderTransitions(flags);
 			}
-			// console.group(this.cid + "::renderFrame transitions:");
-			// if (this.skipTransitions) {
-			// 	console.log("[skipping]");
-			// } else {
-			// 	this.transforms.items.forEach(function(o) {
-			// 		console.log("\t%s: %s", o.el.id || o.id, o.transition.name || o.transition);
-			// 	}, this);
-			// }
-			// console.groupEnd();
-			// this.transforms.clearAllOffsets();
-
-			// if (this.model.hasChanged("collapsed") || this.model.hasChanged("withBundle")) {
-			// 	this.transforms.promise().then(this._whenTransitionsEnd, this._whenTransitionsAbort);
-			// }
 			this.transforms.validate();
 		}
 
@@ -177,6 +168,8 @@ var NavigationView = View.extend({
 			}
 		}, this);
 
+		// graph
+		// - - - - - - - - - - - - - - - - -
 		if ((flags & (View.SIZE_INVALID | ~View.MODEL_INVALID))
 			&& !this.model.hasChanged("collapsed")
 			&& !this.model.get("withBundle")) {
@@ -185,7 +178,8 @@ var NavigationView = View.extend({
 			if (!this.skipTransitions) {
 				this.graph.renderNow();
 			}
-		} else if ((flags & View.SIZE_INVALID)
+		} else
+		if ((flags & View.SIZE_INVALID)
 			&& !this.model.get("collapsed")) {
 			/* NavigationView has resized while uncollapsed,
 			   but model is unchanged */
@@ -207,6 +201,7 @@ var NavigationView = View.extend({
 
 	_whenTransitionsAbort: function(reason) {
 		console.warn("%s::_whenTransitionsAbort %o", this.cid, reason);
+		this.el.classList.remove("container-changing");
 	},
 
 	/* -------------------------------
@@ -214,6 +209,9 @@ var NavigationView = View.extend({
 	/* ------------------------------- */
 
 	renderTransitions: function(flags) {
+		var fromRoute = this.model.previous("routeName");
+		var toRoute = this.model.get("routeName");
+
 		var modelChanged = (flags & View.MODEL_INVALID);
 		/* bundle */
 		var withBundle = this.model.get("withBundle");
@@ -226,9 +224,9 @@ var NavigationView = View.extend({
 		/* collapsed */
 		var collapsed = this.model.get("collapsed");
 		var collapsedChanged = modelChanged && this.model.hasChanged("collapsed");
-		/* layoutName */
-		var layoutName = Globals.BREAKPOINTS["desktop-small"].matches ?
-			this.model.get("layoutName") : "";
+		/* bundle */
+		var withArticle = this.model.get("withArticle");
+		var withArticleChanged = modelChanged && this.model.hasChanged("withArticle");
 
 		var tf;
 		/* this.bundleList.el */
@@ -248,67 +246,47 @@ var NavigationView = View.extend({
 			tf.clearOffset();
 		}
 
-		/* Horizontal transitions*/
-		switch (layoutName) {
-			case "left-layout":
-			case "default-layout":
-				/* this.keywordList.wrapper */
-				tf = this.transforms.get(this.keywordList.wrapper);
-				if (collapsedChanged) {
-					if (withBundleChanged) {
-						if (withMediaChanged)
-							tf.runTransition(withBundle ? tx.LAST : tx.FIRST);
-					} else {
-						if (withMedia)
-							tf.runTransition(collapsed ? tx.LAST : tx.FIRST);
-					}
+		if (Globals.BREAKPOINTS["desktop-small"].matches) {
+			/* Horizontal transitions*/
+			/* this.keywordList.wrapper */
+			tf = this.transforms.get(this.keywordList.wrapper);
+			if (collapsedChanged) {
+				if (withBundleChanged) {
+					if (withMediaChanged)
+						tf.runTransition(withBundle ? tx.LAST : tx.FIRST);
 				} else {
-					if (!withBundleChanged && withMediaChanged)
-						tf.runTransition(bundleChanged ? tx.BETWEEN : tx.NOW);
+					if (withMedia)
+						tf.runTransition(collapsed ? tx.LAST : tx.FIRST);
 				}
-				// continue
-			case "right-layout":
-				if (collapsedChanged) { /* this.hGroupings */
-					this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST, this.hGroupings);
-				}
-				break;
+			} else {
+				if (!withBundleChanged && withMediaChanged)
+					tf.runTransition(bundleChanged ? tx.BETWEEN : tx.NOW);
+			}
+			if (collapsedChanged) { /* this.hGroupings */
+				this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST, this.hGroupings);
+			}
+			// }
+			// if (Globals.BREAKPOINTS["desktop-small"].matches) {
+			/* Vertical transitions */
+			if (collapsedChanged) { /* this.bundleList.wrapper */
+				this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST, this.bundleList.wrapper);
+			}
+			if (collapsedChanged) { /* this.sitename.el */
+				this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST, this.sitename.el);
+			}
+			if (withBundleChanged || withArticleChanged) { /* this.sitename.wrapper */
+				this.transforms.runTransition(tx.BETWEEN, this.sitename.wrapper);
+				// NOTE: when changing to collapsed, tx tends to fire early,
+				// so use BETWEEN_LATE
+				// this.transforms.runTransition(collapsed? tx.BETWEEN_LATE : tx.BETWEEN, this.sitename.el);
+			}
+		} else {
+			if (withBundleChanged || withArticleChanged) { /* this.sitename.el */
+				this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
+			}
 		}
-
-		/* Vertical transitions */
-		switch (layoutName) {
-			case "left-layout":
-				if (collapsedChanged) { /* this.bundleList.wrapper */
-					this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST, this.bundleList.wrapper);
-				}
-				if (collapsedChanged) { /* this.sitename.el */
-					this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST, this.sitename.el);
-				}
-				if (withBundleChanged) { /* this.sitename.wrapper */
-					this.transforms.runTransition(tx.BETWEEN, this.sitename.wrapper);
-					// NOTE: when changing to collapsed, tx tends to fire early, so use BETWEEN_LATE
-					// this.transforms.runTransition(collapsed? tx.BETWEEN_LATE : tx.BETWEEN, this.sitename.el);
-				}
-				break;
-			case "default-layout":
-				if (collapsedChanged ^ withBundleChanged) { /* this.bundleList.wrapper */
-					// if either but not both, then invert condition if collapsedChanged
-					this.transforms.runTransition(collapsed ^ collapsedChanged ? tx.FIRST : tx.LAST, this.bundleList.wrapper);
-				}
-				// continue
-			case "right-layout":
-				if (withBundleChanged && collapsedChanged) { /* this.sitename.el */
-					this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
-				} else if (collapsedChanged) {
-					this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST, this.sitename.el);
-				}
-				break;
-			default:
-				if (withBundleChanged) { /* this.sitename.el */
-					this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
-				}
-				break;
-		}
-		this.transforms.clearOffset(this.bundleList.el, this.keywordList.el, this.keywordList.wrapper);
+		this.transforms.clearOffset(this.bundleList.el, this.keywordList.el,
+			this.keywordList.wrapper);
 	},
 
 	/* --------------------------- *
@@ -342,21 +320,43 @@ var NavigationView = View.extend({
 		this.requestRender(View.MODEL_INVALID);
 	},
 
-	/*events: {
-		"click": function(ev) {
-			console.log("%s:[click] ev: %o", this.cid, ev);
-			if (!ev.defaultPrevented && this.model.get("withBundle")) {
-				this.setImmediate(function() {
+	/* --------------------------- *
+	/* button events
+	/* --------------------------- */
+
+	// _onAboutClick: function() {
+	// 	if (this.model.get("routeName") == "root") {
+	// 		// if (!this.model.get("collapsed")) {
+	// 		// this.transforms.offset(0, 1, this.graph.el);
+	// 		// this.transforms.validate();
+	// 		this.setImmediate(function() {
+	// 			// keywords.deselect();
+	// 			// this.keywordList.refresh();
+	// 			this.model.set("collapsed", true);
+	// 		});
+	// 		// }
+	// 	}
+	// },
+
+	_onSitenameClick: function() {
+		switch (this.model.get("routeName")) {
+			case "media-item":
+			case "bundle-item":
+				if (this.model.get("collapsed")) {
 					this.transforms.offset(0, 1, this.graph.el);
 					this.transforms.validate();
 					this.setImmediate(function() {
-						this.model.set("collapsed", !this.model.get("collapsed"));
+						this.model.set("collapsed", false);
 					});
-				});
-			}
+				} else {
+					controller.deselectBundle();
+				}
+				break;
+			case "article-item":
+				controller.deselectArticle();
+				break;
 		}
-	},*/
-
+	},
 
 	/* --------------------------- *
 	/* bundleList event
@@ -368,7 +368,6 @@ var NavigationView = View.extend({
 		this.setImmediate(function() {
 			this.model.set("collapsed", !this.model.get("collapsed"));
 		});
-
 	},
 
 	/* --------------------------- *
@@ -407,10 +406,10 @@ var NavigationView = View.extend({
 			.stopTransition()
 			.clearOffset()
 			.validate();
-		if (this.model.get("layoutName") != "left-layout"
-			&& this.model.get("layoutName") != "default-layout") {
-			return;
-		}
+		// if (this.model.get("layoutName") != "left-layout"
+		// 	&& this.model.get("layoutName") != "default-layout") {
+		// 	return;
+		// }
 		if (Globals.BREAKPOINTS["desktop-small"].matches
 			&& this.model.get("bundle").get("media").selectedIndex <= 0
 			&& this.model.get("collapsed")) {
@@ -546,11 +545,25 @@ var NavigationView = View.extend({
 				"click a": function(domev) {
 					domev.defaultPrevented || domev.preventDefault();
 					this.trigger("view:click");
-					// controller.deselectBundle();
 				}
 			}
 		});
 		this.listenTo(view, "view:click", this._onSitenameClick);
+		view.wrapper = view.el.parentElement;
+		return view;
+	},
+
+	createAboutButton: function() {
+		var view = new View({
+			el: "#about",
+			// events: {
+			// 	"click a": function(domev) {
+			// 		domev.defaultPrevented || domev.preventDefault();
+			// 		this.trigger("view:click");
+			// 	}
+			// }
+		});
+		// this.listenTo(view, "view:click", this._onAboutClick);
 		view.wrapper = view.el.parentElement;
 		return view;
 	},
@@ -564,7 +577,8 @@ var NavigationView = View.extend({
 			collection: bundles,
 			collapsed: false,
 			filterFn: function(bundle, index, arr) {
-				return keywords.selected ? bundle.get("kIds").indexOf(keywords.selected.id) !== -1 : false;
+				return keywords.selected ?
+					bundle.get("kIds").indexOf(keywords.selected.id) !== -1 : false;
 			},
 		});
 		controller.listenTo(view, {
@@ -587,7 +601,8 @@ var NavigationView = View.extend({
 			collapsed: false,
 			filterFn: function(item, idx, arr) {
 				// return !!(item.get("bundle").selected);
-				return bundles.selected ? (bundles.selected.get("kIds").indexOf(item.id) !== -1) : false;
+				return bundles.selected ?
+					(bundles.selected.get("kIds").indexOf(item.id) !== -1) : false;
 			},
 			groupingFn: function(item, idx, arr) {
 				// return item.get("type");
@@ -596,7 +611,6 @@ var NavigationView = View.extend({
 		});
 		this.listenTo(view, "view:select:one view:select:none", this._onKeywordListChange);
 		view.wrapper = view.el.parentElement;
-
 		return view;
 	},
 

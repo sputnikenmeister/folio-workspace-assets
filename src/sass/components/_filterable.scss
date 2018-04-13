@@ -69,6 +69,8 @@
 		// height: auto;
 	}
 	&.collapsed {
+		&:not(.has-excluded) .list-group,
+		&:not(.has-excluded) .list-item,
 		.list-group.excluded,
 		.list-item.excluded {
 			visibility: hidden;
@@ -173,6 +175,14 @@
 		@extend %wait-move-fadein;
 	}
 	&.collapsed {
+		.list-group,
+		.list-item {
+			&.excluded {
+				@extend %fadeout-move-wait;
+			}
+		}
+	}
+	&.collapsed:not(.has-excluded) {
 		.list-group,
 		.list-item {
 			&.excluded {

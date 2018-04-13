@@ -7,10 +7,13 @@ var typeList = require("app/model/collection/TypeCollection");
 var keywordList = require("app/model/collection/KeywordCollection");
 /** @type {module:app/model/collection/BundleCollection} */
 var bundleList = require("app/model/collection/BundleCollection");
+/** @type {module:app/model/collection/ArticleCollection} */
+var articleList = require("app/model/collection/ArticleCollection");
 
 module.exports = function(bootstrap) {
 	// Fix-ups to bootstrap data.
 
+	var articles = bootstrap["articles-all"];
 	var types = bootstrap["types-all"];
 	var keywords = bootstrap["keywords-all"];
 	var bundles = bootstrap["bundles-all"];
@@ -43,7 +46,8 @@ module.exports = function(bootstrap) {
 		});
 	});
 
-	// Fill collection singletons
+	// Fill collection singletons\
+	articleList.reset(articles);
 	typeList.reset(types);
 	keywordList.reset(keywords);
 	bundleList.reset(bundles);

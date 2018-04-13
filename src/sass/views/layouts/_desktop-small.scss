@@ -185,6 +185,16 @@ $nav_height_land: 9rem;
 	.media-dotnav {
 		width: $page_width_large;
 	}
+	// article-view
+	// ===================================
+	.article-view {
+		top: $nav_top_land + $nav_height_land;
+		width: $page_width_large;
+		// padding-left: $aside_width_large + $hu;
+		h2 {
+			margin-left: $aside_width;
+		}
+	}
 
 }
 // end media-query

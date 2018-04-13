@@ -78,7 +78,7 @@ var ContentView = View.extend({
 
 	/** @override */
 	initialize: function(options) {
-		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal", "_onCollapsedClick");
+		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal", "_onCollapsedEvent");
 
 		this.transforms = new TransformHelper();
 		this.touch = TouchManager.getInstance();
@@ -193,18 +193,6 @@ var ContentView = View.extend({
 					}
 				}
 			}
-			// console.group(this.cid + "::renderFrame transitions:");
-			// if (!this.skipTransitions) {
-			// 	console.log("[skipping]");
-			// } else {
-			// 	this.transforms.items.forEach(function(o) {
-			// 		var args = [ "\t%s: %s", o.el.id || o.id, o.transition.name || o.transition ];
-			// 		if (o.hasOffset) args.push("[hasOffset]", o.offsetX, o.offsetY);
-			// 		console.log.apply(console, args);
-			// 	}, this);
-			// }
-			// console.groupEnd();
-
 			if (!childrenChanged) {
 				this.transforms.clearAllOffsets();
 			}
@@ -343,29 +331,28 @@ var ContentView = View.extend({
 	/* ------------------------------- */
 
 	/** Create children on bundle select */
-	createChildren: function(bundle) {
-		// will be attached to dom in this order
-		var stack = this.createMediaCaptionStack(bundle),
-			carousel = this.createMediaCarousel(bundle),
-			dotNav = this.createMediaDotNavigation(bundle);
-
-		this.itemViews.push(stack, carousel, dotNav);
-		this.transforms.add(carousel.el, stack.el);
+	createChildren: function(model) {
+		var view;
+		if (model.__proto__.constructor === bundles.model) {
+			// will be attached to dom in this order
+			view = this.createMediaCaptionStack(model);
+			this.itemViews.push(view);
+			this.transforms.add(view.el);
+			view = this.createMediaCarousel(model);
+			this.itemViews.push(view);
+			this.transforms.add(view.el);
+			view = this.createMediaDotNavigation(model);
+			this.itemViews.push(view);
+		} else
+		if (model.__proto__.constructor === articles.model) {
+			view = this.createArticleView(model);
+			this.itemViews.push(view);
+		}
 
 		this.itemViews.forEach(function(view) {
-			// view.listenToOnce(bundle, "deselect", function() {
-			// 	this.stopListening(this.collection);
-			// });
 			if (!this.skipTransitions) {
 				view.el.classList.add("adding-child");
 				view.el.style.opacity = 0;
-				// this.listenToOnce(view, "view:attached", function(view) {
-				// 	// console.log("%s::[view:added] id:%s", this.cid, view.cid);
-				// 	if (!this.skipTransitions) {
-				// 		view.el.style[transitionProp] = "opacity " + tx.LAST.cssText;
-				// 	}
-				// 	view.el.style.removeProperty("opacity");
-				// });
 			}
 			this.el.appendChild(view.el);
 			view.render();
@@ -384,10 +371,8 @@ var ContentView = View.extend({
 		}
 	},
 
-	removeChildren: function(bundle) {
-		// this.purgeChildren();
-		// this.transforms.remove(this.carousel.el, this.captionStack.el);
-		this.itemViews.forEach(function(view, i, a) {
+	removeChildren: function() {
+		this.itemViews.forEach(function(view, i, arr) {
 			this.transforms.remove(view.el);
 			if (this.skipTransitions) {
 				view.remove();
@@ -403,7 +388,7 @@ var ContentView = View.extend({
 					view.el.style.opacity = 0;
 				}
 			}
-			a[i] = null;
+			arr[i] = null;
 		}, this);
 		this.itemViews.length = 0;
 	},
@@ -447,8 +432,8 @@ var ContentView = View.extend({
 	/* ------------------------------- */
 
 	/**
-	/* media-carousel
-	/*/
+	 * media-carousel
+	 */
 	createMediaCarousel: function(bundle) {
 		// Create carousel
 		var classname = "media-carousel " + bundle.get("domid");
@@ -492,8 +477,8 @@ var ContentView = View.extend({
 	},
 
 	/**
-	/* media-caption-stack
-	/*/
+	 * media-caption-stack
+	 */
 	createMediaCaptionStack: function(bundle) {
 		var view = new CollectionStack({
 			className: "media-caption-stack",
@@ -507,8 +492,8 @@ var ContentView = View.extend({
 	},
 
 	/**
-	/* media-dotnav
-	/*/
+	 * media-dotnav
+	 */
 	createMediaDotNavigation: function(bundle) {
 		var view = new SelectableListView({
 			className: "media-dotnav dots-fontface color-fg05",
@@ -527,17 +512,28 @@ var ContentView = View.extend({
 		return view;
 	},
 
-	createProgressWrapper: function() {
-		// var view = new ProgressMeter({
-		// 	id: "media-progress-wrapper",
-		// 	// className: "color-bg color-fg05",
-		// 	useOpaque: false,
-		// 	labelFn: function() { return "0%"; }
-		// });
-		// this.el.appendChild(this.progressWrapper.el);
-		// return view;
-		return null;
+	/**
+	 * @param el {module:app/model/item/ArticleView}
+	 * @return {module:app/view/base/View}
+	 */
+	createArticleView: function(article) {
+		var view = new ArticleView({
+			model: article,
+		});
+		return view;
 	},
+
+	// createProgressWrapper: function() {
+	// 	// var view = new ProgressMeter({
+	// 	// 	id: "media-progress-wrapper",
+	// 	// 	// className: "color-bg color-fg05",
+	// 	// 	useOpaque: false,
+	// 	// 	labelFn: function() { return "0%"; }
+	// 	// });
+	// 	// this.el.appendChild(this.progressWrapper.el);
+	// 	// return view;
+	// 	return null;
+	// },
 });
 
 module.exports = ContentView;

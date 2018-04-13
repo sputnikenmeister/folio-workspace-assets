@@ -9,6 +9,7 @@
 		<span class="color-fg color-bg" data-prop="withMedia">m</span>
 		<span class="color-fg color-bg" data-prop="collapsed">c</span>
 	</dt>
+	{{#if layouts}}
 	<dd id="select-layout">
 		<select size=1>
 			{{#each layouts}}
@@ -16,6 +17,7 @@
 			{{/each}}
 		</select>
 	</dd>
+	{{/if}}
 	<dd id="edit-backend">
 		<a href="{{global "APP_ROOT"}}symphony/" class="color-fg color-bg" target="_blank">CMS</a>
 	</dd>

@@ -47,7 +47,7 @@ var DebugToolbar = View.extend({
 		};
 
 		this.el.innerHTML = this.template({
-			layouts: Globals.LAYOUT_NAMES,
+			// layouts: Globals.LAYOUT_NAMES,
 			tests: Modernizr,
 			navigator: window.navigator
 		});
@@ -81,12 +81,13 @@ var DebugToolbar = View.extend({
 
 		this.initializeViewportInfo();
 
-		this.initializeLayoutSelect();
+		// this.initializeLayoutSelect();
 
 		this.listenTo(this.model, "change", this._onModelChange);
 		this._onModelChange();
 	},
 
+	/*
 	initializeLayoutSelect: function() {
 		var layoutSelectEl = this.el.querySelector("#select-layout select");
 		var cookieValue, cookieKey = "layout-name";
@@ -113,7 +114,7 @@ var DebugToolbar = View.extend({
 
 		console.info("%s::init layout-name cookie:'%s' model:'%s' doc:'%s' url:'%s' -> '%s'", this.cid, cookieValue, modelValue, docValue, urlValue, result);
 
-		/* setup listeners after values are sync'd */
+		// setup listeners after values are sync'd
 		this.listenTo(this.model, "change:layoutName", function(model, value) {
 			var previousValue = model.previous(modelKey);
 			if (previousValue)
@@ -129,6 +130,7 @@ var DebugToolbar = View.extend({
 			this.model.set(modelKey, ev.target.value);
 		}.bind(this), false);
 	},
+	*/
 
 	initializeViewportInfo: function() {
 		var viewportInfoEl = this.el.querySelector("#viewport-info span");
@@ -165,7 +167,7 @@ var DebugToolbar = View.extend({
 	},
 
 	_onModelChange: function() {
-		console.log("%s::_onModelChange changedAttributes: %o", this.cid, this.model.changedAttributes());
+		// console.log("%s::_onModelChange changedAttributes: %o", this.cid, this.model.changedAttributes());
 		var i, ii, prop, el, els = this.appStateEl.children;
 		for (i = 0, ii = els.length; i < ii; i++) {
 			el = els[i];

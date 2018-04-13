@@ -73,6 +73,9 @@ body {
 			&#bundle-list-wrapper {
 				z-index: 2;
 			}
+			&#site-name-wrapper {
+				z-index: 3;
+			}
 		}
 	}
 	#content {
@@ -123,7 +126,7 @@ body {
 @import "includes/media-queries";
 @import "views/layouts/default";
 @import "views/layouts/desktop-small";
-@import "views/layouts/desktop-small.default";
 @import "views/layouts/desktop-small.left";
-@import "views/layouts/desktop-small.right";
+// @import "views/layouts/desktop-small.default";
+// @import "views/layouts/desktop-small.right";
 @import "views/layouts/unsupported";

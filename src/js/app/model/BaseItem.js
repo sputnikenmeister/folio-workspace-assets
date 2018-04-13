@@ -79,7 +79,7 @@ var BaseItemProto = {
 
 var BaseItem = {
 	extend: function(proto, obj) {
-		var constr, propName, propDef;
+		var constr, propName; //, propDef;
 		for (propName in proto) {
 			if (proto.hasOwnProperty(propName) && _.isObject(proto[propName])) { //(Object.getPrototypeOf(proto[propName]) === Object.prototype)) {
 				_.defaults(proto[propName], BaseItemProto[propName]);

@@ -15,16 +15,25 @@
 // - - - - - - - - - - - - - - - - - -
 #site-name {
 	@include heading_font();
-	// margin-left: -1px;
+	a {
+		transition: tx(color, 1, 1);
+		// 	@at-root .with-bundle .container-expanded & {
+		// 		color: inherit;
+		// 		transition: tx(color, 1, 1);
+		// 	}
+	}
 }
 
-#site-name a {
-	transition: tx(color, 1, 1);
-	// 	@at-root .with-bundle .container-expanded & {
-	// 		color: inherit;
-	// 		transition: tx(color, 1, 1);
-	// 	}
-}
+// #navigation h2 {
+// 	@include heading_font();
+// 	padding: 0 $hu;
+// 	a {
+// 		transition: tx(color, 1, 1);
+// 		&:not(.selected) {
+// 			color: inherit;
+// 		}
+// 	}
+// }
 
 // FilterableList
 // ===================================

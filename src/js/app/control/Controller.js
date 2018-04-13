@@ -2,15 +2,17 @@
 /* @module app/control/Controller
 /*/
 
-// /** @type {module:underscore} */
-// var _ = require("underscore");
+/** @type {module:underscore} */
+var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 
 // /** @type {module:app/model/collection/TypeCollection} */
 // var types = require("app/model/collection/TypeCollection");
-// /** @type {module:app/model/collection/KeywordCollection} */
-// var keywords = require("app/model/collection/KeywordCollection");
+/** @type {module:app/model/collection/KeywordCollection} */
+var keywords = require("app/model/collection/KeywordCollection");
+/** @type {module:app/model/collection/ArticleCollection} */
+var articles = require("app/model/collection/ArticleCollection");
 /** @type {module:app/model/collection/BundleCollection} */
 var bundles = require("app/model/collection/BundleCollection");
 
@@ -24,48 +26,64 @@ var bundles = require("app/model/collection/BundleCollection");
 /*/
 var Controller = Backbone.Router.extend({
 
+	// /** @override */
+	// routes: {},
+
 	/** @override */
-	routes: {
-		"bundles/:bundleHandle(/:mediaIndex)": "toBundleItem",
-		"bundles": "toBundleCollection",
-		"": function() {
-			this.navigate("bundles", {
-				trigger: true,
-				replace: true
-			});
-		}
+	initialize: function(options) {
+		this._routeNames = [];
+		/*
+		Prefixed article regexp: /^article(?:\/([^\/]+))\/?$/
+		Single bundle regexp: /^bundles(?:\/([^\/]+)(?:\/(\d+))?)?\/?$/
+		*/
+		this.route(/(.*)/,
+			"notfound", this.toNotFound);
+		this.route(/^\/?$/,
+			"root", this.toRoot);
+		this.route(/^([a-z][a-z0-9\-]*)\/?$/,
+			"article-item", this.toArticleItem);
+		this.route(/^bundles\/?$/,
+			"bundle-list", this.toBundleList);
+		this.route(/^bundles\/([^\/]+)\/?$/,
+			"bundle-item", this.toBundleItem);
+		this.route(/^bundles\/([^\/]+)\/(\d+)\/?$/,
+			"media-item", this.toMediaItem);
+
+		console.log("%s::initialize routes: %o", "controller", this._routeNames);
 	},
 
-	/** @override */
-	initialize: function(options) {},
+	route: function(route, name, callback) {
+		this._routeNames.push(_.isString(name) ? name : '');
+		return Backbone.Router.prototype.route.apply(this, arguments);
+	},
 
 	/* ---------------------------
-	/* Public command methods
+	/* JS to URL: public command methods
 	/* --------------------------- */
 
 	selectMedia: function(media) {
 		this._goToLocation(media.get("bundle"), media);
-		// this._changeSelection(media.get("bundle"), media);
-		// this._updateLocation();
 	},
 
 	selectBundle: function(bundle) {
 		this._goToLocation(bundle);
-		// this._changeSelection(bundle);
-		// this._updateLocation();
 	},
 
 	deselectMedia: function() {
 		this._goToLocation(bundles.selected);
-		// this._changeSelection(bundles.selected);
-		// this._updateLocation();
 	},
 
 	deselectBundle: function() {
 		this._goToLocation();
-		// this._changeSelection();
-		// this._updateLocation();
 	},
+
+	deselectArticle: function() {
+		this._goToLocation();
+	},
+
+	/* ---------------------------
+	/* JS to URL: private helpers
+	/* --------------------------- */
 
 	/** Update location when navigation happens internally */
 	_updateLocation: function() {
@@ -81,8 +99,8 @@ var Controller = Backbone.Router.extend({
 
 	_getLocation: function(bundle, media) {
 		var mediaIndex, location = [];
-		location.push("bundles");
 		if (bundle) {
+			location.push("bundles");
 			location.push(bundle.get("handle"));
 			if (media) {
 				mediaIndex = bundle.get("media").indexOf(media);
@@ -102,32 +120,72 @@ var Controller = Backbone.Router.extend({
 	},
 
 	/* --------------------------- *
-	/* Router handlers (browser address changes)
+	/* URL to JS: router handlers
 	/* --------------------------- */
 
-	toBundleItem: function(bundleHandle, mediaIndex) {
-		var bundle, media;
-		bundle = bundles.findWhere({
+	toRoot: function() {
+		this.trigger("change:before");
+		if (bundles.selected) {
+			bundles.selected.get("media").deselect();
+			bundles.deselect();
+		}
+		// keywords.deselect();
+		articles.deselect();
+		this.trigger("change:after");
+	},
+
+	toNotFound: function(slug) {
+		console.warn("route:[*:%s]", slug);
+	},
+
+	toBundleList: function() {
+		// this._changeSelection();
+		this.navigate("", {
+			trigger: true,
+			replace: true
+		});
+	},
+
+	toBundleItem: function(bundleHandle) {
+		var bundle = bundles.findWhere({
 			handle: bundleHandle
 		});
 		if (!bundle) {
 			throw new Error("Cannot find bundle with handle \"" + bundleHandle + "\"");
 		}
-		if (mediaIndex) {
-			media = bundle.get("media").at(mediaIndex);
-			if (!media) {
-				throw new Error("No media at index " + mediaIndex + " bundle with handle \"" + bundleHandle + "\"");
-			}
+		this._changeSelection(bundle);
+	},
+
+	toMediaItem: function(bundleHandle, mediaIndex) {
+		var bundle, media;
+		// if (bundleHandle) {
+		bundle = bundles.findWhere({ handle: bundleHandle });
+		if (!bundle) {
+			throw new Error("No bundle with handle \"" + bundleHandle + "\" found");
 		}
+		// if (mediaIndex) {
+		media = bundle.get("media").at(mediaIndex);
+		if (!media) {
+			throw new Error("No media at index " + mediaIndex + " in bundle with handle \"" + bundleHandle + "\" found");
+		}
+		// }
+		// }
 		this._changeSelection(bundle, media);
 	},
 
-	toBundleCollection: function() {
-		this._changeSelection();
+	toArticleItem: function(articleHandle) {
+		var article = articles.findWhere({ handle: articleHandle });
+		if (!article) {
+			throw new Error("Cannot find article with handle \"" + articleHandle + "\"");
+		}
+		this.trigger("change:before", article);
+		bundles.deselect();
+		articles.select(article);
+		this.trigger("change:after", article);
 	},
 
 	/* -------------------------------
-	/* Select Bundle/media
+	/* URL to JS: private helpers
 	/* ------------------------------- */
 
 	/*
@@ -140,26 +198,25 @@ var Controller = Backbone.Router.extend({
 	/*	they will not be listening to media selection changes yet.
 	/*/
 	_changeSelection: function(bundle, media) {
+		var lastBundle, lastMedia;
 		if (bundle === void 0) bundle = null;
 		if (media === void 0) media = null;
 
-		var lastBundle = bundles.selected;
-		var lastMedia = lastBundle ? lastBundle.get("media").selected : null;
-
+		lastBundle = bundles.selected;
+		lastMedia = lastBundle ? lastBundle.get("media").selected : null;
 		console.log("controller::_changeSelection bundle:[%s => %s] media:[%s => %s]",
 			(lastBundle ? lastBundle.cid : lastBundle), (bundle ? bundle.cid : bundle),
-			(lastMedia ? lastMedia.cid : lastMedia), (media ? media.cid : bundle)
+			(lastMedia ? lastMedia.cid : lastMedia), (media ? media.cid : media)
 		);
 
-		if (lastBundle === bundle && lastMedia === media) {
+		if (!articles.selected && lastBundle === bundle && lastMedia === media) {
 			return;
 		}
 
 		this.trigger("change:before", bundle, media);
-
 		bundle && bundle.get("media").select(media);
 		bundles.select(bundle);
-
+		articles.deselect();
 		this.trigger("change:after", bundle, media);
 	},
 });

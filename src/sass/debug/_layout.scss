@@ -129,6 +129,14 @@ $darkolivegreen: darkolivegreen;
 		// &[style*="transform"] {
 		// 	@include debug_outline(0.5rem, dashed, transparentize($deepskyblue, 0.4));
 		// }
+		.article-view {
+			// background-color: transparentize($lightblue, 0.9);
+			@include debug_outline(0.5rem, solid, transparentize($deepskyblue, 0.7));
+			& > * {
+				background-color: transparentize($lightblue, 0.8);
+				@include debug_outline(1px, dashed, $deepskyblue);
+			}
+		}
 		.stack {
 			.content {
 				background-color: transparentize($lightblue, 0.9);

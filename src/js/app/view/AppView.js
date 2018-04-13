@@ -24,8 +24,10 @@ var TouchManager = require("app/view/base/TouchManager");
 var controller = require("app/control/Controller");
 /** @type {module:app/model/AppState} */
 var AppState = require("app/model/AppState");
-// /** @type {module:app/model/collection/BundleCollection} */
-// var bundles = require("app/model/collection/BundleCollection");
+/** @type {module:app/model/collection/BundleCollection} */
+var bundles = require("app/model/collection/BundleCollection");
+/** @type {module:app/model/collection/ArticleCollection} */
+var articles = require("app/model/collection/ArticleCollection");
 
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
@@ -73,9 +75,9 @@ var AppViewProto = {
 		var docValue = _.find(Globals.LAYOUT_NAMES, function(s) {
 			return document.body.classList.contains(s);
 		});
-		if (docValue && (docValue !== this.model.get("layoutName"))) {
-			this.model.set("layoutName", docValue, { silent: true });
-		}
+		// if (docValue && (docValue !== this.model.get("layoutName"))) {
+		// 	this.model.set("layoutName", docValue, { silent: true });
+		// }
 
 		/* prevent touch overscroll on iOS */
 		// document.addEventListener("touchmove", function(ev) {
@@ -91,7 +93,8 @@ var AppViewProto = {
 		window.addEventListener("resize", _.debounce(this._onResize, 100, false /* immediate? */ ), false);
 
 		/* initialize controller/model listeners BEFORE views register their own */
-		this.listenTo(controller, "change:after", this._afterControllerChanged);
+		this.listenTo(controller, "route", this._onRoute);
+		// this.listenTo(controller, "change:after", this._afterControllerChanged);
 		this.listenTo(this.model, "change", this._onModelChange); /* FIXME */
 
 		/* initialize views */
@@ -106,11 +109,14 @@ var AppViewProto = {
 
 		/* startup listener */
 		this.listenToOnce(controller, "route", this._appStart);
-		// start router, which will request appropiate state
+
+		/* start router, which will request appropiate state */
 		Backbone.history.start({
 			pushState: false,
-			hashChange: true
+			hashChange: true,
+			root: Globals.APP_ROOT.match(/(?:https?\:\/\/[^\/]+(.*))/)[1]
 		});
+		// this.listenTo(this.model, "change", this._onModelChange);
 	},
 
 	/* -------------------------------
@@ -127,43 +133,66 @@ var AppViewProto = {
 	/* model changed
 	/* --------------------------- */
 
-	_afterControllerChanged: function(bundle, media) {
-		/* update model on controller event */
-		console.log("%s::[controller change:after]", this.cid);
-		this.model.set({
-			bundle: bundle || null,
-			withBundle: !!bundle,
-			media: media || null,
-			withMedia: !!media,
-			collapsed: !!bundle // reset collapsed on bundle change
-		});
+	// _onRoute: function(name, args) {
+	// 	console.info("%s::_onRoute %o", this.cid, name);
+	// 	// this.model.set("routeName", name, { silent: true });
+	// },
+
+	_onRoute: function(name, args) {
+		var o = _.defaults({ routeName: name }, AppState.prototype.defaults);
+		switch (name) {
+			case "media-item":
+				o.bundle = bundles.selected;
+				o.withBundle = true;
+				o.media = o.bundle.media.selected;
+				o.withMedia = true;
+				o.collapsed = true;
+				break;
+			case "bundle-item":
+				o.bundle = bundles.selected;
+				o.withBundle = true;
+				o.collapsed = true;
+				break;
+			case "article-item":
+				o.article = articles.selected;
+				o.withArticle = true;
+				o.collapsed = true;
+				break;
+			case "bundle-list":
+			case "notfound":
+			case "root":
+			default:
+				o.collapsed = false;
+				break;
+		}
+		console.info("%s::_onRoute %o", this.cid, name);
+		this.model.set(o);
 	},
+
+	// _afterControllerChanged: function(bundle, media) {
+	// 	/* update model on controller event */
+	// 	console.log("%s::_afterControllerChanged [change:after] [%o %s %s]", this.cid, controller.routeName, bundle && bundle.get("handle"), media && media.cid);
+	// 	this.model.set({
+	// 		routeName: controller.routeName,
+	// 		bundle: bundle || null,
+	// 		withBundle: !!bundle,
+	// 		media: media || null,
+	// 		withMedia: !!media,
+	// 		collapsed: !!bundle // reset collapsed on bundle change
+	// 	});
+	// },
 
 	/* --------------------------- *
 	/* model changed
 	/* --------------------------- */
 
 	_onModelChange: function() {
-		console.group(this.cid + "::_onModelChange changed:");
-		Object.keys(this.model.changedAttributes()).forEach(function(key) {
-			console.info("%s: %s -> %s", key, this.model.previous(key), this.model.get(key));
-		}, this);
-		console.groupEnd();
-
-		// var changelog = Object.keys(this.model.changedAttributes()).reduce(
-		// 	function(obj, key, idx, arr) {
-		// 		obj[key] = [this.model.previous(key), this.model.get(key)].join(" -> ");
-		// 		return obj;
-		// 	}.bind(this), {});
-		// var changelog = Object.keys(this.model.changedAttributes()).map(
-		// 	function(key, idx, arr) {
-		// 		return key + ": " + this.model.previous(key) + " -> " + this.model.get(key);
-		// 	}, this);
-		// console.info("%s::_onModelChange changed: %o", this.cid, changelog);
-
-		if (this.model.hasChanged("bundle") || this.model.hasChanged("media")) {
-			this.requestRender(View.MODEL_INVALID);
-		}
+		// if (this.model.hasChanged("bundle")
+		// 	|| this.model.hasChanged("media")
+		// 	|| this.model.hasChanged("article")
+		// 	|| this.model.hasChanged("routeName")) {
+		this.requestRender(View.MODEL_INVALID);
+		// }
 	},
 
 	/* -------------------------------
@@ -194,8 +223,8 @@ var AppViewProto = {
 
 	renderAppStart: function() {
 		console.log("%s::renderAppStart", this.cid);
-		document.documentElement.classList.remove("app-initial");
-		document.body.classList.remove("app-initial");
+		// document.documentElement.classList.remove("app-initial");
+		this.el.classList.remove("app-initial");
 		// document.documentElement.classList.add("app-ready");
 	},
 
@@ -234,14 +263,15 @@ var AppViewProto = {
 	renderModelChange: function() {
 		console.log("%s::renderModelChange", this.cid);
 
+		var article = this.model.get("article");
 		var bundle = this.model.get("bundle");
 		var media = this.model.get("media");
 
-		this.updateDocumentTitle(bundle, media);
-		this.updateClassList(bundle, media);
-	},
-
-	updateDocumentTitle: function(bundle, media) {
+		// 	this.updateDocumentTitle(bundle, media);
+		// 	this.updateClassList(bundle, media);
+		// },
+		//
+		// updateDocumentTitle: function(bundle, media) {
 		// Set browser title
 		var docTitle = "Portfolio";
 		if (bundle) {
@@ -249,29 +279,41 @@ var AppViewProto = {
 			if (media) {
 				docTitle += ": " + stripTags(media.get("name"));
 			}
+		} else if (article) {
+			docTitle += " - " + stripTags(article.get("name"));
 		}
 		document.title = docTitle;
-	},
-
-	updateClassList: function(bundle, media) {
+		// },
+		//
+		// updateClassList: function(bundle, media) {
 		// classList target
 		var cls = this.el.classList;
 		var prevAttr = null;
 		// var hasDarkBg = false;
 
 		// Set state classes
-		cls.toggle("with-bundle", !!bundle);
-		cls.toggle("without-bundle", !bundle);
-		cls.toggle("with-media", !!media);
-		cls.toggle("without-media", !media);
-		// if (this.model.hasChanged("withBundle")) {
-		// 	cls.toggle("with-bundle", this.model.get("withBundle"));
-		// 	cls.toggle("without-bundle", !this.model.get("withBundle"));
-		// }
-		// if (this.model.hasChanged("withMedia")) {
-		// 	cls.toggle("with-media", this.model.get("withMedia"));
-		// 	cls.toggle("without-media", !this.model.get("withMedia"));
-		// }
+
+		if (this.model.hasChanged("routeName")) {
+			prevAttr = this.model.previous("routeName");
+			if (prevAttr) {
+				cls.remove("route-" + prevAttr);
+			}
+			cls.add("route-" + this.model.get("routeName"));
+		}
+
+		// Set article class
+		if (this.model.hasChanged("article")) {
+			prevAttr = this.model.previous("article");
+			if (prevAttr) {
+				cls.remove(prevAttr.get("domid"));
+			}
+			if (article) {
+				cls.add(article.get("domid"));
+				// hasDarkBg = hasDarkBg || bundle.colors.hasDarkBg;
+			}
+		}
+		cls.toggle("with-article", !!article);
+		cls.toggle("without-article", !article);
 
 		// Set bundle class
 		if (this.model.hasChanged("bundle")) {
@@ -284,6 +326,9 @@ var AppViewProto = {
 				// hasDarkBg = hasDarkBg || bundle.colors.hasDarkBg;
 			}
 		}
+		cls.toggle("with-bundle", !!bundle);
+		cls.toggle("without-bundle", !bundle);
+
 		// Set media class
 		if (this.model.hasChanged("media")) {
 			prevAttr = this.model.previous("media");
@@ -295,6 +340,9 @@ var AppViewProto = {
 				// hasDarkBg = hasDarkBg || media.colors.hasDarkBg;
 			}
 		}
+		cls.toggle("with-media", !!media);
+		cls.toggle("without-media", !media);
+
 		// Set color-dark class
 		// cls.toggle("color-dark", hasDarkBg);
 		cls.toggle("color-dark",
@@ -307,6 +355,17 @@ if (DEBUG) {
 	/** @type {module:app/view/DebugToolbar} */
 	var DebugToolbar = require("app/view/DebugToolbar");
 
+	AppViewProto._onModelChange = (function(fn) {
+		return function() {
+			console.group(this.cid + "::_onModelChange changed:");
+			Object.keys(this.model.changedAttributes()).forEach(function(key) {
+				console.info("%s::_onModelChange %s: %s -> %s", this.cid, key, this.model.previous(key), this.model.get(key));
+			}, this);
+			console.groupEnd();
+			return fn.apply(this, arguments);
+		};
+	})(AppViewProto._onModelChange);
+
 	AppViewProto.initialize = (function(fn) {
 		return function() {
 			// var ret = fn.apply(this, arguments);
@@ -315,9 +374,9 @@ if (DEBUG) {
 				model: this.model
 			});
 			this.el.appendChild(view.render().el);
-			this.listenTo(this.model, "change:layoutName", function() {
-				this.requestRender(View.SIZE_INVALID); //.renderNow();
-			});
+			// this.listenTo(this.model, "change:layoutName", function() {
+			// 	this.requestRender(View.SIZE_INVALID); //.renderNow();
+			// });
 			// return ret;
 			return fn.apply(this, arguments);
 		};
