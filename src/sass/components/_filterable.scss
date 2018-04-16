@@ -34,9 +34,9 @@
 		// max-height: 1.5em;
 	}
 	&.collapsed {
-		.list-item {
-			// max-height: 0;
-		}
+		// .list-item {
+		// 	max-height: 0;
+		// }
 		.list-item:not(.selected) {
 			visibility: hidden;
 			opacity: 0;

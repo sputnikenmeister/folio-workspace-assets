@@ -47,7 +47,6 @@ var DebugToolbar = View.extend({
 		};
 
 		this.el.innerHTML = this.template({
-			// layouts: Globals.LAYOUT_NAMES,
 			tests: Modernizr,
 			navigator: window.navigator
 		});
@@ -86,51 +85,6 @@ var DebugToolbar = View.extend({
 		this.listenTo(this.model, "change", this._onModelChange);
 		this._onModelChange();
 	},
-
-	/*
-	initializeLayoutSelect: function() {
-		var layoutSelectEl = this.el.querySelector("#select-layout select");
-		var cookieValue, cookieKey = "layout-name";
-		var modelValue, modelKey = "layoutName";
-		var urlValue, urlExpr = /[?&;]layout=([^&;]+)/;
-		var docValue;
-		var result;
-
-		modelValue = this.model.get(modelKey);
-		cookieValue = Cookies.get(cookieKey);
-		urlValue = window.location.href.match(urlExpr);
-		docValue = _.find(Globals.LAYOUT_NAMES, function(s) {
-			return document.body.classList.contains(s);
-		});
-		result = (urlValue && urlValue[1]) || cookieValue || modelValue || docValue || Globals.LAYOUT_NAMES[0];
-
-		Cookies.set(cookieKey, result);
-		layoutSelectEl.value = result;
-		if (docValue !== result) {
-			if (docValue) document.body.classList.remove(docValue);
-			document.body.classList.add(result);
-		}
-		this.model.set("layoutName", result, { silent: true });
-
-		console.info("%s::init layout-name cookie:'%s' model:'%s' doc:'%s' url:'%s' -> '%s'", this.cid, cookieValue, modelValue, docValue, urlValue, result);
-
-		// setup listeners after values are sync'd
-		this.listenTo(this.model, "change:layoutName", function(model, value) {
-			var previousValue = model.previous(modelKey);
-			if (previousValue)
-				document.body.classList.remove(previousValue);
-			if (value)
-				document.body.classList.add(value);
-			Cookies.set(cookieKey, value);
-			console.info("%s::[change:layoutName] layout-name value:'%s' previous:'%s'\n\tdoc:'%s'", this.cid, value, previousValue, document.body.className);
-		});
-
-		layoutSelectEl.addEventListener("change", function(ev) {
-			console.info("%s:[change] value:'%s'", this.cid, ev.target.value, ev);
-			this.model.set(modelKey, ev.target.value);
-		}.bind(this), false);
-	},
-	*/
 
 	initializeViewportInfo: function() {
 		var viewportInfoEl = this.el.querySelector("#viewport-info span");
@@ -176,14 +130,14 @@ var DebugToolbar = View.extend({
 			el.classList.toggle("has-changed", this.model.hasChanged(prop));
 			el.classList.toggle("color-reverse", this.model.hasChanged(prop));
 		}
-		if (this.model.hasChanged("bundle")) {
-			var attrVal = Globals.APP_ROOT;
+		if (this.model.hasChanged("routeName")) {
+			var attrVal = Globals.APP_ROOT + "symphony/";
 			if (this.model.has("media")) {
-				attrVal += "symphony/publish/media/edit/" + this.model.get("media").id;
+				attrVal += "publish/media/edit/" + this.model.get("media").id;
 			} else if (this.model.has("bundle")) {
-				attrVal += "symphony/publish/bundles/edit/" + this.model.get("bundle").id;
-			} else {
-				attrVal += "symphony/";
+				attrVal += "publish/bundles/edit/" + this.model.get("bundle").id;
+			} else if (this.model.has("article")) {
+				attrVal += "publish/articles/edit/" + this.model.get("article").id;
 			}
 			this.backendEl.setAttribute("href", attrVal);
 		}

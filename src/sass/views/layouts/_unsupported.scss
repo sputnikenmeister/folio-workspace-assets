@@ -8,22 +8,29 @@
 		min-width: unset;
 		visibility: visible;
 		opacity: 1;
-		#content,
-		#navigation {
-			display: none;
+	}
+	#navigation {
+		display: none;
+	}
+	#content {
+		display: none;
+	}
+	#unsupported {
+		display: block;
+		padding: 3.75rem $hu 1rem;
+		margin: 0 auto;
+		width: unset;
+		max-width: 640px;
+		box-sizing: content-box;
+		h1,
+		h2,
+		p {
+			@include heading_font();
+			margin-bottom: 1rem;
+			margin-left: unset;
 		}
-		#unsupported {
-			display: block;
-			padding: 3.75rem $hu 1rem;
-			margin: 0 auto;
-			max-width: 640px;
-			box-sizing: content-box;
-			h1,
-			h2,
-			p {
-				@include heading_font();
-				margin-bottom: 1rem;
-			}
-		}
+		// a {
+		// 	color: $link_color_value;
+		// }
 	}
 }

@@ -29,3 +29,51 @@
 	margin-left: $hu;
 	margin-right: $hu;
 }
+
+.article-view {
+	h2,
+	h3,
+	h4,
+	p {
+		padding: 0 $hu;
+	}
+	h2 {
+		@include heading_font($size: 1.9999999rem, $weight: 300, $lead: 2rem);
+		margin-top: 2.5rem;
+		margin-bottom: 0.5em;
+		margin-left: $aside_width;
+	}
+	h3,
+	h4 {
+		width: $aside_width;
+		float: left;
+		clear: both;
+	}
+	h3 {
+		@include heading_font(1.3333333rem, 600, 1.5rem, -0.5px);
+		// @include heading_font(1.6666666rem, 600, 1.75rem, -0.5px);
+		margin-top: 0.25em;
+		margin-bottom: 0.5em;
+	}
+	h4 {
+		// @include small_caps($lead: 1rem);
+		@include heading_font(1.3333333rem, 400, 1.5rem, -0.25px);
+		margin-top: 0.125em;
+		margin-bottom: 0.25em;
+		// text-align: right;
+	}
+	p {
+		// @include heading_font(1.333rem, 300, 1.5rem);
+		// @include paragraph_font(1.1rem, 400, 1rem);
+		font-size: 110%;
+		margin-top: 0.25em;
+		margin-bottom: 0.5em;
+		margin-left: $aside_width;
+	}
+	a {
+		color: inherit;
+		// background-color: rgba(127,127,127,0.15);
+		text-decoration: underline;
+		text-decoration-color: rgba(127,127,127,0.35);
+	}
+}

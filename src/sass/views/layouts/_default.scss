@@ -115,15 +115,15 @@ $list_group_width: $aside_width - $gutter - $hu*2;
 // site-name
 // ===================================
 #site-name {
-	position: relative;
-	display: inline-block;
+	// position: relative;
+	// display: inline-block;
+	position: absolute;
+	display: block;
+	padding: 0.5rem $hu;
 	top: 1rem;
 	transform: move(0, 0);
-	padding: 0.5rem $hu;
-	// left: $hu;
-	// min-height: 2rem;
 }
-.with-article,
+// .with-article,
 .with-bundle {
 	#site-name {
 		transform: move(-100%, 0);
@@ -133,12 +133,71 @@ $list_group_width: $aside_width - $gutter - $hu*2;
 // - - - - - - - - - - - - - - - - - -
 #site-name-wrapper {
 	left: 0;
-	width: 100%;
+	// width: 100%;
+	width: $aside_width;
 	// width: auto;
 	// transform: move(0, 0);
 }
 // .with-bundle #site-name-wrapper {
 // 	transform: move(-100%, 0);
+// }
+
+// about
+// ===================================
+#about {
+	// position: relative;
+	// display: inline-block;
+	position: absolute;
+	display: block;
+	padding: 0.5rem $hu;
+	top: 1rem;
+	transform: move(0, 0);
+	a {
+		visibility: visible;
+		opacity: 1;
+		transition: tx(visibility, 3, 0, step-start), tx(opacity, 1, 0), tx(color, 1, 1);
+	}
+}
+.route-initial #about {
+	a {
+		visibility: hidden;
+		opacity: 0;
+	}
+}
+.with-bundle #about {
+	transform: move(-100%, 0);
+	a {
+		visibility: hidden;
+		opacity: 0;
+		transition: tx(visibility, 3, 0, step-end), tx(opacity, 1, 2), tx(color, 1, 1);
+	}
+}
+
+// article-list-wrapper (vertical movements)
+// - - - - - - - - - - - - - - - - - -
+#article-list-wrapper {
+	left: 0;
+	width: $aside_width;
+	transform: move(0, 2rem);
+
+}
+// .with-article #article-list-wrapper {
+// 	transform: move(0, 0rem);
+// }
+
+// @include media(desktop-small) {
+// 	#about {
+// 		// hiding
+// 		transition: tx(visibility, 3, 0, step-end), tx(opacity, 1, 2), tx(transform, 1, 2);
+// 	}
+// 	&.route-article-item,
+// 	&.route-bundle-list,
+// 	&.route-root {
+// 		#about {
+// 			// showing
+// 			transition: tx(visibility, 3, 0, step-start), tx(opacity, 1, 0), tx(transform, 1, 0);
+// 		}
+// 	}
 // }
 
 // nav-graph
@@ -297,105 +356,15 @@ $list_group_width: $aside_width - $gutter - $hu*2;
 	}
 }
 
-// about
-// ===================================
-#about {
-	@include heading_font($size: 1.9999999rem, $weight: 300, $lead: 2rem);
-	position: absolute;
-	display: block;
-	top: 1rem;
-	padding: 0.5rem $hu;
-}
-#about {
-// 	transform: move(0, 0);
-	transform: move(-100%, 2rem);
-	visibility: hidden;
-	opacity: 0; // hiding
-	transition: tx(visibility, 3, 0, step-end), tx(opacity, 1, 2), tx(transform, 1, 1);
-
-	.route-article-item &,
-	.route-bundle-list &,
-	.route-root & {
-		visibility: visible;
-		opacity: 1; // showing
-		transition: tx(visibility, 3, 0, step-start), tx(opacity, 1, 0), tx(transform, 1, 1);
-
-	}
-	.route-article-item & {
-		transform: move(0, 0);
-	}
-	.route-bundle-list &,
-	.route-root & {
-		transform: move(0, 2rem);
-	}
-}
-@include media(desktop-small) {
-	#about {
-		// hiding
-		transition: tx(visibility, 3, 0, step-end), tx(opacity, 1, 2), tx(transform, 1, 2);
-	}
-	&.route-article-item,
-	&.route-bundle-list,
-	&.route-root {
-		#about {
-			// showing
-			transition: tx(visibility, 3, 0, step-start), tx(opacity, 1, 0), tx(transform, 1, 0);
-		}
-	}
-}
-
 // article-view
 // ===================================
 .article-view {
-	// position: absolute;
 	position: relative;
+	top: $nav_top_port;
+	bottom: 0.75em;
 	width: $page_width;
 	margin: -1rem auto 4.5rem;
-	top: $nav_top_port; // + $nav_height_port;
-	bottom: 0.75em;
-
-	h2,
-	h3,
-	h4,
-	p {
-		padding: 0 $hu;
-	}
-	h2 {
-		@include heading_font($size: 1.9999999rem, $weight: 300, $lead: 2rem);
-		margin-top: 2.5rem;
-		margin-bottom: 0.75em;
-		margin-left: $aside_width;
-	}
-	h3,
-	h4 {
-		width: $aside_width;
-		float: left;
-		clear: both;
-	}
-	h3 {
-		@include heading_font(1.6666666rem, 600, 1.75rem, -0.5px);
-		margin-top: 0.25em;
-		margin-bottom: 0.5em;
-	}
-	h4 {
-		@include heading_font(1.3333333rem, 600, 1.5rem, -0.5px);
-		margin-top: 0.125em;
-		margin-bottom: 0.25em;
-	}
-	p {
-		// @include heading_font(1.333rem, 300, 1.5rem);
-		margin-top: 0.25em;
-		margin-bottom: 0.5em;
-		margin-left: $aside_width;
-	}
 }
-// .with-article {
-// 	#bundle-list,
-// 	#keyword-list {
-// 		opacity: 0;
-// 		visibility: hidden;
-// 	}
-// }
 
 // // media-progress-wrapper
 // // - - - - - - - - - - - - - - - - - -

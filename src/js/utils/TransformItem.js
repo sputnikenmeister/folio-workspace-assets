@@ -196,47 +196,7 @@ function TransformItem(el, id) {
 	this._pendingPromises = [];
 }
 
-var TransformItemProps = {
-	transition: {
-		get: function() {
-			return this._transition;
-		}
-	},
-
-	capturedChanged: {
-		get: function() {
-			return this._capturedChanged;
-		}
-	},
-	capturedX: {
-		get: function() {
-			return this._capturedX;
-		}
-	},
-	capturedY: {
-		get: function() {
-			return this._capturedY;
-		}
-	},
-
-	hasOffset: {
-		get: function() {
-			return this._hasOffset;
-		}
-	},
-	offsetX: {
-		get: function() {
-			return this._offsetX;
-		}
-	},
-	offsetY: {
-		get: function() {
-			return this._offsetY;
-		}
-	},
-};
-
-var TransformItemProto = {
+TransformItem.prototype = Object.create({
 
 	/* -------------------------------
 	/* Public
@@ -405,7 +365,7 @@ var TransformItemProto = {
 		if (!this._captureInvalid) {
 			return;
 		}
-		var computed, capturedValues;
+		// var computed, capturedValues;
 		var transformValue = null;
 
 		if (this._hasOffset && !this._offsetInvalid) {
@@ -422,7 +382,7 @@ var TransformItemProto = {
 		this._currCapture = this._getComputedCSSProps();
 
 		if (this._currCapture.transform !== this._lastCapture.transform) {
-			var m, mm, ret = {};
+			var m, mm; //, ret = {};
 			mm = this._currCapture.transform.match(/(matrix|matrix3d)\(([^\)]+)\)/);
 			if (mm) {
 				m = mm[2].split(",");
@@ -494,6 +454,7 @@ var TransformItemProto = {
 		}
 		if (this._transitionRunning && (this.el === ev.target) &&
 			(this._transition.property == ev.propertyName)) {
+			this._hasTransition = false;
 			this._transitionRunning = false;
 			this._removeCSSProp("transition");
 			resolveAll(this._promises, this.el);
@@ -539,6 +500,11 @@ var TransformItemProto = {
 	transition: {
 		get: function() {
 			return this._transition;
+		}
+	},
+	hasTransition: {
+		get: function() {
+			return this._hasTransition;
 		}
 	},
 	capturedChanged: {

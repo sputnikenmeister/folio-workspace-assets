@@ -359,7 +359,11 @@ if (DEBUG) {
 		return function() {
 			console.group(this.cid + "::_onModelChange changed:");
 			Object.keys(this.model.changedAttributes()).forEach(function(key) {
-				console.info("%s::_onModelChange %s: %s -> %s", this.cid, key, this.model.previous(key), this.model.get(key));
+				var prev = this.model.previous(key),
+					curr = this.model.get(key);
+				console.info("%s::_onModelChange %s: %s -> %s", this.cid, key,
+					prev && prev.toString(),
+					curr && curr.toString());
 			}, this);
 			console.groupEnd();
 			return fn.apply(this, arguments);

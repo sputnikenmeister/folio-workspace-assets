@@ -25,6 +25,8 @@ var types = require("app/model/collection/TypeCollection");
 var keywords = require("app/model/collection/KeywordCollection");
 /** @type {module:app/model/collection/BundleCollection} */
 var bundles = require("app/model/collection/BundleCollection");
+/** @type {module:app/model/collection/ArticleCollection} */
+var articles = require("app/model/collection/ArticleCollection");
 
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
@@ -34,8 +36,10 @@ var FilterableListView = require("app/view/component/FilterableListView");
 var GroupingListView = require("app/view/component/GroupingListView");
 // /** @type {module:app/view/component/CollectionPager} */
 // var CollectionPager = require("app/view/component/CollectionPager");
-/** @type {module:app/view/component/CollectionPager} */
+/** @type {module:app/view/component/GraphView} */
 var GraphView = require("app/view/component/GraphView");
+/** @type {module:app/view/component/ArticleButton} */
+var ArticleButton = require("app/view/component/ArticleButton");
 
 // /** @type {module:utils/prefixedProperty} */
 // var prefixedProperty = require("utils/prefixedProperty");
@@ -79,8 +83,8 @@ var NavigationView = View.extend({
 		this.transforms.add(this.sitename.wrapper, this.sitename.el);
 		// this.transforms.add(this.sitename.el.firstElementChild, this.sitename.el);
 
-		this.about = this.createAboutButton();
-		this.transforms.add(this.about.el);
+		this.about = this.createArticleButton(articles.findWhere({ handle: "about" }));
+		this.transforms.add(this.about.wrapper, this.about.el);
 
 		this.graph = this.createGraphView(this.bundleList, this.keywordList);
 		// this.transforms.add(this.graph.el);
@@ -123,8 +127,7 @@ var NavigationView = View.extend({
 				this.el.classList.toggle("container-expanded", !this.model.get("collapsed"));
 			}
 			if (this.model.hasChanged("collapsed")
-				|| this.model.hasChanged("withBundle")
-				|| this.model.hasChanged("withArticle")) {
+				|| this.model.hasChanged("withBundle")) {
 				this.el.classList.add("container-changing");
 			}
 			if (this.model.hasChanged("bundle")) {
@@ -146,12 +149,18 @@ var NavigationView = View.extend({
 				this.renderTransitions(flags);
 			}
 			this.transforms.validate();
+			console.log("%s::renderFrame %o", this.cid,
+				this.transforms.items.map(function(o) {
+					return [o.hasTransition, o.el.localName, o.el.id || o.el.className].join(" : ");
+				})
+			);
 		}
 
 		if (flags & View.MODEL_INVALID) {
-			if (this.model.hasChanged("collapsed") || this.model.hasChanged("withBundle")) {
-				//if ((this.model.hasChanged("collapsed") && !this.model.get("collapsed")) || (this.model.hasChanged("withBundle") && !this.model.get("withBundle"))) {
-				// this.el.classList.add("container-changing");
+			// if (this.model.hasChanged("collapsed")) {
+			//if ((this.model.hasChanged("collapsed") && !this.model.get("collapsed")) || (this.model.hasChanged("withBundle") && !this.model.get("withBundle"))) {
+			if (this.model.hasChanged("collapsed") ||
+				this.model.hasChanged("withBundle")) {
 				this.transforms.promise().then(this._whenTransitionsEnd, this._whenTransitionsAbort);
 			}
 		}
@@ -173,7 +182,7 @@ var NavigationView = View.extend({
 		if ((flags & (View.SIZE_INVALID | ~View.MODEL_INVALID))
 			&& !this.model.hasChanged("collapsed")
 			&& !this.model.get("withBundle")) {
-			/* collapsed has not changed, no bundle selected*/
+			/* collapsed has not changed, no bundle selected */
 			this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
 			if (!this.skipTransitions) {
 				this.graph.renderNow();
@@ -224,7 +233,7 @@ var NavigationView = View.extend({
 		/* collapsed */
 		var collapsed = this.model.get("collapsed");
 		var collapsedChanged = modelChanged && this.model.hasChanged("collapsed");
-		/* bundle */
+		/* article */
 		var withArticle = this.model.get("withArticle");
 		var withArticleChanged = modelChanged && this.model.hasChanged("withArticle");
 
@@ -246,11 +255,18 @@ var NavigationView = View.extend({
 			tf.clearOffset();
 		}
 
+		/** NOTE:
+		Vertical: site-name-wrapper, article-list-wrapper
+		Horizontal: site-name, about
+		*/
+
+
 		if (Globals.BREAKPOINTS["desktop-small"].matches) {
 			/* Horizontal transitions*/
 			/* this.keywordList.wrapper */
 			tf = this.transforms.get(this.keywordList.wrapper);
-			if (collapsedChanged) {
+			if (collapsedChanged && !withArticleChanged) {
+				// if (collapsedChanged) {
 				if (withBundleChanged) {
 					if (withMediaChanged)
 						tf.runTransition(withBundle ? tx.LAST : tx.FIRST);
@@ -262,27 +278,25 @@ var NavigationView = View.extend({
 				if (!withBundleChanged && withMediaChanged)
 					tf.runTransition(bundleChanged ? tx.BETWEEN : tx.NOW);
 			}
-			if (collapsedChanged) { /* this.hGroupings */
+			if (collapsedChanged && !withArticleChanged) { /* this.hGroupings */
 				this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST, this.hGroupings);
 			}
-			// }
-			// if (Globals.BREAKPOINTS["desktop-small"].matches) {
-			/* Vertical transitions */
-			if (collapsedChanged) { /* this.bundleList.wrapper */
+			if (collapsedChanged ^ withArticleChanged) { /* HORIZONTAL */
+				this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST,
+					this.sitename.el, this.about.el);
+			}
+			if (fromRoute == 'root' || toRoute == 'root') { /* VERICAL */
+				this.transforms.runTransition(tx.BETWEEN,
+					this.sitename.wrapper, this.about.wrapper);
+			}
+			if (collapsedChanged && !withArticleChanged) {
+				// if (fromRoute == 'root' || toRoute == 'root') {
 				this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST, this.bundleList.wrapper);
 			}
-			if (collapsedChanged) { /* this.sitename.el */
-				this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST, this.sitename.el);
-			}
-			if (withBundleChanged || withArticleChanged) { /* this.sitename.wrapper */
-				this.transforms.runTransition(tx.BETWEEN, this.sitename.wrapper);
-				// NOTE: when changing to collapsed, tx tends to fire early,
-				// so use BETWEEN_LATE
-				// this.transforms.runTransition(collapsed? tx.BETWEEN_LATE : tx.BETWEEN, this.sitename.el);
-			}
 		} else {
-			if (withBundleChanged || withArticleChanged) { /* this.sitename.el */
-				this.transforms.runTransition(tx.BETWEEN, this.sitename.el);
+			if (withBundleChanged) {
+				this.transforms.runTransition(tx.BETWEEN,
+					this.sitename.el, this.about.el);
 			}
 		}
 		this.transforms.clearOffset(this.bundleList.el, this.keywordList.el,
@@ -324,19 +338,17 @@ var NavigationView = View.extend({
 	/* button events
 	/* --------------------------- */
 
-	// _onAboutClick: function() {
-	// 	if (this.model.get("routeName") == "root") {
-	// 		// if (!this.model.get("collapsed")) {
-	// 		// this.transforms.offset(0, 1, this.graph.el);
-	// 		// this.transforms.validate();
-	// 		this.setImmediate(function() {
-	// 			// keywords.deselect();
-	// 			// this.keywordList.refresh();
-	// 			this.model.set("collapsed", true);
-	// 		});
-	// 		// }
-	// 	}
-	// },
+	_onArticleClick: function(item) {
+		switch (this.model.get("routeName")) {
+			case "article-item":
+				controller.deselectArticle();
+				break;
+			case "root":
+			default:
+				controller.selectArticle(item);
+				break;
+		}
+	},
 
 	_onSitenameClick: function() {
 		switch (this.model.get("routeName")) {
@@ -553,24 +565,33 @@ var NavigationView = View.extend({
 		return view;
 	},
 
-	createAboutButton: function() {
-		var view = new View({
+	createArticleButton: function(articleItem) {
+		var view = new ArticleButton({
 			el: "#about",
-			// events: {
-			// 	"click a": function(domev) {
-			// 		domev.defaultPrevented || domev.preventDefault();
-			// 		this.trigger("view:click");
-			// 	}
-			// }
-		});
-		// this.listenTo(view, "view:click", this._onAboutClick);
+			model: articleItem
+		}).render();
+		this.listenTo(view, "view:click", this._onArticleClick);
 		view.wrapper = view.el.parentElement;
 		return view;
 	},
 
+	// createArticleButton2: function(articleItem) {
+	// 	var view = new View({
+	// 		el: "#about",
+	// 		className: "article-button",
+	// 		// tag: "h2",
+	// 		model: articleItem,
+	// 	});
+	// 	// this.listenTo(view, "view:click", this._onAboutClick);
+	// 	view.label = view.el.querySelector("a");
+	// 	view.label.innerHTML = articleItem.get("name");
+	// 	view.wrapper = view.el.parentElement;
+	// 	return view;
+	// },
+
 	/**
-	/* bundle-list
-	/*/
+	 * bundle-list
+	 */
 	createBundleList: function() {
 		var view = new FilterableListView({
 			el: "#bundle-list",
@@ -592,8 +613,8 @@ var NavigationView = View.extend({
 	},
 
 	/**
-	/* keyword-list
-	/*/
+	 * keyword-list
+	 */
 	createKeywordList: function() {
 		var view = new GroupingListView({
 			el: "#keyword-list",
@@ -614,6 +635,9 @@ var NavigationView = View.extend({
 		return view;
 	},
 
+	/**
+	 * nav-graph
+	 */
 	createGraphView: function(listA, listB) {
 		var view = new GraphView({
 			id: "nav-graph",

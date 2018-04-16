@@ -66,11 +66,21 @@ $darkolivegreen: darkolivegreen;
 		@include debug_outline(0.5rem, dashed, transparentize($lightcoral, 0.75));
 	}
 	#sitename,
-	.transform-wrapper {
+	.article-button {
 		&[style*="transition"] {
-			@include debug_outline(2px, solid, transparentize($lightcoral, 0.35), -4px);
-			// background-color: transparentize($lightcoral, 0.5);
+			@include debug_outline(4px, dashed, transparentize($darkseagreen, 0.25), -4px);
 		}
+	}
+	#article-list-wrapper,
+	#site-name-wrapper {
+		&[style*="transition"] {
+			@include debug_outline(4px, dashed, transparentize($deepskyblue, 0.25), -4px);
+		}
+	}
+
+	.transform-wrapper[style*="transition"] {
+		@include debug_outline(2px, solid, transparentize($lightcoral, 0.35), -4px);
+		// background-color: transparentize($lightcoral, 0.5);
 	}
 	.list-group span[style*="transition"] {
 		@include debug_outline(2px, dashed, transparentize($lightcoral, 0.35));
@@ -113,6 +123,7 @@ $darkolivegreen: darkolivegreen;
 			background-color: transparentize($lightcoral, 0.9);
 		}
 		#site-name a,
+		.article-button a,
 		.list .list-group .label span,
 		.list .list-item .label {
 			background-color: transparentize($lightcoral, 0.7);

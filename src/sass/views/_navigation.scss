@@ -23,17 +23,10 @@
 		// 	}
 	}
 }
-
-// #navigation h2 {
-// 	@include heading_font();
-// 	padding: 0 $hu;
-// 	a {
-// 		transition: tx(color, 1, 1);
-// 		&:not(.selected) {
-// 			color: inherit;
-// 		}
-// 	}
-// }
+.article-button {
+	@include heading_font($size: 1.9999999rem, $weight: 300, $lead: 2rem);
+	/* tx:color in _default.scss */
+}
 
 // FilterableList
 // ===================================

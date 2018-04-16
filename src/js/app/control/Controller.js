@@ -77,8 +77,12 @@ var Controller = Backbone.Router.extend({
 		this._goToLocation();
 	},
 
+	selectArticle: function(article) {
+		this.navigate(article.get("handle"), { trigger: true });
+	},
+
 	deselectArticle: function() {
-		this._goToLocation();
+		this.navigate("", { trigger: true });
 	},
 
 	/* ---------------------------
