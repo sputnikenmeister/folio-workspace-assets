@@ -114,7 +114,7 @@ var AppViewProto = {
 		Backbone.history.start({
 			pushState: false,
 			hashChange: true,
-			root: Globals.APP_ROOT.match(/(?:https?\:\/\/[^\/]+(.*))/)[1]
+			// root: Globals.APP_ROOT.match(/(?:https?\:\/\/[^\/]+(.*))/)[1]
 		});
 		// this.listenTo(this.model, "change", this._onModelChange);
 	},
@@ -124,7 +124,7 @@ var AppViewProto = {
 	/* ------------------------------- */
 
 	_appStart: function() {
-		console.log("%s::_appStart", this.cid, arguments[0]);
+		console.info("%s::_appStart", this.cid, arguments[0]);
 		this._appStartChanged = true;
 		this.requestRender(View.MODEL_INVALID | View.SIZE_INVALID);
 	},
@@ -165,7 +165,7 @@ var AppViewProto = {
 				o.collapsed = false;
 				break;
 		}
-		console.info("%s::_onRoute %o", this.cid, name);
+		console.log("%s::_onRoute %o", this.cid, name);
 		this.model.set(o);
 	},
 

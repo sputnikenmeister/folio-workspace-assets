@@ -869,7 +869,7 @@ var CarouselProto = {
 	/** @private */
 	_onSelectOne: function(model) {
 		if (model === this._selectedView.model) {
-			console.info("INTERNAL");
+			// console.info("INTERNAL");
 			return;
 		}
 		this._onSelectAny(model);
@@ -878,7 +878,7 @@ var CarouselProto = {
 	/** @private */
 	_onSelectNone: function() {
 		if ((this.requireSelection ? this.itemViews.first() : this.emptyView) === this._selectedView) {
-			console.info("INTERNAL");
+			// console.info("INTERNAL");
 			return;
 		}
 		this._onSelectAny();

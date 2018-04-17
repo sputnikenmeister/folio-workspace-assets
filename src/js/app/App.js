@@ -59,7 +59,7 @@ if (DEBUG) {
 	}
 }
 
-console.log("App first statement (DEBUG: %s)", DEBUG);
+console.info("App first statement (DEBUG: %s)", DEBUG);
 
 require("Modernizr");
 
@@ -106,31 +106,31 @@ window.addEventListener("load", function(ev) {
 	/** @type {module:webfontloader} */
 	var WebFont = require("webfontloader");
 	WebFont.load({
-		async: true,
+		async: false,
 		classes: false,
 		custom: {
 			families: [
 				"Franklin Gothic FS:n4,i4,n7,i7",
 				"FolioFigures-Regular",
-				"ITCFranklinGothicStd-Compressed",
+				// "ITCFranklinGothicStd-Compressed",
 			],
 			testStrings: {
 				"FolioFigures-Regular": "hms"
 			},
 		},
 		active: function() {
-			console.log("WebFont::active");
+			console.info("WebFont::active");
 			AppView.getInstance();
 		},
 		fontactive: function(familyName, variantFvd) {
-			console.log("WebFont::fontactive '%s' (%s)", familyName, variantFvd);
+			console.info("WebFont::fontactive '%s' (%s)", familyName, variantFvd);
 		},
 		inactive: function() {
-			console.log("WebFont::inactive");
+			console.info("WebFont::inactive");
 			AppView.getInstance();
 		},
 		fontinactive: function(familyName, variantFvd) {
-			console.log("WebFont::fontinactive '%s' (%s)", familyName, variantFvd);
+			console.info("WebFont::fontinactive '%s' (%s)", familyName, variantFvd);
 		},
 		// loading: function() {
 		// 	console.log("WebFont::loading");

@@ -38,6 +38,17 @@ module.exports = (function() {
 
 	// paths, networking
 	// - - - - - - - - - - - - - - - - -
+	// var toAbsoluteURL = (function() {
+	// 	var a = null;
+	// 	return function(url) {
+	// 		a = a || document.createElement('a');
+	// 		a.href = url;
+	// 		return a.href;
+	// 	};
+	// })();
+	// g.APP_ROOT = toAbsoluteURL(window.approot);
+	// g.MEDIA_DIR = toAbsoluteURL(window.mediadir);
+
 	g.APP_ROOT = window.approot;
 	g.MEDIA_DIR = window.mediadir;
 

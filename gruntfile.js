@@ -389,8 +389,8 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks("grunt-contrib-uglify");
 	grunt.config("uglify.dist", {
 		options: {
-			mangle: true,
 			sourceMap: false,
+			mangle: true,
 			compress: {
 				dead_code: true,
 				drop_console: true,
@@ -404,6 +404,12 @@ module.exports = function(grunt) {
 			// "js/<%= paths.filebase.distJs %>.js": [grunt.config("browserify.dist.dest")]
 		}
 	});
+
+	/* Keep some console messages */
+	// var dropFuncs = ["console.log", "console.warn", "console.group", "console.groupCollapsed", "console.groupEnd"];
+	// grunt.config("uglify.dist.options.mangle.reserve", dropFuncs);
+	// grunt.config("uglify.dist.options.compress.pure_funcs", dropFuncs);
+	// grunt.config("uglify.dist.options.compress.drop_console", false);
 
 	/* --------------------------------
 	/* resources

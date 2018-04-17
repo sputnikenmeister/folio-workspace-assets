@@ -220,7 +220,7 @@ if (DEBUG) {
 	// console.info("Using app/view/base/FrameQueue");
 
 	// 	// // log frame exec time
-	// 	// var _now = window.performance? 
+	// 	// var _now = window.performance?
 	// 	// 	window.performance.now.bind(window.performance) :
 	// 	// 	Date.now.bind(Date);
 	// 	// _runQueue = _.wrap(_runQueue, function(fn, tstamp) {
@@ -233,7 +233,7 @@ if (DEBUG) {
 	// 	// 	if (_nextQueue.numItems != 0) console.info("[FRAME ENDED] %i items scheduled for [raf:%i]", _nextQueue.numItems, _rafId);
 	// 	// 	return retval;
 	// 	// });
-	// 	
+	//
 	// 	// log frame end
 	// 	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
 	// 		var retval;
@@ -244,14 +244,16 @@ if (DEBUG) {
 	// 	});
 
 	// use log prefix
-	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
-		var retval, logprefix;
-		logprefix = console.prefix;
-		console.prefix += "[raf:" + _rafId + "] ";
-		retval = fn(tstamp);
-		console.prefix = logprefix;
-		return retval;
-	});
+	if (console.prefix) {
+		_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
+			var retval, logprefix;
+			logprefix = console.prefix;
+			console.prefix += "[raf:" + _rafId + "] ";
+			retval = fn(tstamp);
+			console.prefix = logprefix;
+			return retval;
+		});
+	}
 
 	// FrameQueue.cancel = _.wrap(FrameQueue.cancel, function(fn, id) {
 	// 	if ((_currQueue !== null) && (_currQueue.offset >= id) && (id < _nextQueue.offset)) {

@@ -335,7 +335,7 @@ TransformItem.prototype = Object.create({
 				currY = (this._renderedY !== null ? this._renderedY : this._capturedY);
 
 			if (lastX === currX && lastY === currY) {
-				this._hasTransition && console.info("tx[%s]::validate unchanged: last:[%i,%i] curr:[%i,%i]", this.el.id || this.id, lastX, lastY, currX, currY);
+				this._hasTransition && console.warn("tx[%s]::validate unchanged: last:[%i,%i] curr:[%i,%i]", this.el.id || this.id, lastX, lastY, currX, currY);
 				// console.info("tx[%s]::validate unchanged: last:[%f,%f] curr:[%f,%f] render:[%f,%f] captured[%f,%f]", this.el.id || this.id, lastX, lastY, currX, currY, this._renderedX, this._renderedY, this._capturedX, this._capturedY);
 				this.clearTransition();
 				// this._validateTransition();

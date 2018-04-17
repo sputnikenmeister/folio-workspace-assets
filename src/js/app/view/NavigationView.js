@@ -149,11 +149,11 @@ var NavigationView = View.extend({
 				this.renderTransitions(flags);
 			}
 			this.transforms.validate();
-			console.log("%s::renderFrame %o", this.cid,
-				this.transforms.items.map(function(o) {
-					return [o.hasTransition, o.el.localName, o.el.id || o.el.className].join(" : ");
-				})
-			);
+			// console.log("%s::renderFrame %o", this.cid,
+			// 	this.transforms.items.map(function(o) {
+			// 		return [o.hasTransition, o.el.localName, o.el.id || o.el.className].join(" : ");
+			// 	})
+			// );
 		}
 
 		if (flags & View.MODEL_INVALID) {
