@@ -71,6 +71,7 @@ var DebugToolbar = View.extend({
 		/* - - - - - - - - - - - - - - - - */
 		this.initializeClassToggle("debug-grid-bg", this.el.querySelector("#toggle-grid-bg a"), container);
 		this.initializeClassToggle("debug-blocks", this.el.querySelector("#toggle-blocks a"), container);
+		this.initializeClassToggle("debug-markdown", this.el.querySelector("#toggle-markdown a"), container);
 		this.initializeClassToggle("debug-logs", this.el.querySelector("#toggle-logs a"), container);
 		this.initializeClassToggle("debug-tx", this.el.querySelector("#toggle-tx a"), container,
 			function(key, value) {
@@ -121,7 +122,7 @@ var DebugToolbar = View.extend({
 	},
 
 	_onModelChange: function() {
-		// console.log("%s::_onModelChange changedAttributes: %o", this.cid, this.model.changedAttributes());
+		console.log("%s::_onModelChange changedAttributes: %o", this.cid, this.model.changedAttributes());
 		var i, ii, prop, el, els = this.appStateEl.children;
 		for (i = 0, ii = els.length; i < ii; i++) {
 			el = els[i];
@@ -132,12 +133,19 @@ var DebugToolbar = View.extend({
 		}
 		if (this.model.hasChanged("routeName")) {
 			var attrVal = Globals.APP_ROOT + "symphony/";
-			if (this.model.has("media")) {
-				attrVal += "publish/media/edit/" + this.model.get("media").id;
-			} else if (this.model.has("bundle")) {
-				attrVal += "publish/bundles/edit/" + this.model.get("bundle").id;
-			} else if (this.model.has("article")) {
-				attrVal += "publish/articles/edit/" + this.model.get("article").id;
+			switch (this.model.get("routeName")) {
+				case "article-item":
+					attrVal += "publish/articles/edit/" + this.model.get("article").id;
+					break;
+				case "bundle-item":
+					attrVal += "publish/bundles/edit/" + this.model.get("bundle").id;
+					break;
+				case "media-item":
+					attrVal += "publish/media/edit/" + this.model.get("media").id;
+					break;
+				case "root":
+					attrVal += "publish/bundles";
+					break;
 			}
 			this.backendEl.setAttribute("href", attrVal);
 		}

@@ -9,8 +9,8 @@ var Backbone = require("backbone");
 
 // /** @type {module:app/model/collection/TypeCollection} */
 // var types = require("app/model/collection/TypeCollection");
-/** @type {module:app/model/collection/KeywordCollection} */
-var keywords = require("app/model/collection/KeywordCollection");
+// /** @type {module:app/model/collection/KeywordCollection} */
+// var keywords = require("app/model/collection/KeywordCollection");
 /** @type {module:app/model/collection/ArticleCollection} */
 var articles = require("app/model/collection/ArticleCollection");
 /** @type {module:app/model/collection/BundleCollection} */
@@ -139,7 +139,7 @@ var Controller = Backbone.Router.extend({
 	},
 
 	toNotFound: function(slug) {
-		console.warn("route:[*:%s]", slug);
+		console.info("route:[*:%s]", slug);
 	},
 
 	toBundleList: function() {

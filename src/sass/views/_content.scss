@@ -30,7 +30,116 @@
 	margin-right: $hu;
 }
 
-.article-view {
+// ///////////////////////////////////
+// markdown-html elements
+// ///////////////////////////////////
+
+.markdown-html {
+	a {
+		color: inherit !important;
+		text-decoration: underline;
+		text-decoration-color: transparentize($color, 0.3);
+	}
+	ol {
+		list-style-type: decimal;
+	}
+	ul {
+		list-style-type: none;
+		& > li::before {
+			content: '·';
+			display: inline-block;
+			padding-left: 0.1em;
+			margin-left: -1em;
+			width: 1em;
+			box-sizing: border-box;
+		}
+	}
+	ol,
+	ul {
+		padding-left: $hu - 1.5px;
+		li {
+			margin-left: 1em;
+		}
+	}
+	// dd, li, p {}
+
+	.lorem::after {
+		// background-color: hsla(183, 100%, 50%, 0.18);
+		opacity: 0.35;
+		content: ' Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
+	}
+}
+
+.media-carousel .empty-item .markdown-html {
+	// @include heading_font($weight: 300, $size: 28px, $lead: 30px);
+	// @include heading_font($weight: 300, $size: 22px, $lead: 24px);
+	@include heading_font(300, 22px, 24px);
+	& > * {
+		margin-bottom: 0.75rem;
+	}
+	p {
+		@extend %n1p2_2f6;
+		margin-bottom: 0.75rem;
+	}
+	// - - - - - - - - - - - - - - - -
+	h1 {
+		@extend %n4_8;
+		margin-bottom: 3rem;
+	}
+	h2 {
+		@extend %n3f2_8;
+		margin-bottom: 3rem;
+	}
+	h3 {
+		@extend %n3f2_7;
+		margin-bottom: 2.25rem;
+	}
+	h4 {
+		@extend %n3_6;
+		margin-bottom: 2.25rem;
+	}
+	h5 {
+		@extend %n2_5;
+		margin-bottom: 1.5rem;
+	}
+	h6 {
+		@extend %n1f2_4;
+		margin-bottom: 1.5rem;
+	}
+	/* NOTE: used for lorem ipsum */
+	blockquote {
+		background-color: hsla(183, 100%, 50%, 0.18);
+	}
+}
+@include media(desktop-small) {
+	.media-carousel .empty-item .markdown-html {
+		@include heading_font(300, 28px, 30px);
+		p {
+			@extend %n1p3_3f3;
+		}
+		// - - - - - - - - - - - - - -
+		h1 {
+			@extend %n4f2_10;
+		}
+		h2 {
+			@extend %n4_9;
+		}
+		h3 {
+			@extend %n3f2_8;
+		}
+		h4 {
+			@extend %n3f2_7;
+		}
+		h5 {
+			@extend %n3_6;
+		}
+		h6 {
+			@extend %n2_5;
+		}
+	}
+}
+
+.article-view.markdown-html {
 	h2,
 	h3,
 	h4,
@@ -50,30 +159,25 @@
 		clear: both;
 	}
 	h3 {
-		@include heading_font(1.3333333rem, 600, 1.5rem, -0.5px);
-		// @include heading_font(1.6666666rem, 600, 1.75rem, -0.5px);
+		@include heading_font(600, 1.3333333rem, 1.5rem, -0.5px);
+		// @include heading_font(600, 1.6666666rem, 600, 1.75rem, -0.5px);
 		margin-top: 0.25em;
 		margin-bottom: 0.5em;
 	}
 	h4 {
 		// @include small_caps($lead: 1rem);
-		@include heading_font(1.3333333rem, 400, 1.5rem, -0.25px);
+		@include heading_font(400, 1.3333333rem, 1.5rem, -0.25px);
 		margin-top: 0.125em;
 		margin-bottom: 0.25em;
 		// text-align: right;
 	}
 	p {
-		// @include heading_font(1.333rem, 300, 1.5rem);
-		// @include paragraph_font(1.1rem, 400, 1rem);
+		// @include heading_font(300, 1.333rem, 1.5rem);
+		// @include paragraph_font(400, 1.1rem, 1rem);
 		font-size: 110%;
 		margin-top: 0.25em;
 		margin-bottom: 0.5em;
 		margin-left: $aside_width;
-	}
-	a {
-		color: inherit;
-		// background-color: rgba(127,127,127,0.15);
-		text-decoration: underline;
-		text-decoration-color: rgba(127,127,127,0.35);
+		hyphens: auto;
 	}
 }

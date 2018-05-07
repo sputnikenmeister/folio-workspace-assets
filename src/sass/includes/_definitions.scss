@@ -103,18 +103,8 @@ $mono_font_family: $mono_fallback;
 	text-overflow: ellipsis;
 }
 
-%heading_base {
-	letter-spacing: -1px;
-	font-kerning: normal;
-	@include text_rendering_legibility();
-	@include font_smoothing();
-}
-
-// h1 font-size: 3.42857rem; letter-spacing: -2px;
-// h2 font-size: 2.14286rem; letter-spacing: -1px;
-
 //@mixin heading_font($size: 24px, $weight: 600, $lead: 24px) {
-@mixin heading_font($size: 1.99rem, $weight: 600, $lead: 1, $track: -1px) {
+@mixin heading_font($weight: 600, $size: 1.99rem, $lead: 1, $track: -1px) {
 	font-size: $size;
 	font-weight: $weight;
 	line-height: $lead;

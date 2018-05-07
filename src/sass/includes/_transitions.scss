@@ -22,7 +22,12 @@ $delay: $duration + $delay_interval; // transition/animation timing function
 	// @return translate3d($x, $y, 0);
 	@return translate($x, $y);
 }
-
+@function moveX($x:0) {
+	@return translate($x, 0);
+}
+@function moveY($y:0) {
+	@return translate(0, $y);
+}
 // transition function
 // - - - - - - - - - - - - - - - - - -
 @function tx($prop: all, $duration_count: 1, $delay_count: -1, $ease: $ease) {

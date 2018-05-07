@@ -6,6 +6,7 @@
 // Abstract rules
 // - - - - - - - - - - - - - - - - - -
 @import "includes/transitions";
+@import "includes/media-queries";
 
 // -----------------------------------
 // Root container
@@ -124,7 +125,6 @@ body {
 // media queries / layouts
 // ///////////////////////////////////
 
-@import "includes/media-queries";
 @import "views/layouts/default";
 @import "views/layouts/desktop-small";
 @import "views/layouts/unsupported";

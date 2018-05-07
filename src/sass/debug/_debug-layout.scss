@@ -15,11 +15,11 @@ $salmon: hsla(6, 93%, 71%, 1);
 /* thistle: 		hsl(300, 24%, 80%) */
 $thistle: hsla(300, 24%, 80%, 1);
 /* darkseagreen:	hsl(120, 25%, 65%) */
-$darkseagreen: hsla(120, 25%, 65%, 1);
-/* darkolivegreen:	hsl(???) */
-$darkolivegreen: darkolivegreen;
-/* indigo */
-$indigo: rgba(75, 0, 130, 1);
+$darkseagreen: hsla(120, 25%, 50%, 1); //hsl(120, 25%, 65%)
+/* darkolivegreen:	hsl(82, 39%, 30%) */
+$darkolivegreen: hsla(82, 39%, 50%, 1); //hsl(82, 39%, 30%);
+/* indigo:			hsl(275, 100%, 25%); */
+$indigo: hsla(275, 100%, 25%, 1);
 
 @mixin debug_outline($width: 1px, $style: dashed, $color: inherit, $opacity: null, $offset: null) {
 	outline: $width $style if($opacity == null, $color, transparentize($color, $opacity));
@@ -187,63 +187,46 @@ $indigo: rgba(75, 0, 130, 1);
 	background-image: image-url("debug/debug-background.svg");
 	background-color: transparent;
 	background-repeat: no-repeat;
-	background-position: 50% 0.25rem;
+	background-position: 50% -0.5rem;
 	background-size: #{$page_width + $hu*2} 100%; //1600px;
 
 	@include media(desktop-small) {
 		// background-position: calc(50% + 1px) calc(-1rem + 1px);
 		background-size: #{$page_width_large + $hu*2} 100%; //1600px;
 	}
-	.markdown-html {
-		dl,
-		dt,
-		h1,
-		h2,
-		h3,
-		h4,
-		h5,
-		h6,
-		li,
-		ol,
-		p,
-		ul {
-			@include debug_outline(2px, solid, $darkseagreen, 0.3, -1px);
-			background-color: transparentize($darkseagreen, 0.9);
-			position: relative;
-			&::before {
-				position: absolute;
-				display: block;
-				right: 0;
-				bottom: 0;
-				padding: 0.1em 0.2em;
-				margin: 0;
-				color: white;
-				background: darkseagreen;
-				font: 800 8px/1.2 sans-serif;
-				text-transform: uppercase;
-				letter-spacing: normal;
-			}
+}
+
+// -----------------------------------
+// .debug-grid + markdown-html
+// -----------------------------------
+@mixin _debugSelectorInContent($selectors...) {
+	#{$selectors} {
+		@content;
+	}
+	@each $sel in $selectors {
+		#{$sel}::before {
+			content: #{'\''+$sel+'\''};
 		}
-		h1::before {
-			content: 'h1';
-		}
-		h2::before {
-			content: 'h2';
-		}
-		h3::before {
-			content: 'h3';
-		}
-		h4::before {
-			content: 'h4';
-		}
-		h5::before {
-			content: 'h5';
-		}
-		h6::before {
-			content: 'h6';
-		}
-		p::before {
-			content: 'p';
+	}
+}
+.debug-markdown .markdown-html {
+	@include _debugSelectorInContent(h1,h2,h3,h4,h5,h6,p,ol,ul,dl) {
+		@include debug_outline(1px, solid, $darkolivegreen, 0.1, -1px);
+		background-color: transparentize($darkolivegreen, 0.9);
+		position: relative;
+		&::before {
+			position: absolute;
+			display: block;
+			right: 0;
+			bottom: 0;
+			height: 1.2em;
+			padding: 0.1em 0.2em;
+			margin: 0;
+			color: white;
+			background: $darkolivegreen; //#5d7533;
+			font: 800 8px/120% $small_font_family;
+			text-transform: uppercase;
+			letter-spacing: normal;
 		}
 	}
 }

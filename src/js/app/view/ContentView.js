@@ -46,6 +46,8 @@ var SequenceRenderer = require("app/view/render/SequenceRenderer");
 // /** @type {module:app/view/component/ProgressMeter} */
 // var ProgressMeter = require("app/view/component/ProgressMeter");
 
+// /** @type {Function} */
+// var bundleStackTemplate = require("./template/CollectionStack.Bundle.hbs");
 /** @type {Function} */
 var bundleStackTemplate = require("./template/CollectionStack.Bundle.hbs");
 /** @type {Function} */
@@ -431,12 +433,12 @@ var ContentView = View.extend({
 	/* Components
 	/* ------------------------------- */
 
+
 	/**
 	 * media-carousel
 	 */
 	createMediaCarousel: function(bundle) {
 		// Create carousel
-		var classname = "media-carousel " + bundle.get("domid");
 		var EmptyRenderer = CarouselRenderer.extend({
 			className: "carousel-item empty-item",
 			model: bundle,
@@ -457,7 +459,7 @@ var ContentView = View.extend({
 			}
 		};
 		var view = new Carousel({
-			className: classname,
+			className: "media-carousel " + bundle.get("domid"),
 			collection: bundle.get("media"),
 			rendererFunction: rendererFunction,
 			requireSelection: false,

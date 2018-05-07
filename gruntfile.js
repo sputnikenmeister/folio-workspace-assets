@@ -405,20 +405,30 @@ module.exports = function(grunt) {
 		}
 	});
 
-	/* Keep some console messages */
-	// var dropFuncs = ["console.log", "console.warn", "console.group", "console.groupCollapsed", "console.groupEnd"];
-	// grunt.config("uglify.dist.options.mangle.reserve", dropFuncs);
-	// grunt.config("uglify.dist.options.compress.pure_funcs", dropFuncs);
-	// grunt.config("uglify.dist.options.compress.drop_console", false);
+	/* Remove most console messages */
+	var dropFuncs = [
+		"console.log",
+		"console.info",
+		// "console.warn",
+		// "console.error",
+		"console.group",
+		"console.groupCollapsed",
+		"console.groupEnd"
+	];
+	grunt.config("uglify.dist.options.mangle.reserve", dropFuncs);
+	grunt.config("uglify.dist.options.compress.pure_funcs", dropFuncs);
+	grunt.config("uglify.dist.options.compress.drop_console", false);
 
 	/* --------------------------------
 	/* resources
 	/* -------------------------------- */
 
 	/* generate-favicons
+	 * NOTE: requires `brew install imagemagick`
 	 * - - - - - - - - - - - - - - - - - */
 
-	// grunt.loadNpmTasks("grunt-contrib-clean"); // NOTE: already loaded above
+	// grunt.loadNpmTasks("grunt-contrib-clean");
+	// NOTE: already loaded above
 	grunt.config("clean.favicons", {
 		src: [
 			"<%= paths.src.generated %>/resources/favicons",

@@ -47,9 +47,14 @@ var MediaRenderer = CarouselRenderer.extend({
 		// if (this.model.attrs().hasOwnProperty("@classname")) {
 		// 	this.el.className += " " + this.model.attr("@classname");
 		// }
-		if (this.model.attr("@classname") !== void 0) {
-			this.el.classList.add(this.model.attr("@classname"));
-		}
+
+		// NOTE: @classname attr handling moved to CarouselRenderer
+		// if (this.model.attr("@classname") !== void 0) {
+		// 	var clsAttr = this.model.attr("@classname").split(" ");
+		// 	for (var i = 0; i < clsAttr.length; i++) {
+		// 		this.el.classList.add(clsAttr[i]);
+		// 	}
+		// }
 		CarouselRenderer.prototype.initialize.apply(this, arguments);
 
 		this.metrics.media = {};

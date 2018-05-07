@@ -46,22 +46,22 @@ var styleBase = {
 	// margin: 20,
 };
 
-var _dStyles = {
-	red: {
-		lineWidth: 1,
-		fillStyle: "rgba(255,127,127,0.75)",
-		strokeStyle: "rgba(255,127,127,0.75)",
-		lineDashOffset: 0,
-		setLineDash: [[]]
-	},
-	blue: {
-		lineWidth: 1,
-		fillStyle: "rgba(127,127,255,0.75)",
-		strokeStyle: "rgba(127,127,255,0.75)",
-		lineDashOffset: 0,
-		setLineDash: [[]]
-	}
-};
+// var _dStyles = {
+// 	red: {
+// 		lineWidth: 1,
+// 		fillStyle: "rgba(255,127,127,0.75)",
+// 		strokeStyle: "rgba(255,127,127,0.75)",
+// 		lineDashOffset: 0,
+// 		setLineDash: [[]]
+// 	},
+// 	blue: {
+// 		lineWidth: 1,
+// 		fillStyle: "rgba(127,127,255,0.75)",
+// 		strokeStyle: "rgba(127,127,255,0.75)",
+// 		lineDashOffset: 0,
+// 		setLineDash: [[]]
+// 	}
+// };
 
 function setStyle(ctx, s) {
 	if (typeof s != "object") return;

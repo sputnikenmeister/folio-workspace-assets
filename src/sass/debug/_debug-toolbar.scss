@@ -105,8 +105,8 @@
 			display: inline-block;
 			margin-left: 0;
 			margin-right: 0;
-			width: 0.75em;
-			text-align: center;
+			// width: 1em;
+			// text-align: center;
 			text-transform: none; // uppercase
 			text-decoration: none; // line-through underline overline
 
@@ -128,8 +128,8 @@
 		// margin: 1em 0.75em;
 		background-color: transparent;
 		font-family: inherit;
-		font-size: inherit;
 		font-weight: inherit;
+		font-size: inherit;
 		&:focus {
 			outline: none;
 		}
@@ -164,9 +164,12 @@
 		select,
 		span,
 		svg {
-			padding: 0 0.1em;
-			margin: 0.5em;
 			display: inline-block;
+			padding: 0.1em 0.2em 0;
+			margin: 0.5em;
+		}
+		a {
+			border-radius: 0.25em;
 		}
 	}
 	dd:after {
@@ -200,7 +203,7 @@
 	}
 	&.debug-links dd {
 		// @include small_caps($lead: inherit);
-		@include debug_toolbar_sc($lead: inherit);
+		@include debug_toolbar_sc($weight: 400, $lead: inherit);
 	}
 	&.debug-info dd {
 		font-weight: 300;

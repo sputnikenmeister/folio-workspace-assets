@@ -19,6 +19,10 @@ function insertCSSRule(sheet, selector, style) {
 	sheet.insertRule(selector + "{" + cssText + "}", sheet.cssRules.length);
 }
 
+function selfAndDescendant(selfCls, cls) {
+	return selfCls + " " + cls + ", " + selfCls + cls;
+}
+
 // - - - - - - - - - - - - - - - -
 //  body rules
 // - - - - - - - - - - - - - - - -
@@ -71,14 +75,16 @@ function initBodyStyles(sheet, bodySelector, attrs, fgColor, bgColor, lnColor, h
 		"color": bgColorVal
 	}; // s = { "color" : revFgColorVal };
 	s["-webkit-font-smoothing"] = (hasDarkBg ? "auto" : "antialiased");
-	insertCSSRule(sheet, revSelector + " .color-fg", s);
-	insertCSSRule(sheet, revSelector + ".color-fg", s);
+	// insertCSSRule(sheet, revSelector + " .color-fg", s);
+	// insertCSSRule(sheet, revSelector + ".color-fg", s);
+	insertCSSRule(sheet, selfAndDescendant(revSelector, ".color-fg"), s);
 
 	s = {
 		"background-color": fgColorVal
 	}; // s = { "background-color" : revBgColorVal };
-	insertCSSRule(sheet, revSelector + " .color-bg", s);
-	insertCSSRule(sheet, revSelector + ".color-bg", s);
+	// insertCSSRule(sheet, revSelector + " .color-bg", s);
+	// insertCSSRule(sheet, revSelector + ".color-bg", s);
+	insertCSSRule(sheet, selfAndDescendant(revSelector, ".color-bg"), s);
 
 	// .color-stroke .color-fill (SVG)
 	// - - - - - - - - - - - - - - - -
@@ -94,13 +100,15 @@ function initBodyStyles(sheet, bodySelector, attrs, fgColor, bgColor, lnColor, h
 	s = {
 		"stroke": bgColorVal
 	};
-	insertCSSRule(sheet, revSelector + " .color-stroke", s);
-	insertCSSRule(sheet, revSelector + ".color-stroke", s);
+	// insertCSSRule(sheet, revSelector + " .color-stroke", s);
+	// insertCSSRule(sheet, revSelector + ".color-stroke", s);
+	insertCSSRule(sheet, selfAndDescendant(revSelector, ".color-stroke"), s);
 	s = {
 		"fill": fgColorVal
 	};
-	insertCSSRule(sheet, revSelector + " .color-fill", s);
-	insertCSSRule(sheet, revSelector + ".color-fill", s);
+	// insertCSSRule(sheet, revSelector + " .color-fill", s);
+	// insertCSSRule(sheet, revSelector + ".color-fill", s);
+	insertCSSRule(sheet, selfAndDescendant(revSelector, ".color-fill"), s);
 
 	// .text-outline
 	// - - - - - - - - - - - - - - - -
@@ -145,6 +153,11 @@ function initCarouselStyles(sheet, carouselSelector, attrs, fgColor, bgColor, ln
 	("border-radius" in attrs) && (s["border-radius"] = attrs["border-radius"]);
 	insertCSSRule(sheet, carouselSelector + " .media-item .placeholder", s);
 
+	// .empty-item A
+	// - - - - - - - - - - - - - - - -
+	s = {};
+	s["text-decoration-color"] = fgColor.clone().mix(bgColor, 0.3).rgbString();
+	insertCSSRule(sheet, carouselSelector + " .empty-item A", s);
 	// // .color-gradient
 	// // - - - - - - - - - - - - - - - -
 	// s = {};
@@ -175,8 +188,9 @@ module.exports = function() {
 	colorStyles.id = "colors";
 	colorStyles.type = "text/css";
 	document.head.appendChild(colorStyles);
+	// var colorStyles = document.querySelector("link#folio");
 
-	initBodyStyles(colorStyles.sheet, "body", attrs, fgColor, bgColor, lnColor, hasDarkBg);
+	initBodyStyles(colorStyles.sheet, "BODY", attrs, fgColor, bgColor, lnColor, hasDarkBg);
 	initCarouselStyles(colorStyles.sheet, ".carousel", attrs, fgColor, bgColor, lnColor, hasDarkBg);
 
 	// - - - - - - - - - - - - - - - -
@@ -189,8 +203,7 @@ module.exports = function() {
 		lnColor = bundle.colors.lnColor;
 		hasDarkBg = bundle.colors.hasDarkBg;
 
-		initBodyStyles(colorStyles.sheet, "body." + bundle.get("domid"), attrs, fgColor, bgColor, lnColor, hasDarkBg);
+		initBodyStyles(colorStyles.sheet, "BODY." + bundle.get("domid"), attrs, fgColor, bgColor, lnColor, hasDarkBg);
 		initCarouselStyles(colorStyles.sheet, ".carousel." + bundle.get("domid"), attrs, fgColor, bgColor, lnColor, hasDarkBg);
 	});
-
 };

@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {},
   "devDependencies": {
+    "@folio/webfonts": "file:../folio-webfonts",
     "Backbone.Mutators": "^0.4.5",
     "backbone": "^1.0.0 <1.2.0",
     "backbone.babysitter": "^0.1.6",

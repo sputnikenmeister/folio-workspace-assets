@@ -236,13 +236,25 @@ var FilterableListView = View.extend({
 			model: item,
 			el: this.el.querySelector(".list-item[data-id=\"" + item.id + "\"]")
 		});
-		this.itemViews.add(view);
+		item.set("excluded", false, { silent: true });
 		this.listenTo(view, "renderer:click", this._onRendererClick);
+		view.listenTo(item, "change:excluded", function(item, newVal) {
+			// console.log(arguments);
+			if (this.el.classList.contains("excluded") !== newVal) {
+				console.warn("%s:[change:excluded] m:%o css: %o", this.cid, newVal, this.el.classList.contains("excluded"));
+			}
+			// this.el.classList.toggle("excluded", excluded);
+		});
+		this.itemViews.add(view);
 		return view;
 	},
 
 	/** @private */
 	_onRendererClick: function(item, ev) {
+		if (this._collapsedTransitioning
+			|| (this._collapsed && item.get("excluded"))) {
+			return;
+		}
 		if (this.collection.selected !== item) {
 			this.trigger("view:select:one", item);
 		} else {
@@ -330,11 +342,13 @@ var FilterableListView = View.extend({
 		if (hasNew) {
 			diff((hasOld ? oldItems : this._getAllItems()), newItems).forEach(function(item) {
 				this.itemViews.findByModel(item).el.classList.add("excluded");
+				item.set("excluded", true);
 			}, this);
 		}
 		if (hasOld) {
 			diff((hasNew ? newItems : this._getAllItems()), oldItems).forEach(function(item) {
 				this.itemViews.findByModel(item).el.classList.remove("excluded");
+				item.set("excluded", false);
 			}, this);
 		}
 		this.el.classList.toggle("has-excluded", hasNew);

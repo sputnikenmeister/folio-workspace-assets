@@ -11,6 +11,13 @@ var View = require("app/view/base/View");
 /** @type {module:underscore} */
 var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
+/** @type {module:utils/net/toAbsoluteURL} */
+var toAbsoluteURL = require("utils/net/toAbsoluteURL");
+
+/** @type {string} */
+var ABS_APP_ROOT = toAbsoluteURL(
+	require("app/control/Globals").APP_ROOT);
+
 /**
  * @constructor
  * @type {module:app/view/render/CarouselRenderer}
@@ -24,7 +31,7 @@ var CarouselRenderer = View.extend({
 	/** @override */
 	className: "carousel-item",
 	/** @override */
-	template: _.template("<div class=\"content sizing\"><%= name %></div>"),
+	template: _.template("<div class=\"content sizing markdown-html\"><%= name %></div>"),
 
 	properties: {
 		content: {
@@ -41,6 +48,12 @@ var CarouselRenderer = View.extend({
 
 	/** @override */
 	initialize: function(options) {
+		if (this.model.attr("@classname") !== void 0) {
+			var clsAttr = this.model.attr("@classname").split(" ");
+			for (var i = 0; i < clsAttr.length; i++) {
+				this.el.classList.add(clsAttr[i]);
+			}
+		}
 		options.parentView && (this.parentView = options.parentView);
 		this.metrics = {};
 		this.metrics.content = {};
@@ -51,6 +64,12 @@ var CarouselRenderer = View.extend({
 
 	createChildren: function() {
 		this.el.innerHTML = this.template(this.model.toJSON());
+		this.el.querySelectorAll("a[href]").forEach(function(el) {
+			var url = toAbsoluteURL(el.getAttribute("href"));
+			if (url.indexOf(ABS_APP_ROOT) !== 0) {
+				el.setAttribute("target", "_blank");
+			}
+		});
 	},
 
 	/** @return {HTMLElement} */

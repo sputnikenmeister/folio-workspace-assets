@@ -80,7 +80,7 @@
 			}
 		}
 	}
-	&:not(collapsed) {
+	&:not(.collapsed) {
 		// .list-group,
 		.list-item {
 			&:not(.selected) a {
