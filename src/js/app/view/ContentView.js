@@ -46,10 +46,8 @@ var SequenceRenderer = require("app/view/render/SequenceRenderer");
 // /** @type {module:app/view/component/ProgressMeter} */
 // var ProgressMeter = require("app/view/component/ProgressMeter");
 
-// /** @type {Function} */
-// var bundleStackTemplate = require("./template/CollectionStack.Bundle.hbs");
 /** @type {Function} */
-var bundleStackTemplate = require("./template/CollectionStack.Bundle.hbs");
+var carouselEmptyTemplate = require("./template/Carousel.EmptyRenderer.Bundle.hbs");
 /** @type {Function} */
 var mediaStackTemplate = require("./template/CollectionStack.Media.hbs");
 
@@ -442,7 +440,7 @@ var ContentView = View.extend({
 		var EmptyRenderer = CarouselRenderer.extend({
 			className: "carousel-item empty-item",
 			model: bundle,
-			template: bundleStackTemplate,
+			template: carouselEmptyTemplate,
 		});
 		var rendererFunction = function(item, index, arr) {
 			if (index === -1) {
@@ -453,7 +451,8 @@ var ContentView = View.extend({
 					return VideoRenderer;
 				case "sequence":
 					return SequenceRenderer;
-					// case "image": return ImageRenderer;
+				case "image":
+					return ImageRenderer;
 				default:
 					return ImageRenderer;
 			}

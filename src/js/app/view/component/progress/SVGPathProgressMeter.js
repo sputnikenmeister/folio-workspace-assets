@@ -3,11 +3,11 @@
  */
 
 
-/** @type {module:underscore} */
-var _ = require("underscore");
+// /** @type {module:underscore} */
+// var _ = require("underscore");
 
-/** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+// /** @type {module:app/control/Globals} */
+// var Globals = require("app/control/Globals");
 /** @type {module:utils/svg/arcData} */
 var arcData = require("utils/svg/arcData");
 /** @type {module:app/view/component/progress/ModelProgressMeter} */

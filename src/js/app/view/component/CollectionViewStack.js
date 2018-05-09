@@ -1,5 +1,5 @@
 /**
- * @module app/view/component/CollectionStack
+ * @module app/view/component/CollectionViewStack
  */
 
 /** @type {module:underscore} */
@@ -32,7 +32,7 @@ module.exports = View.extend({
 	className: "view-stack",
 
 	initialize: function(options) {
-		//		_.bindAll(this, "renderFrame");
+		//	_.bindAll(this, "renderFrame");
 		// options
 		options.renderer && (this.renderer = options.renderer);
 		options.emptyRenderer && (this.emptyRenderer = options.emptyRenderer);
