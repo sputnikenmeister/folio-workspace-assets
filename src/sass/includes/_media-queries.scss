@@ -3,7 +3,9 @@
 // ------------------------------------
 
 @mixin media($query) {
-	@at-root .#{#{$query} &} {
+	// @at-root .#{#{$query} &} {
+	// @at-root .#{$query} body & {
+	@at-root .#{#{$query} body &} {
 		@content;
 	}
 }

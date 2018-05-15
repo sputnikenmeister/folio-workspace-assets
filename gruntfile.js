@@ -457,9 +457,10 @@ module.exports = function(grunt) {
 	/* generate-favicons
 	 * NOTE: requires `brew install imagemagick`
 	 * - - - - - - - - - - - - - - - - - */
-	var faviconColor = "#D0021B";
+	// var faviconColor = "#D0021B", file = "prtfl.png";
+	var faviconColor = "#000000",
+		faviconFile = "profile-abstract2-black.png";
 	grunt.config("paths.favicons", {
-		file: "profile-abstract2-black.png",
 		src: "src/resources/favicons",
 		dest: "images/favicons",
 		generated: "<%= paths.src.generated %>/favicons",
@@ -476,7 +477,7 @@ module.exports = function(grunt) {
 
 	grunt.config("copy.svg-favicon", {
 		files: [{
-			src: "<%= paths.favicons.src %>/<%= paths.favicons.file %>",
+			src: "<%= paths.favicons.src %>/" + faviconFile,
 			dest: "<%= paths.favicons.generated %>/favicon.png",
 		}]
 	});

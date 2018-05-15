@@ -1,6 +1,9 @@
-@import "compass/reset";
+// ///////////////////////////////////
+// dist entry point
+// ///////////////////////////////////
 
-@import "includes/definitions";
-@import "includes/headers";
-@import "includes/base";
-@import "views/layouts";
+// $debug: false;
+
+// @import "fonts";
+@import "main";
+@import "views/layouts/unsupported";

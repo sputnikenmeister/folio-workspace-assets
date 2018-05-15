@@ -1,0 +1,12 @@
+// ///////////////////////////////////
+// media query : $desktop-small
+// ///////////////////////////////////
+
+// layout variables
+// - - - - - - - - - - - - - - - - - -
+html.mobile {
+	font-size: 6px;
+}
+@include media(mobile) {
+	font-size: 6px;
+}

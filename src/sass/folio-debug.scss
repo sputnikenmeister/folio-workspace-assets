@@ -1,5 +1,13 @@
-@import "fonts";
-@import "folio";
+// ///////////////////////////////////
+// debug entry point
+// ///////////////////////////////////
+
+$debug: true;
+
+// @import "fonts";
+@import "main";
+@import "views/layouts/mobile";
+
 @import "debug/debug-layout";
 @import "debug/debug-toolbar";
 @import "debug/debug-carousel-log";

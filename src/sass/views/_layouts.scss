@@ -125,6 +125,9 @@ body {
 // media queries / layouts
 // ///////////////////////////////////
 
+#unsupported {
+	display: none;
+}
+
 @import "views/layouts/default";
 @import "views/layouts/desktop-small";
-@import "views/layouts/unsupported";
