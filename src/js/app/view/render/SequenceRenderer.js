@@ -50,6 +50,10 @@ var whenSelectionDistanceIs = require("app/view/promise/whenSelectionDistanceIs"
 
 var errorTemplate = require("../template/ErrorBlock.hbs");
 
+var MIN_STEP_INTERVAL = 2 * Globals.TRANSITION_DURATION + Globals.TRANSITION_DELAY_INTERVAL;
+var DEFAULT_STEP_INTERVAL = 6 * Globals.TRANSITION_DURATION + Globals.TRANSITION_DELAY_INTERVAL;
+
+
 /* --------------------------- *
 /* Private classes
 /* --------------------------- */
@@ -84,6 +88,9 @@ var PrefetechedSourceRenderer = View.extend({
 
 	/** @override */
 	initialize: function(options) {
+		!this.el.hasAttribute("alt") && this.el.setAttribute("alt", this.model.get("src"));
+		// this.el.setAttribute("longdesc", this.model.get("original"));
+
 		if (this.model.has("prefetched")) {
 			this._renderPrefetched();
 		} else {
@@ -369,7 +376,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 
 		// timer
 		// ---------------------------------
-		this._sequenceInterval = parseInt(this.model.attr("@sequence-interval")) || 2500;
+		this._sequenceInterval = Math.max(parseInt(this.model.attr("@sequence-interval")), MIN_STEP_INTERVAL) || DEFAULT_STEP_INTERVAL;
 
 		this.timer = new Timer();
 		this.listenTo(this, "view:removed", function() {
@@ -575,6 +582,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 					context.sources.select(nextSource); // NOTE: step increase done here
 					// view.updateOverlay(nextView.el, view.overlay);
 					context.timer.start(context._sequenceInterval);
+					// console.log("%s::showNextView %sms %s", context.cid, context._sequenceInterval, nextSource.cid)
 				}
 			});
 		};
@@ -584,12 +592,19 @@ var SequenceRenderer = PlayableRenderer.extend({
 			_whenImageLoads(nextView.el).then(showNextView, showNextView);
 		} else {
 			this.content.classList.add("waiting");
-			this.listenTo(nextSource, "change:prefetched change:error", function() {
-				this.stopListening(nextSource, "change:prefetched change:error");
-				// context.content.classList.remove("waiting");
-				// nextView = context._getItemRenderer(nextSource).el;
-				_whenImageLoads(nextView.el).then(showNextView, showNextView);
-			});
+			/* TODO: add ga event 'media-waiting' */
+			// console.log("%s:[waiting] %sms %s", context.cid, nextSource.cid);
+			window.ga("send", "event", "sequence-renderer", "waiting", this.model.get("text"));
+			this.listenTo(nextSource, "change:prefetched change:error",
+				function() {
+					this.stopListening(nextSource, "change:prefetched change:error");
+					/* TODO: add ga event 'media-playing' */
+					// console.log("%s:[playing] %sms %s", context.cid, nextSource.cid);
+					window.ga("send", "event", "sequence-renderer", "playing", this.model.get("text"));
+					_whenImageLoads(nextView.el).then(showNextView, showNextView);
+					// context.content.classList.remove("waiting");
+					// nextView = context._getItemRenderer(nextSource).el;
+				});
 		}
 	},
 

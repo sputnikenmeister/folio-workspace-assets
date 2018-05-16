@@ -38,12 +38,12 @@ var Controller = Backbone.Router.extend({
 		*/
 		this.route(/(.*)/,
 			"notfound", this.toNotFound);
-		this.route(/^\/?$/,
-			"root", this.toRoot);
 		this.route(/^([a-z][a-z0-9\-]*)\/?$/,
 			"article-item", this.toArticleItem);
-		this.route(/^bundles\/?$/,
-			"bundle-list", this.toBundleList);
+		this.route(/^(?:bundles)?\/?$/,
+			"root", this.toRoot);
+		// this.route(/^bundles\/?$/,
+		// 	"bundle-list", this.toBundleList);
 		this.route(/^bundles\/([^\/]+)\/?$/,
 			"bundle-item", this.toBundleItem);
 		this.route(/^bundles\/([^\/]+)\/(\d+)\/?$/,
@@ -142,13 +142,12 @@ var Controller = Backbone.Router.extend({
 		console.info("route:[*:%s]", slug);
 	},
 
-	toBundleList: function() {
-		// this._changeSelection();
-		this.navigate("", {
-			trigger: true,
-			replace: true
-		});
-	},
+	// toBundleList: function() {
+	// 	this.navigate("", {
+	// 		trigger: true,
+	// 		replace: true
+	// 	});
+	// },
 
 	toBundleItem: function(bundleHandle) {
 		var bundle = bundles.findWhere({

@@ -8,10 +8,10 @@ var Model = require("backbone").Model;
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
-/** @type {module:app/utils/strings/stripTags} */
-var stripTags = require("utils/strings/stripTags");
+// /** @type {module:app/control/Globals} */
+// var Globals = require("app/control/Globals");
+// /** @type {module:app/utils/strings/stripTags} */
+// var stripTags = require("utils/strings/stripTags");
 // /** @type {module:app/model/parseSymAttrs} */
 //var parseSymAttrs = require("app/model/parseSymAttrs");
 
@@ -48,7 +48,9 @@ var BaseItemProto = {
 
 	mutators: {
 		domid: function() {
-			return this._domId || (this._domId = this._domPrefix + this.id);
+			if (!this.hasOwnProperty("_domId"))
+				this._domId = this._domPrefix + this.id;
+			return this._domId;
 		},
 		attrs: {
 			set: function(key, value, options, set) {

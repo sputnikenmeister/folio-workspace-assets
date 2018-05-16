@@ -2,11 +2,13 @@
 // media query : $desktop-small
 // ///////////////////////////////////
 
+@import "views/layouts/unsupported";
+
 // layout variables
 // - - - - - - - - - - - - - - - - - -
 html.mobile {
-	font-size: 6px;
+	// font-size: 6px;
 }
 @include media(mobile) {
-	font-size: 6px;
+	// font-size: 6px;
 }

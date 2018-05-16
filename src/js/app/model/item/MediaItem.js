@@ -71,7 +71,9 @@ module.exports = BaseItem.extend({
 			return this.get("src");
 		},
 		text: function() {
-			return stripTags(this.get("name"));
+			if (!this.hasOwnProperty("_text"))
+				this._text = _.unescape(stripTags(this.get("name")));
+			return this._text;
 		},
 		attrs: {
 			set: function(key, value, opts, set) {

@@ -7,7 +7,7 @@ rules:
   empty-line-between-blocks:
     - 0
   indentation:
-    - 1
+    - 0
     - size: 'tab'
   no-trailing-zero: 0
   property-sort-order: 0

@@ -25,12 +25,39 @@ module.exports = (function() {
 	// - - - - - - - - - - - - - - - - -
 	g.BREAKPOINTS = {};
 	for (s in sass.breakpoints) {
-		g.BREAKPOINTS[s] = window.matchMedia(sass.breakpoints[s]);
+		o = sass.breakpoints[s];
+		/*if (Array.isArray(o)) {
+			g.BREAKPOINTS[s] = Object.defineProperties({}, {
+				"matches": {
+					get: _.partial(_.some, o.map(window.matchMedia), _.property("matches"))
+				},
+				"media": {
+					value: o.join(", ")
+				},
+				"queries": {
+					value: o.map(window.matchMedia)
+				},
+			});
+		} else {
+			g.BREAKPOINTS[s] = window.matchMedia(o);
+		}*/
+		o = Array.isArray(o) ? o.join(", ") : o;
+		o = o.replace(/[\'\"]/g, "");
+		o = window.matchMedia(o);
+		o.className = s;
+		g.BREAKPOINTS[s] = o;
+	}
+	if (DEBUG) {
+		console.group("Breakpoints");
+		for (s in g.BREAKPOINTS) {
+			// console.log("%s: %o %o", s, g.BREAKPOINTS[s], sass.breakpoints[s] + '');
+			console.log("%s: %o", s, g.BREAKPOINTS[s].media);
+		}
+		console.groupEnd();
 	}
 
 	// base colors, dimensions
 	// - - - - - - - - - - - - - - - - -
-	g.LAYOUT_NAMES = _.clone(sass.layout_names);
 	g.DEFAULT_COLORS = _.clone(sass.default_colors);
 	g.HORIZONTAL_STEP = parseFloat(sass.units["hu_px"]);
 	g.VERTICAL_STEP = parseFloat(sass.units["vu_px"]);
@@ -152,7 +179,7 @@ module.exports = (function() {
 	// o.LAST_EARLY = 		_.defaults({delay: txDelay*2.0 + txMinDelay*0}, txAligned);
 	// o.AFTER = 			_.defaults({delay: txDelay*2.0 + txMinDelay}, txAligned);
 
-	console.group("transitions");
+	console.groupCollapsed("Transitions");
 	for (s in o) {
 		so = o[s];
 		so.name = s;

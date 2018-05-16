@@ -5,7 +5,7 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 /** @type {Function} */
-var Color = require("color");
+// var Color = require("color");
 
 /** @type {module:app/view/MediaRenderer} */
 var MediaRenderer = require("app/view/render/MediaRenderer");
@@ -30,23 +30,22 @@ var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden"
 // var getAverageRGBA = require("utils/canvas/bitmap/getAverageRGBA");
 // var getAverageRGB = require("utils/canvas/bitmap/getAverageRGB");
 
-/** @type {HTMLCanvasElement} */
-var _sharedCanvas = null;
-/** @return {HTMLCanvasElement} */
-var getSharedCanvas = function() {
-	if (_sharedCanvas === null) {
-		_sharedCanvas = document.createElement("canvas");
-	}
-	return _sharedCanvas;
-};
+// /** @type {HTMLCanvasElement} */
+// var _sharedCanvas = null;
+// /** @return {HTMLCanvasElement} */
+// var getSharedCanvas = function() {
+// 	if (_sharedCanvas === null) {
+// 		_sharedCanvas = document.createElement("canvas");
+// 	}
+// 	return _sharedCanvas;
+// };
 
-function logAttachInfo(view, name, level) {
-	if (["log", "info", "warn", "error"].indexOf(level) != -1) {
-		level = "log";
-	}
-	console[level].call(console, "%s::%s [parent:%s %s %s depth:%s]", view.cid, name, view.parentView && view.parentView.cid, view.attached ? "attached" : "detached", view._viewPhase, view.viewDepth);
-
-}
+// function logAttachInfo(view, name, level) {
+// 	if (["log", "info", "warn", "error"].indexOf(level) != -1) {
+// 		level = "log";
+// 	}
+// 	console[level].call(console, "%s::%s [parent:%s %s %s depth:%s]", view.cid, name, view.parentView && view.parentView.cid, view.attached ? "attached" : "detached", view._viewPhase, view.viewDepth);
+// }
 
 /**
  * @constructor
@@ -365,7 +364,7 @@ var PlayableRenderer = MediaRenderer.extend({
 	},
 
 	_validatePlayback: function(shortcircuit) {
-		// a 'shortcircuit' boolean argument can be passed, and if false, 
+		// a 'shortcircuit' boolean argument can be passed, and if false,
 		// skip _canResumePlayback and pause playback right away
 		if (arguments.length != 0 && !shortcircuit) {
 			this.togglePlayback(false);
@@ -545,6 +544,57 @@ var PlayableRenderer = MediaRenderer.extend({
 		// targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
 	}*/
 });
+
+/* ---------------------------
+/* Google Analytics
+/* --------------------------- */
+if (GA) {
+	PlayableRenderer = (function(PlayableRenderer) {
+
+		/** @type {module:underscore.strings/dasherize} */
+		var dasherize = require("underscore.string/dasherize");
+
+		// var readyEvents = ["playing", "waiting", "ended"];
+		// var userEvents = ["play", "pause"];
+
+
+		return PlayableRenderer.extend({
+
+			/** @override */
+			initialize: function() {
+				var retval = PlayableRenderer.prototype.initialize.apply(this, arguments);
+				this._playbackRequestedDefault = this.playbackRequested;
+				return retval;
+			},
+
+			_onPlaybackToggle: function(ev) {
+				var retval = PlayableRenderer.prototype._onPlaybackToggle.apply(this, arguments);
+				var o = {
+					hitType: "event",
+					eventCategory: dasherize(this.cidPrefix),
+					eventAction: this.playbackRequested ? "play" : "pause",
+					eventLabel: this.model.get("text"),
+				};
+				if (this._playbackRequestedDefault)
+					o.eventAction += "-autoplay";
+				window.ga("send", o);
+				return retval;
+			},
+
+			// /** @override */
+			// togglePlayback: function(newPlayState) {
+			// 	var retval = PlayableRenderer.prototype.togglePlayback.apply(this, arguments);
+			// 	window.ga("send", {
+			// 		hitType: "event",
+			// 		eventCategory: "Playable",
+			// 		eventAction: this.playbackRequested ? "play" : "pause",
+			// 		eventLabel: this.model.get("text"),
+			// 	});
+			// 	return retval;
+			// },
+		});
+	})(PlayableRenderer);
+}
 
 // if (DEBUG) {
 //

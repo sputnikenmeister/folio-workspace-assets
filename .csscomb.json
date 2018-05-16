@@ -1,0 +1,24 @@
+{
+	"exclude": [
+		".git/**",
+		"node_modules/**",
+		"bower_components/**",
+		"build/**",
+		"css/**"
+	],
+	"always-semicolon": true,
+	"color-case": "upper",
+	"block-indent": "\t",
+	"element-case": "lower",
+	"eof-newline": true,
+	"leading-zero": true,
+	"quotes": "double",
+	"space-before-colon": "",
+	"space-before-combinator": " ",
+	"space-after-combinator": " ",
+	"space-before-opening-brace": " ",
+	"space-before-selector-delimiter": "",
+	"space-before-closing-brace": "\n",
+	"strip-spaces": true,
+	"vendor-prefix-align": false
+}

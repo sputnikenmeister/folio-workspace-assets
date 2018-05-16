@@ -15,16 +15,9 @@
 	& > pre {
 		font-family: $mono_fallback;
 		display: block;
-		&.log-header {
-			top: 0;
-			position: sticky;
-			// border-bottom: 1px solid currentColor;
-			padding-bottom: 0.25em;
-			box-shadow: 0 0 0 1px rgba(0,0,0,0.15); //, 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
-		}
 		&::before {
 			@include ellipsis(inline-block);
-			width: 8em;
+			width: 9em;
 			padding-right: 0.5em;
 			font-weight: bold;
 			text-decoration: underline;
@@ -33,8 +26,28 @@
 		&::before {
 			content: attr(data-logtype);
 		}
+		&.log-header {
+			top: 0;
+			position: sticky;
+			// border-bottom: 1px solid currentColor;
+			margin-bottom: 0.25rem;
+			padding-bottom: 0.25em;
+			box-shadow: 0 0 0 1px hsla(0,0%,50%,0.5); //, 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
+		}
+		&.log-header::before {
+			content: 'Type';
+		}
 		&[data-logrepeat]::before {
 			content: '[' attr(data-logrepeat) ']' attr(data-logtype);
+		}
+		&[data-logtype='play'],
+		&[data-logtype='pause'] {
+			background-color: rgba(255,0,0,0.25);
+		}
+		&[data-logtype='playing'],
+		&[data-logtype='waiting'],
+		&[data-logtype='ended'] {
+			background-color: rgba(0,255,0,0.25);
 		}
 	}
 }

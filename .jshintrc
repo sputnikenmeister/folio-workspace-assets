@@ -22,7 +22,8 @@
 		"$": true,
 		"_": true,
 		"Modernizr": true,
-		"DEBUG": true
+		"DEBUG": true,
+		"GA": true,
 	},
 	"boss": true,
 	"curly": false,

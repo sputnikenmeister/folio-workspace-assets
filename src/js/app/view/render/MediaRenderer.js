@@ -288,11 +288,18 @@ if (DEBUG) {
 
 			/** @override */
 			createChildren: function() {
-				MediaRenderer.prototype.createChildren.apply(this, arguments);
+				var ret = MediaRenderer.prototype.createChildren.apply(this, arguments);
 
 				this.__logElement = document.createElement("div");
 				this.__logElement.className = "debug-log";
+				this.__logHeaderEl = document.createElement("pre");
+				this.__logHeaderEl.className = "log-header color-bg";
+				// this.model.colors.fgColor.clone().mix(fgColor, 0.9).rgbString()
+				// this.model.colors.fgColor.clone().alpha
+				this.__logHeaderEl.textContent = this.__getHeaderText();
+				this.__logElement.appendChild(this.__logHeaderEl);
 				this.el.insertBefore(this.__logElement, this.el.firstElementChild);
+				return ret;
 			},
 
 			/** @override */
@@ -332,6 +339,10 @@ if (DEBUG) {
 			__getTStamp: function() {
 				// return new Date(Date.now() - this.__logStartTime).toISOString().substr(11, 12);
 				return lpad(((Date.now() - this.__logStartTime) / 1000).toFixed(3), 8, "0");
+			},
+
+			__getHeaderText: function() {
+				return '';
 			},
 		});
 	})(MediaRenderer);

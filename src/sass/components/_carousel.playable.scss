@@ -169,17 +169,10 @@
 	// .control-box
 	// - - - - - - - - - - - - - - - - -
 	.control-box {
-		display: -webkit-flex;
-		display: -ms-flex;
 		display: flex;
-		-webkit-flex-direction: row;
-		-ms-flex-direction: row;
 		flex-direction: row;
-		// align-items: center;
 
 		& > * {
-			-webkit-flex: 0 1 auto;
-			-ms-flex: 0 1 auto;
 			flex: 0 1 auto;
 			padding: 0 0.5rem;
 			align-self: center;
@@ -194,7 +187,6 @@
 	}
 	.bottom-bar {
 		top: 100%;
-		-webkit-justify-content: space-between;
 		justify-content: space-between;
 	}
 	.top-bar {
@@ -270,13 +262,12 @@
 				background-color: hsla(0,0,100%,0.25);
 			}
 		}
-
 	}
 
 	// .progress-meter
 	// - - - - - - - - - - - - - - - - -
 	.progress-meter {
-		font-family: 'FolioFigures-Regular', monospace;
+		font-family: "FolioFigures", monospace;
 		font-weight: normal;
 		box-sizing: content-box;
 		// width: 2.3rem;

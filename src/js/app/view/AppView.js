@@ -70,27 +70,20 @@ var AppViewProto = {
 
 	/** @override */
 	initialize: function(options) {
-		// document.documentElement.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
-		/* sync to docValue, so previous value is up-to-date on change */
-		var docValue = _.find(Globals.LAYOUT_NAMES, function(s) {
-			return document.body.classList.contains(s);
-		});
-		// if (docValue && (docValue !== this.model.get("layoutName"))) {
-		// 	this.model.set("layoutName", docValue, { silent: true });
-		// }
-
-		/* prevent touch overscroll on iOS */
-		// document.addEventListener("touchmove", function(ev) {
-		// 	ev.preventDefault();
-		// }, false);
 		/* create single hammerjs manager */
-		// this.touch = TouchManager.init(document.querySelector("#container"));
 		this.touch = TouchManager.init(this.el);
 
 		/* render on resize, onorientationchange, visibilitychange */
 		this._onResize = this._onResize.bind(this); // _.bindAll(this, "_onResize");
 		window.addEventListener("orientationchange", this._onResize, false);
 		window.addEventListener("resize", _.debounce(this._onResize, 100, false /* immediate? */ ), false);
+
+		/* TODO: replace resize w/ mediaquery listeners. Caveat: some components
+		(vg. Carousel) require update on resize */
+		// this._onBreakpointChange = this._onBreakpointChange.bind(this);
+		// Object.keys(Globals.BREAKPOINTS).forEach(function(s) {
+		// 	Globals.BREAKPOINTS[s].addListener(this._onBreakpointChange);
+		// }, this);
 
 		/* initialize controller/model listeners BEFORE views register their own */
 		this.listenTo(controller, "route", this._onRoute);
@@ -107,7 +100,25 @@ var AppViewProto = {
 			model: this.model
 		});
 
-		/* startup listener */
+		/* Google Analytics */
+		if (window.ga) {
+			controller
+				.once("route", function() {
+					window.ga("create", window.GA_ID, "auto");
+					if (/(?:(localhost|\.local))$/.test(location.hostname))
+						window.ga("set", "sendHitTask", null);
+				})
+				.on("route", function(name) {
+					var page = Backbone.history.getFragment();
+					// Add a slash if neccesary
+					page.replace(/^(?!\/)/, "/");
+					// if (!/^\//.test(page)) page = "/" + page;
+					window.ga("set", "page", page);
+					window.ga("send", "pageview");
+				});
+		}
+
+		/* Startup listener, added last */
 		this.listenToOnce(controller, "route", this._appStart);
 
 		/* start router, which will request appropiate state */
@@ -132,11 +143,6 @@ var AppViewProto = {
 	/* --------------------------- *
 	/* model changed
 	/* --------------------------- */
-
-	// _onRoute: function(name, args) {
-	// 	console.info("%s::_onRoute %o", this.cid, name);
-	// 	// this.model.set("routeName", name, { silent: true });
-	// },
 
 	_onRoute: function(name, args) {
 		var o = _.defaults({ routeName: name }, AppState.prototype.defaults);
@@ -165,22 +171,9 @@ var AppViewProto = {
 				o.collapsed = false;
 				break;
 		}
-		console.log("%s::_onRoute %o", this.cid, name);
+		console.info("%s::_onRoute %o -> %o", this.cid, this.model.get("routeName"), name);
 		this.model.set(o);
 	},
-
-	// _afterControllerChanged: function(bundle, media) {
-	// 	/* update model on controller event */
-	// 	console.log("%s::_afterControllerChanged [change:after] [%o %s %s]", this.cid, controller.routeName, bundle && bundle.get("handle"), media && media.cid);
-	// 	this.model.set({
-	// 		routeName: controller.routeName,
-	// 		bundle: bundle || null,
-	// 		withBundle: !!bundle,
-	// 		media: media || null,
-	// 		withMedia: !!media,
-	// 		collapsed: !!bundle // reset collapsed on bundle change
-	// 	});
-	// },
 
 	/* --------------------------- *
 	/* model changed
@@ -204,6 +197,11 @@ var AppViewProto = {
 		this.requestRender(View.SIZE_INVALID).renderNow();
 	},
 
+	// _onBreakpointChange: function(ev) {
+	// 	console.log("%s::_onBreakpointChange", this.cid, ev.matches, ev.media, ev.target.className);
+	// 	this.requestRender(View.SIZE_INVALID).renderNow();
+	// },
+
 	/* -------------------------------
 	/* render
 	/* ------------------------------- */
@@ -225,6 +223,11 @@ var AppViewProto = {
 		console.log("%s::renderAppStart", this.cid);
 		// document.documentElement.classList.remove("app-initial");
 		this.el.classList.remove("app-initial");
+		if (this.el.classList.contains("route-initial")) {
+			this.el.classList.remove("route-initial");
+			document.documentElement.appendChild(
+				document.createComment("'route-initial' was still present"));
+		}
 		// document.documentElement.classList.add("app-ready");
 	},
 
@@ -232,26 +235,14 @@ var AppViewProto = {
 		document.body.scrollTop = 0;
 		_.each(Globals.BREAKPOINTS, function(o, s) {
 			this.toggle(s, o.matches);
-		}, document.body.classList);
+		}, document.documentElement.classList);
 
 		// var bb = _.filter(_.keys(Globals.BREAKPOINTS), function(s) {
 		// 	return this.contains(s);
 		// }, document.body.classList).join();
 		// console.log("%s::renderResize matches: %s", this.cid, bb);
 
-		// document.body.classList.toggle("tablet-portrait", Globals.BREAKPOINTS["tablet-portrait"].matches);
-		// document.body.classList.toggle("desktop-small", Globals.BREAKPOINTS["desktop-small"].matches);
-
 		this.requestChildrenRender(View.SIZE_INVALID, true);
-
-		// var ccid, view;
-		// for (ccid in this.childViews) {
-		// 	view = this.childViews[ccid];
-		// 	view.skipTransitions = true;
-		// 	// view.invalidateSize();
-		// 	// view.renderNow();
-		// 	view.requestRender(View.SIZE_INVALID).renderNow();
-		// }
 	},
 
 	/* -------------------------------
@@ -282,7 +273,7 @@ var AppViewProto = {
 		} else if (article) {
 			docTitle += " - " + stripTags(article.get("name"));
 		}
-		document.title = docTitle;
+		document.title = _.unescape(docTitle);
 		// },
 		//
 		// updateClassList: function(bundle, media) {
@@ -290,16 +281,6 @@ var AppViewProto = {
 		var cls = this.el.classList;
 		var prevAttr = null;
 		// var hasDarkBg = false;
-
-		// Set state classes
-
-		if (this.model.hasChanged("routeName")) {
-			prevAttr = this.model.previous("routeName");
-			if (prevAttr) {
-				cls.remove("route-" + prevAttr);
-			}
-			cls.add("route-" + this.model.get("routeName"));
-		}
 
 		// Set article class
 		if (this.model.hasChanged("article")) {
@@ -342,6 +323,15 @@ var AppViewProto = {
 		}
 		cls.toggle("with-media", !!media);
 		cls.toggle("without-media", !media);
+
+		// Set state classes
+		if (this.model.hasChanged("routeName")) {
+			prevAttr = this.model.previous("routeName");
+			if (prevAttr) {
+				cls.remove("route-" + prevAttr);
+			}
+			cls.add("route-" + this.model.get("routeName"));
+		}
 
 		// Set color-dark class
 		// cls.toggle("color-dark", hasDarkBg);

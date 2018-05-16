@@ -205,7 +205,7 @@ $indigo: hsla(275, 100%, 25%, 1);
 	}
 	@each $sel in $selectors {
 		#{$sel}::before {
-			content: #{'\''+$sel+'\''};
+			content: #{"\'"+$sel+"\'"};
 		}
 	}
 }

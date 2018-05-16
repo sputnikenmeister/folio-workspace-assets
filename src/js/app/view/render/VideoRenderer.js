@@ -34,7 +34,7 @@ var prefixedEvent = require("utils/prefixedEvent");
 // var whenViewIsAttached = require("app/view/promise/whenViewIsAttached");
 
 var fullscreenChangeEvent = prefixedEvent("fullscreenchange", document);
-var fullscreenErrorEvent = prefixedEvent("fullscreenerror", document);
+// var fullscreenErrorEvent = prefixedEvent("fullscreenerror", document);
 
 var formatTimecode = function(value) {
 	if (isNaN(value)) return ""; //value = 0;
@@ -531,16 +531,46 @@ if (DEBUG) {
 		/** @type {module:underscore.strings/rpad} */
 		var rpad = require("underscore.string/rpad");
 
-		var fullscreenEvents = [
-			fullscreenChangeEvent, fullscreenErrorEvent,
-			"webkitbeginfullscreen", "webkitendfullscreen",
-		];
+		// var fullscreenEvents = [
+		// 	fullscreenChangeEvent, fullscreenErrorEvent,
+		// 	"webkitbeginfullscreen", "webkitendfullscreen",
+		// ];
 
-		// var mediaEvents = [];
-		var mediaEvents = _.without(require("utils/event/mediaEventsEnum"), "resize", "error");
-		var updatePlaybackStateEvents = ["playing", "waiting", "ended", "pause", "seeking", "seeked"],
-			updateBufferedEvents = ["progress", "durationchange", "canplay", "play"],
-			updatePlayedEvents = ["playing", "timeupdate"];
+		var mediaEvents = require("utils/event/mediaEventsEnum");
+		var updatePlaybackStateEvents, updateBufferedEvents, updatePlayedEvents;
+
+		// updatePlaybackStateEvents = ["playing", "waiting", "ended", "pause", "seeking", "seeked"];
+		// updateBufferedEvents = ["progress", "durationchange", "canplay", "play"];
+		// updatePlayedEvents = ["playing", "timeupdate"];
+
+		updatePlaybackStateEvents = [
+			"loadstart",
+			"progress",
+			"suspend",
+			"abort",
+			"error",
+			"emptied",
+			"stalled",
+		];
+		updateBufferedEvents = [
+			"loadedmetadata",
+			"loadeddata",
+			"canplay",
+			"canplaythrough",
+			"playing",
+			"waiting",
+			"seeking", // seeking changed to true
+			"seeked", // seeking changed to false
+			"ended", // ended is true
+		];
+		updatePlayedEvents = ["play", "pause"];
+
+		// Exclude some events from log
+		mediaEvents = _.without(mediaEvents, "resize", "error");
+		// Make sure event subsets exist in the main set
+		updatePlaybackStateEvents = _.intersection(mediaEvents, updatePlaybackStateEvents);
+		updateBufferedEvents = _.intersection(mediaEvents, updateBufferedEvents);
+		updatePlayedEvents = _.intersection(mediaEvents, updatePlayedEvents);
 
 		var readyStateSymbols = _.invert(_.pick(HTMLMediaElement,
 			function(val, key, obj) {
@@ -574,10 +604,10 @@ if (DEBUG) {
 
 		var formatVideoError = function(video) {
 			return [
-			mediaErrorToString(video),
-			networkStateToString(video),
-			readyStateToString(video),
-		].join(" ");
+				mediaErrorToString(video),
+				networkStateToString(video),
+				readyStateToString(video),
+			].join(" ");
 		};
 
 		var getVideoStatsCols = function() {
@@ -628,23 +658,11 @@ if (DEBUG) {
 					var c = new Color(fgColor),
 						cc = 1;
 					if (updateBufferedEvents.indexOf(ev) != -1) c.mix(green, (cc /= 2));
-					if (updatePlayedEvents.indexOf(ev) != -1) c.mix(blue, (cc /= 2));
-					if (updatePlaybackStateEvents.indexOf(ev) != -1) c.mix(red, (cc /= 2));
+					if (updatePlayedEvents.indexOf(ev) != -1) c.mix(red, (cc /= 2));
+					if (updatePlaybackStateEvents.indexOf(ev) != -1) c.mix(blue, (cc /= 2));
 					this.__logColors[ev] = c.rgbString();
 				}
 				this.video.addEventListener("error", this.__handleMediaEvent, true);
-			},
-
-			/** @override */
-			createChildren: function() {
-				var ret = VideoRenderer.prototype.createChildren.apply(this, arguments);
-				this.__logHeaderEl = document.createElement("pre");
-				this.__logHeaderEl.className = "log-header color-bg";
-				// this.model.colors.fgColor.clone().mix(fgColor, 0.9).rgbString()
-				// this.model.colors.fgColor.clone().alpha
-				this.__logHeaderEl.textContent = getVideoStatsCols();
-				this.__logElement.appendChild(this.__logHeaderEl);
-				return ret;
 			},
 
 			/** @override */
@@ -680,7 +698,7 @@ if (DEBUG) {
 			},
 
 			__handleMediaEvent: function(ev) {
-				var evmsg, errmsg;
+				var evmsg; //, errmsg;
 				// evmsg = formatVideoStats(this.video) + " " + rpad(this._lastPlaybackStates || "-", 9);
 				evmsg = formatVideoStats(this.video);
 				if (this.playbackRequested === true) {
@@ -699,13 +717,17 @@ if (DEBUG) {
 			__logEvent: function(msg, logtype, color) {
 				var logEntryEl = this.__logElement.lastElementChild;
 				if ((logEntryEl && logEntryEl.getAttribute("data-logtype") == logtype) &&
-					(logtype === "timeupdate")) {
+					((logtype === "timeupdate") || (logtype === "progress"))) {
 					var logRepeatVal = parseInt(logEntryEl.getAttribute("data-logrepeat"));
 					logEntryEl.textContent = this.__getTStamp() + " " + msg;
 					logEntryEl.setAttribute("data-logrepeat", isNaN(logRepeatVal) ? 2 : ++logRepeatVal);
 				} else {
 					this.__logMessage(msg, logtype, color);
 				}
+			},
+
+			__getHeaderText: function() {
+				return getVideoStatsCols();
 			},
 		});
 	})(VideoRenderer);

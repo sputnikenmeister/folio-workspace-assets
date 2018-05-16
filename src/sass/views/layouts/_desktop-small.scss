@@ -154,7 +154,7 @@ $nav_height_land: 9rem;
 		// display: inline-block;
 		width: $aside_width_large;
 	}
-	// .route-bundle-list,
+	&.route-bundle-list,
 	&.route-root {
 		#article-list-wrapper {
 			transform: moveY(5rem);

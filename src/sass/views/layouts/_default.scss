@@ -98,7 +98,7 @@ $list_group_width: $aside_width - $gutter - $hu*2;
 	width: $aside_width; //$list-group-width;
 	// width: calc(100% - #{$gutter});
 	.label {
-		width: $list-group-width;
+		width: $list_group_width;
 		// transform: movel-$list_group_width, 0);
 		// width: 100%;
 		transform: moveX(-100%);
@@ -158,12 +158,7 @@ $list_group_width: $aside_width - $gutter - $hu*2;
 
 // about
 // ===================================
-.article-button#about {
-	top: 1rem;
-}
 .article-button {
-	// position: relative;
-	// display: inline-block;
 	position: absolute;
 	display: block;
 	padding: 0.5rem $hu;
@@ -174,12 +169,6 @@ $list_group_width: $aside_width - $gutter - $hu*2;
 		transition: tx(visibility, 3, 0, step-start), tx(opacity, 1, 0), tx(color, 1, 1);
 	}
 }
-.route-initial .article-button {
-	a {
-		visibility: hidden;
-		opacity: 0;
-	}
-}
 .with-bundle .article-button {
 	transform: moveX(-100%);
 	a {
@@ -188,6 +177,15 @@ $list_group_width: $aside_width - $gutter - $hu*2;
 		transition: tx(visibility, 3, 0, step-end), tx(opacity, 1, 2), tx(color, 1, 1);
 	}
 }
+// no transition if initial visibility is hidden
+.app-initial.with-bundle .article-button {
+	a {
+		transition: none;
+	}
+}
+.article-button#about {
+	top: 1rem;
+}
 
 // article-list-wrapper (vertical movements)
 // - - - - - - - - - - - - - - - - - -
@@ -195,7 +193,6 @@ $list_group_width: $aside_width - $gutter - $hu*2;
 	left: 0;
 	width: $aside_width;
 	transform: moveY(2rem);
-
 }
 // .with-article #article-list-wrapper {
 // 	transform: move(0, 0);
@@ -270,12 +267,12 @@ $list_group_width: $aside_width - $gutter - $hu*2;
 	top: $nav_top_port + $nav_height_port;
 	padding-top: 4.5rem;
 	padding-bottom: 4.5rem;
-	$carousel-item-height: calc(100% - 9rem);
+	$carousel_item_height: calc(100% - 9rem);
 
 	// top: 0;//$nav_top_port;
 	// padding-top: $nav_top_port + $nav_height_port;
 	// padding-bottom: 4.5rem;
-	// $carousel-item-height: calc(100% - #{$nav_height_port + 4.5rem});
+	// $carousel_item_height: calc(100% - #{$nav_height_port + 4.5rem});
 
 	.carousel-item {
 		// padding-top: 1.5rem;
@@ -284,21 +281,22 @@ $list_group_width: $aside_width - $gutter - $hu*2;
 	}
 	.empty-item {
 		height: auto;
-		max-height: $carousel-item-height;
+		max-height: $carousel_item_height;
 		overflow: visible;
 		// FIXME: empty-item narrow px adjust
 		// width: $page_width/2 + $hu - 9px;
 		width: $main_width - 5px;
 	}
 	.media-item {
-		height: $carousel-item-height;
+		height: $carousel_item_height;
 		width: $page_width;
 	}
 	.playable-renderer .progress-meter {
 		top: -3.5rem;
 		right: 0;
 	}
-	.empty-item .content {}
+	.empty-item .content {
+	}
 	.empty-item .content *:first-child {
 		// margin-top: -4px;
 		// margin-top: 0;

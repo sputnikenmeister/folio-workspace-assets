@@ -733,4 +733,26 @@ var GraphView = CanvasView.extend({
 	},*/
 });
 
+if (DEBUG) {
+	var applyMethod = function(context, args) {
+		return Array.prototype.shift.apply(args).apply(context, args);
+	}
+	GraphView.prototype._skipLog = false;
+	GraphView.prototype._requestRender = _.wrap(CanvasView.prototype._requestRender, function(fn) {
+		console.log("%s::_requestRender", this.cid);
+		// var retval = Array.prototype.shift.apply(arguments).apply(this, arguments);
+		// return retval;
+
+		return applyMethod(this, arguments);
+	});
+	GraphView.prototype._applyRender = _.wrap(CanvasView.prototype._applyRender, function(fn) {
+		// this._skipLog = true;
+		console.log("%s::_applyRender", this.cid);
+		// var retval = Array.prototype.shift.apply(arguments).apply(this, arguments);
+		// this._skipLog = false;
+		// return retval;
+		return applyMethod(this, arguments);
+	});
+}
+
 module.exports = GraphView;

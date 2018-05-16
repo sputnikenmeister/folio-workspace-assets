@@ -60,7 +60,7 @@ module.exports = function(grunt) {
 	grunt.registerTask("build", ["debug", "dist"]);
 	grunt.registerTask("rebuild", ["clean-all", "deps", "build"]);
 	// Default task
-	grunt.registerTask("default", ["rebuild", "debug-watch"]);
+	grunt.registerTask("default", ["debug", "debug-watch"]);
 
 	/* --------------------------------
 	/* watch
@@ -124,8 +124,9 @@ module.exports = function(grunt) {
 				expand: true,
 				dest: "./fonts/",
 				src: [
-					"./node_modules/@folio/webfonts/build/fonts/folio/<%= paths.ext.fonts %>",
 					"./src/resources/fonts/franklin-gothic-fs/<%= paths.ext.fonts %>",
+					// "./node_modules/@folio/webfonts-numbers/target/glyphs-app/<%= paths.ext.fonts %>",
+					"./node_modules/@folio/webfonts/build/fonts/folio-figures/<%= paths.ext.fonts %>",
 					// "./node_modules/@folio/webfonts/build/fonts/franklin-gothic-itc-cp/<%= paths.ext.fonts %>",
 					// "./src/resources/fonts/fontello*/**/<%= paths.ext.fonts %>",
 				]
@@ -142,7 +143,7 @@ module.exports = function(grunt) {
 				dest: "./build/generated/sass/fonts",
 				cwd: "./node_modules/@folio/webfonts/build/sass/",
 				src: [
-					"_folio.scss",
+					"_folio-figures.scss",
 					// "_franklin-gothic-itc-cp.scss",
 				]
 			}]
