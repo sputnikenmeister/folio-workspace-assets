@@ -96,9 +96,16 @@ var NavigationView = View.extend({
 
 		this.listenTo(this.graph, "view:render:before", function(view, flags) {
 			// console.info("%s:[%s view:render:before]", this.cid, view.cid);
-			if (flags & View.SIZE_INVALID) {
-				// console.info("%s:[%s view:render:before] bundleList height", this.cid, view.cid, this.bundleList.el.style.height);
-				this.graph.el.style.height = this.bundleList.el.style.height;
+			if (flags & View.SIZE_INVALID | View.MODEL_INVALID) {
+				console.info("%s:[%s view:render:before] heights: %s %s (bundleList,keywordList)",
+					this.cid, view.cid,
+					this.bundleList._metrics.height,
+					this.keywordList._metrics.height
+				);
+				this.graph.el.style.height = Math.max(
+					this.bundleList._metrics.height,
+					this.keywordList._metrics.height
+				) + "px";
 				// this.graph.el.style.opacity = this.bundleList.collapsed? "0": "1";
 				// view.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
 			}

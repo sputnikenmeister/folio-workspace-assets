@@ -55,11 +55,12 @@ pre {
 // Misc
 // ------------------------------------
 
-//*::selection {
-//	color: $selection_fgcolor;
-//	background-color: $selection_bgcolor;
-//}
-@import "compass/css3/selection";
-* {
-	@include selection($selection_bgcolor, $selection_fgcolor);
+*::selection {
+	color: $selection_fgcolor;
+	background-color: $selection_bgcolor;
 }
+
+// @import "compass/css3/_selection";
+// * {
+// 	@include selection($selection_bgcolor, $selection_fgcolor);
+// }

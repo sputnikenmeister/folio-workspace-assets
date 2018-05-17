@@ -18,11 +18,16 @@ $page_margin_left: 2 * $hu;
 $page_margin_right: 2 * $hu;
 
 $page_width: 33 * $hu; //700px;
-$page_width_large: 44 * $hu; //940px;
 $aside_width: 11 * $hu;
-$aside_width_large: 11 * $hu;
 $main_width: $page_width - $aside_width;
+
+$page_width_large: 44 * $hu; //940px;
+$aside_width_large: 11 * $hu;
 $main_width_large: $page_width_large - $aside_width_large;
+
+$page_width_small: 22 * $hu; //940px;
+$aside_width_small: 11 * $hu;
+$main_width_small: $page_width_small - $aside_width_small;
 
 // ------------------------------------
 // Colors: public
@@ -32,17 +37,9 @@ $main_width_large: $page_width_large - $aside_width_large;
 $color: map-get($default_colors, color);
 $background_color: map-get($default_colors, background-color);
 
-// link-colors
-// $link_color: hsl(10, 80%, 50%); //scale_color($color, $red: 60%);
-// $link_hover_color: scale_color($link_color_value, $lightness: 15%); //hsl(10, 95%, 60%);
-// $link_down_color: scale_color($link_color_value, $lightness: -15%); //hsl(10, 95%, 30%);
-
 // selection-colors
 $selection_fgcolor: hsl(203, 100%, 50%);
 $selection_bgcolor: hsl(203, 100%, 90%);
-
-// $royal_blue_color:	#204980;
-// $royal_ivory_color:	#FEFCE7;
 
 // CSS variables
 // - - - - - - - - - - - - - - - - - -
@@ -145,7 +142,12 @@ $mono_font_family: $mono_fallback;
 	$r2: $radius;
 	// $color 0 -#{$r1} 0, $color 0 #{$r1} 0,
 	// top-left, top-right, bottom-left, bottom-right
-	text-shadow: $color -#{$r1} 0 0, $color #{$r1} 0 0, $color -#{$r2} -#{$r2} 0, $color #{$r2} #{$r2} 0, $color #{$r2} -#{$r2} 0, $color -#{$r2} #{$r2} 0;
+	text-shadow: $color -#{$r1} 0 0,
+		$color #{$r1} 0 0,
+		$color -#{$r2} -#{$r2} 0,
+		$color #{$r2} #{$r2} 0,
+		$color #{$r2} -#{$r2} 0,
+		$color -#{$r2} #{$r2} 0;
 }
 
 // ------------------------------------

@@ -194,6 +194,9 @@ $indigo: hsla(275, 100%, 25%, 1);
 		// background-position: calc(50% + 1px) calc(-1rem + 1px);
 		background-size: #{$page_width_large + $hu*2} 100%; //1600px;
 	}
+	@include media(mobile) {
+		background-size: #{$page_width_small + $hu*2} 100%; //1600px;
+	}
 }
 
 // -----------------------------------

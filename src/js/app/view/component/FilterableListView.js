@@ -222,8 +222,10 @@ var FilterableListView = View.extend({
 			view.el.style[transformProp] = translateCssValue(view.transform.tx, view.transform.ty);
 		}
 
-		posY += this._metrics.paddingBottom;
-		this.el.style.height = (posY > 0) ? posY + "px" : "";
+		// posY += this._metrics.paddingBottom;
+		this._metrics.height = Math.max(0, posY + this._metrics.paddingBottom);
+		this.el.style.height = this._metrics.height + "px";
+		// this.el.style.height = (posY > 0) ? posY + "px" : "";
 	},
 
 	/* --------------------------- *

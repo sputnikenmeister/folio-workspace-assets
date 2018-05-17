@@ -62,7 +62,12 @@
 // bundle-list
 // - - - - - - - - - - - - - - - - - -
 #bundle-list {
-	@include heading_font();
+	@include heading_font(
+		$weight: 600,
+		$size: 1.9999999rem,
+		$lead: 2rem,
+		$track: -1px);
+	// @include heading_font();
 	.list-item {
 		.completed {
 			display: none;

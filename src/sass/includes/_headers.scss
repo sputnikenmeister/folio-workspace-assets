@@ -155,12 +155,30 @@
 	@extend %heading_normal;
 	font-size: 22px;
 	line-height: 24px; //2.6666
-	letter-spacing: -1px;
+	letter-spacing: -0.5px;
 	padding: 0 20px 3px 19px;
 	&:first-child {
 		margin-top: -4.5px;
 	}
 	margin-bottom: 9px;
+}
+
+%n1f3_1f5 {
+	font-size: 1.3333333rem;
+	line-height: 1.5rem;
+	letter-spacing: -0.25px;
+	// margin-top: 0.1666666rem;//0.125em;
+	margin-top: 0.3333333rem;//0.25em;
+	// margin-bottom: 0.3333333rem;//0.25em;
+	margin-bottom: 0.6666666rem;//0.5em;
+}
+
+%n1f1_1f6 {
+	font-size: 1.1rem;
+	line-height: 1.5rem;
+	margin-top: 0.25rem;
+	margin-bottom: 0.5rem;
+	// @include paragraph_font(400, 1.1rem, 1rem);
 }
 
 // ///////////////////////////////////
