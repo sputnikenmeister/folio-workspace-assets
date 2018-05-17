@@ -12,10 +12,10 @@ var View = require("app/view/base/View");
 var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
 // FIXME: this fixup should not be done here
-/** @type {module:utils/net/toAbsoluteURL} */
-var toAbsoluteURL = require("utils/net/toAbsoluteURL");
-/** @type {string} */
-var ABS_APP_ROOT = toAbsoluteURL(require("app/control/Globals").APP_ROOT);
+// /** @type {module:utils/net/toAbsoluteURL} */
+// var toAbsoluteURL = require("utils/net/toAbsoluteURL");
+// /** @type {string} */
+// var ABS_APP_ROOT = toAbsoluteURL(require("app/control/Globals").APP_ROOT);
 
 /**
  * @constructor
@@ -64,12 +64,13 @@ var CarouselRenderer = View.extend({
 	createChildren: function() {
 		this.el.innerHTML = this.template(this.model.toJSON());
 		// FIXME: this fixup should not be done here
-		this.el.querySelectorAll("a[href]").forEach(function(el) {
+		// FIXED: now done in xslt
+		/*this.el.querySelectorAll("a[href]").forEach(function(el) {
 			var url = toAbsoluteURL(el.getAttribute("href"));
 			if (url.indexOf(ABS_APP_ROOT) !== 0) {
 				el.setAttribute("target", "_blank");
 			}
-		});
+		});*/
 	},
 
 	/** @return {HTMLElement} */
