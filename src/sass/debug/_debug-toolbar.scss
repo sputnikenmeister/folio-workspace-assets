@@ -17,6 +17,12 @@
 	top: 0;
 	// right: 0;
 	width: 100%; // prevents dotnav mouse events
+
+	@include media(mobile) {
+		top: auto;
+		bottom: 0;
+	}
+
 	.debug-links {
 		direction: rtl;
 	}
@@ -75,10 +81,10 @@
 		float: right;
 		// font-weight: normal;
 		&::before {
-			content: 'Hide ';
+			content: "Hide ";
 		}
 		&.toggle-enabled::before {
-			content: 'Show ';
+			content: "Show ";
 		}
 	}
 	&.hide-passed {
@@ -173,7 +179,7 @@
 		}
 	}
 	dd:after {
-		content: '';
+		content: "";
 		display: inline-block;
 		width: 1px;
 		height: 0.75em;

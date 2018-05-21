@@ -47,7 +47,7 @@ module.exports = {
 		ctx.restore();
 	},
 
-	circle: function(ctx, x, y, r, solid, s) {
+	circle: function(ctx, x, y, r, s, solid) {
 		ctx.save();
 		if (s) setStyle(ctx, s);
 		ctx.beginPath();
@@ -58,7 +58,7 @@ module.exports = {
 		ctx.restore();
 	},
 
-	square: function(ctx, x, y, r, solid, s) {
+	square: function(ctx, x, y, r, s, solid) {
 		r = Math.floor(r / 2) * 2;
 		if (solid) r += 0.5;
 		ctx.save();

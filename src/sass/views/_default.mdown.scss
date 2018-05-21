@@ -4,31 +4,13 @@
 
 // media-caption-stack
 // - - - - - - - - - - - - - - - - - -
-@import "components/stack";
 
 // image-carousel
 // - - - - - - - - - - - - - - - - - -
-@import "components/carousel";
 
 // media-dotnav
 // - - - - - - - - - - - - - - - - - -
-@import "components/selectable.dots-fontface.scss";
 
-.dots-fontface .list-item a {
-	color: inherit;
-}
-
-// leaf elements
-// - - - - - - - - - - - - - - - - - -
-.empty-item .content p,
-.stack .content {
-	@extend %leaf-content;
-}
-
-.media-item .sizing {
-	margin-left: $hu;
-	margin-right: $hu;
-}
 
 // ///////////////////////////////////
 // markdown-html elements
@@ -66,15 +48,15 @@
 	.lorem::after {
 		// background-color: hsla(183, 100%, 50%, 0.18);
 		opacity: 0.35;
-		content: " Lorem ipsum dolor sit amet";
-		// content: " Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+		// content: " Lorem ipsum dolor sit amet";
+		content: " Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 	}
 }
 
 .media-carousel .empty-item .markdown-html {
 	// @include heading_font($weight: 300, $size: 28px, $lead: 30px);
 	// @include heading_font($weight: 300, $size: 22px, $lead: 24px);
-	@include heading_font(300, 22px, 24px);
+	// @include heading_font(300, 22px, 24px);
 	& > * {
 		margin-bottom: 0.75rem;
 	}

@@ -81,7 +81,8 @@ function initBodyStyles(sheet, bodySelector, attrs, fgColor, bgColor, lnColor, h
 
 	s = {
 		"background-color": fgColorVal
-	}; // s = { "background-color" : revBgColorVal };
+	};
+	// s = { "background-color" : revBgColorVal };
 	// insertCSSRule(sheet, revSelector + " .color-bg", s);
 	// insertCSSRule(sheet, revSelector + ".color-bg", s);
 	insertCSSRule(sheet, selfAndDescendant(revSelector, ".color-bg"), s);

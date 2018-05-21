@@ -82,17 +82,15 @@
 	.play-toggle {
 		width: auto;
 		height: auto;
-		top: 1em;
-		bottom: 1em;
-		left: 1em;
-		right: 1em;
+		top: 20%;//1em;
+		bottom: 20%;//1em;
+		left: 20%;//1em;
+		right: 20%;//1em;
 		cursor: pointer;
 		display: block;
 		position: absolute;
 
-		// background-size: 3.3rem 3.3rem;
 		background-size: 49px 49px;
-		// background-size: 111px 111px;
 		background-position: center center;
 		background-repeat: no-repeat;
 	}

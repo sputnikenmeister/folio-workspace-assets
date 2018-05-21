@@ -41,7 +41,7 @@ module.exports = function(grunt) {
 
 	// resources
 	grunt.registerTask("deps-styles", ["copy:resources", "copy:sources", "compass:fonts"]);
-	grunt.registerTask("deps", ["deps-styles", "build-favicon", "modernizr-build:production"]);
+	grunt.registerTask("deps", ["deps-styles", "build-favicons", "modernizr-build:production"]);
 
 	// debug build tasks
 	grunt.registerTask("debug-styles", ["compass:debug", "compass:fonts", "compass:ie", "autoprefixer:debug"]);
@@ -476,7 +476,7 @@ module.exports = function(grunt) {
 			]
 	});
 
-	grunt.config("copy.svg-favicon", {
+	grunt.config("copy.svg-favicons", {
 		files: [{
 			src: "<%= paths.favicons.src %>/" + faviconFile,
 			dest: "<%= paths.favicons.generated %>/favicon.png",
@@ -488,7 +488,7 @@ module.exports = function(grunt) {
 		globals: [{
 			maskRadius: "50%",
 			viewBox: "0 0 512 512",
-			transform: "translate(256, 256) scale(1.05) translate(-256, -256)"
+			transform: "translate(256, 256) scale(1.25) translate(-256, -256)"
 		}],
 		files: [{
 			src: "<%= paths.favicons.src %>/favicon_template.hbs",
@@ -567,7 +567,7 @@ module.exports = function(grunt) {
 				trueColor: true,
 				precomposed: true,
 				appleTouchBackgroundColor: faviconColor,
-				appleTouchPadding: 0,
+				appleTouchPadding: 20,
 				html: "<%= paths.favicons.generated %>/favicon_roundel.html",
 				HTMLPrefix: "/workspace/assets/images/favicons/",
 			},
@@ -584,9 +584,9 @@ module.exports = function(grunt) {
 		}*/
 	});
 
-	grunt.registerTask("build-favicon", [
+	grunt.registerTask("build-favicons", [
 		"clean:favicons",
-		"copy:svg-favicon",
+		"copy:svg-favicons",
 		"compile-handlebars:svg-wrap",
 		"svg2png:favicons",
 		"favicons:square",

@@ -57,14 +57,14 @@
 		top: 0;
 		left: 0;
 		padding: 3rem;
-		// font: bold normal 9rem/110% 'ITCFranklinGothicStd-Compressed', $grotesque_fallback;
-		font: bold normal 9rem/90% 'Franklin Gothic FS', $grotesque_fallback;
+		// font: bold normal 9rem/110% "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
+		font: bold normal 9rem/90% "Franklin Gothic FS", $grotesque_fallback;
 		letter-spacing: -0.01em;
 	}
 	&.pending,
 	&.ready {
 		.placeholder:before {
-			font: normal normal 12rem/0.9 'FolioFigures-Regular', monospace;
+			font: normal normal 12rem/0.9 "FolioFigures", monospace;
 			letter-spacing: -0.05em;
 		}
 	}
@@ -84,25 +84,25 @@
 	}
 
 	.placeholder:before {
-		content: '';
+		content: "";
 	}
 	&.idle .placeholder:before {
-		content: 'Waiting';
+		content: "Waiting";
 	}
 	&.error .placeholder:before {
-		content: 'Error'; //'☹'
+		content: "Error"; //"☹"
 	}
 	&.pending .placeholder:before {
-		content: '00%';
+		content: "00%";
 	}
 	&.ready .placeholder:before {
-		content: '99%';
+		content: "99%";
 	}
 	&.candidate,
 	&.selected,
 	.empty-item.selected + & {
 		&.pending .placeholder[data-progress]:before {
-			content: attr(data-progress) '%';
+			content: attr(data-progress) "%";
 			// font-style: normal;
 		}
 	}

@@ -13,12 +13,16 @@
 		padding: 0;
 	}
 
+	// font icons
+	// ===================================
+
 	& a:before {
-		font: 70%/1.5 'FolioFigures-Regular', monospace;
+		font: 70%/1.5 "FolioFigures", monospace;
 		width: 1.5em;
 		display: inline-block;
 		text-align: center;
 	}
+
 	/*
 	U+25A4 	SQUARE WITH HORIZONTAL FILL
 	U+25CB 	WHITE CIRCLE
@@ -28,20 +32,20 @@
 	U+25CF 	BLACK CIRCLE
 	*/
 	& a:before {
-		content: '\25CB';
+		content: "\25CB";
 	}
 	&.selected a:before {
-		content: '\25CF';
+		content: "\25CF";
 	}
 	&.empty-item a:before {
-		content: '\25A4';
+		content: "\25A4";
 	}
 
 	// show link cursor, except on selected
 	@include user_select(none);
 	cursor: pointer;
-	&.selected,
-	&.selected a {
+
+	&.selected, &.selected a {
 		cursor: default;
 	}
 

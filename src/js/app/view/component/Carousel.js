@@ -208,7 +208,7 @@ var CarouselProto = {
 
 		_.extend(this, _.defaults(_.pick(options, Carousel.validOptions), Carousel.defaults));
 
-		this.childGap = this.dirProp(20, 18);
+		this.childGap = 0; //this.dirProp(20, 18);
 		this._precedingDir = (Hammer.DIRECTION_LEFT | Hammer.DIRECTION_UP) & this.direction;
 		this._followingDir = (Hammer.DIRECTION_RIGHT | Hammer.DIRECTION_DOWN) & this.direction;
 

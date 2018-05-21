@@ -1,3 +1,9 @@
+
+// ///////////////////////////////////
+// ===================================
+// -----------------------------------
+// - - - - - - - - - - - - - - - - - -
+
 // @import "compass";
 @import "compass/reset";
 @import "compass/css3/font-face";
@@ -5,4 +11,14 @@
 @import "includes/definitions";
 @import "includes/headers";
 @import "includes/base";
-@import "views/layouts";
+@import "includes/transitions";
+@import "includes/media-queries";
+
+@import "views/default";
+@import "views/desktop-small";
+
+
+#unsupported {
+	display: none;
+}
+// @import "views/unsupported";

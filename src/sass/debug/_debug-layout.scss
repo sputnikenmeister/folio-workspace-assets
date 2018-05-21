@@ -107,7 +107,7 @@ $indigo: hsla(275, 100%, 25%, 1);
 		#site-name-wrapper,
 		.list {
 			// @include debug_outline_thick($color: $lightcoral);
-			background-color: transparentize($lightcoral, 0.9);
+			background-color: transparentize($lightcoral, 0.7);
 		}
 		#site-name a,
 		.article-button a,
@@ -175,6 +175,9 @@ $indigo: hsla(275, 100%, 25%, 1);
 		.media-item {
 			background-color: transparentize($lightblue, 0.7);
 			// .content {}
+			.play-toggle-hitarea {
+				background-color: transparentize($lightblue, 0.5);
+			}
 		}
 	}
 }
@@ -196,6 +199,8 @@ $indigo: hsla(275, 100%, 25%, 1);
 	}
 	@include media(mobile) {
 		background-size: #{$page_width_small + $hu*2} 100%; //1600px;
+		// background-position: center -0.5rem;
+		// background-size: 100% 100%; //1600px;
 	}
 }
 

@@ -1,97 +1,14 @@
-// -----------------------------------
+
+// ///////////////////////////////////
 // FilterableListView
 // GroupingListView
-// -----------------------------------
+// ///////////////////////////////////
 
 @import "includes/transitions";
 
-// - - - - - - - - - - - - - - - - - -
-// .common
-// - - - - - - - - - - - - - - - - - -
-
-.list {
-	position: relative;
-	// transform-style: preserve-3d;
-	.list-group,
-	.list-item {
-		// position: static;
-		position: absolute;
-		display: block;
-		top: 0;
-		left: 0;
-		transform: move(0,0);
-		// transform: translate3d(0,0,0);
-		// transform-style: preserve-3d;
-	}
-}
-
-// #bundle-list (FilterableListView)
-// - - - - - - - - - - - - - - - - - -
-#bundle-list {
-	.list-item {
-		visibility: visible;
-		opacity: 1;
-		// max-height: 1.5em;
-	}
-	&.collapsed {
-		// .list-item {
-		// 	max-height: 0;
-		// }
-		.list-item:not(.selected) {
-			visibility: hidden;
-			opacity: 0;
-			// max-height: 0;
-		}
-		// .list-item.selected {
-		// 	visibility: visible;
-		// 	opacity: 1;
-		// 	max-height: 1.5em;
-		// }
-	}
-	// &:not(.collapsed) .list-item.selected a::after {
-	// 	content: ' ';
-	// 	background-color: currentColor; //oldlace;
-	// 	display: block;
-	// 	height: 0.7em;
-	// 	width: auto;
-	// 	margin-top: -1.7rem;
-	// 	margin-left: 2px;
-	// }
-}
-
-// #keyword-list (GroupingListView)
-// - - - - - - - - - - - - - - - - - -
-#keyword-list {
-	.list-group,
-	.list-item {
-		visibility: visible;
-		opacity: 1;
-		// height: auto;
-	}
-	&.collapsed {
-		&:not(.has-excluded) .list-group,
-		&:not(.has-excluded) .list-item,
-		.list-group.excluded,
-		.list-item.excluded {
-			visibility: hidden;
-			opacity: 0;
-			// height: 0;
-		}
-	}
-	// &:not(.collapsed) .list-item.selected a::after {
-	// 	content: ' ';
-	// 	background-color: currentColor; //oldlace;
-	// 	display: block;
-	// 	width: auto;
-	// 	height: 0.8em;
-	// 	margin-top: -1.2rem;
-	// }
-
-}
-
-// - - - - - - - - - - - - - - - - - -
-// transitions
-// - - - - - - - - - - - - - - - - - -
+// -----------------------------------
+// Definitions
+// -----------------------------------
 
 %wait-move-fadein {
 	// wait, expand, fadein (3 steps)
@@ -109,32 +26,65 @@
 	// fadeout, collapse (2 steps)
 	transition: tx(visibility, 2, 0, step-end), tx(opacity, 1, 0), tx(transform, 1, 1);
 }
-
-// %wait-move-fadein, %fadeout-move-wait,
-// %move-fadein, %fadeout-move {
-// 	outline: 2px dashed rgba(63,127,63,0.5);
-// 	outline-offset: -2px;
-// }
-
-// %skip-debug {
-// 	outline: 4px dashed rgba(255,0,0,1.0);
-// 	outline-offset: -4px;
-// }
-
 .skip-transitions {
 	&.grouped .list-group,
 	&.list .list-item {
 		@include skip_transitions;
-		// @extend %skip-debug;
-		// transition: none !important;
-		// transition-property: none !important;
-		// transition-duration: 0s !important;
-		// transition-delay: 0s !important;
+	}
+}
+
+// -----------------------------------
+// common
+// -----------------------------------
+
+.list {
+	position: relative;
+	.list-group, .list-item {
+		position: absolute;
+		display: block;
+		top: 0;
+		left: 0;
+		transform: move(0,0);
+		// transform-style: preserve-3d;
 	}
 }
 
 // #bundle-list (FilterableListView)
-// - - - - - - - - - - - - - - - - - -
+// ===================================
+#bundle-list {
+	.list-item {
+		visibility: visible;
+		opacity: 1;
+	}
+	&.collapsed {
+		.list-item:not(.selected) {
+			visibility: hidden;
+			opacity: 0;
+		}
+	}
+}
+
+// #keyword-list (GroupingListView)
+// ===================================
+#keyword-list {
+	.list-group,
+	.list-item {
+		visibility: visible;
+		opacity: 1;
+	}
+	&.collapsed {
+		&:not(.has-excluded) .list-group,
+		&:not(.has-excluded) .list-item,
+		.list-group.excluded,
+		.list-item.excluded {
+			visibility: hidden;
+			opacity: 0;
+		}
+	}
+}
+
+// #bundle-list (FilterableListView)
+// ===================================
 #bundle-list {
 	.list-item {
 		@extend %wait-move-fadein;
@@ -144,31 +94,10 @@
 			@extend %fadeout-move-wait;
 		}
 	}
-	// // NOTE: '.collapsed-changed' animations are not symmetrical
-	// // between '.collapsed)' and 'not:(.collapsed)'
-	// &.collapsed-changed {
-	// 	// &:not(.collapsed) {
-	// 		.list-item {
-	// 			@extend %move-fadein;
-	// 		}
-	// 	// }
-	// 	&.collapsed {
-	// 		.list-item {
-	// 			@extend %fadeout-move;
-	// 		}
-	// 	}
-	// }
-	// &.skip-transitions {
-	// 	.list-item {
-	// 		&, * {
-	// 			@include skip_transitions;
-	// 		}
-	// 	}
-	// }
 }
 
 // #keyword-list (GroupingListView)
-// - - - - - - - - - - - - - - - - - -
+// ===================================
 #keyword-list {
 	.list-group,
 	.list-item {
@@ -190,23 +119,4 @@
 			}
 		}
 	}
-	// NOTE: '.collapsed-changed' animations are not symmetrical
-	// between '.collapsed)' and 'not:(.collapsed)'
-	// &.collapsed-changed {
-	// 	// &:not(.collapsed) {
-	// 		.list-group, .list-item {
-	// 			@extend %move-fadein;
-	// 		}
-	// 	// }
-	// 	&.collapsed {
-	// 		.list-group, .list-item {
-	// 			@extend %fadeout-move;
-	// 		}
-	// 	}
-	// }
-	// &.skip-transitions {
-	// 	.list-group, .list-item {
-	// 		@extend %skip-debug;
-	// 	}
-	// }
 }

@@ -110,7 +110,7 @@ $mono_font_family: $mono_fallback;
 	@include font_smoothing();
 }
 
-@mixin paragraph_font($size: 1rem, $weight: 400, $lead: 1.5) {
+@mixin paragraph_font($weight: 400, $size: 1rem, $lead: 1.5) {
 	//	font: $weight #{$size + "/" + $lead} inherit;
 	font-size: $size;
 	font-weight: $weight;

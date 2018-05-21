@@ -1,0 +1,77 @@
+// ///////////////////////////////////
+// Colors
+// ///////////////////////////////////
+
+// ------------------------------------
+//
+// ------------------------------------
+
+html {
+	color: #666;
+	background-color: #000;
+}
+body {
+	color: $color;
+	background-color: $background_color;
+}
+.color-fg05 {
+	color: lighten($color, 40%);
+	border-color: lighten($color, 60%);
+}
+.color-tx, body {
+	transition: tx(background-color, 1, 1), tx(color, 1, 0);
+}
+
+// initialize fade-in
+// - - - - - - - - - - - - - - - - - -
+#container {
+	transition: tx(opacity, 1, 1),
+		tx(visibility, 1, 1, step-start);
+}
+.app-initial {
+	#container {
+		visibility: hidden;
+		opacity: 0;
+	}
+	@include skip_transitions;
+}
+
+// -----------------------------------
+// Layer ordering
+// -----------------------------------
+
+#container {
+	z-index: 1;
+	#navigation {
+		// z-index: 1;
+		@at-root .transform-wrapper {
+			z-index: 1;
+			.list {
+				z-index: 1;
+			}
+			&#bundle-list-wrapper {
+				z-index: 2;
+			}
+			&#article-list-wrapper,
+			&#site-name-wrapper {
+				z-index: 3;
+			}
+		}
+	}
+	#content {
+		// z-index: 1;
+		@at-root .media-carousel {
+			z-index: 0;
+			&.panning,
+			&.scrolling {
+				z-index: 2;
+			}
+			.carousel-item {
+				z-index: 0;
+				&.selected {
+					z-index: 1;
+				}
+			}
+		}
+	}
+}

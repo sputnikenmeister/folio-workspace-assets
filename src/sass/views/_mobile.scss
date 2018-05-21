@@ -1,10 +1,10 @@
 // ///////////////////////////////////
-// media query : $desktop-small
+// media query : mobile
 // ///////////////////////////////////
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$nav_top_small: 2.5rem;
+$nav_top_small: 1.5rem;
 $nav_height_small: 9.5rem;
 
 // html.mobile {
@@ -48,7 +48,7 @@ $nav_height_small: 9.5rem;
 			$lead: 1.5rem,
 			$track: -0.5px);
 		width: $page_width_small - $aside_width_small - (2*$hu);
-		padding-top: $nav_height_small;
+		padding-top: $nav_height_small;//9.16666666rem
 		// padding-bottom: 1.5rem;
 		// min-height: 4.5rem;
 		.list-item {
@@ -68,7 +68,7 @@ $nav_height_small: 9.5rem;
 	// ===================================
 	#keyword-list {
 		width: $aside_width_small;// - (2*$hu);
-		padding-top: #{$nav_height_small - 0.25rem};
+		padding-top: #{$nav_height_small - 0.25rem};//8.5rem;
 		.list-item {
 			width: $aside_width_small;
 		}
@@ -104,6 +104,9 @@ $nav_height_small: 9.5rem;
 	#site-name-wrapper {
 		width: $aside_width_small;
 	}
+	#site-name {
+		@include heading_font(600, 1.5rem, 1.5rem, -0.5px);
+	}
 
 	// article-list
 	// ===================================
@@ -113,6 +116,17 @@ $nav_height_small: 9.5rem;
 	#article-list-wrapper {
 		width: $aside_width_small;
 	}
+
+	// article-button
+	// - - - - - - - - - - - - - - - - - -
+	.article-button {
+		@include heading_font(400, 1.5rem, 1.5rem, -0.5px);
+	}
+
+	.article-button#about {
+		top: 0.75rem;
+	}
+
 	// nav-graph
 	// - - - - - - - - - - - - - - - - - -
 	#nav-graph {
@@ -131,24 +145,25 @@ $nav_height_small: 9.5rem;
 
 	// media-carousel
 	// ===================================
+	// $carousel_item_height: calc(100% - 9rem);
 	.media-carousel {
 		min-width: $page_width_small;
-
 		top: $nav_top_small + $nav_height_small;
 		padding-top: 4.5rem;
 		padding-bottom: 4.5rem;
-		$carousel_item_height: calc(100% - 9rem);
-
 		.carousel-item {
 			left: calc(50% - #{$page_width_small/2});
-			width: $page_width_small;
-		}
-		.empty-item {
-			// width: $main_width_small - 8px;
-		}
-		.media-item {
 			// width: $page_width_small;
 		}
+		.empty-item {
+			width: $main_width_small - 8px;
+		}
+		.media-item {
+			width: $page_width_small;
+		}
+	}
+	.container-expanded .media-carousel {
+		transform: moveY(#{$nav_collapse_offset * 0.6666666});
 	}
 
 	// media-caption-stack

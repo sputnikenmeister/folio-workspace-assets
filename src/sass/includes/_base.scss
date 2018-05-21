@@ -11,15 +11,6 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-html {
-	font: #{$vu}/1 $base_font_family;
-}
-
-body {
-	line-height: 1.5rem;
-	-moz-osx-font-smoothing: grayscale;
-}
-
 a {
 	// color: inherit;
 	color: $link_color_value;

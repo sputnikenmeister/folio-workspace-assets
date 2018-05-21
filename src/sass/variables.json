@@ -10,11 +10,11 @@
 		"ease": "ease"
 	},
 	"breakpoints": {
-		"unsupported": "'not screen and (min-width: 704px)'",
 		"mobile": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
-		"desktop-small": "'only screen and (min-width: 1024px) and (min-height: 704px)'",
-		"desktop-medium": "'only screen and (min-width: 1224px) and (min-height: 1024px)'",
-		"desktop-large": "'only screen and (min-width: 1824px) and (min-height: 1224px)'"
+		"desktop-small": "'only screen and (min-width: 1024px) and (min-height: 540px)'",
+		"desktop-medium": "'only screen and (min-width: 1224px) and (min-height: 704px)'",
+		"desktop-large": "'only screen and (min-width: 1824px) and (min-height: 1024px)'",
+		"unsupported": "'not screen and (min-width: 704px)'"
 	},
 	"default_colors": {
 		"color": "hsl(47, 5%, 15%)",

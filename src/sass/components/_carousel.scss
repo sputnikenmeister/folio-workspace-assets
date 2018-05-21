@@ -60,14 +60,23 @@
 .empty-item {
 	.content {
 		transition: tx(opacity, 0.5, 0);
-		opacity: 0.15;
+		opacity: 0.06;
+		overflow: hidden;
 		// color: silver;
+		.s {
+			transition: tx(background-color, 0.5, 0);
+			background-color: currentColor;
+		}
 	}
 	&.candidate,
 	&.selected {
 		.content {
 			@at-root & {
+				overflow: auto;
 				opacity: 1.0;
+				.s {
+					background-color: transparent;
+				}
 				// color: darkgreen;
 			}
 			// @at-root .carousel.scrolling & {
@@ -76,7 +85,11 @@
 			// 	color: blue;
 			// }
 			@at-root .carousel.disabled & {
-				opacity: 0.15;
+				opacity: 0.06;
+				overflow: hidden;
+				.s {
+					background-color: currentColor;
+				}
 				// color: red;
 				// text-decoration: line-through
 			}

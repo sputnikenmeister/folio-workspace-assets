@@ -1,0 +1,294 @@
+// ///////////////////////////////////
+// media query : mobile
+// ///////////////////////////////////
+
+// ///////////////////////////////////
+// Definitions
+// ///////////////////////////////////
+
+// layout variables
+// - - - - - - - - - - - - - - - - - -
+$nav_top_small: 0.75rem;
+$nav_height_small: 7rem;//6.5rem;
+$page_max: auto;//704px;
+$hmargin: $hu / 2;
+$vmargin: 4.5rem;
+
+// block definitions
+// - - - - - - - - - - - - - - - - - -
+@include media(mobile) {
+
+	// leaf elements
+	// - - - - - - - - - - - - - - - - - -
+	%leaf-content {
+		padding-left: $hmargin;
+		padding-right: $hmargin;
+	}
+}
+
+// ///////////////////////////////////
+// Root
+// ///////////////////////////////////
+
+html.mobile {
+	// font-size: 9px;
+}
+
+@include media(mobile) {
+	& {
+		width: 100%;
+		overflow: hidden;
+	}
+	// font-size: 6px;
+	// -----------------------------------
+	// Container
+	// -----------------------------------
+
+	#container {
+		min-width: auto;
+		max-width: $page_max;
+	}
+
+	// ///////////////////////////////////
+	// navigation
+	// ///////////////////////////////////
+
+	#navigation {
+		position: absolute;
+		max-width: $page_max;
+		width: calc(100% - #{$hmargin*4});
+		margin: 0 $hmargin;
+		left: $hmargin;
+
+		top: 0;
+		min-height: $nav_height_small;
+		padding-top: $nav_top_small;
+	}
+
+	// nav_list
+	// -----------------------------------
+
+	%nav_font {
+		// @include heading_font(600, 1.25rem, 1.5rem, -0.5px);
+		font-size: 1.25rem;
+		line-height: 1.5rem;
+		letter-spacing: -0.5px;
+		@include text_rendering_legibility;
+		@include font_smoothing;
+	}
+	.transform-wrapper {
+		left: 0; right: 0;
+		width: auto;
+	}
+
+	.list-group, .list-item {
+		padding: 0 $hmargin;
+		// padding: 0 #{$hu/3} 0 #{$hu/3};
+		// .label {
+		// 	margin: 0 #{-$hu/3};// 0 #{-$hu/3};
+		// 	padding: 0 #{$hu/3};// 0 #{$hu/3};
+		// }
+	}
+	// bundle-list
+	// ===================================
+	#bundle-list {
+		// @include heading_font(600, 1.25rem, 1.5rem, -0.5px);
+		@extend %nav_font;
+		font-weight: 600;
+
+		left: 0;
+		right: calc(50% + #{$hmargin});
+		width: auto;
+		min-width: calc(50% - #{$hmargin});
+
+		padding-top: #{$nav_height_small + 0.5rem};
+		.list-item {
+			// width: $main_width - $aside_width_small - (2*$hu);
+			// width: calc(100% - #{8*$hu});
+			height: 1.5rem;
+		}
+	}
+	&.with-bundle #bundle-list {
+		padding-top: 1.5rem;
+	}
+
+	// bundle-list-wrapper
+	// - - - - - - - - - - - - - - - - - -
+	#bundle-list-wrapper {
+		// position:static;
+	}
+
+	// keyword-list
+	// ===================================
+	#keyword-list {
+		left: calc(50% + #{$hmargin});
+		right: 0;
+		width: auto;
+		min-width: calc(50% - #{$hmargin});
+		// width: 50%;//$aside_width_small;
+
+		padding-top: $nav_height_small;
+		.list-item {
+			width: auto;//$aside_width_small;
+		}
+	}
+	&.with-bundle #keyword-list {
+		padding-top: 0.75rem;
+	}
+
+	// keyword-list-wrapper
+	// - - - - - - - - - - - - - - - - - -
+	#keyword-list-wrapper {
+		left: 0;
+		// position:static;
+	}
+
+	// keyword-list list-group
+	// - - - - - - - - - - - - - - - - - -
+	// $list_group_width_small: $aside_width_small - $gutter - $hu*2;
+	#keyword-list .list-group {
+		// height: 0;
+		height: 1.5rem;
+		width: 50%;//$aside_width_small;
+		.label {
+			transform: moveX();
+			// width: $list_group_width_small;
+		}
+	}
+	&.with-bundle .navigation:not(.container-expanded) #keyword-list {
+		padding-top: 1.5rem;
+		.list-group {
+			height: 0;
+			visibility: hidden;
+			opacity: 0;
+		}
+	}
+
+	// site-name
+	// ===================================
+
+	// site-name-wrapper
+	// - - - - - - - - - - - - - - - - - -
+	#site-name-wrapper {
+		width: 100%;//$page_width_small;
+	}
+	#site-name {
+		@extend %nav_font;
+		font-weight: 600;
+		// @include heading_font(600, 1.5rem, 1.5rem, -0.5px);
+	}
+
+	// article-list
+	// ===================================
+
+	// article-list-wrapper (vertical movements)
+	// - - - - - - - - - - - - - - - - - -
+	#article-list-wrapper {
+		width: 100%;//$page_width_small;
+	}
+
+	// article-button
+	// - - - - - - - - - - - - - - - - - -
+	.article-button {
+		@extend %nav_font;
+		font-weight: 400;
+		// @include heading_font(400, 1.5rem, 1.5rem, -0.5px);
+	}
+
+	.article-button#about {
+		top: 0.333333333em;
+	}
+
+	// nav-graph
+	// - - - - - - - - - - - - - - - - - -
+	#nav-graph {
+		width: 100%;//$page_width_small;
+	};
+
+	// ///////////////////////////////////
+	// content
+	// ///////////////////////////////////
+
+	#content {
+		// left: 0;
+		// right: 0;
+		//width: 100%;
+	}
+
+	// media-carousel
+	// ===================================
+	// $carousel_item_height: calc(100% - 9rem);
+	.media-carousel {
+		max-width: $page_max;
+		min-width: auto;
+
+		top: $nav_top_small + $nav_height_small;
+		// top: 0;
+		padding-top: $vmargin;
+		padding-bottom: $vmargin;
+
+		.carousel-item {
+			left: $hmargin*1;
+			margin-left: $hmargin*2;
+			margin-right: $hmargin*2;
+			// width: calc(100% - #{$hu*2})
+			// left: calc(50% - #{$page_width_small/2});
+			// width: $page_width_small;
+		}
+		.empty-item {
+			// width: 50%;
+			width: calc(50% - #{$hmargin*6});
+			// width: $main_width_small - 8px;
+		}
+		.media-item {
+			width: calc(100% - #{$hmargin*6});
+			// width: $page_width_small;
+			.sizing {
+				// margin-left: $hmargin;
+				// margin-right: $hmargin;
+				margin-left: 0;
+				margin-right: 0;
+			}
+		}
+	}
+	.container-expanded .media-carousel {
+		transform: moveY(#{$nav_collapse_offset * 0.6666666});
+	}
+	.playable-renderer {
+		.top-bar {
+			top: 0;
+			z-index: 1;
+		}
+	}
+
+	// media-caption-stack
+	// ===================================
+	.media-caption-stack {
+		top: $nav_top_small + $nav_height_small;
+		margin: -0.75rem #{$hmargin*2} 0;
+		width: calc(100% - #{$hmargin*4});
+		.content p {
+			@extend %nav_font;
+		}
+	}
+
+	// media-dotnav
+	// ===================================
+	.media-dotnav {
+		padding: 0 $hmargin;
+		width: auto;
+		bottom: 1rem;
+		.list-item {
+			// padding: 0 0.25rem;
+			padding: 0 0.3333333rem;
+		}
+	}
+
+	// article-view
+	// ===================================
+	.article-view {
+		top: $nav_top_small;
+		margin: -1rem $hmargin 4.5rem;
+		width: calc(100% - #{$hmargin*2});
+	}
+}
