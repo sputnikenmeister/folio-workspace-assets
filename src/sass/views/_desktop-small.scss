@@ -24,8 +24,8 @@ $nav_height_land: 9rem;
 	#navigation {
 		max-width: $page_width_large;
 		min-height: $nav_height_land;
-		// top: $nav_top_land;
-		padding-top: $nav_top_land;
+		top: $nav_top_land;
+		// padding-top: $nav_top_land;
 	}
 
 	// nav_list
@@ -256,6 +256,10 @@ $nav_height_land: 9rem;
 		top: $nav_top_land;
 		margin-top: 0;
 		width: $page_width_large;
+		& > .stack-item {
+			top: 0;
+			bottom: auto;
+		}
 		.content {
 			margin-left: $aside_width_large;
 			width: $main_width_large;

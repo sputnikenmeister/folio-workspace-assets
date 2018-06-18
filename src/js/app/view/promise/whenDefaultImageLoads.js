@@ -7,7 +7,7 @@ var _loadImageAsObjectURL = require("app/view/promise/_loadImageAsObjectURL");
 
 // var isBlobRE = /^blob\:.*/;
 
-var logMessage = "%s::whenDefaultImageLoads [%s]: %s";
+// var logMessage = "%s::whenDefaultImageLoads [%s]: %s";
 
 module.exports = function(view) {
 	return new Promise(function(resolve, reject) {
@@ -39,7 +39,7 @@ module.exports = function(view) {
 							source.set("prefetched", url);
 						}
 						view.defaultImage.src = url;
-						// URL.revokeObjectURL(url); 
+						// URL.revokeObjectURL(url);
 						return view.defaultImage;
 					})
 				.then(_whenImageLoads)

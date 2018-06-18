@@ -28,7 +28,12 @@
 	font-size: 90px;
 	line-height: 99px;
 	letter-spacing: -2px;
-	padding: 5px 20px 13px 13px;
+
+	padding-top: 5px;
+	padding-right: 20px;
+	padding-bottom: 13px;
+	padding-left: 13px;
+
 	&:first-child {
 		margin-top: -36px;
 	}
@@ -42,7 +47,12 @@
 	font-size: 84px;
 	line-height: 90px;
 	letter-spacing: -2px;
-	padding: 2px 20px 7px 13px;
+
+	padding-top: 2px;
+	padding-right: 20px;
+	padding-bottom: 7px;
+	padding-left: 13px;
+
 	&:first-child {
 		margin-top: -27px;
 	}
@@ -54,7 +64,12 @@
 	font-size: 72px;
 	line-height: 81px;
 	letter-spacing: -2px;
-	padding: 1px 20px 8px 15px;
+
+	padding-top: 1px;
+	padding-right: 20px;
+	padding-bottom: 8px;
+	padding-left: 15px;
+
 	&:first-child {
 		margin-top: -27px;
 	}
@@ -66,7 +81,12 @@
 	font-size: 72px;
 	line-height: 72px;
 	letter-spacing: -2px;
-	padding: 6px 20px 12px 15px;
+
+	padding-top: 6px;
+	padding-right: 20px;
+	padding-bottom: 12px;
+	padding-left: 15px;
+
 	&:first-child {
 		margin-top: -27px;
 	}
@@ -77,7 +97,12 @@
 	font-size: 67px;
 	line-height: 72px;
 	letter-spacing: -2px;
-	padding: 7px 20px 11px 15px;
+
+	padding-top: 7px;
+	padding-right: 20px;
+	padding-bottom: 11px;
+	padding-left: 15px;
+
 	&:first-child {
 		margin-top: -27px;
 	}
@@ -88,7 +113,12 @@
 	font-size: 67px;
 	line-height: 63px;
 	letter-spacing: -2px;
-	padding: 3px 20px 6px 15px;
+
+	padding-top: 3px;
+	padding-right: 20px;
+	padding-bottom: 6px;
+	padding-left: 15px;
+
 	&:first-child {
 		margin-top: -18px;
 	}
@@ -99,7 +129,12 @@
 	font-size: 55px;
 	line-height: 63px;
 	letter-spacing: -2px;
-	padding: 7px 20px 11px 17px;
+
+	padding-top: 7px;
+	padding-right: 20px;
+	padding-bottom: 11px;
+	padding-left: 17px;
+
 	&:first-child {
 		margin-top: -27px;
 	}
@@ -110,8 +145,12 @@
 	font-size: 55px;
 	line-height: 54px;
 	letter-spacing: -2px;
-	// padding: 1px 20px 8px 18px;
-	padding: 2px 20px 7px 17px;
+
+	padding-top: 2px;
+	padding-right: 20px;
+	padding-bottom: 7px;
+	padding-left: 17px;
+
 	&:first-child {
 		// margin-top: -17px;
 		margin-top: -9px;
@@ -123,7 +162,12 @@
 	font-size: 41px;
 	line-height: 45px;
 	letter-spacing: -2px;
-	padding: 2px 20px 3px 17px;
+
+	padding-top: 2px;
+	padding-right: 20px;
+	padding-bottom: 3px;
+	padding-left: 17px;
+
 	&:first-child {
 		margin-top: -9px;
 	}
@@ -134,8 +178,12 @@
 	font-size: 31.5px;
 	line-height: 36px;
 	letter-spacing: -1px;
-	// padding: 2px 20px 3px 17px;
-	padding: 1px 20px 8px 17px;
+
+	padding-top: 1px;
+	padding-right: 20px;
+	padding-bottom: 8px;
+	padding-left: 17px;
+
 	&:first-child {
 		margin-top: -9px;
 	}
@@ -146,7 +194,12 @@
 	font-size: 28px;
 	line-height: 30px;
 	letter-spacing: -1px;
-	padding: 5px 20px 1px 18.5px;
+
+	padding-top: 5px;
+	padding-right: 20px;
+	padding-bottom: 1px;
+	padding-left: 18.5px;
+
 	&:first-child {
 		margin-top: -9px;
 	}
@@ -157,7 +210,12 @@
 	font-size: 22px;
 	line-height: 24px; //2.6666
 	letter-spacing: -0.5px;
-	padding: 0 20px 3px 19px;
+
+	padding-top: 0;
+	padding-right: 20px;
+	padding-bottom: 3px;
+	padding-left: 19px;
+
 	&:first-child {
 		margin-top: -4.5px;
 	}
@@ -169,18 +227,31 @@
 	font-size: 1.3333333rem;
 	line-height: 1.5rem;
 	letter-spacing: -0.25px;
+
+	padding-top: 4px;
+	padding-right: 20px;
+	padding-bottom: 3px;
+	padding-left: 20px;
+
 	// margin-top: 0.1666666rem;//0.125em;
-	margin-top: 0.3333333rem;//0.25em;
+	// margin-top: 0.3333333rem;//0.25em;
 	// margin-bottom: 0.3333333rem;//0.25em;
-	margin-bottom: 0.6666666rem;//0.5em;
+	margin-bottom: 8px;//0.6666666rem;//0.5em;
 }
 
 %n1f1_1f6 {
 	@include paragraph_font(400, 1.1rem, 1.3333333rem);
 	// font-size: 1.1rem;
 	// line-height: 1.5rem;
-	margin-top: 0.25rem;
-	margin-bottom: 0.5rem;
+	// margin-top: 0.25rem;
+
+	padding-top: 3px;
+	padding-right: 20px;
+	padding-bottom: 3px;
+	padding-left: 20px;
+
+	&:first-child {}
+	margin-bottom: 9px;
 }
 
 // ///////////////////////////////////
@@ -193,7 +264,12 @@
 	font-size: 96px;
 	line-height: 99px;
 	letter-spacing: -2px;
-	padding: 3px 20px 6px 13px;
+
+	padding-top: 3px;
+	padding-right: 20px;
+	padding-bottom: 6px;
+	padding-left: 13px;
+
 	&:first-child {
 		margin-top: -18px;
 	}
@@ -203,7 +279,12 @@
 	font-size: 67px;
 	line-height: 63px;
 	letter-spacing: -2px;
-	padding: 3px 20px 12px 16px;
+
+	padding-top: 3px;
+	padding-right: 20px;
+	padding-bottom: 12px;
+	padding-left: 16px;
+
 	&:first-child {
 		margin-top: -9px;
 	}
@@ -213,7 +294,12 @@
 	font-size: 55px;
 	line-height: 63px;
 	letter-spacing: -2px;
-	padding: 7px 20px 12px 15px;
+
+	padding-top: 7px;
+	padding-right: 20px;
+	padding-bottom: 12px;
+	padding-left: 15px;
+
 	&:first-child {
 		margin-top: -18px;
 	}
@@ -222,7 +308,12 @@
 	@extend %heading_caps;
 	font-size: 41px;
 	line-height: 45px;
-	padding: 2px 20px 7px 17px;
+
+	padding-top: 2px;
+	padding-right: 20px;
+	padding-bottom: 7px;
+	padding-left: 17px;
+
 	letter-spacing: -2px;
 	&:first-child {
 		margin-top: -9px;

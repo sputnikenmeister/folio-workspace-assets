@@ -2,9 +2,6 @@
 // media query : default
 // ///////////////////////////////////
 
-@import "views/default.colors";
-@import "views/default.mdown";
-
 // ///////////////////////////////////
 // Definitions
 // ///////////////////////////////////
@@ -24,24 +21,32 @@ $nav_collapse_offset: map-get($temp, collapse_offset) * 1px; //28rem;
 	will-change: transform;
 	// transform-style: preserve-3d;
 	// transform: move();
+	// box-sizing: content-box;
 }
 // leaf elements
 // - - - - - - - - - - - - - - - - - -
-%leaf-content {
+%leaf_content {
 	box-sizing: border-box;
 	padding-left: $hu;
 	padding-right: $hu;
+	.label {
+		padding: 0 #{$hu};
+		margin: 0 -#{$hu};
+	}
 	&, * {
 		@include user_select(none);
 	}
 }
+
+@import "views/default.colors";
+@import "views/default.mdown";
 
 // ///////////////////////////////////
 // Root
 // ///////////////////////////////////
 
 html {
-	font: #{$vu}/1.5 $base_font_family;
+	font: #{$vu}/1.5 $base_font;
 }
 
 body {
@@ -76,8 +81,8 @@ html {
 
 	max-width: $page_width;
 	min-height: $nav_height_port;
-	padding-top: $nav_top_port;
-	// top: $nav_top_port;
+	// padding-top: $nav_top_port;
+	top: $nav_top_port;
 }
 .transform-wrapper {
 	// @extend %nav_list;
@@ -92,10 +97,11 @@ html {
 // ===================================
 @import "components/filterable";
 
-.filterable {
+// .filterable {
 	.list-item {
-		@extend %leaf-content;
+		@extend %leaf_content;
 		white-space: nowrap;
+		cursor: pointer;
 		a {
 			display: inline-block;
 			transition: tx(color, 1, 1);
@@ -108,13 +114,13 @@ html {
 		}
 	}
 	.list-group {
-		@extend %leaf-content;
+		@extend %leaf_content;
 		white-space: nowrap;
 		.label {
 			display: inline-block;
 		}
 	}
-}
+// }
 
 // bundle-list
 // ===================================
@@ -202,8 +208,8 @@ html {
 			// margin: 0 #{-0.5*$hu};
 
 			& > span {
-				padding: 0.25em 1em;
-				margin: -0.25em -1em;
+				padding: 0.25em 1rem;
+				margin: -0.25em -1rem;
 
 				// padding: 0.25rem #{0.5*$hu};
 				// margin: -0.25rem #{-0.5*$hu};
@@ -215,17 +221,21 @@ html {
 			}
 		}
 	}
-	@at-root .without-bundle &, &.collapsed {
-		.list-item a {
-			color: inherit;
-		}
-	}
 	&:not(.collapsed) {
 		.list-item.excluded a {
 			color: inherit;
 		}
 		.list-item.selected a {
 			text-decoration: underline;
+		}
+	}
+	@at-root {
+		.app-initial &,
+		.without-bundle &,
+		&.collapsed {
+			.list-item a {
+				color: inherit;
+			}
 		}
 	}
 }
@@ -259,11 +269,12 @@ html {
 // ===================================
 #site-name {
 	@include heading_font(600, 1.9999999rem, 2rem);
-	@extend %leaf-content;
+	@extend %leaf_content;
 
 	position: absolute;
 	display: block;
-	padding: 0.5rem $hu;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
 	top: 1rem;
 	transform: moveX();
 	a {
@@ -293,11 +304,12 @@ html {
 // ===================================
 .article-button {
 	@include heading_font(300, 1.9999999rem, 2rem);
-	@extend %leaf-content;
+	@extend %leaf_content;
 
 	position: absolute;
 	display: block;
-	padding: 0.5rem $hu;
+	padding-top: 0.5rem;
+	padding-bottom: 0.5rem;
 	transform: moveX();
 	a {
 		visibility: visible;
@@ -319,7 +331,7 @@ html {
 		transition: none;
 	}
 }
-.article-button#about {
+.article-button#about-button {
 	top: 1rem;
 }
 
@@ -361,7 +373,7 @@ html {
 	width: $page_width;
 	// height: 12rem;
 
-	transition: tx(opacity, 1, 0);
+	transition: tx(opacity, 1, 0), tx(height, 1, 0, step-end);
 	opacity: 0;
 	@at-root .container-expanded:not(.container-changing) & {
 		opacity: 1;
@@ -449,32 +461,13 @@ html {
 		top: -3.5rem;
 		right: 0;
 	}
-	// .empty-item .content {
-	// }
-	// .empty-item .content *:first-child {
-	// 	// margin-top: -4px;
-	// 	// margin-top: 0;
-	// }
-	// .empty-item p {
-	// 	// height: 100%;
-	// 	// overflow: hidden;
-	// 	// transform: translate3d(-1.5px,0,0);
-	//
-	// 	// margin-left: -1.5px;
-	// 	// margin-top: 0;
-	// 	// margin-bottom: 9px;
-	//
-	// 	// &:first-child {
-	// 	// 	margin-top: 0;
-	// 	// }
-	// }
 }
 
 // carousel leaf elements
 // - - - - - - - - - - - - - - - - - -
 .empty-item .content p,
 .stack .content {
-	@extend %leaf-content;
+	@extend %leaf_content;
 }
 
 .media-item .sizing {
@@ -500,24 +493,28 @@ html {
 .media-caption-stack {
 	position: relative;
 	width: $page_width;
-	margin: -0.75rem auto 0;
+	margin: 4.5rem auto 0;
 	top: $nav_top_port + $nav_height_port;
 
 	transform: moveY();
 	@at-root .container-expanded & {
 		transform: moveY($nav_collapse_offset);
 	}
+	& > .stack-item {
+		top: auto;
+		bottom: 0;
+	}
+	&.disabled > .stack-item {
+		opacity: 0;
+	}
 	.content {
 		margin: 1.5rem auto;
 	}
 	.content p {
-		margin-left: -1px;
 		@include heading_font($size: 20px, $weight: 300, $lead: 26px);
+		margin-left: -1px;
 		//@include heading_font($size: 1.666rem,
 		//	$weight: 300, $lead: 2rem);
-	}
-	&.disabled > .stack-item {
-		opacity: 0;
 	}
 }
 
@@ -526,12 +523,7 @@ html {
 
 @import "components/selectable.dots-fontface.scss";
 
-// .dots-fontface .list-item a {
-// 	color: inherit;
-// }
-
 .media-dotnav {
-	//font-size: 1.15rem;
 	text-align: center;
 	margin: 0 auto;
 	padding: 0 $hu;
@@ -547,14 +539,13 @@ html {
 	transition: tx(opacity, 1, 0);
 	opacity: 1;
 	@at-root .without-media &,
-	.container-expanded &,
-	.container-changing &,
-	.container-changed & {
+		.container-expanded &,
+		.container-changing &,
+		.container-changed & {
 		opacity: 0;
 	}
 	.list-item {
 		padding: 0 0.5rem;
-		// padding: 0 0.5em;
 		a {
 			color: inherit;
 		}
@@ -563,13 +554,27 @@ html {
 
 // article-view
 // ===================================
-
 .article-view {
 	position: relative;
-	top: $nav_top_port;
-	bottom: 0.75em;
 	width: $page_width;
 	margin: -1rem auto 4.5rem;
+	top: $nav_top_port;
+	bottom: 0.75em;
+
+	&.markdown-html {
+		h1, h2, h3, h4, p {
+			padding-left: $hu;
+			padding-right: $hu;
+		}
+		h1, h2, p {
+			margin-left: $aside_width;
+		}
+		h3, h4 {
+			width: $aside_width;
+			float: left;
+			clear: both;
+		}
+	}
 }
 
 // // media-progress-wrapper

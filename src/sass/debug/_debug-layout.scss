@@ -197,11 +197,14 @@ $indigo: hsla(275, 100%, 25%, 1);
 		// background-position: calc(50% + 1px) calc(-1rem + 1px);
 		background-size: #{$page_width_large + $hu*2} 100%; //1600px;
 	}
-	@include media(mobile) {
-		background-size: #{$page_width_small + $hu*2} 100%; //1600px;
-		// background-position: center -0.5rem;
+	@include media(fullwidth) {
+		background-size: 100% 100%; //1600px;
+		background-position: 0 0;
 		// background-size: 100% 100%; //1600px;
 	}
+	// @include media(mobile) {
+	// 	background-size: #{$page_width_small + $hu*2} 100%;
+	// }
 }
 
 // -----------------------------------
@@ -232,7 +235,7 @@ $indigo: hsla(275, 100%, 25%, 1);
 			margin: 0;
 			color: white;
 			background: $darkolivegreen; //#5d7533;
-			font: 800 8px/120% $small_font_family;
+			font: 800 8px/120% $small_font;
 			text-transform: uppercase;
 			letter-spacing: normal;
 		}

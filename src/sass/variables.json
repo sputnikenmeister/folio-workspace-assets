@@ -10,6 +10,7 @@
 		"ease": "ease"
 	},
 	"breakpoints": {
+		"fullwidth": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
 		"mobile": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
 		"desktop-small": "'only screen and (min-width: 1024px) and (min-height: 540px)'",
 		"desktop-medium": "'only screen and (min-width: 1224px) and (min-height: 704px)'",

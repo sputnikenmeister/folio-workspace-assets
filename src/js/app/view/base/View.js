@@ -196,6 +196,10 @@ var View = {
 	/** @type {module:app/view/promise/whenViewIsAttached} */
 	whenViewIsAttached: require("app/view/promise/whenViewIsAttached"),
 
+
+	/** @type {module:app/view/promise/whenViewIsRendered} */
+	whenViewIsRendered: require("app/view/promise/whenViewIsRendered"),
+
 	/**
 	/* @param el {HTMLElement}
 	/* @return {module:app/view/base/View}
@@ -317,6 +321,11 @@ var ViewProto = {
 				this.setEnabled(enabled);
 			}
 		},
+		renderFlags: {
+			get: function() {
+				return this._renderFlags;
+			}
+		}
 	},
 
 	/**
@@ -627,6 +636,10 @@ var ViewProto = {
 			this._applyRender(_now());
 		}
 		return this;
+	},
+
+	whenRendered: function() {
+		return View.whenViewIsRendered(this);
 	},
 
 	/* -------------------------------

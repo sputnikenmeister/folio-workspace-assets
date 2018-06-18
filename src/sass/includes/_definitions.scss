@@ -59,19 +59,19 @@ $link_color_value: map-get($default_colors, --link-color);
 // ------------------------------------
 
 // Font fallback lists
-$mono_fallback: Consolas, Menlo, "Andale Mono", monospace;
-$humanist_fallback: "Lucida Grande","Lucida Sans", Calibri, Tahoma, Verdana, Kalimati, sans-serif;
-$grotesque_fallback: "Helvetica", sans-serif;
-$modern_fallback: "georgia", sans-serif;
+$mono_font: Consolas, Menlo, "Andale Mono", monospace;
+$humanist_font: "Lucida Grande","Lucida Sans", Calibri, Tahoma, Verdana, Kalimati, sans-serif;
+$grotesk_font: "Helvetica", sans-serif;
+$modern_font: "georgia", sans-serif;
 
 // Typefaces: public
 // - - - - - - - - - - - - - - - - - -
 
-$base_font_family: "Franklin Gothic FS", $grotesque_fallback;
+$base_font: "Franklin Gothic FS", $grotesk_font;
 
-$large_font_family: $base_font_family;
-$small_font_family: $humanist_fallback;
-$mono_font_family: $mono_fallback;
+$large_font: $base_font;
+$small_font: $humanist_font;
+$mono_font: $mono_font;
 
 // ------------------------------------
 // Typography mixins

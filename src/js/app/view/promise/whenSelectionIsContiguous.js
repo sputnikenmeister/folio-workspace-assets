@@ -1,5 +1,5 @@
-/** @type {module:app/view/base/ViewError} */
-var ViewError = require("app/view/base/ViewError");
+// /** @type {module:app/view/base/ViewError} */
+// var ViewError = require("app/view/base/ViewError");
 
 /** @type {module:app/view/promise/whenSelectionDistanceIs} */
 var whenSelectionDistanceIs = require("app/view/promise/whenSelectionDistanceIs");

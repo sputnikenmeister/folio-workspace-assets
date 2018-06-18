@@ -61,7 +61,7 @@
 	.content {
 		transition: tx(opacity, 0.5, 0);
 		opacity: 0.06;
-		overflow: hidden;
+		// overflow: hidden;
 		// color: silver;
 		.s {
 			transition: tx(background-color, 0.5, 0);
@@ -72,7 +72,7 @@
 	&.selected {
 		.content {
 			@at-root & {
-				overflow: auto;
+				// overflow: auto;
 				opacity: 1.0;
 				.s {
 					background-color: transparent;
@@ -86,7 +86,7 @@
 			// }
 			@at-root .carousel.disabled & {
 				opacity: 0.06;
-				overflow: hidden;
+				// overflow: hidden;
 				.s {
 					background-color: currentColor;
 				}
@@ -98,8 +98,8 @@
 }
 
 // NOTE:
-@import "./_carousel.media";
-@import "./_carousel.playable";
+@import "components/carousel.media";
+@import "components/carousel.playable";
 
 // .disabled .media-item
 // - - - - - - - - - - - - - - - - - -

@@ -2,25 +2,25 @@
  * @module app/view/component/progress/CanvasProgressMeter
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
+// /** @type {module:underscore} */
+// var _ = require("underscore");
 
-/** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+// /** @type {module:app/control/Globals} */
+// var Globals = require("app/control/Globals");
 /** @type {module:app/view/base/CanvasView} */
 var CanvasView = require("app/view/base/CanvasView");
 // /** @type {module:app/view/base/Interpolator} */
 // var Interpolator = require("app/view/base/Interpolator");
 
-var ARC_ERR = 0.00001;
+// var ARC_ERR = 0.00001;
 // var ARC_ERR = 0.0;
-var PI = Math.PI;
+// var PI = Math.PI;
 var PI2 = Math.PI * 2;
 
 var GAP_ARC = PI2 / 48;
-var CAP_SCALE = 2; // cap arc = GAP_ARC * CAP_SCALE
-var WAIT_CYCLE_VALUE = 1;
-var WAIT_CYCLE_MS = 300; // milliseconds per interpolation loop 
+// var CAP_SCALE = 2; // cap arc = GAP_ARC * CAP_SCALE
+// var WAIT_CYCLE_VALUE = 1;
+// var WAIT_CYCLE_MS = 300; // milliseconds per interpolation loop
 
 var ARC_DEFAULTS = {
 	"amount": {
@@ -82,6 +82,10 @@ var CanvasProgressMeter = CanvasView.extend({
 		this._canvasOrigin = null;
 	},
 
+	measureCanvas: function(w, h) {
+		this._canvasHeight = this._canvasWidth = Math.min(this._canvasWidth, this._canvasHeight);
+	},
+
 	_updateCanvas: function() {
 		CanvasView.prototype._updateCanvas.apply(this, arguments);
 
@@ -95,7 +99,7 @@ var CanvasProgressMeter = CanvasView.extend({
 			return s + n;
 		};
 
-		this._canvasSize = Math.min(this._canvasWidth, this._canvasWidth); // / this._canvasRatio;
+		this._canvasSize = Math.min(this._canvasWidth, this._canvasHeight); // / this._canvasRatio;
 		this._maxDashArc = 0;
 
 		for (arcName in ARC_DEFAULTS) {

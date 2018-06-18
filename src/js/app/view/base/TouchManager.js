@@ -27,12 +27,12 @@ var Pan = require("utils/touch/SmoothPanRecognizer");
 function createInstance(el) {
 	var manager, hpan, vpan, tap;
 	hpan = new Pan({
-		threshold: Globals.PAN_THRESHOLD,
+		// threshold: Globals.PAN_THRESHOLD,
 		direction: Hammer.DIRECTION_HORIZONTAL,
 		event: "hpan",
 	});
 	vpan = new Pan({
-		threshold: Globals.PAN_THRESHOLD,
+		// threshold: Globals.PAN_THRESHOLD,
 		direction: Hammer.DIRECTION_VERTICAL,
 		event: "vpan",
 	});

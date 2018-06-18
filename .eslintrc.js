@@ -16,7 +16,7 @@ module.exports = {
 		"GA": false,
 	},
 	"rules": {
-		"no-cond-assign": "warn",
+		"no-cond-assign": "off",
 		"no-console": "off",
 		"no-empty": "warn",
 		/* allow fallthrough in switch */

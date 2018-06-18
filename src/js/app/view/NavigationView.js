@@ -597,7 +597,7 @@ var NavigationView = View.extend({
 
 	createArticleButton: function(articleItem) {
 		var view = new ArticleButton({
-			el: "#about",
+			el: ".article-button[data-handle='about']",
 			model: articleItem
 		}).render();
 		this.listenTo(view, "view:click", this._onArticleClick);

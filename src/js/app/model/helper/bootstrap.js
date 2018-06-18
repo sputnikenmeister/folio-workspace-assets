@@ -1,18 +1,23 @@
 /** @type {module:underscore} */
 var _ = require("underscore");
 
-/** @type {module:app/model/collection/TypeCollection} */
-var typeList = require("app/model/collection/TypeCollection");
-/** @type {module:app/model/collection/KeywordCollection} */
-var keywordList = require("app/model/collection/KeywordCollection");
-/** @type {module:app/model/collection/BundleCollection} */
-var bundleList = require("app/model/collection/BundleCollection");
-/** @type {module:app/model/collection/ArticleCollection} */
-var articleList = require("app/model/collection/ArticleCollection");
-
 module.exports = function(bootstrap) {
-	// Fix-ups to bootstrap data.
 
+	/** @type {module:app/control/Globals} */
+	var Globals = require("app/control/Globals");
+
+	Globals.PARAMS = bootstrap["params"];
+
+	/** @type {module:app/model/collection/TypeCollection} */
+	var typeList = require("app/model/collection/TypeCollection");
+	/** @type {module:app/model/collection/KeywordCollection} */
+	var keywordList = require("app/model/collection/KeywordCollection");
+	/** @type {module:app/model/collection/BundleCollection} */
+	var bundleList = require("app/model/collection/BundleCollection");
+	/** @type {module:app/model/collection/ArticleCollection} */
+	var articleList = require("app/model/collection/ArticleCollection");
+
+	// Fix-ups to bootstrap data.
 	var articles = bootstrap["articles-all"];
 	var types = bootstrap["types-all"];
 	var keywords = bootstrap["keywords-all"];
@@ -46,9 +51,11 @@ module.exports = function(bootstrap) {
 		});
 	});
 
-	// Fill collection singletons\
+	// Fill collection singletons
 	articleList.reset(articles);
 	typeList.reset(types);
 	keywordList.reset(keywords);
 	bundleList.reset(bundles);
+
+	// bootstrap["params"] = bootstrap["articles-all"] = bootstrap["types-all"] = bootstrap["keywords-all"] = bootstrap["bundles-all"] = bootstrap["media-all"] = null;
 };

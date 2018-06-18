@@ -79,7 +79,7 @@ var FilterableListView = View.extend({
 			if (this._collapsedTransitioning && ev.propertyName === "visibility" /*&& this.el.classList.contains("collapsed-changed")*/ ) {
 				this._collapsedTransitioning = false;
 				this.el.classList.remove("collapsed-changed");
-				// console.log("%s:::events[transitionend .list-item] collapsed-changed end", this.cid);
+				console.log("%s::events[transitionend .list-item] collapsed-changed end", this.cid);
 			}
 		},
 	},

@@ -23,6 +23,7 @@
 		// box-shadow: 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
 	}
 	.placeholder {
+		overflow: hidden;
 		// *** "mutable" properties: must be in the first matching rule
 		// color: $background_color;
 		// background-color: mix($color, $background_color, 7%);
@@ -53,18 +54,18 @@
 	// .placeholder:before
 	// - - - - - - - - - - - - - - - - -
 	.placeholder:before {
+		// font: bold normal 9rem/110% "ITCFranklinGothicStd-Compressed", $grotesk_font;
+		font: 600 9rem/0.9 "Franklin Gothic FS", $grotesk_font;
+		letter-spacing: -0.01em;
+		padding: 3rem;
 		position: absolute;
 		top: 0;
 		left: 0;
-		padding: 3rem;
-		// font: bold normal 9rem/110% "ITCFranklinGothicStd-Compressed", $grotesque_fallback;
-		font: bold normal 9rem/90% "Franklin Gothic FS", $grotesque_fallback;
-		letter-spacing: -0.01em;
 	}
 	&.pending,
 	&.ready {
 		.placeholder:before {
-			font: normal normal 12rem/0.9 "FolioFigures", monospace;
+			font: 300 12rem/0.9 "FolioFigures", $mono_font;
 			letter-spacing: -0.05em;
 		}
 	}

@@ -57,6 +57,9 @@ var transitionProp = View.prefixedProperty("transition");
 
 var tx = Globals.transitions;
 
+
+// var clickEvent = window.hasOwnProperty("onpointerup") ? "pointerup" : "mouseup",
+
 /**
  * @constructor
  * @type {module:app/view/ContentView}

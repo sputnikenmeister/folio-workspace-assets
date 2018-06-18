@@ -28,6 +28,7 @@ body {
 	transition: tx(opacity, 1, 1),
 		tx(visibility, 1, 1, step-start);
 }
+// .route-initial,
 .app-initial {
 	#container {
 		visibility: hidden;

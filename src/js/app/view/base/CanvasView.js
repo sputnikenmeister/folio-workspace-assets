@@ -73,12 +73,7 @@ var CanvasView = View.extend({
 		options.maxValues = _.defaults(options.maxValues, this.defaults.maxValues);
 
 		this._interpolator = new Interpolator(options.values, options.maxValues);
-
-		// render props
-		// this._color = options.color;
-		// this._backgroundColor = options.backgroundColor;
 		this._useOpaque = options.useOpaque;
-
 		this._options = _.pick(options, "color", "backgroundColor");
 
 		// opaque background
@@ -133,17 +128,24 @@ var CanvasView = View.extend({
 		// adjust canvas size to pixel ratio
 		// upscale the canvas if the two ratios don't match
 		// --------------------------------
-		var s, m, w, h, edgeW, edgeH;
 
-		s = getComputedStyle(this.el);
-		m = getBoxEdgeStyles(s);
-		edgeW = m.paddingLeft + m.paddingRight + m.borderLeftWidth + m.borderRightWidth;
-		edgeH = m.paddingTop + m.paddingBottom + m.borderTopWidth + m.borderBottomWidth;
-		w = this.el.offsetWidth;
-		h = this.el.offsetHeight;
+		var s = getComputedStyle(this.el);
 
-		this.el.width = this._canvasWidth = (w - edgeW) * this._canvasRatio;
-		this.el.height = this._canvasHeight = (h - edgeH) * this._canvasRatio;
+		this._canvasWidth = this.el.offsetWidth;
+		this._canvasHeight = this.el.offsetHeight;
+
+		if (s.boxSizing === "border-box") {
+			var m = getBoxEdgeStyles(s);
+			this._canvasWidth -= m.paddingLeft + m.paddingRight + m.borderLeftWidth + m.borderRightWidth;
+			this._canvasHeight -= m.paddingTop + m.paddingBottom + m.borderTopWidth + m.borderBottomWidth;
+		}
+
+		this._canvasWidth *= this._canvasRatio;
+		this._canvasHeight *= this._canvasRatio;
+
+		this.measureCanvas(); //this._canvasWidth, this._canvasHeight);
+		this.el.width = this._canvasWidth;
+		this.el.height = this._canvasHeight;
 		// this.el.style.height = h + "px";
 		// this.el.style.width = w + "px";
 
@@ -189,7 +191,11 @@ var CanvasView = View.extend({
 	},
 
 	updateCanvas: function() {
+		/* abstract */
+	},
 
+	measureCanvas: function() {
+		/* abstract */
 	},
 
 	_getFontMetrics: function(str) {

@@ -1,19 +1,5 @@
 // ///////////////////////////////////
-// Content
-// ///////////////////////////////////
-
-// media-caption-stack
-// - - - - - - - - - - - - - - - - - -
-
-// image-carousel
-// - - - - - - - - - - - - - - - - - -
-
-// media-dotnav
-// - - - - - - - - - - - - - - - - - -
-
-
-// ///////////////////////////////////
-// markdown-html elements
+// markdown-html
 // ///////////////////////////////////
 
 .markdown-html {
@@ -94,6 +80,31 @@
 		background-color: hsla(183, 100%, 50%, 0.18);
 	}
 }
+
+.article-view.markdown-html {
+	h1, h2 {
+		@include heading_font(300, 1.9999999rem, 2rem);
+		margin-top: 2.5rem;
+		margin-bottom: 0.5em;
+	}
+	h3, h4 {
+		margin-top: 0;
+	}
+	h3 {
+		@extend %n1f3_1f5;
+		font-weight: 600;
+		margin-bottom: 0.6666666rem;//0.5em;
+	}
+	h4 {
+		@extend %n1f3_1f5;
+		margin-bottom: 0.3333333rem;
+	}
+	p {
+		@extend %n1f1_1f6;
+		hyphens: auto;
+	}
+}
+
 @include media(desktop-small) {
 	.media-carousel .empty-item .markdown-html {
 		@include heading_font(300, 28px, 30px);
@@ -119,62 +130,5 @@
 		p {
 			@extend %n1p3_3f3;
 		}
-	}
-}
-@include media(mobile) {
-	.media-carousel .empty-item .markdown-html {
-		// - - - - - - - - - - - - - - - -
-		h1, h2 {
-			@extend %n1p3_3f3;
-		}
-		h3, h4 {
-			@extend %n1p2_2f6;
-		}
-		h6, h5 {
-			@extend %n1f3_1f5;
-		}
-		p {
-			@extend %n1f1_1f6;
-		}
-	}
-}
-
-.article-view.markdown-html {
-	h1, h2, h3, h4, p {
-		padding: 0 $hu;
-	}
-	h1, h2 {
-		@include heading_font($size: 1.9999999rem, $weight: 300, $lead: 2rem);
-		margin-top: 2.5rem;
-		margin-bottom: 0.5em;
-		margin-left: $aside_width;
-	}
-	h3, h4 {
-		width: $aside_width;
-		margin-top: 0;
-		float: left;
-		clear: both;
-	}
-	h3 {
-		@extend %n1f3_1f5;
-		font-weight: 600;
-		// @include heading_font(600, 1.3333333rem, 1.5rem, -0.5px);
-		// @include heading_font(600, 1.6666666rem, 600, 1.75rem, -0.5px);
-		// margin-top: 0.3333333rem;//0.25em;
-		margin-bottom: 0.6666666rem;//0.5em;
-	}
-	h4 {
-		@extend %n1f3_1f5;
-		// @include small_caps($lead: 1rem);
-		// @include heading_font(400, 16px, 1.5rem, -0.25px);
-		// @include heading_font(400, 1.3333333rem, 1.5rem, -0.25px);
-		// margin-top: 0.1666666rem;//0.125em;
-		margin-bottom: 0.3333333rem;//0.25em;
-		// text-align: right;
-	}
-	p {
-		@extend %n1f1_1f6;
-		margin-left: $aside_width;
-		hyphens: auto;
 	}
 }

@@ -18,13 +18,13 @@
 		transition: background-color 0.1s;
 	}
 	.preceding-button {
-		background-image: url('../images/rsquare-larr.svg');
+		background-image: url("../images/rsquare-larr.svg");
 	}
 	.following-button {
-		background-image: url('../images/rsquare-rarr.svg');
+		background-image: url("../images/rsquare-rarr.svg");
 	}
 	.close-button {
-		background-image: url('../images/rsquare-close.svg');
+		background-image: url("../images/rsquare-close.svg");
 	}
 	.button,
 	.button:link,

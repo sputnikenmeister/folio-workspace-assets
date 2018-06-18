@@ -1,5 +1,5 @@
 // ///////////////////////////////////
-// media query : mobile
+// media query : fullwidth
 // ///////////////////////////////////
 
 // ///////////////////////////////////
@@ -8,15 +8,20 @@
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$nav_top_small: 0.75rem;
+$nav_top_small: 0rem;
 $nav_height_small: 7rem;//6.5rem;
 $page_width_max: none;//704px;
 $aside_width_small: 50%;
+
+
 $margin_right: $hu / 3;
 $margin_left: $hu / 1.5;
-$margin_v: 4.5rem;
+$margin_top: 1.5rem;
+$margin_bottom: 3rem;
+$ctrl_height: 2.1rem;
+$ctrl_width: $hu * 1.05;//2.1rem;
 
-@include media(mobile) {
+@include media(fullwidth) {
 	// block definitions
 	// - - - - - - - - - - - - - - - - - -
 	%nav_font {
@@ -31,8 +36,8 @@ $margin_v: 4.5rem;
 	%list_item {
 		width: 100%;
 		// .label {
-			text-overflow: ellipsis;
-			overflow: hidden;
+			// text-overflow: ellipsis;
+			// overflow: hidden;
 		// }
 	}
 
@@ -42,8 +47,8 @@ $margin_v: 4.5rem;
 		padding-left: $margin_left;
 		padding-right: $margin_right;
 		.label {
-			padding: 0.25em #{$hu/4};// 0.25em 0.5em;
-			margin: -0.25em -#{$hu/4};// -0.25em -0.5em;
+			padding: 0.25em #{$hu/2} 0.25em #{$hu/4};// 0.25em 0.5em;
+			margin: -0.25em -#{$hu/2} 0.25em -#{$hu/4};// -0.25em -0.5em;
 		}
 	}
 }
@@ -54,11 +59,11 @@ $margin_v: 4.5rem;
 // Root
 // ///////////////////////////////////
 
-html.mobile {
+html.fullwidth {
 
 }
 
-@include media(mobile) {
+@include media(fullwidth) {
 
 	width: 100%;
 	overflow: hidden;
@@ -98,11 +103,17 @@ html.mobile {
 		// top: 0;
 		min-height: $nav_height_small;
 		// padding-top: $nav_top_small;
-		margin-bottom: 3rem;
+		// margin-bottom: 3rem;
+		box-sizing: content-box;
+		padding-top: 0.75rem;
+		padding-bottom: 0;
 
 	}
-	&.with-article #navigation {
-		margin-bottom: 0rem;
+	&.route-article-item,
+	&.route-root  {
+		#navigation {
+			padding-bottom: 1.5rem;
+		}
 	}
 
 	.transform-wrapper {
@@ -120,11 +131,12 @@ html.mobile {
 
 		width: auto;
 		left: 0;
-		right: calc(50% + #{$margin_right});
+		right: calc(50% + #{$hu * 0.5});
+		// right: calc(50% + #{$margin_right});
 		// min-width: calc(50% - #{$margin_right});
 
 		padding-top: #{$nav_height_small + 0.5rem};
-		// padding-bottom: 1.5rem;
+		padding-bottom: 1.5rem;
 		.list-item {
 			@extend %list_item;
 			// width: $main_width - $aside_width_small - (2*$hu);
@@ -148,17 +160,20 @@ html.mobile {
 		font-size: #{7/8 * 1rem};
 
 		width: auto;
-		left: calc(50% + #{$margin_left});
+		left: calc(50% + #{$hu * 2});
+		// left: calc(50% + #{$margin_left});
 		right: 0;
 
 		// min-width: calc(50% - #{$margin_left});
 		// width: 50%;//$aside_width_small;
 
 		padding-top: $nav_height_small;
-		// padding-bottom: 1.5rem;
+		padding-bottom: 1.5rem;
 		.list-item {
 			@extend %list_item;
 			height: 1.5em;
+			text-overflow: ellipsis;
+			overflow: hidden;
 			.label {
 				font-size: inherit;//#{7/8 * 1rem};
 				// line-height: 1;//1rem;
@@ -177,6 +192,15 @@ html.mobile {
 	}
 	&.with-bundle #keyword-list {
 		padding-top: 0.75rem;
+	}
+	&.with-media .container-collapsed #keyword-list {
+		opacity: 0;
+		visibility: 0;
+		// .list-group, .list-item {
+		// 	height: 0;
+		// 	visibility: 0;
+		// 	opacity: 0;
+		// }
 	}
 
 	// keyword-list-wrapper
@@ -253,6 +277,9 @@ html.mobile {
 		// left: 0;
 		// right: 0;
 		//width: 100%;
+		// position: relative;
+		// width: 100%;
+		// height: 100%;
 	}
 
 	// media-carousel
@@ -267,14 +294,17 @@ html.mobile {
 
 		top: $nav_top_small + $nav_height_small;
 		// top: 0;
-		padding-top: $margin_v;
-		padding-bottom: $margin_v;
+		margin-top: #{-$ctrl_height};
+		padding-top: #{$margin_top + $ctrl_height};
+		// padding-top: $margin_top;
+		padding-bottom: $margin_bottom;
 
 		.carousel-item {
 			margin-left: $margin_left*2;
 			margin-right: $margin_right*2;
 			width: auto;
 			left: $margin_left*1;
+			height: calc(100% - #{$margin_top + $margin_bottom});
 			// right: $margin_right*1;
 			// width: calc(100% - #{$hu*2})
 			// left: calc(50% - #{$page_width_small/2});
@@ -290,7 +320,7 @@ html.mobile {
 			// margin-right: $margin_right*2;
 		}
 		.empty-item {
-			right: $margin_right*7;
+			right: $margin_right * 7;
 			// width: 50%;
 			// width: calc(100% - #{$margin_left*3 + $margin_right*3});
 			// width: $main_width_small - 8px;
@@ -332,12 +362,27 @@ html.mobile {
 	.playable-renderer {
 		.top-bar {
 			// top: 0;
-			direction: ltr;
+			// direction: ltr;
 			z-index: 1;
+			height: $ctrl_height;
+
+			// width: $ctrl_width;
+			// flex-direction: column;
+			// direction: ltr;
+			// top: 0;
+			// right: 100%;
+			// width: auto;
+			// height: calc(100% + 1rem);
+			// margin: -0.5rem #{$hu / 2};
+			// & > * {
+			// 	padding: 0.5rem 0;
+			// }
 		}
 		.progress-meter {
-			width: 2.1rem;
-			height: 2.1rem;
+			// width: 100%; height: auto;
+			width: auto; height: 100%;
+			// width: $ctrlbar_height;//2.1rem;
+			// height: $ctrlbar_height;//2.1rem;
 			font-size: 75%;
 			line-height: 1;
 		}
@@ -346,9 +391,10 @@ html.mobile {
 	// media-caption-stack
 	// ===================================
 	.media-caption-stack {
-		top: $nav_top_small + 1.5rem;// + $nav_height_small;
+		top: $nav_top_small + 2.25rem;// + $nav_height_small;
 		margin: 0 0 0 #{$margin_left*2};
 		width: calc(50% - #{$margin_left*2});
+		// width: calc(100% - #{$margin_left*2});
 		& > .stack-item {
 			top: 0;
 			bottom: auto;
@@ -369,7 +415,7 @@ html.mobile {
 		padding-left: $margin_left;
 		padding-right: $margin_right;
 		width: auto;
-		bottom: 1.5rem;
+		bottom: 0.75rem;
 		.list-item {
 			// padding: 0 0.25rem;
 			padding: 0 0.3333333rem;

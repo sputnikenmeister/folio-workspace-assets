@@ -24,6 +24,8 @@ var stripTags = require("utils/strings/stripTags");
 // /** @type {module:app/model/parseSymAttrs} */
 // var parseSymAttrs = require("app/model/parseSymAttrs");
 
+console.log(Globals.PARAMS);
+
 var urlTemplates = {
 	"original": _.template(Globals.MEDIA_DIR + "/<%= src %>"),
 	"constrain-width": _.template(Globals.APP_ROOT + "image/1/<%= width %>/0/uploads/<%= src %>"),
@@ -50,6 +52,7 @@ module.exports = BaseItem.extend({
 	/** @type {Object} */
 	defaults: {
 		name: "<p><em>Untitled</em></p>",
+		sub: "",
 		o: 0,
 		bId: -1,
 		srcIdx: 0,
@@ -64,9 +67,9 @@ module.exports = BaseItem.extend({
 	getters: ["name", "bundle", "source", "sources"],
 
 	mutators: {
-		desc: function() {
-			return this.get("name");
-		},
+		// desc: function() {
+		// 	return this.get("name");
+		// },
 		handle: function() {
 			return this.get("src");
 		},

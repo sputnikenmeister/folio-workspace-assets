@@ -19,11 +19,11 @@
 		margin-left: 2em;
 	}
 	.preceding-button:before {
-		content: '\e807';
+		content: "\e807";
 		@include fontello_icon_before();
 	}
 	.following-button:after {
-		content: '\e808';
+		content: "\e808";
 		@include fontello_icon_after();
 	}
 }

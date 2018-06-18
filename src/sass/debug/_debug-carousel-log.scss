@@ -13,7 +13,7 @@
 	overflow-y: auto;
 	overflow-x: hidden;
 	& > pre {
-		font-family: $mono_fallback;
+		font-family: $mono_font;
 		display: block;
 		&::before {
 			@include ellipsis(inline-block);
@@ -35,18 +35,18 @@
 			box-shadow: 0 0 0 1px hsla(0,0%,50%,0.5); //, 0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
 		}
 		&.log-header::before {
-			content: 'Type';
+			content: "Type";
 		}
 		&[data-logrepeat]::before {
-			content: '[' attr(data-logrepeat) ']' attr(data-logtype);
+			content: "[" attr(data-logrepeat) "]" attr(data-logtype);
 		}
-		&[data-logtype='play'],
-		&[data-logtype='pause'] {
+		&[data-logtype="play"],
+		&[data-logtype="pause"] {
 			background-color: rgba(255,0,0,0.25);
 		}
-		&[data-logtype='playing'],
-		&[data-logtype='waiting'],
-		&[data-logtype='ended'] {
+		&[data-logtype="playing"],
+		&[data-logtype="waiting"],
+		&[data-logtype="ended"] {
 			background-color: rgba(0,255,0,0.25);
 		}
 	}

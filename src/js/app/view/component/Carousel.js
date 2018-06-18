@@ -91,17 +91,17 @@ var VERTICAL_PROPS = {
 // var DIRECTION_UP = 8;
 // var DIRECTION_DOWN = 16;
 
-function dirToStr(dir) {
-	if (dir === Hammer.DIRECTION_NONE) return 'NONE';
-	if (dir === Hammer.DIRECTION_LEFT) return 'LEFT';
-	if (dir === Hammer.DIRECTION_RIGHT) return 'RIGHT';
-	if (dir === Hammer.DIRECTION_UP) return 'UP';
-	if (dir === Hammer.DIRECTION_DOWN) return 'DOWN';
-	if (dir === Hammer.DIRECTION_HORIZONTAL) return 'HORIZONTAL';
-	if (dir === Hammer.DIRECTION_VERTICAL) return 'VERTICAL';
-	if (dir === Hammer.DIRECTION_ALL) return 'ALL';
-	return 'UNRECOGNIZED';
-}
+// function dirToStr(dir) {
+// 	if (dir === Hammer.DIRECTION_NONE) return 'NONE';
+// 	if (dir === Hammer.DIRECTION_LEFT) return 'LEFT';
+// 	if (dir === Hammer.DIRECTION_RIGHT) return 'RIGHT';
+// 	if (dir === Hammer.DIRECTION_UP) return 'UP';
+// 	if (dir === Hammer.DIRECTION_DOWN) return 'DOWN';
+// 	if (dir === Hammer.DIRECTION_HORIZONTAL) return 'HORIZONTAL';
+// 	if (dir === Hammer.DIRECTION_VERTICAL) return 'VERTICAL';
+// 	if (dir === Hammer.DIRECTION_ALL) return 'ALL';
+// 	return 'UNRECOGNIZED';
+// }
 
 var isValidTouchManager = function(touch, direction) {
 	// var retval;
@@ -208,7 +208,7 @@ var CarouselProto = {
 
 		_.extend(this, _.defaults(_.pick(options, Carousel.validOptions), Carousel.defaults));
 
-		this.childGap = 0; //this.dirProp(20, 18);
+		// this.childGap = 0; //this.dirProp(20, 18);
 		this._precedingDir = (Hammer.DIRECTION_LEFT | Hammer.DIRECTION_UP) & this.direction;
 		this._followingDir = (Hammer.DIRECTION_RIGHT | Hammer.DIRECTION_DOWN) & this.direction;
 
@@ -279,7 +279,6 @@ var CarouselProto = {
 	// 	}
 	// 	this.touch = touch;
 	// },
-
 
 	remove: function() {
 		// this._scrollPendingAction && this._scrollPendingAction(true);
@@ -496,9 +495,9 @@ var CarouselProto = {
 		this.itemViews.each(function(view) {
 			m = this.measureItemView(view);
 			m.pos = pos;
-			pos += m.outer + this.childGap;
+			pos += m.outer; // + this.childGap;
 			m.posInner = posInner;
-			posInner += m.inner + this.childGap;
+			posInner += m.inner; //+ this.childGap;
 			if (view !== this.emptyView) {
 				if (m.across > maxAcross) {
 					maxAcross = m.across;
