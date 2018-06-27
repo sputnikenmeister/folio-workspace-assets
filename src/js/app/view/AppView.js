@@ -53,8 +53,8 @@ var AppViewProto = {
 	cidPrefix: "app",
 	/** @override */
 	el: "body",
-	/** @override */
-	className: "without-bundle without-media",
+	// /** @override */
+	className: "without-bundle without-media without-article",
 	/** @override */
 	model: AppState,
 
@@ -66,17 +66,39 @@ var AppViewProto = {
 		"fullscreenchange": function(ev) {
 			console.log(ev.type);
 		},
+		// "scroll #container": function(ev) {
+		// 	console.log(ev.type, ev);
+		// }
+	},
+
+	properties: {
+		container: {
+			get: function() {
+				return this._container || (this._container = document.getElementById("container"));
+			}
+		}
 	},
 
 	/** @override */
 	initialize: function(options) {
 		/* create single hammerjs manager */
-		this.touch = TouchManager.init(this.el);
+		this.touch = TouchManager.init(this.container);
+		this.touch.set({
+			enable: (function() {
+				return this.model.get("collapsed") && this.model.get("withBundle");
+			}).bind(this)
+		});
+
+		this._afterRender = this._afterRender.bind(this);
+		this._onResize = this._onResize.bind(this);
 
 		/* render on resize, onorientationchange, visibilitychange */
-		this._onResize = this._onResize.bind(this); // _.bindAll(this, "_onResize");
 		window.addEventListener("orientationchange", this._onResize, false);
 		window.addEventListener("resize", _.debounce(this._onResize, 100, false /* immediate? */ ), false);
+
+		// var h = function(ev) { console.log(ev.type, ev) };
+		// window.addEventListener("scroll", h, false);
+		// window.addEventListener("wheel", h, false);
 
 		/* TODO: replace resize w/ mediaquery listeners. Caveat: some components
 		(vg. Carousel) require update on resize */
@@ -258,26 +280,18 @@ var AppViewProto = {
 		var bundle = this.model.get("bundle");
 		var media = this.model.get("media");
 
-		// 	this.updateDocumentTitle(bundle, media);
-		// 	this.updateClassList(bundle, media);
-		// },
-		//
-		// updateDocumentTitle: function(bundle, media) {
-		// Set browser title
-		var docTitle = "Portfolio";
+		var docTitle = []
+		docTitle.push(Globals.APP_NAME);
 		if (bundle) {
-			docTitle += " - " + stripTags(bundle.get("name"));
+			docTitle.push(stripTags(bundle.get("name")));
 			if (media) {
-				docTitle += ": " + stripTags(media.get("name"));
+				docTitle.push(stripTags(media.get("name")));
 			}
 		} else if (article) {
-			docTitle += " - " + stripTags(article.get("name"));
-		}
-		document.title = _.unescape(docTitle);
-		// },
-		//
-		// updateClassList: function(bundle, media) {
-		// classList target
+			docTitle.push(stripTags(article.get("name")));
+		} // else docTitle.push("Portfolio");
+		document.title = _.unescape(docTitle.join(" / "));
+
 		var cls = this.el.classList;
 		var prevAttr = null;
 		// var hasDarkBg = false;

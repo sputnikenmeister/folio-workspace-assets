@@ -65,6 +65,9 @@ var NavigationView = View.extend({
 		_.bindAll(this, "_whenTransitionsEnd", "_whenTransitionsAbort");
 		_.bindAll(this, "_onNavigationClick");
 
+		// this._metrics = {
+		// 	minHeight: 0
+		// };
 		this.itemViews = [];
 		this.transforms = new TransformHelper();
 		this.touch = TouchManager.getInstance();
@@ -97,19 +100,14 @@ var NavigationView = View.extend({
 		// });
 
 		this.listenTo(this.graph, "view:render:before", function(view, flags) {
-			// console.info("%s:[%s view:render:before]", this.cid, view.cid);
 			if (flags & View.SIZE_INVALID | View.MODEL_INVALID) {
-				console.info("%s:[%s view:render:before] heights: %s %s (bundleList,keywordList)",
-					this.cid, view.cid,
+				var vmax = Math.max(
 					this.bundleList._metrics.height,
 					this.keywordList._metrics.height
 				);
-				this.graph.el.style.height = Math.max(
-					this.bundleList._metrics.height,
-					this.keywordList._metrics.height
-				) + "px";
-				// this.graph.el.style.opacity = this.bundleList.collapsed? "0": "1";
-				// view.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
+				console.log("%s:%s[view:render:before] flags: %s] height: %o",
+					this.cid, view.cid, View.flagsToString(flags), vmax);
+				view.el.style.height = vmax + "px";
 			}
 		});
 		// this.listenTo(this.bundleList, "view:render:after", function(view, flags) {
@@ -186,6 +184,34 @@ var NavigationView = View.extend({
 				view.renderNow();
 			}
 		}, this);
+
+		// if ((flags & View.SIZE_INVALID) || (this.model.hasChanged("collapsed") && (flags | View.MODEL_INVALID))) {
+		// 	// if (this.model.get("collapsed")) {
+		// 	// 	this.el.style.minHeight = "";
+		// 	// } else {
+		Promise.all([
+			this.bundleList.whenRendered(),
+			this.keywordList.whenRendered()
+		]).then((function(arr) {
+			var vmax = arr.reduce(function(a, o) {
+				return Math.max(a, o._metrics.height);
+			}, 0);
+			console.log("%s:[whenRendered flags: %s] height: %o",
+				this.cid, View.flagsToString(flags), vmax);
+			// if (vmax !== this._metrics.minHeight) {
+			// 	this._metrics.minHeight = vmax;
+			// this.el.style.minHeight = vmax + "px";
+			// }
+			this.graph.el.style.height = vmax + "px";
+			this.el.style.minHeight = vmax + "px";
+			// document.body.scrollTop = 0;
+			// window.scrollTo(0, 1)
+			// this.requestAnimationFrame(function() {
+			// 	window.scrollTo(0, 0);
+			// });
+		}).bind(this));
+		// 	// }
+		// }
 
 		// graph
 		// - - - - - - - - - - - - - - - - -
@@ -319,6 +345,11 @@ var NavigationView = View.extend({
 			// 		this.transforms.runTransition(withArticle ? tx.BETWEEN : tx.LAST, this.bundleList.wrapper);
 			// 	}
 			// }
+		} else if (Globals.BREAKPOINTS["fullwidth"].matches) {
+			if (collapsedChanged) {
+				this.transforms.runTransition(tx.BETWEEN,
+					this.sitename.el, this.about.el);
+			}
 		} else {
 			if (withBundleChanged) {
 				this.transforms.runTransition(tx.BETWEEN,
@@ -351,6 +382,8 @@ var NavigationView = View.extend({
 			// this.graph && this.graph.requestRender(View.SIZE_INVALID);
 		}
 		if (this.model.hasChanged("withBundle")) {
+
+			// this.keywordList.refresh()
 			if (this.model.get("withBundle")) {
 				this.touch.on("vpanstart", this._onVPanStart);
 				this.touch.on("hpanstart", this._onHPanStart);
@@ -358,6 +391,7 @@ var NavigationView = View.extend({
 			} else {
 				this.touch.off("vpanstart", this._onVPanStart);
 				this.touch.off("hpanstart", this._onHPanStart);
+				keywords.deselect();
 				// this.touch.off("tap", this._onTap);
 			}
 			// this.graph.valueTo()

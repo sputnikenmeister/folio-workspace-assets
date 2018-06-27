@@ -612,10 +612,18 @@ var ViewProto = {
 	/* render: public / abstract methods
 	/* ------------------------------- */
 
-	requestRender: function(flags) {
+	invalidate: function(flags) {
 		if (flags !== void 0) {
 			this._renderFlags |= flags;
 		}
+		return this;
+	},
+
+	requestRender: function(flags) {
+		// if (flags !== void 0) {
+		// 	this._renderFlags |= flags;
+		// }
+		this.invalidate(flags);
 		this._requestRender();
 		return this;
 	},

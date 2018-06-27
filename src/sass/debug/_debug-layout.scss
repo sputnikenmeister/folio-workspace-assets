@@ -114,6 +114,7 @@ $indigo: hsla(275, 100%, 25%, 1);
 		.list .list-group .label span,
 		.list .list-item .label {
 			background-color: transparentize($lightcoral, 0.7);
+			// @include debug_outline_thin(1px, solid, $lightcoral);
 		}
 		.graph {
 			@include debug_outline(2px, dashed, $darkseagreen, 0.25, 0);
@@ -199,7 +200,7 @@ $indigo: hsla(275, 100%, 25%, 1);
 	}
 	@include media(fullwidth) {
 		background-size: 100% 100%; //1600px;
-		background-position: 0 0;
+		background-position: 6px 0;
 		// background-size: 100% 100%; //1600px;
 	}
 	// @include media(mobile) {

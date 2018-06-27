@@ -22,13 +22,9 @@ var setStyle = function(ctx, s) {
 var _drawShape = function(fn, s, ctx) {
 	ctx.save();
 	if (s) setStyle(ctx, s);
-
-	// ctx.beginPath();
 	fn.apply(null, splice.call(arguments, 2));
 	if (ctx.lineWidth !== "transparent") ctx.stroke();
 	if (ctx.fillStyle !== "transparent") ctx.fill();
-	// ctx.closePath();
-
 	ctx.restore();
 };
 
@@ -36,33 +32,32 @@ module.exports = {
 	setStyle: setStyle,
 
 	vGuide: function(ctx, x) {
-		// ctx.save();
-		// if (s) setStyle(ctx, s);
-		// ctx.beginPath();
-		ctx.moveTo(x, ctx.canvas.offsetTop);
-		ctx.lineTo(x, ctx.canvas.offsetHeight);
-		// ctx.stroke();
-		// ctx.restore();
+		ctx.beginPath();
+		ctx.moveTo(x, 0);
+		ctx.lineTo(x, ctx.canvas.height);
 	},
 	drawVGuide: function(ctx, s, x) {
 		_drawShape(this.vGuide, s, ctx, x);
 	},
 
+	hGuide: function(ctx, y) {
+		ctx.beginPath();
+		ctx.moveTo(0, y);
+		ctx.lineTo(ctx.canvas.width, y);
+	},
+	drawHGuide: function(ctx, s, y) {
+		_drawShape(this.hGuide, s, ctx, y);
+	},
+
 	crosshair: function(ctx, x, y, r) {
 		ctx.save();
-		// if (s) {
-		// 	setStyle(ctx, s);
-		// }
-		// if (s && s.style != "vertical") {
 		ctx.translate(x, y);
 		ctx.rotate(Math.PI / 4);
-		// }
 		ctx.beginPath();
 		ctx.moveTo(0, -r);
 		ctx.lineTo(0, r);
 		ctx.moveTo(-r, 0);
 		ctx.lineTo(r, 0);
-		// ctx.stroke();
 		ctx.restore();
 	},
 	drawCrosshair: function(ctx, s, x, y, r) {
@@ -70,17 +65,8 @@ module.exports = {
 	},
 
 	circle: function(ctx, x, y, r) {
-		// ctx.save();
-		// if (s) {
-		// 	setStyle(ctx, s);
-		// }
 		ctx.beginPath();
 		ctx.arc(x, y, r, 0, PI2);
-		ctx.closePath();
-		// if (ctx.lineWidth !== "transparent") ctx.stroke();
-		// if (ctx.fillStyle !== "transparent") ctx.fill();
-		// else ctx.stroke();
-		// ctx.restore();
 	},
 	drawCircle: function(ctx, s, x, y, r) {
 		_drawShape(this.circle, s, ctx, x, y, r);
@@ -88,14 +74,8 @@ module.exports = {
 
 	square: function(ctx, x, y, r) {
 		r = Math.floor(r / 2) * 2;
-		// if (solid) r += 0.5;
-		// ctx.save();
-		// if (s) setStyle(ctx, s);
 		ctx.beginPath();
 		ctx.rect(x - r, y - r, r * 2, r * 2);
-		// if (solid) ctx.fill();
-		// else ctx.stroke();
-		// ctx.restore();
 	},
 	drawSquare: function(ctx, s, x, y, r) {
 		_drawShape(this.square, s, ctx, x, y, r);
@@ -103,16 +83,9 @@ module.exports = {
 
 	arrowhead: function(ctx, x, y, r, t) {
 		ctx.save();
-		// if (s) {
-		// 	setStyle(ctx, s);
-		// }
-		// if (r < 10) {
-		// 	ctx.setLineDash([]);
-		// }
 		ctx.translate(x, y);
 		ctx.rotate(t); // - Math.PI * 0.5);
 		ctx.translate(r * 0.5, 0);
-
 		ctx.beginPath();
 		ctx.moveTo(0, 0);
 		// ctx.lineTo(-r, r * Math.SQRT1_2);
@@ -122,8 +95,6 @@ module.exports = {
 		// ctx.quadraticCurveTo(0, 0, -r * Math.SQRT2, -r * Math.SQRT1_2);
 		ctx.lineTo(0, 0);
 		ctx.closePath();
-		// if (solid) ctx.fill();
-		// else ctx.stroke();
 		ctx.restore();
 	},
 	drawArrowhead: function(ctx, s, x, y, r, t) {

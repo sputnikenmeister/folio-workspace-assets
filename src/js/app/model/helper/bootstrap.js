@@ -6,7 +6,11 @@ module.exports = function(bootstrap) {
 	/** @type {module:app/control/Globals} */
 	var Globals = require("app/control/Globals");
 
-	Globals.PARAMS = bootstrap["params"];
+	// Globals.GA_TAGS = bootstrap["ga-tags"];
+	// Globals.PARAMS = bootstrap["params"];
+	// Globals.APP_ROOT = bootstrap["params"]["root"];
+	// Globals.MEDIA_DIR = bootstrap["params"]["uploads"];
+	Globals.APP_NAME = bootstrap["params"]["website-name"];
 
 	/** @type {module:app/model/collection/TypeCollection} */
 	var typeList = require("app/model/collection/TypeCollection");

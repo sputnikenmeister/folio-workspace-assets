@@ -1,0 +1,69 @@
+
+
+// ///////////////////////////////////
+// Root
+// ///////////////////////////////////
+
+html.fullwidth-small {
+}
+
+@include media(fullwidth-small) {
+	#container {
+		min-width: 375px;
+	}
+
+	// bundle-list
+	// ===================================
+	#bundle-list {
+		left: 0;
+		right: calc(50% + #{$hu * 0.5});
+		width: auto;
+	}
+
+	// keyword-list
+	// ===================================
+	#keyword-list {
+		width: auto;
+		left: calc(50% + #{$hu * 2});
+		right: 0;
+
+		padding-top: #{$nav_height_small - 0rem};
+		.list-group {
+			// height: 0;
+			height: 1.5em;
+			.label {
+				width: auto;
+				transform: moveX();
+			}
+		}
+	}
+	// &.with-bundle .container-collapsed #keyword-list {
+	// 	padding-top: 0.75rem;
+	// }
+
+	// keyword-list list-group
+	// - - - - - - - - - - - - - - - - - -
+	// &.with-bundle .navigation:not(.container-expanded) #keyword-list {
+	// 	// padding-top: 1.5rem;
+	// 	.list-group {
+	// 		height: 0;
+	// 		visibility: hidden;
+	// 		opacity: 0;
+	// 	}
+	// }
+
+	// ///////////////////////////////////
+	// content
+	// ///////////////////////////////////
+	// media-carousel
+	// ===================================
+
+	.media-carousel {
+		.empty-item {
+			right: calc(50% - #{($hu * 2) + $margin_left});
+			// right: calc(50% - #{($hu * 2) + $margin_right});
+			// right: $margin_right * 7;
+			// right: $margin_left + $margin_right;
+		}
+	}
+}

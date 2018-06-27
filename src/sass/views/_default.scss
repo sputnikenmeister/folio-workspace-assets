@@ -373,10 +373,17 @@ html {
 	width: $page_width;
 	// height: 12rem;
 
-	transition: tx(opacity, 1, 0), tx(height, 1, 0, step-end);
 	opacity: 0;
+	transition: tx(opacity, 1, 0);
+	
 	@at-root .container-expanded:not(.container-changing) & {
 		opacity: 1;
+	}
+	@at-root .container-collapsed.container-changing & {
+		transition: tx(opacity, 1, 0), tx(height, 1, 0, step-end);
+	}
+	@at-root .skip-transitions & {
+		@include skip_transitions;
 	}
 }
 .container-collapsed #nav-graph {

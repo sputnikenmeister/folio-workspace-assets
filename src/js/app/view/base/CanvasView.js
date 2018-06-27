@@ -143,7 +143,7 @@ var CanvasView = View.extend({
 		this._canvasWidth *= this._canvasRatio;
 		this._canvasHeight *= this._canvasRatio;
 
-		this.measureCanvas(); //this._canvasWidth, this._canvasHeight);
+		this.measureCanvas(this._canvasWidth, this._canvasHeight);
 		this.el.width = this._canvasWidth;
 		this.el.height = this._canvasHeight;
 		// this.el.style.height = h + "px";
@@ -220,6 +220,10 @@ var CanvasView = View.extend({
 		}
 	},
 
+	_setStyle: function(s) {
+		CanvasView.setStyle(this._ctx, s);
+	},
+
 	/* --------------------------- *
 	/* render
 	/* --------------------------- */
@@ -279,6 +283,22 @@ var CanvasView = View.extend({
 
 	redraw: function(context, changed) {},
 
+}, {
+	setStyle: function(ctx, s) {
+		if (typeof s != "object") return;
+		for (var p in s) {
+			switch (typeof ctx[p]) {
+				case "undefined":
+					break;
+				case "function":
+					if (Array.isArray(s[p])) ctx[p].apply(ctx, s[p]);
+					else ctx[p].call(ctx, s[p]);
+					break;
+				default:
+					ctx[p] = s[p];
+			}
+		}
+	}
 });
 
 if (DEBUG) {

@@ -3,7 +3,7 @@
 /*/
 "use strict";
 
-console.info("App first statement");
+console.info("Portfolio App started");
 
 if (!DEBUG) {
 	window.addEventListener("error", function(ev) {
@@ -11,10 +11,12 @@ if (!DEBUG) {
 	});
 }
 
-// document.addEventListener('DOMContentLoaded', function() {
+// document.addEventListener('DOMContentLoaded', function(ev) {
+// 	console.log("%s:[event %s]", ev.target, ev.type);
 // });
-window.addEventListener("load", function(ev) {
 
+window.addEventListener("load", function(ev) {
+	console.log("%s:[event %s]", ev.target, ev.type);
 
 	require("Modernizr");
 	require("es6-promise").polyfill();
@@ -25,25 +27,22 @@ window.addEventListener("load", function(ev) {
 	require("math-sign-polyfill");
 	require("setimmediate");
 
-	// var Backbone = require("backbone");
-	// Backbone.$ = require("backbone.native");
 	require("backbone").$ = require("backbone.native");
 	require("backbone.babysitter");
 	require("Backbone.Mutators");
 	require("hammerjs");
 
+	// process bootstrap data, let errors go up the stack
 	try {
-		// process bootstrap data, let errors go up the stack
 		require("app/model/helper/bootstrap")(window.bootstrap);
-		// } catch (err) {
+	} catch (err) {
 		// 	// document.body.innerHTML = "<h1>Oops... </h1>";
 		// 	// document.documentElement.classList.remove("app-initial");
 		// 	// document.documentElement.classList.add("app-error");
-		// 	throw new Error("bootstrap data is missing");
+		throw new Error("bootstrap data is missing");
 	} finally {
-		// detele global var
 		delete window.bootstrap;
-	}
+	} // detele global var
 
 	require("app/view/template/_helpers");
 	// require("app/view/template/_partials");
@@ -56,11 +55,12 @@ window.addEventListener("load", function(ev) {
 	/** @type {module:webfontloader} */
 	var WebFont = require("webfontloader");
 	WebFont.load({
-		async: false,
+		async: true,
 		classes: false,
 		custom: {
 			families: [
-				"Franklin Gothic FS:n4,i4,n7,i7",
+				"Franklin Gothic FS:n4,n7",
+				// "Franklin Gothic FS:n4,i4,n7,i7",
 				"FolioFigures:n4",
 			],
 			testStrings: {
