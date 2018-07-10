@@ -16,60 +16,150 @@
 	position: fixed;
 	width: 100%;
 	top: 0;
+	right: 0;
 
-	@include media(fullwidth) {
-		top: auto;
-		bottom: 0;
-	}
-
-	.debug-links {
-		direction: rtl;
-	}
-	.toggle-enabled {
-	}
-	.debug-links {
+	.debug-links > * {
 		opacity: 0.5;
 	}
 	&:not(.show-links) {
-		.debug-links {
-			opacity: 0.2;
+		width: auto;
+		.debug-links.color-bg {
+			/* override color-bg */
+			background-color: transparent;
 		}
-		// #links-toggle {}
-		&:not(.show-tx) #app-state {
-			display: none;
+		.debug-links > * {
+			opacity: 0.2;
 		}
 		.debug-links > dd {
 			display: none;
 		}
+		&:not(.show-tx) #app-state {
+			display: none;
+		}
 	}
 
+	// ///////////////////////////////////
+	// debug-toolbar components
+	// ///////////////////////////////////
+
+	// buttons/links
+	// -----------------------------------
+	dl.debug-links {
+		line-height: 1;
+		padding: 0.25em 0;
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		direction: rtl;
+
+		& > * {
+			// -webkit-flex: 0 1 auto;
+			flex: 0 1 auto;
+			display: block;
+		}
+
+		&, * {
+			@include user_select(none);
+		}
+
+		dd, dt {
+			cursor: pointer;
+			direction: ltr;
+			padding: 0 0.3em;
+
+			a, select, span, svg {
+				display: inline-block;
+				padding: 0.1em 0.2em 0;
+				// margin: 0.5em;
+			}
+			a, span {
+			}
+			a {
+				border-radius: 0.2em;
+			}
+		}
+		dd {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+
+			border-left: 1px solid currentColor;
+			&:first-child {
+				border-left: 0 none;
+			}
+			&:last-child {
+				border-left: 0 none;
+			}
+		}
+		dt {
+			flex: 0 0 auto;
+			svg.icon {
+				width: 1em;
+				height: 1em;
+				vertical-align: middle;
+				display: block;
+			}
+		}
+		&.debug-links dd {
+			// @include small_caps($lead: inherit);
+			font-size: 85%;
+			font-weight: 400;
+			// line-height: 1.76470;
+		}
+		&.debug-info dd {
+			font-weight: 300;
+			& > * {
+				margin-top: -0.1rem;
+			}
+		}
+		// dd:after {
+		// 	content: "";
+		// 	display: inline-block;
+		// 	width: 1px;
+		// 	height: 0.75em;
+		// 	background-color: currentColor;
+		// 	position: absolute;
+		// 	top: 0.925em;
+		// 	dt + & {
+		// 		display: none;
+		// 	}
+		// 	@include media(fullwidth) {
+		// 		display: none;
+		// 	}
+		// }
+	}
+
+	// app-state
+	// -----------------------------------
 	#app-state {
 		font-size: 85%;
 		font-weight: 700;
 		// line-height: 1.17647059;// inverse of 0.85
-
 		direction: ltr;
-		letter-spacing: -1px;
 		padding: 0 0.5em;
 
 		& > span {
 			display: inline-block;
 			margin-left: 0;
 			margin-right: 0;
-			// width: 1em;
-			// text-align: center;
+			padding: 0;
+			width: 1em;
+			text-align: center;
 			text-transform: none; // uppercase
 			text-decoration: none; // line-through underline overline
 
+			border-right: 1px solid currentColor;
+			&:last-child {
+				border-right: 0 none;
+			}
 			&.has-value {
 				text-transform: uppercase;
 			}
-			// &:not(.has-value) { text-decoration: line-through; }
-			// &.has-changed { text-decoration: underline; }
-			// &:not(.has-changed) { opacity: 0.5; }
 		}
 	}
 
+	// select
+	// -----------------------------------
 	select {
 		-webkit-appearance: none;
 		-moz-appearance: none;
@@ -85,101 +175,20 @@
 			outline: none;
 		}
 	}
-}
 
-// ///////////////////////////////////
-// debug-toolbar buttons
-// ///////////////////////////////////
+	// per-button rules
+	// -----------------------------------
 
-#debug-toolbar dl {
-	line-height: 1rem;
-	// padding: 0;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	&,
-	* {
-		@include user_select(none);
-	}
-	& > * {
-		// -webkit-flex: 0 1 auto;
-		flex: 0 1 auto;
-		display: block;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		cursor: pointer;
-	}
-	dd,
-	dt {
-		margin: auto 0;
-		padding: 0;
-		direction: ltr;
-		a,
-		select,
-		span,
-		svg {
-			display: inline-block;
-			padding: 0.1em 0.2em 0;
-			margin: 0.5em;
-		}
-		a {
-			border-radius: 0.25em;
-		}
-	}
-	dd:after {
-		content: "";
-		display: inline-block;
-		width: 1px;
-		height: 0.75em;
-		background-color: currentColor;
-		position: absolute;
-		top: 0.925em;
-	}
-	dt + dd:after {
-		display: none;
-	}
-	dt {
-		flex: 0 0 auto;
-		svg.icon {
-			width: 1em;
-			height: 1em;
-			vertical-align: middle;
-			display: block;
-		}
-	}
-	&.debug-links dd {
-		// @include small_caps($lead: inherit);
-		font-size: 85%;
-		font-weight: 400;
-		// line-height: 1.76470;
-	}
-	&.debug-info dd {
-		font-weight: 300;
-		& > * {
-			margin-top: -0.1rem;
-		}
-	}
-
-	@include media(fullwidth) {
-		dd:after {
+	@at-root .without-media #debug-toolbar {
+		#media-info,
+		#toggle-logs {
 			display: none;
 		}
 	}
-}
 
-.without-media #debug-toolbar {
-	#media-info,
-	#toggle-logs {
-		display: none;
-	}
-}
+	// #test-results
+	// -----------------------------------
 
-// ///////////////////////////////////
-// #test-results
-// ///////////////////////////////////
-
-#debug-toolbar {
 	#test-results {
 		font: normal 12px/1 monospace;
 		color: #333333;
@@ -189,16 +198,7 @@
 		max-height: 75vh;
 		overflow-y: auto;
 
-		@include media(fullwidth) {
-			width: auto;
-			left: -2rem;
-			right: -2rem;
-			position: absolute;
-			top: auto;
-			bottom: 100%;
-		}
-
-		padding: 1rem 0;
+		padding: 0.25rem 0;
 		& > * {
 			margin: 0.75em 0;
 			padding: 0 1.5em;
@@ -239,6 +239,19 @@
 			&.failed {
 				text-decoration: none;
 			}
+		}
+	}
+
+	@include media(fullwidth) {
+		// top: auto;
+		// bottom: 0;
+		#test-results {
+			// top: auto;
+			// bottom: 100%;
+			// position: absolute;
+			width: auto;
+			left: -2rem;
+			right: -2rem;
 		}
 	}
 }

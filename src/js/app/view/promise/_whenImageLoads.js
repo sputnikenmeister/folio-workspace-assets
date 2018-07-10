@@ -1,7 +1,8 @@
 module.exports = function(image, resolveEmpty) {
 	return new Promise(function(resolve, reject) {
 		if (!(image instanceof window.HTMLImageElement)) {
-			reject(new Error("not an HTMLImageElement"));
+			//reject(new Error("not an HTMLImageElement"));
+			reject("Error: not an HTMLImageElement");
 		} else if (image.complete && (image.src.length > 0 || resolveEmpty)) {
 			// if (image.src === "") console.warn("_whenImageLoads resolved with empty src");
 			// else console.log("_whenImageLoads resolve-sync", image.src);

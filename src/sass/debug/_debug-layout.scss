@@ -91,6 +91,8 @@ $indigo: hsla(275, 100%, 25%, 1);
 // -----------------------------------
 
 .debug-blocks {
+
+	@include debug_outline(0.25rem, solid, lightgreen);
 	// *[data-cid] {
 	// 	@include debug_outline_thin($width: 0.25rem, $style: solid, $color: transparentize($thistle, 0.5));
 	// }
@@ -106,13 +108,18 @@ $indigo: hsla(275, 100%, 25%, 1);
 		}
 		#site-name-wrapper,
 		.list {
+			@include debug_outline_thin(1px, solid, Crimson, -1px);
 			// @include debug_outline_thick($color: $lightcoral);
-			background-color: transparentize($lightcoral, 0.7);
+			background-color: transparentize($lightcoral, 0.9);
 		}
-		#site-name a,
-		.article-button a,
-		.list .list-group .label span,
-		.list .list-item .label {
+		#site-name,
+		.article-button,
+		.list .list-group,
+		.list .list-item {
+		// #site-name a,
+		// .article-button a,
+		// .list .list-group .label span,
+		// .list .list-item .label {
 			background-color: transparentize($lightcoral, 0.7);
 			// @include debug_outline_thin(1px, solid, $lightcoral);
 		}
@@ -125,11 +132,7 @@ $indigo: hsla(275, 100%, 25%, 1);
 		&.container-changing {
 			@include debug_outline(0.5rem, dashed, $deepskyblue, 0.4);
 		}
-		// &[style*="transform"] {
-		// 	@include debug_outline(0.5rem, dashed, $deepskyblue, 0.4);
-		// }
 		.article-view {
-			// background-color: transparentize($lightblue, 0.9);
 			@include debug_outline(0.5rem, solid, $deepskyblue, 0.7);
 			& > * {
 				background-color: transparentize($lightblue, 0.8);
@@ -137,18 +140,15 @@ $indigo: hsla(275, 100%, 25%, 1);
 			}
 		}
 		.stack {
+			.stack-item {
+				@include debug_outline_thin(1px, solid, RoyalBlue);
+			}
 			.content {
 				background-color: transparentize($lightblue, 0.9);
 				& > * {
 					background-color: transparentize($lightblue, 0.7);
-					// @include debug_outline($color: $deepskyblue);
-					// @include debug_outline_thin(1px, solid, $deepskyblue, 0.5);
-					// @include debug_outline(0.5rem, solid, $deepskyblue, 0.8);
 				}
 			}
-			// &[style*="transition"] {
-			// 	@include debug_outline(0.25rem, dashed, $deepskyblue, 0.4);
-			// }
 		}
 		.carousel {
 			background-color: transparentize($lightblue, 0.9);
@@ -169,8 +169,10 @@ $indigo: hsla(275, 100%, 25%, 1);
 			@include debug_outline_thin(1px, solid, $deepskyblue, 0.5);
 		}
 		.empty-item {
+			@include debug_outline_thin(1px, solid, RoyalBlue, -1px);
 			.content {
-				background-color: transparentize($lightblue, 0.7);
+				@include debug_outline_thin(1px, solid, RoyalBlue, -1px);
+				//background-color: transparentize($lightblue, 0.7);
 			}
 		}
 		.media-item {
@@ -187,25 +189,171 @@ $indigo: hsla(275, 100%, 25%, 1);
 // .debug-grid
 // -----------------------------------
 
-#container.debug-grid-bg {
-	background-image: image-url("debug/debug-background.svg");
-	background-color: transparent;
-	background-repeat: no-repeat;
-	background-position: 50% -0.5rem;
-	background-size: #{$page_width + $hu*2} 100%; //1600px;
+// .debug-grid-bg {
+// 	// background-color: transparent;
+// 	background-image: image-url("debug/debug-background.svg");
+// 	background-repeat: no-repeat;
+// 	background-position: 50% 3px;
+// 	background-size: #{$page_width + $hu*2} 100%; //1600px;
+//
+// 	// @include media(desktop-small) {
+// 	@at-root .desktop-small & {
+// 		background-position: 50% 0;
+// 		background-size: #{$page_width_large + $hu*2} 100%; //1600px;
+// 	}
+// 	// @include media(fullwidth) {
+// 	@at-root .fullwidth & {
+// 		background-position: 6px 0;
+// 		background-size: 100% 100%;
+// 	}
+// }
 
-	@include media(desktop-small) {
-		// background-position: calc(50% + 1px) calc(-1rem + 1px);
-		background-size: #{$page_width_large + $hu*2} 100%; //1600px;
+#grid-wrapper {
+	display: none;
+	overflow: hidden;
+	position: absolute;
+
+	@at-root .debug-grid-bg & {
+		display: block;
 	}
-	@include media(fullwidth) {
-		background-size: 100% 100%; //1600px;
-		background-position: 6px 0;
-		// background-size: 100% 100%; //1600px;
+
+	top: 0;//$nav_top_port;
+	right: 0; bottom: 0; left: 0;
+
+	@at-root .desktop-small & {
+		// top: $nav_top_land;
 	}
-	// @include media(mobile) {
-	// 	background-size: #{$page_width_small + $hu*2} 100%;
-	// }
+	@at-root .fullwidth & {
+		// top: $nav_top_small;
+		left: $margin_left;
+		right: $margin_right;
+	}
+}
+
+svg#debug-grid {
+	width: 100%;
+	max-width: $page_width;
+	position: absolute;
+	height: 100%;
+	margin: 0 auto;
+	left: 0; right: 0;
+
+	@at-root .desktop-small & {
+		max-width: $page_width_large;
+	}
+	@at-root .fullwidth & {
+		max-width: $page_width_max;
+		margin: 0;
+	}
+
+	// -----------------------------------
+	// definitions
+	// -----------------------------------
+
+	.baseline, .vguide, .hguide {
+		stroke-width: 1px;
+	}
+
+	#pat-baseline-12px,
+	#pat-baseline-24px {
+		stroke: hsl(276,93%,50%);
+	}
+	#pat-baseline-10px,
+	#pat-baseline-20px {
+		stroke: hsl(236,93%,50%);
+	}
+
+	/* Baseline */
+	#baseline {
+		opacity: 0.5;
+		fill: url("#pat-baseline-12px");
+		@at-root .fullwidth-small & {
+			fill: url("#pat-baseline-10px");
+		}
+	}
+	#baseline-content {
+		opacity: 0.75;
+		fill: url("#pat-baseline-24px");
+		@at-root .fullwidth & {
+			fill: none;//url("#pat-baseline-10px");
+		}
+	}
+	/* Guides columns & margins definitions */
+	#columns {
+		fill: url("#pat-cols-220px");
+		@at-root .fullwidth & {
+			display: none;
+		}
+	}
+	.vguide {
+		stroke: hsl(236,50%,40%);
+		stroke-opacity: 0.5;
+		.gutter {
+			stroke: hsl(276,50%,50%);
+			stroke-opacity: 0.3;
+		}
+	}
+	.hguide {
+		stroke: hsl(136,50%,40%);
+		stroke-opacity: 0.5;
+	}
+
+	// -----------------------------------
+	// Positioning
+	// -----------------------------------
+
+	/* Horizontal guides */
+	#debug-grid-container {
+		transform: translate(0, $nav_top_port);
+		@at-root .desktop-small & {
+			transform: translate(0, $nav_top_land);
+		}
+		@at-root .fullwidth & {
+			transform: translate(0, $nav_top_small);
+		}
+		#gnv0, #gct0 {
+			stroke-dasharray: 0.25rem;
+			stroke-opacity: 1;
+		}
+		#gnv1, #gct1 {
+			transform: translate(0, 3rem);
+		}
+	}
+	#debug-grid-content {
+		transform: translate(0, $nav_height_port);
+		@at-root .desktop-small & {
+			transform: translate(0, $nav_height_land);
+		}
+		@at-root .fullwidth & {
+			transform: translate(0, $nav_height_small);
+		}
+	}
+
+	/* Vertical guides instances */
+	#gl0 { transform: translate(0, 0); }
+	#gr0 { transform: translate(0, 0); }
+
+	#gl1 { transform: translate($hu, 0); }
+	#gr1 { transform: translate(-$hu, 0); }
+
+	// #gm0 { transform: translate(-2rem, 0); }
+	// #gm1 { transform: translate(2rem, 0); }
+
+	@at-root .fullwidth & {
+		#gl0 { transform: translate($margin_left, 0); }
+		#gr0 { transform: translate(-$margin_right, 0); }
+		#gl1 { transform: translate(#{$margin_left + $content_margin_left}, 0); }
+		#gr1 { transform: translate(-#{$margin_right + $content_margin_right}, 0); }
+
+		#gm  { transform: translate(#{$margin_right - $margin_left}, 0); }
+		#gm1 { transform: translate(-#{$content_margin_right}, 0); }
+
+		#gm0 {
+			stroke: green; stroke-opacity: 1;
+			transform: translate(
+				-#{($margin_left + $margin_right) - ($content_margin_left + $content_margin_right)}, 0);
+		}
+	}
 }
 
 // -----------------------------------

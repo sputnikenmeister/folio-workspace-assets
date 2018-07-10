@@ -164,18 +164,21 @@ var MediaRenderer = CarouselRenderer.extend({
 			cs = 1;
 			cw = sw;
 			ch = sh;
+			this.metrics.fitDirection = "both";
 		} else if ((pcw / pch) < (sw / sh)) {
-			// constrain height
+			// fit width
 			cw = pcw;
 			cs = cw / sw;
 			// ch = cs * sh;
 			ch = Math.round(cs * sh);
+			this.metrics.fitDirection = "width";
 		} else {
-			// constrain width
+			// fit height
 			ch = pch;
 			cs = ch / sh;
 			// cw = cs * sw;
 			cw = Math.round(cs * sw);
+			this.metrics.fitDirection = "height";
 		}
 
 		this.metrics.content.x = cx;
@@ -189,6 +192,7 @@ var MediaRenderer = CarouselRenderer.extend({
 		this.metrics.media.height = ch;
 		this.metrics.media.scale = cs;
 
+		// console.log("%s::measure constraint: %s metrics: %o", this.cid, this.metrics.constraint, this.metrics);
 		// var sizing = this.getSizingEl();
 		// sizing.style.maxWidth = (cw + ew) + "px";
 		// sizing.style.maxHeight = (ch + eh) + "px";
@@ -203,6 +207,8 @@ var MediaRenderer = CarouselRenderer.extend({
 		var sizing = this.getSizingEl();
 		sizing.style.maxWidth = this.metrics.content.width + "px";
 		sizing.style.maxHeight = this.metrics.content.height + "px";
+
+		this.el.setAttribute("data-fit-dir", this.metrics.fitDirection);
 
 		return this;
 	},
@@ -308,7 +314,7 @@ if (DEBUG) {
 
 				this.__logElement.style.marginTop = "3rem";
 				this.__logElement.style.maxHeight = "calc(100% - " + (this.metrics.media.height) + "px - 3rem)";
-				this.__logElement.style.width = this.metrics.media.width + "px";
+				//this.__logElement.style.width = this.metrics.media.width + "px";
 				this.__logElement.scrollTop = this.__logElement.scrollHeight;
 
 				return this;

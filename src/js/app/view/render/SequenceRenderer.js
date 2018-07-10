@@ -400,8 +400,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 
 		// progress-meter
 		// ---------------------------------
-
 		this.progressMeter = new ProgressMeter({
+			el: this.el.querySelector(".progress-meter"),
 			values: {
 				available: this._sourceProgressByIdx.concat(),
 			},
@@ -414,7 +414,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 			labelFn: this._progressLabelFn.bind(this)
 		});
 
-		this.el.querySelector(".top-bar").appendChild(this.progressMeter.render().el);
+		// this.el.querySelector(".top-bar")
+		//		.appendChild(this.progressMeter.render().el);
 	},
 
 	_progressLabelFn: function() {
@@ -587,9 +588,11 @@ var SequenceRenderer = PlayableRenderer.extend({
 			});
 		};
 
-		if (nextSource.has("prefetched") || nextSource.has("error")) {
+		if (nextSource.has("prefetched")) {
 			// nextView = context._getItemRenderer(nextSource).el;
 			_whenImageLoads(nextView.el).then(showNextView, showNextView);
+		} else if (nextSource.has("error")) {
+			showNextView();
 		} else {
 			this.content.classList.add("waiting");
 			/* TODO: add ga event 'media-waiting' */

@@ -5,6 +5,7 @@
 module.exports = function(grunt) {
 
 	var _ = require('underscore');
+	var path = require('path');
 
 	grunt.config('pkg', grunt.file.readJSON('package.json'));
 
@@ -21,7 +22,7 @@ module.exports = function(grunt) {
 			// fonts: './images',
 		},
 		ext: {
-			fonts: '*.{eot,woff,woff2,svg,ttf,otf}',
+			fonts: '{eot,woff,woff2,svg,ttf,otf}',
 		},
 		web: {
 			root: 'http://localhost/projects/folio-sym',
@@ -44,12 +45,11 @@ module.exports = function(grunt) {
 	// resources
 	grunt.registerTask('deps-install', [
 		'copy:resources', 'copy:sources', 'deps-build']);
-	grunt.registerTask('deps-build', [
-		'compass:fonts', 'build-favicons', 'modernizr-build:production']);
+	grunt.registerTask('deps-build', ['build-favicons', 'modernizr-build:production']);
 
 	// debug build tasks
-	grunt.registerTask('debug-styles', [
-		'compass:debug', 'compass:ie', 'autoprefixer:debug']);
+	/* NOTE debug-styles defined next to task config */
+	grunt.registerTask('debug-styles', ['debug-styles-sass']);
 	grunt.registerTask('debug-vendor', [
 		'browserify:vendor', 'exorcise:vendor']);
 	grunt.registerTask('debug-client', [
@@ -59,7 +59,8 @@ module.exports = function(grunt) {
 
 	// dist build tasks
 	grunt.registerTask('dist-styles', [
-		'compass:dist', 'compass:ie', 'autoprefixer:dist']);
+		'sass:dist', 'sass:ie', 'autoprefixer:dist']);
+	// 'compass:fonts-dist', 'compass:dist', 'compass:ie', 'autoprefixer:dist']);
 	grunt.registerTask('dist-js', [
 		'browserify:dist', 'uglify:dist']);
 	grunt.registerTask('dist', [
@@ -70,7 +71,7 @@ module.exports = function(grunt) {
 		'browserify:watch-client', 'browserify:watch-vendor', 'watch']);
 
 	grunt.registerTask('clean-all', [
-		'clean:js', 'clean:css', 'compass:clean']);
+		'clean:js', 'clean:css']); //, 'compass:clean']);
 	grunt.registerTask('build', [
 		'debug', 'dist']);
 	grunt.registerTask('rebuild', [
@@ -91,10 +92,10 @@ module.exports = function(grunt) {
 		},
 		'reload-config': {
 			files: ['gruntfile.js', 'package.json'],
-			tasks: ['rebuild'],
+			tasks: ['build'],
 		},
 		'build-styles': {
-			tasks: ['compass:debug', 'compass:ie', 'autoprefixer:debug'],
+			tasks: ['sass:debug', 'sass:ie', 'autoprefixer:debug'],
 			files: ['src/sass/**/*.scss', 'src/sass/**/*.json'],
 		},
 		'build-deps': {
@@ -133,11 +134,8 @@ module.exports = function(grunt) {
 				expand: true,
 				dest: './fonts/',
 				src: [
-					'./src/resources/fonts/franklin-gothic-fs/<%= paths.ext.fonts %>',
-					// './node_modules/@folio/webfonts-numbers/target/glyphs-app/<%= paths.ext.fonts %>',
-					'./node_modules/@folio/webfonts/build/fonts/folio-figures/<%= paths.ext.fonts %>',
-					// './node_modules/@folio/webfonts/build/fonts/franklin-gothic-itc-cp/<%= paths.ext.fonts %>',
-					// './src/resources/fonts/fontello*/**/<%= paths.ext.fonts %>',
+					'./node_modules/@folio/webfonts/build/fonts/folio-figures/*.<%= paths.ext.fonts %>',
+					'./src/resources/fonts/franklin-gothic-fs/*.<%= paths.ext.fonts %>',
 				]
 			}]
 		},
@@ -148,12 +146,19 @@ module.exports = function(grunt) {
 				}
 			},
 			files: [{
+				flatten: true,
 				expand: true,
 				dest: './build/generated/sass/fonts',
-				cwd: './node_modules/@folio/webfonts/build/sass/',
 				src: [
-					'_folio-figures.scss',
-				]
+					'./node_modules/@folio/webfonts/build/sass/_folio-figures.scss',
+					'./src/resources/fonts/franklin-gothic-fs/*.css',
+				],
+				rename: function(dest, src) {
+					var name = path.parse(src).name;
+					name = name.replace(/^_/g, '').toLowerCase();
+					// if (name.charAt(0) != '_') name = '_' + name;
+					return dest + path.sep + name + '.scss';
+				}
 			}]
 		}
 	});
@@ -162,50 +167,126 @@ module.exports = function(grunt) {
 	/* Style Sheets
 	/* --------------------------------- */
 
+	grunt.registerTask('debug-styles-sass', [
+		'sass:debug',
+		'sass:fonts-debug',
+		'sass:ie',
+		'autoprefixer:debug'
+	]);
+
+	// grunt.loadNpmTasks('grunt-sass-format');
+	// grunt.loadNpmTasks('grunt-sass');
+	// grunt.loadNpmTasks('grunt-contrib-compass');
+
 	/* sass
 	/* `npm install --save-dev grunt-sass`
-	/* `npm install --save-dev node-sass-json-importer node-sass-import-once`
+	/* `npm install --save-dev compass-importer`
+	/* `npm install --save-dev node-sass-json-importer`
+	/* `npm install --save-dev node-sass-import-once`
+	/* `npm install --save-dev compass-sass-mixins`
 	/* - - - - - - - - - - - - - - - - - */
-	// var sassJsonImporter = require('node-sass-json-importer');
-	// var sassImportOnce = require('node-sass-import-once');
-	//
-	// grunt.loadNpmTasks('grunt-sass');
-	// grunt.config('sass', {
-	// 	options: {
-	// 		includePaths: ['src/sass/', 'build/compass-stylesheets/'],
-	// 		importer: [sassJsonImporter] //, sassImportOnce],
-	// 	},
-	// 	debug: {
-	// 		options: {
-	// 			sourceMap: true,
-	// 		},
-	// 		files: {
-	// 			'css/folio-debug.css': 'src/sass/<%= paths.filebase.debugStyles %>.scss'
-	// 		}
-	// 	}
-	// });
 
-	/* NOTE: compass dependencies
-	 *`gem install compass sass-json-vars compass-import-once`
-	 */
+	grunt.loadNpmTasks('grunt-contrib-sass');
+	grunt.config('sass', {
+		options: {
+			sourcemap: 'none',
+			precision: 9,
+			loadPath: [
+				'src/sass',
+				'node_modules/compass-mixins/lib/',
+			],
+			require: [
+				'sass-json-vars',
+				'compass-import-once'
+			]
+		}
+	});
+	grunt.config('sass.debug', {
+		options: {
+			sourcemap: 'auto',
+		},
+		files: {
+			'css/folio-debug.css': 'src/sass/<%= paths.filebase.debugStyles %>.scss',
+		}
+	});
+	grunt.config('sass.fonts-debug', {
+		files: {
+			'css/fonts-debug.css': 'src/sass/fonts-debug.scss',
+		}
+	});
+	grunt.config('sass.ie', {
+		files: {
+			'css/folio-ie.css': 'src/sass/folio-ie.scss',
+		}
+	});
 
-	/* compass
+	/* libsass
 	/* - - - - - - - - - - - - - - - - - */
+
+	/*
+	grunt.loadNpmTasks('grunt-sass');
+	grunt.config('sass', {
+		options: {
+			// precision: 9,
+			includePaths: [
+				'src/sass',
+				// 'node_modules/compass-mixins/lib/',
+			],
+			importer: [
+				require('node-sass-json-importer'),
+				require('compass-importer'),
+				// require('node-sass-import-once'),
+			],
+			// functions: {'image-url($url)': function(url) {
+			// url.setValue('url("../images/' + url.getValue() + '")'); return url;
+			// }}
+		},
+		debug: {
+			options: {
+				sourceMap: true,
+				sourceComments: true,
+				outputStyle: 'expanded',
+			},
+			files: {
+				'css/folio-debug.css': 'src/sass/<%= paths.filebase.debugStyles %>.scss',
+			}
+
+		}
+	});
+	*/
+
+	/* - - - - - - - - - - - - - - - - - -
+	 * compass
+	 *
+	 * NOTE: dependencies
+	 * `gem install compass sass-json-vars compass-import-once`
+	 * - - - - - - - - - - - - - - - - - */
+
+	/*
+	grunt.registerTask('debug-styles-compass', [
+		'compass:debug',
+		'compass:fonts-debug',
+		'compass:ie',
+		'autoprefixer:debug'
+	]);
+
 	grunt.loadNpmTasks('grunt-contrib-compass');
 	grunt.config('compass.options', {
 		require: [
 			'sass-json-vars',
 			'compass-import-once',
-			'./build/grunt/compass-encode.rb', // alternative to compass inline-image()
+			'./build/grunt/compass-encode.rb',
+			// alternative to compass inline-image()
 		],
 		sassDir: 'src/sass',
-		cssDir: 'css',
+		cssDir: 'css/compass',
 		imagesDir: 'images',
 		fontsDir: 'fonts',
 		javascriptsDir: 'js',
 		relativeAssets: true,
 		importPath: [
-			'build/generated/sass'
+			'node_modules/compass-mixins/lib/',
+			'build/generated/sass/'
 		]
 		//httpPath: '/workspace/assets',
 	});
@@ -216,64 +297,74 @@ module.exports = function(grunt) {
 		specify: ['src/sass/<%= paths.filebase.debugStyles %>.scss'],
 		sourcemap: true,
 	});
-	grunt.config('compass.fonts.options', {
-		specify: 'src/sass/fonts.scss',
+	grunt.config('compass.fonts-debug.options', {
+		specify: 'src/sass/fonts-debug.scss',
 		sourcemap: false,
-		// outputStyle: 'compressed',
+		assetCacheBuster: true,
 	});
-
 	grunt.config('compass.ie.options', {
 		specify: ['src/sass/<%= paths.filebase.ieStyles %>.scss'],
-		sourcemap: true,
+		sourcemap: false,
 	});
+	*/
 
 	/* autoprefixer
 	/* - - - - - - - - - - - - - - - - - */
 	grunt.loadNpmTasks('grunt-autoprefixer');
 	grunt.config('autoprefixer.debug', {
-		options: { map: true },
-		src: 'css/<%= paths.filebase.debugStyles %>.css'
+		options: {
+			// map: {
+			// 	prev: 'css/',
+			// 	sourcesContent: true
+			// },
+			// diff: true,
+			map: true,
+			// safe: true,
+
+		},
+		src: 'css/folio-debug.css', //'css/<%= paths.filebase.debugStyles %>.css'
 		// files: {'css/<%= paths.filebase.debugStyles %>.css': 'css/<%= paths.filebase.debugStyles %>.css',
 		// 'css/fonts.css': 'css/fonts.css'},
 	});
 
-	/* - - - - - - - - - - - - - - - - - */
-	/* base64 font encode and embed
-	/* - - - - - - - - - - - - - - - - - */
-	grunt.config('compass.b64fonts.options', {
-		specify: 'src/sass/fonts.scss',
-		sourcemap: false,
-		assetCacheBuster: false,
-		cssDir: 'build/generated/b64fonts',
-		sassDir: 'src/sass',
-		fontsDir: 'fonts',
-		environment: 'production',
-		outputStyle: 'expanded'
+
+	/* -------------------------------- */
+	/* base64 font encode and embed		*/
+	/* -------------------------------- */
+
+
+	// var xmlWrapper = {
+	// 	header: '<?xml version="1.0" encoding="UTF-8"?><data><![CDATA[',
+	// 	footer: ']]></data>',
+	// };
+	// grunt.loadNpmTasks('grunt-contrib-copy');
+	grunt.config('copy.fonts-xmlwrap', {
+		options: {
+			process: function(content, srcpath) {
+				return '<?xml version="1.0" encoding="UTF-8"?><data><![CDATA[' + content + ']]></data>';
+			}
+		},
+		files: [{
+			flatten: true,
+			expand: true,
+			src: 'fonts/base64/*.b64',
+			dest: 'fonts/base64',
+			ext: '.xml',
+			extDot: 'last',
+		}]
 	});
 
 	grunt.loadNpmTasks('grunt-embed-fonts');
-	grunt.config('embedFonts', {
-		b64fonts: {
-			options: {
-				applyTo: ['woff', 'woff2']
-			},
-			files: {
-				'build/generated/b64fonts/fonts-embedded.css': ['build/generated/b64fonts/fonts.css']
-			}
+	grunt.config('embedFonts.fonts-inline', {
+		options: {
+			applyTo: ['woff2', 'woff', 'ttf']
 		},
-		franklin: {
-			files: [{
-				expand: true,
-				dest: 'build/generated/b64fonts',
-				cwd: 'src/resources/fonts/franklin-gothic-fs/',
-				src: [
-					'FranklinGothic-Book.css',
-					'FranklinGothic-Demi.css',
-				]
-			}]
+		files: {
+			'css/fonts-inline.css': ['css/fonts.css']
 		}
 	});
-	grunt.registerTask('b64fonts', ['compass:b64fonts', 'embedFonts:b64fonts']);
+
+	grunt.registerTask('fonts-inline', ['sass:dist', 'embedFonts:fonts-inline']);
 
 	/* --------------------------------
 	/* Build JS dependencies
@@ -415,11 +506,36 @@ module.exports = function(grunt) {
 	/* dist
 	/* -------------------------------- */
 
+	grunt.config('sass.dist', {
+		// options: {
+		// 	sourceMap: false,
+		// 	sourceComments: false,
+		// 	outputStyle: 'compressed',
+		// },
+		files: {
+			'css/folio.css': 'src/sass/<%= paths.filebase.distStyles %>.scss',
+			'css/folio-ie.css': 'src/sass/folio-ie.scss',
+			'css/fonts.css': 'src/sass/fonts.scss',
+		}
+	});
+
+	/*
 	grunt.config('compass.dist.options', {
 		specify: 'src/sass/<%= paths.filebase.distStyles %>.scss',
 		sourcemap: false,
+		environment: 'production',
+		outputStyle: 'compressed',
+		// httpPath: '/workspace/assets',
+	});
+
+	grunt.config('compass.fonts-dist.options', {
+		specify: 'src/sass/fonts.scss',
+		sourcemap: false,
+		assetCacheBuster: false,
+		environment: 'production',
 		outputStyle: 'compressed'
 	});
+	*/
 
 	grunt.config('autoprefixer.dist', {
 		options: {

@@ -100,14 +100,14 @@ var NavigationView = View.extend({
 		// });
 
 		this.listenTo(this.graph, "view:render:before", function(view, flags) {
-			if (flags & View.SIZE_INVALID | View.MODEL_INVALID) {
+			if (flags & (View.SIZE_INVALID | View.MODEL_INVALID)) {
 				var vmax = Math.max(
 					this.bundleList._metrics.height,
 					this.keywordList._metrics.height
 				);
+				view.el.style.height = vmax + "px";
 				console.log("%s:%s[view:render:before] flags: %s] height: %o",
 					this.cid, view.cid, View.flagsToString(flags), vmax);
-				view.el.style.height = vmax + "px";
 			}
 		});
 		// this.listenTo(this.bundleList, "view:render:after", function(view, flags) {
@@ -710,7 +710,8 @@ var NavigationView = View.extend({
 			model: this.model,
 			useOpaque: false
 		});
-		this.el.appendChild(view.el);
+		// this.el.appendChild(view.el);
+		this.el.insertBefore(view.el, this.el.firstElementChild);
 		return view;
 	},
 

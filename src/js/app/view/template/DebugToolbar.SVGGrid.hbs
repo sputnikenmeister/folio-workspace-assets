@@ -1,0 +1,98 @@
+<svg id="debug-grid" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMaxYMid slice" viewport-fill="hsl(0,0%,100%)" viewport-fill-opacity="1" style="fill:none;stroke:none;stroke-width:1px;fill:none;fill-rule:evenodd;">
+<defs>
+	{{! base 12px}}
+	<pattern id="pat-baseline-12px" class="baseline base12" x="0" y="0" width="20" height="12" patternUnits="userSpaceOnUse">
+		<line x1="0" x2="100%" y1="0" y2="0" stroke-opacity="1.0"/>
+		<line x1="0" x2="100%" y1="3" y2="3" stroke-opacity="0.125"/>
+		<line x1="0" x2="100%" y1="6" y2="6" stroke-opacity="0.375"/>
+		<line x1="0" x2="100%" y1="9" y2="9" stroke-opacity="0.125"/>
+	</pattern>
+
+	<pattern id="pat-baseline-24px" class="baseline base12" x="0" y="0" width="20" height="24" patternUnits="userSpaceOnUse">
+		<line x1="0" x2="100%" y1="0" y2="0" stroke-opacity="1.0"/>
+	</pattern>
+
+	{{! base 10px}}
+	<pattern id="pat-baseline-10px" class="baseline base10" x="0" y="0" width="20" height="10" patternUnits="userSpaceOnUse">
+		<line x1="0" x2="100%" y1="0" y2="0" stroke-opacity="1.00"/>
+		<line x1="0" x2="100%" y1="5" y2="5" stroke-opacity="0.75"/>
+	</pattern>
+	<pattern id="pat-baseline-20px" class="baseline base10" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+		<line x1="0" x2="100%" y1="0" y2="0" stroke-opacity="1.0"/>
+	</pattern>
+	{{!
+	<line x1="0" x2="100%" y1="12" y2="12" stroke-opacity="0.5"/>
+	<line x1="0" x2="100%" y1="15" y2="15" stroke-opacity="0.125"/>
+	<line x1="0" x2="100%" y1="18" y2="18" stroke-opacity="0.375"/>
+	<line x1="0" x2="100%" y1="21" y2="21" stroke-opacity="0.125"/>
+	}}
+	{{!
+	<line x1="0" x2="0" y1="0" y2="100%" stroke-opacity="0.50" stroke="hsl(336,93%,50%)"/>
+	<rect x="0" y="0" width="100%" height="1" fill-opacity="1.00" />
+	<rect x="0" y="6" width="100%" height="1" fill-opacity="0.50" />
+	<rect x="0" y="3" width="100%" height="1" fill-opacity="0.125" />
+	<rect x="0" y="9" width="100%" height="1" fill-opacity="0.125" />
+	<rect x="0" y="0" width="1" height="100%" fill="hsl(336,93%,50%)" fill-opacity="0.25" />
+	}}
+	{{!
+	<line x1="0" x2="0" y1="0" y2="100%" stroke-opacity="0.50" stroke="hsl(336,93%,50%)"/>
+	<rect x="0" y="0" width="100%" height="1" fill-opacity="1.00" />
+	<rect x="0" y="5" width="100%" height="1" fill-opacity="0.50" />
+	<rect x="0" y="0" width="1" height="100%" fill="hsl(336,93%,50%)" fill-opacity="0.25" />
+`	`}}
+	{{!<pattern id="pat-hgrid-220px" x="0" y="0" width="220" height="36" patternUnits="userSpaceOnUse">
+		<g fill-opacity="0.05">
+			<rect width="100%" height="9" x="0" y="0" transform="translate(0 0)" fill="hsl(236,50%,100%)"/>
+			<rect width="100%" height="9" x="0" y="0" transform="translate(0 9)" fill="hsl(236,50%,66%)"/>
+			<rect width="100%" height="9" x="0" y="0" transform="translate(0 18)" fill="hsl(236,50%,33%)"/>
+			<rect width="100%" height="9" x="0" y="0" transform="translate(0 27)" fill="hsl(236,50%,0%)"/>
+		</g>
+	</pattern>}}
+	<pattern id="pat-cols-220px" x="0" y="0" width="220" height="36" patternUnits="userSpaceOnUse">
+		<rect transform="translate(0,0)" x="0" y="0" width="20" height="100%" fill="hsl(336,50%,40%)" fill-opacity="0.1"/>
+		<rect transform="translate(200,0)" x="0" y="0" width="20" height="100%" fill="hsl(336,50%,40%)" fill-opacity="0.1"/>
+		<line transform="translate(20 0)" x1="0" x2="0" y1="0" y2="100%" stroke="hsl(336,50%,60%)" stroke-opacity="0.2"/>
+		<line transform="translate(200 0)" x1="0" x2="0" y1="0" y2="100%" stroke="hsl(336,50%,40%)" stroke-opacity="0.2"/>
+
+		<line transform="translate(140 0)" x1="0" x2="0" y1="0" y2="100%" stroke="hsl(336,50%,40%)" stroke-opacity="0.3"/>
+		<line transform="translate(80 0)" x1="0" x2="0" y1="0" y2="100%" stroke="hsl(336,50%,40%)" stroke-opacity="0.3"/>
+
+		<line transform="translate(0 0)" x1="0" x2="0" y1="0" y2="100%" stroke="hsl(236,50%,40%)" stroke-opacity="0.4" stroke-width="1"/>
+		<line transform="translate(220 0)" x1="0" x2="0" y1="0" y2="100%" stroke="hsl(236,50%,40%)" stroke-opacity="0.4" stroke-width="1"/>
+	</pattern>
+</defs>
+<g transform="translate(0 0.5)">
+	<rect id="baseline" x="0" y="0" width="100%" height="100%"/>
+
+	<g id="debug-grid-container">
+		<line id="gnv0" class="hguide" x1="0" x2="100%" y1="0" y2="0"/>
+		<line id="gnv1" class="hguide" x1="0" x2="100%" y1="0" y2="0"/>
+		<g id="debug-grid-content">
+			<rect id="baseline-content" x="0" y="0" width="100%" height="100%"/>
+			<line id="gct0" class="hguide" x1="0" x2="100%" y1="0" y2="0"/>
+			<line id="gct1" class="hguide" x1="0" x2="100%" y1="0" y2="0"/>
+		</g>
+	</g>
+
+	<rect id="columns" x="0" y="0" width="100%" height="100%"/>
+	<line id="gl0" class="vguide" x1="0" x2="0" y1="0" y2="100%"/>
+	<line id="gl1" class="vguide gutter lgap" x1="0" x2="0" y1="0" y2="100%"/>
+	<line id="gr0" class="vguide" x1="100%" x2="100%" y1="0" y2="100%"/>
+	<line id="gr1" class="vguide gutter rgap" x1="100%" x2="100%" y1="0" y2="100%"/>{{!
+
+	<line id="ga" class="vguide" x1="33.333333%" x2="33.333333%" y1="0" y2="100%"/>
+
+	<line id="gm" class="vguide" x1="66.666666%" x2="66.666666%" y1="0" y2="100%"/>
+	<line id="gm0" class="vguide lgap" x1="66.666666%" x2="66.666666%" y1="0" y2="100%"/>
+	<line id="gm1" class="vguide rgap" x1="66.666666%" x2="66.666666%" y1="0" y2="100%"/>}}
+</g>
+{{!<svg id="left_items" viewBox="0 0 2000 50" preserveAspectRatio="xMinYMin meet">
+	<rect class="window-chrome" x="0%" y="0" width="100%" height="54" rx="4" transform="translate(0.5 0.5)" stroke="red" stroke-width="1"/>
+</svg>
+<svg id="right_items" viewBox="-2000 0 2000 50" preserveAspectRatio="xMaxYMin meet">
+	<rect class="window-chrome" x="-100%" y="0" width="100%" height="54" rx="4" transform="translate(-0.5 0.5)" stroke="red" stroke-width="1"/>
+</svg>
+<svg id="center_items" viewBox="-1000 0 2000 50" preserveAspectRatio="xMidYMin meet">
+	<text id="title-text" class="ui-text" x="0" y="18" text-anchor="middle" fill="red">Window Title</text>
+</svg>}}
+</svg>

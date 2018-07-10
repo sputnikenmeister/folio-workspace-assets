@@ -23,6 +23,9 @@ var View = require("app/view/base/View");
 var viewTemplate = require("./template/DebugToolbar.hbs");
 
 /** @type {Function} */
+var gridTemplate = require("./template/DebugToolbar.SVGGrid.hbs");
+
+/** @type {Function} */
 var sizeTemplate = _.template("<%= w %> \u00D7 <%= h %>");
 
 // var appStateSymbols = { withBundle: "b", withMedia: "m", collapsed: "c"};
@@ -38,6 +41,15 @@ var DebugToolbar = View.extend({
 	className: "toolbar",
 	/** @override */
 	template: viewTemplate,
+
+	/** @override */
+	properties: {
+		grid: {
+			get: function() {
+				return this._grid || (this._grid = this.createGridElement());
+			}
+		}
+	},
 
 	initialize: function(options) {
 		Cookies.defaults = {
@@ -55,6 +67,10 @@ var DebugToolbar = View.extend({
 		/* - - - - - - - - - - - - - - - - */
 		var container = document.body.querySelector("#container");
 
+		/* create/attach svg grid element
+		/* - - - - - - - - - - - - - - - - */
+		container.insertBefore(this.createGridElement(), container.firstElementChild);
+
 		/* info elements
 		/* - - - - - - - - - - - - - - - - */
 		this.backendEl = this.el.querySelector("#edit-backend a");
@@ -62,20 +78,26 @@ var DebugToolbar = View.extend({
 		this.appStateEl = this.el.querySelector("#app-state");
 
 		/* toggle visibility
-				/* - - - - - - - - - - - - - - - - */
-		this.initializeClassToggle("show-links", this.el.querySelector(".debug-links #links-toggle"), this.el);
+		/* - - - - - - - - - - - - - - - - */
+		this.initializeClassToggle("show-links", this.el.querySelector(".debug-links #links-toggle"), this.el,
+			function(key, value) {
+				this.el.classList.toggle("not-" + key, !value);
+				// console.log("%s:initializeClassToggle:[callback] %o", this.cid, arguments);
+			}
+		);
 		this.initializeClassToggle("show-tests", this.el.querySelector("#toggle-tests a"), this.el);
 		this.initializeClassToggle("hide-passed", this.el.querySelector("#toggle-passed"), this.el);
 
 		/* toggle container classes
 		/* - - - - - - - - - - - - - - - - */
-		this.initializeClassToggle("debug-grid-bg", this.el.querySelector("#toggle-grid-bg a"), container);
+		this.initializeClassToggle("debug-grid-bg", this.el.querySelector("#toggle-grid-bg a"), document.body);
 		this.initializeClassToggle("debug-blocks", this.el.querySelector("#toggle-blocks a"), container);
 		this.initializeClassToggle("debug-markdown", this.el.querySelector("#toggle-markdown a"), container);
 		this.initializeClassToggle("debug-logs", this.el.querySelector("#toggle-logs a"), container);
 		this.initializeClassToggle("debug-tx", this.el.querySelector("#toggle-tx a"), container,
 			function(key, value) {
 				this.el.classList.toggle("show-tx", value);
+				this.el.classList.toggle("not-show-tx", !value);
 			}
 		);
 
@@ -131,24 +153,26 @@ var DebugToolbar = View.extend({
 			el.classList.toggle("has-changed", this.model.hasChanged(prop));
 			el.classList.toggle("color-reverse", this.model.hasChanged(prop));
 		}
-		if (this.model.hasChanged("routeName")) {
-			var attrVal = Globals.APP_ROOT + "symphony/";
-			switch (this.model.get("routeName")) {
-				case "article-item":
-					attrVal += "publish/articles/edit/" + this.model.get("article").id;
-					break;
-				case "bundle-item":
-					attrVal += "publish/bundles/edit/" + this.model.get("bundle").id;
-					break;
-				case "media-item":
-					attrVal += "publish/media/edit/" + this.model.get("media").id;
-					break;
-				case "root":
-					attrVal += "publish/bundles";
-					break;
-			}
-			this.backendEl.setAttribute("href", attrVal);
+
+		// NOTE: Always but rewrite CMS href.
+		// Only collapsed may have changed, but not worth all the logic
+		var attrVal = Globals.APP_ROOT + "symphony/";
+		switch (this.model.get("routeName")) {
+			case "article-item":
+				attrVal += "publish/articles/edit/" + this.model.get("article").id;
+				break;
+			case "bundle-item":
+				attrVal += "publish/bundles/edit/" + this.model.get("bundle").id;
+				break;
+			case "media-item":
+				attrVal += "publish/media/edit/" + this.model.get("media").id;
+				break;
+			case "root":
+				attrVal += "publish/bundles";
+				break;
 		}
+		this.backendEl.setAttribute("href", attrVal);
+
 		if (this.model.hasChanged("media")) {
 			if (this.model.has("media")) {
 				this.mediaInfoEl.textContent = sizeTemplate(this.model.get("media").get("source").toJSON());
@@ -158,6 +182,13 @@ var DebugToolbar = View.extend({
 				this.mediaInfoEl.style.display = "none";
 			}
 		}
+	},
+
+	createGridElement: function() {
+		var el = document.createElement("div");
+		el.id = "grid-wrapper";
+		el.innerHTML = gridTemplate();
+		return el;
 	},
 });
 

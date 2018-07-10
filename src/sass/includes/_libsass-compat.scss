@@ -1,0 +1,20 @@
+// $ts: "?#{random(1000000)}";
+
+@function image-url($url) {
+	$unquoted_url: unquote($url);
+	@return url("../images/#{$unquoted_url}");
+	// @return url("../images/#{$unquoted_url + if($debug, $ts, null)}");
+}
+
+@function font-url($url) {
+	$unquoted_url: unquote($url);
+	@return url("../fonts/#{$unquoted_url}");
+}
+
+@function base64_encode($url) {
+	@return image-url($url);
+}
+
+@function base64-encode($url) {
+	@return image-url($url);
+}

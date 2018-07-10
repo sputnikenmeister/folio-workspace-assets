@@ -18,11 +18,11 @@ var prefixedProperty = require("utils/prefixedProperty");
 /** @type {module:utils/css/getBoxEdgeStyles} */
 var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
-var diff = function(a1, a2) {
+var diff = function(a1, a2, dest) {
 	return a1.reduce(function(res, o, i, a) {
 		if (a2.indexOf(o) == -1) res.push(o);
 		return res;
-	}, []);
+	}, dest || []);
 };
 
 /** @type {module:app/control/Globals.TRANSLATE_TEMPLATE} */
@@ -93,6 +93,7 @@ var FilterableListView = View.extend({
 		_.defaults(options, this.defaults);
 		this.renderer = options.renderer;
 		this._filterFn = options.filterFn;
+		this._filteredItems = [];
 
 		this.collection.each(this.createItemView, this);
 		this.refresh();

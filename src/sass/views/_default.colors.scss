@@ -45,6 +45,9 @@ body {
 	z-index: 1;
 	#navigation {
 		// z-index: 1;
+		#nav-graph {
+			z-index: 1;
+		}
 		@at-root .transform-wrapper {
 			z-index: 1;
 			.list {

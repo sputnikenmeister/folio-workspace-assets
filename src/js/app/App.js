@@ -11,6 +11,20 @@ if (!DEBUG) {
 	});
 }
 
+require("Modernizr");
+require("es6-promise").polyfill();
+require("classlist-polyfill");
+require("raf-polyfill");
+require("matches-polyfill");
+require("fullscreen-polyfill");
+require("math-sign-polyfill");
+require("setimmediate");
+
+require("backbone").$ = require("backbone.native");
+require("backbone.babysitter");
+require("Backbone.Mutators");
+require("hammerjs");
+
 // document.addEventListener('DOMContentLoaded', function(ev) {
 // 	console.log("%s:[event %s]", ev.target, ev.type);
 // });
@@ -18,31 +32,16 @@ if (!DEBUG) {
 window.addEventListener("load", function(ev) {
 	console.log("%s:[event %s]", ev.target, ev.type);
 
-	require("Modernizr");
-	require("es6-promise").polyfill();
-	require("classlist-polyfill");
-	require("raf-polyfill");
-	require("matches-polyfill");
-	require("fullscreen-polyfill");
-	require("math-sign-polyfill");
-	require("setimmediate");
-
-	require("backbone").$ = require("backbone.native");
-	require("backbone.babysitter");
-	require("Backbone.Mutators");
-	require("hammerjs");
-
 	// process bootstrap data, let errors go up the stack
 	try {
 		require("app/model/helper/bootstrap")(window.bootstrap);
 	} catch (err) {
-		// 	// document.body.innerHTML = "<h1>Oops... </h1>";
-		// 	// document.documentElement.classList.remove("app-initial");
-		// 	// document.documentElement.classList.add("app-error");
-		throw new Error("bootstrap data is missing");
-	} finally {
+		document.body.classList.remove("app-initial");
+		document.body.classList.add("app-error");
+		throw new Error("bootstrap data error (" + err.message + ")", err.fileName, err.lineNumber);
+	} finally { // detele global var
 		delete window.bootstrap;
-	} // detele global var
+	}
 
 	require("app/view/template/_helpers");
 	// require("app/view/template/_partials");
@@ -59,8 +58,8 @@ window.addEventListener("load", function(ev) {
 		classes: false,
 		custom: {
 			families: [
-				"Franklin Gothic FS:n4,n7",
-				// "Franklin Gothic FS:n4,i4,n7,i7",
+				// "Franklin Gothic FS:n4,n7",
+				"Franklin Gothic FS:n4,i4,n7,i7",
 				"FolioFigures:n4",
 			],
 			testStrings: {
@@ -69,14 +68,14 @@ window.addEventListener("load", function(ev) {
 		},
 		active: function() {
 			console.info("WebFont::active");
-			AppView.getInstance();
+			// AppView.getInstance();
 		},
 		fontactive: function(familyName, variantFvd) {
 			console.info("WebFont::fontactive '%s' (%s)", familyName, variantFvd);
 		},
 		inactive: function() {
 			console.warn("WebFont::inactive");
-			AppView.getInstance();
+			// AppView.getInstance();
 		},
 		fontinactive: function(familyName, variantFvd) {
 			console.warn("WebFont::fontinactive '%s' (%s)", familyName, variantFvd);
@@ -88,6 +87,7 @@ window.addEventListener("load", function(ev) {
 		// 	console.log("WebFont::fontloading", familyName, JSON.stringify(variantDesc, null, " "));
 		// },
 	});
+	AppView.getInstance();
 });
 
 

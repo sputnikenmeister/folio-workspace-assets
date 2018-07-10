@@ -1,15 +1,16 @@
 <div class="placeholder sizing"></div>
 <div class="content media-border">
 	<div class="controls content-size">
-		<div class="top-bar control-box">
+		{{! <div class="top-bar control-box"></div> }}
+		{{! <div class="bottom-bar control-box"></div> }}
+		{{! <div class="progress-meter"></div> }}
+			<canvas class="progress-meter"></canvas>
 			<a class="fullscreen-toggle" href="javascript:(void 0)">
 				<svg version="1.1" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" viewBox="-21 -21 42 42" style="max-width:14px;max-height:14px">
 					<path d="M-5,5 L-20,20 M-7,20 L-20,20 L-20,7 M5,-5 L20,-20 M7,-20 L20,-20 L20,-7" class="color-stroke" style="stroke-width:1;fill:none;" vector-effect="non-scaling-stroke" />
+					{{!<path d="M-7,7 L-20,20 M-9,20 L-20,20 L-20,9 M7,-7 L20,-20 M9,-20 L20,-20 L20,-9 M7,7 L20,20 M9,20 L20,20 L20,9 M-7,-7 L-20,-20 M-9,-20 L-20,-20 L-20,-9" class="color-stroke" style="stroke-width:1;fill:none;" vector-effect="non-scaling-stroke" />}}
 				</svg>
-			</a>{{! <div class="progress-meter"></div> }}
-			{{! <canvas class="progress-meter"></canvas> }}
-		</div>
-		{{! <div class="bottom-bar control-box"></div> }}
+			</a>
 	</div>
 	<div class="crop-box media-size">
 		<video preload="none" width="240" height="180"></video>

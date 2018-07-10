@@ -223,6 +223,7 @@ var VideoRenderer = PlayableRenderer.extend({
 		// progress-meter
 		// ---------------------------------
 		this.progressMeter = new ProgressMeter({
+			el: this.el.querySelector(".progress-meter"),
 			maxValues: {
 				amount: this.video.duration,
 				available: this.video.duration,
@@ -231,8 +232,8 @@ var VideoRenderer = PlayableRenderer.extend({
 			backgroundColor: this.model.attr("background-color"),
 			labelFn: this._progressLabelFn.bind(this)
 		});
-		var parentEl = this.el.querySelector(".top-bar");
-		parentEl.insertBefore(this.progressMeter.render().el, parentEl.firstChild);
+		// var parentEl = this.el.querySelector(".top-bar");
+		// parentEl.insertBefore(this.progressMeter.render().el, parentEl.firstChild);
 	},
 
 	_progressLabelFn: function(value, total) {

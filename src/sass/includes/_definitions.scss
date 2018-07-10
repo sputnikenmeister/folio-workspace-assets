@@ -101,7 +101,7 @@ $mono_font: $mono_font;
 }
 
 //@mixin heading_font($size: 24px, $weight: 600, $lead: 24px) {
-@mixin heading_font($weight: 600, $size: 1.99rem, $lead: 1, $track: -1px) {
+@mixin heading_font($weight: 600, $size: 1.999999999rem, $lead: 2rem, $track: -1px) {
 	font-size: $size;
 	font-weight: $weight;
 	line-height: $lead;

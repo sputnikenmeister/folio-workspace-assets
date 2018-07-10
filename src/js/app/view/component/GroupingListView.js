@@ -63,7 +63,12 @@ var GroupingListView = FilterableListView.extend({
 			get: function() {
 				return this._groups;
 			}
-		}
+		},
+		filteredGroups: {
+			get: function() {
+				return this._filteredGroups;
+			}
+		},
 	},
 
 	/** @override */
@@ -71,9 +76,9 @@ var GroupingListView = FilterableListView.extend({
 		FilterableListView.prototype.initialize.apply(this, arguments);
 
 		this._groups = [];
-		// this._groupItems = [];
-		this._groupsByItemCid = {};
+		this._filteredGroups = [];
 
+		this._groupsByItemCid = {};
 		this._groupingFn = options.groupingFn;
 		this.groupingRenderer = options.groupingRenderer;
 
@@ -113,15 +118,16 @@ var GroupingListView = FilterableListView.extend({
 
 		if (this._groupingFn) {
 			if (this._filteredItems.length == 0) {
+				this._filteredGroups = [];
 				this._groups.forEach(function(group) {
 					this.itemViews.findByModel(group).el.classList.remove("excluded");
 				}, this);
 			} else {
-				var filteredGroups = this._filteredItems.map(function(item) {
+				this._filteredGroups = _.uniq(this._filteredItems.map(function(item) {
 					return this._groupsByItemCid[item.cid];
-				}, this);
+				}, this));
 				this._groups.forEach(function(group) {
-					this.itemViews.findByModel(group).el.classList.toggle("excluded", filteredGroups.indexOf(group) == -1);
+					this.itemViews.findByModel(group).el.classList.toggle("excluded", this._filteredGroups.indexOf(group) == -1);
 				}, this);
 			}
 			// this._groupsExclusionIndex = this._groups.map(function (group) {

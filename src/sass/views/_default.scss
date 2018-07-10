@@ -8,35 +8,9 @@
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$nav_top_port: 2.5rem;
-$nav_height_port: 12rem; //13.5rem;//14.25rem;
+$nav_top_port: 2.5rem;//2.5rem;
+$nav_height_port: 14rem; //13.5rem;//14.25rem;
 $nav_collapse_offset: map-get($temp, collapse_offset) * 1px; //28rem;
-
-// block definitions
-// - - - - - - - - - - - - - - - - - -
-%nav_list {
-	position: absolute;
-	display: inline-block;
-	// display: block;
-	will-change: transform;
-	// transform-style: preserve-3d;
-	// transform: move();
-	// box-sizing: content-box;
-}
-// leaf elements
-// - - - - - - - - - - - - - - - - - -
-%leaf_content {
-	box-sizing: border-box;
-	padding-left: $hu;
-	padding-right: $hu;
-	.label {
-		padding: 0 #{$hu};
-		margin: 0 -#{$hu};
-	}
-	&, * {
-		@include user_select(none);
-	}
-}
 
 @import "views/default.colors";
 @import "views/default.mdown";
@@ -54,84 +28,157 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
-body,
 html {
 	height: 100%;
-	overflow-x: hidden;
+	overflow: hidden;
+	overflow-y: auto;
+	overscroll-behavior: none;
+}
+
+body {
+	// height: 100%;
+	width: 100%;
+	min-height: 100%;
+	overflow: hidden;
+	overflow-y: auto;
 	overscroll-behavior: none;
 }
 
 // Container
 // - - - - - - - - - - - - - - - - - -
 #container {
-	width: 100%;
-	height: 100%;
 	display: block;
-	overflow: hidden;
+	width: 100%;
 	min-width: $page_width;
+	min-height: 100%;
 }
-
-// ///////////////////////////////////
-// navigation
-// ///////////////////////////////////
 
 #navigation {
 	position: relative;
 	margin: 0 auto;
+	box-sizing: content-box;
 
 	max-width: $page_width;
 	min-height: $nav_height_port;
 	// padding-top: $nav_top_port;
-	top: $nav_top_port;
+	padding-top: 0;
+	margin-top: $nav_top_port;
 }
+
+#content {
+	overflow: hidden;
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	// padding-top: $nav_top_port;
+	padding-top: 0;
+	margin-top: $nav_top_port;
+}
+
+// ///////////////////////////////////
+// navigation children
+// ///////////////////////////////////
+
+// leaf elements
+// - - - - - - - - - - - - - - - - - -
+%leaf_content {
+	box-sizing: border-box;
+	padding-left: $hu;
+	padding-right: $hu;
+	.label {
+		padding: 0 #{$hu};
+		margin: 0 -#{$hu};
+	}
+	&, * {
+		@include user_select(none);
+	}
+}
+
+// block definitions
+// - - - - - - - - - - - - - - - - - -
+%nav_list {
+	position: absolute;
+	display: inline-block;
+	// will-change: transform;
+	// display: block;
+	// transform-style: preserve-3d;
+	// transform: move();
+	// box-sizing: content-box;
+}
+
 .transform-wrapper {
 	// @extend %nav_list;
 	position: absolute;
 	display: inline-block;
+	// will-change: transform;
 	// display: block;
-	will-change: transform;
 	// transform-style: preserve-3d;
+}
+
+// Common alignment
+// ===================================
+
+#bundle-list, #keyword-list {
+	padding-top: $nav_height_port;
+	padding-bottom: 1.5rem;
+}
+.with-article,
+.with-bundle {
+	#bundle-list, #keyword-list {
+		padding-top: 1.5rem;
+	}
+}
+.without-bundle.without-article {
+	#bundle-list, #keyword-list {
+		min-height: 0;
+	}
+}
+#site-name, #about-button {
+	margin-top: 1.5rem;
+	margin-bottom: 1.5rem;
 }
 
 // FilterableList
 // ===================================
 @import "components/filterable";
 
-// .filterable {
-	.list-item {
-		@extend %leaf_content;
-		white-space: nowrap;
-		cursor: pointer;
-		a {
-			display: inline-block;
-			transition: tx(color, 1, 1);
-		}
-		.label {
-			line-height: 0;
-			// margin: 0 #{-$hu * 0.75} 0 #{-$hu};
-			// padding: 0 #{$hu * 0.75} 0 $hu;
-			// display: inline-block;
-		}
+.list-item {
+	@extend %leaf_content;
+	white-space: nowrap;
+	cursor: pointer;
+	a {
+		display: inline-block;
+		transition: tx(color, 1, 1);
 	}
-	.list-group {
-		@extend %leaf_content;
-		white-space: nowrap;
-		.label {
-			display: inline-block;
-		}
+	.label {
+		line-height: 0;
+		// margin: 0 #{-$hu * 0.75} 0 #{-$hu};
+		// padding: 0 #{$hu * 0.75} 0 $hu;
+		// display: inline-block;
 	}
-// }
+}
+.list-group {
+	@extend %leaf_content;
+	white-space: nowrap;
+	.label {
+		display: inline-block;
+	}
+}
 
 // bundle-list
 // ===================================
 #bundle-list {
 	@extend %nav_list;
 	width: $main_width - $aside_width;
-	padding-top: $nav_height_port;
-	padding-bottom: 1.5rem;
+	// margin-top: 0.25rem;
+	// padding-top: $nav_height_port;
+	// padding-bottom: 1.5rem;
 	min-height: 4.5rem;
 
-	@include heading_font(600, 1.9999999rem, 2rem, -1px);
+	@include heading_font(600, 1.999999999rem, 2rem, -1px);
+	// @include heading_font(600, 1.999999999rem, 1.25, -1px);
 
 	.list-item {
 		// width: $main_width - $aside_width;
@@ -161,9 +208,10 @@ html {
 		}
 	}
 }
-.with-bundle #bundle-list {
-	padding-top: 1.5rem;
-}
+// .with-bundle #bundle-list {
+// 	padding-top: 1.5rem;
+// }
+
 // bundle-list-wrapper
 // - - - - - - - - - - - - - - - - - -
 #bundle-list-wrapper {
@@ -175,8 +223,8 @@ html {
 #keyword-list {
 	@extend %nav_list;
 	width: $aside_width;
-	padding-top: #{$nav_height_port - 0.25rem};
-	padding-bottom: 1.5rem;
+	// padding-top: $nav_height_port;//#{$nav_height_port - 0.25rem};
+	// padding-bottom: 1.5rem;
 	.list-item {
 		// width: 100%;
 		width: $aside_width;
@@ -187,18 +235,21 @@ html {
 		}
 	}
 	.list-group {
-		// NOTE: in js, this value is ignored when height is zero
+		// NOTE: in js, margin-top is ignored when height is zero
 		margin-top: 0.5rem;
 		white-space: nowrap;
 		height: 0;
+		/*&:not(.excluded):first-child {
+			top: 0;
+		}*/
 
-		$list_group_width: $aside_width - $gutter - $hu*2;
+		// $list_group_width: $aside_width - $gutter - $hu*2;
 		width: $aside_width; //$list-group-width;
 		// width: calc(100% - #{$gutter});
 		.label {
 			@include small_caps($lead: 0);
 			display: inline-block;
-			width: $list_group_width;
+			width: $aside_width - $gutter - $hu*2;//$list_group_width;
 			// transform: movel-$list_group_width, 0);
 			// width: 100%;
 			transform: moveX(-100%);
@@ -210,14 +261,6 @@ html {
 			& > span {
 				padding: 0.25em 1rem;
 				margin: -0.25em -1rem;
-
-				// padding: 0.25rem #{0.5*$hu};
-				// margin: -0.25rem #{-0.5*$hu};
-
-				// padding-top: 0.25rem;
-				// padding-bottom: 0.25rem;
-				// margin-top: -0.25rem;
-				// margin-bottom: -0.25rem;
 			}
 		}
 	}
@@ -239,17 +282,17 @@ html {
 		}
 	}
 }
-.with-bundle #keyword-list {
-	padding-top: 1.25rem;
-}
+// .with-bundle #keyword-list {
+// 	padding-top: 1.5rem;
+// }
 
 // keyword-list list-group
 // - - - - - - - - - - - - - - - - - -
 .without-bundle {
 	#bundle-list, #keyword-list {
 		// padding-top: 0 !important;
-		padding-bottom: 0;
-		min-height: 0;
+		// padding-bottom: 0;
+		// min-height: 0;
 		&.collapsed {
 			.list-group, .list-item {
 				height: 0;
@@ -269,13 +312,12 @@ html {
 // ===================================
 #site-name {
 	@include heading_font(600, 1.9999999rem, 2rem);
+// 	@include heading_font(600, 1.9999999rem, 1.25); //1.16666666);
 	@extend %leaf_content;
 
 	position: absolute;
 	display: block;
-	padding-top: 0.5rem;
-	padding-bottom: 0.5rem;
-	top: 1rem;
+	top: 0;
 	transform: moveX();
 	a {
 		transition: tx(color, 1, 1);
@@ -287,14 +329,12 @@ html {
 		transform: moveX(-100%);
 	}
 }
+
 // site-name-wrapper
 // - - - - - - - - - - - - - - - - - -
 #site-name-wrapper {
 	left: 0;
-	// width: 100%;
 	width: $aside_width;
-	// width: auto;
-	// transform: move();
 }
 // .with-bundle #site-name-wrapper {
 // 	transform: moveX(-100%);
@@ -303,13 +343,12 @@ html {
 // article-list
 // ===================================
 .article-button {
-	@include heading_font(300, 1.9999999rem, 2rem);
+	@include heading_font(300, 1.999999999rem, 2rem);
+	// @include heading_font(300, 1.9999999rem, 1.25); //1.16666666);
 	@extend %leaf_content;
 
 	position: absolute;
 	display: block;
-	padding-top: 0.5rem;
-	padding-bottom: 0.5rem;
 	transform: moveX();
 	a {
 		visibility: visible;
@@ -332,7 +371,7 @@ html {
 	}
 }
 .article-button#about-button {
-	top: 1rem;
+	top: 2rem;
 }
 
 // article-list-wrapper (vertical movements)
@@ -340,7 +379,7 @@ html {
 #article-list-wrapper {
 	left: 0;
 	width: $aside_width;
-	transform: moveY(2rem);
+	// transform: moveY(2rem);
 }
 // .with-article #article-list-wrapper {
 // 	transform: move(0, 0);
@@ -375,7 +414,7 @@ html {
 
 	opacity: 0;
 	transition: tx(opacity, 1, 0);
-	
+
 	@at-root .container-expanded:not(.container-changing) & {
 		opacity: 1;
 	}
@@ -407,15 +446,6 @@ html {
 // content
 // ///////////////////////////////////
 
-#content {
-	overflow: hidden;
-	position: absolute;
-	top: 0;
-	bottom: 0; //height: 100%;
-	left: 0;
-	right: 0; //width: 100%;
-}
-
 // media-carousel
 // ===================================
 
@@ -435,7 +465,8 @@ html {
 	min-width: $page_width;
 	bottom: 0;
 
-	top: $nav_top_port + $nav_height_port;
+	top: $nav_height_port;
+	margin-top: -4.5rem;
 	padding-top: 4.5rem;
 	padding-bottom: 4.5rem;
 	$carousel_item_height: calc(100% - 9rem);
@@ -451,6 +482,10 @@ html {
 		left: calc(50% - #{$page_width/2 + $hu});
 		margin-left: $hu;
 		margin-right: $hu;
+		.sizing {
+			margin-left: $hu;
+			margin-right: $hu;
+		}
 	}
 	.empty-item {
 		height: auto;
@@ -464,23 +499,80 @@ html {
 		height: $carousel_item_height;
 		width: $page_width;
 	}
-	.playable-renderer .progress-meter {
-		top: -3.5rem;
-		right: 0;
+	.playable-renderer {
+		.controls {
+			& > .progress-meter,
+			& > .fullscreen-toggle {
+				position: absolute;
+
+				left: auto;
+				right: 0;
+				// margin: 1rem;
+				// margin-left: auto;
+			}
+			& > .progress-meter {
+				top: auto;
+				bottom: 100%;
+				margin: 0 0 1.5rem 0;
+				// margin-bottom: 1.5rem;
+				// margin-left: 1.5rem;
+			}
+			& > .fullscreen-toggle {
+				top: 100%;
+				bottom: auto;
+				margin: 1rem 0 0 0;
+				// margin-top: 1.5rem;
+				// margin-left: 1.5rem;
+			}
+		}
+
+		&[data-fit-dir="height"] .controls {
+			& > .progress-meter,
+			& > .fullscreen-toggle {
+				left: 100%;
+				right: auto;
+			}
+			& > .progress-meter {
+				top: 0;
+				bottom: auto;
+				margin: 0 0 0 1.5rem;
+			}
+			& > .fullscreen-toggle {
+				top: auto;
+				bottom: 0;
+				margin: 0 0 0 1rem;
+			}
+		}
+
+		// &[fitDirection='width'] {
+		// 	.controls > .fullscreen-toggle {
+		// 	}
+		// }
+
+		// .overlay {
+		// 	& > .fullscreen-toggle {
+		// 		position: absolute;
+		// 		bottom: 1rem;
+		// 		right: 1rem;
+		// 		visibility: hidden;
+		// 	}
+		// 	&:hover > .fullscreen-toggle {
+		// 		visibility: visible;
+		// 	}
+		// }
 	}
 }
 
 // carousel leaf elements
-// - - - - - - - - - - - - - - - - - -
-.empty-item .content p,
-.stack .content {
-	@extend %leaf_content;
-}
+// - - - - - - - - - - - - - - - - - -=
 
-.media-item .sizing {
-	margin-left: $hu;
-	margin-right: $hu;
-}
+// .media-item .sizing {
+// 	margin-left: $hu;
+// 	margin-right: $hu;
+// }
+// .empty-item .content > * {
+// 	@extend %leaf_content;
+// }
 
 // NOTE
 // Do not fade-out content when removing carousel:
@@ -500,8 +592,9 @@ html {
 .media-caption-stack {
 	position: relative;
 	width: $page_width;
-	margin: 4.5rem auto 0;
-	top: $nav_top_port + $nav_height_port;
+	margin: 0 auto;
+	top: $nav_height_port;
+	@include heading_font(300, 1.666666666rem, 2rem);
 
 	transform: moveY();
 	@at-root .container-expanded & {
@@ -515,14 +608,23 @@ html {
 		opacity: 0;
 	}
 	.content {
-		margin: 1.5rem auto;
+		margin: 0;//1.5rem auto;
+		padding-top: 1.5rem;
+		padding-bottom: 1.5rem;
 	}
-	.content p {
-		@include heading_font($size: 20px, $weight: 300, $lead: 26px);
+	.content > * {
+		@extend %leaf_content;
+	}
+	.content > p {
+		// @include heading_font(300, 20px, 26px);
+		// @include heading_font(300, 1.666666666rem, 1.2);
+		// @include heading_font(300, 1.999999999rem, 1.166666666);
+		// @include heading_font(300, 1.999999999rem, 1.25);
 		margin-left: -1px;
-		//@include heading_font($size: 1.666rem,
-		//	$weight: 300, $lead: 2rem);
 	}
+	// .content *:first-child {
+	// 	margin-top: 0.25rem;
+	// }
 }
 
 // media-dotnav
@@ -564,9 +666,10 @@ html {
 .article-view {
 	position: relative;
 	width: $page_width;
-	margin: -1rem auto 4.5rem;
-	top: $nav_top_port;
-	bottom: 0.75em;
+	margin: 0 auto 3rem;
+	top: 0;
+	padding-top: 1rem;
+	padding-bottom: 1rem;
 
 	&.markdown-html {
 		h1, h2, h3, h4, p {

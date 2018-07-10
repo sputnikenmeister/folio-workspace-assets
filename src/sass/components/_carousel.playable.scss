@@ -80,12 +80,13 @@
 	// box/background position
 	// - - - - - - - - - - - - - - - - -
 	.play-toggle {
+		margin: 1rem;
+		top: 0;//20%;//1em;
+		bottom: 0;//20%;//1em;
+		left: 0;//20%;//1em;
+		right: 0;//20%;//1em;
 		width: auto;
 		height: auto;
-		top: 20%;//1em;
-		bottom: 20%;//1em;
-		left: 20%;//1em;
-		right: 20%;//1em;
 		cursor: pointer;
 		display: block;
 		position: absolute;
@@ -172,19 +173,24 @@
 
 		& > * {
 			flex: 0 1 auto;
-			padding: 0 0.5rem;
+			//padding: 0 0.5rem;
+			margin: 0 0.5rem;
 			align-self: center;
 		}
+		//& > *:first-child {
+		//	margin-right: 0;
+		//}
 	}
 	.bottom-bar,
 	.top-bar {
 		position: absolute;
 		width: calc(100% + 1rem);
 		height: auto;
-		margin: 1.25rem -0.5rem;
+		margin: 0.5rem -0.5rem;
 	}
 	.bottom-bar {
 		top: 100%;
+		margin-top: 1.5rem;
 		justify-content: space-between;
 	}
 	.top-bar {
@@ -193,17 +199,18 @@
 		// [ justify-content: flex-start | flex-end ]
 		direction: rtl;
 		bottom: 100%; // top: -3.5rem;
+		margin-bottom: 1.5rem;
 	}
 
 	// .control-box > *
 	// - - - - - - - - - - - - - - - - -
 	// NOTE: Fade controls while scrolling ONLY. For other states
 	// (not-selected, disabled), an ancestor will be shown/hidden.
-	.control-box > * {
+	.controls > * {
 		opacity: 0;
 		visibility: hidden;
 	}
-	&.ready.selected .control-box > * {
+	&.ready.selected .controls > * {
 		transition: tx(opacity, 1, 0), tx(visibility, 1, 0);
 		opacity: 1;
 		visibility: visible;
@@ -248,17 +255,23 @@
 	.fullscreen-toggle {
 		line-height: 0;
 		cursor: pointer;
+		border-radius: 0.2rem;
+		&:hover {
+			background-color: hsla(0,0,100%,0.25);
+			@at-root .color-dark & {
+				background-color: hsla(0,0,0%,0.25);
+			}
+		}
+		&:active {
+			background-color: hsla(0,0,100%,0.5);
+			@at-root .color-dark & {
+				background-color: hsla(0,0,0%,0.5);
+			}
+		}
 		svg {
 			width: 1em;
 			height: 1em;
-			padding: 0.25rem;
-		}
-		&:active {
-			border-radius: 0.2rem;
-			background-color: hsla(0,0,0%,0.25);
-			@at-root .color-dark & {
-				background-color: hsla(0,0,100%,0.25);
-			}
+			padding: 0.5em;
 		}
 	}
 
@@ -400,13 +413,14 @@
 
 		&.error {
 			// background-image: image-url("bg-missing-media.svg");
-			background-image: base64_encode("bg-missing-media.svg");
+			background-image: base64-encode("bg-missing-media.svg");
 			// background-color: transparent !important;
 		}
 	}
 	.playback-error .sequence-step:not(.current) {
 		transition: tx(visibility, 3, 0, step-end), tx(opacity, 1.5, 0.5);
 	}
+
 
 	// .media-border
 	// - - - - - - - - - - - - - - - - -

@@ -7,11 +7,12 @@
 	line-height: 10px;
 	box-sizing: border-box;
 	position: absolute;
-	width: 100%;
+	width: auto; //100%;
+	left: 0; right: 0;
 	bottom: -1.5rem;
-	margin: 1.5rem 20px;
+	margin: 1.5rem 0; //20px;
 	overflow-y: auto;
-	overflow-x: hidden;
+	overflow-x: auto; //hidden;
 	& > pre {
 		font-family: $mono_font;
 		display: block;

@@ -33,7 +33,6 @@
 		.layout-guide {
 			stroke: hsl(240, 93%, 71%);
 		}
-
 		@media screen and (min-width: 1024px) {
 			.layout-guide {
 				stroke: hsl(60, 93%, 71%);
@@ -56,9 +55,8 @@
 		<line transform="translate(100 0)" x1="0.5" x2="0.5" y1="0" y2="100%" stroke="hsl(336,50%,40%)" stroke-opacity="0.2"/>
 	</pattern>
 
-	<pattern id="Grid-220px" x="0" y="0" width="220" height="36" patternUnits="userSpaceOnUse">
+	<pattern id="HGrid-220px" x="0" y="0" width="220" height="36" patternUnits="userSpaceOnUse">
 		<!-- <line transform="translate(0 18)" y1="0.5" y2="0.5" x1="0" x2="100%" stroke="hsl(336,50%,40%)" stroke-opacity="0.6"/> -->
-
 		<rect width="20" height="100%" x="0" y="0" transform="translate(0,0)" fill="hsla(336,50%,40%,0.1)"/>
 		<rect width="20" height="100%" x="0" y="0" transform="translate(200,0)" fill="hsla(336,50%,40%,0.1)"/>
 
@@ -71,26 +69,32 @@
 		</g>
 		<!-- <rect width="100%" height="18" x="0" y="0" transform="translate(0 18.5)" fill="hsla(236,50%,40%,0.1)"/> -->
 
-		<!-- V -->
+	</pattern>
+
+	<!-- Vertical -->
+	<pattern id="VGrid-220px" x="0" y="0" width="220" height="36" patternUnits="userSpaceOnUse">
 		<line transform="translate(200 0)" x1="0.5" x2="0.5" y1="0" y2="100%" stroke="hsl(336,50%,40%)" stroke-opacity="0.2"/>
 		<line transform="translate(140 0)" x1="0.5" x2="0.5" y1="0" y2="100%" stroke="hsl(336,50%,40%)" stroke-opacity="0.2"/>
 		<line transform="translate(80 0)" x1="0.5" x2="0.5" y1="0" y2="100%" stroke="hsl(336,50%,40%)" stroke-opacity="0.2"/>
 		<line transform="translate(20 0)" x1="0.5" x2="0.5" y1="0" y2="100%" stroke="hsl(336,50%,60%)" stroke-opacity="0.4"/>
-
-		<line transform="translate(0 0)" x1="0" x2="0" y1="0" y2="100%" stroke="hsl(236,50%,40%)" stroke-opacity="0.4" stroke-width="2"/>
+		<line transform="translate(0 0)" x1="0.5" x2="0.5" y1="0" y2="100%" stroke="hsl(236,50%,40%)" stroke-opacity="0.4" stroke-width="2"/>
 
 		<!--  -->
 		<!-- <line transform="translate(220 0)" x1="0.5" x2="0.5" y1="0" y2="100%" stroke="hsl(336,50%,40%)" stroke-opacity="0.2"/> -->
 		<!-- <rect width="20" height="100%" x="0" y="0" transform="translate(200,0)" fill="hsla(336,50%,40%,0.2)"/> -->
 		<!-- <line transform="translate(220 0)" x1="0" x2="0" y1="0" y2="100%" stroke="hsl(336,50%,60%)" stroke-opacity="0.4"/> -->
 	</pattern>
-	<!-- <filter id="grayscale">
+
+	<!--
+	<filter id="grayscale">
 		<feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0 0 0 1 0" />
-	</filter> -->
+	</filter>
+	-->
 </defs>
 <g transform="translate(20 0)" stroke="none" stroke-width="1">
-	<rect fill="url(#Baseline)" x="-20" y="0" width="100%" height="100%" opacity=".3" />
-	<rect fill="url(#Grid-220px)" x="-20" y="0" width="100%" height="100%"/>
+	<rect id="baseline" style="fill:url('#Baseline');" x="-20" y="0" width="100%" height="100%" opacity=".3" />
+	<rect id="hgrid" style="fill:url('#HGrid-220px');" x="-20" y="0" width="100%" height="100%"/>
+	<rect id="vgrid" style="fill:url('#VGrid-220px');" x="-20" y="0" width="100%" height="100%"/>
 
 	<!-- <rect class="vguide" width="1" height="100%" x="0" y="0" transform="translate(20,0)"/> -->
 

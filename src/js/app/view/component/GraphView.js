@@ -23,6 +23,10 @@ var CanvasHelper = require("utils/canvas/CanvasHelper");
 /** @type {module:utils/geom/inflateRect} */
 var inflateRect = require("utils/geom/inflateRect");
 
+/** @type {module:utils/dom/getAbsoluteClientRect} */
+var getAbsoluteClientRect = require("utils/dom/getAbsoluteClientRect");
+
+
 // var BEZIER_CIRCLE = 0.551915024494;
 // var MIN_CANVAS_RATIO = 2;
 // var PI2 = Math.PI * 2;
@@ -139,9 +143,18 @@ var GraphView = CanvasView.extend({
 		};
 		this.listenTo(this, "view:render:before", this._beforeViewRender);
 
-		// this._viewportChanged = _.debounce(this._viewportChanged.bind(this), 100, false);
-		// window.addEventListener("scroll", this._viewportChanged, false);
-		// window.addEventListener("wheel", this._viewportChanged, false);
+		this._viewportChanged = function(ev) {
+			// this.requestRender(CanvasView.SIZE_INVALID);
+			// this.requestRender(CanvasView.LAYOUT_INVALID);
+			console.log("%s:[%s]:_viewportChanged window.scrollY:%s document.body.scrollTop:%s document.documentElement.scrollTop:%s", this.cid, ev.type,
+				window.scrollY, document.body.scrollTop, document.documentElement.scrollTop, ev);
+			this._groupRects = null;
+		};
+
+		this._viewportChanged = this._viewportChanged.bind(this);
+		// this._viewportChanged = _.debounce(this._viewportChanged, 100, false);
+		window.addEventListener("scroll", _.debounce(this._viewportChanged, 100, false), false);
+		window.addEventListener("wheel", _.debounce(this._viewportChanged, 100, false), false);
 
 		// this._addListListeners(this._a2b);
 		// this._addListListeners(this._b2a);
@@ -178,21 +191,15 @@ var GraphView = CanvasView.extend({
 	/* --------------------------- */
 
 	_updateStyles: function() {
-		var b, bgColor, lnColor; //, altBgColor;
+		var b, bgColor, lnColor;
 		if (this.model.get("withBundle")) {
 			b = this.model.get("bundle");
 			lnColor = b.colors.lnColor.clone();
 			bgColor = b.colors.bgColor.clone();
-			// altBgColor = b.attrs["--alt-background-color"];
 		} else {
 			bgColor = Color(Globals.DEFAULT_COLORS["background-color"]);
 			lnColor = Color(Globals.DEFAULT_COLORS["--link-color"]);
 		}
-		// bgColor = Color(window.getComputedStyle(this.el).getPropertyValue("background-color"));
-		// console.log("%s::_updateStyles bg: %s", this.cid, window.getComputedStyle(this.el).getPropertyValue("background-color"));
-		// var bgColor = this.model.get("withBundle") ? this.model.get("bundle").colors.bgColor : Color(Globals.DEFAULT_COLORS["background-color"]);
-		// var lnColor = this.model.get("withBundle") ? this.model.get("bundle").colors.lnColor : Color(Globals.DEFAULT_COLORS["--link-color"]);
-		// var altBgColor = this.model.get("bundle").attrs["--alt-background-color"];
 
 		this._a2b.s.strokeStyle = this._a2b.s.fillStyle =
 			this._a2b.strokeStyleFn(this._color, bgColor, lnColor);
@@ -201,7 +208,6 @@ var GraphView = CanvasView.extend({
 	},
 
 	_setStyle: function(s) {
-		// var ctx = this._ctx;
 		if (typeof s == "string") {
 			s = this._styleData[s];
 		}
@@ -213,12 +219,17 @@ var GraphView = CanvasView.extend({
 	/* --------------------------- */
 
 	_updateMetrics: function() {
-		var bounds = this.el.getBoundingClientRect();
-		this._ctx.setTransform(this._canvasRatio, 0, 0, this._canvasRatio, -bounds.left * this._canvasRatio - 0.5, -bounds.top * this._canvasRatio - 0.5);
-
+		var bounds;
 		var i, ii, els;
 		var aRect, bRect;
 		var aMin, bMin;
+
+		bounds = this.el.getBoundingClientRect();
+		// bounds = getAbsoluteClientRect(this.el);
+		this._ctx.setTransform(this._canvasRatio, 0, 0, this._canvasRatio,
+			(-bounds.left * this._canvasRatio) - 0.5,
+			(-bounds.top * this._canvasRatio) - 0.5
+		);
 
 		aRect = this._listA.el.getBoundingClientRect();
 		aMin = aRect.left;
@@ -265,12 +276,6 @@ var GraphView = CanvasView.extend({
 	/* redraw
 	/* --------------------------- */
 
-	_viewportChanged: function(ev) {
-		// this.requestRender(CanvasView.SIZE_INVALID);
-		// this.requestRender(CanvasView.LAYOUT_INVALID);
-		console.log("%s::_viewportChanged %o %o", this.cid);
-	},
-
 	_beforeViewRender: function(view, flags) {
 		if (flags & (CanvasView.SIZE_INVALID | CanvasView.MODEL_INVALID)) {
 			console.log("%s::_beforeViewRender [flags: %s]", this.cid, CanvasView.flagsToString(flags));
@@ -316,48 +321,67 @@ var GraphView = CanvasView.extend({
 		this._drawConnectors(this._b2a.rootOut, this._b2a.pointsOut, this._b2a.s, 1 - lVal, 1);
 		this._drawConnectors(this._a2b.root, this._a2b.points, this._a2b.s, 1, 2);
 
+		// this._drawOverlays(this._a2b.destView, this._a2b.destRect);
+
 		// clear some label backgrounds
 		if (this._groupRects === null) {
 			this._groupRects = [];
 			var els = this._listB.el.querySelectorAll(".list-group .label span");
 			for (var i = 0, ii = els.length; i < ii; i++) {
-				this._groupRects[i] = inflateRect(els[i].getBoundingClientRect(), -8.5, -4.5);
+				this._groupRects[i] = els[i].getBoundingClientRect(els[i]);
 			}
 		}
+		if (lVal === 1) {
+			console.log("%s::_redraw " +
+				"window.scrollY: %s " +
+				"window.pageYOffset: %s " +
+				"body.scrollTop: %s " +
+				"html.scrollTop: %s " +
+				"#container.scrollTop: %s",
+				this.cid,
+				window.scrollY,
+				window.pageYOffset,
+				document.documentElement.scrollTop,
+				document.body.scrollTop,
+				document.documentElement.firstElementChild.scrollTop
+			);
+		}
+
 		this._groupRects.forEach(function(r) {
 			// TODO: implement DOMRect.inflate()
-			this._ctx.clearRect(r.left, r.top, r.width - 1, r.height - 1);
-			// this._ctx.strokeRect(r.left, r.top, r.width, r.height);
-			// var ro = r.original;
-			// this._ctx.strokeRect(ro.left, ro.top, ro.width, ro.height);
+			// CanvasHelper.drawRect(this._ctx, _dStyles["red_fill"],
+			// 	r.left + document.body.scrollLeft,
+			// 	r.top + document.body.scrollTop,
+			// 	r.width, r.height);
+			r = inflateRect(r, -8.5, -4.5);
+			this._ctx.clearRect(
+				r.left + document.body.scrollLeft,
+				r.top + document.body.scrollTop,
+				r.width, r.height);
+
 		}, this);
-
-		// var i, ii, r;
-		// if (this._a2b.points || this._b2a.points || this._a2b.pointsOut || this._b2a.pointsOut) {
-		// 	ii = this._groupRects.length;
-		// 	for (i = 0; i < ii; i++) {
-		// 		r = this._groupRects[i];
-		// 		ctx.clearRect(r.left, r.top, r.width, r.height);
-		// 	}
-		// }
-
-		// if (DEBUG) {
-		// 	if (!interpolator._valuesChanged) {
-		// 		var p;
-		// 		for (i = 0; i < ii; i++) {
-		// 			p = this._b2a.points[i];
-		// 			CanvasHelper.crosshair(ctx, p.cx2, p.cy2, 5, _dStyles.red);
-		// 			CanvasHelper.circle(ctx, p.cx1, p.cy1, 1, true, _dStyles.blue);
-		// 		}
-		// 	}
-		// 	CanvasHelper.vGuide(ctx, this._a2b.xMin, _dStyles.red);
-		// 	CanvasHelper.vGuide(ctx, this._b2a.xMin, _dStyles.blue);
-		// }
 	},
 
-	_roundTo: function(n, p) {
-		if (p > 1) p = 1 / p;
-		return Math.round(n / p) * p;
+	_drawOverlays: function(list, rect) {
+		var items = list.groups;
+		for (var i = 0, num = items.length, item; i < num; i++) {
+			item = list.itemViews.findByModel(items[i]);
+			if (item._metrics && item.transform) {
+				console.log("list.filteredGroups.length[%o] %o", i,
+					item._metrics, item.transform);
+				this._ctx.clearRect(
+					rect.left + item.transform.tx + item._metrics.offsetLeft,
+					rect.top + item.transform.ty + item._metrics.offsetTop - 5,
+					item._metrics.offsetWidth,
+					10 // item._metrics.offsetHeight
+				);
+				// CanvasHelper.drawRect(this._ctx, _dStyles["red_fill"],
+				// 	rect.left + item.transform.tx + item._metrics.offsetLeft,
+				// 	rect.top + item.transform.ty + item._metrics.offsetTop - 5,
+				// 	item._metrics.offsetWidth, 10
+				// );
+			}
+		}
 	},
 
 	_computeConnectors: function(d) {
@@ -380,16 +404,17 @@ var GraphView = CanvasView.extend({
 			qx = 0;
 		}
 
-		var sView, ddView, ddItems, ddNum, i, rect;
+		var sView, ddView, ddItems, ddNum, i;
 		if (d.srcView.collection.selected && d.destView.filteredItems) {
 			sView = d.srcView.itemViews.findByModel(d.srcView.collection.selected);
 
-			// rect = sView.label.getBoundingClientRect();
+			// var rect = sView.label.getBoundingClientRect();
 			// x1 = rect.left;
 			// y1 = rect.top + rect.height / 2;
 			// if (qx > 0) x1 += rect.width;
 			// x1 += document.body.scrollLeft;
 			// y1 += document.body.scrollTop;
+			if (!sView._metrics) return;
 
 			x1 = d.rect.left + sView.transform.tx
 				+ sView._metrics.textLeft;
@@ -486,6 +511,113 @@ var GraphView = CanvasView.extend({
 		d.root = root;
 	},
 
+	_drawConnectors: function(root, pp, s, lVal, dir) {
+		var i, ii, p;
+		var ra1, ra2, ta;
+		if (!(pp && pp.length && lVal)) return;
+
+		// if (pp && pp.length && lVal) {
+		ii = pp.length;
+		ra1 = s.arrowSize * this._rootFontSize;
+		// ra1 = (s.radiusIncrement * this._rootFontSize) + s.lineWidth;
+		ra2 = ra1 + (s.outlineWidth - s.lineWidth);
+		ta = Math.PI * dir;
+
+		this._setStyle(s);
+		// if (lVal < 1) {
+		// 	this._ctx.lineDashOffset = lMax * (1 + lVal);
+		// 	this._ctx.setLineDash([lMax, lMax])
+		// 	// this._ctx.lineDashOffset = lMax * (1 + lVal);;
+		// 	// this._ctx.setLineDash([lMax * (1 - lVal), lMax]);
+		// }
+
+		for (i = 0; i < ii; i++) {
+			p = pp[i];
+			if (s.outlineWidth) {
+				this._ctx.save();
+				this._ctx.globalCompositeOperation = "destination-out";
+				this._ctx.lineWidth = s.lineWidth + s.outlineWidth;
+				// for (i = 0; i < ii; i++) {
+				// p = pp[i];
+
+				if (lVal < 1) {
+					this._ctx.lineDashOffset = p.length * (1 + lVal);
+					this._ctx.setLineDash([p.length, p.length])
+				}
+				this._drawConnector(p, i, pp);
+				if (lVal == 1) {
+					CanvasHelper.arrowhead(this._ctx, p.x2, p.y2, ra2, ta);
+					this._ctx.fill();
+				}
+				// }
+				this._ctx.restore();
+			}
+
+			// for (i = 0; i < ii; i++) {
+			// p = pp[i];
+			if (lVal < 1) {
+				this._ctx.lineDashOffset = p.length * (1 + lVal);
+				this._ctx.setLineDash([p.length, p.length])
+			}
+			this._drawConnector(p, i, pp);
+			if (lVal == 1) {
+				CanvasHelper.arrowhead(this._ctx, p.x2, p.y2, ra1, ta);
+				this._ctx.fill();
+			}
+			// }
+		}
+	},
+
+	_drawConnector: function(p, i, pp) {
+
+		this._ctx.beginPath();
+		this._ctx.moveTo(p.x2, p.cy2);
+		this._ctx.arcTo(p.tx2, p.cy2, p.tx1, p.cy1, p.r2);
+		this._ctx.arcTo(p.tx1, p.cy1, p.cx1, p.cy1, p.r1);
+		this._ctx.arcTo(p.cx0, p.cy1, p.cx0, p.y1, p.r0);
+
+		// p.cx00 = p.x1 + ((p.r0 + p.di) * p.qx);
+		// p.cy00 = (p.cy1 + p.y1) / 2;
+		// this._ctx.arcTo(p.cx00, p.cy1, p.cx00, p.cy00, p.r0 / 2);
+		// this._ctx.arcTo(p.cx00, p.y1, p.x1, p.y1, p.r0 / 2);
+		// this._ctx.lineTo(p.x1, p.y1);
+
+		// p.cx00 = p.x1 + (p.r0 * p.qx * 2);
+		// this._ctx.lineTo(p.cx00, p.cy1);
+		// this._ctx.quadraticCurveTo(p.cx0, p.cy1, p.cx0, p.y1);
+
+		// this._ctx.lineTo(p.cx0, p.y1);
+
+		this._ctx.stroke();
+
+		// if (DEBUG) {
+		// 	CanvasHelper.drawCrosshair(this._ctx, _dStyles["blue"],
+		// 		p.x1 + ((p.r0 + p.di) * p.qx), p.cy1, 3);
+		// 	if (i === 0) {
+		// 		CanvasHelper.drawVGuide(this._ctx, _dStyles["blue"], p.x1);
+		// 		CanvasHelper.drawCircle(this._ctx, _dStyles["midnightblue"], p.x1, p.y1, 10);
+		// 		CanvasHelper.drawVGuide(this._ctx, _dStyles["lightskyblue"], p.cx1);
+		// 		CanvasHelper.drawHGuide(this._ctx, _dStyles["grey"], p.y1);
+		// 	}
+		// 	CanvasHelper.drawHGuide(this._ctx, _dStyles["silver"], p.cy2);
+		// 	// _dStyles[p.dy > 0 ? "lightgreen" : "salmon"], p.cy2);
+		// 	CanvasHelper.drawSquare(this._ctx, _dStyles["midnightblue"], p.cx0, p.cy1, 2);
+		// 	CanvasHelper.drawCircle(this._ctx, _dStyles["blue"], p.cx1, p.cy1, 1);
+		// 	CanvasHelper.drawSquare(this._ctx, _dStyles["blue"], p.tx1, p.cy1, 2);
+		// 	CanvasHelper.drawSquare(this._ctx, _dStyles["green"], p.tx2, p.cy2, 2);
+		// 	CanvasHelper.drawCircle(this._ctx, _dStyles["green"], p.cx2, p.cy2, 1);
+		//
+		// 	CanvasHelper.drawVGuide(this._ctx, _dStyles["yellowgreen"], p.cx2);
+		// 	CanvasHelper.drawCircle(this._ctx, _dStyles["olive"], p.x2, p.cy2, 3);
+		// 	CanvasHelper.drawCrosshair(this._ctx, _dStyles["olive"], p.x2, p.y2, 6);
+		// }
+	},
+
+	_roundTo: function(n, p) {
+		if (p > 1) p = 1 / p;
+		return Math.round(n / p) * p;
+	},
+
 	/* _computeConnectors: function(d) {
 		var rBase = d.s.radiusBase;
 		var rInc = d.s.radiusIncrement;
@@ -576,136 +708,26 @@ var GraphView = CanvasView.extend({
 		d.maxLength = qx;
 	}, */
 
-	_drawConnectors: function(root, pp, s, lVal, dir) {
-		var i, ii, p;
-		var ra1, ra2, ta;
-		if (!(pp && pp.length && lVal)) return;
-
-		// if (pp && pp.length && lVal) {
-		ii = pp.length;
-		ra1 = s.arrowSize * this._rootFontSize;
-		// ra1 = (s.radiusIncrement * this._rootFontSize) + s.lineWidth;
-		ra2 = ra1 + (s.outlineWidth - s.lineWidth);
-		ta = Math.PI * dir;
-
-		this._setStyle(s);
-		// if (lVal < 1) {
-		// 	this._ctx.lineDashOffset = lMax * (1 + lVal);
-		// 	this._ctx.setLineDash([lMax, lMax])
-		// 	// this._ctx.lineDashOffset = lMax * (1 + lVal);;
-		// 	// this._ctx.setLineDash([lMax * (1 - lVal), lMax]);
-		// }
-
-		for (i = 0; i < ii; i++) {
-			p = pp[i];
-			if (s.outlineWidth) {
-				this._ctx.save();
-				this._ctx.globalCompositeOperation = "destination-out";
-				this._ctx.lineWidth = s.lineWidth + s.outlineWidth;
-				// for (i = 0; i < ii; i++) {
-				// p = pp[i];
-
-				if (lVal < 1) {
-					this._ctx.lineDashOffset = p.length * (1 + lVal);
-					this._ctx.setLineDash([p.length, p.length])
-				}
-				this._drawConnector(p, i, pp);
-				if (lVal == 1) {
-					CanvasHelper.arrowhead(this._ctx, p.x2, p.y2, ra2, ta);
-					this._ctx.fill();
-				}
-				// }
-				this._ctx.restore();
-			}
-
-			// for (i = 0; i < ii; i++) {
-			// p = pp[i];
-			if (lVal < 1) {
-				this._ctx.lineDashOffset = p.length * (1 + lVal);
-				this._ctx.setLineDash([p.length, p.length])
-			}
-			this._drawConnector(p, i, pp);
-			if (lVal == 1) {
-				CanvasHelper.arrowhead(this._ctx, p.x2, p.y2, ra1, ta);
-				this._ctx.fill();
-			}
-			// }
-		}
-		// this._ctx.save();
-		// this._ctx.globalCompositeOperation = "destination-out";
-		// this._ctx.translate(root.x, root.y);
-		// // this._ctx.scale(0.5, 1);
-		// CanvasHelper.circle(this._ctx, 0, 0, root.r0);
-		// this._ctx.fill()
-		// this._ctx.restore();
-	},
-
-	_drawConnector: function(p, i, pp) {
-
-		this._ctx.beginPath();
-		this._ctx.moveTo(p.x2, p.cy2);
-		this._ctx.arcTo(p.tx2, p.cy2, p.tx1, p.cy1, p.r2);
-		this._ctx.arcTo(p.tx1, p.cy1, p.cx1, p.cy1, p.r1);
-		this._ctx.arcTo(p.cx0, p.cy1, p.cx0, p.y1, p.r0);
-
-		// p.cx00 = p.x1 + ((p.r0 + p.di) * p.qx);
-		// p.cy00 = (p.cy1 + p.y1) / 2;
-		// this._ctx.arcTo(p.cx00, p.cy1, p.cx00, p.cy00, p.r0 / 2);
-		// this._ctx.arcTo(p.cx00, p.y1, p.x1, p.y1, p.r0 / 2);
-		// this._ctx.lineTo(p.x1, p.y1);
-
-		// p.cx00 = p.x1 + (p.r0 * p.qx * 2);
-		// this._ctx.lineTo(p.cx00, p.cy1);
-		// this._ctx.quadraticCurveTo(p.cx0, p.cy1, p.cx0, p.y1);
-
-		// this._ctx.lineTo(p.cx0, p.y1);
-
-		this._ctx.stroke();
-
-		// if (DEBUG) {
-		// 	CanvasHelper.drawCrosshair(this._ctx, _dStyles["blue"],
-		// 		p.x1 + ((p.r0 + p.di) * p.qx), p.cy1, 3);
-		// 	if (i === 0) {
-		// 		CanvasHelper.drawVGuide(this._ctx, _dStyles["blue"], p.x1);
-		// 		CanvasHelper.drawCircle(this._ctx, _dStyles["midnightblue"], p.x1, p.y1, 10);
-		// 		CanvasHelper.drawVGuide(this._ctx, _dStyles["lightskyblue"], p.cx1);
-		// 		CanvasHelper.drawHGuide(this._ctx, _dStyles["grey"], p.y1);
-		// 	}
-		// 	CanvasHelper.drawHGuide(this._ctx, _dStyles["silver"], p.cy2);
-		// 	// _dStyles[p.dy > 0 ? "lightgreen" : "salmon"], p.cy2);
-		// 	CanvasHelper.drawSquare(this._ctx, _dStyles["midnightblue"], p.cx0, p.cy1, 2);
-		// 	CanvasHelper.drawCircle(this._ctx, _dStyles["blue"], p.cx1, p.cy1, 1);
-		// 	CanvasHelper.drawSquare(this._ctx, _dStyles["blue"], p.tx1, p.cy1, 2);
-		// 	CanvasHelper.drawSquare(this._ctx, _dStyles["green"], p.tx2, p.cy2, 2);
-		// 	CanvasHelper.drawCircle(this._ctx, _dStyles["green"], p.cx2, p.cy2, 1);
-		//
-		// 	CanvasHelper.drawVGuide(this._ctx, _dStyles["yellowgreen"], p.cx2);
-		// 	CanvasHelper.drawCircle(this._ctx, _dStyles["olive"], p.x2, p.cy2, 3);
-		// 	CanvasHelper.drawCrosshair(this._ctx, _dStyles["olive"], p.x2, p.y2, 6);
-		// }
-	},
 });
 
 if (DEBUG) {
 	var applyMethod = function(context, args) {
 		return Array.prototype.shift.apply(args).apply(context, args);
 	}
-	GraphView.prototype._skipLog = false;
-	GraphView.prototype._requestRender = _.wrap(CanvasView.prototype._requestRender, function(fn) {
-		console.log("%s::_requestRender", this.cid);
-		// var retval = Array.prototype.shift.apply(arguments).apply(this, arguments);
-		// return retval;
+	GraphView.prototype._skipLog = true;
 
-		return applyMethod(this, arguments);
-	});
-	GraphView.prototype._applyRender = _.wrap(CanvasView.prototype._applyRender, function(fn) {
-		// this._skipLog = true;
-		console.log("%s::_applyRender", this.cid);
-		// var retval = Array.prototype.shift.apply(arguments).apply(this, arguments);
-		// this._skipLog = false;
-		// return retval;
-		return applyMethod(this, arguments);
-	});
+	if (!GraphView.prototype._skipLog) {
+		GraphView.prototype._requestRender = _.wrap(CanvasView.prototype._requestRender, function(fn) {
+			console.log("%s::_requestRender", this.cid);
+			return applyMethod(this, arguments);
+		});
+		GraphView.prototype._applyRender = _.wrap(CanvasView.prototype._applyRender, function(fn) {
+			// this._skipLog = true;
+			// console.log("%s::_applyRender", this.cid);
+			// this._skipLog = false;
+			return applyMethod(this, arguments);
+		});
+	}
 }
 
 module.exports = GraphView;

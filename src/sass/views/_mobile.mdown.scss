@@ -3,10 +3,10 @@
 // ///////////////////////////////////
 
 @include media(mobile) {
-	.media-carousel .empty-item .markdown-html {
+	.carousel .markdown-html {
 		h1, h2, h3, h4, h5, h6, p {
-			margin-left: -#{$hu - $margin_left};
-			margin-right: -#{$hu - $margin_right};
+			//margin-left: -20px;//-#{$rhu};// - $margin_left};
+			//margin-right: -20px;//-#{$rhu};// - $margin_right};
 		}
 		h1, h2 {
 			@extend %n1p3_3f3;

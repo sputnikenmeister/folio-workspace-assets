@@ -24,7 +24,7 @@ var stripTags = require("utils/strings/stripTags");
 // /** @type {module:app/model/parseSymAttrs} */
 // var parseSymAttrs = require("app/model/parseSymAttrs");
 
-console.log(Globals.PARAMS);
+// console.log(Globals.PARAMS);
 
 var urlTemplates = {
 	"original": _.template(Globals.MEDIA_DIR + "/<%= src %>"),

@@ -89,7 +89,7 @@ var AppViewProto = {
 			}).bind(this)
 		});
 
-		this._afterRender = this._afterRender.bind(this);
+		// this._afterRender = this._afterRender.bind(this);
 		this._onResize = this._onResize.bind(this);
 
 		/* render on resize, onorientationchange, visibilitychange */
@@ -126,15 +126,24 @@ var AppViewProto = {
 		if (window.ga) {
 			controller
 				.once("route", function() {
-					window.ga("create", window.GA_ID, "auto");
-					if (/(?:(localhost|\.local))$/.test(location.hostname))
+					var gaTag;
+					// if (Globals.GA_TAGS) {
+					// 	gaTag = Globals.GA_TAGS[location.hostname]
+					// } else
+					if (!/(?:(localhost|\.local))$/.test(location.hostname)) {
+						gaTag = window.GA_ID;
+					}
+					if (gaTag) {
+						window.ga("create", gaTag, "auto");
+					} else {
+						window.ga("create", "UA-0000000-0", "auto");
 						window.ga("set", "sendHitTask", null);
+					}
 				})
 				.on("route", function(name) {
 					var page = Backbone.history.getFragment();
 					// Add a slash if neccesary
 					page.replace(/^(?!\/)/, "/");
-					// if (!/^\//.test(page)) page = "/" + page;
 					window.ga("set", "page", page);
 					window.ga("send", "pageview");
 				});
@@ -147,9 +156,7 @@ var AppViewProto = {
 		Backbone.history.start({
 			pushState: false,
 			hashChange: true,
-			// root: Globals.APP_ROOT.match(/(?:https?\:\/\/[^\/]+(.*))/)[1]
 		});
-		// this.listenTo(this.model, "change", this._onModelChange);
 	},
 
 	/* -------------------------------
@@ -216,7 +223,11 @@ var AppViewProto = {
 
 	_onResize: function() {
 		console.log("%s::_onResize", this.cid);
+		this.el.classList.add("skip-transitions");
 		this.requestRender(View.SIZE_INVALID).renderNow();
+		this.requestAnimationFrame(function() {
+			this.el.classList.remove("skip-transitions");
+		}.bind(this));
 	},
 
 	// _onBreakpointChange: function(ev) {
@@ -233,28 +244,33 @@ var AppViewProto = {
 			this.renderModelChange();
 		}
 		if (flags & View.SIZE_INVALID) {
-			this.renderResize();
+			this.renderResize(flags);
 		}
 		if (this._appStartChanged) {
 			this._appStartChanged = false;
 			this.requestAnimationFrame(this.renderAppStart);
 		}
+
+		// this.requestAnimationFrame(this._afterRender);
 	},
+
+	// _afterRender: function() {
+	// 	document.body.scrollTop = 0;
+	// },
 
 	renderAppStart: function() {
 		console.log("%s::renderAppStart", this.cid);
-		// document.documentElement.classList.remove("app-initial");
 		this.el.classList.remove("app-initial");
 		if (this.el.classList.contains("route-initial")) {
 			this.el.classList.remove("route-initial");
-			document.documentElement.appendChild(
-				document.createComment("'route-initial' was still present"));
+			console.warn("'route-initial' was still present");
 		}
-		// document.documentElement.classList.add("app-ready");
 	},
 
-	renderResize: function() {
-		document.body.scrollTop = 0;
+	renderResize: function(flags) {
+		// document.body.scrollTop = 0;
+		// window.scroll({ top: 0, behavior: "smooth" });
+
 		_.each(Globals.BREAKPOINTS, function(o, s) {
 			this.toggle(s, o.matches);
 		}, document.documentElement.classList);
@@ -264,7 +280,8 @@ var AppViewProto = {
 		// }, document.body.classList).join();
 		// console.log("%s::renderResize matches: %s", this.cid, bb);
 
-		this.requestChildrenRender(View.SIZE_INVALID, true);
+		// this.requestChildrenRender(View.SIZE_INVALID, true);
+		this.requestChildrenRender(flags, true);
 	},
 
 	/* -------------------------------

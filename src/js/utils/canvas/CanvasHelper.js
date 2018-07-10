@@ -100,4 +100,17 @@ module.exports = {
 	drawArrowhead: function(ctx, s, x, y, r, t) {
 		_drawShape(this.arrowhead, s, ctx, x, y, r, t);
 	},
+
+	rect: function(ctx, a1, a2, a3, a4) {
+
+		ctx.beginPath();
+		if (isNaN(a1)) {
+			ctx.rect(a1.left, a1.top, a1.width, a1.height);
+		} else {
+			ctx.rect(a1, a2, a3, a4);
+		}
+	},
+	drawRect: function(ctx, s, a1, a2, a3, a4) {
+		_drawShape(this.rect, s, ctx, a1, a2, a3, a4);
+	},
 };
