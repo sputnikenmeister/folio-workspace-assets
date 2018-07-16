@@ -14,9 +14,9 @@ html.fullwidth-small {
 
 	// container navigation content
 	// - - - - - - - - - - - - - - - - - -
-	#container {
-		min-width: $default_page_width_min;
-	}
+	// #container {
+	// 	min-width: $default_page_width_min;
+	// }
 
 	// bundle-list
 	// ===================================
@@ -30,6 +30,7 @@ html.fullwidth-small {
 	// ===================================
 	#keyword-list {
 		width: 40%;
+		// min-width: ($default_page_width_min * 0.4);
 		// width: auto;
 		// left: calc(50% + #{$hu * 2});
 		// right: 0;
@@ -80,12 +81,8 @@ html.fullwidth-small {
 
 	.media-carousel {
 		.empty-item {
-			// right: 50%;
-			min-width: ($default_page_width_min * (2/3)) ;
-			// right: calc(50% - #{($hu * 2) + $margin_left});
-			// right: calc(50% - #{($hu * 2) + $margin_right});
-			// right: $margin_right * 7;
-			// right: $margin_left + $margin_right;
+			// FIXME FIXME FIXME : parallax breaks if item is not 100%;
+			right: calc(40% - 3px);
 		}
 	}
 }

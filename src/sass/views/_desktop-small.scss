@@ -209,7 +209,7 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 			left: calc(50% - #{$wide_page_width/2 + $hu});
 			width: $wide_page_width;
 		}
-		// FIXME
+		// FIXME FIXME FIXME : parallax breaks if item is not 100%;
 		$_fixme_empty_adj: 12px;//7px;
 		$_fixme_empty_val: $hu*2 + $_fixme_empty_adj;
 		.empty-item {
