@@ -66,6 +66,14 @@ var FilterableListView = View.extend({
 				this._setCollapsed(value);
 			}
 		},
+		selectedItem: {
+			get: function() {
+				return this._selectedItem;
+			},
+			set: function(value) {
+				this._setSelection(value);
+			}
+		},
 		filteredItems: {
 			get: function() {
 				return this._filteredItems;
@@ -107,7 +115,7 @@ var FilterableListView = View.extend({
 			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID); //.renderNow();
 		});
 
-		this.listenTo(this.collection, "select:one select:none", this._setSelection);
+		// this.listenTo(this.collection, "select:one select:none", this._setSelection);
 		this.listenTo(this.collection, "reset", function() {
 			this._allItems = null;
 			throw new Error("not implemented");
@@ -120,9 +128,18 @@ var FilterableListView = View.extend({
 
 	/** @override */
 	renderFrame: function(tstamp, flags) {
+		if (DEBUG) {
+			var changed = [];
+			this._collapsedChanged && changed.push("collapsed");
+			this._selectionChanged && changed.push("selection");
+			this._filterChanged && changed.push("filter");
+			console.log("%s::renderFrame [%s]", this.cid, changed.join(" "));
+		}
+
 		// collapsed transition flag
-		if (this._collapsedTransitioning)
-			console.warn("%s::renderFrame collapsed transition interrupted", this.cid);
+		if (this._collapsedTransitioning) {
+			console.warn("%s::renderFrame collapsed tx interrupted", this.cid);
+		}
 
 		this._collapsedTransitioning = !this.skipTransitions && this._collapsedChanged;
 
@@ -138,7 +155,7 @@ var FilterableListView = View.extend({
 			});
 		}
 		if (this._collapsedChanged) {
-			flags |= View.SIZE_INVALID;
+			flags |= (View.SIZE_INVALID);
 			this.el.classList.toggle("collapsed", this._collapsed);
 		}
 		if (this._selectionChanged) {
@@ -297,9 +314,11 @@ var FilterableListView = View.extend({
 
 	/** @param {Backbone.Model|null} */
 	_setSelection: function(item) {
-		this._selectedItem = item;
-		this._selectionChanged = true;
-		this._requestRender();
+		if (item !== this._selectedItem) {
+			this._selectedItem = item;
+			this._selectionChanged = true;
+			this.requestRender(View.MODEL_INVALID);
+		}
 	},
 
 	/** @private */
@@ -326,7 +345,7 @@ var FilterableListView = View.extend({
 	refresh: function() {
 		if (this._filterFn) {
 			this._filterChanged = true;
-			this.requestRender();
+			this.requestRender(View.MODEL_INVALID);
 		}
 	},
 
@@ -340,7 +359,7 @@ var FilterableListView = View.extend({
 		var hasNew = !!(newItems && newItems.length);
 		var hasOld = !!(oldItems && oldItems.length);
 
-		console.log("%s::renderFilterFn", this.cid, newItems);
+		// console.log("%s::renderFilterFn", this.cid, newItems);
 
 		if (hasNew) {
 			diff((hasOld ? oldItems : this._getAllItems()), newItems).forEach(function(item) {

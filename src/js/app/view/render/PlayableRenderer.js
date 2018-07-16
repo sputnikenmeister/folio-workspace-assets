@@ -298,7 +298,7 @@ var PlayableRenderer = MediaRenderer.extend({
 	_onPlaybackToggle: function(ev) {
 		console.log("%s[%sabled]::_onPlaybackToggle[%s] defaultPrevented: %s", this.cid, this.enabled ? "en" : "dis", ev.type, ev.defaultPrevented);
 		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
-		if (!ev.defaultPrevented && !ev.button) {
+		if (this.enabled && !ev.defaultPrevented && !ev.button) {
 			ev.preventDefault();
 			this.playbackRequested = !this.playbackRequested;
 		}

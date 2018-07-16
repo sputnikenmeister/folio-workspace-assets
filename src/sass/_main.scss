@@ -9,7 +9,7 @@
 
 @import "includes/libsass-compat";
 @import "includes/definitions";
-@import "includes/headers-rem";
+@import "includes/headers";
 @import "includes/base";
 @import "includes/transitions";
 @import "includes/media-queries";
@@ -19,8 +19,4 @@
 @import "views/fullwidth";
 @import "views/fullwidth-small";
 
-
-#unsupported {
-	display: none;
-}
 // @import "views/unsupported";

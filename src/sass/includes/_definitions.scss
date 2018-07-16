@@ -17,18 +17,6 @@ $gutter: 2 * $hu;
 $page_margin_left: 2 * $hu;
 $page_margin_right: 2 * $hu;
 
-$page_width: 33 * $hu; //700px;
-$aside_width: 11 * $hu;
-$main_width: $page_width - $aside_width;
-
-$page_width_large: 44 * $hu; //940px;
-$aside_width_large: 11 * $hu;
-$main_width_large: $page_width_large - $aside_width_large;
-
-$page_width_small: 22 * $hu; //940px;
-$aside_width_small: 11 * $hu;
-$main_width_small: $page_width_small - $aside_width_small;
-
 // ------------------------------------
 // Colors: public
 // ------------------------------------
@@ -82,7 +70,6 @@ $mono_font: $mono_font;
 	-webkit-text-rendering: optimizelegibility;
 	text-rendering: optimizelegibility;
 }
-
 @mixin text_rendering_speed {
 	-webkit-text-rendering: optimizespeed;
 	text-rendering: optimizespeed;
@@ -101,14 +88,14 @@ $mono_font: $mono_font;
 }
 
 //@mixin heading_font($size: 24px, $weight: 600, $lead: 24px) {
-@mixin heading_font($weight: 600, $size: 1.999999999rem, $lead: 2rem, $track: -1px) {
-	font-size: $size;
-	font-weight: $weight;
-	line-height: $lead;
-	letter-spacing: $track;
-	@include text_rendering_legibility();
-	@include font_smoothing();
-}
+// @mixin heading_font($weight: 600, $size: 1.999999999rem, $lead: 2rem, $track: -1px) {
+// 	font-size: $size;
+// 	font-weight: $weight;
+// 	line-height: $lead;
+// 	letter-spacing: $track;
+// 	@include text_rendering_legibility();
+// 	@include font_smoothing();
+// }
 
 @mixin paragraph_font($weight: 400, $size: 1rem, $lead: 1.5) {
 	//	font: $weight #{$size + "/" + $lead} inherit;
@@ -127,14 +114,14 @@ $mono_font: $mono_font;
 	text-transform: uppercase;
 }
 
-%large_text p {
-	//	@include heading_font($size: 2.5rem, $weight: 300, $lead: 0.960em);
-	@include heading_font($size: 28px, $weight: 300, $lead: 30px);
-	margin: 0 2px 0.5em -2px;
-	&:first-child {
-		margin-top: -0.15em;
-	}
-}
+// %large_text p {
+// 	//	@include heading_font($size: 2.5rem, $weight: 300, $lead: 0.960em);
+// 	@include heading_font($size: 28px, $weight: 300, $lead: 30px);
+// 	margin: 0 2px 0.5em -2px;
+// 	&:first-child {
+// 		margin-top: -0.15em;
+// 	}
+// }
 
 @mixin text_outline($color: black, $radius: 1px) {
 	// PI/4=0.78539816339 1/(PI/2)=1.27323954474

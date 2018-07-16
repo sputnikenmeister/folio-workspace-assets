@@ -6,11 +6,11 @@
 //
 // ------------------------------------
 
-html {
-	color: #666;
-	background-color: #000;
-}
-body {
+// html {
+// 	color: #666;
+// 	background-color: #000;
+// }
+.app {
 	color: $color;
 	background-color: $background_color;
 }
@@ -18,19 +18,22 @@ body {
 	color: lighten($color, 40%);
 	border-color: lighten($color, 60%);
 }
-.color-tx, body {
-	transition: tx(background-color, 1, 1), tx(color, 1, 0);
+.app,
+.color-tx {
+	transition: tx(background-color, 1, 1),
+		tx(color, 1, 1);
 }
 
 // initialize fade-in
 // - - - - - - - - - - - - - - - - - -
-#container {
+#navigation, #content {
 	transition: tx(opacity, 1, 1),
 		tx(visibility, 1, 1, step-start);
 }
 // .route-initial,
 .app-initial {
-	#container {
+	#navigation, #content {
+		// #container {
 		visibility: hidden;
 		opacity: 0;
 	}
@@ -41,41 +44,33 @@ body {
 // Layer ordering
 // -----------------------------------
 
-#container {
+
+#nav-graph {
 	z-index: 1;
-	#navigation {
-		// z-index: 1;
-		#nav-graph {
-			z-index: 1;
-		}
-		@at-root .transform-wrapper {
-			z-index: 1;
-			.list {
-				z-index: 1;
-			}
-			&#bundle-list-wrapper {
-				z-index: 2;
-			}
-			&#article-list-wrapper,
-			&#site-name-wrapper {
-				z-index: 3;
-			}
-		}
+}
+.transform-wrapper {
+	z-index: 1;
+	&#bundle-list-wrapper {
+		z-index: 2;
 	}
-	#content {
-		// z-index: 1;
-		@at-root .media-carousel {
-			z-index: 0;
-			&.panning,
-			&.scrolling {
-				z-index: 2;
-			}
-			.carousel-item {
-				z-index: 0;
-				&.selected {
-					z-index: 1;
-				}
-			}
-		}
+	&#article-list-wrapper,
+	&#site-name-wrapper {
+		z-index: 3;
+	}
+	.list {
+		z-index: 1;
+	}
+}
+.media-carousel {
+	z-index: 0;
+	&.panning,
+	&.scrolling {
+		z-index: 2;
+	}
+	.carousel-item {
+		z-index: 0;
+	}
+	&:not(.disabled) .carousel-item.selected {
+		z-index: 1;
 	}
 }

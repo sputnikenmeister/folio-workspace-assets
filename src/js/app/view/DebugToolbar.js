@@ -65,7 +65,7 @@ var DebugToolbar = View.extend({
 
 		/* toggle's target: container
 		/* - - - - - - - - - - - - - - - - */
-		var container = document.body.querySelector("#container");
+		var container = document.body; //.querySelector("#container");
 
 		/* create/attach svg grid element
 		/* - - - - - - - - - - - - - - - - */
@@ -92,7 +92,7 @@ var DebugToolbar = View.extend({
 		/* - - - - - - - - - - - - - - - - */
 		this.initializeClassToggle("debug-grid-bg", this.el.querySelector("#toggle-grid-bg a"), document.body);
 		this.initializeClassToggle("debug-blocks", this.el.querySelector("#toggle-blocks a"), container);
-		this.initializeClassToggle("debug-markdown", this.el.querySelector("#toggle-markdown a"), container);
+		this.initializeClassToggle("debug-mdown", this.el.querySelector("#toggle-mdown a"), container);
 		this.initializeClassToggle("debug-logs", this.el.querySelector("#toggle-logs a"), container);
 		this.initializeClassToggle("debug-tx", this.el.querySelector("#toggle-tx a"), container,
 			function(key, value) {

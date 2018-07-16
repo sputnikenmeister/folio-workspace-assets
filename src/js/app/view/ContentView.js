@@ -70,7 +70,7 @@ var ContentView = View.extend({
 	cidPrefix: "contentView",
 
 	/** @override */
-	className: "container-x container-expanded",
+	className: "container-expanded",
 
 	/** @override */
 	events: {

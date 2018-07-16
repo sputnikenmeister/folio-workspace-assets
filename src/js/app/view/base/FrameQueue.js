@@ -165,7 +165,7 @@ var _runQueue = function(tstamp) {
 var FrameQueue = Object.create({
 	/**
 	/* @param fn {Function}
-	/* @param forceNext {int}
+	/* @param priority {int}
 	/* @return {int}
 	/*/
 	request: function(fn, priority) {
@@ -233,27 +233,29 @@ if (DEBUG) {
 	// 	// 	if (_nextQueue.numItems != 0) console.info("[FRAME ENDED] %i items scheduled for [raf:%i]", _nextQueue.numItems, _rafId);
 	// 	// 	return retval;
 	// 	// });
-	//
-	// 	// log frame end
+
+	// log frame end
+	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
+		var retval;
+		console.group("FrameQueue " + _rafId);
+		// console.log("FrameQueue::_runQueue %i items (ID range:%i-%i)", _nextQueue.numItems, _nextQueue.offset, _nextQueue.offset + _nextQueue.length - 1);
+		retval = fn(tstamp);
+		// console.log("[Frame exit]\n---\n");
+		console.groupEnd();
+		return retval;
+	});
+
+	// // use log prefix
+	// if (console.prefix) {
 	// 	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
-	// 		var retval;
-	// 		console.log("FrameQueue::_runQueue %i items (ID range:%i-%i)", _nextQueue.numItems, _nextQueue.offset, _nextQueue.offset + _nextQueue.length - 1);
+	// 		var retval, logprefix;
+	// 		logprefix = console.prefix;
+	// 		console.prefix += "[raf:" + _rafId + "] ";
 	// 		retval = fn(tstamp);
-	// 		console.log("[Frame exit]\n---\n");
+	// 		console.prefix = logprefix;
 	// 		return retval;
 	// 	});
-
-	// use log prefix
-	if (console.prefix) {
-		_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
-			var retval, logprefix;
-			logprefix = console.prefix;
-			console.prefix += "[raf:" + _rafId + "] ";
-			retval = fn(tstamp);
-			console.prefix = logprefix;
-			return retval;
-		});
-	}
+	// }
 
 	// FrameQueue.cancel = _.wrap(FrameQueue.cancel, function(fn, id) {
 	// 	if ((_currQueue !== null) && (_currQueue.offset >= id) && (id < _nextQueue.offset)) {

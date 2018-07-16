@@ -559,13 +559,15 @@ var ViewProto = {
 
 	/** @private */
 	_applyRender: function(tstamp) {
-		if (!this._skipLog) {
-			console.log("%s::_applyRender [flags: %s] [%s, %s, %s]", this.cid,
-				View.flagsToString(this._renderFlags),
-				(this._frameQueueId != -1 ? "async #" + this._frameQueueId : "sync"),
-				(this.attached ? "attached" : "detached"),
-				(this.skipTransitions ? "skip" : "run") + " transitions"
-			);
+		if (DEBUG) {
+			if (!this._skipLog) {
+				console.log("%s::_applyRender [%s] [%s, %s, %s]", this.cid,
+					View.flagsToString(this._renderFlags),
+					(this._frameQueueId != -1 ? "async #" + this._frameQueueId : "sync"),
+					(this.attached ? "attached" : "detached"),
+					(this.skipTransitions ? "skip" : "run") + " tx"
+				);
+			}
 		}
 
 		var flags = this._renderFlags;
@@ -600,11 +602,16 @@ var ViewProto = {
 	},
 
 	_requestRender: function() {
+		if (FrameQueue.running) {
+			this._cancelRender();
+			if (DEBUG) {
+				if (!this._skipLog) {
+					console.info("%s::_requestRender rescheduled [%s (%s)]", this.cid, View.flagsToString(this._renderFlags), this._renderFlags);
+				}
+			}
+		}
 		if (this._frameQueueId == -1) {
 			this._frameQueueId = FrameQueue.request(this._applyRender, isNaN(this.viewDepth) ? Number.MAX_VALUE : this.viewDepth);
-			// this._frameQueueId = FrameQueue.request(this._applyRender, 10);
-			// if (!this._skipLog && !FrameQueue.running)
-			// 	console.log("%s::_requestRender ID:%i rescheduled", this.cid, this._frameQueueId);
 		}
 	},
 
@@ -614,6 +621,15 @@ var ViewProto = {
 
 	invalidate: function(flags) {
 		if (flags !== void 0) {
+			if (DEBUG) {
+				if (!this._skipLog) {
+					if (this._renderFlags > 0) {
+						console.log("%s::invalidate [%s (%s)] + [%s (%s)]", this.cid, View.flagsToString(this._renderFlags), this._renderFlags, View.flagsToString(flags), flags);
+					} else {
+						console.log("%s::invalidate [%s (%s)]", this.cid, View.flagsToString(flags), flags);
+					}
+				}
+			}
 			this._renderFlags |= flags;
 		}
 		return this;
@@ -636,7 +652,7 @@ var ViewProto = {
 
 	renderNow: function(alwaysRun) {
 		if (this._frameQueueId != -1) {
-			var cancelId = this._cancelRender();
+			this._cancelRender();
 			alwaysRun = true;
 		}
 		// if (alwaysRun === true) {

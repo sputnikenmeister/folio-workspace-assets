@@ -42,11 +42,11 @@ $indigo: hsla(275, 100%, 25%, 1);
 	// #sitename,
 	// .transform-wrapper {
 	// 	// height: 1rem;
-	// 	width: $aside_width;
-	// 	height: $nav_height_port;
+	// 	width: $default_aside_width;
+	// 	height: $default_nav_height;
 	// 	@include media(desktop-small) {
-	// 		width: $aside_width_large;
-	// 		height: $nav_height_land;
+	// 		width: $wide_aside_width;
+	// 		height: $large_nav_height;
 	// 	}
 	// }
 	#navigation.container-changing {
@@ -120,8 +120,9 @@ $indigo: hsla(275, 100%, 25%, 1);
 		// .article-button a,
 		// .list .list-group .label span,
 		// .list .list-item .label {
-			background-color: transparentize($lightcoral, 0.7);
+			&, .label { background-color: transparentize($lightcoral, 0.7);
 			// @include debug_outline_thin(1px, solid, $lightcoral);
+			}
 		}
 		.graph {
 			@include debug_outline(2px, dashed, $darkseagreen, 0.25, 0);
@@ -194,12 +195,12 @@ $indigo: hsla(275, 100%, 25%, 1);
 // 	background-image: image-url("debug/debug-background.svg");
 // 	background-repeat: no-repeat;
 // 	background-position: 50% 3px;
-// 	background-size: #{$page_width + $hu*2} 100%; //1600px;
+// 	background-size: #{$default_page_width + $hu*2} 100%; //1600px;
 //
 // 	// @include media(desktop-small) {
 // 	@at-root .desktop-small & {
 // 		background-position: 50% 0;
-// 		background-size: #{$page_width_large + $hu*2} 100%; //1600px;
+// 		background-size: #{$wide_page_width + $hu*2} 100%; //1600px;
 // 	}
 // 	// @include media(fullwidth) {
 // 	@at-root .fullwidth & {
@@ -217,14 +218,14 @@ $indigo: hsla(275, 100%, 25%, 1);
 		display: block;
 	}
 
-	top: 0;//$nav_top_port;
+	top: 0;//$default_nav_top;
 	right: 0; bottom: 0; left: 0;
 
 	@at-root .desktop-small & {
-		// top: $nav_top_land;
+		// top: $large_nav_top;
 	}
 	@at-root .fullwidth & {
-		// top: $nav_top_small;
+		// top: $small_nav_top;
 		left: $margin_left;
 		right: $margin_right;
 	}
@@ -232,17 +233,17 @@ $indigo: hsla(275, 100%, 25%, 1);
 
 svg#debug-grid {
 	width: 100%;
-	max-width: $page_width;
+	max-width: $default_page_width;
 	position: absolute;
 	height: 100%;
 	margin: 0 auto;
 	left: 0; right: 0;
 
 	@at-root .desktop-small & {
-		max-width: $page_width_large;
+		max-width: $wide_page_width;
 	}
 	@at-root .fullwidth & {
-		max-width: $page_width_max;
+		max-width: $small_page_width_max;
 		margin: 0;
 	}
 
@@ -260,19 +261,24 @@ svg#debug-grid {
 	}
 	#pat-baseline-10px,
 	#pat-baseline-20px {
-		stroke: hsl(236,93%,50%);
+		stroke: hsl(336,93%,50%);
 	}
 
-	/* Baseline */
-	#baseline {
+	/* baseline */
+	#debug-grid-body {
 		opacity: 0.5;
+	}
+
+	/* baseline */
+	#baseline {
+		opacity: 0.25;
 		fill: url("#pat-baseline-12px");
 		@at-root .fullwidth-small & {
 			fill: url("#pat-baseline-10px");
 		}
 	}
 	#baseline-content {
-		opacity: 0.75;
+		// opacity: 0.5;
 		fill: url("#pat-baseline-24px");
 		@at-root .fullwidth & {
 			fill: none;//url("#pat-baseline-10px");
@@ -294,8 +300,8 @@ svg#debug-grid {
 		}
 	}
 	.hguide {
-		stroke: hsl(136,50%,40%);
-		stroke-opacity: 0.5;
+		stroke: hsl(216,100%,50%);
+		stroke-opacity: 0.75;
 	}
 
 	// -----------------------------------
@@ -304,28 +310,30 @@ svg#debug-grid {
 
 	/* Horizontal guides */
 	#debug-grid-container {
-		transform: translate(0, $nav_top_port);
+		transform: translate(0, $default_nav_top);
 		@at-root .desktop-small & {
-			transform: translate(0, $nav_top_land);
+			transform: translate(0, $large_nav_top);
 		}
 		@at-root .fullwidth & {
-			transform: translate(0, $nav_top_small);
+			transform: translate(0, $small_nav_top);
 		}
 		#gnv0, #gct0 {
 			stroke-dasharray: 0.25rem;
-			stroke-opacity: 1;
+			// stroke-opacity: 1;
 		}
 		#gnv1, #gct1 {
 			transform: translate(0, 3rem);
+			stroke-dasharray: 0.5rem 0.75rem;
+			// stroke-opacity: 1;
 		}
 	}
 	#debug-grid-content {
-		transform: translate(0, $nav_height_port);
+		transform: translate(0, $default_nav_height);
 		@at-root .desktop-small & {
-			transform: translate(0, $nav_height_land);
+			transform: translate(0, $large_nav_height);
 		}
 		@at-root .fullwidth & {
-			transform: translate(0, $nav_height_small);
+			transform: translate(0, $small_nav_height);
 		}
 	}
 
@@ -345,19 +353,18 @@ svg#debug-grid {
 		#gl1 { transform: translate(#{$margin_left + $content_margin_left}, 0); }
 		#gr1 { transform: translate(-#{$margin_right + $content_margin_right}, 0); }
 
-		#gm  { transform: translate(#{$margin_right - $margin_left}, 0); }
-		#gm1 { transform: translate(-#{$content_margin_right}, 0); }
-
-		#gm0 {
-			stroke: green; stroke-opacity: 1;
-			transform: translate(
-				-#{($margin_left + $margin_right) - ($content_margin_left + $content_margin_right)}, 0);
-		}
+		// #gm  { transform: translate(#{$margin_right - $margin_left}, 0); }
+		// #gm1 { transform: translate(-#{$content_margin_right}, 0); }
+		// #gm0 {
+		// 	stroke: green; stroke-opacity: 1;
+		// 	transform: translate(
+		// 		-#{($margin_left + $margin_right) - ($content_margin_left + $content_margin_right)}, 0);
+		// }
 	}
 }
 
 // -----------------------------------
-// .debug-grid + markdown-html
+// .debug-grid + mdown
 // -----------------------------------
 @mixin _debugSelectorInContent($selectors...) {
 	#{$selectors} {
@@ -369,7 +376,7 @@ svg#debug-grid {
 		}
 	}
 }
-.debug-markdown .markdown-html {
+.debug-mdown .mdown {
 	@include _debugSelectorInContent(h1,h2,h3,h4,h5,h6,p,ol,ul,dl) {
 		@include debug_outline(1px, solid, $darkolivegreen, 0.1, -1px);
 		background-color: transparentize($darkolivegreen, 0.9);

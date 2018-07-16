@@ -39,8 +39,8 @@ var styleBase = {
 	radiusBase: 0.75,
 	/* factored to rem unit */ //6,
 	radiusIncrement: 0.21, //3, //0.25,
-	/* factored to rem unit */ //4,
-	outlineWidth: 2.5, // in px
+	/* uses lineWidth multiplier */
+	outlineWidth: 1.5,
 	arrowSize: 0.3
 };
 
@@ -143,18 +143,24 @@ var GraphView = CanvasView.extend({
 		};
 		this.listenTo(this, "view:render:before", this._beforeViewRender);
 
-		this._viewportChanged = function(ev) {
+		var viewportChanged = function(ev) {
 			// this.requestRender(CanvasView.SIZE_INVALID);
 			// this.requestRender(CanvasView.LAYOUT_INVALID);
-			console.log("%s:[%s]:_viewportChanged window.scrollY:%s document.body.scrollTop:%s document.documentElement.scrollTop:%s", this.cid, ev.type,
-				window.scrollY, document.body.scrollTop, document.documentElement.scrollTop, ev);
+			console.log("%s:[%s]: window.scrollY:%s body.scrollTop:%s html.scrollTop:%s",
+				this.cid, ev.type,
+				window.scrollY,
+				document.body.scrollTop,
+				document.documentElement.scrollTop);
+			console.log("%s:[%s]: body.scrollHeight:%s body.clientHeight:%s html.scrollHeight:%s html.clientHeight:%s",
+				this.cid, ev.type,
+				document.body.scrollHeight, document.body.clientHeight,
+				document.documentElement.scrollHeight, document.documentElement.clientHeight);
 			this._groupRects = null;
-		};
+		}.bind(this);
 
-		this._viewportChanged = this._viewportChanged.bind(this);
-		// this._viewportChanged = _.debounce(this._viewportChanged, 100, false);
-		window.addEventListener("scroll", _.debounce(this._viewportChanged, 100, false), false);
-		window.addEventListener("wheel", _.debounce(this._viewportChanged, 100, false), false);
+		// viewportChanged = _.debounce(viewportChanged, 100, false);
+		window.addEventListener("scroll", _.debounce(viewportChanged, 100, false), false);
+		window.addEventListener("wheel", _.debounce(viewportChanged, 100, false), false);
 
 		// this._addListListeners(this._a2b);
 		// this._addListListeners(this._b2a);
@@ -177,7 +183,8 @@ var GraphView = CanvasView.extend({
 
 	/** @override */
 	measureCanvas: function(w, h) {
-		console.log("%s::measureCanvas s:%o o:%o h:%o", this.cid, this.el.style.height, this.el.offsetHeight, h);
+		console.log("%s::measureCanvas style:%o offset:%o arg:%o", this.cid,
+			parseInt(this.el.style.height), this.el.offsetHeight, h);
 	},
 
 	/** @override */
@@ -224,6 +231,9 @@ var GraphView = CanvasView.extend({
 		var aRect, bRect;
 		var aMin, bMin;
 
+		this._rootFontSize = parseFloat(
+			getComputedStyle(document.documentElement).fontSize);
+
 		bounds = this.el.getBoundingClientRect();
 		// bounds = getAbsoluteClientRect(this.el);
 		this._ctx.setTransform(this._canvasRatio, 0, 0, this._canvasRatio,
@@ -251,8 +261,8 @@ var GraphView = CanvasView.extend({
 		this._a2b.destRect = this._b2a.rect = bRect;
 		this._a2b.destMinX = this._b2a.xMin = bMin;
 
-		var s = getComputedStyle(document.documentElement);
-		this._rootFontSize = parseFloat(s.fontSize); // * this._canvasRatio;
+		// var s = getComputedStyle(document.documentElement);
+		// this._rootFontSize = parseFloat(s.fontSize); // * this._canvasRatio;
 		// console.log("%s::_updateMetrics _rootFontSize: %s %o", this.cid, this._rootFontSize, s);
 
 		// var c = Math.abs(sData.xMin - dData.xMin) / 6;
@@ -353,7 +363,7 @@ var GraphView = CanvasView.extend({
 			// 	r.left + document.body.scrollLeft,
 			// 	r.top + document.body.scrollTop,
 			// 	r.width, r.height);
-			r = inflateRect(r, -8.5, -4.5);
+			// r = inflateRect(r, -8.5, -4.5);
 			this._ctx.clearRect(
 				r.left + document.body.scrollLeft,
 				r.top + document.body.scrollTop,
@@ -513,17 +523,27 @@ var GraphView = CanvasView.extend({
 
 	_drawConnectors: function(root, pp, s, lVal, dir) {
 		var i, ii, p;
-		var ra1, ra2, ta;
+		var ow, ra1, ra2, ta;
+
 		if (!(pp && pp.length && lVal)) return;
 
-		// if (pp && pp.length && lVal) {
 		ii = pp.length;
-		ra1 = s.arrowSize * this._rootFontSize;
+
+		/* outline width */
+		// ow = s.lineWidth + s.outlineWidth;
+		ow = Math.min(
+			this._roundTo(s.radiusIncrement * this._rootFontSize, 0.5),
+			this._roundTo(s.lineWidth * (1 + s.outlineWidth), 0.5)
+		);
+
+		/* arrow radiuses, direction */
 		// ra1 = (s.radiusIncrement * this._rootFontSize) + s.lineWidth;
-		ra2 = ra1 + (s.outlineWidth - s.lineWidth);
+		ra1 = s.arrowSize * this._rootFontSize;
+		ra2 = ra1 + (ow - s.lineWidth);
 		ta = Math.PI * dir;
 
 		this._setStyle(s);
+
 		// if (lVal < 1) {
 		// 	this._ctx.lineDashOffset = lMax * (1 + lVal);
 		// 	this._ctx.setLineDash([lMax, lMax])
@@ -531,14 +551,14 @@ var GraphView = CanvasView.extend({
 		// 	// this._ctx.setLineDash([lMax * (1 - lVal), lMax]);
 		// }
 
-		for (i = 0; i < ii; i++) {
-			p = pp[i];
-			if (s.outlineWidth) {
-				this._ctx.save();
-				this._ctx.globalCompositeOperation = "destination-out";
-				this._ctx.lineWidth = s.lineWidth + s.outlineWidth;
-				// for (i = 0; i < ii; i++) {
-				// p = pp[i];
+		// for (i = 0; i < ii; i++) {
+		// p = pp[i];
+		if (s.outlineWidth) {
+			this._ctx.save();
+			this._ctx.globalCompositeOperation = "destination-out";
+			this._ctx.lineWidth = ow;
+			for (i = 0; i < ii; i++) {
+				p = pp[i];
 
 				if (lVal < 1) {
 					this._ctx.lineDashOffset = p.length * (1 + lVal);
@@ -549,12 +569,12 @@ var GraphView = CanvasView.extend({
 					CanvasHelper.arrowhead(this._ctx, p.x2, p.y2, ra2, ta);
 					this._ctx.fill();
 				}
-				// }
-				this._ctx.restore();
 			}
+			this._ctx.restore();
+		}
 
-			// for (i = 0; i < ii; i++) {
-			// p = pp[i];
+		for (i = 0; i < ii; i++) {
+			p = pp[i];
 			if (lVal < 1) {
 				this._ctx.lineDashOffset = p.length * (1 + lVal);
 				this._ctx.setLineDash([p.length, p.length])
@@ -564,7 +584,6 @@ var GraphView = CanvasView.extend({
 				CanvasHelper.arrowhead(this._ctx, p.x2, p.y2, ra1, ta);
 				this._ctx.fill();
 			}
-			// }
 		}
 	},
 
@@ -711,21 +730,24 @@ var GraphView = CanvasView.extend({
 });
 
 if (DEBUG) {
+	GraphView.prototype._skipLog = false;
+
+	var debouncedLog = _.debounce(_.bind(console.log, console), 500, true);
 	var applyMethod = function(context, args) {
 		return Array.prototype.shift.apply(args).apply(context, args);
 	}
-	GraphView.prototype._skipLog = true;
-
 	if (!GraphView.prototype._skipLog) {
-		GraphView.prototype._requestRender = _.wrap(CanvasView.prototype._requestRender, function(fn) {
-			console.log("%s::_requestRender", this.cid);
-			return applyMethod(this, arguments);
-		});
+		// GraphView.prototype._requestRender = _.wrap(CanvasView.prototype._requestRender, function(fn) {
+		// 	debouncedLog("%s::_requestRender", this.cid);
+		// 	return applyMethod(this, arguments);
+		// });
 		GraphView.prototype._applyRender = _.wrap(CanvasView.prototype._applyRender, function(fn) {
-			// this._skipLog = true;
-			// console.log("%s::_applyRender", this.cid);
-			// this._skipLog = false;
-			return applyMethod(this, arguments);
+			this._skipLog = true;
+			debouncedLog("%s::_applyRender [debounced]", this.cid);
+			var retval = applyMethod(this, arguments);
+			this._skipLog = false;
+			return retval;
+
 		});
 	}
 }

@@ -2,14 +2,15 @@
 // media query : default
 // ///////////////////////////////////
 
-// ///////////////////////////////////
-// Definitions
-// ///////////////////////////////////
-
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$nav_top_port: 2.5rem;//2.5rem;
-$nav_height_port: 14rem; //13.5rem;//14.25rem;
+$default_nav_top: 2.5rem;//2.5rem;
+$default_nav_height: 14rem; //13.5rem;//14.25rem;
+
+$default_page_width: 33 * $hu; //700px;
+$default_aside_width: 11 * $hu;
+$default_main_width: $default_page_width - $default_aside_width;
+
 $nav_collapse_offset: map-get($temp, collapse_offset) * 1px; //28rem;
 
 @import "views/default.colors";
@@ -36,49 +37,58 @@ html {
 }
 
 body {
+	position: relative;
 	// height: 100%;
 	width: 100%;
 	min-height: 100%;
 	overflow: hidden;
 	overflow-y: auto;
 	overscroll-behavior: none;
+	// padding-top: $default_nav_top;
+	// padding-bottom: $default_nav_top;
 }
 
-// Container
+// container navigation content
 // - - - - - - - - - - - - - - - - - -
-#container {
-	display: block;
-	width: 100%;
-	min-width: $page_width;
-	min-height: 100%;
-}
+
+// #container {
+// 	display: block;
+// 	width: 100%;
+// 	min-width: $default_page_width;
+// 	min-height: 100%;
+// }
 
 #navigation {
 	position: relative;
 	margin: 0 auto;
 	box-sizing: content-box;
 
-	max-width: $page_width;
-	min-height: $nav_height_port;
-	// padding-top: $nav_top_port;
-	padding-top: 0;
-	margin-top: $nav_top_port;
+	max-width: $default_page_width;
+	min-height: $default_nav_height;
+	// margin-top: $default_nav_top;
+	padding-top: $default_nav_top;
 }
 
 #content {
 	overflow: hidden;
 	position: absolute;
 	top: 0;
-	bottom: 0;
+	// bottom: 0;
 	left: 0;
 	right: 0;
-	// padding-top: $nav_top_port;
-	padding-top: 0;
-	margin-top: $nav_top_port;
+	min-height: 100%;
+	// margin-top: $default_nav_top;
+	// margin-bottom: -$default_nav_top;
+	padding-top: $default_nav_top;
 }
 
+// #content.container-expanded,
+// .without-bundle #content{
+// 	overflow: visible;
+// }
+
 // ///////////////////////////////////
-// navigation children
+// navigation definitions
 // ///////////////////////////////////
 
 // leaf elements
@@ -87,13 +97,23 @@ body {
 	box-sizing: border-box;
 	padding-left: $hu;
 	padding-right: $hu;
-	.label {
-		padding: 0 #{$hu};
-		margin: 0 -#{$hu};
-	}
+	// .label {}
 	&, * {
 		@include user_select(none);
 	}
+}
+
+%leaf_content_label {
+	// @include optical_margins(#{-$hu}, -0.08ex, true);
+	// padding: 0 #{$hu};
+	// @include optical_margins(-1ex, -0.08);
+	$label_margin: 1ex;
+	$label_optical_adjust: 0.08;
+	padding-left: $label_margin;
+	padding-right: $label_margin;
+	margin-left: -#{$label_margin + ($label_margin * $label_optical_adjust)};
+	margin-right: -#{$label_margin - ($label_margin * $label_optical_adjust)};
+
 }
 
 // block definitions
@@ -101,18 +121,22 @@ body {
 %nav_list {
 	position: absolute;
 	display: inline-block;
-	// will-change: transform;
+	will-change: transform;
 	// display: block;
 	// transform-style: preserve-3d;
 	// transform: move();
 	// box-sizing: content-box;
 }
 
+// ///////////////////////////////////
+// navigation children
+// ///////////////////////////////////
+
 .transform-wrapper {
 	// @extend %nav_list;
 	position: absolute;
 	display: inline-block;
-	// will-change: transform;
+	will-change: transform;
 	// display: block;
 	// transform-style: preserve-3d;
 }
@@ -121,7 +145,7 @@ body {
 // ===================================
 
 #bundle-list, #keyword-list {
-	padding-top: $nav_height_port;
+	padding-top: $default_nav_height;
 	padding-bottom: 1.5rem;
 }
 .with-article,
@@ -150,9 +174,10 @@ body {
 	cursor: pointer;
 	a {
 		display: inline-block;
-		transition: tx(color, 1, 1);
+		// transition: tx(color, 1, 0);
 	}
 	.label {
+		@extend %leaf_content_label;
 		line-height: 0;
 		// margin: 0 #{-$hu * 0.75} 0 #{-$hu};
 		// padding: 0 #{$hu * 0.75} 0 $hu;
@@ -163,6 +188,7 @@ body {
 	@extend %leaf_content;
 	white-space: nowrap;
 	.label {
+		@extend %leaf_content_label;
 		display: inline-block;
 	}
 }
@@ -170,18 +196,20 @@ body {
 // bundle-list
 // ===================================
 #bundle-list {
+	@extend %char_2_2;
+	font-weight: 600;
+	// @include heading_font(600, 1.999999999rem, 2rem, -1px);
+	// @include heading_font(600, 1.999999999rem, 1.25, -1px);
+
 	@extend %nav_list;
-	width: $main_width - $aside_width;
+	width: $default_main_width - $default_aside_width;
 	// margin-top: 0.25rem;
-	// padding-top: $nav_height_port;
+	// padding-top: $default_nav_height;
 	// padding-bottom: 1.5rem;
 	min-height: 4.5rem;
 
-	@include heading_font(600, 1.999999999rem, 2rem, -1px);
-	// @include heading_font(600, 1.999999999rem, 1.25, -1px);
-
 	.list-item {
-		// width: $main_width - $aside_width;
+		// width: $default_main_width - $default_aside_width;
 		width: 100%;
 		height: 1em;
 		.completed {
@@ -222,16 +250,15 @@ body {
 // ===================================
 #keyword-list {
 	@extend %nav_list;
-	width: $aside_width;
-	// padding-top: $nav_height_port;//#{$nav_height_port - 0.25rem};
+	width: $default_aside_width;
+	// padding-top: $default_nav_height;//#{$default_nav_height - 0.25rem};
 	// padding-bottom: 1.5rem;
 	.list-item {
 		// width: 100%;
-		width: $aside_width;
+		width: $default_aside_width;
 		height: 1.5rem;
 		.label {
 			// font-size: 13px;
-			font-size: 1.08333333rem;
 		}
 	}
 	.list-group {
@@ -243,13 +270,13 @@ body {
 			top: 0;
 		}*/
 
-		// $list_group_width: $aside_width - $gutter - $hu*2;
-		width: $aside_width; //$list-group-width;
+		// $list_group_width: $default_aside_width - $gutter - $hu*2;
+		width: $default_aside_width; //$list-group-width;
 		// width: calc(100% - #{$gutter});
 		.label {
 			@include small_caps($lead: 0);
 			display: inline-block;
-			width: $aside_width - $gutter - $hu*2;//$list_group_width;
+			width: $default_aside_width - $gutter - $hu*2;//$list_group_width;
 			// transform: movel-$list_group_width, 0);
 			// width: 100%;
 			transform: moveX(-100%);
@@ -257,11 +284,10 @@ body {
 
 			// padding: 0 #{0.5*$hu};
 			// margin: 0 #{-0.5*$hu};
-
-			& > span {
-				padding: 0.25em 1rem;
-				margin: -0.25em -1rem;
-			}
+			// & > span {
+			// 	padding: 0.025em 0.35em 0;
+			// 	margin: -0.1em 0 0;
+			// }
 		}
 	}
 	&:not(.collapsed) {
@@ -304,15 +330,17 @@ body {
 // keyword-list-wrapper
 // - - - - - - - - - - - - - - - - - -
 #keyword-list-wrapper {
-	left: $main_width;
+	left: $default_main_width;
 	transform: moveX();
 }
 
 // site-name
 // ===================================
 #site-name {
-	@include heading_font(600, 1.9999999rem, 2rem);
-// 	@include heading_font(600, 1.9999999rem, 1.25); //1.16666666);
+	@extend %char_2_2;
+	font-weight: 600;
+	// @include heading_font(600, 1.9999999rem, 2rem);
+	// @include heading_font(600, 1.9999999rem, 1.25); //1.16666666);
 	@extend %leaf_content;
 
 	position: absolute;
@@ -320,6 +348,7 @@ body {
 	top: 0;
 	transform: moveX();
 	a {
+		@extend %leaf_content_label;
 		transition: tx(color, 1, 1);
 	}
 }
@@ -334,7 +363,7 @@ body {
 // - - - - - - - - - - - - - - - - - -
 #site-name-wrapper {
 	left: 0;
-	width: $aside_width;
+	width: $default_aside_width;
 }
 // .with-bundle #site-name-wrapper {
 // 	transform: moveX(-100%);
@@ -343,7 +372,8 @@ body {
 // article-list
 // ===================================
 .article-button {
-	@include heading_font(300, 1.999999999rem, 2rem);
+	@extend %char_2_2;
+	// @include heading_font(300, 1.999999999rem, 2rem);
 	// @include heading_font(300, 1.9999999rem, 1.25); //1.16666666);
 	@extend %leaf_content;
 
@@ -351,6 +381,7 @@ body {
 	display: block;
 	transform: moveX();
 	a {
+		@extend %leaf_content_label;
 		visibility: visible;
 		opacity: 1;
 		transition: tx(visibility, 3, 0, step-start), tx(opacity, 1, 0), tx(color, 1, 1);
@@ -378,7 +409,7 @@ body {
 // - - - - - - - - - - - - - - - - - -
 #article-list-wrapper {
 	left: 0;
-	width: $aside_width;
+	width: $default_aside_width;
 	// transform: moveY(2rem);
 }
 // .with-article #article-list-wrapper {
@@ -403,13 +434,14 @@ body {
 // nav-graph
 // ===================================
 #nav-graph {
-	@extend %nav_list;
+	// @extend %nav_list;
 	// box-sizing: border-box;
+	position: absolute;
 	box-sizing: content-box;
 	// padding: 1.5rem 0;
 	padding: 0;
 	// right: 0;
-	width: $page_width;
+	width: $default_page_width;
 	// height: 12rem;
 
 	opacity: 0;
@@ -462,24 +494,24 @@ body {
 .media-carousel {
 	overflow: hidden;
 	width: 100%;
-	min-width: $page_width;
+	min-width: $default_page_width;
 	bottom: 0;
 
-	top: $nav_height_port;
+	top: $default_nav_top + $default_nav_height;
 	margin-top: -4.5rem;
 	padding-top: 4.5rem;
 	padding-bottom: 4.5rem;
 	$carousel_item_height: calc(100% - 9rem);
 
-	// top: 0;//$nav_top_port;
-	// padding-top: $nav_top_port + $nav_height_port;
+	// top: 0;//$default_nav_top;
+	// padding-top: $default_nav_top + $default_nav_height;
 	// padding-bottom: 4.5rem;
-	// $carousel_item_height: calc(100% - #{$nav_height_port + 4.5rem});
+	// $carousel_item_height: calc(100% - #{$default_nav_height + 4.5rem});
 
 	.carousel-item {
 		// padding-top: 1.5rem;
 		// padding-bottom: 1.5rem;
-		left: calc(50% - #{$page_width/2 + $hu});
+		left: calc(50% - #{$default_page_width/2 + $hu});
 		margin-left: $hu;
 		margin-right: $hu;
 		.sizing {
@@ -492,12 +524,12 @@ body {
 		max-height: $carousel_item_height;
 		overflow: visible;
 		// FIXME: empty-item narrow px adjust
-		// width: $page_width/2 + $hu - 9px;
-		width: $main_width - 12px;
+		// width: $default_page_width/2 + $hu - 9px;
+		width: $default_main_width - 12px;
 	}
 	.media-item {
 		height: $carousel_item_height;
-		width: $page_width;
+		width: $default_page_width;
 	}
 	.playable-renderer {
 		.controls {
@@ -590,11 +622,13 @@ body {
 @import "components/stack";
 
 .media-caption-stack {
+	@extend %char_1p2_2f6;
+	// @include heading_font(300, 1.666666666rem, 2rem);\
+
 	position: relative;
-	width: $page_width;
+	width: $default_page_width;
 	margin: 0 auto;
-	top: $nav_height_port;
-	@include heading_font(300, 1.666666666rem, 2rem);
+	top: $default_nav_height;
 
 	transform: moveY();
 	@at-root .container-expanded & {
@@ -614,14 +648,15 @@ body {
 	}
 	.content > * {
 		@extend %leaf_content;
+		margin-left: -0.1ex;
 	}
-	.content > p {
-		// @include heading_font(300, 20px, 26px);
-		// @include heading_font(300, 1.666666666rem, 1.2);
-		// @include heading_font(300, 1.999999999rem, 1.166666666);
-		// @include heading_font(300, 1.999999999rem, 1.25);
-		margin-left: -1px;
-	}
+	// .content > p {
+	// 	// @include heading_font(300, 20px, 26px);
+	// 	// @include heading_font(300, 1.666666666rem, 1.2);
+	// 	// @include heading_font(300, 1.999999999rem, 1.166666666);
+	// 	// @include heading_font(300, 1.999999999rem, 1.25);
+	// 	// margin-left: -1px;
+	// }
 	// .content *:first-child {
 	// 	margin-top: 0.25rem;
 	// }
@@ -638,7 +673,7 @@ body {
 	padding: 0 $hu;
 
 	position: absolute;
-	width: $page_width;
+	width: $default_page_width;
 	// height: 1.5rem;
 	bottom: 1rem;
 	left: 0;
@@ -656,7 +691,7 @@ body {
 	.list-item {
 		padding: 0 0.5rem;
 		a {
-			color: inherit;
+			color: inherit !important;
 		}
 	}
 }
@@ -664,23 +699,31 @@ body {
 // article-view
 // ===================================
 .article-view {
-	position: relative;
-	width: $page_width;
-	margin: 0 auto 3rem;
-	top: 0;
-	padding-top: 1rem;
-	padding-bottom: 1rem;
+	// position: relative;
+	width: $default_page_width;
+	// top: 0;
+	margin: 0 auto 1rem;
+	padding-top: 1.5rem;
+	padding-bottom: 1.5rem;
+	padding-left: $hu;
+	padding-right: $hu;
 
-	&.markdown-html {
-		h1, h2, h3, h4, p {
-			padding-left: $hu;
-			padding-right: $hu;
+	&.mdown {
+		& > *:first-child {
+			margin-top: 0 !important;
 		}
-		h1, h2, p {
-			margin-left: $aside_width;
+		h1, h2, h3, h4, p {
+			// padding-left: $hu;
+			// padding-right: $hu;
+		}
+		// h1, h2, p {
+		& > * {
+			padding-left: $default_aside_width;
 		}
 		h3, h4 {
-			width: $aside_width;
+			margin-top: 0;
+			padding-left: 0;
+			width: $default_aside_width - $hu;
 			float: left;
 			clear: both;
 		}
@@ -693,7 +736,7 @@ body {
 // 	position: absolute;
 // 	transform: move();
 //
-// 	right: calc(50% - #{$page_width/2});
+// 	right: calc(50% - #{$default_page_width/2});
 // 	top: 2.5rem;
 // 	margin: 0 $hu;
 // 	box-sizing: content-box;
@@ -716,9 +759,9 @@ body {
 // #content:after {
 // 	position: absolute;
 // 	margin: 0 auto;
-// 	max-width: $page_width;
+// 	max-width: $default_page_width;
 // 	left: 0; right: 0;
-// 	top: $nav_top_port + $nav_height_port;
+// 	top: $default_nav_top + $default_nav_height;
 // 	height: 1px;
 // 	background-color: blue;
 // 	content: ' ';

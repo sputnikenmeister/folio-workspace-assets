@@ -12,36 +12,78 @@ $two_thirds: 100% * (2/3);
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$nav_top_small: 1.166666666rem;
-$nav_height_small: 7rem;//6.5rem;
-$page_width_max: none;//704px;
-$main_width_small: $two_thirds;
-$aside_width_small: 100% - $main_width_small;
+$small_nav_top: 1.166666666rem;
+$small_nav_height: 7rem;//6.5rem;
+// $small_page_width: 22 * $hu; //940px;
+$small_page_width_max: none;//704px;
+// $small_main_width: $small_page_width - $small_aside_width;
+$small_main_width: $two_thirds;
+// $small_aside_width: 11 * $hu;
+$small_aside_width: 100% - $small_main_width;
 
-$margin_left: 1.75rem;//$rhu * (2/3);
-$margin_right: 1.75rem;//$rhu * (1/3);
-$content_margin_left: 1rem;//$rhu * (2/3);
+$margin_left: 1.25rem;//$rhu * (2/3);
+$margin_right: 1.25rem;//$rhu * (1/3);
+$content_margin_left: 2rem;//$rhu * (2/3);
 $content_margin_right: 1rem;//$rhu * (1/3);
 
+// ///////////////////////////////////
+// Root
+// ///////////////////////////////////
+
+// html.fullwidth {}
+
+// @import "views/mobile.mdown";
+
 @include media(fullwidth) {
-	// block definitions
+
+	/* body */
+	// width: 100%;
+	// overflow: hidden;
+	// overflow-y: auto;
+	// padding-top: $small_nav_top;
+	// padding-bottom: $small_nav_top;
+
+	// & {
+	// 	overflow-y: scroll;
+	// 	#container {
+	// 		overflow-y: visible;
+	// 	}
+	// }
+
+	// container navigation content
 	// - - - - - - - - - - - - - - - - - -
-	%nav_font {
-		// @include heading_font(600, 1.25rem, 1.5rem, -0.5px);
-		font-size: 1.333333333rem; //1.25rem;
-		line-height: 1.125; //1.2;
-		letter-spacing: -0.5px;
-		@include text_rendering_legibility;
-		// @include font_smoothing;
+
+	// #container {
+	// 	// height: auto;
+	// 	width: auto;
+	// 	min-width: 0;
+	// 	max-width: none;
+	// 	min-height: 100%;
+	// }
+
+	#navigation {
+		width: auto;//calc(100% - #{$margin_left * 4});//auto;
+		max-width: $small_page_width_max;
+		left: 0;//$margin_left * 2;
+		right: 0;//$margin_right * 2;
+		margin-left: $margin_left * 2;// + $content_margin_left;
+		margin-right: $margin_right * 2;// + $content_margin_right;
+
+		min-height: $small_nav_height;
+		// margin-top: $small_nav_top;
+		padding-top: $small_nav_top;
+		padding-bottom: 3rem;// TODO: whats the best value for this?
 	}
 
-	%list_item {
-		width: 100%;
-		// .label {
-			// text-overflow: ellipsis;
-			// overflow: hidden;
-		// }
+	#content {
+		// margin-top: $small_nav_top;
+		// margin-bottom: -$small_nav_top;
+		padding-top: $small_nav_top;
 	}
+
+	// ///////////////////////////////////
+	// navigation definitions
+	// ///////////////////////////////////
 
 	// leaf elements
 	// - - - - - - - - - - - - - - - - - -
@@ -55,57 +97,15 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 			margin: 0 -0.5rem;
 		}
 	}
-}
 
-@import "views/mobile.mdown";
-
-// ///////////////////////////////////
-// Root
-// ///////////////////////////////////
-
-html.fullwidth {
-	// position: absolute;
-	// top: 0; bottom: 0; left: 0; right: 0;
-}
-
-@include media(fullwidth) {
-
-	/* body */
-	// width: 100%;
-	// overflow: hidden;
-	// overflow-y: auto;
-
-	// -----------------------------------
-	// Container
-	// -----------------------------------
-
-	#container {
-		// height: auto;
-		min-width: 0;
-		max-width: none;
-		min-height: 100%;
-	}
-
-	#navigation {
-		width: auto;//calc(100% - #{$margin_left * 4});//auto;
-		max-width: $page_width_max;
-		left: 0;//$margin_left * 2;
-		right: 0;//$margin_right * 2;
-		margin-left: $margin_left * 2;// + $content_margin_left;
-		margin-right: $margin_right * 2;// + $content_margin_right;
-
-		// top: $nav_top_small;
-		min-height: $nav_height_small;
-		padding-top: 0;
-		margin-top: $nav_top_small;
-	}
-
-	#content {
-		// top: 1rem;
-		// padding-top: 1.166666666rem;
-		// padding-top: $nav_top_small;
-		padding-top: 0;
-		margin-top: $nav_top_small;
+	// block definitions
+	// - - - - - - - - - - - - - - - - - -
+	%nav_font {
+		@extend %char_1f3_1f5;
+		// @include heading_font(600, 1.25rem, 1.5rem, -0.5px);
+		// @include heading_font(600, 1.333333333rem, 1.125rem, -0.5px);
+		// @include text_rendering_legibility;
+		// @include font_smoothing;
 	}
 
 	// ///////////////////////////////////
@@ -130,13 +130,14 @@ html.fullwidth {
 		left: 0;
 		right: $two_thirds;
 
-		// padding-top: #{$nav_height_small + 0.5rem};
+		// padding-top: #{$small_nav_height + 0.5rem};
 		// padding-bottom: 1.5rem;
 		.list-item {
-			@extend %list_item;
-			// width: $main_width - $aside_width_small - (2*$hu);
+			// @extend %list_item;
+			// width: $default_main_width - $small_aside_width - (2*$hu);
 			// width: calc(100% - #{8*$hu});
 			height: 1.5rem;
+			width: 100%;
 		}
 	}
 	&.with-bundle .container-collapsed #bundle-list {
@@ -152,24 +153,26 @@ html.fullwidth {
 	// keyword-list
 	// ===================================
 	#keyword-list {
-		font-size: 0.9166666666rem; //1rem; //#{(7/8)}rem;
-		line-height: 1.5rem;//1.090909091;//1.166666666; //1rem;
+		// width: auto; left: $two_thirds; right: 0;
+		width: $one_third; left: auto; right: 0;
+
+		//font-size: 0.9166666666rem; //1rem; //#{(7/8)}rem;
+		//line-height: 1.5rem;//1.090909091;//1.166666666; //1rem;
 
 		// width: auto;
-		// left: calc(#{$main_width_small} - #{$content_margin_left});
+		// left: calc(#{$small_main_width} - #{$content_margin_left});
 		// right: 0;
 
-		left: auto;
-		right: 0;
-		width: 33.333333333%;//calc(100% / 3);
+		// width: 33.333333333%;//calc(100% / 3);
 		// width: calc((100% - #{abs($margin_left - $margin_right)}) / 3);
-		// width: calc(#{$aside_width_small} + #{$margin_right} + #{$margin_left});
+		// width: calc(#{$small_aside_width} + #{$margin_right} + #{$margin_left});
 
 		.list-item {
-			@extend %list_item;
-			height: 1.5rem;
-			text-overflow: ellipsis;
-			overflow: hidden;
+			// @extend %list_item;
+			//height: 1.5rem;
+			width: 100%;
+			// text-overflow: ellipsis;
+			// overflow: hidden;
 			.label {
 				font-size: inherit;//#{7/8 * 1rem};
 				// line-height: 1;//1rem;
@@ -182,11 +185,11 @@ html.fullwidth {
 			.label {
 				width: calc(50% + #{$content_margin_left});
 				transform: moveX(-100%);
-				padding: 0; margin: 0;
-				& > span {
-					padding: 0 0.25em;
-					margin: 0 -0.25em;
-				}
+				// padding: 0; margin: 0;
+				// & > span {
+				// 	padding: 0 0.25em;
+				// 	margin: 0 -0.25em;
+				// }
 			}
 		}
 
@@ -247,7 +250,9 @@ html.fullwidth {
 		a {
 			visibility: visible;
 			opacity: 1;
-			transition: tx(visibility, 3, 0, step-start), tx(opacity, 1, 0), tx(color, 1, 1);
+			transition: tx(visibility, 3, 0, step-start),
+				tx(opacity, 1, 0),
+				tx(color, 1, 1);
 		}
 	}
 
@@ -258,7 +263,7 @@ html.fullwidth {
 	// article-list-wrapper (vertical movements)
 	// - - - - - - - - - - - - - - - - - -
 	#article-list-wrapper {
-		width: 100%;//$page_width_small;
+		width: 100%;//$small_page_width;
 	}
 
 	// NOTE: these elements need symmetrical padding
@@ -294,7 +299,7 @@ html.fullwidth {
 	// nav-graph
 	// - - - - - - - - - - - - - - - - - -
 	#nav-graph {
-		width: 100%;//$page_width_small;
+		width: 100%;//$small_page_width;
 	};
 
 	// ///////////////////////////////////
@@ -307,19 +312,19 @@ html.fullwidth {
 	$ctrl_height: 2.1rem;
 	$ctrl_width: $rhu * 1.05;//2.1rem;
 
-	$margin_top: $nav_top_small + $nav_height_small; //4.5rem; //$ctrl_height + 1rem;
+	$margin_top: $small_nav_top + $small_nav_height; //4.5rem; //$ctrl_height + 1rem;
 	$margin_bottom: 3rem;
 
 	// $carousel_item_height: calc(100% - #{($margin_top + $margin_bottom)});
 
 	.media-carousel {
-		max-width: $page_width_max;
+		max-width: $small_page_width_max;
 		min-width: 0;
 		width: auto;
 		left: 0;
 		right: 0;
 
-		top: $nav_top_small + $nav_height_small;
+		top: $small_nav_top + $small_nav_height;
 
 		margin-top: #{-$margin_top};
 		padding-top: $margin_top;
@@ -435,17 +440,9 @@ html.fullwidth {
 	// 	transition: tx(height, 1, 0);
 	// }
 
-	& {
-		overflow-y: scroll;
-		#container {
-			overflow-y: visible;
-		}
-	}
-
-
 	// article-view
 	// ===================================
-	&.without-bundle {
+	/*&.without-bundle {
 		// height: auto;
 		// overflow: visible;
 		overscroll-behavior: none;
@@ -473,10 +470,12 @@ html.fullwidth {
 			min-height: 0;
 			max-height: none;
 		}
-	}
+	}*/
 
-	.article-view {
-		width: calc(100% - #{$margin_left*2 + $margin_right*2});
+	/* NOTE: these values depend on #navigation being absolute or relative */
+	/*.article-view {
+		// position: relative;
+		/*width: calc(100% - #{$margin_left*2 + $margin_right*2});
 		left: $margin_left * 2;
 		right: $margin_right * 2;
 		margin-left: 0;
@@ -484,13 +483,12 @@ html.fullwidth {
 		padding-left: 0;//$content_margin_left;
 		padding-right: 0;//$content_margin_right;
 
-		/* NOTE: these values depend on #navigation being absolute or relative */
 		// overflow: hidden;
 		// overflow-y: scroll;
 		// position: relative;
 		// top: 0;
 		top: auto;
-		// top: $nav_height_small;
+		// top: $small_nav_height;
 		bottom: auto;
 		height: auto;
 		min-height: 0;
@@ -499,26 +497,35 @@ html.fullwidth {
 
 		margin-top: 0;
 		margin-bottom: 0;
-		padding-top: 0;//$nav_height_small;
+		padding-top: 0;//$small_nav_height;
 		padding-bottom: 4.5rem;
 		// margin-top: -1rem;
-		// margin-top: $nav_height_small;
+		// margin-top: $small_nav_height;
 		// margin-bottom: 4.5rem;
+	}*/
 
-
-		&.markdown-html {
-			:first-child {
-				margin-top: 0;
-			}
+	.article-view {
+		width: auto;
+		margin-left: $margin_left * 2;
+		margin-right: $margin_left * 2;
+		padding-top: $small_nav_height;
+		padding-left: $content_margin_left;
+		padding-right: $content_margin_right;
+		&.mdown {
+			// :first-child {
+			// 	margin-top: 0;
+			// }
 			h1, h2, h3, h4, p {
-				padding-left: $content_margin_left;
-				padding-right: $content_margin_right;
+				// padding-left: $content_margin_left;
+				// padding-right: $content_margin_right;
 			}
-			h1, h2, p {
-				margin-left: 0;//$aside_width_small;
+			// h1, h2, p {
+			& > * {
+				padding-left: 0;//$small_aside_width;
 			}
 			h3, h4 {
-				width: auto;//$aside_width_small;
+				padding-left: 0;
+				width: auto;//$small_aside_width;
 				float: none;
 				clear: none;
 			}

@@ -12,11 +12,9 @@
 	"breakpoints": {
 		"fullwidth-small": "'not screen and (min-width: 460px)'",
 		"fullwidth": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
-		"mobile": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
 		"desktop-small": "'only screen and (min-width: 1024px) and (min-height: 540px)'",
 		"desktop-medium": "'only screen and (min-width: 1224px) and (min-height: 704px)'",
-		"desktop-large": "'only screen and (min-width: 1824px) and (min-height: 1024px)'",
-		"unsupported": "'not screen and (min-width: 704px)'"
+		"desktop-large": "'only screen and (min-width: 1824px) and (min-height: 1024px)'"
 	},
 	"default_colors": {
 		"color": "hsl(47, 5%, 15%)",
@@ -26,17 +24,22 @@
 	"temp": {
 		"collapse_offset": "360"
 	},
-	"_debug_mq": {
-		"unquoted": "only screen and (min-width: 1824px)",
-		"unquoted_neg": "not screen and (min-width: 704px)",
-		"quoted_combined": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
-		"array": [
-			"only screen and (min-width: 704px)",
-			"not screen and (min-width: 704px)",
-			"not screen and (min-height: 540px)"
-		]
-	},
-	"_debug": {
-		"--alt-background-color": "unset"
+	"_ignore": {
+
+		"breakpoints": {
+			"mobile": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
+			"unsupported": "'not screen and (min-width: 704px)'",
+			"unquoted": "only screen and (min-width: 1824px)",
+			"unquoted_neg": "not screen and (min-width: 704px)",
+			"quoted_combined": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
+			"array": [
+				"only screen and (min-width: 704px)",
+				"not screen and (min-width: 704px)",
+				"not screen and (min-height: 540px)"
+			]
+		},
+		"default_colors": {
+			"--alt-background-color": "unset"
+		}
 	}
 }

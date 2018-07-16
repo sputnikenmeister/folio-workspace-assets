@@ -24,52 +24,52 @@ function selfAndDescendant(selfCls, cls) {
 }
 
 // - - - - - - - - - - - - - - - -
-//  body rules
+//  root rules
 // - - - - - - - - - - - - - - - -
 
-var bodyStyles = ["background", "background-color", "color", "--link-color"];
+var rootStyles = ["background", "background-color", "color", "--link-color"];
 
-function initBodyStyles(sheet, bodySelector, attrs, fgColor, bgColor, lnColor, hasDarkBg) {
+function initRootStyles(sheet, rootSelector, attrs, fgColor, bgColor, lnColor, hasDarkBg) {
 	var s, revSelector, fgColorVal, bgColorVal;
 	// var revFgColorVal, revBgColorVal;
 
-	s = _.pick(attrs, bodyStyles);
+	s = _.pick(attrs, rootStyles);
 	s["-webkit-font-smoothing"] = (hasDarkBg ? "antialiased" : "auto");
-	/* NOTE: In Firefox 'body { -moz-osx-font-smoothing: grayscale; }'
+	/* NOTE: In Firefox '-moz-osx-font-smoothing: grayscale;'
 	/* works both in light over dark and dark over light, hardcoded in _base.scss */
 	//s["-moz-osx-font-smoothing"] = (hasDarkBg? "grayscale" : "auto");
-	insertCSSRule(sheet, bodySelector, s);
+	insertCSSRule(sheet, rootSelector, s);
 
 	// A element
 	// - - - - - - - - - - - - - - - -
 	s = {}
 	s["color"] = lnColor.rgbString();
-	insertCSSRule(sheet, bodySelector + " a", s);
-	insertCSSRule(sheet, bodySelector + " .color-ln", s);
+	insertCSSRule(sheet, rootSelector + " a", s);
+	insertCSSRule(sheet, rootSelector + " .color-ln", s);
 
 	// .color-fg05
 	// - - - - - - - - - - - - - - - -
 	s = {};
 	s["color"] = fgColor.clone().mix(bgColor, 0.5).rgbString();
 	s["border-color"] = fgColor.clone().mix(bgColor, 0.7).rgbString();
-	insertCSSRule(sheet, bodySelector + " .color-fg05", s);
+	insertCSSRule(sheet, rootSelector + " .color-fg05", s);
 
 	fgColorVal = fgColor.rgbString();
 	bgColorVal = bgColor.rgbString();
 	// revFgColorVal = bgColor.clone().mix(fgColor, 0.9).rgbString();
 	// revBgColorVal = fgColor.clone().mix(bgColor, 0.6).rgbString();
-	revSelector = bodySelector + " .color-reverse";
+	revSelector = rootSelector + " .color-reverse";
 
 	// .color-fg .color-bg
 	// - - - - - - - - - - - - - - - -
 	s = {
 		"color": fgColorVal
 	};
-	insertCSSRule(sheet, bodySelector + " .color-fg", s);
+	insertCSSRule(sheet, rootSelector + " .color-fg", s);
 	s = {
 		"background-color": bgColorVal
 	};
-	insertCSSRule(sheet, bodySelector + " .color-bg", s);
+	insertCSSRule(sheet, rootSelector + " .color-bg", s);
 	// html inverted text/background
 	s = {
 		"color": bgColorVal
@@ -92,11 +92,11 @@ function initBodyStyles(sheet, bodySelector, attrs, fgColor, bgColor, lnColor, h
 	s = {
 		"stroke": fgColorVal
 	};
-	insertCSSRule(sheet, bodySelector + " .color-stroke", s);
+	insertCSSRule(sheet, rootSelector + " .color-stroke", s);
 	s = {
 		"fill": bgColorVal
 	};
-	insertCSSRule(sheet, bodySelector + " .color-fill", s);
+	insertCSSRule(sheet, rootSelector + " .color-fill", s);
 	// svg inverted fill/stroke
 	s = {
 		"stroke": bgColorVal
@@ -119,7 +119,7 @@ function initBodyStyles(sheet, bodySelector, attrs, fgColor, bgColor, lnColor, h
 	// 		", -1px 1px 0 " + bgColorVal +
 	// 		", 1px 1px 0 " + bgColorVal
 	// };
-	// insertCSSRule(sheet, bodySelector + " :not(.collapsed-changed) .text-outline-bg", s);
+	// insertCSSRule(sheet, rootSelector + " :not(.collapsed-changed) .text-outline-bg", s);
 
 }
 
@@ -166,7 +166,7 @@ function initCarouselStyles(sheet, carouselSelector, attrs, fgColor, bgColor, ln
 	// s["background"] = "linear-gradient(to bottom, " +
 	// 		bgColor.clone().alpha(0.00).rgbaString() + " 0%, " +
 	// 		bgColor.clone().alpha(0.11).rgbaString() + " 100%)";
-	// insertCSSRule(sheet, bodySelector + " .color-gradient", s);
+	// insertCSSRule(sheet, rootSelector + " .color-gradient", s);
 	// s = {};
 	// s["background-color"] = "transparent";
 	// s["background"] = "linear-gradient(to bottom, " +
@@ -191,8 +191,10 @@ module.exports = function() {
 	document.head.appendChild(colorStyles);
 	// var colorStyles = document.querySelector("link#folio");
 
-	initBodyStyles(colorStyles.sheet, "BODY", attrs, fgColor, bgColor, lnColor, hasDarkBg);
-	initCarouselStyles(colorStyles.sheet, ".carousel", attrs, fgColor, bgColor, lnColor, hasDarkBg);
+	initRootStyles(colorStyles.sheet, ".app",
+		attrs, fgColor, bgColor, lnColor, hasDarkBg);
+	initCarouselStyles(colorStyles.sheet, ".carousel",
+		attrs, fgColor, bgColor, lnColor, hasDarkBg);
 
 	// - - - - - - - - - - - - - - - -
 	// per-bundle rules
@@ -204,7 +206,11 @@ module.exports = function() {
 		lnColor = bundle.colors.lnColor;
 		hasDarkBg = bundle.colors.hasDarkBg;
 
-		initBodyStyles(colorStyles.sheet, "BODY." + bundle.get("domid"), attrs, fgColor, bgColor, lnColor, hasDarkBg);
-		initCarouselStyles(colorStyles.sheet, ".carousel." + bundle.get("domid"), attrs, fgColor, bgColor, lnColor, hasDarkBg);
+		initRootStyles(colorStyles.sheet,
+			".app." + bundle.get("domid"),
+			attrs, fgColor, bgColor, lnColor, hasDarkBg);
+		initCarouselStyles(colorStyles.sheet,
+			".carousel." + bundle.get("domid"),
+			attrs, fgColor, bgColor, lnColor, hasDarkBg);
 	});
 };

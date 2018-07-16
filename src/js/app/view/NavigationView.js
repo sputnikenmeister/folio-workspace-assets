@@ -100,14 +100,25 @@ var NavigationView = View.extend({
 		// });
 
 		this.listenTo(this.graph, "view:render:before", function(view, flags) {
+			var vmax;
 			if (flags & (View.SIZE_INVALID | View.MODEL_INVALID)) {
-				var vmax = Math.max(
+				// if ((this.bundleList.renderFlags | View.SIZE_INVALID) ||
+				// 	(this.keywordList.renderFlags | View.SIZE_INVALID)) {
+				// 	view.el.style.height = "";
+				// } else {
+				vmax = Math.max(
 					this.bundleList._metrics.height,
 					this.keywordList._metrics.height
 				);
-				view.el.style.height = vmax + "px";
-				console.log("%s:%s[view:render:before] flags: %s] height: %o",
-					this.cid, view.cid, View.flagsToString(flags), vmax);
+				if (vmax) {
+					view.el.style.height = vmax + "px";
+				}
+				// }
+				console.log("%s:%s[view:render:before] [%s] h: %s, %s maxh: %o",
+					this.cid, view.cid, View.flagsToString(flags),
+					this.bundleList._metrics.height,
+					this.keywordList._metrics.height,
+					vmax || 'invalid');
 			}
 		});
 		// this.listenTo(this.bundleList, "view:render:after", function(view, flags) {
@@ -137,9 +148,13 @@ var NavigationView = View.extend({
 				|| this.model.hasChanged("withBundle")) {
 				this.el.classList.add("container-changing");
 			}
-			if (this.model.hasChanged("bundle")) {
-				this.bundleList.requestRender(View.SIZE_INVALID);
-				this.keywordList.requestRender(View.SIZE_INVALID);
+			// if (this.bundleList.invalidated) {
+			// 	this.bundleList.invalidate(View.SIZE_INVALID);
+			// }
+			// if (this.model.hasChanged("bundle")) {
+			if (this.model.hasChanged("routeName")) {
+				this.bundleList.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
+				this.keywordList.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
 			}
 		}
 
@@ -228,7 +243,7 @@ var NavigationView = View.extend({
 		   but model is unchanged */
 		else if ((flags & View.SIZE_INVALID) && !this.model.get("collapsed")) {
 			// console.info("%s::renderFrame", this.cid, "NavigationView has resized");
-			this.graph.requestRender(View.SIZE_INVALID);
+			this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
 		}
 		this.skipTransitions = false;
 	},
@@ -346,7 +361,8 @@ var NavigationView = View.extend({
 			// 	}
 			// }
 		} else if (Globals.BREAKPOINTS["fullwidth"].matches) {
-			if (collapsedChanged) {
+			// if (collapsedChanged ) {
+			if (collapsedChanged ^ withArticleChanged) {
 				this.transforms.runTransition(tx.BETWEEN,
 					this.sitename.el, this.about.el);
 			}
@@ -365,6 +381,7 @@ var NavigationView = View.extend({
 	/* --------------------------- */
 
 	_onModelChange: function() {
+		this.requestRender(View.MODEL_INVALID);
 		// keywords.deselect();
 		if (this.model.hasChanged("collapsed")) {
 			if (this.model.get("collapsed")) {
@@ -374,15 +391,16 @@ var NavigationView = View.extend({
 			} else {
 				// this.touch.off("tap", this._onNavigationClick);
 			}
-			this.keywordList.collapsed = this.bundleList.collapsed = this.model.get("collapsed");
+			this.keywordList.collapsed = this.model.get("collapsed");
+			this.bundleList.collapsed = this.model.get("collapsed");
 		}
 		if (this.model.hasChanged("bundle")) {
-			// keywords.deselect();
+			this.bundleList.selectedItem = this.model.get("bundle");
 			this.keywordList.refresh();
+			// keywords.deselect();
 			// this.graph && this.graph.requestRender(View.SIZE_INVALID);
 		}
 		if (this.model.hasChanged("withBundle")) {
-
 			// this.keywordList.refresh()
 			if (this.model.get("withBundle")) {
 				this.touch.on("vpanstart", this._onVPanStart);
@@ -396,7 +414,6 @@ var NavigationView = View.extend({
 			}
 			// this.graph.valueTo()
 		}
-		this.requestRender(View.MODEL_INVALID);
 	},
 
 	/* --------------------------- *
@@ -670,6 +687,9 @@ var NavigationView = View.extend({
 			"view:select:one": controller.selectBundle,
 			"view:select:none": controller.deselectBundle
 		});
+		// view.listenTo(bundles, "select:one select:none", function(item) {
+		// 	view.selectedItem = item;
+		// });
 		this.listenTo(view, "view:select:same", this._onBundleListSame);
 		this.listenTo(keywords, "select:one select:none", this._onKeywordSelect);
 		view.wrapper = view.el.parentElement;
@@ -693,6 +713,9 @@ var NavigationView = View.extend({
 				// return item.get("type");
 				return types.get(item.get("tId"));
 			},
+		});
+		view.listenTo(keywords, "select:one select:none", function(item) {
+			view.selectedItem = item;
 		});
 		this.listenTo(view, "view:select:one view:select:none", this._onKeywordListChange);
 		view.wrapper = view.el.parentElement;

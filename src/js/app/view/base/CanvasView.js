@@ -151,8 +151,10 @@ var CanvasView = View.extend({
 
 		// colors
 		// --------------------------------
-		this._color = s.color || this._options.color || Globals.DEFAULT_COLORS["color"];
-		this._backgroundColor = s.backgroundColor || this._options.backgroundColor || Globals.DEFAULT_COLORS["background-color"];
+		this._color = this._options.color ||
+			s.color || Globals.DEFAULT_COLORS["color"];
+		this._backgroundColor = this._options.backgroundColor ||
+			s.backgroundColor || Globals.DEFAULT_COLORS["background-color"];
 
 		// mozOpaque
 		// --------------------------------

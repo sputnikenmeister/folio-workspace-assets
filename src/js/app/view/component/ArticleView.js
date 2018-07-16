@@ -22,7 +22,7 @@ var ArticleView = View.extend({
 	/** @override */
 	tagName: "article",
 	/** @override */
-	className: "article-view markdown-html",
+	className: "article-view mdown",
 
 	/** @override */
 	initialize: function(options) {},

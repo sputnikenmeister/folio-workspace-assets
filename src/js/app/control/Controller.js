@@ -32,10 +32,17 @@ var Controller = Backbone.Router.extend({
 	/** @override */
 	initialize: function(options) {
 		this._routeNames = [];
+
+		if (DEBUG) {
+			this.on("route", function(routeName, args) {
+				console.log("controller:[route] %s [%s]", routeName, args.join());
+			});
+		}
+
 		/*
-		Prefixed article regexp: /^article(?:\/([^\/]+))\/?$/
-		Single bundle regexp: /^bundles(?:\/([^\/]+)(?:\/(\d+))?)?\/?$/
-		*/
+		 * Prefixed article regexp: /^article(?:\/([^\/]+))\/?$/
+		 * Single bundle regexp: /^bundles(?:\/([^\/]+)(?:\/(\d+))?)?\/?$/
+		 */
 		this.route(/(.*)/,
 			"notfound", this.toNotFound);
 		this.route(/^([a-z][a-z0-9\-]*)\/?$/,
@@ -207,12 +214,12 @@ var Controller = Backbone.Router.extend({
 
 		lastBundle = bundles.selected;
 		lastMedia = lastBundle ? lastBundle.get("media").selected : null;
-		console.log("controller::_changeSelection bundle:[%s => %s] media:[%s => %s]",
+		console.log("controller::_changeSelection bundle:[%s -> %s] media:[%s -> %s]",
 			(lastBundle ? lastBundle.cid : lastBundle), (bundle ? bundle.cid : bundle),
 			(lastMedia ? lastMedia.cid : lastMedia), (media ? media.cid : media)
 		);
 
-		if (!articles.selected && lastBundle === bundle && lastMedia === media) {
+		if (!articles.selected && (lastBundle === bundle) && (lastMedia === media)) {
 			return;
 		}
 
@@ -223,5 +230,6 @@ var Controller = Backbone.Router.extend({
 		this.trigger("change:after", bundle, media);
 	},
 });
+
 
 module.exports = new Controller();

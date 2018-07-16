@@ -192,6 +192,17 @@ var CarouselProto = {
 				return this._scrolling;
 			}
 		},
+		selectedItem: {
+			get: function() {
+				return this._selectedView.model;
+			},
+			set: function(value) {
+				if (value)
+					this._onSelectOne(value)
+				else
+					this._onSelectNone();
+			}
+		},
 	},
 
 	events: {

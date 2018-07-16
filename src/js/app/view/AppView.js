@@ -52,9 +52,9 @@ var AppViewProto = {
 	/** @override */
 	cidPrefix: "app",
 	/** @override */
-	el: "body",
+	el: "html",
 	// /** @override */
-	className: "without-bundle without-media without-article",
+	className: "app without-bundle without-media without-article",
 	/** @override */
 	model: AppState,
 
@@ -74,7 +74,10 @@ var AppViewProto = {
 	properties: {
 		container: {
 			get: function() {
-				return this._container || (this._container = document.getElementById("container"));
+				return this._container || (this._container =
+					// document.getElementById("container")
+					document.body
+				);
 			}
 		}
 	},
@@ -85,7 +88,10 @@ var AppViewProto = {
 		this.touch = TouchManager.init(this.container);
 		this.touch.set({
 			enable: (function() {
-				return this.model.get("collapsed") && this.model.get("withBundle");
+				return this.el.scrollHeight == this.el.clientHeight;
+				// return this.el.scrollTop === 0;
+				// return this.container.scrollTop === 0;
+				// return this.model.get("collapsed") && this.model.get("withBundle");
 			}).bind(this)
 		});
 
@@ -123,20 +129,13 @@ var AppViewProto = {
 		});
 
 		/* Google Analytics */
-		if (window.ga) {
+		if (window.ga && window.GA_ID) {
 			controller
 				.once("route", function() {
-					var gaTag;
-					// if (Globals.GA_TAGS) {
-					// 	gaTag = Globals.GA_TAGS[location.hostname]
-					// } else
-					if (!/(?:(localhost|\.local))$/.test(location.hostname)) {
-						gaTag = window.GA_ID;
-					}
-					if (gaTag) {
-						window.ga("create", gaTag, "auto");
-					} else {
-						window.ga("create", "UA-0000000-0", "auto");
+					window.ga("create", window.GA_ID, "auto");
+					// if localhost or dummy ID, disable analytics
+					if (/(?:(localhost|\.local))$/.test(location.hostname)
+						|| window.GA_ID == "UA-0000000-0") {
 						window.ga("set", "sendHitTask", null);
 					}
 				})
@@ -201,6 +200,7 @@ var AppViewProto = {
 				break;
 		}
 		console.info("%s::_onRoute %o -> %o", this.cid, this.model.get("routeName"), name);
+		// console.log("%s::_onRoute args: %o", this.cid, name, args);
 		this.model.set(o);
 	},
 
@@ -209,12 +209,17 @@ var AppViewProto = {
 	/* --------------------------- */
 
 	_onModelChange: function() {
-		// if (this.model.hasChanged("bundle")
-		// 	|| this.model.hasChanged("media")
-		// 	|| this.model.hasChanged("article")
-		// 	|| this.model.hasChanged("routeName")) {
-		this.requestRender(View.MODEL_INVALID);
-		// }
+		// console.log("%s::_onModelChange [START]", this.cid);
+		console.group(this.cid + "::_onModelChange [render request]");
+		this.requestRender(View.MODEL_INVALID)
+			.once("view:render:after", function(view, flags) {
+				console.info("%s::_onModelChange [render complete]", view.cid);
+				console.groupEnd();
+				// .whenRendered().then(function(view) {
+				// this.requestAnimationFrame(function() {
+				// 	console.log("%s::_onModelChange [next frame]", view.cid);
+				// });
+			});
 	},
 
 	/* -------------------------------
@@ -222,12 +227,27 @@ var AppViewProto = {
 	/* ------------------------------- */
 
 	_onResize: function() {
-		console.log("%s::_onResize", this.cid);
+		// console.log("%s::_onResize [START]", this.cid);
+		console.group(this.cid + "::_onResize [render request]");
 		this.el.classList.add("skip-transitions");
-		this.requestRender(View.SIZE_INVALID).renderNow();
-		this.requestAnimationFrame(function() {
-			this.el.classList.remove("skip-transitions");
-		}.bind(this));
+		this.skipTransitions = true;
+
+		// this.requestRender(View.SIZE_INVALID).renderNow();
+		// this.requestAnimationFrame(function() {
+		// 	this.el.classList.remove("skip-transitions");
+		// }.bind(this));
+
+		this.requestRender(View.SIZE_INVALID)
+			.once("view:render:after", function(view, flags) {
+				console.info("%s::_onResize [render complete]", view.cid);
+				// .whenRendered().then(function(view) {
+				this.requestAnimationFrame(function() {
+					view.el.classList.remove("skip-transitions");
+					this.skipTransitions = false;
+					console.info("%s::_onResize [removed skip-tx]", view.cid);
+					console.groupEnd();
+				})
+			});
 	},
 
 	// _onBreakpointChange: function(ev) {
@@ -240,18 +260,29 @@ var AppViewProto = {
 	/* ------------------------------- */
 
 	renderFrame: function(tstamp, flags) {
+		console.log("%s::renderFrame [%s]", this.cid, View.flagsToString(flags));
 		if (flags & View.MODEL_INVALID) {
-			this.renderModelChange();
+			this.renderModelChange(flags);
 		}
 		if (flags & View.SIZE_INVALID) {
 			this.renderResize(flags);
+			// this.requestChildrenRender(flags, true);
 		}
+		if (flags & (View.MODEL_INVALID | View.SIZE_INVALID)) {
+			// this.requestAnimationFrame(function() {
+			// document.body.scrollTop = 0;
+			window.scroll({ top: 0, behavior: "smooth" });
+			// });
+		}
+		// request children render
+		// set 'now' flag if size is invalid
+		this.requestChildrenRender(flags, true);
+		// this.requestChildrenRender(flags, flags & View.SIZE_INVALID);
+
 		if (this._appStartChanged) {
 			this._appStartChanged = false;
 			this.requestAnimationFrame(this.renderAppStart);
 		}
-
-		// this.requestAnimationFrame(this._afterRender);
 	},
 
 	// _afterRender: function() {
@@ -281,7 +312,7 @@ var AppViewProto = {
 		// console.log("%s::renderResize matches: %s", this.cid, bb);
 
 		// this.requestChildrenRender(View.SIZE_INVALID, true);
-		this.requestChildrenRender(flags, true);
+		// this.requestChildrenRender(flags, true);
 	},
 
 	/* -------------------------------
@@ -306,12 +337,11 @@ var AppViewProto = {
 			}
 		} else if (article) {
 			docTitle.push(stripTags(article.get("name")));
-		} // else docTitle.push("Portfolio");
+		}
 		document.title = _.unescape(docTitle.join(" / "));
 
 		var cls = this.el.classList;
 		var prevAttr = null;
-		// var hasDarkBg = false;
 
 		// Set article class
 		if (this.model.hasChanged("article")) {
@@ -321,7 +351,6 @@ var AppViewProto = {
 			}
 			if (article) {
 				cls.add(article.get("domid"));
-				// hasDarkBg = hasDarkBg || bundle.colors.hasDarkBg;
 			}
 		}
 		cls.toggle("with-article", !!article);
@@ -335,7 +364,6 @@ var AppViewProto = {
 			}
 			if (bundle) {
 				cls.add(bundle.get("domid"));
-				// hasDarkBg = hasDarkBg || bundle.colors.hasDarkBg;
 			}
 		}
 		cls.toggle("with-bundle", !!bundle);
@@ -349,7 +377,6 @@ var AppViewProto = {
 			}
 			if (media) {
 				cls.add(media.get("domid"));
-				// hasDarkBg = hasDarkBg || media.colors.hasDarkBg;
 			}
 		}
 		cls.toggle("with-media", !!media);
@@ -378,7 +405,8 @@ if (DEBUG) {
 
 	AppViewProto._onModelChange = (function(fn) {
 		return function() {
-			console.group(this.cid + "::_onModelChange changed:");
+			var retval;
+			console.group(this.cid + "::_onModelChange");
 			Object.keys(this.model.changedAttributes()).forEach(function(key) {
 				var prev = this.model.previous(key),
 					curr = this.model.get(key);
@@ -387,7 +415,9 @@ if (DEBUG) {
 					curr && curr.toString());
 			}, this);
 			console.groupEnd();
-			return fn.apply(this, arguments);
+
+			retval = fn.apply(this, arguments);
+			return retval;
 		};
 	})(AppViewProto._onModelChange);
 
@@ -398,7 +428,7 @@ if (DEBUG) {
 				id: "debug-toolbar",
 				model: this.model
 			});
-			this.el.appendChild(view.render().el);
+			document.body.appendChild(view.render().el);
 			// this.listenTo(this.model, "change:layoutName", function() {
 			// 	this.requestRender(View.SIZE_INVALID); //.renderNow();
 			// });
