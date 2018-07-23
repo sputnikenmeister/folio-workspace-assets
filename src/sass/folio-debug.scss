@@ -7,8 +7,9 @@ $debug: true;
 // @import "fonts";
 @import "main";
 
-@import "debug/debug-layout";
 @import "debug/debug-toolbar";
+@import "debug/debug-layout";
+@import "debug/debug-grid";
 @import "debug/debug-carousel-log";
 
 @include list_breakpoints();
