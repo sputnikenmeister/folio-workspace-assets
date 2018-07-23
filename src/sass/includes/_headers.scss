@@ -5,18 +5,30 @@
 // h1 font-size: 3.42857rem; letter-spacing: -2px;
 // h2 font-size: 2.14286rem; letter-spacing: -1px;
 
+%char_text {
+	letter-spacing: unset;
+}
 %char_heading {
 	letter-spacing: -0.05ch;
-	@include text_rendering_legibility();
-	// @at-root :not(.color-dark) & {
-	// 	@include font_smoothing();
-	// }
+}
+%para_text {
+	margin-left: unset;
+	&:first-child {
+		margin-top: unset;
+	}
 }
 %para_heading {
 	margin-left: -0.1ex;
 	&:first-child {
-		margin-top: -0.5ch;//-0.333333333em;
+		margin-top: -0.5ch;
 	}
+}
+
+@mixin optical_margins($label_margin:1ex, $label_optical_adjust:0.08) {
+	padding-left: $label_margin;
+	padding-right: $label_margin;
+	margin-left: -#{$label_margin + ($label_margin * $label_optical_adjust)};
+	margin-right: -#{$label_margin - ($label_margin * $label_optical_adjust)};
 }
 
 // @mixin optical_margins($margin:null, $adjust: -0.08, $calc: false) {
@@ -257,13 +269,13 @@
 
 /* 1f1_1f6 */
 %char_1f1_1f6 {
-	//@extend %char_heading;
+	@extend %char_text;
 	font-size: 1.1rem;
 	line-height: 1.333333333rem;
 	// letter-spacing: -0.25px;
 }
 %n1f1_1f6 {
-	//@extend %para_heading;
+	@extend %para_text;
 	@extend %char_1f1_1f6;
 	margin-bottom: 1rem;//0.75rem;
 	// padding: 3px 20px 3px 20px;
@@ -272,13 +284,13 @@
 
 /* 1_1f5 */
 %char_1_1f5 {
-	//@extend %char_heading;
+	@extend %char_text;
 	font-size: 1rem;
 	line-height: 1.333333333rem;
 	// letter-spacing: 0;
 }
 %n1_1f5 {
-	//@extend %para_heading;
+	@extend %para_text;
 	@extend %char_1_1f5;
 	margin-bottom: 1rem;//0.75rem;
 	// &:first-child: { margin-top: 0.25rem; }

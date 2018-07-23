@@ -2,11 +2,16 @@
 // Media Queries
 // ------------------------------------
 
-@mixin media($query) {
-	// @at-root .#{#{$query} &} {
-	// @at-root .#{$query} body & {
-	// @at-root .app.#{#{$query} &} {
-	@at-root .#{$query} {
+@mixin media($names) {
+	$selector: "";
+	@each $name in $names {
+		@if type-of($name) == "string" {
+			$selector: $selector + "." + $name;
+		} @else {
+			@error "A string is required but #{type-of($name)} was passed instead: `#{$name}`";
+		}
+	}
+	@at-root #{#{$selector} &} {
 		@content;
 	}
 }

@@ -58,9 +58,9 @@ var VideoRenderer = PlayableRenderer.extend({
 	template: require("./VideoRenderer.hbs"),
 
 	events: (function() {
-		return window.hasOwnProperty("onpointerup")
-			? { "pointerup .fullscreen-toggle": "_onFullscreenToggle" }
-			: { "mouseup .fullscreen-toggle": "_onFullscreenToggle" }
+		var ret = {};
+		ret[Globals.CLICK_EVENT + " fullscreen-toggle"] = "_onFullscreenToggle";
+		return ret;
 	}()),
 
 	// events: {
@@ -229,7 +229,7 @@ var VideoRenderer = PlayableRenderer.extend({
 				available: this.video.duration,
 			},
 			color: this.model.attr("color"),
-			backgroundColor: this.model.attr("background-color"),
+			// backgroundColor: this.model.attr("background-color"),
 			labelFn: this._progressLabelFn.bind(this)
 		});
 		// var parentEl = this.el.querySelector(".top-bar");

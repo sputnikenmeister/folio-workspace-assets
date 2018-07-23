@@ -410,7 +410,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 				available: this.sources.length,
 			},
 			color: this.model.attr("color"),
-			backgroundColor: this.model.attr("background-color"),
+			// backgroundColor: this.model.attr("background-color"),
 			labelFn: this._progressLabelFn.bind(this)
 		});
 

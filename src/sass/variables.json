@@ -1,15 +1,13 @@
 {
-	"units": {
-		"hu_px": "20",
-		"vu_px": "12"
-	},
 	"transitions": {
-		"min_delay_ms": "34",
-		"delay_interval_ms": "134",
+		"ease": "ease",
 		"duration_ms": "400",
-		"ease": "ease"
+		"delay_interval_ms": "100",
+		"min_delay_ms": "50"
 	},
 	"breakpoints": {
+		"landscape": "'(orientation: landscape)'",
+		"portrait": "'(orientation: portrait)'",
 		"fullwidth-small": "'not screen and (min-width: 460px)'",
 		"fullwidth": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
 		"desktop-small": "'only screen and (min-width: 1024px) and (min-height: 540px)'",
@@ -19,13 +17,26 @@
 	"default_colors": {
 		"color": "hsl(47, 5%, 15%)",
 		"background-color": "hsl(47, 5%, 95%)",
-		"--link-color": "hsl(10, 80%, 50%)"
+		"link-color": "hsl(10, 80%, 50%)"
 	},
 	"temp": {
 		"collapse_offset": "360"
 	},
 	"_ignore": {
-
+		"transitions": {
+			"ease": "ease",
+			"duration_ms": "400",
+			"delay_interval_ms": "134",
+			"min_delay_ms": "34"
+		},
+		"default_colors": {
+			"--link-color": "hsl(10, 80%, 50%)",
+			"--alt-background-color": "unset"
+		},
+		"units": {
+			"hu_px": "20",
+			"vu_px": "12"
+		},
 		"breakpoints": {
 			"mobile": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
 			"unsupported": "'not screen and (min-width: 704px)'",
@@ -37,9 +48,6 @@
 				"not screen and (min-width: 704px)",
 				"not screen and (min-height: 540px)"
 			]
-		},
-		"default_colors": {
-			"--alt-background-color": "unset"
 		}
 	}
 }

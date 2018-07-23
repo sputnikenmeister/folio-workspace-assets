@@ -23,8 +23,8 @@ var CanvasHelper = require("utils/canvas/CanvasHelper");
 /** @type {module:utils/geom/inflateRect} */
 var inflateRect = require("utils/geom/inflateRect");
 
-/** @type {module:utils/dom/getAbsoluteClientRect} */
-var getAbsoluteClientRect = require("utils/dom/getAbsoluteClientRect");
+// /** @type {module:utils/dom/getAbsoluteClientRect} */
+// var getAbsoluteClientRect = require("utils/dom/getAbsoluteClientRect");
 
 
 // var BEZIER_CIRCLE = 0.551915024494;
@@ -63,11 +63,11 @@ if (DEBUG) {
 		"grey", "silver"
 	]
 	.forEach(function(colorName) {
-		var rgbaValue = Color(colorName).alpha(0.75).rgbaString();
+		var rgbaValue = Color(colorName).alpha(0.5).rgbaString();
 
 		_dStyles[colorName] = _.defaults({
 			lineWidth: 0.75,
-			strokeStyle: rgbaValue
+			strokeStyle: rgbaValue,
 		}, _dStyles["defaults"]);
 
 		_dStyles[colorName + "_fill"] = _.defaults({
@@ -143,48 +143,59 @@ var GraphView = CanvasView.extend({
 		};
 		this.listenTo(this, "view:render:before", this._beforeViewRender);
 
-		var viewportChanged = function(ev) {
-			// this.requestRender(CanvasView.SIZE_INVALID);
-			// this.requestRender(CanvasView.LAYOUT_INVALID);
-			console.log("%s:[%s]: window.scrollY:%s body.scrollTop:%s html.scrollTop:%s",
-				this.cid, ev.type,
-				window.scrollY,
-				document.body.scrollTop,
-				document.documentElement.scrollTop);
-			console.log("%s:[%s]: body.scrollHeight:%s body.clientHeight:%s html.scrollHeight:%s html.clientHeight:%s",
-				this.cid, ev.type,
-				document.body.scrollHeight, document.body.clientHeight,
-				document.documentElement.scrollHeight, document.documentElement.clientHeight);
-			this._groupRects = null;
-		}.bind(this);
+		// this.__traceScroll = _.debounce(this.__traceScroll, 100, false);
 
+		var viewportChanged = function(ev) {
+			console.log("%s:[%s]", this.cid, ev.type);
+
+			// this.__traceScroll(ev.type);
+			// this._groupRects = null;
+			// this.invalidate(CanvasView.LAYOUT_INVALID | CanvasView.SIZE_INVALID);
+			this.requestRender(CanvasView.LAYOUT_INVALID | CanvasView.SIZE_INVALID);
+		}.bind(this);
 		// viewportChanged = _.debounce(viewportChanged, 100, false);
-		window.addEventListener("scroll", _.debounce(viewportChanged, 100, false), false);
-		window.addEventListener("wheel", _.debounce(viewportChanged, 100, false), false);
+
+		// window.addEventListener("scroll",
+		// 		_.debounce(viewportChanged, 100, false), false);
+		// window.addEventListener("wheel",
+		// 	_.debounce(viewportChanged, 100, false), false);
+		window.addEventListener("scroll", viewportChanged, false);
+		window.addEventListener("wheel", viewportChanged, false);
+		window.addEventListener("resize", viewportChanged, false);
+		window.addEventListener("orientationchange", viewportChanged, false);
 
 		// this._addListListeners(this._a2b);
 		// this._addListListeners(this._b2a);
 	},
 
-	// _addListListeners: function(d) {
-	// 	this.listenTo(d.srcView, {
-	// 		"select:one": function(model) {
-	// 			this.listenToOnce(d.destView, "view:render:after",
-	// 				function(view) {
-	// 					d.srcItem = d.srcView.collection.selected;
-	// 					d.destItems = d.destView.filteredItems;
-	// 				});
-	// 		},
-	// 		"select:none": function() {
-	// 			d.srcItem = d.destItems = null;
-	// 		}
-	// 	});
-	// },
+	__traceScroll: function(type) {
+		var tpl = "%s:[%s] DPR:%i " +
+			"[window: %i %i] " +
+			"[html: %i %i %i] " +
+			"[body: %i %i %i] " +
+			"[container: %i %i %i] " +
+			"[graph: %i %i %i]";
+		console.log(tpl, this.cid, type, this._canvasRatio,
+			window.scrollY,
+			window.pageYOffset,
+			document.documentElement.clientHeight,
+			document.documentElement.scrollTop,
+			document.documentElement.scrollHeight,
+			document.body.clientHeight,
+			document.body.scrollTop,
+			document.body.scrollHeight,
+			document.body.firstElementChild.clientHeight,
+			document.body.firstElementChild.scrollTop,
+			document.body.firstElementChild.scrollHeight,
+			this.el.clientHeight,
+			this.el.scrollTop,
+			this.el.scrollHeight
+		);
+	},
 
 	/** @override */
 	measureCanvas: function(w, h) {
-		console.log("%s::measureCanvas style:%o offset:%o arg:%o", this.cid,
-			parseInt(this.el.style.height), this.el.offsetHeight, h);
+		console.log("%s::measureCanvas style:%o offset:%o client:%o arg:%o", this.cid, parseInt(this.el.style.height), this.el.offsetHeight, this.el.clientHeight, h);
 	},
 
 	/** @override */
@@ -205,13 +216,18 @@ var GraphView = CanvasView.extend({
 			bgColor = b.colors.bgColor.clone();
 		} else {
 			bgColor = Color(Globals.DEFAULT_COLORS["background-color"]);
-			lnColor = Color(Globals.DEFAULT_COLORS["--link-color"]);
+			lnColor = Color(Globals.DEFAULT_COLORS["link-color"]);
 		}
 
 		this._a2b.s.strokeStyle = this._a2b.s.fillStyle =
 			this._a2b.strokeStyleFn(this._color, bgColor, lnColor);
 		this._b2a.s.strokeStyle = this._b2a.s.fillStyle =
-			this._b2a.strokeStyleFn(this._color, bgColor, lnColor)
+			this._b2a.strokeStyleFn(this._color, bgColor, lnColor);
+
+		if (DEBUG) {
+			this._debugBlocks = this.el.matches(".debug-blocks ." + this.className);
+			this._debugGraph = this.el.matches(".debug-graph ." + this.className);
+		}
 	},
 
 	_setStyle: function(s) {
@@ -341,55 +357,33 @@ var GraphView = CanvasView.extend({
 				this._groupRects[i] = els[i].getBoundingClientRect(els[i]);
 			}
 		}
-		if (lVal === 1) {
-			console.log("%s::_redraw " +
-				"window.scrollY: %s " +
-				"window.pageYOffset: %s " +
-				"body.scrollTop: %s " +
-				"html.scrollTop: %s " +
-				"#container.scrollTop: %s",
-				this.cid,
-				window.scrollY,
-				window.pageYOffset,
-				document.documentElement.scrollTop,
-				document.body.scrollTop,
-				document.documentElement.firstElementChild.scrollTop
-			);
-		}
+		// if (lVal === 1) {
+		// 	this.__traceScroll("redraw");
+		// }
 
 		this._groupRects.forEach(function(r) {
-			// TODO: implement DOMRect.inflate()
-			// CanvasHelper.drawRect(this._ctx, _dStyles["red_fill"],
-			// 	r.left + document.body.scrollLeft,
-			// 	r.top + document.body.scrollTop,
-			// 	r.width, r.height);
-			// r = inflateRect(r, -8.5, -4.5);
-			this._ctx.clearRect(
-				r.left + document.body.scrollLeft,
-				r.top + document.body.scrollTop,
-				r.width, r.height);
-
+			this._ctx.clearRect(r.left, r.top, r.width, r.height);
+			if (this._debugGraph || this._debugBlocks) {
+				r = inflateRect(r, 2, 2);
+				CanvasHelper.drawRect(this._ctx, _dStyles["salmon"],
+					r.left, r.top, r.width, r.height);
+			}
 		}, this);
 	},
 
 	_drawOverlays: function(list, rect) {
-		var items = list.groups;
+		var r = {},
+			items = list.groups;
 		for (var i = 0, num = items.length, item; i < num; i++) {
 			item = list.itemViews.findByModel(items[i]);
 			if (item._metrics && item.transform) {
-				console.log("list.filteredGroups.length[%o] %o", i,
-					item._metrics, item.transform);
-				this._ctx.clearRect(
-					rect.left + item.transform.tx + item._metrics.offsetLeft,
-					rect.top + item.transform.ty + item._metrics.offsetTop - 5,
-					item._metrics.offsetWidth,
-					10 // item._metrics.offsetHeight
-				);
-				// CanvasHelper.drawRect(this._ctx, _dStyles["red_fill"],
-				// 	rect.left + item.transform.tx + item._metrics.offsetLeft,
-				// 	rect.top + item.transform.ty + item._metrics.offsetTop - 5,
-				// 	item._metrics.offsetWidth, 10
-				// );
+				r.left = rect.left + item.transform.tx + item._metrics.offsetLeft;
+				r.top = rect.top + item.transform.ty + item._metrics.offsetTop - 5;
+				r.width = item._metrics.offsetWidth;
+				r.height = item._metrics.offsetHeight;
+				r = inflateRect(r, 4, 4);
+				CanvasHelper.drawRect(this._ctx, _dStyles["green"],
+					r.left, r.top, r.width, r.height);
 			}
 		}
 	},
@@ -588,6 +582,19 @@ var GraphView = CanvasView.extend({
 	},
 
 	_drawConnector: function(p, i, pp) {
+		if (DEBUG) {
+			if (this._debugGraph) {
+				if (i === 0) {
+					CanvasHelper.drawVGuide(this._ctx, _dStyles["grey"], p.x1);
+					CanvasHelper.drawVGuide(this._ctx, _dStyles["grey"], p.cx1);
+					CanvasHelper.drawHGuide(this._ctx, _dStyles["grey"], p.y1);
+					CanvasHelper.drawCircle(this._ctx, _dStyles["midnightblue"], p.x1, p.y1, 10);
+				}
+				CanvasHelper.drawVGuide(this._ctx, _dStyles["grey"], p.cx2);
+				CanvasHelper.drawHGuide(this._ctx, _dStyles["grey"], p.cy2);
+				// _dStyles[p.dy > 0 ? "lightgreen" : "salmon"], p.cy2);
+			}
+		}
 
 		this._ctx.beginPath();
 		this._ctx.moveTo(p.x2, p.cy2);
@@ -608,28 +615,20 @@ var GraphView = CanvasView.extend({
 		// this._ctx.lineTo(p.cx0, p.y1);
 
 		this._ctx.stroke();
+		if (DEBUG) {
+			if (this._debugGraph) {
+				CanvasHelper.drawCrosshair(this._ctx, _dStyles["blue"],
+					p.x1 + ((p.r0 + p.di) * p.qx), p.cy1, 3);
+				CanvasHelper.drawSquare(this._ctx, _dStyles["midnightblue"], p.cx0, p.cy1, 2);
+				CanvasHelper.drawCircle(this._ctx, _dStyles["blue"], p.cx1, p.cy1, 1);
+				CanvasHelper.drawSquare(this._ctx, _dStyles["blue"], p.tx1, p.cy1, 2);
+				CanvasHelper.drawSquare(this._ctx, _dStyles["green"], p.tx2, p.cy2, 2);
+				CanvasHelper.drawCircle(this._ctx, _dStyles["green"], p.cx2, p.cy2, 1);
 
-		// if (DEBUG) {
-		// 	CanvasHelper.drawCrosshair(this._ctx, _dStyles["blue"],
-		// 		p.x1 + ((p.r0 + p.di) * p.qx), p.cy1, 3);
-		// 	if (i === 0) {
-		// 		CanvasHelper.drawVGuide(this._ctx, _dStyles["blue"], p.x1);
-		// 		CanvasHelper.drawCircle(this._ctx, _dStyles["midnightblue"], p.x1, p.y1, 10);
-		// 		CanvasHelper.drawVGuide(this._ctx, _dStyles["lightskyblue"], p.cx1);
-		// 		CanvasHelper.drawHGuide(this._ctx, _dStyles["grey"], p.y1);
-		// 	}
-		// 	CanvasHelper.drawHGuide(this._ctx, _dStyles["silver"], p.cy2);
-		// 	// _dStyles[p.dy > 0 ? "lightgreen" : "salmon"], p.cy2);
-		// 	CanvasHelper.drawSquare(this._ctx, _dStyles["midnightblue"], p.cx0, p.cy1, 2);
-		// 	CanvasHelper.drawCircle(this._ctx, _dStyles["blue"], p.cx1, p.cy1, 1);
-		// 	CanvasHelper.drawSquare(this._ctx, _dStyles["blue"], p.tx1, p.cy1, 2);
-		// 	CanvasHelper.drawSquare(this._ctx, _dStyles["green"], p.tx2, p.cy2, 2);
-		// 	CanvasHelper.drawCircle(this._ctx, _dStyles["green"], p.cx2, p.cy2, 1);
-		//
-		// 	CanvasHelper.drawVGuide(this._ctx, _dStyles["yellowgreen"], p.cx2);
-		// 	CanvasHelper.drawCircle(this._ctx, _dStyles["olive"], p.x2, p.cy2, 3);
-		// 	CanvasHelper.drawCrosshair(this._ctx, _dStyles["olive"], p.x2, p.y2, 6);
-		// }
+				CanvasHelper.drawCircle(this._ctx, _dStyles["olive"], p.x2, p.cy2, 3);
+				CanvasHelper.drawCrosshair(this._ctx, _dStyles["olive"], p.x2, p.y2, 6);
+			}
+		}
 	},
 
 	_roundTo: function(n, p) {
@@ -637,7 +636,8 @@ var GraphView = CanvasView.extend({
 		return Math.round(n / p) * p;
 	},
 
-	/* _computeConnectors: function(d) {
+	/*
+	_computeConnectors: function(d) {
 		var rBase = d.s.radiusBase;
 		var rInc = d.s.radiusIncrement;
 		var sMin = d.xMin;

@@ -128,7 +128,7 @@ RequestQueue.prototype = Object.create({
 var _nextQueue = new RequestQueue(0);
 var _currQueue = null;
 
-var _pending = false;
+// var _pending = false;
 var _running = false;
 var _rafId = -1;
 

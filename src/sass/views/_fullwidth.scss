@@ -7,24 +7,51 @@
 // ///////////////////////////////////
 
 $rhu: 1.666666666rem;
-$one_third: 100% * (1/3);
-$two_thirds: 100% * (2/3);
+$one_third: 100vw * (1/3);
+$two_thirds: 100vw * (2/3);
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
-$small_nav_top: 1.166666666rem;
-$small_nav_height: 7rem;//6.5rem;
-// $small_page_width: 22 * $hu; //940px;
-$small_page_width_max: none;//704px;
-// $small_main_width: $small_page_width - $small_aside_width;
-$small_main_width: $two_thirds;
-// $small_aside_width: 11 * $hu;
-$small_aside_width: 100% - $small_main_width;
+$s_nav_top: 1.166666666rem;
+$s_nav_bottom: 1rem;
+$s_nav_height: 25vh;//25%;// 7rem;//6.5rem;
+$s_page_width_max: none;//704px;
 
-$margin_left: 1.25rem;//$rhu * (2/3);
-$margin_right: 1.25rem;//$rhu * (1/3);
-$content_margin_left: 2rem;//$rhu * (2/3);
-$content_margin_right: 1rem;//$rhu * (1/3);
+$s_aside_width_val: 32vw;
+$s_page_left_val: 2vw;
+$s_page_right_val: 2vw;
+$s_margin_left_val: 6vw;//1.25rem;//$rhu * (2/3);
+$s_margin_right_val: 2vw;//1.25rem;//$rhu * (1/3);
+$s_content_left_val: 2vw;//2rem;//$rhu * (2/3);
+$s_content_right_val: 2vw;//1rem;//$rhu * (1/3);
+
+$s_aside_width: $s_aside_width_val;
+$s_page_left: $s_page_left_val;
+$s_page_right: $s_page_right_val;
+$s_margin_left: $s_margin_left_val;
+$s_margin_right: $s_margin_right_val;
+$s_content_left: $s_content_left_val;
+$s_content_right: $s_content_right_val;
+
+// @if $debug {
+// 	$s_aside_width: #{var(--aw, $s_aside_width_val)};
+// 	$s_page_left: #{var(--pl, $s_page_left_val)};
+// 	$s_page_right: #{var(--pr, $s_page_right_val)};
+// 	$s_margin_left: #{var(--ml, $s_margin_left_val)};
+// 	$s_margin_right: #{var(--mr, $s_margin_right_val)};
+// 	$s_content_left: #{var(--cml, $s_content_left_val)};
+// 	$s_content_right: #{var(--cmr, $s_content_right_val)};
+//
+// 	@include media(fullwidth) {
+// 		--aw: #{$s_aside_width_val};
+// 		--pl: #{$s_page_left_val};
+// 		--pr: #{$s_page_right_val};
+// 		--ml: #{$s_margin_left_val};
+// 		--mr: #{$s_margin_right_val};
+// 		--cml: #{$s_content_left_val};
+// 		--cmr: #{$s_content_right_val};
+// 	}
+// }
 
 // ///////////////////////////////////
 // Root
@@ -36,12 +63,15 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 
 @include media(fullwidth) {
 
+	// @if ($debug) { @include s_variables; }
+	// @include s_variables;
+
 	/* body */
 	// width: 100%;
 	// overflow: hidden;
 	// overflow-y: auto;
-	// padding-top: $small_nav_top;
-	// padding-bottom: $small_nav_top;
+	// padding-top: $s_nav_top;
+	// padding-bottom: $s_nav_top;
 
 	// & {
 	// 	overflow-y: scroll;
@@ -52,33 +82,26 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 
 	// container navigation content
 	// - - - - - - - - - - - - - - - - - -
-
-	// #container {
-	// 	// height: auto;
-	// 	width: auto;
-	// 	min-width: 0;
-	// 	max-width: none;
-	// 	min-height: 100%;
+	// .container {
+	// 	padding-left: $s_page_left;
+	// 	padding-right: $s_page_right;
 	// }
 
 	#navigation {
-		width: auto;//calc(100% - #{$margin_left * 4});//auto;
-		max-width: $small_page_width_max;
-		left: 0;//$margin_left * 2;
-		right: 0;//$margin_right * 2;
-		margin-left: $margin_left * 2;// + $content_margin_left;
-		margin-right: $margin_right * 2;// + $content_margin_right;
+		width: auto;
+		max-width: $s_page_width_max;
+		margin-left: $s_margin_left;
+		margin-right: $s_margin_right;
 
-		min-height: $small_nav_height;
-		// margin-top: $small_nav_top;
-		padding-top: $small_nav_top;
-		padding-bottom: 3rem;// TODO: whats the best value for this?
+		min-height: $s_nav_height;
+		padding-top: $s_nav_top;
+		padding-bottom: $s_nav_bottom;
 	}
 
 	#content {
-		// margin-top: $small_nav_top;
-		// margin-bottom: -$small_nav_top;
-		padding-top: $small_nav_top;
+		// margin-top: $s_nav_top;
+		// margin-bottom: -$s_nav_top;
+		padding-top: $s_nav_top;
 	}
 
 	// ///////////////////////////////////
@@ -88,24 +111,18 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 	// leaf elements
 	// - - - - - - - - - - - - - - - - - -
 	%leaf_content {
-		padding-left: $content_margin_left;
-		padding-right: $content_margin_right;
-		.label {
-			// padding: 0 $content_margin_right 0 $content_margin_left;
-			// margin: 0 -$content_margin_right 0 -$content_margin_left;
-			padding: 0 0.5rem;
-			margin: 0 -0.5rem;
-		}
+		padding-left: $s_content_left;
+		padding-right: $s_content_right;
+	}
+	%leaf_content_label {
+		@include optical_margins(1vw, 0);
 	}
 
 	// block definitions
 	// - - - - - - - - - - - - - - - - - -
+	// %nav_list {}
 	%nav_font {
 		@extend %char_1f3_1f5;
-		// @include heading_font(600, 1.25rem, 1.5rem, -0.5px);
-		// @include heading_font(600, 1.333333333rem, 1.125rem, -0.5px);
-		// @include text_rendering_legibility;
-		// @include font_smoothing;
 	}
 
 	// ///////////////////////////////////
@@ -113,11 +130,14 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 	// ///////////////////////////////////
 
 	.transform-wrapper {
-		left: 0; right: 0;
+		left: 0;
+		right: 0;
 		width: auto;
+		margin-left: $s_page_left;
+		margin-right: $s_page_right;
 	}
 
-	.list-group, .list-item {}
+	// .list-group, .list-item {}
 
 	// bundle-list
 	// ===================================
@@ -126,15 +146,15 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 		@extend %nav_font;
 		font-weight: 600;
 
-		width: auto;
+		width: $one_third;
 		left: 0;
-		right: $two_thirds;
+		right: auto;//$two_thirds;
 
-		// padding-top: #{$small_nav_height + 0.5rem};
+		// padding-top: #{$s_nav_height + 0.5rem};
 		// padding-bottom: 1.5rem;
 		.list-item {
 			// @extend %list_item;
-			// width: $default_main_width - $small_aside_width - (2*$hu);
+			// width: $default_main_width - $s_aside_width - (2*$hu);
 			// width: calc(100% - #{8*$hu});
 			height: 1.5rem;
 			width: 100%;
@@ -154,18 +174,13 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 	// ===================================
 	#keyword-list {
 		// width: auto; left: $two_thirds; right: 0;
-		width: $one_third; left: auto; right: 0;
-
-		//font-size: 0.9166666666rem; //1rem; //#{(7/8)}rem;
-		//line-height: 1.5rem;//1.090909091;//1.166666666; //1rem;
-
+		// NOTE: adding margins to acct for #navigation's box
+		// width: $s_margin_left + $s_content_left + $s_aside_width;
+		right: 0;
 		// width: auto;
-		// left: calc(#{$small_main_width} - #{$content_margin_left});
-		// right: 0;
-
-		// width: 33.333333333%;//calc(100% / 3);
-		// width: calc((100% - #{abs($margin_left - $margin_right)}) / 3);
-		// width: calc(#{$small_aside_width} + #{$margin_right} + #{$margin_left});
+		// left: calc(100vw - #{$s_aside_width} - #{$s_page_left} - #{$s_margin_left} - #{$s_content_left});
+		width: calc(#{$s_aside_width} - #{$s_page_right} - #{$s_margin_right} + #{$s_content_left});
+		left: auto;
 
 		.list-item {
 			// @extend %list_item;
@@ -183,13 +198,13 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 			height: 0;
 			width: 100%; // width of #keyword-list
 			.label {
-				width: calc(50% + #{$content_margin_left});
+				width: ($s_aside_width / 2);
 				transform: moveX(-100%);
 				// padding: 0; margin: 0;
-				// & > span {
-				// 	padding: 0 0.25em;
-				// 	margin: 0 -0.25em;
-				// }
+				& > span {
+					padding: 0 0.5ex;
+					margin: 0 -0.5ex;
+				}
 			}
 		}
 
@@ -263,12 +278,12 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 	// article-list-wrapper (vertical movements)
 	// - - - - - - - - - - - - - - - - - -
 	#article-list-wrapper {
-		width: 100%;//$small_page_width;
+		width: 100%;//$s_page_width;
 	}
 
 	// NOTE: these elements need symmetrical padding
 	#site-name, .article-button {
-		padding-right: $margin_left;
+		padding-right: $s_margin_left;
 	}
 
 	// Common
@@ -299,7 +314,8 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 	// nav-graph
 	// - - - - - - - - - - - - - - - - - -
 	#nav-graph {
-		width: 100%;//$small_page_width;
+		width: 100%;
+		// display: block;
 	};
 
 	// ///////////////////////////////////
@@ -311,41 +327,41 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 
 	$ctrl_height: 2.1rem;
 	$ctrl_width: $rhu * 1.05;//2.1rem;
-
-	$margin_top: $small_nav_top + $small_nav_height; //4.5rem; //$ctrl_height + 1rem;
+	$margin_top: 4rem;
 	$margin_bottom: 3rem;
 
-	// $carousel_item_height: calc(100% - #{($margin_top + $margin_bottom)});
-
 	.media-carousel {
-		max-width: $small_page_width_max;
+		max-width: $s_page_width_max;
 		min-width: 0;
 		width: auto;
 		left: 0;
 		right: 0;
 
-		top: $small_nav_top + $small_nav_height;
+		top: calc(#{$s_nav_top} + #{$s_nav_height});
 
 		margin-top: #{-$margin_top};
 		padding-top: $margin_top;
 		padding-bottom: $margin_bottom;
+		padding-left: $s_margin_left;
+		padding-right: $s_margin_right;
 
 		.carousel-item {
 			width: auto;
-			height: calc(100% - #{$margin_top + $margin_bottom});
-			left: $margin_left;
-			right: $margin_right;
-			margin-left: $margin_left;
-			margin-right: $margin_right;
+			max-height: calc(100% - #{$margin_top + $margin_bottom});
+			left: $s_page_left;
+			right: $s_page_right;
+			margin-left: $s_margin_left;
+			margin-right: $s_margin_right;
 			.sizing {
-				margin-left: $content_margin_left;
-				margin-right: $content_margin_right;
+				margin-left: $s_content_left;
+				margin-right: $s_content_right;
 			}
 		}
 		.empty-item {
 			// FIXME FIXME FIXME : parallax breaks if item is not 100%;
 			width: auto;
-			right: calc(33.333333% - 3px);
+			right: $s_aside_width;
+			// right: calc(#{$s_aside_width} - #{$s_content_left}});
 		}
 		.media-item {
 			.placeholder:before {
@@ -371,31 +387,11 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 			margin-bottom: 1rem;
 		}
 		.progress-meter {
-			// width: 100%; height: auto;
-			// width: auto; height: 100%;
 			width: $ctrl_height;//2.1rem;
 			height: $ctrl_height;//2.1rem;
 			font-size: 75%;
 			line-height: 1;
 		}
-		// .top-bar {
-		// 	margin: 1.5rem -0.5rem;
-		// 	top: 0;
-		// 	direction: ltr;
-		// 	z-index: 4;
-		//
-		// 	width: $ctrl_width;
-		// 	flex-direction: column;
-		// 	direction: ltr;
-		// 	top: 0;
-		// 	right: 100%;
-		// 	width: auto;
-		// 	height: calc(100% + 1rem);
-		// 	margin: -0.5rem #{$hu / 2};
-		// 	& > * {
-		// 		padding: 0.5rem 0;
-		// 	}
-		// }
 	}
 
 	// media-caption-stack
@@ -403,14 +399,14 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 	.media-caption-stack {
 		top: 1.5rem;
 		margin: 0;
-		// margin-left: #{$margin_left*2};
-		// margin-right: 7rem;
 
-		margin-left: $margin_left * 2;// + $content_margin_left;
-		margin-right: $margin_right * 2;// + $content_margin_right;
+		left: $s_page_left;
+		right: $s_page_left;
+		margin-left: $s_margin_left;
+		margin-right: $s_margin_right;
 
 		// space for carousel ctrls: 7rem
-		width: auto;//calc(100% - #{$margin_left*2} - 7rem);
+		width: auto;
 
 		.stack-item {
 			top: 0;
@@ -429,105 +425,44 @@ $content_margin_right: 1rem;//$rhu * (1/3);
 	// media-dotnav
 	// ===================================
 	.media-dotnav {
-		padding-left: $margin_left;
-		padding-right: $margin_right;
+		padding-left: $s_margin_left;
+		padding-right: $s_margin_right;
 		width: auto;
 		bottom: 0.75rem;
 		.list-item {
-			// padding: 0 0.25rem;
 			padding: 0 0.3333333rem;
 		}
 	}
-	// #container {
-	// 	transition: tx(height, 1, 0);
-	// }
 
 	// article-view
 	// ===================================
-	/*&.without-bundle {
-		// height: auto;
-		// overflow: visible;
-		overscroll-behavior: none;
-		overflow-x: hidden;
-		overflow-y: scroll;
-
-		#container {
-		// 	position: relative;
-			overscroll-behavior: none;
-			overflow-x: hidden;
-			overflow-y: scroll;
-		// 	top: auto;
-		// 	bottom: auto;
-		// 	height: auto;
-		// 	min-height: 0;
-		// 	max-height: none;
-		}
-		#container,
-		#container #content {
-			position: relative;
-			overflow: visible;
-			top: auto;
-			bottom: auto;
-			height: auto;
-			min-height: 0;
-			max-height: none;
-		}
-	}*/
-
-	/* NOTE: these values depend on #navigation being absolute or relative */
-	/*.article-view {
-		// position: relative;
-		/*width: calc(100% - #{$margin_left*2 + $margin_right*2});
-		left: $margin_left * 2;
-		right: $margin_right * 2;
-		margin-left: 0;
-		margin-right: 0;
-		padding-left: 0;//$content_margin_left;
-		padding-right: 0;//$content_margin_right;
-
-		// overflow: hidden;
-		// overflow-y: scroll;
-		// position: relative;
-		// top: 0;
-		top: auto;
-		// top: $small_nav_height;
-		bottom: auto;
-		height: auto;
-		min-height: 0;
-		max-height: none;
-		overflow: visible;
-
-		margin-top: 0;
-		margin-bottom: 0;
-		padding-top: 0;//$small_nav_height;
-		padding-bottom: 4.5rem;
-		// margin-top: -1rem;
-		// margin-top: $small_nav_height;
-		// margin-bottom: 4.5rem;
-	}*/
 
 	.article-view {
 		width: auto;
-		margin-left: $margin_left * 2;
-		margin-right: $margin_left * 2;
-		padding-top: $small_nav_height;
-		padding-left: $content_margin_left;
-		padding-right: $content_margin_right;
+
+		margin-left: $s_page_left;
+		margin-right: $s_page_right;
+		padding-left: $s_margin_left;
+		padding-right: $s_margin_right;
+
+		padding-top: 25vh;//$s_nav_height;
 		&.mdown {
 			// :first-child {
 			// 	margin-top: 0;
 			// }
 			h1, h2, h3, h4, p {
-				// padding-left: $content_margin_left;
-				// padding-right: $content_margin_right;
+				// padding-left: $s_content_left;
+				// padding-right: $s_content_right;
 			}
 			// h1, h2, p {
 			& > * {
-				padding-left: 0;//$small_aside_width;
+				padding-left: $s_content_left;
+				padding-right: $s_content_right;
+				// padding-left: 0;//$s_aside_width;
 			}
 			h3, h4 {
-				padding-left: 0;
-				width: auto;//$small_aside_width;
+				// padding-left: 0;
+				width: auto;//$s_aside_width;
 				float: none;
 				clear: none;
 			}

@@ -133,7 +133,7 @@ var FilterableListView = View.extend({
 			this._collapsedChanged && changed.push("collapsed");
 			this._selectionChanged && changed.push("selection");
 			this._filterChanged && changed.push("filter");
-			console.log("%s::renderFrame [%s]", this.cid, changed.join(" "));
+			//console.log("%s::renderFrame [%s]", this.cid, changed.join(" "));
 		}
 
 		// collapsed transition flag

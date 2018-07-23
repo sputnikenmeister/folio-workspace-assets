@@ -11,12 +11,10 @@
 	}
 	.button:hover {
 		color: white;
-		background-color: $link_color_value;
 		background-color: $link_color;
 	}
 	.button:active {
 		background-color: white;
-		color: $link_color_value;
 		color: $link_color;
 	}
 	.button:before {

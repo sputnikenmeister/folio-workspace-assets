@@ -1,12 +1,13 @@
 // ///////////////////////////////////
-// media query : mobile
+// media query : unsupported
 // ///////////////////////////////////
 
-#unsupported { display: none; }
+#unsupported {
+	display: none;
+}
 
-@include media(mobile) {
+@include media(unsupported) {
 	#container {
-		// width: 320px;
 		min-width: unset;
 		visibility: visible;
 		opacity: 1;
@@ -19,20 +20,21 @@
 	}
 	#unsupported {
 		display: block;
-		padding: 3.75rem $hu 1rem;
-		margin: 0 auto;
-		width: unset;
-		max-width: 640px;
 		box-sizing: content-box;
-		h1,
-		h2,
+		width: auto;
+		padding: 4rem 20px 1rem;
+		margin: 0 auto;
+		max-width: 640px;
+
+		h1, h2, h3, h4, h5, h6 {
+			@extend %char_2_2;
+			font-weight: bold;
+			margin-left: unset;
+		}
 		p {
-			@include heading_font();
+			@extend %char_1f1_1f6;
 			margin-bottom: 1rem;
 			margin-left: unset;
 		}
-		// a {
-		// 	color: $link_color_value;
-		// }
 	}
 }

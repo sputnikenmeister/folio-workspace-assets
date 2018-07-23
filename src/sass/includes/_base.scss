@@ -12,9 +12,7 @@
 }
 
 a {
-	// color: inherit;
-	color: $link_color_value;
-	// color: $link_color;
+	color: $link_color;
 	text-decoration: none;
 	-webkit-tap-highlight-color: initial;
 	&:focus {
@@ -33,14 +31,7 @@ strong {
 code,
 pre {
 	font-family: courier, monospace;
-	// -webkit-font-smoothing: none;
-	// -moz-osx-font-smoothing: grayscale;
 }
-
-// p  { @include paragraph_font(); }
-// h1 { @include heading_font(); }
-// h2 { @include heading_font($size: 28px, $weight: 300, $lead: 30px); }
-// h3 { @include heading_font($size: 20px, $weight: 300, $lead: 24px); }
 
 // ------------------------------------
 // Misc

@@ -75,8 +75,7 @@ var AppViewProto = {
 		container: {
 			get: function() {
 				return this._container || (this._container =
-					// document.getElementById("container")
-					document.body
+					document.getElementById("container")
 				);
 			}
 		}
@@ -400,8 +399,8 @@ var AppViewProto = {
 };
 
 if (DEBUG) {
-	/** @type {module:app/view/DebugToolbar} */
-	var DebugToolbar = require("app/view/DebugToolbar");
+	/** @type {module:app/debug/DebugToolbar} */
+	var DebugToolbar = require("app/debug/DebugToolbar");
 
 	AppViewProto._onModelChange = (function(fn) {
 		return function() {

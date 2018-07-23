@@ -1,6 +1,19 @@
+// ///////////////////////////////////
+// media query : fullwidth-small
+// ///////////////////////////////////
 
+// layout variables
+// - - - - - - - - - - - - - - - - - -
 
 $default_page_width_min: 375px;
+
+@mixin ss_variables {
+	--aw: 38vw;
+	--pl: 4vw;
+	--ml: 4vw;
+	--cml: 1vw;
+	--cmr: 1vw;
+}
 
 // ///////////////////////////////////
 // Root
@@ -11,6 +24,12 @@ html.fullwidth-small {
 }
 
 @include media(fullwidth-small) {
+
+	@include ss_variables;
+
+	%leaf_content_label {
+		@include optical_margins(1ex, 0);
+	}
 
 	// container navigation content
 	// - - - - - - - - - - - - - - - - - -
@@ -29,12 +48,6 @@ html.fullwidth-small {
 	// keyword-list
 	// ===================================
 	#keyword-list {
-		width: 40%;
-		// min-width: ($default_page_width_min * 0.4);
-		// width: auto;
-		// left: calc(50% + #{$hu * 2});
-		// right: 0;
-		// padding-top: #{$small_nav_height - 0rem};
 		.list-group {
 			// height: 0;
 			height: 1.5rem;
@@ -46,12 +59,9 @@ html.fullwidth-small {
 	}
 	&.with-bundle .container-expanded {
 		#bundle-list, #keyword-list {
-			padding-top: $small_nav_height;
+			padding-top: $s_nav_height;
 		}
 	}
-	// &.with-bundle .container-collapsed #keyword-list {
-	// 	padding-top: 1.5rem;
-	// }
 	#keyword-list {
 		.list-group {
 			margin-top: 0.5rem;
@@ -60,17 +70,6 @@ html.fullwidth-small {
 			}
 		}
 	}
-
-	// keyword-list list-group
-	// - - - - - - - - - - - - - - - - - -
-	// &.with-bundle .navigation:not(.container-expanded) #keyword-list {
-	// 	// padding-top: 1.5rem;
-	// 	.list-group {
-	// 		height: 0;
-	// 		visibility: hidden;
-	// 		opacity: 0;
-	// 	}
-	// }
 
 	// ///////////////////////////////////
 	// content
@@ -82,7 +81,7 @@ html.fullwidth-small {
 	.media-carousel {
 		.empty-item {
 			// FIXME FIXME FIXME : parallax breaks if item is not 100%;
-			right: calc(40% - 3px);
+			// right: calc(40% - 3px);
 		}
 	}
 }

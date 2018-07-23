@@ -6,20 +6,27 @@
 /** @type {module:backbone} */
 var Backbone = require("backbone");
 
-var defaults = {
-	routeName: "initial",
-	collapsed: false,
-	article: null,
-	withArticle: false,
-	bundle: null,
-	withBundle: false,
-	media: null,
-	withMedia: false,
-};
+module.exports = Backbone.Model.extend({
 
-var AppState = Backbone.Model.extend({
-	defaults: defaults,
-	// getters: Object.keys(defaults),
+	defaults: {
+		routeName: "initial",
+		collapsed: false,
+		article: null,
+		withArticle: false,
+		bundle: null,
+		withBundle: false,
+		media: null,
+		withMedia: false,
+	},
+
+	initialize: function() {
+		Object.keys(this.defaults).forEach(function(getterName) {
+			Object.defineProperty(this, getterName, {
+				enumerable: true,
+				get: function() {
+					return this.get(getterName);
+				}
+			});
+		});
+	}
 });
-
-module.exports = AppState;

@@ -27,7 +27,12 @@ function selfAndDescendant(selfCls, cls) {
 //  root rules
 // - - - - - - - - - - - - - - - -
 
-var rootStyles = ["background", "background-color", "color", "--link-color"];
+var rootStyles = [
+	"color",
+	"background",
+	"background-color",
+	// "--link-color"
+];
 
 function initRootStyles(sheet, rootSelector, attrs, fgColor, bgColor, lnColor, hasDarkBg) {
 	var s, revSelector, fgColorVal, bgColorVal;
@@ -182,7 +187,7 @@ module.exports = function() {
 	attrs = Globals.DEFAULT_COLORS;
 	fgColor = new Color(Globals.DEFAULT_COLORS["color"]);
 	bgColor = new Color(Globals.DEFAULT_COLORS["background-color"]);
-	lnColor = new Color(Globals.DEFAULT_COLORS["--link-color"])
+	lnColor = new Color(Globals.DEFAULT_COLORS["link-color"])
 	hasDarkBg = fgColor.luminosity() > bgColor.luminosity();
 
 	var colorStyles = document.createElement("style");

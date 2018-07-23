@@ -4,6 +4,15 @@
 
 // layout variables
 // - - - - - - - - - - - - - - - - - -
+
+$hu: 20px;
+$default_page_left: $hu;
+$default_page_right: $hu;
+$default_margin_left: $hu;
+$default_margin_right: $hu;
+$default_content_left: $hu;
+$default_content_right: $hu;
+
 $default_nav_top: 2.5rem;//2.5rem;
 $default_nav_height: 14rem; //13.5rem;//14.25rem;
 
@@ -11,7 +20,7 @@ $default_page_width: 33 * $hu; //700px;
 $default_aside_width: 11 * $hu;
 $default_main_width: $default_page_width - $default_aside_width;
 
-$nav_collapse_offset: map-get($temp, collapse_offset) * 1px; //28rem;
+$nav_collapse_offset: map-get($temp, collapse_offset) * 1px;
 
 @import "views/default.colors";
 @import "views/default.mdown";
@@ -21,7 +30,7 @@ $nav_collapse_offset: map-get($temp, collapse_offset) * 1px; //28rem;
 // ///////////////////////////////////
 
 html {
-	font: #{$vu}/1.5 $base_font;
+	font: 12px/1.5 $base_font;
 }
 
 body {
@@ -51,11 +60,8 @@ body {
 // container navigation content
 // - - - - - - - - - - - - - - - - - -
 
-// #container {
-// 	display: block;
-// 	width: 100%;
-// 	min-width: $default_page_width;
-// 	min-height: 100%;
+// .container {
+// 	box-sizing: border-box;
 // }
 
 #navigation {
@@ -95,8 +101,8 @@ body {
 // - - - - - - - - - - - - - - - - - -
 %leaf_content {
 	box-sizing: border-box;
-	padding-left: $hu;
-	padding-right: $hu;
+	padding-left: $default_content_left;
+	padding-right: $default_content_right;
 	// .label {}
 	&, * {
 		@include user_select(none);
@@ -104,24 +110,15 @@ body {
 }
 
 %leaf_content_label {
-	// @include optical_margins(#{-$hu}, -0.08ex, true);
-	// padding: 0 #{$hu};
-	// @include optical_margins(-1ex, -0.08);
-	$label_margin: 1ex;
-	$label_optical_adjust: 0.08;
-	padding-left: $label_margin;
-	padding-right: $label_margin;
-	margin-left: -#{$label_margin + ($label_margin * $label_optical_adjust)};
-	margin-right: -#{$label_margin - ($label_margin * $label_optical_adjust)};
-
+	@include optical_margins(1rem, 0.08);
 }
 
 // block definitions
 // - - - - - - - - - - - - - - - - - -
 %nav_list {
 	position: absolute;
-	display: inline-block;
 	will-change: transform;
+	display: inline-block;
 	// display: block;
 	// transform-style: preserve-3d;
 	// transform: move();
@@ -133,10 +130,10 @@ body {
 // ///////////////////////////////////
 
 .transform-wrapper {
-	// @extend %nav_list;
 	position: absolute;
-	display: inline-block;
 	will-change: transform;
+	display: inline-block;
+	// @extend %nav_list;
 	// display: block;
 	// transform-style: preserve-3d;
 }
@@ -148,8 +145,7 @@ body {
 	padding-top: $default_nav_height;
 	padding-bottom: 1.5rem;
 }
-.with-article,
-.with-bundle {
+.with-article, .with-bundle {
 	#bundle-list, #keyword-list {
 		padding-top: 1.5rem;
 	}
@@ -190,6 +186,10 @@ body {
 	.label {
 		@extend %leaf_content_label;
 		display: inline-block;
+		& > span {
+			padding: 0 1ex;
+			margin: 0 -1ex;
+		}
 	}
 }
 
@@ -198,18 +198,12 @@ body {
 #bundle-list {
 	@extend %char_2_2;
 	font-weight: 600;
-	// @include heading_font(600, 1.999999999rem, 2rem, -1px);
-	// @include heading_font(600, 1.999999999rem, 1.25, -1px);
 
 	@extend %nav_list;
 	width: $default_main_width - $default_aside_width;
-	// margin-top: 0.25rem;
-	// padding-top: $default_nav_height;
-	// padding-bottom: 1.5rem;
 	min-height: 4.5rem;
 
 	.list-item {
-		// width: $default_main_width - $default_aside_width;
 		width: 100%;
 		height: 1em;
 		.completed {
@@ -250,6 +244,7 @@ body {
 // ===================================
 #keyword-list {
 	@extend %nav_list;
+	font-size: 1.05rem;
 	width: $default_aside_width;
 	// padding-top: $default_nav_height;//#{$default_nav_height - 0.25rem};
 	// padding-bottom: 1.5rem;
@@ -257,28 +252,21 @@ body {
 		// width: 100%;
 		width: $default_aside_width;
 		height: 1.5rem;
-		.label {
-			// font-size: 13px;
-		}
+		.label {}
 	}
 	.list-group {
 		// NOTE: in js, margin-top is ignored when height is zero
 		margin-top: 0.5rem;
 		white-space: nowrap;
 		height: 0;
-		/*&:not(.excluded):first-child {
+		/* &:not(.excluded):first-child {
 			top: 0;
-		}*/
-
-		// $list_group_width: $default_aside_width - $gutter - $hu*2;
-		width: $default_aside_width; //$list-group-width;
-		// width: calc(100% - #{$gutter});
+		} */
+		width: $default_aside_width;
 		.label {
-			@include small_caps($lead: 0);
+			@include small_caps($size: 0.85rem, $lead: 0);
 			display: inline-block;
-			width: $default_aside_width - $gutter - $hu*2;//$list_group_width;
-			// transform: movel-$list_group_width, 0);
-			// width: 100%;
+			width: $default_aside_width - $hu * 4;
 			transform: moveX(-100%);
 			box-sizing: border-box;
 
@@ -512,11 +500,13 @@ body {
 		// padding-top: 1.5rem;
 		// padding-bottom: 1.5rem;
 		left: calc(50% - #{$default_page_width/2 + $hu});
-		margin-left: $hu;
-		margin-right: $hu;
+		// left: $default_page_left;
+		// right: $default_page_right;
+		margin-left: $default_margin_left;
+		margin-right: $default_margin_right;
 		.sizing {
-			margin-left: $hu;
-			margin-right: $hu;
+			margin-left: $default_content_left;
+			margin-right: $default_content_right;
 		}
 	}
 	.empty-item {
@@ -525,7 +515,7 @@ body {
 		overflow: visible;
 		// FIXME: empty-item narrow px adjust
 		// width: $default_page_width/2 + $hu - 9px;
-		width: $default_main_width - 12px;
+		width: $default_main_width;// - 12px;
 	}
 	.media-item {
 		height: $carousel_item_height;
@@ -670,7 +660,7 @@ body {
 .media-dotnav {
 	text-align: center;
 	margin: 0 auto;
-	padding: 0 $hu;
+	padding: 0 $default_margin_right 0 $default_margin_left;
 
 	position: absolute;
 	width: $default_page_width;
@@ -705,8 +695,8 @@ body {
 	margin: 0 auto 1rem;
 	padding-top: 1.5rem;
 	padding-bottom: 1.5rem;
-	padding-left: $hu;
-	padding-right: $hu;
+	padding-left: $default_margin_left;
+	padding-right: $default_margin_right;
 
 	&.mdown {
 		& > *:first-child {

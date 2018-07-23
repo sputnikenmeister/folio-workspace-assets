@@ -6,10 +6,15 @@
 var _ = require("underscore");
 // /** @type {module:backbone} */
 // var Backbone = require("backbone");
-/** @type {module:hammerjs} */
-var Hammer = require("hammerjs");
 /** @type {module:backbone.babysitter} */
 var Container = require("backbone.babysitter");
+
+/** @type {module:hammerjs} */
+var Hammer = require("hammerjs");
+/** @type {module:utils/touch/SmoothPanRecognizer} */
+var Pan = require("utils/touch/SmoothPanRecognizer");
+/** @type {module:hammerjs.Tap} */
+var Tap = Hammer.Tap;
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
@@ -118,12 +123,13 @@ var isValidTouchManager = function(touch, direction) {
 
 var createTouchManager = function(el, dir, thres) {
 	var touch = new Hammer.Manager(el);
-	var pan = new Hammer.Pan({
-		threshold: 15,
-		direction: dir,
+	var pan = new Pan({
+		event: "hpan",
+		threshold: Globals.THRESHOLD,
+		direction: Hammer.DIRECTION_HORIZONTAL,
 	});
-	var tap = new Hammer.Tap({
-		threshold: thres - 1,
+	var tap = new Tap({
+		threshold: Globals.THRESHOLD - 1,
 		interval: 50,
 		time: 200,
 	});
@@ -227,7 +233,7 @@ var CarouselProto = {
 		if (isValidTouchManager(options.touch, this.direction)) {
 			this.touch = options.touch;
 		} else {
-			console.warn("%s::initializeHammer using private Hammer instance", this.cid);
+			console.warn("%s::initialize creating Hammer instance", this.cid);
 			this.touch = createTouchManager(this.el, this.direction);
 			// this.on("view:removed", this.touch.destroy, this.touch);
 			this.listenTo(this, "view:removed", function() {
@@ -630,15 +636,15 @@ var CarouselProto = {
 
 		pos = mCurr.pos - mSel.pos + delta;
 		if (pos < 0) {
-			if (Math.abs(pos) < mCurr.outer) {
-				offset += (-mCurr.after) / mCurr.outer * pos;
+			if (Math.abs(pos) < mSel.outer) {
+				offset += (-mCurr.after) / mSel.outer * pos;
 			} else {
 				offset += mCurr.after;
 			}
 		} else
 		if (0 <= pos) {
-			if (Math.abs(pos) < mCurr.outer) {
-				offset -= mCurr.before / mCurr.outer * pos;
+			if (Math.abs(pos) < mSel.outer) {
+				offset -= mCurr.before / mSel.outer * pos;
 			} else {
 				offset -= mCurr.before;
 			}

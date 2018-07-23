@@ -54,8 +54,9 @@
 	// .placeholder:before
 	// - - - - - - - - - - - - - - - - -
 	.placeholder:before {
-		// font: bold normal 9rem/110% "ITCFranklinGothicStd-Compressed", $grotesk_font;
-		font: 600 9rem/0.9 "Franklin Gothic FS", $grotesk_font;
+		font-size: 9rem;
+		font-weight: bold;
+		line-height: 0.9;
 		letter-spacing: -0.01em;
 		padding: 3rem;
 		position: absolute;

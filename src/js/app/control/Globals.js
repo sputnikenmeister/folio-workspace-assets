@@ -50,7 +50,6 @@ module.exports = (function() {
 	if (DEBUG) {
 		console.group("Breakpoints");
 		for (s in g.BREAKPOINTS) {
-			// console.log("%s: %o %o", s, g.BREAKPOINTS[s], sass.breakpoints[s] + '');
 			console.log("%s: %o", s, g.BREAKPOINTS[s].media);
 		}
 		console.groupEnd();
@@ -59,8 +58,8 @@ module.exports = (function() {
 	// base colors, dimensions
 	// - - - - - - - - - - - - - - - - -
 	g.DEFAULT_COLORS = _.clone(sass.default_colors);
-	g.HORIZONTAL_STEP = parseFloat(sass.units["hu_px"]);
-	g.VERTICAL_STEP = parseFloat(sass.units["vu_px"]);
+	// g.HORIZONTAL_STEP = parseFloat(sass.units["hu_px"]);
+	// g.VERTICAL_STEP = parseFloat(sass.units["vu_px"]);
 
 
 	// paths, networking
@@ -120,17 +119,34 @@ module.exports = (function() {
 	var minDelay = g.TRANSITION_MIN_DELAY = parseFloat(sass.transitions["min_delay_ms"]);
 	var delay = g.TRANSITION_DELAY = g.TRANSITION_DURATION + g.TRANSITION_DELAY_INTERVAL;
 
-	// css transition presets
+	// css transitions
+	// - - - - - - - - - - - - - - - - -
+	o = {};
+
+	// match tx() in _transitions.scss
+	// - - - - - - - - - - - - - - - - -
+	o.tx = function tx(durationCount, delayCount, easeVal) {
+		_.isNumber(durationCount) || (durationCount = 1);
+		_.isNumber(delayCount) || (delayCount = -1);
+		_.isString(easeVal) || (easeVal = ease);
+
+		var o = {};
+		if (delayCount < 0) {
+			o.duration = (duration * durationCount) +
+				(delayInterval * (durationCount - 1));
+			o.delay = 0;
+		} else {
+			o.duration = (duration * durationCount) +
+				(delayInterval * (durationCount - 1)) - minDelay;
+			o.delay = (delay * delayCount) - minDelay;
+		}
+		o.easeing = easeVal;
+		return 0;
+	}
+
+	// transition presets
 	// TODO: get rid of this
 	// - - - - - - - - - - - - - - - - -
-
-	// var tx = function(txo, durationCount, delayCount) {
-	// 	txo.duration = (duration * durationCount)
-	// 		+ (delayInterval * (durationCount - 1));
-	// 	txo.delay = (delay * delayCount) + minDelay;
-	// };
-
-	o = {};
 
 	o.NONE = {
 		delay: 0,
@@ -179,15 +195,17 @@ module.exports = (function() {
 	// o.LAST_EARLY = 		_.defaults({delay: txDelay*2.0 + txMinDelay*0}, txAligned);
 	// o.AFTER = 			_.defaults({delay: txDelay*2.0 + txMinDelay}, txAligned);
 
-	console.groupCollapsed("Transitions");
+	console.group("Transitions");
 	for (s in o) {
-		so = o[s];
-		so.name = s;
-		so.className = "tx-" + s.replace("_", "-").toLowerCase();
-		if (!so.hasOwnProperty("cssText")) {
-			so.cssText = so.duration / 1000 + "s " + so.easing + " " + so.delay / 1000 + "s";
+		if (!_.isFunction(o[s])) {
+			so = o[s];
+			so.name = s;
+			so.className = "tx-" + s.replace("_", "-").toLowerCase();
+			if (!so.hasOwnProperty("cssText")) {
+				so.cssText = so.duration / 1000 + "s " + so.easing + " " + so.delay / 1000 + "s";
+			}
+			console.log("%s: %s", so.name, so.cssText);
 		}
-		console.log("%s: %s", so.name, so.cssText);
 	}
 	console.groupEnd();
 	g.transitions = o;

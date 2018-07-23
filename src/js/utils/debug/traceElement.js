@@ -1,24 +1,18 @@
 module.exports = function(el) {
-	var traceId = "";
-	if (el.cid !== void 0) {
-		traceId += "@" + el.cid + " ";
+	if (el.hasOwnProperty("tagName")) {
+		return "" + el;
 	}
+	var retval = [el.tagName];
 	if (el.hasAttribute("id")) {
-		traceId += "#" + el.id + " ";
-	} else {
-		traceId += "." + el.classList[0] + " ";
+		retval.push("#" + el.id);
 	}
-	// var cid;
-	// if (el.hasAttribute("data-cid")) {
-	// 	cid = el.getAttribute("data-cid");
-	// 	if (el.cid === cid) {
-	// 		traceId += "@" + cid + " ";
-	// 	} else {
-	// 		traceId += "@!" + cid + " ";
-	// 	}
-	// }
-	if (traceId == "") {
-		traceId += "(" + el.tagName + ")?";
+	if (el.classList[0]) {
+		retval.push("." + el.classList[0]);
 	}
-	return traceId;
+	if (el.cid !== void 0) {
+		retval.push(" @" + el.cid);
+	} else if (el.hasAttribute("data-cid")) {
+		retval.push(" @" + el.getAttribute("data-cid"));
+	}
+	return retval.join("");
 };

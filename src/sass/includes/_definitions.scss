@@ -10,12 +10,8 @@
 // ------------------------------------
 
 // Size base units
-$hu: map-get($units, hu_px) * 1px;
-$vu: map-get($units, vu_px) * 1px;
-
-$gutter: 2 * $hu;
-$page_margin_left: 2 * $hu;
-$page_margin_right: 2 * $hu;
+// $hu: map-get($units, hu_px) * 1px;
+// $vu: map-get($units, vu_px) * 1px;
 
 // ------------------------------------
 // Colors: public
@@ -31,16 +27,10 @@ $selection_bgcolor: hsl(203, 100%, 90%);
 
 // CSS variables
 // - - - - - - - - - - - - - - - - - -
-$link_color_value: map-get($default_colors, --link-color);
-// $link_color: var(--link-color);
-// :root {
-// 	--link-color: #{$link_color_value};
-// }
-// $alt_bgcolor_value: map-get($default_colors, --alt-background-color);
-// $alt_bgcolor: var(--alt-background-color);
-// :root {
-// 	--alt-background-color: #{$alt_bgcolor_value};
-// }
+$link_color_value: map-get($default_colors, link-color);
+$link_color: $link_color_value;
+// $link_color: var(--link-color, $link_color_value);
+// :root { --link-color: #{$link_color_value}; }
 
 // ------------------------------------
 // Typefaces
@@ -148,18 +138,11 @@ $mono_font: $mono_font;
 }
 
 @mixin image_optimize_contrast {
-	image-rendering: optimizeSpeed;
-	/*   */
-	image-rendering: -moz-crisp-edges;
-	/* Firefox */
-	image-rendering: -o-crisp-edges;
-	/* Opera */
-	image-rendering: -webkit-optimize-contrast;
-	/* Chrome (and eventually Safari) */
-	image-rendering: pixelated;
-	/* Chrome */
-	image-rendering: optimize-contrast;
-	/* CSS3 Proposed */
-	-ms-interpolation-mode: nearest-neighbor;
-	/* IE8+ */
+	image-rendering: optimizeSpeed;/*   */
+	image-rendering: -moz-crisp-edges; /* Firefox */
+	image-rendering: -o-crisp-edges;	/* Opera */
+	image-rendering: -webkit-optimize-contrast;	/* Chrome (and eventually Safari) */
+	image-rendering: pixelated;	/* Chrome */
+	image-rendering: optimize-contrast;	/* CSS3 Proposed */
+	-ms-interpolation-mode: nearest-neighbor;	/* IE8+ */
 }
