@@ -621,7 +621,7 @@ var ViewProto = {
 
 	invalidate: function(flags) {
 		if (flags !== void 0) {
-			if (DEBUG) {
+			/*if (DEBUG) {
 				if (!this._skipLog) {
 					if (this._renderFlags > 0) {
 						console.log("%s::invalidate [%s (%s)] + [%s (%s)]", this.cid, View.flagsToString(this._renderFlags), this._renderFlags, View.flagsToString(flags), flags);
@@ -629,7 +629,7 @@ var ViewProto = {
 						console.log("%s::invalidate [%s (%s)]", this.cid, View.flagsToString(flags), flags);
 					}
 				}
-			}
+			}*/
 			this._renderFlags |= flags;
 		}
 		return this;

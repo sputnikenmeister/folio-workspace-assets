@@ -6,20 +6,12 @@
 var _ = require("underscore");
 /** @type {module:backbone} */
 var Backbone = require("backbone");
-// /** @type {Function} */
-// var Color = require("color");
 
 /** @type {module:app/utils/debug/traceArgs} */
 var stripTags = require("utils/strings/stripTags");
-// /** @type {Function} */
-// var prefixedProperty = require("utils/prefixedProperty");
-// /** @type {Function} */
-// var prefixedEvent = require("utils/prefixedEvent");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
-/** @type {module:app/view/base/TouchManager} */
-var TouchManager = require("app/view/base/TouchManager");
 /** @type {module:app/control/Controller} */
 var controller = require("app/control/Controller");
 /** @type {module:app/model/AppState} */
@@ -35,6 +27,22 @@ var View = require("app/view/base/View");
 var NavigationView = require("app/view/NavigationView");
 /** @type {module:app/view/ContentView} */
 var ContentView = require("app/view/ContentView");
+
+
+/** @type {module:app/view/base/TouchManager} */
+var TouchManager = require("app/view/base/TouchManager");
+// /** @type {module:hammerjs} */
+// var Hammer = require("hammerjs");
+// /** @type {module:utils/touch/SmoothPanRecognizer} */
+// var Pan = require("utils/touch/SmoothPanRecognizer");
+// /** @type {module:hammerjs.Tap} */
+// var Tap = Hammer.Tap;
+
+// /** @type {module:utils/debug/traceElement} */
+// var traceElement = require("utils/debug/traceElement");
+//
+// var vpanLogFn = _.debounce(console.log.bind(console), 100, false);
+// var hpanLogFn = _.debounce(console.log.bind(console), 100, false);
 
 var AppView = {
 	getInstance: function() {
@@ -66,40 +74,128 @@ var AppViewProto = {
 		"fullscreenchange": function(ev) {
 			console.log(ev.type);
 		},
-		// "scroll #container": function(ev) {
-		// 	console.log(ev.type, ev);
-		// }
+		"dragstart": function(ev) {
+			if (ev.target.nodeName == "IMG" || ev.target.nodeName == "A") {
+				ev.defaultPrevented || ev.preventDefault();
+			}
+		}
 	},
 
 	properties: {
 		container: {
 			get: function() {
-				return this._container || (this._container =
-					document.getElementById("container")
-				);
+				return this._container ||
+					(this._container = document.getElementById("container"));
+				// (this._container = document.body);
 			}
-		}
+		},
+		navigation: {
+			get: function() {
+				return this._navigation ||
+					(this._navigation = document.getElementById("navigation"));
+			}
+		},
+		content: {
+			get: function() {
+				return this._content ||
+					(this._content = document.getElementById("content"));
+			}
+		},
 	},
 
 	/** @override */
 	initialize: function(options) {
-		/* create single hammerjs manager */
-		this.touch = TouchManager.init(this.container);
-		this.touch.set({
-			enable: (function() {
-				return this.el.scrollHeight == this.el.clientHeight;
-				// return this.el.scrollTop === 0;
-				// return this.container.scrollTop === 0;
-				// return this.model.get("collapsed") && this.model.get("withBundle");
-			}).bind(this)
-		});
+		/* elements */
+		// this.routeEl = this.el;
+		// this.stateEl = this.el
+		this.breakpointEl = this.el;
+		// this.touchEl = document.body;
+		// this.touchEl = document.getElementById("containter");
+
+		/* init HammerJS handlers */
+		var vtouch, htouch;
+		// var vpan, hpan, tap;
+
+		// this._vpanEnableFn = function(mc, ev) {
+		// 	var retval = !this._hasOverflowY(this.container);
+		// 	vpanLogFn("%s::_vpanEnableFn -> %o\n%o", this.cid, retval, arguments);
+		// 	return retval;
+		// }.bind(this);
+		//
+		// this._hpanEnableFn = function(mc, ev) {
+		// 	var retval = this.model.get("withBundle") && this.model.get("collapsed");
+		// 	hpanLogFn("%s::_hpanEnableFn -> %o\n%o", this.cid, retval, arguments);
+		// 	return !!retval;
+		// }.bind(this);
+
+		vtouch = htouch = TouchManager.init(this.content);
+		// vtouch.get("vpan").set({ enable: this._vpanEnableFn });
+		// htouch.get("hpan").set({ enable: this._hpanEnableFn });
+// 		vtouch.set({
+// 			enable: function() {
+// 				console.log("app1::hammerjs enable", arguments);
+// 				return true;
+// 			}
+// 		});
+		// hpan = vpan;
+
+		// this.el.style.touchAction = "none"; //"pan-x pan-y";
+
+		// tap = new Hammer.Tap();
+		// hpan = new Pan({
+		// 	event: "hpan",
+		// 	direction: Hammer.DIRECTION_HORIZONTAL
+		// });
+		// hpan.set({
+		// 	enable: this._hpanEnableFn
+		// });
+		// vpan = new Pan({
+		// 	event: "vpan",
+		// 	direction: Hammer.DIRECTION_VERTICAL
+		// });
+		// vpan.set({
+		// 	enable: this._vpanEnableFn
+		// });
+		// hpan.requireFailure(vpan);
+		// vpan.requireFailure(hpan);
+
+		// vtouch = new Hammer.Manager(this.navigation);
+		// vtouch.add([]);
+
+		// htouch = vtouch = new Hammer.Manager(this.content);
+		// htouch.add([tap, hpan, vpan]);
+		// htouch.add([hpan, vpan]);
+		// htouch.set({ touchAction: "pan-x pan-y" });
+
+		// vpan = new Hammer(this.navigation, {
+		// 	recognizers: [
+		// 		[Pan, {
+		// 			event: 'vpan',
+		// 			touchAction: "pan-y",
+		// 			direction: Hammer.DIRECTION_VERTICAL,
+		// 			enable: vpanEnableFn
+		// 		}],
+		// 	]
+		// });
+		// hpan = new Hammer(this.content, {
+		// 	recognizers: [
+		// 		[Pan, {
+		// 			event: 'hpan',
+		// 			touchAction: "pan-x",
+		// 			direction: Hammer.DIRECTION_HORIZONTAL,
+		// 			enable: hpanEnableFn
+		// 		}],
+		// 		[Tap]
+		// 	]
+		// });
+		// hpan.get("hpan").requireFailure(vpan.get("vpan"));
 
 		// this._afterRender = this._afterRender.bind(this);
 		this._onResize = this._onResize.bind(this);
 
 		/* render on resize, onorientationchange, visibilitychange */
 		window.addEventListener("orientationchange", this._onResize, false);
-		window.addEventListener("resize", _.debounce(this._onResize, 100, false /* immediate? */ ), false);
+		window.addEventListener("resize", _.debounce(this._onResize, 30, false), false);
 
 		// var h = function(ev) { console.log(ev.type, ev) };
 		// window.addEventListener("scroll", h, false);
@@ -119,12 +215,17 @@ var AppViewProto = {
 
 		/* initialize views */
 		this.navigationView = new NavigationView({
-			el: "#navigation",
-			model: this.model
+			el: this.navigation,
+			model: this.model,
+			vpan: vtouch,
+			hpan: htouch
 		});
+
 		this.contentView = new ContentView({
-			el: "#content",
-			model: this.model
+			el: this.content,
+			model: this.model,
+			vpan: vtouch,
+			hpan: htouch,
 		});
 
 		/* Google Analytics */
@@ -161,14 +262,28 @@ var AppViewProto = {
 	/* _appStart
 	/* ------------------------------- */
 
-	_appStart: function() {
-		console.info("%s::_appStart", this.cid, arguments[0]);
-		this._appStartChanged = true;
-		this.requestRender(View.MODEL_INVALID | View.SIZE_INVALID);
+	_appStart: function(name, args) {
+		console.info("%s::_appStart(%s, %s)", this.cid, name, args.join());
+		// this._appStartChanged = true;
+
+		this.skipTransitions = true;
+		this.el.classList.add("skip-transitions");
+
+		this.requestRender(View.MODEL_INVALID | View.SIZE_INVALID)
+			.listenToOnce(this, "view:render:after", function(view, flags) {
+				this.setImmediate(function() {
+					// this.requestAnimationFrame(function() {
+					console.log("%s::_appStart[view:render:after][setImmediate]", this.cid);
+					// console.log("%s::_appStart[view:render:after][raf]", this.cid);
+					this.skipTransitions = false;
+					this.el.classList.remove("skip-transitions");
+					this.el.classList.remove("app-initial");
+				});
+			});
 	},
 
 	/* --------------------------- *
-	/* model changed
+	/* route changed
 	/* --------------------------- */
 
 	_onRoute: function(name, args) {
@@ -228,8 +343,8 @@ var AppViewProto = {
 	_onResize: function() {
 		// console.log("%s::_onResize [START]", this.cid);
 		console.group(this.cid + "::_onResize [render request]");
-		this.el.classList.add("skip-transitions");
 		this.skipTransitions = true;
+		this.el.classList.add("skip-transitions");
 
 		// this.requestRender(View.SIZE_INVALID).renderNow();
 		// this.requestAnimationFrame(function() {
@@ -237,17 +352,41 @@ var AppViewProto = {
 		// }.bind(this));
 
 		this.requestRender(View.SIZE_INVALID)
+			// .whenRendered().then(function(view) {
 			.once("view:render:after", function(view, flags) {
-				console.info("%s::_onResize [render complete]", view.cid);
-				// .whenRendered().then(function(view) {
+				console.info("%s::_onResize [render complete] %o + %o = %o + %o",
+					view.cid, view.el.clientTop, view.el.clientHeight, view.el.scrollTop, view.el.scrollHeight);
+
+				// if ((view.el.scrollTop < 1) && (view.el.clientHeight != view.el.scrollHeight)) {
+				// 	view.el.scrollTop = 1;
+				// }
+				// if (/iphone/i.test(navigator.userAgent)) {
+				// document.body.scrollTop = 1;
+				// }
+
 				this.requestAnimationFrame(function() {
+					view.skipTransitions = false;
 					view.el.classList.remove("skip-transitions");
-					this.skipTransitions = false;
-					console.info("%s::_onResize [removed skip-tx]", view.cid);
+					// window.scrollTo(0, 1);
+					// document.body.scrollTop = 1;
+					console.info("%s::_onResize [render removed skipTx]", view.cid);
 					console.groupEnd();
 				})
 			});
 	},
+
+	// _hasOverflowY: function(el) {
+	// 	var retval = false;
+	// 	var trace = [];
+	// 	var scrollEl = el;
+	// 	do {
+	// 		retval = retval || (scrollEl.scrollHeight != scrollEl.clientHeight);
+	// 		trace.push(traceElement(scrollEl) + " " + scrollEl.scrollHeight + " == " + scrollEl.clientHeight);
+	// 	} while (scrollEl = scrollEl.parentElement);
+	// 	// this.navigation.style.touchAction = retval ? "pan-x" : "auto";
+	// 	vpanLogFn("%s::_hasOverflowY(%s) -> %s %o", this.cid, traceElement(el), retval, trace);
+	// 	return retval;
+	// },
 
 	// _onBreakpointChange: function(ev) {
 	// 	console.log("%s::_onBreakpointChange", this.cid, ev.matches, ev.media, ev.target.className);
@@ -260,128 +399,66 @@ var AppViewProto = {
 
 	renderFrame: function(tstamp, flags) {
 		console.log("%s::renderFrame [%s]", this.cid, View.flagsToString(flags));
+
+		/* model: set route & model id classes */
 		if (flags & View.MODEL_INVALID) {
 			this.renderModelChange(flags);
 		}
+
+		/* size: check breakpoints and set classes*/
 		if (flags & View.SIZE_INVALID) {
-			this.renderResize(flags);
-			// this.requestChildrenRender(flags, true);
+			_.each(Globals.BREAKPOINTS, function(o, s) {
+				this.toggle(s, o.matches);
+			}, this.breakpointEl.classList);
 		}
-		if (flags & (View.MODEL_INVALID | View.SIZE_INVALID)) {
-			// this.requestAnimationFrame(function() {
-			// document.body.scrollTop = 0;
-			window.scroll({ top: 0, behavior: "smooth" });
-			// });
-		}
-		// request children render
-		// set 'now' flag if size is invalid
+		/* request children render:  always render now */
 		this.requestChildrenRender(flags, true);
+		/* request children render:  set 'now' flag if size is invalid */
 		// this.requestChildrenRender(flags, flags & View.SIZE_INVALID);
 
-		if (this._appStartChanged) {
-			this._appStartChanged = false;
-			this.requestAnimationFrame(this.renderAppStart);
+		if (flags & (View.MODEL_INVALID | View.SIZE_INVALID)) {
+			// this.navigation.style.touchAction = !this._hasOverflowY(this.container) ? "pan-x" : "";
+			// this.content.style.touchAction = this._hpanEnableFn() ? "pan-y" : "";
+			// this.requestAnimationFrame(function() {
+			// 	if (this._hpanEnableFn() && this._vpanEnableFn()) {
+			// 		this.content.style.touchAction = "none";
+			// 	} else if (this._hpanEnableFn()) {
+			// 		this.content.style.touchAction = "pan-y";
+			// 	} else if (this._vpanEnableFn()) {
+			// 		this.content.style.touchAction = "pan-x";
+			// 	} else {
+			// 		this.content.style.touchAction = "auto";
+			// 	}
+			// 	// 	document.body.scrollTop = 0;
+			// 	// 	window.scroll({ top: 0, behavior: "smooth" });
+			// });
+
 		}
-	},
-
-	// _afterRender: function() {
-	// 	document.body.scrollTop = 0;
-	// },
-
-	renderAppStart: function() {
-		console.log("%s::renderAppStart", this.cid);
-		this.el.classList.remove("app-initial");
-		if (this.el.classList.contains("route-initial")) {
-			this.el.classList.remove("route-initial");
-			console.warn("'route-initial' was still present");
-		}
-	},
-
-	renderResize: function(flags) {
-		// document.body.scrollTop = 0;
-		// window.scroll({ top: 0, behavior: "smooth" });
-
-		_.each(Globals.BREAKPOINTS, function(o, s) {
-			this.toggle(s, o.matches);
-		}, document.documentElement.classList);
-
-		// var bb = _.filter(_.keys(Globals.BREAKPOINTS), function(s) {
-		// 	return this.contains(s);
-		// }, document.body.classList).join();
-		// console.log("%s::renderResize matches: %s", this.cid, bb);
-
-		// this.requestChildrenRender(View.SIZE_INVALID, true);
-		// this.requestChildrenRender(flags, true);
 	},
 
 	/* -------------------------------
 	/* body classes etc
 	/* ------------------------------- */
 
-	// _controllerChanged: true,
-
 	renderModelChange: function() {
-		console.log("%s::renderModelChange", this.cid);
-
-		var article = this.model.get("article");
-		var bundle = this.model.get("bundle");
-		var media = this.model.get("media");
-
-		var docTitle = []
-		docTitle.push(Globals.APP_NAME);
-		if (bundle) {
-			docTitle.push(stripTags(bundle.get("name")));
-			if (media) {
-				docTitle.push(stripTags(media.get("name")));
-			}
-		} else if (article) {
-			docTitle.push(stripTags(article.get("name")));
-		}
-		document.title = _.unescape(docTitle.join(" / "));
 
 		var cls = this.el.classList;
 		var prevAttr = null;
+		var docTitle = [];
+		var hasDarkBg = false;
 
-		// Set article class
-		if (this.model.hasChanged("article")) {
-			prevAttr = this.model.previous("article");
-			if (prevAttr) {
-				cls.remove(prevAttr.get("domid"));
+		docTitle.push(Globals.APP_NAME);
+		if (this.model.get("bundle")) {
+			docTitle.push(stripTags(this.model.get("bundle").get("name")));
+			if (this.model.get("media")) {
+				docTitle.push(stripTags(this.model.get("media").get("name")));
 			}
-			if (article) {
-				cls.add(article.get("domid"));
-			}
+		} else if (this.model.get("article")) {
+			docTitle.push(stripTags(this.model.get("article").get("name")));
 		}
-		cls.toggle("with-article", !!article);
-		cls.toggle("without-article", !article);
+		document.title = _.unescape(docTitle.join(" / "));
 
-		// Set bundle class
-		if (this.model.hasChanged("bundle")) {
-			prevAttr = this.model.previous("bundle");
-			if (prevAttr) {
-				cls.remove(prevAttr.get("domid"));
-			}
-			if (bundle) {
-				cls.add(bundle.get("domid"));
-			}
-		}
-		cls.toggle("with-bundle", !!bundle);
-		cls.toggle("without-bundle", !bundle);
-
-		// Set media class
-		if (this.model.hasChanged("media")) {
-			prevAttr = this.model.previous("media");
-			if (prevAttr) {
-				cls.remove(prevAttr.get("domid"));
-			}
-			if (media) {
-				cls.add(media.get("domid"));
-			}
-		}
-		cls.toggle("with-media", !!media);
-		cls.toggle("without-media", !media);
-
-		// Set state classes
+		/* Set route class */
 		if (this.model.hasChanged("routeName")) {
 			prevAttr = this.model.previous("routeName");
 			if (prevAttr) {
@@ -390,11 +467,25 @@ var AppViewProto = {
 			cls.add("route-" + this.model.get("routeName"));
 		}
 
-		// Set color-dark class
-		// cls.toggle("color-dark", hasDarkBg);
-		cls.toggle("color-dark",
-			(media && media.colors.hasDarkBg) ||
-			(bundle && bundle.colors.hasDarkBg));
+		/* Set model id classes for color styles */
+		["article", "bundle", "media"].forEach(function(prop) {
+			var item = this.model.get(prop);
+			if (this.model.hasChanged(prop)) {
+				prevAttr = this.model.previous(prop);
+				if (prevAttr) {
+					cls.remove(prevAttr.get("domid"));
+				}
+				if (item) {
+					cls.add(item.get("domid"));
+				}
+			}
+			cls.toggle("with-" + prop, !!item);
+			cls.toggle("without-" + prop, !item);
+			hasDarkBg |= (item && item.colors && item.colors.hasDarkBg);
+		}.bind(this));
+
+		/* flag dark background */
+		cls.toggle("color-dark", hasDarkBg);
 	},
 };
 

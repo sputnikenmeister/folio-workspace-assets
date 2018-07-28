@@ -65,7 +65,7 @@ var DebugToolbar = View.extend({
 
 		/* toggle's target: container
 		/* - - - - - - - - - - - - - - - - */
-		var container = document.body; //.querySelector("#container");
+		var container = document.getElementById("container"); //.querySelector("#container");
 
 		/* create/attach svg grid element
 		/* - - - - - - - - - - - - - - - - */

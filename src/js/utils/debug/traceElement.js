@@ -1,5 +1,5 @@
 module.exports = function(el) {
-	if (el.hasOwnProperty("tagName")) {
+	if (!(el instanceof HTMLElement)) {
 		return "" + el;
 	}
 	var retval = [el.tagName];

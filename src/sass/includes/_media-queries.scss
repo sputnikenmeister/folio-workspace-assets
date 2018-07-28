@@ -3,7 +3,7 @@
 // ------------------------------------
 
 @mixin media($names) {
-	$selector: "";
+	$selector: ".app";
 	@each $name in $names {
 		@if type-of($name) == "string" {
 			$selector: $selector + "." + $name;

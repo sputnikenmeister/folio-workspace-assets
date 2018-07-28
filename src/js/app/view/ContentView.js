@@ -9,8 +9,8 @@ var _ = require("underscore");
 var Globals = require("app/control/Globals");
 /** @type {module:utils/TransformHelper} */
 var TransformHelper = require("utils/TransformHelper");
-/** @type {module:app/view/base/TouchManager} */
-var TouchManager = require("app/view/base/TouchManager");
+// /** @type {module:app/view/base/TouchManager} */
+// var TouchManager = require("app/view/base/TouchManager");
 
 /** @type {module:app/control/Controller} */
 var controller = require("app/control/Controller");
@@ -84,7 +84,9 @@ var ContentView = View.extend({
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal", "_onCollapsedEvent");
 
 		this.transforms = new TransformHelper();
-		this.touch = TouchManager.getInstance();
+		// this.touch = options.touch || new Error("no touch"); //TouchManager.getInstance();
+		this.vpan = options.vpan || new Error("no vpan");
+		this.hpan = options.hpan || new Error("no hpan");
 
 		this.listenTo(this.model, "change", this._onModelChange);
 
@@ -204,10 +206,29 @@ var ContentView = View.extend({
 		if (sizeChanged) {
 			this.itemViews.forEach(function(view) {
 				view.skipTransitions = this.skipTransitions;
-				// view.invalidateSize();
-				// view.renderNow();
 				view.requestRender(View.SIZE_INVALID).renderNow();
 			}, this);
+			/*Promise.all(this.itemViews.map(function(view) {
+					view.skipTransitions = this.skipTransitions;
+					return view.requestRender(View.SIZE_INVALID).whenRendered();
+				}, this))
+				.then(
+					function(views) {
+						var nh = this.el.offsetParent.offsetHeight - this.el.offsetTop;
+						// var oh = views.reduce(function(h, view) {
+						// 	return Math.max(h, view.el.offsetHeight);
+						// }, nh);
+						// oh++;
+						// console.log("%s:[whenRendered] [result: %s %s] %o", this.cid,
+						// 	nh, oh, this.el.parent, views);
+						this.el.style.minHeight = nh + "px";
+						return views;
+					}.bind(this),
+					function(reason) {
+						console.warn("%s:[whenRendered] [rejected] %o", this.cid, reason);
+						return reason;
+					}.bind(this)
+				);*/
 		}
 		this.skipTransitions = this._transformsChanged = false;
 	},
@@ -223,9 +244,16 @@ var ContentView = View.extend({
 		});
 	},
 
+	/* -------------------------------
+	/* Collapse UI gestures/events
+	/* ------------------------------- */
+
 	_onCollapsedEvent: function(ev) {
 		console.log("%s:[%s -> _onCollapsedEvent] target: %s", this.cid, ev.type, ev.target);
-		if (!ev.defaultPrevented && this.model.get("withBundle") && !this.model.get("collapsed") && !this.enabled) {
+		if (!ev.defaultPrevented &&
+			this.model.get("withBundle") &&
+			!this.model.get("collapsed") &&
+			!this.enabled) {
 			// this.setImmediate(function() {
 			// if (ev.type == "click") ev.stopPropagation();
 			ev.preventDefault();
@@ -236,6 +264,7 @@ var ContentView = View.extend({
 			// });
 		}
 	},
+
 	/* --------------------------- *
 	/* model changed
 	/* --------------------------- */
@@ -243,20 +272,24 @@ var ContentView = View.extend({
 	_onModelChange: function() {
 		if (this.model.hasChanged("withBundle")) {
 			if (this.model.get("withBundle")) {
-				this.touch.on("vpanstart", this._onVPanStart);
+				this.vpan.on("vpanstart", this._onVPanStart);
 			} else {
-				this.touch.off("vpanstart", this._onVPanStart);
+				this.vpan.off("vpanstart", this._onVPanStart);
 			}
 		}
-		if (this.model.hasChanged("collapsed") || this.model.hasChanged("withBundle")) {
-			if (this.model.get("withBundle") && !this.model.get("collapsed")) {
-				this.touch.on("hpanleft hpanright", this._onCollapsedEvent);
-				this.el.addEventListener("click", this._onCollapsedEvent, false);
+		/*
+		if (this.model.hasChanged("withBundle") ||
+			this.model.hasChanged("collapsed")) {
+			if (this.model.get("withBundle") &&
+				!this.model.get("collapsed")) {
+				this.hpan.on("hpanleft hpanright", this._onCollapsedEvent);
+				this.el.addEventListener(Globals.CLICK_EVENT, this._onCollapsedEvent, false);
 			} else {
-				this.touch.off("hpanleft hpanright", this._onCollapsedEvent);
-				this.el.removeEventListener("click", this._onCollapsedEvent, false);
+				this.hpan.off("hpanleft hpanright", this._onCollapsedEvent);
+				this.el.removeEventListener(Globals.CLICK_EVENT, this._onCollapsedEvent, false);
 			}
 		}
+		*/
 		this.requestRender(View.MODEL_INVALID);
 	},
 
@@ -267,8 +300,8 @@ var ContentView = View.extend({
 	_collapsedOffsetY: Globals.COLLAPSE_OFFSET,
 
 	_onVPanStart: function(ev) {
-		this.touch.on("vpanmove", this._onVPanMove);
-		this.touch.on("vpanend vpancancel", this._onVPanFinal);
+		this.vpan.on("vpanmove", this._onVPanMove);
+		this.vpan.on("vpanend vpancancel", this._onVPanFinal);
 
 		this.transforms.stopAllTransitions();
 		// this.transforms.clearAllOffsets();
@@ -308,8 +341,8 @@ var ContentView = View.extend({
 	},
 
 	_onVPanFinal: function(ev) {
-		this.touch.off("vpanmove", this._onVPanMove);
-		this.touch.off("vpanend vpancancel", this._onVPanFinal);
+		this.vpan.off("vpanmove", this._onVPanMove);
+		this.vpan.off("vpanend vpancancel", this._onVPanFinal);
 
 		// FIXME: model.collapsed may have already changed, _onVPanMove would run with wrong values:
 		// model.collapsed is changed in a setImmediate callback from NavigationView.
@@ -466,7 +499,7 @@ var ContentView = View.extend({
 			rendererFunction: rendererFunction,
 			requireSelection: false,
 			direction: Carousel.DIRECTION_HORIZONTAL,
-			touch: this.touch,
+			touch: this.hpan,
 		});
 		controller.listenTo(view, {
 			"view:select:one": controller.selectMedia,

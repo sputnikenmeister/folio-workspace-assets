@@ -28,11 +28,13 @@ function createInstance(el) {
 	var manager, hpan, vpan, tap;
 	hpan = new Pan({
 		// threshold: Globals.PAN_THRESHOLD,
+		// touchAction: "pan-y",
 		direction: Hammer.DIRECTION_HORIZONTAL,
 		event: "hpan",
 	});
 	vpan = new Pan({
 		// threshold: Globals.PAN_THRESHOLD,
+		// touchAction: "pan-x",
 		direction: Hammer.DIRECTION_VERTICAL,
 		event: "vpan",
 	});
@@ -40,9 +42,11 @@ function createInstance(el) {
 		// threshold: Globals.PAN_THRESHOLD - 1
 	});
 	manager = new Hammer.Manager(el);
-	manager.add([tap, hpan, vpan]);
-	vpan.requireFailure(hpan);
 	// manager.set({ domevents: true });
+	manager.add([tap, hpan, vpan]);
+	// manager.add([hpan, vpan]);
+	vpan.requireFailure(hpan);
+	// manager.add(hpan);
 	return manager;
 }
 

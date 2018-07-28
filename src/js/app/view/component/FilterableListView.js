@@ -78,6 +78,11 @@ var FilterableListView = View.extend({
 			get: function() {
 				return this._filteredItems;
 			}
+		},
+		metrics: {
+			get: function() {
+				return this._metrics;
+			}
 		}
 	},
 

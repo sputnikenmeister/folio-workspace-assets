@@ -26,14 +26,16 @@
 	display: none;
 	overflow: hidden;
 	position: absolute;
+	width: auto;
+	height: auto;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
 
 	@at-root .debug-grid-bg & {
 		display: block;
 	}
-
-	top: 0;//$default_nav_top;
-	right: 0; bottom: 0; left: 0;
-
 	@at-root .desktop-small & {
 		// top: $large_nav_top;
 	}
@@ -47,11 +49,13 @@
 }
 
 svg#debug-grid {
+	// position: absolute;
+	display: block;
 	width: 100%;
-	max-width: $default_page_width;
-	position: absolute;
 	height: 100%;
+	max-width: $default_page_width;
 	margin: 0 auto;
+	top: 0; bottom: 0;
 	left: 0; right: 0;
 
 	@at-root .desktop-small & {
@@ -101,8 +105,17 @@ svg#debug-grid {
 	/* Guides columns & margins definitions */
 	#columns {
 		fill: url("#pat-cols-220px");
+	}
+	#abs-cols {
+		visibility: visible;
 		@at-root .fullwidth & {
-			display: none;
+			visibility: hidden;
+		}
+	}
+	#rel-cols {
+		visibility: hidden;
+		@at-root .fullwidth & {
+			visibility: visible;
 		}
 	}
 	.vguide {

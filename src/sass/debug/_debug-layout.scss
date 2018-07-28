@@ -89,9 +89,10 @@ $indigo: hsla(275, 100%, 25%, 1);
 // -----------------------------------
 // .debug-blocks
 // -----------------------------------
-
+$brightyellow: hsl(308, 100%, 50%);
 .debug-blocks {
-	@include debug_outline(0.25rem, solid, lightgreen);
+	@include debug_outline(0.4rem, solid, $brightyellow, $offset:-0.6rem);
+	#container {@include debug_outline(0.4rem, dashed, $brightyellow, $offset:-0.9rem);}
 	// *[data-cid] {
 	// 	@include debug_outline_thin($width: 0.25rem, $style: solid, $color: transparentize($thistle, 0.5));
 	// }
@@ -187,9 +188,9 @@ $indigo: hsla(275, 100%, 25%, 1);
 		.media-item {
 			background-color: transparentize($lightblue, 0.7);
 			// .content {}
-			.play-toggle-hitarea {
-				background-color: transparentize($lightblue, 0.5);
-			}
+// 			.play-toggle-hitarea {
+// 				background-color: transparentize($lightblue, 0.5);
+// 			}
 		}
 	}
 }

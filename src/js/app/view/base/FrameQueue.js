@@ -234,14 +234,34 @@ if (DEBUG) {
 	// 	// 	return retval;
 	// 	// });
 
+	/*
+	var wrapConsole = function(prefix) {
+		var shift = [].shift;
+		var fnNames = ["group", "log", "info", "warn", "error"];
+		var fnSrc = {};
+		fnNames.forEach(function(fnName) {
+			fnSrc[fnName] = console[fnName];
+			console[fnName] = _.wrap(console[fnName], function() {
+				if (typeof arguments[1] == "string") arguments[1] = prefix + " " + arguments[1];
+				return shift.apply(arguments).apply(console, arguments);
+			});
+		});
+		return function() {
+			fnNames.forEach(function(fnName) {
+				console[fnName] = fnSrc[fnName];
+			});
+		}
+	}
+	*/
+
 	// log frame end
 	_runQueue = _.wrap(_runQueue, function(fn, tstamp) {
 		var retval;
-		console.group("FrameQueue " + _rafId);
-		// console.log("FrameQueue::_runQueue %i items (ID range:%i-%i)", _nextQueue.numItems, _nextQueue.offset, _nextQueue.offset + _nextQueue.length - 1);
+		// var unwrap = wrapConsole("[raf " + _rafId + "]");
+		// console.group("FrameQueue #" + _rafId);
 		retval = fn(tstamp);
-		// console.log("[Frame exit]\n---\n");
-		console.groupEnd();
+		// console.groupEnd();
+		// unwrap();
 		return retval;
 	});
 

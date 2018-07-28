@@ -112,7 +112,7 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 		// margin-top: -0.5rem;
 	}
 	&.with-bundle .container-collapsed #keyword-list {
-		padding-top: $large_nav_height - 1rem;
+		padding-top: ($large_nav_height - 1rem);
 	}
 	// &.with-bundle .container-expanded #keyword-list {
 	// 	padding-top: 1.5rem;

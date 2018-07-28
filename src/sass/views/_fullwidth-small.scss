@@ -57,7 +57,8 @@ html.fullwidth-small {
 			}
 		}
 	}
-	&.with-bundle .container-expanded {
+// 	&.with-bundle
+	.container-expanded {
 		#bundle-list, #keyword-list {
 			padding-top: $s_nav_height;
 		}

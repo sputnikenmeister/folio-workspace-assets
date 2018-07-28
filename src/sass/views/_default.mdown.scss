@@ -73,21 +73,18 @@
 	}
 }
 
-.article-view {
-	&.mdown {
-		h1, h2 {
-			// @include heading_font(300, 1.999999999rem, 2rem);
-			@extend %n1p2_2;
-		}
-		h3, h4 {
-			@extend %n1f3_1f5;
-		}
-		h3, h4 {
-			font-weight: 600;
-		}
-		p {
-			@extend %n1f1_1f6;
-		}
+.article-view.mdown {
+	h1, h2 {
+		@extend %n1p2_2;
+	}
+	h3, h4 {
+		@extend %n1f3_1f5;
+	}
+	h3, h4 {
+		font-weight: 600;
+	}
+	p {
+		@extend %n1f1_1f6;
 	}
 }
 

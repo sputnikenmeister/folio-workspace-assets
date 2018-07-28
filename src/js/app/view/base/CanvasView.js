@@ -17,7 +17,7 @@ var Interpolator = require("app/view/base/Interpolator");
 /** @type {module:utils/css/getBoxEdgeStyles} */
 var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
-var MIN_CANVAS_RATIO = 2; // /Firefox/.test(window.navigator.userAgent)? 2 : 1;
+var MIN_CANVAS_RATIO = 1; // /Firefox/.test(window.navigator.userAgent)? 2 : 1;
 
 /**
  * @constructor
