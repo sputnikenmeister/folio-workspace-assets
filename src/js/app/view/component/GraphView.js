@@ -210,7 +210,7 @@ var GraphView = CanvasView.extend({
 
 	_updateStyles: function() {
 		var b, bgColor, lnColor;
-		if (this.model.get("withBundle")) {
+		if (this.model.has("bundle")) {
 			b = this.model.get("bundle");
 			lnColor = b.colors.lnColor.clone();
 			bgColor = b.colors.bgColor.clone();

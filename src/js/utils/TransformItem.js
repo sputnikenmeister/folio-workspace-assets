@@ -78,24 +78,8 @@ var transitionEnd = prefixedEvent("transitionend"); //require("utils/event/trans
 /* Private static
 /* ------------------------------- */
 
-var NO_TRANSITION = "none 0s step-start 0s";
-
-
-// var translateTemplate = function(o) {
-// 	// return "translate(" + o._renderedX + "px, " + o._renderedY + "px)";
-// 	// return "translate3d(" + o._renderedX + "px, " + o._renderedY + "px, 0px)";
-// };
-
-var translateTemplate = (function() {
-	var fn = require("app/control/Globals").TRANSLATE_TEMPLATE;
-	return function(o) {
-		return fn(o._renderedX, o._renderedY);
-	};
-}());
-
-var transitionTemplate = function(o) {
-	return o.property + " " + o.duration / 1000 + "s " + o.easing + " " + o.delay / 1000 + "s";
-};
+var NO_TRANSITION_VALUE = "none 0s step-start 0s";
+// var NO_TRANSITION_VALUE = "all 0.001s step-start 0.001s";
 
 var UNSET_TRANSITION = {
 	name: "unset",
@@ -107,8 +91,22 @@ var UNSET_TRANSITION = {
 	cssText: "unset",
 };
 
+
+// var translateTemplate = function(o) {
+// 	// return "translate(" + o._renderedX + "px, " + o._renderedY + "px)";
+// 	// return "translate3d(" + o._renderedX + "px, " + o._renderedY + "px, 0px)";
+// };
+var translateTemplate = (function() {
+	var fn = require("app/control/Globals").TRANSLATE_TEMPLATE;
+	return function(o) {
+		return fn(o._renderedX, o._renderedY);
+	};
+}());
+
 // var transitionTemplate = _.template("<%= property %> <% duration/1000 %>s <%= easing %> <% delay/1000 %>s");
-// var NO_TRANSITION = "all 0.001s step-start 0.001s";
+var transitionTemplate = function(o) {
+	return o.property + " " + o.duration / 1000 + "s " + o.easing + " " + o.delay / 1000 + "s";
+};
 
 var propDefaults = {
 	"opacity": "1",
@@ -164,7 +162,7 @@ var rejectAll = function(pp, reason) {
 /**
  * @constructor
  */
-function TransformItem(el, id) {
+var TransformItem = function(el, id) {
 	_.bindAll(this, "_onTransitionEnd");
 
 	this.el = el;
@@ -281,7 +279,7 @@ TransformItem.prototype = Object.create({
 
 	clearTransition: function() {
 		this._transition = _.extend(this._transition, UNSET_TRANSITION);
-		this._transitionValue = NO_TRANSITION;
+		this._transitionValue = NO_TRANSITION_VALUE;
 
 		this._hasTransition = false;
 		this._transitionInvalid = true;
@@ -293,7 +291,7 @@ TransformItem.prototype = Object.create({
 		// this._transition.name = "[none]";
 		// this._transition.property = "none";
 		this._transition = _.extend(this._transition, UNSET_TRANSITION);
-		this._transitionValue = NO_TRANSITION;
+		this._transitionValue = NO_TRANSITION_VALUE;
 
 		this._hasTransition = false;
 		this._transitionInvalid = true;
@@ -438,11 +436,18 @@ TransformItem.prototype = Object.create({
 			// whatever still here is to be rejected. reuse array
 			this._pendingPromises = rejectAll(reject, this.el);
 
+			// Set running flag, if there's a transition to run
 			this._transitionRunning = this._hasTransition;
+			// Set the css value (which will be empty string if there's no transition)
 			this._setCSSProp("transition", this._transitionValue);
+			if (DEBUG) {
+				if (this._hasTransition) {
+					this.el.setAttribute("data-tx", this._transition.name);
+				}
+			}
 
 			if (!this._hasTransition) {
-				// no transition, resolve now
+				// if there is no transition, resolve promises now
 				resolveAll(this._promises, this.el);
 			}
 		}
@@ -458,6 +463,13 @@ TransformItem.prototype = Object.create({
 			this._transitionRunning = false;
 			this._removeCSSProp("transition");
 			resolveAll(this._promises, this.el);
+
+			if (DEBUG) {
+				if (this.el.hasAttribute("data-tx")) {
+					// this.el.setAttribute("data-tx-last", this.el.getAttribute("data-tx"));
+					this.el.removeAttribute("data-tx");
+				}
+			}
 		}
 	},
 
@@ -472,7 +484,7 @@ TransformItem.prototype = Object.create({
 	},
 
 	_setCSSProp: function(prop, value) {
-		if (prop === "transition" && value == NO_TRANSITION) {
+		if (prop === "transition" && value == NO_TRANSITION_VALUE) {
 			value = "";
 		}
 		if (value === null || value === void 0 || value === "") {

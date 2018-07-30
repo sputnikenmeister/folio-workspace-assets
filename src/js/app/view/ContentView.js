@@ -251,7 +251,7 @@ var ContentView = View.extend({
 	_onCollapsedEvent: function(ev) {
 		console.log("%s:[%s -> _onCollapsedEvent] target: %s", this.cid, ev.type, ev.target);
 		if (!ev.defaultPrevented &&
-			this.model.get("withBundle") &&
+			this.model.has("bundle") &&
 			!this.model.get("collapsed") &&
 			!this.enabled) {
 			// this.setImmediate(function() {
@@ -271,7 +271,7 @@ var ContentView = View.extend({
 
 	_onModelChange: function() {
 		if (this.model.hasChanged("withBundle")) {
-			if (this.model.get("withBundle")) {
+			if (this.model.has("bundle")) {
 				this.vpan.on("vpanstart", this._onVPanStart);
 			} else {
 				this.vpan.off("vpanstart", this._onVPanStart);

@@ -77,8 +77,10 @@ var NavigationView = View.extend({
 		this.hpan = options.hpan || new Error("no hpan");
 
 		this.listenTo(this.model, "change", this._onModelChange);
+		// this.listenTo(this.model, "withBundle:change", this._onwithBundleChange);
 
-		this.listenTo(this.model, "withBundle:change", this._onWithBundleChange);
+		this.vpanGroup = this.el.querySelector("#vpan-group");
+		this.transforms.add(this.vpanGroup);
 
 		this.keywordList = this.createKeywordList();
 		/* NOTE: .list-group .label moves horizontally (cf. sass/layouts/*.scss) */
@@ -92,12 +94,11 @@ var NavigationView = View.extend({
 
 		this.sitename = this.createSitenameButton();
 		this.transforms.add(this.sitename.wrapper, this.sitename.el);
-		// this.transforms.add(this.sitename.el.firstElementChild, this.sitename.el);
 
 		this.about = this.createArticleButton(articles.findWhere({ handle: "about" }));
 		this.transforms.add(this.about.wrapper, this.about.el);
 
-		this.graph = this.createGraphView(this.bundleList, this.keywordList);
+		this.graph = this.createGraphView(this.bundleList, this.keywordList, this.vpanGroup);
 		// this.transforms.add(this.graph.el);
 		// this.itemViews.push(this.graph);
 		// this.listenTo(this.graph, {
@@ -768,7 +769,7 @@ var NavigationView = View.extend({
 	/**
 	 * nav-graph
 	 */
-	createGraphView: function(listA, listB) {
+	createGraphView: function(listA, listB, parentEl) {
 		var view = new GraphView({
 			id: "nav-graph",
 			listA: listA,
@@ -776,8 +777,8 @@ var NavigationView = View.extend({
 			model: this.model,
 			useOpaque: false
 		});
-		// this.el.appendChild(view.el);
-		this.el.insertBefore(view.el, this.el.firstElementChild);
+		parentEl || (parentEl = this.el);
+		parentEl.insertBefore(view.el, parentEl.firstElementChild);
 		return view;
 	},
 
