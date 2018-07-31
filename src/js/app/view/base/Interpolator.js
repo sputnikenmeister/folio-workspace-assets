@@ -11,7 +11,7 @@ var linear = require("utils/ease/linear");
  * @constructor
  * @type {module:app/view/base/Interpolator}
  */
-function Interpolator(values, maxValues) {
+var Interpolator = function(values, maxValues) {
 	this._valueData = {};
 	this._maxValues = {};
 	this._renderableKeys = [];
@@ -28,7 +28,7 @@ function Interpolator(values, maxValues) {
 		this._renderableKeys.push(key);
 	}
 	this._valuesChanged = this._renderableKeys.length > 0;
-}
+};
 
 Interpolator.prototype = Object.create({
 

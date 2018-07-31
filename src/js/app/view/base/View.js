@@ -108,8 +108,21 @@ observer.observe(document.body, {
 /* static private
 /* ------------------------------- */
 
+
 /** @type {module:app/view/base/FrameQueue} */
 var FrameQueue = require("app/view/base/FrameQueue");
+
+// /** @type {module:app/view/base/CallbackManager} */
+// var FrameQueue;
+//
+// /** @type {module:app/view/base/CallbackManager} */
+// var ImmediateQueue;
+//
+// (function() {
+// 	var CallbackManager = require("app/view/base/CallbackManager");
+// 	FrameQueue = new CallbackManager(window.requestAnimationFrame, window.cancelAnimationFrame);
+// 	ImmediateQueue = new CallbackManager(window.setImmediate, window.clearImmediate);
+// })();
 
 /** @type {module:app/view/base/PrefixedEvents} */
 var PrefixedEvents = require("app/view/base/PrefixedEvents");
@@ -549,8 +562,14 @@ var ViewProto = {
 		return FrameQueue.cancel(id);
 	},
 
-	setImmediate: function(callback, ctx) {
-		window.setImmediate(callback.bind(ctx || this));
+	setImmediate: function(callback, priority, ctx) {
+		// return ImmediateQueue.request(callback.bind(ctx || this), priority);
+		return window.setImmediate(callback.bind(ctx || this));
+	},
+
+	clearImmediate: function(id) {
+		// return ImmediateQueue.cancel(id);
+		return window.clearImmediate(id);
 	},
 
 	/* -------------------------------
