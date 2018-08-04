@@ -9,18 +9,7 @@ var View = require("app/view/base/View");
 /** @type {module:utils/ease/linear} */
 var linear = require("utils/ease/linear");
 
-var ModelProgressMeter = {
-	// formatters: {
-	// 	step: function(i, t, s) { 
-	// 		return (((i/t)*s) | 0) + 1;
-	// 	},
-	// 	fraction: function(i, t, s) {
-	// 		return ((((i/t)*s) | 0) + 1) +"/"+s;
-	// 	},
-	// }
-};
-
-var ModelProgressMeterProto = {
+module.exports = View.extend({
 
 	/** @type {string} */
 	cidPrefix: "progressMeter",
@@ -217,10 +206,17 @@ var ModelProgressMeterProto = {
 	},
 
 	redraw: function() { /* abstract */ },
-};
+}, {
+	// formatters: {
+	// 	step: function(i, t, s) {
+	// 		return (((i/t)*s) | 0) + 1;
+	// 	},
+	// 	fraction: function(i, t, s) {
+	// 		return ((((i/t)*s) | 0) + 1) +"/"+s;
+	// 	},
+	// }
+});
 
 if (DEBUG) {
-	ModelProgressMeterProto._skipLog = true;
+	module.exports.prototype._logFlags = "";
 }
-
-module.exports = View.extend(ModelProgressMeterProto, ModelProgressMeter);

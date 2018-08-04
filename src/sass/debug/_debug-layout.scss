@@ -91,8 +91,8 @@ $indigo: hsla(275, 100%, 25%, 1);
 // -----------------------------------
 $brightyellow: hsl(308, 100%, 50%);
 .debug-blocks {
-	@include debug_outline(0.4rem, solid, $brightyellow, $offset:-0.6rem);
-	#container {@include debug_outline(0.4rem, dashed, $brightyellow, $offset:-0.9rem);}
+	// @include debug_outline(0.4rem, solid, $brightyellow, $offset:-0.6rem);
+	// #container { @include debug_outline(0.4rem, dashed, $brightyellow, $offset:-0.9rem); }
 	// *[data-cid] {
 	// 	@include debug_outline_thin($width: 0.25rem, $style: solid, $color: transparentize($thistle, 0.5));
 	// }
@@ -102,14 +102,14 @@ $brightyellow: hsl(308, 100%, 50%);
 	// }
 
 	#navigation {
-		@include debug_outline(0.5rem, dashed, $lightcoral, 0.75, 0);
+		@include debug_outline(0.8rem, dashed, $lightcoral, 0.5, -0.4rem);
 		&.container-changing {
-			@include debug_outline(0.5rem, dashed, $lightcoral, 0.4, 0);
+			@include debug_outline(0.8rem, dashed, $lightcoral, 0.25, -0.4rem);
 		}
 		.graph {
-			@include debug_outline(0.5rem, dashed, $darkseagreen, 0.75, 0);
+			@include debug_outline(0.3rem, dashed, $darkseagreen, 0.75, 0);
 			&:hover, &:active {
-				@include debug_outline(0.5rem, dashed, $darkseagreen, 0.25, 0);
+				@include debug_outline(0.3rem, dashed, $darkseagreen, 0.25, 0);
 			}
 		}
 		#article-list-wrapper,

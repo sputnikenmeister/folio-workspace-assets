@@ -150,8 +150,9 @@ var GraphView = CanvasView.extend({
 
 			// this.__traceScroll(ev.type);
 			// this._groupRects = null;
-			// this.invalidate(CanvasView.LAYOUT_INVALID | CanvasView.SIZE_INVALID);
-			this.requestRender(CanvasView.LAYOUT_INVALID | CanvasView.SIZE_INVALID);
+			this.invalidate(CanvasView.LAYOUT_INVALID | CanvasView.SIZE_INVALID);
+			// this.requestRender(CanvasView.LAYOUT_INVALID | CanvasView.SIZE_INVALID);
+			// this.requestRender().renderNow();
 		}.bind(this);
 		// viewportChanged = _.debounce(viewportChanged, 100, false);
 
@@ -160,9 +161,9 @@ var GraphView = CanvasView.extend({
 		// window.addEventListener("wheel",
 		// 	_.debounce(viewportChanged, 100, false), false);
 		window.addEventListener("scroll", viewportChanged, false);
-		window.addEventListener("wheel", viewportChanged, false);
-		window.addEventListener("resize", viewportChanged, false);
-		window.addEventListener("orientationchange", viewportChanged, false);
+		// window.addEventListener("wheel", viewportChanged, false);
+		// window.addEventListener("resize", viewportChanged, false);
+		// window.addEventListener("orientationchange", viewportChanged, false);
 
 		// this._addListListeners(this._a2b);
 		// this._addListListeners(this._b2a);
@@ -730,24 +731,24 @@ var GraphView = CanvasView.extend({
 });
 
 if (DEBUG) {
-	GraphView.prototype._skipLog = false;
+	// GraphView.prototype._logFlags = "";
 
 	var debouncedLog = _.debounce(_.bind(console.log, console), 500, true);
 	var applyMethod = function(context, args) {
 		return Array.prototype.shift.apply(args).apply(context, args);
 	}
-	if (!GraphView.prototype._skipLog) {
+	if (GraphView.prototype._logFlags.split(" ")["view.render"]) {
 		// GraphView.prototype._requestRender = _.wrap(CanvasView.prototype._requestRender, function(fn) {
 		// 	debouncedLog("%s::_requestRender", this.cid);
 		// 	return applyMethod(this, arguments);
 		// });
 		GraphView.prototype._applyRender = _.wrap(CanvasView.prototype._applyRender, function(fn) {
-			this._skipLog = true;
+			var retval;
+			this._logFlags["view.render"] = false;
 			debouncedLog("%s::_applyRender [debounced]", this.cid);
-			var retval = applyMethod(this, arguments);
-			this._skipLog = false;
+			retval = applyMethod(this, arguments);
+			this._logFlags["view.render"] = true;
 			return retval;
-
 		});
 	}
 }

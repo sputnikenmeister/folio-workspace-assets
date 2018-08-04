@@ -96,7 +96,7 @@ PriorityQueue.prototype = Object.create({
 	},
 });
 
-var CallbackManager = function(requestFn, cancelFn) {
+var CallbackQueue = function(requestFn, cancelFn) {
 	this._nextQueue = new PriorityQueue(0);
 	this._currQueue = null;
 
@@ -109,30 +109,42 @@ var CallbackManager = function(requestFn, cancelFn) {
 	this._runQueue = this._runQueue.bind(this)
 };
 
-CallbackManager.prototype = Object.create({
+CallbackQueue.prototype = Object.create({
 	/**
 	 * @param tstamp {int}
 	 */
 	_runQueue: function() {
 		if (this._running) throw new Error("wtf!!!");
 
-		this._runId = -1;
-		this._running = true;
 		this._currQueue = this._nextQueue;
 		this._nextQueue = new PriorityQueue(this._currQueue.offset + this._currQueue.length);
 
-		this._currQueue.indexes().forEach(function(index) {
-			var fn = this._currQueue._items[index];
-			if (fn !== null) {
-				fn.apply(null, arguments);
+		this._runId = -1;
+		this._running = true;
+
+		var i, item;
+		var indexes = this._currQueue.indexes();
+		var items = this._currQueue._items;
+		for (i = 0; i < indexes.length; i++) {
+			item = items[indexes[i]];
+			if (item !== null) {
+				item.apply(null, arguments);
 			}
-		});
+		}
+
+		// var self = this;
+		// this._currQueue.indexes().forEach(function(index) {
+		// 	var fn = self._currQueue._items[index];
+		// 	if (fn !== null) {
+		// 		fn.apply(null, arguments);
+		// 	}
+		// });
 		this._running = false;
 		this._currQueue = null;
 
 		if (this._nextQueue.numItems > 0) {
-			// this._runId = this._requestFn.call(null, this._runQueue);
-			this._runId = this._requestFn(this._runQueue);
+			this._runId = this._requestFn.call(null, this._runQueue);
+			// this._runId = this._requestFn(this._runQueue);
 		}
 	},
 
@@ -156,8 +168,8 @@ CallbackManager.prototype = Object.create({
 		// 	});
 		// }
 		if (!this._running && this._runId === -1) {
-			// this._runId = this._requestFn.call(null, this._runQueue);
-			this._runId = this._requestFn(this._runQueue);
+			this._runId = this._requestFn.call(null, this._runQueue);
+			// this._runId = this._requestFn(this._runQueue);
 		}
 		return this._nextQueue.enqueue(fn, priority);
 	},
@@ -173,8 +185,8 @@ CallbackManager.prototype = Object.create({
 		} else {
 			fn = this._nextQueue.skip(id);
 			if ((this._runId !== -1) && (this._nextQueue.numItems === 0)) {
-				// this._cancelFn.call(null, this._runId);
-				this._cancelFn(this._runId);
+				this._cancelFn.call(null, this._runId);
+				// this._cancelFn(this._runId);
 				this._runId = -1;
 			}
 		}
@@ -188,4 +200,4 @@ CallbackManager.prototype = Object.create({
 	}
 });
 
-module.exports = CallbackManager;
+module.exports = CallbackQueue;

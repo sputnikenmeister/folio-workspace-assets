@@ -9,8 +9,11 @@
 	position: absolute;
 	width: auto; //100%;
 	left: 0; right: 0;
-	bottom: -1.5rem;
-	margin: 1.5rem 0; //20px;
+	bottom: 0;//-1.5rem;
+	margin-top: 3rem;
+	// touch-action: pan-x pan-y;
+	//margin: 1.5rem 0; //20px;
+	//padding: 1rem;
 	overflow-y: auto;
 	overflow-x: auto; //hidden;
 	& > pre {

@@ -17,12 +17,29 @@ var ClickableRenderer = require("app/view/render/ClickableRenderer");
 var prefixedProperty = require("utils/prefixedProperty");
 /** @type {module:utils/css/getBoxEdgeStyles} */
 var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
+/** @type {module:utils/array/difference} */
+var diff = require("utils/array/difference");
 
-var diff = function(a1, a2, dest) {
-	return a1.reduce(function(res, o, i, a) {
-		if (a2.indexOf(o) == -1) res.push(o);
-		return res;
-	}, dest || []);
+var resolveAll = function(pp, result) {
+	if (pp.length != 0) {
+		pp.forEach(function(p, i, a) {
+			p.resolve(result);
+			a[i] = null;
+		});
+		pp.length = 0;
+	}
+	return pp;
+};
+
+var rejectAll = function(pp, reason) {
+	if (pp.length != 0) {
+		pp.forEach(function(p, i, a) {
+			p.reject(reason);
+			a[i] = null;
+		});
+		pp.length = 0;
+	}
+	return pp;
 };
 
 /** @type {module:app/control/Globals.TRANSLATE_TEMPLATE} */
@@ -89,35 +106,41 @@ var FilterableListView = View.extend({
 	/** @override */
 	events: {
 		"transitionend .list-item": function(ev) {
-			if (this._collapsedTransitioning && ev.propertyName === "visibility" /*&& this.el.classList.contains("collapsed-changed")*/ ) {
-				this._collapsedTransitioning = false;
-				this.el.classList.remove("collapsed-changed");
-				console.log("%s::events[transitionend .list-item] collapsed-changed end", this.cid);
+			if (this._collapsedChanging && ev.propertyName === "visibility" /*&& this.el.classList.contains(".collapsed-changing")*/ ) {
+				console.log("%s::events[transitionend .list-item] .collapsed-changing end", this.cid);
+				this._collapsedChanging = false;
+				this.el.classList.remove(".collapsed-changing");
+				resolveAll(this._collapsePromises, this);
 			}
 		},
 	},
 
 	/** @override */
 	initialize: function(options) {
+		this._filteredItems = [];
+		this._filteredIncoming = [];
+		this._filteredOutgoing = [];
+
 		this._metrics = {};
 		this._itemMetrics = [];
+		this._collapsePromises = [];
 		this.itemViews = new Container();
 
 		_.defaults(options, this.defaults);
 		this.renderer = options.renderer;
 		this._filterFn = options.filterFn;
-		this._filteredItems = [];
 
 		this.collection.each(this.createItemView, this);
-		this.refresh();
 		this._setSelection(this.collection.selected);
 		this._setCollapsed(options.collapsed);
+		this.refreshFilter();
 
 		// will trigger on return if this.el is already attached
-		// this.skipTransitions = true;
+		this.skipTransitions = true;
+		this.el.classList.add("skip-transitions");
 		this.listenTo(this, "view:attached", function() {
-			this.skipTransitions = true;
-			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID); //.renderNow();
+			// this.skipTransitions = true;
+			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
 		});
 
 		// this.listenTo(this.collection, "select:one select:none", this._setSelection);
@@ -127,57 +150,107 @@ var FilterableListView = View.extend({
 		});
 	},
 
+	/**
+	 * Get an array with a collection contens
+	 * @private
+	 */
+	_getAllItems: function() {
+		return this._allItems || (this._allItems = this.collection.slice());
+	},
+
+	/* --------------------------- *
+	/* Transition promises
+	/* --------------------------- */
+
+	whenCollapseChangeEnds: function() {
+		if (this._collapsedChanged) {
+			var view = this;
+			return new Promise(function(resolve, reject) {
+				view.on("view:render:after", resolve);
+			})
+		} else {
+			return Promise.resolve(this);
+		}
+	},
+
+	_whenCollapseChangeEnds: function() {
+		var d, p, pp;
+		if (this._collapsedChanging || this._collapsedChanged) {
+			d = {};
+			p = new Promise(function(resolve, reject) {
+				d.resolve = resolve;
+				d.reject = reject;
+			});
+			pp = this._collapsePromises;
+			pp.push(d);
+		} else {
+			p = Promise.resolve(this);
+		}
+		return p;
+	},
+
 	/* --------------------------- *
 	/* Render
 	/* --------------------------- */
 
 	/** @override */
 	renderFrame: function(tstamp, flags) {
-		if (DEBUG) {
-			var changed = [];
-			this._collapsedChanged && changed.push("collapsed");
-			this._selectionChanged && changed.push("selection");
-			this._filterChanged && changed.push("filter");
-			//console.log("%s::renderFrame [%s]", this.cid, changed.join(" "));
-		}
+		// if (DEBUG) {
+		// 	var changed = [];
+		// 	this._collapsedChanged && changed.push("collapsed");
+		// 	this._selectionChanged && changed.push("selection");
+		// 	this._filterChanged && changed.push("filter");
+		// 	console.log("%s::renderFrame [%s]", this.cid, changed.join(" "));
+		// }
 
 		// collapsed transition flag
-		if (this._collapsedTransitioning) {
+		if (this._collapsedChanging) {
 			console.warn("%s::renderFrame collapsed tx interrupted", this.cid);
+			// rejectAll(this._collapsePromises, this);
 		}
-
-		this._collapsedTransitioning = !this.skipTransitions && this._collapsedChanged;
-
-		// this.el.classList.toggle("animate", !this.skipTransitions);
-		this.el.classList.toggle("collapsed-changed", this._collapsedTransitioning);
-		this.el.classList.toggle("skip-transitions", this.skipTransitions);
 		if (this.skipTransitions) {
-			this.skipTransitions = false;
-			// Invalidate again after frame render loop to reapply transforms:
-			// that should kill any running transitions.
-			this.setImmediate(function() {
-				this.requestRender(View.LAYOUT_INVALID);
+			// resolveAll(this._collapsePromises, this.el);
+			this.el.classList.add("skip-transitions");
+			this.requestAnimationFrame(function() {
+				// this.setImmediate(function() {
+				// Invalidate again after frame render loop to reapply transforms:
+				// that should kill any running transitions.
+				// this.requestRender(View.LAYOUT_INVALID).renderNow();
+				this.skipTransitions = false;
+				this.el.classList.remove("skip-transitions");
 			});
+			this._collapsedChanging = false;
+		} else {
+			this._collapsedChanging = this._collapsedChanged;
 		}
+		this.el.classList.toggle("collapsed-changing", this._collapsedChanging);
+
 		if (this._collapsedChanged) {
+			this._collapsedChanged = false;
+			this._filterChanged = true;
 			flags |= (View.SIZE_INVALID);
 			this.el.classList.toggle("collapsed", this._collapsed);
 		}
 		if (this._selectionChanged) {
+			this._selectionChanged = false;
 			flags |= View.LAYOUT_INVALID;
 			this.renderSelection(this.collection.selected, this.collection.lastSelected);
 		}
 		if (this._filterChanged) {
+			this._filterChanged = false;
 			flags |= View.LAYOUT_INVALID;
-			this.renderFilterFn();
+			this._printStats();
+			this.computeFilter();
+
+			this.applyFilter();
+			this._printStats();
 		}
 		if (flags & View.SIZE_INVALID) {
-			this.measure();
+			this.measure(); // NOTE: measures children
 		}
 		if (flags & (View.LAYOUT_INVALID | View.SIZE_INVALID)) {
 			this.renderLayout();
 		}
-		this._collapsedChanged = this._selectionChanged = this._filterChanged = false;
 	},
 
 	measure: function() {
@@ -262,21 +335,21 @@ var FilterableListView = View.extend({
 			el: this.el.querySelector(".list-item[data-id=\"" + item.id + "\"]")
 		});
 		item.set("excluded", false, { silent: true });
+		// view.listenTo(item, "change:excluded", function(item, newVal) {
+		// 	// console.log(arguments);
+		// 	if (this.el.classList.contains("excluded") !== newVal) {
+		// 		console.warn("%s:[change:excluded] m:%o css: %o", this.cid, newVal, this.el.classList.contains("excluded"));
+		// 	}
+		// 	// this.el.classList.toggle("excluded", excluded);
+		// });
 		this.listenTo(view, "renderer:click", this._onRendererClick);
-		view.listenTo(item, "change:excluded", function(item, newVal) {
-			// console.log(arguments);
-			if (this.el.classList.contains("excluded") !== newVal) {
-				console.warn("%s:[change:excluded] m:%o css: %o", this.cid, newVal, this.el.classList.contains("excluded"));
-			}
-			// this.el.classList.toggle("excluded", excluded);
-		});
 		this.itemViews.add(view);
 		return view;
 	},
 
 	/** @private */
 	_onRendererClick: function(item, ev) {
-		if (this._collapsedTransitioning
+		if (this._collapsedChanging
 			|| (this._collapsed && item.get("excluded"))) {
 			return;
 		}
@@ -300,8 +373,8 @@ var FilterableListView = View.extend({
 	_collapsed: undefined,
 
 	/**
-	/* @param {Boolean}
-	/*/
+	 * @param {Boolean}
+	 */
 	_setCollapsed: function(collapsed) {
 		if (collapsed !== this._collapsed) {
 			this._collapsed = collapsed;
@@ -343,18 +416,82 @@ var FilterableListView = View.extend({
 		}
 	},
 
+	_printStats: function() {
+		console.log("%o::renderFrame %s filtered:%o:%o/%o (changed:%o, in:%o, out:%o)", this.cid,
+			this.filteredItems.length > 0 ? "has" : "has not",
+			this.filteredItems.length,
+			((this.filteredItems.length + this._filteredIncoming.length) - this._filteredOutgoing.length),
+			this.collection.length,
+			(this._filteredIncoming.length + this._filteredOutgoing.length),
+			this._filteredIncoming.length,
+			this._filteredOutgoing.length);
+	},
+
 	/* --------------------------- *
 	/* Filter
 	/* --------------------------- */
 
-	refresh: function() {
+	refreshFilter: function() {
 		if (this._filterFn) {
 			this._filterChanged = true;
 			this.requestRender(View.MODEL_INVALID);
 		}
 	},
 
-	renderFilterFn: function() {
+	/* --------------------------- *
+	/* Filter impl 2
+	/* --------------------------- */
+
+	computeFilter: function() {
+		var newItems, oldItems;
+		var hasNew, hasOld;
+		this._filteredIncoming.length = 0;
+		this._filteredOutgoing.length = 0;
+
+		newItems = this._filterFn ? this.collection.filter(this._filterFn, this) : this._getAllItems();
+		oldItems = this._filteredItems;
+		hasNew = !!(newItems && newItems.length);
+		hasOld = !!(oldItems && oldItems.length);
+		// NOTE: diff third arg is destination array
+		if (hasNew) {
+			// incoming exclusions
+			diff((hasOld ? oldItems : this._getAllItems()), newItems, this._filteredIncoming);
+			// this._filteredIncoming.forEach(function(item) {
+			// 	item.set("excluded", true);
+			// });
+		}
+		if (hasOld) {
+			// outgoing exclusions
+			diff((hasNew ? newItems : this._getAllItems()), oldItems, this._filteredOutgoing);
+			// this._filteredOutgoing.forEach(function(item) {
+			// 	item.set("excluded", false);
+			// });
+		}
+		// console.log("%s::renderFilterFn", this.cid, newItems);
+		this._filteredItems = newItems;
+	},
+
+	applyFilter: function() {
+		// this.itemViews.forEach(function(view) {
+		// 	view.el.classList.toggle("excluded", view.model.get("excluded"));
+		// });
+		this._filteredIncoming.forEach(function(item) {
+			this.itemViews.findByModel(item).el.classList.add("excluded");
+			item.set("excluded", true);
+		}, this);
+		this._filteredOutgoing.forEach(function(item) {
+			this.itemViews.findByModel(item).el.classList.remove("excluded");
+			item.set("excluded", false);
+		}, this);
+
+		this.el.classList.toggle("has-excluded", this.filteredItems.length > 0);
+	},
+
+	/* --------------------------- *
+	/* Filter impl 1
+	/* --------------------------- */
+
+	computeFilter_1: function() {
 		var items = this._filterFn ? this.collection.filter(this._filterFn, this) : this._getAllItems();
 		this.renderFilters(items, this._filteredItems);
 		this._filteredItems = items;
@@ -363,31 +500,30 @@ var FilterableListView = View.extend({
 	renderFilters: function(newItems, oldItems) {
 		var hasNew = !!(newItems && newItems.length);
 		var hasOld = !!(oldItems && oldItems.length);
+		var inExcl = [];
+		var outExcl = [];
 
 		// console.log("%s::renderFilterFn", this.cid, newItems);
-
+		// NOTE: diff third arg is destination array
 		if (hasNew) {
-			diff((hasOld ? oldItems : this._getAllItems()), newItems).forEach(function(item) {
-				this.itemViews.findByModel(item).el.classList.add("excluded");
-				item.set("excluded", true);
-			}, this);
+			diff((hasOld ? oldItems : this._getAllItems()), newItems, inExcl)
+			// .forEach(function(item) {
+			// 	this.itemViews.findByModel(item).el.classList.add("excluded");
+			// 	item.set("excluded", true);
+			// }, this);
 		}
 		if (hasOld) {
-			diff((hasNew ? newItems : this._getAllItems()), oldItems).forEach(function(item) {
-				this.itemViews.findByModel(item).el.classList.remove("excluded");
-				item.set("excluded", false);
-			}, this);
+			diff((hasNew ? newItems : this._getAllItems()), oldItems, outExcl)
+			// .forEach(function(item) {
+			// 	this.itemViews.findByModel(item).el.classList.remove("excluded");
+			// 	item.set("excluded", false);
+			// }, this);
 		}
-		this.el.classList.toggle("has-excluded", hasNew);
+		this._filteredIncoming = inExcl;
+		this._filteredOutgoing = outExcl;
+		// this.el.classList.toggle("has-excluded", hasNew);
+		// this.applyFilter();
 	},
-
-	_getAllItems: function() {
-		return this._allItems || (this._allItems = this.collection.slice());
-	},
-
-	/* --------------------------- *
-	/* Filter 2
-	/* --------------------------- */
 
 	// computeFiltered: function() {
 	// 	this._filterResult = this.collection.map(this._filterFn, this);

@@ -131,12 +131,12 @@ var AppViewProto = {
 		vtouch = htouch = TouchManager.init(this.content);
 		// vtouch.get("vpan").set({ enable: this._vpanEnableFn });
 		// htouch.get("hpan").set({ enable: this._hpanEnableFn });
-// 		vtouch.set({
-// 			enable: function() {
-// 				console.log("app1::hammerjs enable", arguments);
-// 				return true;
-// 			}
-// 		});
+		// 		vtouch.set({
+		// 			enable: function() {
+		// 				console.log("app1::hammerjs enable", arguments);
+		// 				return true;
+		// 			}
+		// 		});
 		// hpan = vpan;
 
 		// this.el.style.touchAction = "none"; //"pan-x pan-y";
@@ -191,11 +191,11 @@ var AppViewProto = {
 		// hpan.get("hpan").requireFailure(vpan.get("vpan"));
 
 		// this._afterRender = this._afterRender.bind(this);
-		this._onResize = this._onResize.bind(this);
+		// this._onResize = this._onResize.bind(this);
 
 		/* render on resize, onorientationchange, visibilitychange */
-		window.addEventListener("orientationchange", this._onResize, false);
-		window.addEventListener("resize", _.debounce(this._onResize, 30, false), false);
+		// window.addEventListener("orientationchange", this._onResize, false);
+		window.addEventListener("resize", _.debounce(this._onResize.bind(this), 30, false), false);
 
 		// var h = function(ev) { console.log(ev.type, ev) };
 		// window.addEventListener("scroll", h, false);
@@ -264,17 +264,15 @@ var AppViewProto = {
 
 	_appStart: function(name, args) {
 		console.info("%s::_appStart(%s, %s)", this.cid, name, args.join());
-		// this._appStartChanged = true;
-
 		this.skipTransitions = true;
 		this.el.classList.add("skip-transitions");
 
 		this.requestRender(View.MODEL_INVALID | View.SIZE_INVALID)
+			.requestChildrenRender(View.MODEL_INVALID | View.SIZE_INVALID)
 			.listenToOnce(this, "view:render:after", function(view, flags) {
-				this.setImmediate(function() {
-					// this.requestAnimationFrame(function() {
-					console.log("%s::_appStart[view:render:after][setImmediate]", this.cid);
-					// console.log("%s::_appStart[view:render:after][raf]", this.cid);
+				// this.setImmediate(function() {
+				this.requestAnimationFrame(function() {
+					console.log("%s::_appStart[view:render:after][raf]", this.cid);
 					this.skipTransitions = false;
 					this.el.classList.remove("skip-transitions");
 					this.el.classList.remove("app-initial");
@@ -287,6 +285,7 @@ var AppViewProto = {
 	/* --------------------------- */
 
 	_onRoute: function(name, args) {
+		console.info("%s::_onRoute %o -> %o", this.cid, this.model.get("routeName"), name);
 		var o = _.defaults({ routeName: name }, AppState.prototype.defaults);
 		switch (name) {
 			case "media-item":
@@ -313,7 +312,6 @@ var AppViewProto = {
 				o.collapsed = false;
 				break;
 		}
-		console.info("%s::_onRoute %o -> %o", this.cid, this.model.get("routeName"), name);
 		// console.log("%s::_onRoute args: %o", this.cid, name, args);
 		this.model.set(o);
 	},
@@ -324,8 +322,16 @@ var AppViewProto = {
 
 	_onModelChange: function() {
 		// console.log("%s::_onModelChange [START]", this.cid);
-		console.group(this.cid + "::_onModelChange [render request]");
-		this.requestRender(View.MODEL_INVALID)
+		console.group(this.cid + "::_onModelChange");
+		Object.keys(this.model.changedAttributes()).forEach(function(key) {
+			console.info("%s::_onModelChange %s: %s -> %s", this.cid, key,
+				this.model.previous(key),
+				this.model.get(key));
+		}, this);
+
+		this
+			.requestRender(View.MODEL_INVALID)
+			// .requestChildrenRender(View.MODEL_INVALID)
 			.once("view:render:after", function(view, flags) {
 				console.info("%s::_onModelChange [render complete]", view.cid);
 				console.groupEnd();
@@ -340,9 +346,9 @@ var AppViewProto = {
 	/* resize
 	/* ------------------------------- */
 
-	_onResize: function() {
+	_onResize: function(ev) {
 		// console.log("%s::_onResize [START]", this.cid);
-		console.group(this.cid + "::_onResize [render request]");
+		console.group(this.cid + "::_onResize [event]");
 		this.skipTransitions = true;
 		this.el.classList.add("skip-transitions");
 
@@ -354,44 +360,18 @@ var AppViewProto = {
 		this.requestRender(View.SIZE_INVALID)
 			// .whenRendered().then(function(view) {
 			.once("view:render:after", function(view, flags) {
-				console.info("%s::_onResize [render complete] %o + %o = %o + %o",
-					view.cid, view.el.clientTop, view.el.clientHeight, view.el.scrollTop, view.el.scrollHeight);
-
-				// if ((view.el.scrollTop < 1) && (view.el.clientHeight != view.el.scrollHeight)) {
-				// 	view.el.scrollTop = 1;
-				// }
-				// if (/iphone/i.test(navigator.userAgent)) {
-				// document.body.scrollTop = 1;
-				// }
-
+				// this.requestChildrenRender(View.SIZE_INVALID, true);
+				// this.setImmediate(function() {
 				this.requestAnimationFrame(function() {
+					console.info("%s::_onResize [view:render:after][raf]", view.cid);
 					view.skipTransitions = false;
 					view.el.classList.remove("skip-transitions");
 					// window.scrollTo(0, 1);
 					// document.body.scrollTop = 1;
-					console.info("%s::_onResize [render removed skipTx]", view.cid);
 					console.groupEnd();
 				})
-			});
+			}).renderNow();
 	},
-
-	// _hasOverflowY: function(el) {
-	// 	var retval = false;
-	// 	var trace = [];
-	// 	var scrollEl = el;
-	// 	do {
-	// 		retval = retval || (scrollEl.scrollHeight != scrollEl.clientHeight);
-	// 		trace.push(traceElement(scrollEl) + " " + scrollEl.scrollHeight + " == " + scrollEl.clientHeight);
-	// 	} while (scrollEl = scrollEl.parentElement);
-	// 	// this.navigation.style.touchAction = retval ? "pan-x" : "auto";
-	// 	vpanLogFn("%s::_hasOverflowY(%s) -> %s %o", this.cid, traceElement(el), retval, trace);
-	// 	return retval;
-	// },
-
-	// _onBreakpointChange: function(ev) {
-	// 	console.log("%s::_onBreakpointChange", this.cid, ev.matches, ev.media, ev.target.className);
-	// 	this.requestRender(View.SIZE_INVALID).renderNow();
-	// },
 
 	/* -------------------------------
 	/* render
@@ -416,24 +396,23 @@ var AppViewProto = {
 		/* request children render:  set 'now' flag if size is invalid */
 		// this.requestChildrenRender(flags, flags & View.SIZE_INVALID);
 
-		if (flags & (View.MODEL_INVALID | View.SIZE_INVALID)) {
-			// this.navigation.style.touchAction = !this._hasOverflowY(this.container) ? "pan-x" : "";
-			// this.content.style.touchAction = this._hpanEnableFn() ? "pan-y" : "";
-			// this.requestAnimationFrame(function() {
-			// 	if (this._hpanEnableFn() && this._vpanEnableFn()) {
-			// 		this.content.style.touchAction = "none";
-			// 	} else if (this._hpanEnableFn()) {
-			// 		this.content.style.touchAction = "pan-y";
-			// 	} else if (this._vpanEnableFn()) {
-			// 		this.content.style.touchAction = "pan-x";
-			// 	} else {
-			// 		this.content.style.touchAction = "auto";
-			// 	}
-			// 	// 	document.body.scrollTop = 0;
-			// 	// 	window.scroll({ top: 0, behavior: "smooth" });
-			// });
-
-		}
+		// if (flags & (View.MODEL_INVALID | View.SIZE_INVALID)) {
+		// 	this.navigation.style.touchAction = !this._hasOverflowY(this.container) ? "pan-x" : "";
+		// 	this.content.style.touchAction = this._hpanEnableFn() ? "pan-y" : "";
+		// 	this.requestAnimationFrame(function() {
+		// 		if (this._hpanEnableFn() && this._vpanEnableFn()) {
+		// 			this.content.style.touchAction = "none";
+		// 		} else if (this._hpanEnableFn()) {
+		// 			this.content.style.touchAction = "pan-y";
+		// 		} else if (this._vpanEnableFn()) {
+		// 			this.content.style.touchAction = "pan-x";
+		// 		} else {
+		// 			this.content.style.touchAction = "auto";
+		// 		}
+		// 		// 	document.body.scrollTop = 0;
+		// 		// 	window.scroll({ top: 0, behavior: "smooth" });
+		// 	});
+		// }
 	},
 
 	/* -------------------------------
@@ -493,27 +472,9 @@ if (DEBUG) {
 	/** @type {module:app/debug/DebugToolbar} */
 	var DebugToolbar = require("app/debug/DebugToolbar");
 
-	AppViewProto._onModelChange = (function(fn) {
-		return function() {
-			var retval;
-			console.group(this.cid + "::_onModelChange");
-			Object.keys(this.model.changedAttributes()).forEach(function(key) {
-				var prev = this.model.previous(key),
-					curr = this.model.get(key);
-				console.info("%s::_onModelChange %s: %s -> %s", this.cid, key,
-					prev && prev.toString(),
-					curr && curr.toString());
-			}, this);
-			console.groupEnd();
-
-			retval = fn.apply(this, arguments);
-			return retval;
-		};
-	})(AppViewProto._onModelChange);
-
 	AppViewProto.initialize = (function(fn) {
 		return function() {
-			// var ret = fn.apply(this, arguments);
+			var retval;
 			var view = new DebugToolbar({
 				id: "debug-toolbar",
 				model: this.model
@@ -522,8 +483,13 @@ if (DEBUG) {
 			// this.listenTo(this.model, "change:layoutName", function() {
 			// 	this.requestRender(View.SIZE_INVALID); //.renderNow();
 			// });
-			// return ret;
-			return fn.apply(this, arguments);
+			retval = fn.apply(this, arguments);
+			this._logFlags["view.trace"] = true;
+			this.navigationView._logFlags["view.trace"] = true;
+			// this.navigationView.graph._logFlags["view.trace"] = true;
+			this.navigationView.bundleList._logFlags["view.trace"] = true;
+			this.navigationView.keywordList._logFlags["view.trace"] = true;
+			return retval;
 		};
 	})(AppViewProto.initialize);
 }

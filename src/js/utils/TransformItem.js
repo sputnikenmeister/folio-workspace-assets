@@ -206,8 +206,8 @@ TransformItem.prototype = Object.create({
 		// NOTE: style property may have been modified; clearOffset(element) should
 		// be called explicitly if clean up is required.
 		this.el.removeEventListener(transitionEnd, this._onTransitionEnd, false);
-		rejectAll(this._pendingPromises, this.el);
-		rejectAll(this._promises, this.el);
+		rejectAll(this._pendingPromises, this);
+		rejectAll(this._promises, this);
 		// delete this.el.eid;
 	},
 
@@ -310,7 +310,7 @@ TransformItem.prototype = Object.create({
 			pp = this._transitionInvalid ? this._pendingPromises : this._promises;
 			pp.push(d);
 		} else {
-			p = Promise.resolve(this.el);
+			p = Promise.resolve(this);
 		}
 		return p;
 	},
@@ -434,7 +434,7 @@ TransformItem.prototype = Object.create({
 			// prepare _promises and push in new ones
 			this._promises = this._pendingPromises;
 			// whatever still here is to be rejected. reuse array
-			this._pendingPromises = rejectAll(reject, this.el);
+			this._pendingPromises = rejectAll(reject, this);
 
 			// Set running flag, if there's a transition to run
 			this._transitionRunning = this._hasTransition;
@@ -448,7 +448,7 @@ TransformItem.prototype = Object.create({
 
 			if (!this._hasTransition) {
 				// if there is no transition, resolve promises now
-				resolveAll(this._promises, this.el);
+				resolveAll(this._promises, this);
 			}
 		}
 	},
@@ -462,7 +462,7 @@ TransformItem.prototype = Object.create({
 			this._hasTransition = false;
 			this._transitionRunning = false;
 			this._removeCSSProp("transition");
-			resolveAll(this._promises, this.el);
+			resolveAll(this._promises, this);
 
 			if (DEBUG) {
 				if (this.el.hasAttribute("data-tx")) {

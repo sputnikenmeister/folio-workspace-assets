@@ -44,6 +44,8 @@ var ArticleButton = require("app/view/component/ArticleButton");
 // /** @type {module:utils/prefixedProperty} */
 // var prefixedProperty = require("utils/prefixedProperty");
 
+var traceElement = require("utils/debug/traceElement");
+
 var tx = Globals.transitions;
 
 /**
@@ -63,9 +65,9 @@ var NavigationView = View.extend({
 	initialize: function(options) {
 		_.bindAll(this, "_onVPanStart", "_onVPanMove", "_onVPanFinal");
 		_.bindAll(this, "_onHPanStart", "_onHPanMove", "_onHPanFinal");
-		_.bindAll(this, "_whenTransitionsEnd", "_whenTransitionsAbort");
-		_.bindAll(this, "_whenListsRendered");
 		_.bindAll(this, "_onNavigationClick");
+		// _.bindAll(this, "_whenTransitionsEnd", "_whenTransitionsAbort");
+		// _.bindAll(this, "_whenListsRendered");
 
 		// this._metrics = {
 		// 	minHeight: 0
@@ -77,6 +79,7 @@ var NavigationView = View.extend({
 		this.hpan = options.hpan || new Error("no hpan");
 
 		this.listenTo(this.model, "change", this._onModelChange);
+		this.listenTo(keywords, "select:one select:none", this._onKeywordSelect);
 		// this.listenTo(this.model, "withBundle:change", this._onwithBundleChange);
 
 		this.vpanGroup = this.el.querySelector("#vpan-group");
@@ -85,18 +88,26 @@ var NavigationView = View.extend({
 		this.keywordList = this.createKeywordList();
 		/* NOTE: .list-group .label moves horizontally (cf. sass/layouts/*.scss) */
 		this.hGroupings = this.keywordList.el.querySelectorAll(".list-group .label");
-		this.transforms.add(this.hGroupings, this.keywordList.el, this.keywordList.wrapper);
 		this.itemViews.push(this.keywordList);
 
 		this.bundleList = this.createBundleList();
-		this.transforms.add(this.bundleList.el, this.bundleList.wrapper);
 		this.itemViews.push(this.bundleList);
 
 		this.sitename = this.createSitenameButton();
-		this.transforms.add(this.sitename.wrapper, this.sitename.el);
 
 		this.about = this.createArticleButton(articles.findWhere({ handle: "about" }));
-		this.transforms.add(this.about.wrapper, this.about.el);
+
+		this.transforms.add(
+			this.bundleList.wrapper,
+			this.keywordList.wrapper,
+			this.bundleList.el,
+			this.keywordList.el,
+			this.hGroupings,
+			this.sitename.wrapper,
+			this.about.wrapper,
+			this.sitename.el,
+			this.about.el
+		);
 
 		this.graph = this.createGraphView(this.bundleList, this.keywordList, this.vpanGroup);
 		// this.transforms.add(this.graph.el);
@@ -154,10 +165,6 @@ var NavigationView = View.extend({
 				|| this.model.hasChanged("withBundle")) {
 				this.el.classList.add("container-changing");
 			}
-			// if (this.bundleList.invalidated) {
-			// 	this.bundleList.invalidate(View.SIZE_INVALID);
-			// }
-			// if (this.model.hasChanged("bundle")) {
 			if (this.model.hasChanged("routeName")) {
 				this.bundleList.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
 				this.keywordList.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
@@ -177,9 +184,15 @@ var NavigationView = View.extend({
 				this.renderTransitions(flags);
 			}
 			this.transforms.validate();
+
+			console.groupCollapsed(this.cid + "::renderFrame (" + this.transforms.items.length + ")");
+			this.transforms.items.forEach(function(o) {
+				console.log(traceElement(o.el), (o.hasTransition ? o.transition.name : "-"));
+			});
+			console.groupEnd();
 			// console.log("%s::renderFrame %o", this.cid,
 			// 	this.transforms.items.map(function(o) {
-			// 		return [o.hasTransition, o.el.localName, o.el.id || o.el.className].join(" : ");
+			// 		return traceElement(o.el) + ":" + (o.hasTransition ? o.transition.name : "-");
 			// 	})
 			// );
 		}
@@ -201,54 +214,129 @@ var NavigationView = View.extend({
 			if (flags & View.SIZE_INVALID) {
 				view.requestRender(View.SIZE_INVALID);
 			}
-			if (!view.skipTransitions) {
+			//if (!view.skipTransitions) {
 				view.renderNow();
-			}
+			//}
 		}, this);
 
+
+		// promise handlers
+		// - - - - - - - - - - - - - - - - -
+		var whenListsRenderedDone = function(result) {
+			// var hval = result.reduce(function(a, o) {
+			// 	return Math.max(a, o.metrics.height);
+			// }, 0);
+			if (this.model.get("collapsed")) {
+				this.el.style.height = "";
+			} else {
+				this.el.style.height = Math.max(
+					this.bundleList.metrics.height,
+					this.keywordList.metrics.height) + "px";
+			}
+			this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
+			console.log("%s:[whenListsRenderedDone] height set to %o", this.cid, this.el.style.height, result);
+			return result;
+		}.bind(this);
+
+		var whenCollapsedChangeDone = function(result) {
+			this.el.classList.remove("container-changing");
+			console.log("%s:[whenCollapsedChangeDone][flags: %s]", this.cid, View.flagsToString(flags), result);
+			return result;
+		}.bind(this);
+
+		// promises
+		// - - - - - - - - - - - - - - - - -
+
+		// if (this.model.get("collapsed")) {
+		// collapsing, update graph & height after tx
+		Promise.all([
+				Promise.all([
+					this.bundleList.whenRendered(),
+					this.keywordList.whenRendered()
+				]),
+				this.transforms.promise(),
+				this.bundleList.whenCollapseChangeEnds(),
+				this.keywordList.whenCollapseChangeEnds(),
+			])
+			.then(whenListsRenderedDone)
+			.then(whenCollapsedChangeDone)
+			.catch(function(reason) {
+				console.warn("collapse promise rejected", reason);
+			});
+		// } else {
+		// 	// Expanding, update graph & height before tx
+		// 	Promise.all([
+		// 		Promise.all([
+		// 			this.bundleList.whenRendered(),
+		// 			this.keywordList.whenRendered()
+		// 		])
+		// 			.then(whenListsRenderedDone.bind(this)),
+		// 		this.transforms.promise(),
+		// 		this.bundleList.whenCollapseChangeEnds(),
+		// 		this.keywordList.whenCollapseChangeEnds(),
+		// 	])
+		// 		.then(whenCollapsedChangeDone.bind(this));
+		// }
+
+		/*
 		var whenListsRendered = Promise.all([
 			this.bundleList.whenRendered(),
 			this.keywordList.whenRendered()
-		])
-			.then(
-				function(result) {
-					var hval = result.reduce(function(a, o) {
-						return Math.max(a, o._metrics.height);
-					}, 0);
-					if (this.model.get("collapsed")) {
-						this.el.style.minHeight = "";
-						this.graph.el.style.height = "100%";
-					} else {
-						this.el.style.minHeight = hval + "px";
-						this.graph.el.style.height = hval + "px";
-					}
-					console.log("%s:[whenRendered][flags: %s] height: %o", this.cid, View.flagsToString(flags), hval);
-					return result;
-				}.bind(this),
-				function(reason) {
-					console.warn("%s:[whenRendered] failed: %o", this.cid, reason);
-					return reason;
-				}.bind(this)
-			);
+		]);
+
+		var whenTransformsEnd = this.transforms.promise();
+
+		whenListsRendered.then(
+			whenListsRenderedDone,
+			function(reason) {
+				console.warn("%s:[whenListsRendered] failed: %o", this.cid, reason);
+				return reason;
+			}.bind(this)
+		);
 
 		Promise.all([
 			whenListsRendered,
-			this.transforms.promise()
+			whenTransformsEnd
 		])
 			.then(
 				function(result) {
-					console.log("%s:[listsRendered+transitionsEnd] [%s]", this.cid, View.flagsToString(flags), result);
-
+					console.log("%s:[whenListsRendered+whenTransformsEnd] [%s]", this.cid, View.flagsToString(flags), result);
 					this.el.classList.remove("container-changing");
 					this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
 				}.bind(this),
 				function(reason) {
-					console.warn("%s:[listsRendered+transitionsEnd] [%s]", this.cid, View.flagsToString(flags), reason);
-
+					console.warn("%s:[whenListsRendered+whenTransformsEnd] [%s]", this.cid, View.flagsToString(flags), reason);
 					this.el.classList.remove("container-changing");
 					this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
 				}.bind(this)
-			);
+			);*/
+
+
+		// trace result handlers
+		// - - - - - - - - - - - - - - - - -
+		/*if (this.model.hasChanged("collapsed")) {
+			var msgBase = this.model.get("collapsed") ? "collaps" : "expand";
+			Promise.all([
+				Promise.all([
+						this.bundleList.whenRendered(),
+						this.keywordList.whenRendered()
+					])
+					.then(
+						function() {
+							console.log("nav-tx:%sing", msgBase, arguments);
+						}),
+				this.transforms.promise()
+			])
+				.catch(
+					function() {
+						console.warn("nav-tx:%sed [rejected]", msgBase, arguments);
+					})
+				.finally(
+					function() {
+						console.log("nav-tx:%sed", msgBase, arguments);
+					}
+				);
+		}*/
 
 		// graph
 		// - - - - - - - - - - - - - - - - -
@@ -269,8 +357,24 @@ var NavigationView = View.extend({
 		this.skipTransitions = false;
 	},
 
-	_whenListsRendered: function(result) {
-
+	/*_whenListsRendered: function(result) {
+		var hval;
+		if (this.model.get("collapsed")) {
+			this.el.style.height = "";
+			// this.graph.el.style.height = "100%";
+		} else {
+			// hval = result.reduce(function(a, o) {
+			// 	return Math.max(a, o.metrics.height);
+			// }, 0);
+			hval = Math.max(
+				this.bundleList.metrics.height,
+				this.keywordList.metrics.height);
+			this.el.style.height = hval + "px";
+			// this.graph.el.style.height = hval + "px";
+		}
+		this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
+		console.log("%s:[_whenListsRendered] height set to %opx", this.cid, hval ? hval : "[empty]", arguments);
+		return result
 	},
 
 	_whenTransitionsEnd: function(result) {
@@ -281,6 +385,7 @@ var NavigationView = View.extend({
 		// if (!this.model.get("collapsed")) {
 		// 	this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID); //.renderNow();
 		// }
+		return result;
 	},
 
 	_whenTransitionsAbort: function(reason) {
@@ -291,7 +396,8 @@ var NavigationView = View.extend({
 		// if (!this.model.get("collapsed")) {
 		// 	this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID); //.renderNow();
 		// }
-	},
+		return result;
+	},*/
 
 	/* -------------------------------
 	/* renderTransitions
@@ -303,15 +409,15 @@ var NavigationView = View.extend({
 
 		var modelChanged = (flags & View.MODEL_INVALID);
 		/* bundle */
-		var withBundle = this.model.get("withBundle");
+		var withBundle = this.model.has("bundle");
 		var withBundleChanged = modelChanged && this.model.hasChanged("withBundle");
 		var bundleChanged = modelChanged && this.model.hasChanged("bundle");
 		/* media */
-		var withMedia = this.model.get("withMedia");
+		var withMedia = this.model.has("media");
 		var withMediaChanged = modelChanged && this.model.hasChanged("withMedia");
 		//var mediaChanged = modelChanged && this.model.hasChanged("media");
 		/* article */
-		// var withArticle = this.model.get("withArticle");
+		// var withArticle = this.model.has("article");
 		var withArticleChanged = modelChanged && this.model.hasChanged("withArticle");
 		//var articleChanged = modelChanged && this.model.hasChanged("article");
 		/* collapsed */
@@ -323,11 +429,13 @@ var NavigationView = View.extend({
 		tf = this.transforms.get(this.bundleList.el);
 		if (tf.hasOffset) {
 			tf.runTransition(collapsedChanged ? tx.BETWEEN : tx.NOW);
+			tf.clearOffset();
 		}
 		/* this.keywordList.el */
 		tf = this.transforms.get(this.keywordList.el);
 		if (tf.hasOffset) {
 			tf.runTransition(collapsedChanged ? tx.BETWEEN : tx.NOW);
+			tf.clearOffset();
 		}
 		/* this.graph.el */
 		tf = this.transforms.get(this.graph.el);
@@ -349,7 +457,7 @@ var NavigationView = View.extend({
 		 *		hGroupings
 		 */
 		if (Globals.BREAKPOINTS["desktop-small"].matches) {
-			/* HORIZONTAL */
+			/* HORIZONTAL: keywordList.wrapper */
 			tf = this.transforms.get(this.keywordList.wrapper);
 			if (collapsedChanged && !withArticleChanged) {
 				// if (collapsedChanged) {
@@ -364,6 +472,10 @@ var NavigationView = View.extend({
 				if (!withBundleChanged && withMediaChanged)
 					tf.runTransition(bundleChanged ? tx.BETWEEN : tx.NOW);
 			}
+			if (tf.hasOffset)
+				tf.clearOffset();
+
+			/* HORIZONTAL: the rest */
 			if (collapsedChanged ^ withArticleChanged) {
 				this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST,
 					this.sitename.el, this.about.el, this.bundleList.wrapper, this.hGroupings);
@@ -391,7 +503,7 @@ var NavigationView = View.extend({
 		} else if (Globals.BREAKPOINTS["fullwidth"].matches) {
 			// if (collapsedChanged ) {
 			if (collapsedChanged ^ withArticleChanged) {
-				this.transforms.runTransition(tx.BETWEEN,
+				this.transforms.runTransition(collapsed ? tx.FIRST : tx.LAST,
 					this.sitename.el, this.about.el);
 			}
 		} else {
@@ -400,8 +512,10 @@ var NavigationView = View.extend({
 					this.sitename.el, this.about.el);
 			}
 		}
-		this.transforms.clearOffset(this.bundleList.el, this.keywordList.el,
-			this.keywordList.wrapper);
+		// this.transforms.clearOffset(
+		// 	// this.bundleList.el,
+		// 	// this.keywordList.el,
+		// 	this.keywordList.wrapper);
 	},
 
 	/* --------------------------- *
@@ -409,6 +523,11 @@ var NavigationView = View.extend({
 	/* --------------------------- */
 
 	_onModelChange: function() {
+		// 	this.setImmediate(this.commitModel);
+		// },
+		//
+		// commitModel: function() {
+		// this.requestRender(View.MODEL_INVALID | View.LAYOUT_INVALID);
 		this.requestRender(View.MODEL_INVALID);
 		// keywords.deselect();
 		if (this.model.hasChanged("collapsed")) {
@@ -421,19 +540,19 @@ var NavigationView = View.extend({
 		}
 		if (this.model.hasChanged("bundle")) {
 			this.bundleList.selectedItem = this.model.get("bundle");
-			this.keywordList.refresh();
+			this.keywordList.refreshFilter();
 			// keywords.deselect();
 			// this.graph && this.graph.requestRender(View.SIZE_INVALID);
 		}
 		if (this.model.hasChanged("withBundle")) {
-			// this.keywordList.refresh()
+			// this.keywordList.refreshFilter()
 			if (this.model.get("withBundle")) {
-				// this.graph.el.addEventListener(Globals.CLICK_EVENT, this._onNavigationClick);
+				this.graph.el.addEventListener(Globals.CLICK_EVENT, this._onNavigationClick);
 				this.vpan.on("vpanstart", this._onVPanStart);
 				this.hpan.on("hpanstart", this._onHPanStart);
 				// this.hpan.on("tap", this._onTap);
 			} else {
-				// this.graph.el.removeEventListener(Globals.CLICK_EVENT, this._onNavigationClick);
+				this.graph.el.removeEventListener(Globals.CLICK_EVENT, this._onNavigationClick);
 				this.vpan.off("vpanstart", this._onVPanStart);
 				this.hpan.off("hpanstart", this._onHPanStart);
 				keywords.deselect();
@@ -443,7 +562,7 @@ var NavigationView = View.extend({
 		}
 	},
 
-	// _onWithBundleChange: function(withBundle) {
+	// _onwithBundleChange: function(withBundle) {
 	// 	if (withBundle) {
 	// 		this.listenTo(this.model, "collapsed:change", function(collapsed){
 	//
@@ -460,8 +579,8 @@ var NavigationView = View.extend({
 	/* --------------------------- */
 
 	_onKeywordSelect: function(keyword) {
-		// use collection listener to avoid redundant refresh calls
-		this.bundleList.refresh();
+		// use collection listener to avoid redundant refreshFilter calls
+		this.bundleList.refreshFilter();
 		if (!this.model.get("collapsed") && this.graph) {
 			this.listenToOnce(this.bundleList, "view:render:after", function(view, flags) {
 				console.log("%s::_onKeywordSelect -> %s:[view:render:after] flags:%s", this.cid, view.cid, View.flagsToString(flags));
@@ -478,58 +597,24 @@ var NavigationView = View.extend({
 
 	_onNavigationClick: function(ev) {
 		if (!ev.defaultPrevented && this.model.has("bundle")) {
-			console.log("%s::_onNavigationClick [%s]", this.cid, ev.type); //, ev.target);
+			// console.log("%s::_onNavigationClick [%s]", this.cid, ev.type); //, ev.target);
 			ev.preventDefault();
-			// this.model.set("collapsed", !this.model.get("collapsed"));
-			this._changeCollapsed(!this.model.get("collapsed"));
-		}
-	},
-
-	_onArticleClick: function(item) {
-		switch (this.model.get("routeName")) {
-			case "article-item":
-				controller.deselectArticle();
-				break;
-			case "root":
-			default:
-				controller.selectArticle(item);
-				break;
-		}
-	},
-
-	_onSitenameClick: function() {
-		switch (this.model.get("routeName")) {
-			case "media-item":
-			case "bundle-item":
-				if (this.model.get("collapsed")) {
-					this._changeCollapsed(false);
-				} else {
-					controller.deselectBundle();
-				}
-				break;
-			case "article-item":
-				controller.deselectArticle();
-				break;
-		}
-	},
-
-	_onBundleListSame: function(bundle) {
-		this._changeCollapsed(!this.model.get("collapsed"));
-	},
-
-	_onKeywordListChange: function(keyword) {
-		if (!this.model.get("collapsed")) {
-			keywords.select(keyword);
-		}
-	},
-
-	_changeCollapsed: function(value) {
-		if (value !== this.model.get("collapsed")) {
 			this.transforms.offset(0, 1, this.graph.el);
 			this.transforms.validate();
+			// this._setCollapsed(!this.model.get("collapsed"));
 			this.setImmediate(function() {
-				console.log("%s::_changeCollapsed", this.cid);
 				this.model.set("collapsed", !this.model.get("collapsed"));
+			});
+		}
+	},
+
+	_setCollapsed: function(value) {
+		if (value !== this.model.get("collapsed")) {
+			// this.transforms.offset(0, 1, this.graph.el);
+			// this.transforms.validate();
+			this.setImmediate(function() {
+				// console.log("%s::_setCollapsed -> %s (setImmediate)", this.cid, value);
+				this.model.set("collapsed", value);
 			});
 		}
 	},
@@ -565,7 +650,7 @@ var NavigationView = View.extend({
 		var delta = ev.deltaX; //ev.thresholdDeltaX;
 		// var mediaItems = this.model.get("bundle").get("media");
 
-		if (this.model.get("withMedia")) {
+		if (this.model.has("media")) {
 			// if (this.model.get("withMedia") ^ (this._renderFlags & View.MODEL_INVALID)) {
 			// if (mediaItems.selected !== null) {
 			delta *= (ev.offsetDirection & Hammer.DIRECTION_LEFT) ?
@@ -644,9 +729,11 @@ var NavigationView = View.extend({
 		}
 		delta *= collapsed ? 0.5 : -1; // reapply sign
 
+		// this.transforms.offset(0, delta, this.vpanGroup);
 		this.transforms.offset(0, delta, this.bundleList.el, this.keywordList.el); //, this.graph.el);
-		if (!collapsed)
-			this.transforms.offset(0, delta, this.graph.el)
+		if (!collapsed) {
+			this.transforms.offset(0, delta, this.graph.el);
+		}
 		this.transforms.validate();
 	},
 
@@ -657,10 +744,10 @@ var NavigationView = View.extend({
 		this._onVPanMove(ev);
 		this.setImmediate(function() {
 			if (this.willCollapsedChange(ev)) {
+				// this._setCollapsed(!this.model.get("collapsed"));
 				this.model.set("collapsed", !this.model.get("collapsed"));
-			} else {
-				this.requestRender(View.LAYOUT_INVALID);
 			}
+			this.requestRender(View.LAYOUT_INVALID);
 		});
 	},
 
@@ -672,8 +759,12 @@ var NavigationView = View.extend({
 	},
 
 	/* -------------------------------
-	/* Components
+	/* Create children components
 	/* ------------------------------- */
+
+	// -------------------------------
+	// #site-name
+	// -------------------------------
 
 	createSitenameButton: function() {
 		var view = new View({
@@ -685,41 +776,64 @@ var NavigationView = View.extend({
 				}
 			}
 		});
-		this.listenTo(view, "view:click", this._onSitenameClick);
 		view.wrapper = view.el.parentElement;
+		this.listenTo(view, "view:click", this._onSitenameClick);
 		return view;
 	},
+
+	_onSitenameClick: function() {
+		switch (this.model.get("routeName")) {
+			case "media-item":
+			case "bundle-item":
+				// if (this.model.get("collapsed")) {
+				// 	this._setCollapsed(false);
+				// } else {
+				controller.deselectBundle();
+				// }
+				break;
+			case "article-item":
+				controller.deselectArticle();
+				break;
+		}
+	},
+
+	// -------------------------------
+	// .article-button
+	// -------------------------------
 
 	createArticleButton: function(articleItem) {
 		var view = new ArticleButton({
 			el: ".article-button[data-handle='about']",
 			model: articleItem
 		}).render();
-		this.listenTo(view, "view:click", this._onArticleClick);
 		view.wrapper = view.el.parentElement;
+		this.listenTo(view, "view:click", this._onArticleClick);
 		return view;
 	},
 
-	// createArticleButton2: function(articleItem) {
-	// 	var view = new View({
-	// 		el: "#about",
-	// 		className: "article-button",
-	// 		// tag: "h2",
-	// 		model: articleItem,
-	// 	});
-	// 	// this.listenTo(view, "view:click", this._onAboutClick);
-	// 	view.label = view.el.querySelector("a");
-	// 	view.label.innerHTML = articleItem.get("name");
-	// 	view.wrapper = view.el.parentElement;
-	// 	return view;
-	// },
+	_onArticleClick: function(item) {
+		switch (this.model.get("routeName")) {
+			case "article-item":
+				controller.deselectArticle();
+				break;
+			case "root":
+			default:
+				controller.selectArticle(item);
+				break;
+		}
+	},
+
+	// -------------------------------
+	// #bundle-list
+	// -------------------------------
 
 	/**
-	 * bundle-list
+	 * @param el {HTMLElement}
+	 * @return {module:app/base/view/component/FilterableListView}
 	 */
-	createBundleList: function() {
+	createBundleList: function(el) {
 		var view = new FilterableListView({
-			el: "#bundle-list",
+			el: (el || "#bundle-list"),
 			collection: bundles,
 			collapsed: false,
 			filterFn: function(bundle, index, arr) {
@@ -727,25 +841,35 @@ var NavigationView = View.extend({
 					bundle.get("kIds").indexOf(keywords.selected.id) !== -1 : false;
 			},
 		});
-		controller.listenTo(view, {
-			"view:select:one": controller.selectBundle,
-			"view:select:none": controller.deselectBundle
-		});
-		// view.listenTo(bundles, "select:one select:none", function(item) {
-		// 	view.selectedItem = item;
-		// });
-		this.listenTo(view, "view:select:same", this._onBundleListSame);
-		this.listenTo(keywords, "select:one select:none", this._onKeywordSelect);
 		view.wrapper = view.el.parentElement;
+		this.listenTo(view, "view:select:one view:select:none", function(bundle) {
+			this.setImmediate(function() {
+				controller.selectBundle(bundle);
+			});
+		})
+		this.listenTo(view, "view:select:same", this._onBundleListSame);
 		return view;
 	},
 
+	_onBundleListSame: function(bundle) {
+		this.transforms.offset(0, 1, this.graph.el);
+		this.transforms.validate();
+		this.setImmediate(function() {
+			this.model.set("collapsed", !this.model.get("collapsed"));
+		});
+	},
+
+	// -------------------------------
+	// #keyword-list
+	// -------------------------------
+
 	/**
-	 * keyword-list
+	 * @param el {HTMLElement}
+	 * @return {module:app/base/view/component/GroupingListView}
 	 */
-	createKeywordList: function() {
+	createKeywordList: function(el) {
 		var view = new GroupingListView({
-			el: "#keyword-list",
+			el: (el || "#keyword-list"),
 			collection: keywords,
 			collapsed: false,
 			filterFn: function(item, idx, arr) {
@@ -758,16 +882,29 @@ var NavigationView = View.extend({
 				return types.get(item.get("tId"));
 			},
 		});
+		view.wrapper = view.el.parentElement;
 		view.listenTo(keywords, "select:one select:none", function(item) {
 			view.selectedItem = item;
 		});
 		this.listenTo(view, "view:select:one view:select:none", this._onKeywordListChange);
-		view.wrapper = view.el.parentElement;
 		return view;
 	},
 
+	_onKeywordListChange: function(keyword) {
+		if (!this.model.get("collapsed")) {
+			keywords.select(keyword);
+		}
+	},
+
+	// -------------------------------
+	// #nav-graph
+	// -------------------------------
+
 	/**
-	 * nav-graph
+	 * @param listA {module:app/base/view/component/FilterableListView}
+	 * @param listB {module:app/base/view/component/FilterableListView}
+	 * @param parentEl {HTMLElement}
+	 * @return {module:app/base/view/component/GraphView}
 	 */
 	createGraphView: function(listA, listB, parentEl) {
 		var view = new GraphView({

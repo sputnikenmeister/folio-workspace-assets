@@ -27,7 +27,7 @@ var MIN_CANVAS_RATIO = 2;
 var GAP_ARC = PI2 / 48;
 var CAP_SCALE = 2; // cap arc = GAP_ARC * CAP_SCALE
 var WAIT_CYCLE_VALUE = 1;
-var WAIT_CYCLE_MS = 300; // milliseconds per interpolation loop 
+var WAIT_CYCLE_MS = 300; // milliseconds per interpolation loop
 
 var ARC_DEFAULTS = {
 	"amount": {
@@ -48,7 +48,7 @@ var ARC_DEFAULTS = {
  * @constructor
  * @type {module:app/view/component/progress/CanvasProgressMeter}
  */
-var CanvasProgressMeter = View.extend({
+module.exports = View.extend({
 
 	/** @type {string} */
 	cidPrefix: "canvasProgressMeter",
@@ -402,7 +402,5 @@ var CanvasProgressMeter = View.extend({
 });
 
 if (DEBUG) {
-	CanvasProgressMeter._skipLog = true;
+	module.exports.prototype._logFlags = "";
 }
-
-module.exports = CanvasProgressMeter;

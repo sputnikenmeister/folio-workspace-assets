@@ -31,7 +31,7 @@ var sizeTemplate = _.template("<%= w %> \u00D7 <%= h %>");
 // var appStateSymbols = { withBundle: "b", withMedia: "m", collapsed: "c"};
 // var appStateKeys = Object.keys(appStateSymbols);
 
-var DebugToolbar = View.extend({
+module.exports = View.extend({
 
 	/** @override */
 	cidPrefix: "debugToolbar",
@@ -145,7 +145,7 @@ var DebugToolbar = View.extend({
 	},
 
 	_onModelChange: function() {
-		console.log("%s::_onModelChange changedAttributes: %o", this.cid, this.model.changedAttributes());
+		// console.log("%s::_onModelChange changedAttributes: %o", this.cid, this.model.changedAttributes());
 		var i, ii, prop, el, els = this.appStateEl.children;
 		for (i = 0, ii = els.length; i < ii; i++) {
 			el = els[i];
@@ -193,4 +193,4 @@ var DebugToolbar = View.extend({
 	},
 });
 
-module.exports = DebugToolbar;
+module.exports.prototype._logFlags = "";

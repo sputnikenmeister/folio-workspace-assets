@@ -39,34 +39,40 @@ body {
 }
 
 html {
+	position: relative;
 	height: 100%;
 	width: 100%;
 	overflow-x: hidden;
-	overflow-y: auto;
+	overflow-y: hidden;
 	-webkit-overflow-scrolling: auto;
 	overscroll-behavior: none;
 }
 
+/*
+ * NOTE
+ * The scrolling element is BODY, has only one child with relative/static positioning, #container (others are absolute, fixed...).
+ */
 body {
 	position: relative;
-	height: 100%;
-	// position: absolute;
 	width: 100%;
 	min-height: 100%;
 	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: auto;
 	overscroll-behavior: none;
-	// padding-top: $default_nav_top;
-	// padding-bottom: $default_nav_top;
 }
 
 // container navigation content
 // - - - - - - - - - - - - - - - - - -
 
-// .container {
-// 	box-sizing: border-box;
-// }
+#container {
+//	position: relative;
+	/* allow to grow beyond viewport so that #content can grow too */
+//	min-height: 100%;
+//	width: 100%;
+// 	overflow-x: hidden;
+// 	overflow-y: visible;
+}
 
 #navigation {
 	position: relative;
@@ -80,15 +86,15 @@ body {
 }
 
 #content {
-	overflow: hidden;
 	position: absolute;
+	overflow: hidden;
 	top: 0;
-	// bottom: 0;
+	bottom: 0;
 	left: 0;
 	right: 0;
+	height: auto;
 	min-height: 100%;
 	// margin-top: $default_nav_top;
-	// margin-bottom: -$default_nav_top;
 	padding-top: $default_nav_top;
 }
 
@@ -194,6 +200,11 @@ body {
 			padding: 0 1ex;
 			margin: 0 -1ex;
 		}
+	}
+}
+.list-item, .list-group {
+	&.excluded .label {
+		text-decoration: line-through;
 	}
 }
 
@@ -430,11 +441,10 @@ body {
 	// box-sizing: border-box;
 	position: absolute;
 	box-sizing: content-box;
-	// padding: 1.5rem 0;
-	padding: 0;
-	// right: 0;
 	width: $default_page_width;
-	// height: 12rem;
+	height: 100%;
+	top: 0; bottom: 0;
+	padding: 0;
 
 	opacity: 0;
 	transition: tx(opacity, 1, 0);

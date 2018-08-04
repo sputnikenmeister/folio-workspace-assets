@@ -298,6 +298,7 @@ if (DEBUG) {
 
 				this.__logElement = document.createElement("div");
 				this.__logElement.className = "debug-log";
+				// this.__logElement.style.touchAction = "pan-y";
 				this.__logHeaderEl = document.createElement("pre");
 				this.__logHeaderEl.className = "log-header color-bg";
 				// this.model.colors.fgColor.clone().mix(fgColor, 0.9).rgbString()
@@ -310,14 +311,14 @@ if (DEBUG) {
 
 			/** @override */
 			render: function() {
-				MediaRenderer.prototype.render.apply(this, arguments);
+				var ret = MediaRenderer.prototype.render.apply(this, arguments);
 
-				this.__logElement.style.marginTop = "3rem";
-				this.__logElement.style.maxHeight = "calc(100% - " + (this.metrics.media.height) + "px - 3rem)";
-				//this.__logElement.style.width = this.metrics.media.width + "px";
+				this.__logElement.style.top = (this.metrics.content.height + this.metrics.content.y) + "px";
+				this.__logElement.style.left = this.metrics.content.x + "px";
+				this.__logElement.style.width = this.metrics.content.width + "px";
 				this.__logElement.scrollTop = this.__logElement.scrollHeight;
 
-				return this;
+				return ret;
 			},
 
 			__logMessage: function(msg, logtype, color) {

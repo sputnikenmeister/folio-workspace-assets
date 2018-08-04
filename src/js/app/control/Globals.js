@@ -49,7 +49,7 @@ module.exports = (function() {
 		g.BREAKPOINTS[s] = o;
 	}
 	if (DEBUG) {
-		console.group("Breakpoints");
+		console.groupCollapsed("Breakpoints");
 		for (s in g.BREAKPOINTS) {
 			console.log("%s: %o", s, g.BREAKPOINTS[s].media);
 		}
@@ -196,7 +196,7 @@ module.exports = (function() {
 	// o.LAST_EARLY = 		_.defaults({delay: txDelay*2.0 + txMinDelay*0}, txAligned);
 	// o.AFTER = 			_.defaults({delay: txDelay*2.0 + txMinDelay}, txAligned);
 
-	console.group("Transitions");
+	console.groupCollapsed("Transitions");
 	for (s in o) {
 		if (!_.isFunction(o[s])) {
 			so = o[s];

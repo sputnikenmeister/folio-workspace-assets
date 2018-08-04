@@ -124,7 +124,7 @@ function initRootStyles(sheet, rootSelector, attrs, fgColor, bgColor, lnColor, h
 	// 		", -1px 1px 0 " + bgColorVal +
 	// 		", 1px 1px 0 " + bgColorVal
 	// };
-	// insertCSSRule(sheet, rootSelector + " :not(.collapsed-changed) .text-outline-bg", s);
+	// insertCSSRule(sheet, rootSelector + " :not(..collapsed-changing) .text-outline-bg", s);
 
 }
 

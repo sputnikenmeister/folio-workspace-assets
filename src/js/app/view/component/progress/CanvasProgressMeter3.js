@@ -41,7 +41,7 @@ var ARC_DEFAULTS = {
  * @constructor
  * @type {module:app/view/component/progress/CanvasProgressMeter}
  */
-var CanvasProgressMeter = CanvasView.extend({
+module.exports = CanvasView.extend({
 
 	/** @type {string} */
 	cidPrefix: "canvasProgressMeter",
@@ -278,7 +278,5 @@ var CanvasProgressMeter = CanvasView.extend({
 });
 
 if (DEBUG) {
-	CanvasProgressMeter.prototype._skipLog = true;
+	module.exports.prototype._logFlags = "";
 }
-
-module.exports = CanvasProgressMeter;

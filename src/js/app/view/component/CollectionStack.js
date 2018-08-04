@@ -2,19 +2,8 @@
  * @module app/view/component/CollectionStack
  */
 
-// /** @type {module:underscore} */
-// var _ = require("underscore");
-// /** @type {module:backbone} */
-// var Backbone = require("backbone");
-
-// /** @type {module:app/control/Globals} */
-// var Globals = require("app/control/Globals");
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
-// /** @type {Function} */
-// var transitionEnd = require("utils/event/transitionEnd");
-/** @type {Function} */
-var setImmediate = require("utils/setImmediate");
 
 /** @type {string} */
 var viewTemplate = require("./CollectionStack.hbs");
@@ -80,9 +69,9 @@ module.exports = View.extend({
 			// execute even if content has not changed to apply styles immediately
 			this._skipTransitions = false;
 			this.el.classList.add("skip-transitions");
-			setImmediate(function() {
+			this.setImmediate(function() {
 				this.el.classList.remove("skip-transitions");
-			}.bind(this));
+			});
 
 			// render changed content immediately
 			if (this._contentInvalid) {

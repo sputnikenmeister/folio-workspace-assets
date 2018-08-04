@@ -180,7 +180,8 @@ $s_content_right: $s_content_right_val;
 		right: 0;
 		// width: auto;
 		// left: calc(100vw - #{$s_aside_width} - #{$s_page_left} - #{$s_margin_left} - #{$s_content_left});
-		width: calc(#{$s_aside_width} - #{$s_page_right} - #{$s_margin_right} + #{$s_content_left});
+		// width: calc(#{$s_aside_width} - #{$s_page_right} - #{$s_margin_right} + #{$s_content_left});
+		width: #{$s_aside_width - $s_page_right - $s_margin_right + $s_content_left};
 		left: auto;
 
 		.list-item {
@@ -386,11 +387,18 @@ $s_content_right: $s_content_right_val;
 			height: $ctrl_height;
 			margin-bottom: 1rem;
 		}
+
 		.progress-meter {
 			width: $ctrl_height;//2.1rem;
 			height: $ctrl_height;//2.1rem;
 			font-size: 75%;
 			line-height: 1;
+		}
+		// &[data-fit-dir="width"] .controls > .progress-meter {
+		// 	margin: 0 0 0 1rem;
+		// }
+		&[data-fit-dir="height"] .controls > .progress-meter {
+			margin: 0 0 0 1rem;
 		}
 	}
 

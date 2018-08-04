@@ -304,7 +304,7 @@ var CanvasView = View.extend({
 });
 
 if (DEBUG) {
-	CanvasView.prototype._skipLog = true;
+	CanvasView.prototype._logFlags = "";
 }
 
 module.exports = CanvasView;

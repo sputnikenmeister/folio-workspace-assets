@@ -352,12 +352,14 @@ var VideoRenderer = PlayableRenderer.extend({
 
 	// updatePlaybackEvents: "play playing waiting pause seeking seeked ended",
 	// updateBufferedEvents: "progress canplay canplaythrough playing timeupdate",//loadeddata
+
+	playingOnceEvent: "playing",
 	updatePlaybackEvents: "playing waiting pause",
 	updateBufferedEvents: "progress canplay canplaythrough play playing",
 	updatePlayedEvents: "timeupdate seeked",
 
 	addMediaListeners: function() {
-		if (!this._started) this.video.addEventListener("playing", this._onMediaPlayingOnce, false);
+		if (!this._started) this.video.addEventListener(this.playingOnceEvent, this._onMediaPlayingOnce, false);
 		this.addListener(this.video, this.updatePlaybackEvents, this._updatePlaybackState);
 		this.addListener(this.video, this.updateBufferedEvents, this._updateBufferedValue);
 		this.addListener(this.video, this.updatePlayedEvents, this._updatePlayedValue);
@@ -370,7 +372,7 @@ var VideoRenderer = PlayableRenderer.extend({
 	removeMediaListeners: function() {
 		this.off("view:removed", this.removeMediaListeners, this);
 
-		if (!this._started) this.video.removeEventListener("playing", this._onMediaPlayingOnce, false);
+		if (!this._started) this.video.removeEventListener(this.playingOnceEvent, this._onMediaPlayingOnce, false);
 		this.removeListener(this.video, this.updatePlaybackEvents, this._updatePlaybackState);
 		this.removeListener(this.video, this.updateBufferedEvents, this._updateBufferedValue);
 		this.removeListener(this.video, this.updatePlayedEvents, this._updatePlayedValue);
@@ -396,7 +398,7 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 
 	_onMediaPlayingOnce: function(ev) {
-		this.video.removeEventListener("playing", this._onMediaPlayingOnce, false);
+		this.video.removeEventListener(this.playingOnceEvent, this._onMediaPlayingOnce, false);
 		if (!this._started) {
 			this._started = true;
 			this.content.classList.add("started");
@@ -444,7 +446,7 @@ var VideoRenderer = PlayableRenderer.extend({
 		var bRanges = this.video.buffered;
 		if (bRanges.length > 0) {
 			this._bufferedValue = bRanges.end(bRanges.length - 1);
-			if (this.progressMeter && ((this.video.readyState == HTMLMediaElement.HAVE_ENOUGH_DATA) /*|| (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && this.video.networkState == HTMLMediaElement.NETWORK_LOADING)*/ )) {
+			if (this.progressMeter && ((this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) /*|| (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && this.video.networkState == HTMLMediaElement.NETWORK_LOADING)*/ )) {
 				this.progressMeter.valueTo(this._bufferedValue, 300, "available");
 				// this.progressMeter.valueTo(this._bufferedValue, Math.max(0, 1000 * (this._bufferedValue - (this.progressMeter.getValue("available") | 0))), "available");
 			}

@@ -108,31 +108,44 @@ observer.observe(document.body, {
 /* static private
 /* ------------------------------- */
 
-
-/** @type {module:app/view/base/FrameQueue} */
-var FrameQueue = require("app/view/base/FrameQueue");
-
-// /** @type {module:app/view/base/CallbackManager} */
-// var FrameQueue;
-//
-// /** @type {module:app/view/base/CallbackManager} */
-// var ImmediateQueue;
-//
-// (function() {
-// 	var CallbackManager = require("app/view/base/CallbackManager");
-// 	FrameQueue = new CallbackManager(window.requestAnimationFrame, window.cancelAnimationFrame);
-// 	ImmediateQueue = new CallbackManager(window.setImmediate, window.clearImmediate);
-// })();
-
-/** @type {module:app/view/base/PrefixedEvents} */
-var PrefixedEvents = require("app/view/base/PrefixedEvents");
-
 var _now = window.performance ?
 	window.performance.now.bind(window.performance) :
 	Date.now.bind(Date);
 // var _now = window.performance?
 // 	function() { return window.performance.now(); }:
 // 	function() { return Date.now(); };
+
+// /** @type {module:app/view/base/renderQueue} */
+// var renderQueue = require("app/view/base/renderQueue");
+//
+/** @type {module:app/view/base/CallbackQueue} */
+var renderQueue = (function(CallbackQueue) {
+	return new CallbackQueue(
+		function(callback) {
+			return window.requestAnimationFrame(callback);
+		},
+		function(id) {
+			return window.cancelAnimationFrame(id);
+		}
+	);
+})(require("app/view/base/CallbackQueue"));
+
+/** @type {module:app/view/base/CallbackQueue} */
+var modelQueue = (function(CallbackQueue) {
+	return new CallbackQueue(
+		function(callback) {
+			return window.setImmediate(function() {
+				callback.call(null, _now());
+			});
+		},
+		function(id) {
+			return window.clearImmediate(id);
+		}
+	);
+})(require("app/view/base/CallbackQueue"));
+
+/** @type {module:app/view/base/PrefixedEvents} */
+var PrefixedEvents = require("app/view/base/PrefixedEvents");
 
 var applyEventPrefixes = function(events) {
 	var selector, unprefixed;
@@ -282,6 +295,7 @@ Object.defineProperty(View, "instances", {
 /* prototype
 /* ------------------------------- */
 
+// module.exports = Backbone.View.extend({
 var ViewProto = {
 
 	/** @type {string} */
@@ -295,7 +309,7 @@ var ViewProto = {
 	/** @type {string} initializing > initialized > disposing > disposed */
 	_viewPhase: "initializing",
 	/** @type {int} */
-	_frameQueueId: -1,
+	_renderQueueId: -1,
 	/** @type {int} */
 	_renderFlags: 0,
 
@@ -323,7 +337,7 @@ var ViewProto = {
 		},
 		invalidated: {
 			get: function() {
-				return this._frameQueueId !== -1;
+				return this._renderQueueId !== -1;
 			}
 		},
 		enabled: {
@@ -555,44 +569,49 @@ var ViewProto = {
 	/* ------------------------------- */
 
 	requestAnimationFrame: function(callback, priority, ctx) {
-		return FrameQueue.request(callback.bind(ctx || this), priority);
+		return renderQueue.request(callback.bind(ctx || this), priority);
 	},
 
 	cancelAnimationFrame: function(id) {
-		return FrameQueue.cancel(id);
+		return renderQueue.cancel(id);
 	},
 
 	setImmediate: function(callback, priority, ctx) {
-		// return ImmediateQueue.request(callback.bind(ctx || this), priority);
-		return window.setImmediate(callback.bind(ctx || this));
+		return modelQueue.request(callback.bind(ctx || this), priority);
+		// return window.setImmediate(callback.bind(ctx || this));
 	},
 
 	clearImmediate: function(id) {
-		// return ImmediateQueue.cancel(id);
-		return window.clearImmediate(id);
+		return modelQueue.cancel(id);
+		// return window.clearImmediate(id);
 	},
 
 	/* -------------------------------
 	/* deferred render: private methods
 	/* ------------------------------- */
 
+	_traceRenderStatus: function() {
+		return [
+			(this._renderQueueId != -1 ? "async id:" + this._renderQueueId : "sync"),
+			View.flagsToString(this._renderFlags),
+			(this.attached ? "attached" : "detached"),
+			(this.skipTransitions ? "skip" : "run") + "-tx"
+		].join(", ");
+	},
+
 	/** @private */
 	_applyRender: function(tstamp) {
 		if (DEBUG) {
-			if (!this._skipLog) {
-				console.log("%s::_applyRender [%s] [%s, %s, %s]", this.cid,
-					View.flagsToString(this._renderFlags),
-					(this._frameQueueId != -1 ? "async #" + this._frameQueueId : "sync"),
-					(this.attached ? "attached" : "detached"),
-					(this.skipTransitions ? "skip" : "run") + " tx"
-				);
+			if (this._logFlags["view.render"]) {
+				console.log("%s::_applyRender   [%s]",
+					this.cid, this._traceRenderStatus());
 			}
 		}
 
 		var flags = this._renderFlags;
 		this.trigger("view:render:before", this, flags);
 		this._renderFlags = 0;
-		this._frameQueueId = -1;
+		this._renderQueueId = -1;
 		this._renderFlags |= this.renderFrame(tstamp, flags);
 		this.trigger("view:render:after", this, flags);
 
@@ -602,35 +621,49 @@ var ViewProto = {
 	},
 
 	_cancelRender: function() {
-		if (this._frameQueueId != -1) {
+		if (this._renderQueueId != -1) {
 			var cancelId, cancelFn;
 
-			cancelId = this._frameQueueId;
-			this._frameQueueId = -1;
-			cancelFn = FrameQueue.cancel(cancelId);
+			cancelId = this._renderQueueId;
+			this._renderQueueId = -1;
+			cancelFn = renderQueue.cancel(cancelId);
 
 			if (cancelFn === void 0) {
-				console.warn("%s::_cancelRender ID:%i not found", this.cid, cancelId);
+				console.warn("%s::_cancelRender [id:%i] not found", this.cid, cancelId);
 			} else if (cancelFn === null) {
-				console.warn("%s::_cancelRender ID:%i already cancelled", this.cid, cancelId);
+				console.warn("%s::_cancelRender [id:%i] already cancelled", this.cid, cancelId);
 				// } else {
-				// 	if (!this._skipLog && !FrameQueue.running)
+				// 	if (this._logFlags["view.render"] && !renderQueue.running)
 				// 		console.log("%s::_cancelRender ID:%i cancelled", this.cid, cancelId);
 			}
 		}
 	},
 
 	_requestRender: function() {
-		if (FrameQueue.running) {
+		if (renderQueue.running) {
 			this._cancelRender();
-			if (DEBUG) {
-				if (!this._skipLog) {
-					console.info("%s::_requestRender rescheduled [%s (%s)]", this.cid, View.flagsToString(this._renderFlags), this._renderFlags);
+			// if (DEBUG) {
+			// 	if (this._logFlags["view.render"]) {
+			// 		console.info("%s::_requestRender rescheduled [%s (%s)]", this.cid, View.flagsToString(this._renderFlags), this._renderFlags);
+			// 	}
+			// }
+		}
+		if (this._renderQueueId == -1) {
+			this._renderQueueId = renderQueue.request(this._applyRender, isNaN(this.viewDepth) ? Number.MAX_VALUE : this.viewDepth);
+		}
+		if (DEBUG) {
+			if (this._logFlags["view.render"]) {
+				if (this._logFlags["view.trace"]) {
+					console.groupCollapsed(this.cid + "::_requestRender [" + this._traceRenderStatus() + "] trace");
+					console.trace();
+					console.groupEnd();
+				} else {
+					console.log("%s::_requestRender %s [%s]", this.cid,
+						(renderQueue.running ? "rescheduled " : ""),
+						this._traceRenderStatus()
+					);
 				}
 			}
-		}
-		if (this._frameQueueId == -1) {
-			this._frameQueueId = FrameQueue.request(this._applyRender, isNaN(this.viewDepth) ? Number.MAX_VALUE : this.viewDepth);
 		}
 	},
 
@@ -641,7 +674,7 @@ var ViewProto = {
 	invalidate: function(flags) {
 		if (flags !== void 0) {
 			/*if (DEBUG) {
-				if (!this._skipLog) {
+				if (this._logFlags["view.render"]) {
 					if (this._renderFlags > 0) {
 						console.log("%s::invalidate [%s (%s)] + [%s (%s)]", this.cid, View.flagsToString(this._renderFlags), this._renderFlags, View.flagsToString(flags), flags);
 					} else {
@@ -670,7 +703,7 @@ var ViewProto = {
 	},
 
 	renderNow: function(alwaysRun) {
-		if (this._frameQueueId != -1) {
+		if (this._renderQueueId != -1) {
 			this._cancelRender();
 			alwaysRun = true;
 		}
@@ -698,12 +731,13 @@ var ViewProto = {
 		var ccid, view;
 		for (ccid in this.childViews) {
 			view = this.childViews[ccid];
-			view.skipTransitions = !!(flags & View.SIZE_INVALID);
+			view.skipTransitions = this.skipTransitions;
 			view.requestRender(flags);
 			if (now) {
 				view.renderNow(force);
 			}
 		}
+		return this;
 	},
 
 	render: function() {
@@ -724,5 +758,26 @@ var ViewProto = {
 		this._enabled = enable;
 	},
 };
+//, View);
+
+if (DEBUG) {
+	ViewProto._logFlags = [
+		"view.render",
+		// "view.trace"
+	].join(" ");
+
+	ViewProto.constructor = (function(fn) {
+		return function() {
+			var retval;
+			this._logFlags = this._logFlags.split(" ").reduce(function(r, o) {
+				r[o] = true;
+				return r;
+			}, {});
+			retval = fn.apply(this, arguments);
+			// console.log("------ %s %o", this.cid, this._logFlags);
+			return retval;
+		};
+	})(ViewProto.constructor);
+}
 
 module.exports = Backbone.View.extend(ViewProto, View);
