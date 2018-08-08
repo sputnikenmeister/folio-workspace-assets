@@ -20,6 +20,10 @@ $darkseagreen: hsla(120, 25%, 50%, 1); //hsl(120, 25%, 65%)
 $darkolivegreen: hsla(82, 39%, 50%, 1); //hsl(82, 39%, 30%);
 /* indigo:			hsl(275, 100%, 25%); */
 $indigo: hsla(275, 100%, 25%, 1);
+/* */
+$brightyellow: hsl(308, 100%, 50%);
+/* Crimson	DC 14 3C	220  20  60 */
+$crimsom: rgba(220, 20, 60, 1);
 
 @mixin debug_outline($width: 1px, $style: dashed, $color: inherit, $opacity: null, $offset: null) {
 	outline: $width $style if($opacity == null, $color, transparentize($color, $opacity));
@@ -77,6 +81,12 @@ $indigo: hsla(275, 100%, 25%, 1);
 		@include debug_outline(2px, dashed, $lightcoral, 0.35);
 		// background-color: transparentize($lightblue, 0.5);
 	}
+	// .list-item, .list-group {
+	// 	&.excluded .label {
+	// 		text-decoration: line-through;
+	// 	}
+	// }
+
 	.carousel,
 	.stack {
 		&[style*="transition"] {
@@ -89,7 +99,6 @@ $indigo: hsla(275, 100%, 25%, 1);
 // -----------------------------------
 // .debug-blocks
 // -----------------------------------
-$brightyellow: hsl(308, 100%, 50%);
 .debug-blocks {
 	// @include debug_outline(0.4rem, solid, $brightyellow, $offset:-0.6rem);
 	// #container { @include debug_outline(0.4rem, dashed, $brightyellow, $offset:-0.9rem); }
@@ -106,11 +115,14 @@ $brightyellow: hsl(308, 100%, 50%);
 		&.container-changing {
 			@include debug_outline(0.8rem, dashed, $lightcoral, 0.25, -0.4rem);
 		}
+		#vpan-group {
+			@include debug_outline(0.5rem, solid, $crimsom, 0.4, -0.25rem);
+		}
 		.graph {
 			@include debug_outline(0.3rem, dashed, $darkseagreen, 0.75, 0);
-			&:hover, &:active {
-				@include debug_outline(0.3rem, dashed, $darkseagreen, 0.25, 0);
-			}
+			// &:hover, &:active {
+			// 	@include debug_outline(0.3rem, dashed, $darkseagreen, 0.25, 0);
+			// }
 		}
 		#article-list-wrapper,
 		#site-name-wrapper,
@@ -135,9 +147,9 @@ $brightyellow: hsl(308, 100%, 50%);
 	}
 	#content {
 		@include debug_outline(0.5rem, solid, $deepskyblue, 0.75);
-		&:hover {
-			@include debug_outline(0.75rem, dashed, $deepskyblue, 0.25);
-		}
+		// &:hover {
+		// 	@include debug_outline(0.75rem, dashed, $deepskyblue, 0.25);
+		// }
 		&.container-changing {
 			@include debug_outline(0.5rem, dashed, $deepskyblue, 0.4);
 		}

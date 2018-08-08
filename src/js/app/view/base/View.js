@@ -312,6 +312,8 @@ var ViewProto = {
 	_renderQueueId: -1,
 	/** @type {int} */
 	_renderFlags: 0,
+	/** @type {Boolean} */
+	_enabled: null,
 
 	/** @type {object} */
 	properties: {
@@ -604,8 +606,11 @@ var ViewProto = {
 		if (DEBUG) {
 			if (this._logFlags["view.render"]) {
 				console.log("%s::_applyRender   [%s]",
-					this.cid, this._traceRenderStatus());
+					this.cid, this._traceRenderStatus(),
+					this._logFlags["view.trace"] ?
+					this._logRenderCallers.join("\n") : "");
 			}
+			this._logRenderCallers.length = 0;
 		}
 
 		var flags = this._renderFlags;
@@ -653,16 +658,16 @@ var ViewProto = {
 		}
 		if (DEBUG) {
 			if (this._logFlags["view.render"]) {
-				if (this._logFlags["view.trace"]) {
-					console.groupCollapsed(this.cid + "::_requestRender [" + this._traceRenderStatus() + "] trace");
-					console.trace();
-					console.groupEnd();
-				} else {
-					console.log("%s::_requestRender %s [%s]", this.cid,
-						(renderQueue.running ? "rescheduled " : ""),
-						this._traceRenderStatus()
-					);
-				}
+				// if (this._logFlags["view.trace"]) {
+				// 	console.groupCollapsed(this.cid + "::_requestRender [" + this._traceRenderStatus() + "] trace");
+				// 	console.trace();
+				// 	console.groupEnd();
+				// } else {
+				console.log("%s::_requestRender %s [%s]", this.cid,
+					(renderQueue.running ? "rescheduled " : ""),
+					this._traceRenderStatus()
+				);
+				// }
 			}
 		}
 	},
@@ -688,6 +693,19 @@ var ViewProto = {
 	},
 
 	requestRender: function(flags) {
+		// if (DEBUG) {
+		// 	if (this._logFlags["view.trace"]) {
+		// 		var fnPath = [];
+		// 		var fn = arguments.callee.caller;
+		// 		while (fn) {
+		// 			if (fnPath.length > 5) break;
+		// 			fnPath.push(fn.name);
+		// 			fn = fn.caller;
+		// 		}
+		// 		// this._logRenderCallers.push(fnPath.join("\n\t->"));
+		// 		this._logRenderCallers.push(fnPath.join(" -> "));
+		// 	}
+		// }
 		// if (flags !== void 0) {
 		// 	this._renderFlags |= flags;
 		// }
@@ -731,7 +749,7 @@ var ViewProto = {
 		var ccid, view;
 		for (ccid in this.childViews) {
 			view = this.childViews[ccid];
-			view.skipTransitions = this.skipTransitions;
+			view.skipTransitions = view.skipTransitions || this.skipTransitions;
 			view.requestRender(flags);
 			if (now) {
 				view.renderNow(force);
@@ -747,9 +765,6 @@ var ViewProto = {
 	/* -------------------------------
 	/* common abstract
 	/* ------------------------------- */
-
-	/** @private */
-	_enabled: undefined,
 
 	/**
 	/* @param {Boolean}
@@ -769,6 +784,7 @@ if (DEBUG) {
 	ViewProto.constructor = (function(fn) {
 		return function() {
 			var retval;
+			this._logRenderCallers = [];
 			this._logFlags = this._logFlags.split(" ").reduce(function(r, o) {
 				r[o] = true;
 				return r;

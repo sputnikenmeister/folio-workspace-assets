@@ -19,13 +19,13 @@ $default_page_width_min: 375px;
 // Root
 // ///////////////////////////////////
 
-html.fullwidth-small {
+HTML.fullwidth-small {
 	font-size:10px;
 }
 
 @include media(fullwidth-small) {
 
-	@include ss_variables;
+	// @include ss_variables;
 
 	%leaf_content_label {
 		@include optical_margins(1ex, 0);
@@ -57,7 +57,6 @@ html.fullwidth-small {
 			}
 		}
 	}
-// 	&.with-bundle
 	.container-expanded {
 		#bundle-list, #keyword-list {
 			padding-top: $s_nav_height;
@@ -79,10 +78,5 @@ html.fullwidth-small {
 	// media-carousel
 	// ===================================
 
-	.media-carousel {
-		.empty-item {
-			// FIXME FIXME FIXME : parallax breaks if item is not 100%;
-			// right: calc(40% - 3px);
-		}
-	}
+	// .media-carousel {}
 }

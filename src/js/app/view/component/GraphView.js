@@ -154,7 +154,7 @@ var GraphView = CanvasView.extend({
 			// this.requestRender(CanvasView.LAYOUT_INVALID | CanvasView.SIZE_INVALID);
 			// this.requestRender().renderNow();
 		}.bind(this);
-		// viewportChanged = _.debounce(viewportChanged, 100, false);
+		viewportChanged = _.debounce(viewportChanged, 60, false);
 
 		// window.addEventListener("scroll",
 		// 		_.debounce(viewportChanged, 100, false), false);

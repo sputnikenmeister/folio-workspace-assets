@@ -16,8 +16,8 @@ var FilterableListView = require("app/view/component/FilterableListView");
 var ClickableRenderer = require("app/view/render/ClickableRenderer");
 /** @type {module:app/view/render/LabelRenderer} */
 var LabelRenderer = require("app/view/render/LabelRenderer");
-/** @type {module:utils/array/difference} */
-var diff = require("utils/array/difference");
+// /** @type {module:utils/array/difference} */
+// var diff = require("utils/array/difference");
 
 /**
  * @constructor
@@ -84,7 +84,6 @@ var GroupingListView = FilterableListView.extend({
 
 		this._groupingFn = options.groupingFn;
 		this.groupingRenderer = options.groupingRenderer;
-
 		this._computeGroups();
 		if (this._groupingFn) {
 			this._groups.forEach(this.createGroupingView, this);
@@ -136,6 +135,7 @@ var GroupingListView = FilterableListView.extend({
 	/* --------------------------- */
 
 	/** @override */
+	/*
 	computeFilter_1: function() {
 		FilterableListView.prototype.computeFilter_1.apply(this, arguments);
 
@@ -164,6 +164,7 @@ var GroupingListView = FilterableListView.extend({
 		// 	}
 		// }
 	},
+	*/
 
 	/* --------------------------- *
 	/* Filter impl 2
@@ -189,11 +190,12 @@ var GroupingListView = FilterableListView.extend({
 		}
 	},
 
+	/** @override */
 	applyFilter: function() {
 		FilterableListView.prototype.applyFilter.apply(this, arguments);
 
 		this._groups.forEach(function(group) {
-			this.itemViews.findByModel(group).el.classList.toggle("excluded", this._filteredGroups.indexOf(group) == -1);
+			this.itemViews.findByModel(group).el.classList.toggle("excluded", (this._filteredGroups.indexOf(group) == -1));
 		}, this);
 	},
 

@@ -191,11 +191,12 @@ var AppViewProto = {
 		// hpan.get("hpan").requireFailure(vpan.get("vpan"));
 
 		// this._afterRender = this._afterRender.bind(this);
-		// this._onResize = this._onResize.bind(this);
+		this._onResize = this._onResize.bind(this);
 
 		/* render on resize, onorientationchange, visibilitychange */
 		// window.addEventListener("orientationchange", this._onResize, false);
-		window.addEventListener("resize", _.debounce(this._onResize.bind(this), 30, false), false);
+		// window.addEventListener("resize", _.debounce(this._onResize.bind(this), 30, false), false);
+		window.addEventListener("resize", this._onResize, false);
 
 		// var h = function(ev) { console.log(ev.type, ev) };
 		// window.addEventListener("scroll", h, false);
@@ -487,8 +488,8 @@ if (DEBUG) {
 			this._logFlags["view.trace"] = true;
 			this.navigationView._logFlags["view.trace"] = true;
 			// this.navigationView.graph._logFlags["view.trace"] = true;
-			this.navigationView.bundleList._logFlags["view.trace"] = true;
-			this.navigationView.keywordList._logFlags["view.trace"] = true;
+			// this.navigationView.bundleList._logFlags["view.trace"] = true;
+			// this.navigationView.keywordList._logFlags["view.trace"] = true;
 			return retval;
 		};
 	})(AppViewProto.initialize);

@@ -32,9 +32,12 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 	#navigation {
 		max-width: $wide_page_width;
 		min-height: $large_nav_height;
-		// margin-top: $large_nav_top;
 		padding-top: $large_nav_top;
+		// margin-top: $large_nav_top;
 	}
+	// #vpan-group {
+	// 	height: calc(100% - #{$large_nav_top});
+	// }
 
 	#content {
 		// margin-top: $large_nav_top;

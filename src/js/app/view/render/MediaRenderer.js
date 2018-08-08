@@ -192,7 +192,7 @@ var MediaRenderer = CarouselRenderer.extend({
 		this.metrics.media.height = ch;
 		this.metrics.media.scale = cs;
 
-		// console.log("%s::measure constraint: %s metrics: %o", this.cid, this.metrics.constraint, this.metrics);
+		console.log("%s::measure mw:%s mh:%s fit: %s metrics: %o", this.cid, pcw, pch, this.metrics.fitDirection, this.metrics);
 		// var sizing = this.getSizingEl();
 		// sizing.style.maxWidth = (cw + ew) + "px";
 		// sizing.style.maxHeight = (ch + eh) + "px";

@@ -26,11 +26,8 @@
 	// fadeout, collapse (2 steps)
 	transition: tx(visibility, 2, 0, step-end), tx(opacity, 1, 0), tx(transform, 1, 1);
 }
-.skip-transitions {
-	&.grouped .list-group,
-	&.list .list-item {
-		@include skip_transitions;
-	}
+%skip-fade-move {
+	transition: tx(all, 0, 0, none) !important;
 }
 
 // -----------------------------------
@@ -46,6 +43,13 @@
 		left: 0;
 		transform: move(0,0);
 		// transform-style: preserve-3d;
+	}
+}
+.skip-transitions {
+	&.grouped .list-group,
+	&.list .list-item {
+		@extend %skip-fade-move;
+		// @include skip_transitions;
 	}
 }
 
@@ -85,7 +89,7 @@
 
 // #bundle-list (FilterableListView)
 // ===================================
-#bundle-list {
+#bundle-list:not(.skip-transitions) {
 	.list-item {
 		@extend %wait-move-fadein;
 	}
@@ -98,7 +102,7 @@
 
 // #keyword-list (GroupingListView)
 // ===================================
-#keyword-list {
+#keyword-list:not(.skip-transitions) {
 	.list-group,
 	.list-item {
 		@extend %wait-move-fadein;

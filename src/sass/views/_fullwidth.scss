@@ -96,7 +96,12 @@ $s_content_right: $s_content_right_val;
 		min-height: $s_nav_height;
 		padding-top: $s_nav_top;
 		padding-bottom: $s_nav_bottom;
+		// margin-top: $s_nav_top;
+		// margin-bottom: $s_nav_bottom;
 	}
+	// #vpan-group {
+	// 	height: calc(100% - #{($s_nav_top + $s_nav_bottom)});
+	// }
 
 	#content {
 		// margin-top: $s_nav_top;
@@ -156,7 +161,7 @@ $s_content_right: $s_content_right_val;
 			// @extend %list_item;
 			// width: $default_main_width - $s_aside_width - (2*$hu);
 			// width: calc(100% - #{8*$hu});
-			height: 1.5rem;
+			//height: 1.5rem;
 			width: 100%;
 		}
 	}
@@ -334,21 +339,24 @@ $s_content_right: $s_content_right_val;
 	.media-carousel {
 		max-width: $s_page_width_max;
 		min-width: 0;
-		width: auto;
-		left: 0;
-		right: 0;
+		// width: auto;
+		// left: 0;
+		// right: 0;
 
 		top: calc(#{$s_nav_top} + #{$s_nav_height});
 
 		margin-top: #{-$margin_top};
 		padding-top: $margin_top;
 		padding-bottom: $margin_bottom;
+
 		padding-left: $s_margin_left;
 		padding-right: $s_margin_right;
 
+		// $carousel_item_height: calc(100% - #{$margin_top + $margin_bottom});
+		$carousel_item_height: calc(100vh - #{$s_nav_top + $margin_top} - #{$s_nav_height});
+
 		.carousel-item {
 			width: auto;
-			max-height: calc(100% - #{$margin_top + $margin_bottom});
 			left: $s_page_left;
 			right: $s_page_right;
 			margin-left: $s_margin_left;
@@ -359,12 +367,14 @@ $s_content_right: $s_content_right_val;
 			}
 		}
 		.empty-item {
+			max-height: $carousel_item_height;//calc(100% - #{$margin_top + $margin_bottom});
 			// FIXME FIXME FIXME : parallax breaks if item is not 100%;
 			width: auto;
 			right: $s_aside_width;
 			// right: calc(#{$s_aside_width} - #{$s_content_left}});
 		}
 		.media-item {
+			height: $carousel_item_height;//calc(100% - #{$margin_top + $margin_bottom});
 			.placeholder:before {
 				font-size: 18vw;
 				padding: 5%;

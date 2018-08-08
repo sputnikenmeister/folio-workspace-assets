@@ -31,9 +31,13 @@ var Controller = Backbone.Router.extend({
 
 	/** @override */
 	initialize: function(options) {
-		this._routeNames = [];
 
 		if (DEBUG) {
+			this._routeNames = [];
+			this.route = function(route, name, callback) {
+				this._routeNames.push(_.isString(name) ? name : '');
+				return Backbone.Router.prototype.route.apply(this, arguments);
+			};
 			this.on("route", function(routeName, args) {
 				console.log("controller:[route] %s [%s]", routeName, args.join());
 			});
@@ -56,13 +60,12 @@ var Controller = Backbone.Router.extend({
 		this.route(/^bundles\/([^\/]+)\/(\d+)\/?$/,
 			"media-item", this.toMediaItem);
 
-		console.log("%s::initialize routes: %o", "controller", this._routeNames);
+		if (DEBUG) {
+			console.log("%s::initialize routes: %o", "controller", this._routeNames);
+		}
 	},
 
-	route: function(route, name, callback) {
-		this._routeNames.push(_.isString(name) ? name : '');
-		return Backbone.Router.prototype.route.apply(this, arguments);
-	},
+
 
 	/* ---------------------------
 	/* JS to URL: public command methods
@@ -97,7 +100,7 @@ var Controller = Backbone.Router.extend({
 	/* --------------------------- */
 
 	/** Update location when navigation happens internally */
-	_updateLocation: function() {
+	/*_updateLocation: function() {
 		var bundle, media;
 		bundle = bundles.selected;
 		if (bundle) {
@@ -106,7 +109,7 @@ var Controller = Backbone.Router.extend({
 		this.navigate(this._getLocation(bundle, media), {
 			trigger: false
 		});
-	},
+	},*/
 
 	_getLocation: function(bundle, media) {
 		var mediaIndex, location = [];
@@ -137,7 +140,7 @@ var Controller = Backbone.Router.extend({
 	toRoot: function() {
 		this.trigger("change:before");
 		if (bundles.selected) {
-			bundles.selected.get("media").deselect();
+			// bundles.selected.get("media").deselect();
 			bundles.deselect();
 		}
 		// keywords.deselect();

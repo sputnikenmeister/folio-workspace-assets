@@ -394,7 +394,6 @@ module.exports = function(grunt) {
 
 	/* browserify:vendor */
 	grunt.config('browserify.vendor', {
-		// dest: './build/tasks/browserify.vendor/<%= paths.filebase.debugVendorJs %>.js',
 		dest: './js/<%= paths.filebase.debugVendorJs %>.js',
 		src: [],
 		options: {
@@ -468,9 +467,11 @@ module.exports = function(grunt) {
 		// 		return s.split(':').pop();
 		// 	}));
 		// aliases first
-		return grunt.config('browserify.vendor.options.alias').map(function(s) {
-			return s.split(':').pop();
-		}).concat(grunt.config('browserify.vendor.options.require'));
+		return grunt.config('browserify.vendor.options.alias')
+			.map(function(s) {
+				return s.split(':').pop();
+			})
+			.concat(grunt.config('browserify.vendor.options.require'));
 
 	}()));
 

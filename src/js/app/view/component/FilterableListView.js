@@ -19,28 +19,32 @@ var prefixedProperty = require("utils/prefixedProperty");
 var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 /** @type {module:utils/array/difference} */
 var diff = require("utils/array/difference");
+/** @type {module:utils/promise/resolveAll} */
+var resolveAll = require("utils/promise/resolveAll");
+/** @type {module:utils/promise/rejectAll} */
+var rejectAll = require("utils/promise/rejectAll");
 
-var resolveAll = function(pp, result) {
-	if (pp.length != 0) {
-		pp.forEach(function(p, i, a) {
-			p.resolve(result);
-			a[i] = null;
-		});
-		pp.length = 0;
-	}
-	return pp;
-};
+// var resolveAll = function(pp, result) {
+// 	if (pp.length != 0) {
+// 		pp.forEach(function(p, i, a) {
+// 			p.resolve(result);
+// 			a[i] = null;
+// 		});
+// 		pp.length = 0;
+// 	}
+// 	return pp;
+// };
 
-var rejectAll = function(pp, reason) {
-	if (pp.length != 0) {
-		pp.forEach(function(p, i, a) {
-			p.reject(reason);
-			a[i] = null;
-		});
-		pp.length = 0;
-	}
-	return pp;
-};
+// var rejectAll = function(pp, reason) {
+// 	if (pp.length != 0) {
+// 		pp.forEach(function(p, i, a) {
+// 			p.reject(reason);
+// 			a[i] = null;
+// 		});
+// 		pp.length = 0;
+// 	}
+// 	return pp;
+// };
 
 /** @type {module:app/control/Globals.TRANSLATE_TEMPLATE} */
 var translateCssValue = require("app/control/Globals").TRANSLATE_TEMPLATE;
@@ -107,9 +111,10 @@ var FilterableListView = View.extend({
 	events: {
 		"transitionend .list-item": function(ev) {
 			if (this._collapsedChanging && ev.propertyName === "visibility" /*&& this.el.classList.contains(".collapsed-changing")*/ ) {
-				console.log("%s::events[transitionend .list-item] .collapsed-changing end", this.cid);
+				console.log("%s::events[transitionend .list-item] collapsed-changing end (resolving %s promises)", this.cid, this._collapsePromises.length);
+
 				this._collapsedChanging = false;
-				this.el.classList.remove(".collapsed-changing");
+				this.el.classList.remove("collapsed-changing");
 				resolveAll(this._collapsePromises, this);
 			}
 		},
@@ -130,23 +135,38 @@ var FilterableListView = View.extend({
 		this.renderer = options.renderer;
 		this._filterFn = options.filterFn;
 
+		// this.computeFilter();
+		// this.collection.each(this.createItemView, this);
+
 		this.collection.each(this.createItemView, this);
 		this._setSelection(this.collection.selected);
 		this._setCollapsed(options.collapsed);
 		this.refreshFilter();
-
-		// will trigger on return if this.el is already attached
-		this.skipTransitions = true;
-		this.el.classList.add("skip-transitions");
-		this.listenTo(this, "view:attached", function() {
-			// this.skipTransitions = true;
-			this.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
-		});
+		// this.skipTransitions = true;
+		// this.renderNow();
 
 		// this.listenTo(this.collection, "select:one select:none", this._setSelection);
 		this.listenTo(this.collection, "reset", function() {
 			this._allItems = null;
 			throw new Error("not implemented");
+		});
+
+		// will trigger on return if this.el is already attached
+		// this.skipTransitions = true;
+		// this.el.classList.add("skip-transitions");
+		// this.requestRender(View.ALL_INVALID);
+
+		console.log("%s::initialize attached: %o", this.cid, this.attached);
+
+		this.once("view:attached", function(view) {
+			console.log("%s::initialize -> [view:attached] attached: %o", view.cid, view.attached);
+			// view.requestRender(View.ALL_INVALID).renderNow();
+			view.skipTransitions = true;
+			view.el.classList.add("skip-transitions");
+			view.setImmediate(function() {
+				// this.skipTransitions = true;
+				view.renderNow();
+			});
 		});
 	},
 
@@ -162,7 +182,7 @@ var FilterableListView = View.extend({
 	/* Transition promises
 	/* --------------------------- */
 
-	whenCollapseChangeEnds: function() {
+	_whenCollapseChangeEnds: function() {
 		if (this._collapsedChanged) {
 			var view = this;
 			return new Promise(function(resolve, reject) {
@@ -173,7 +193,7 @@ var FilterableListView = View.extend({
 		}
 	},
 
-	_whenCollapseChangeEnds: function() {
+	whenCollapseChangeEnds: function() {
 		var d, p, pp;
 		if (this._collapsedChanging || this._collapsedChanged) {
 			d = {};
@@ -206,48 +226,63 @@ var FilterableListView = View.extend({
 		// collapsed transition flag
 		if (this._collapsedChanging) {
 			console.warn("%s::renderFrame collapsed tx interrupted", this.cid);
-			// rejectAll(this._collapsePromises, this);
+			this._collapsedChanging = false;
+			this.el.classList.remove("collapsed-changing");
+			rejectAll(this._collapsePromises, this);
 		}
 		if (this.skipTransitions) {
-			// resolveAll(this._collapsePromises, this.el);
 			this.el.classList.add("skip-transitions");
-			this.requestAnimationFrame(function() {
-				// this.setImmediate(function() {
-				// Invalidate again after frame render loop to reapply transforms:
-				// that should kill any running transitions.
-				// this.requestRender(View.LAYOUT_INVALID).renderNow();
+			// this.requestAnimationFrame(function() {
+			this.setImmediate(function() {
 				this.skipTransitions = false;
 				this.el.classList.remove("skip-transitions");
 			});
-			this._collapsedChanging = false;
-		} else {
-			this._collapsedChanging = this._collapsedChanged;
 		}
-		this.el.classList.toggle("collapsed-changing", this._collapsedChanging);
 
 		if (this._collapsedChanged) {
 			this._collapsedChanged = false;
-			this._filterChanged = true;
-			flags |= (View.SIZE_INVALID);
+			flags |= View.SIZE_INVALID;
 			this.el.classList.toggle("collapsed", this._collapsed);
+
+			if (this.skipTransitions) {
+				this._collapsedChanging = false;
+				// resolveAll(this._collapsePromises, this.el);
+				this.once("view:render:after", function(view) {
+					resolveAll(view._collapsePromises, view);
+				});
+			} else {
+				this._collapsedChanging = true;
+				this.el.classList.add("collapsed-changing");
+				// this will be resolved on transitionend
+			}
+			console.log("%s:[collapse changed] %s promises", this.cid,
+				this._collapsePromises.length,
+				this._collapsedChanging ?
+				"resolving now" :
+				"resolving on transititionend"
+			);
 		}
+
 		if (this._selectionChanged) {
 			this._selectionChanged = false;
 			flags |= View.LAYOUT_INVALID;
 			this.renderSelection(this.collection.selected, this.collection.lastSelected);
 		}
+
 		if (this._filterChanged) {
 			this._filterChanged = false;
 			flags |= View.LAYOUT_INVALID;
-			this._printStats();
+			var lastFilteredItems = this.filteredItems;
+			// this._printStats(lastFilteredItems);
 			this.computeFilter();
-
 			this.applyFilter();
-			this._printStats();
+			this._printStats(lastFilteredItems);
 		}
+
 		if (flags & View.SIZE_INVALID) {
 			this.measure(); // NOTE: measures children
 		}
+
 		if (flags & (View.LAYOUT_INVALID | View.SIZE_INVALID)) {
 			this.renderLayout();
 		}
@@ -302,6 +337,7 @@ var FilterableListView = View.extend({
 		posX = this._metrics.paddingLeft;
 		posY = this._metrics.paddingTop;
 
+		// use HTMLElement.children to keep layout order
 		for (var i = 0, ii = this.el.children.length; i < ii; i++) {
 			var view = this.itemViews.findByCid(this.el.children[i].cid);
 			if (((this.collection.selected && !view.model.selected) ||
@@ -309,8 +345,9 @@ var FilterableListView = View.extend({
 				view.transform.tx = posX;
 				view.transform.ty = posY;
 			} else {
-				if (view._metrics.offsetHeight == 0)
+				if (view._metrics.offsetHeight == 0) {
 					posY -= view._metrics.offsetTop;
+				}
 				view.transform.tx = posX;
 				view.transform.ty = posY;
 				posY += view._metrics.offsetHeight + view._metrics.offsetTop;
@@ -334,7 +371,7 @@ var FilterableListView = View.extend({
 			model: item,
 			el: this.el.querySelector(".list-item[data-id=\"" + item.id + "\"]")
 		});
-		item.set("excluded", false, { silent: true });
+		// item.set("excluded", false, { silent: true });
 		// view.listenTo(item, "change:excluded", function(item, newVal) {
 		// 	// console.log(arguments);
 		// 	if (this.el.classList.contains("excluded") !== newVal) {
@@ -414,13 +451,14 @@ var FilterableListView = View.extend({
 			// view.label.classList.add("color-fg");
 			// view.label.classList.add("color-reverse");
 		}
+		this.el.classList.toggle("has-selected", this.selectedItem !== null);
 	},
 
-	_printStats: function() {
-		console.log("%o::renderFrame %s filtered:%o:%o/%o (changed:%o, in:%o, out:%o)", this.cid,
+	_printStats: function(lastFilteredItems) {
+		console.log("%o::renderFrame %s filtered:%o(=%o)/%o (changed:%o, in:%o, out:%o)", this.cid,
 			this.filteredItems.length > 0 ? "has" : "has not",
 			this.filteredItems.length,
-			((this.filteredItems.length + this._filteredIncoming.length) - this._filteredOutgoing.length),
+			lastFilteredItems ? (this.filteredItems.length + this._filteredIncoming.length) - this._filteredOutgoing.length : this.filteredItems.length,
 			this.collection.length,
 			(this._filteredIncoming.length + this._filteredOutgoing.length),
 			this._filteredIncoming.length,
@@ -491,6 +529,7 @@ var FilterableListView = View.extend({
 	/* Filter impl 1
 	/* --------------------------- */
 
+	/*
 	computeFilter_1: function() {
 		var items = this._filterFn ? this.collection.filter(this._filterFn, this) : this._getAllItems();
 		this.renderFilters(items, this._filteredItems);
@@ -524,6 +563,7 @@ var FilterableListView = View.extend({
 		// this.el.classList.toggle("has-excluded", hasNew);
 		// this.applyFilter();
 	},
+	*/
 
 	// computeFiltered: function() {
 	// 	this._filterResult = this.collection.map(this._filterFn, this);
@@ -536,5 +576,12 @@ var FilterableListView = View.extend({
 	// },
 
 });
+
+if (DEBUG) {
+	FilterableListView.prototype._logFlags = [
+		"view.render",
+		// "view.trace"
+	].join(" ");
+}
 
 module.exports = FilterableListView;

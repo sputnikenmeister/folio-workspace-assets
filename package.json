@@ -31,7 +31,6 @@
 		"grunt-contrib-sass": "^1.0.0",
 		"grunt-contrib-uglify": "^3.4.0",
 		"grunt-contrib-watch": "^1.1.0",
-		"grunt-css": "^0.5.4",
 		"grunt-embed-fonts": "^1.0.0",
 		"grunt-exorcise": "^2.1.0",
 		"grunt-favicons": "^0.8.0",
