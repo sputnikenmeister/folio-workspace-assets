@@ -6,7 +6,9 @@
 // var _ = require("underscore");
 
 module.exports = function(rect, dx, dy) {
-	dy || (dy = dx);
+	if (arguments.length == 2) {
+		dy = dx;
+	}
 	var r = {
 		width: rect.width + dx * 2,
 		height: rect.height + dy * 2

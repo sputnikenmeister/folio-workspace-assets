@@ -44,7 +44,6 @@ $delay: $duration + $delay_interval; // transition/animation timing function
 // .tx-last 		{ transition: tx(transform, 1, 2); }
 // .tx-after 		{ transition: tx(transform, 1, 2); }
 
-
 // -----------------------------------
 // Transform functions
 // -----------------------------------
@@ -52,12 +51,15 @@ $delay: $duration + $delay_interval; // transition/animation timing function
 // translate wrapper
 // - - - - - - - - - - - - - - - - - -
 @function move($x: 0, $y: 0) {
-	// @return translate3d($x, $y, 0);
-	@return translate($x, $y);
+	@if ($transform_type == "3d") {
+		@return translate3d($x, $y, 0);
+	} @else {
+		@return translate($x, $y);
+	}
 }
-@function moveX($x:0) {
-	@return translate($x, 0);
+@function moveX($x: 0) {
+	@return move($x, 0);
 }
-@function moveY($y:0) {
-	@return translate(0, $y);
+@function moveY($y: 0) {
+	@return move(0, $y);
 }

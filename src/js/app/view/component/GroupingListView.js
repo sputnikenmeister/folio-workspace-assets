@@ -46,7 +46,7 @@ var GroupingListView = FilterableListView.extend({
 			/** @override */
 			tagName: "dl",
 			/** @override */
-			className: "list-item list-label",
+			className: "list-item list-node",
 		}),
 		groupingRenderer: LabelRenderer.extend({
 			/** @override */
@@ -54,7 +54,7 @@ var GroupingListView = FilterableListView.extend({
 			/** @override */
 			tagName: "dt",
 			/** @override */
-			className: "list-group list-label",
+			className: "list-group list-node",
 		}),
 		groupingFn: null,
 		// },

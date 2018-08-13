@@ -36,7 +36,7 @@ window.addEventListener("load", function(ev) {
 	try {
 		require("app/model/helper/bootstrap")(window.bootstrap);
 	} catch (err) {
-		var el = document.selectQuery(".app");
+		var el = document.querySelector(".app");
 		el.classList.remove("app-initial");
 		el.classList.add("app-error");
 		throw new Error("bootstrap data error (" + err.message + ")", err.fileName, err.lineNumber);

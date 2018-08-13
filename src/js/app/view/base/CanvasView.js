@@ -131,8 +131,10 @@ var CanvasView = View.extend({
 
 		var s = getComputedStyle(this.el);
 
-		this._canvasWidth = this.el.offsetWidth;
-		this._canvasHeight = this.el.offsetHeight;
+		// this._canvasWidth = this.el.offsetWidth;
+		// this._canvasHeight = this.el.offsetHeight;
+		this._canvasWidth = this.el.scrollWidth;
+		this._canvasHeight = this.el.scrollHeight;
 
 		if (s.boxSizing === "border-box") {
 			var m = getBoxEdgeStyles(s);
@@ -143,7 +145,7 @@ var CanvasView = View.extend({
 		this._canvasWidth *= this._canvasRatio;
 		this._canvasHeight *= this._canvasRatio;
 
-		this.measureCanvas(this._canvasWidth, this._canvasHeight);
+		this.measureCanvas(this._canvasWidth, this._canvasHeight, s);
 		this.el.width = this._canvasWidth;
 		this.el.height = this._canvasHeight;
 		// this.el.style.height = h + "px";
@@ -251,7 +253,7 @@ var CanvasView = View.extend({
 			this._interpolator.interpolate(tstamp);
 		}
 		if (flags & (View.LAYOUT_INVALID | View.SIZE_INVALID)) {
-			this.redraw(this._ctx, this._interpolator);
+			this.redraw(this._ctx, this._interpolator, flags);
 			if (this._interpolator.valuesChanged) {
 				this.requestRender();
 			}

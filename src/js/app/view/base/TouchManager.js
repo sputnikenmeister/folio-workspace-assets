@@ -11,10 +11,10 @@ var Globals = require("app/control/Globals");
 
 /** @type {module:hammerjs.Tap} */
 var Tap = Hammer.Tap;
-/** @type {module:utils/touch/SmoothPanRecognizer} */
-var Pan = require("utils/touch/SmoothPanRecognizer");
-// /** @type {module:hammerjs.Pan} */
-// var Pan = Hammer.Pan;
+// /** @type {module:utils/touch/SmoothPanRecognizer} */
+// var Pan = require("utils/touch/SmoothPanRecognizer");
+/** @type {module:hammerjs.Pan} */
+var Pan = Hammer.Pan;
 
 /* -------------------------------
 /* Static private

@@ -2,9 +2,8 @@
 /* Imports
 /* ------------------------------- */
 
-
-/** @type {module:underscore} */
-var _ = require("underscore");
+// /** @type {module:underscore} */
+// var _ = require("underscore");
 
 /** @type {module:utils/TransformItem} */
 var TransformItem = require("./TransformItem");

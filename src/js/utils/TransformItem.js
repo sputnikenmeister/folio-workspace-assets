@@ -11,10 +11,11 @@ var prefixedProperty = require("utils/prefixedProperty");
 var prefixedStyleName = require("utils/prefixedStyleName");
 /** @type {module:utils/prefixedEvent} */
 var prefixedEvent = require("utils/prefixedEvent");
-
 /** @type {String} */
-var transitionEnd = prefixedEvent("transitionend"); //require("utils/event/transitionEnd");
-// /** @type {Function} */// var slice = Array.prototype.slice;
+var transitionEnd = prefixedEvent("transitionend");
+//var transitionEnd = require("utils/event/transitionEnd");
+// /** @type {Function} */
+// var slice = Array.prototype.slice;
 
 // /** @type {module:utils/debug/traceElement} */
 // var traceElt = require("./debug/traceElement");
@@ -91,21 +92,21 @@ var UNSET_TRANSITION = {
 	cssText: "unset",
 };
 
+// var translateTemplate = _.template("translate(<%= _renderedX %>px, <%= _renderedY %>px)";
+// var translate3dTemplate = _.template("translate3d(<%= _renderedX %>px, <%= _renderedY %>px, 0px)";
+// var transitionTemplate = _.template("<%= property %> <% duration/1000 %>s <%= easing %> <% delay/1000 %>s");
 
-// var translateTemplate = function(o) {
-// 	// return "translate(" + o._renderedX + "px, " + o._renderedY + "px)";
-// 	// return "translate3d(" + o._renderedX + "px, " + o._renderedY + "px, 0px)";
-// };
-var translateTemplate = (function() {
-	var fn = require("app/control/Globals").TRANSLATE_TEMPLATE;
+var translateTemplate = (function(fn) {
 	return function(o) {
 		return fn(o._renderedX, o._renderedY);
 	};
-}());
+}(require("app/control/Globals").TRANSLATE_TEMPLATE));
 
-// var transitionTemplate = _.template("<%= property %> <% duration/1000 %>s <%= easing %> <% delay/1000 %>s");
 var transitionTemplate = function(o) {
-	return o.property + " " + o.duration / 1000 + "s " + o.easing + " " + o.delay / 1000 + "s";
+	return o.property + " " +
+		o.duration / 1000 + "s " +
+		o.easing + " " +
+		o.delay / 1000 + "s";
 };
 
 var propDefaults = {
@@ -126,12 +127,14 @@ var propNames = propKeys.reduce(function(obj, propName) {
 	return obj;
 }, {});
 
-/** @type {module:utils/strings/camelToDashed} */
-var camelToDashed = require("utils/strings/camelToDashed");
-var styleNames = propKeys.map(camelToDashed).reduce(function(obj, propName) {
-	obj[propName] = prefixedStyleName(propName);
-	return obj;
-}, {});
+var styleNames = (function(camelToDashed) {
+	return propKeys
+		.map(camelToDashed)
+		.reduce(function(obj, propName) {
+			obj[propName] = prefixedStyleName(propName);
+			return obj;
+		}, {});
+})(require("utils/strings/camelToDashed"));
 
 var resolveAll = function(pp, result) {
 	if (pp.length != 0) {
@@ -163,11 +166,11 @@ var rejectAll = function(pp, reason) {
  * @constructor
  */
 var TransformItem = function(el, id) {
-	_.bindAll(this, "_onTransitionEnd");
-
 	this.el = el;
 	this.id = id;
 	this.el.eid = id;
+
+	this._onTransitionEnd = this._onTransitionEnd.bind(this);
 	this.el.addEventListener(transitionEnd, this._onTransitionEnd, false);
 
 	this._captureInvalid = false;
@@ -213,8 +216,11 @@ TransformItem.prototype = Object.create({
 
 	/* capture
 	/* - - - - - - - - - - - - - - - - */
-	capture: function() {
+	capture: function(force) {
 		// console.log("tx[%s]::capture", this.id);
+		if (force) {
+			this.clearCapture();
+		}
 		this._validateCapture();
 		return this;
 	},
@@ -230,7 +236,6 @@ TransformItem.prototype = Object.create({
 	/* - - - - - - - - - - - - - - - - */
 	offset: function(x, y) {
 		// console.log("tx[%s]::offset", this.id);
-
 		this._hasOffset = true;
 		this._offsetInvalid = true;
 		this._offsetX = x || 0;
@@ -242,15 +247,15 @@ TransformItem.prototype = Object.create({
 	clearOffset: function() {
 		if (this._hasOffset) {
 			// console.log("tx[%s]::clearOffset", this.id);
-
 			this._hasOffset = false;
 			this._offsetInvalid = true;
 			this._offsetX = null;
 			this._offsetY = null;
 			// if (this.immediate) this._validateOffset();
-		} else {
-			// console.log("tx[%s]::clearOffset no offset to clear", this.id);
 		}
+		// else {
+		// 	console.log("tx[%s]::clearOffset no offset to clear", this.id);
+		// }
 		return this;
 	},
 

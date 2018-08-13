@@ -74,6 +74,8 @@ var FilterableListView = View.extend({
 		renderer: ClickableRenderer.extend({
 			/** @override */
 			cidPrefix: "listItem",
+			/** @override */
+			className: "list-item list-node",
 		}),
 	},
 
@@ -109,10 +111,21 @@ var FilterableListView = View.extend({
 
 	/** @override */
 	events: {
-		"transitionend .list-item": function(ev) {
-			if (this._collapsedChanging && ev.propertyName === "visibility" /*&& this.el.classList.contains(".collapsed-changing")*/ ) {
-				console.log("%s::events[transitionend .list-item] collapsed-changing end (resolving %s promises)", this.cid, this._collapsePromises.length);
+		"transitionend .list-node": function(ev) {
+			// if (!ev.target.classList.contains("list-node")) {}
+			if (ev.propertyName == transformProp
+				&& ev.target.parentElement === this.el) {
+				this._changedPosNum--;
+				// console.log("%s:[%s (%s)] [%s]", this.cid, ev.type, ev.target.className, ev.propertyName, this._changedPosNum, ev);
+			}
+			if (!this._collapsedChanging) {
+				return;
+			}
 
+			if (this._changedPosNum == 0) {
+				// if ((ev.propertyName == transformProp) ||
+				// 	(ev.propertyName == "visibility")) {
+				console.log("%s:[%s .list-item] [%s] collapsed-changing end (resolving %s promises)", this.cid, ev.type, ev.propertyName, this._collapsePromises.length);
 				this._collapsedChanging = false;
 				this.el.classList.remove("collapsed-changing");
 				resolveAll(this._collapsePromises, this);
@@ -248,6 +261,7 @@ var FilterableListView = View.extend({
 				this._collapsedChanging = false;
 				// resolveAll(this._collapsePromises, this.el);
 				this.once("view:render:after", function(view) {
+					this._changedPosNum = 0;
 					resolveAll(view._collapsePromises, view);
 				});
 			} else {
@@ -257,9 +271,7 @@ var FilterableListView = View.extend({
 			}
 			console.log("%s:[collapse changed] %s promises", this.cid,
 				this._collapsePromises.length,
-				this._collapsedChanging ?
-				"resolving now" :
-				"resolving on transititionend"
+				this._collapsedChanging ? "resolving now" : "resolving on transitionend"
 			);
 		}
 
@@ -276,7 +288,9 @@ var FilterableListView = View.extend({
 			// this._printStats(lastFilteredItems);
 			this.computeFilter();
 			this.applyFilter();
-			this._printStats(lastFilteredItems);
+			if (DEBUG) {
+				this._printStats(lastFilteredItems);
+			}
 		}
 
 		if (flags & View.SIZE_INVALID) {
@@ -333,13 +347,16 @@ var FilterableListView = View.extend({
 	},
 
 	renderLayout: function() {
-		var posX, posY;
+		var posX, posY, lastX, lastY;
 		posX = this._metrics.paddingLeft;
 		posY = this._metrics.paddingTop;
 
+		this._changedPosNum = 0;
 		// use HTMLElement.children to keep layout order
 		for (var i = 0, ii = this.el.children.length; i < ii; i++) {
 			var view = this.itemViews.findByCid(this.el.children[i].cid);
+			lastX = view.transform.tx;
+			lastY = view.transform.ty;
 			if (((this.collection.selected && !view.model.selected) ||
 					view.el.classList.contains("excluded")) && this._collapsed) {
 				view.transform.tx = posX;
@@ -353,6 +370,9 @@ var FilterableListView = View.extend({
 				posY += view._metrics.offsetHeight + view._metrics.offsetTop;
 			}
 			view.el.style[transformProp] = translateCssValue(view.transform.tx, view.transform.ty);
+			if (view.transform.tx != lastX || view.transform.ty != lastY) {
+				this._changedPosNum++;
+			}
 		}
 
 		// posY += this._metrics.paddingBottom;
@@ -452,17 +472,6 @@ var FilterableListView = View.extend({
 			// view.label.classList.add("color-reverse");
 		}
 		this.el.classList.toggle("has-selected", this.selectedItem !== null);
-	},
-
-	_printStats: function(lastFilteredItems) {
-		console.log("%o::renderFrame %s filtered:%o(=%o)/%o (changed:%o, in:%o, out:%o)", this.cid,
-			this.filteredItems.length > 0 ? "has" : "has not",
-			this.filteredItems.length,
-			lastFilteredItems ? (this.filteredItems.length + this._filteredIncoming.length) - this._filteredOutgoing.length : this.filteredItems.length,
-			this.collection.length,
-			(this._filteredIncoming.length + this._filteredOutgoing.length),
-			this._filteredIncoming.length,
-			this._filteredOutgoing.length);
 	},
 
 	/* --------------------------- *
@@ -582,6 +591,17 @@ if (DEBUG) {
 		"view.render",
 		// "view.trace"
 	].join(" ");
+
+	FilterableListView.prototype._printStats = function(lastFilteredItems) {
+		console.log("%o::renderFrame %s filtered:%o(=%o)/%o (changed:%o, in:%o, out:%o)", this.cid,
+			this.filteredItems.length > 0 ? "has" : "has not",
+			this.filteredItems.length,
+			lastFilteredItems ? (this.filteredItems.length + this._filteredIncoming.length) - this._filteredOutgoing.length : this.filteredItems.length,
+			this.collection.length,
+			(this._filteredIncoming.length + this._filteredOutgoing.length),
+			this._filteredIncoming.length,
+			this._filteredOutgoing.length);
+	};
 }
 
 module.exports = FilterableListView;

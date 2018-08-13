@@ -86,8 +86,8 @@ body {
 	padding-top: $default_nav_top;
 	// margin-top: $default_nav_top;
 }
-// #vpan-group {
-// transform: moveY(0);
+#vpan-group {
+	transform: moveY(0);
 // position: relative;
 // height: inherit;
 	// height: 100%;
@@ -95,7 +95,7 @@ body {
 	// height: calc(100% - #{$default_nav_top});
 	// left: 0;
 	// right: 0;
-// }
+ }
 
 #content {
 	position: absolute;
@@ -139,10 +139,12 @@ body {
 // - - - - - - - - - - - - - - - - - -
 %nav_list {
 	position: absolute;
-	will-change: transform;
+	// will-change: transform;
 	display: inline-block;
+	@if ($transform_type == "3d") {
+		transform-style: preserve-3d;
+	}
 	// display: block;
-	// transform-style: preserve-3d;
 	// transform: move();
 	// box-sizing: content-box;
 }
@@ -443,41 +445,38 @@ body {
 	position: absolute;
 	box-sizing: content-box;
 	width: $default_page_width;
-	height: 100%;
-	top: 0; bottom: 0;
+	height: auto;
+	top: 0;
+	bottom: 0;
 	padding: 0;
 
 	opacity: 0;
-	transition: tx(opacity, 1, 0);
+	visibility: hidden;
+	transition: tx(opacity, 1, 0),
+		tx(visibility, 1, 0, step-start);
 
 	@at-root {
 		.container-collapsed & {
 			opacity: 0;
+			visibility: hidden;
 		}
 		.container-expanded:not(.container-changing) & {
 			opacity: 1;
+			visibility: visible;
+		}
+		.container-expanded.container-changing & {
+			transition: tx(opacity, 1, 0),
+				tx(visibility, 1, 0, step-start);
 		}
 		.container-collapsed.container-changing & {
-			transition: tx(opacity, 1, 0);//, tx(height, 1, 0, step-end);
+			transition: tx(opacity, 1, 0),
+				tx(visibility, 1, 0, step-end);
 		}
 		.skip-transitions & {
 			@include skip_transitions;
 		}
 	}
-
-	// @at-root .container-expanded:not(.container-changing) & {
-	// 	opacity: 1;
-	// }
-	// @at-root .container-collapsed.container-changing & {
-	// 	transition: tx(opacity, 1, 0);//, tx(height, 1, 0, step-end);
-	// }
-	// @at-root .skip-transitions & {
-	// 	@include skip_transitions;
-	// }
 }
-// .container-collapsed #nav-graph {
-// 	opacity: 0;
-// }
 
 // nav-graph unavailable (bundles<>keywords)
 // - - - - - - - - - - - - - - - - - -

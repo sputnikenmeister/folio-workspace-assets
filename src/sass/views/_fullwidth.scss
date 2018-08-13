@@ -208,10 +208,10 @@ $s_content_right: $s_content_right_val;
 				width: ($s_aside_width / 2);
 				transform: moveX(-100%);
 				// padding: 0; margin: 0;
-				& > span {
-					padding: 0 0.5ex;
-					margin: 0 -0.5ex;
-				}
+				// & > span {
+				// 	padding: 0 0.5ex;
+				// 	margin: 0 -0.5ex;
+				// }
 			}
 		}
 

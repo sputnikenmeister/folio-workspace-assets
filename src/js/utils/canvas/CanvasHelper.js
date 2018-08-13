@@ -3,6 +3,10 @@ var PI2 = Math.PI * 2;
 var splice = Array.prototype.splice;
 // var concat = Array.prototype.concat;
 
+var _mod = function(n, m) {
+	return ((n % m) + m) % m;
+};
+
 var setStyle = function(ctx, s) {
 	if (typeof s != "object") return;
 	for (var p in s) {
@@ -81,10 +85,17 @@ module.exports = {
 		_drawShape(this.square, s, ctx, x, y, r);
 	},
 
+	/* https://stackoverflow.com/questions/29588404/using-javascript-to-convert-radians-to-degrees-with-positive-and-negative-values
+		(((r * (180/Math.PI)) % 360) + 360) % 360;
+		function mod(n, m) {
+  return ((n % m) + m) % m;
+}
+	*/
+
 	arrowhead: function(ctx, x, y, r, t) {
 		ctx.save();
 		ctx.translate(x, y);
-		ctx.rotate(t); // - Math.PI * 0.5);
+		ctx.rotate(_mod(t, PI2));
 		ctx.translate(r * 0.5, 0);
 		ctx.beginPath();
 		ctx.moveTo(0, 0);

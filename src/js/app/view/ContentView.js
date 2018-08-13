@@ -1,5 +1,5 @@
 /**
- * @module app/view/NavigationView
+ * @module app/view/ContentView
  */
 
 /** @type {module:underscore} */

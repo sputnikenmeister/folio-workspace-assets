@@ -330,16 +330,11 @@ var AppViewProto = {
 				this.model.get(key));
 		}, this);
 
-		this
-			.requestRender(View.MODEL_INVALID)
+		this.requestRender(View.MODEL_INVALID)
 			// .requestChildrenRender(View.MODEL_INVALID)
 			.once("view:render:after", function(view, flags) {
 				console.info("%s::_onModelChange [render complete]", view.cid);
 				console.groupEnd();
-				// .whenRendered().then(function(view) {
-				// this.requestAnimationFrame(function() {
-				// 	console.log("%s::_onModelChange [next frame]", view.cid);
-				// });
 			});
 	},
 
@@ -348,15 +343,9 @@ var AppViewProto = {
 	/* ------------------------------- */
 
 	_onResize: function(ev) {
-		// console.log("%s::_onResize [START]", this.cid);
 		console.group(this.cid + "::_onResize [event]");
 		this.skipTransitions = true;
 		this.el.classList.add("skip-transitions");
-
-		// this.requestRender(View.SIZE_INVALID).renderNow();
-		// this.requestAnimationFrame(function() {
-		// 	this.el.classList.remove("skip-transitions");
-		// }.bind(this));
 
 		this.requestRender(View.SIZE_INVALID)
 			// .whenRendered().then(function(view) {
@@ -367,8 +356,6 @@ var AppViewProto = {
 					console.info("%s::_onResize [view:render:after][raf]", view.cid);
 					view.skipTransitions = false;
 					view.el.classList.remove("skip-transitions");
-					// window.scrollTo(0, 1);
-					// document.body.scrollTop = 1;
 					console.groupEnd();
 				})
 			}).renderNow();

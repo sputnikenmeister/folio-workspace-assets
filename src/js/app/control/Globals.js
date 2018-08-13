@@ -107,6 +107,15 @@ module.exports = (function() {
 	g.STOP_CHAR = String.fromCharCode(0x23F9);
 
 	// translate common template
+	if (sass.transform_type == "3d") {
+		g.TRANSLATE_TEMPLATE = function(x, y) {
+			return "translate3d(" + x + "px, " + y + "px, 0px)";
+		};
+	} else {
+		g.TRANSLATE_TEMPLATE = function(x, y) {
+			return "translate(" + x + "px, " + y + "px)";
+		};
+	}
 
 	g.TRANSLATE_TEMPLATE = function(x, y) {
 		return "translate(" + x + "px, " + y + "px)";

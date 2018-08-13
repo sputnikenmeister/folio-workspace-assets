@@ -707,8 +707,8 @@ var CarouselProto = {
 	/** @param {Object} ev */
 	_onPanMove: function(ev) {
 		var view = this.getViewAtPanDir(ev.offsetDirection);
-		var delta = (this.direction & HORIZONTAL) ? ev.thresholdDeltaX : ev.thresholdDeltaY;
-		// var delta = (this.direction & HORIZONTAL) ? ev.deltaX : ev.deltaY;
+		// var delta = (this.direction & HORIZONTAL) ? ev.thresholdDeltaX : ev.thresholdDeltaY;
+		var delta = (this.direction & HORIZONTAL) ? ev.deltaX : ev.deltaY;
 
 		if (this._panCandidateView !== view) {
 			this._panCandidateView && this._panCandidateView.el.classList.remove("candidate");
@@ -731,8 +731,8 @@ var CarouselProto = {
 	_onPanFinal: function(ev) {
 		var scrollCandidate;
 		// NOTE: this delta is used for determining selection, NOT for layout
-		var delta = (this.direction & HORIZONTAL) ? ev.thresholdDeltaX : ev.thresholdDeltaY;
-		// var delta = (this.direction & HORIZONTAL) ? ev.deltaX : ev.deltaY;
+		// var delta = (this.direction & HORIZONTAL) ? ev.thresholdDeltaX : ev.thresholdDeltaY;
+		var delta = (this.direction & HORIZONTAL) ? ev.deltaX : ev.deltaY;
 
 		if ((ev.type == "hpanend")
 			/* pan direction (current event) and offsetDirection (whole gesture) must match */
