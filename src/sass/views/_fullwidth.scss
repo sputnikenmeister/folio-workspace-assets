@@ -13,7 +13,7 @@ $two_thirds: 100vw * (2/3);
 // layout variables
 // - - - - - - - - - - - - - - - - - -
 $s_nav_top: 1.166666666rem;
-$s_nav_bottom: 1rem;
+$s_nav_bottom: 0;
 $s_nav_height: 20vh;//25%;// 7rem;//6.5rem;
 $s_page_width_max: none;//704px;
 
@@ -94,8 +94,9 @@ $s_content_right: $s_content_right_val;
 		margin-right: $s_margin_right;
 
 		min-height: $s_nav_height;
+		// max-height: calc(100vh - #{($s_nav_top + $s_nav_bottom)});
 		padding-top: $s_nav_top;
-		padding-bottom: $s_nav_bottom;
+		// padding-bottom: $s_nav_bottom;
 		// margin-top: $s_nav_top;
 		// margin-bottom: $s_nav_bottom;
 	}
@@ -331,29 +332,32 @@ $s_content_right: $s_content_right_val;
 	// media-carousel
 	// ===================================
 
-	$ctrl_height: 2.1rem;
-	$ctrl_width: $rhu * 1.05;//2.1rem;
-	$margin_top: 4rem;
-	$margin_bottom: 3rem;
+	$s_content_top: 4rem;
+	$s_content_bottom: 3rem;
 
 	.media-carousel {
 		max-width: $s_page_width_max;
 		min-width: 0;
-		// width: auto;
-		// left: 0;
-		// right: 0;
+		// width: auto; left: 0; right: 0;
 
 		top: calc(#{$s_nav_top} + #{$s_nav_height});
+		// height: calc(100% - #{$s_nav_height});
+		height: calc(100%
+			- #{$s_nav_top}
+			- #{$s_nav_height}
+			+ #{$s_content_top}
+		);
+		$s_carousel_item_height: calc(100%
+			- #{$s_content_top}
+			- #{$s_content_bottom}
+		);
 
-		margin-top: #{-$margin_top};
-		padding-top: $margin_top;
-		padding-bottom: $margin_bottom;
+		margin-top: -#{$s_content_top};
+		padding-top: $s_content_top;
+		padding-bottom: $s_content_bottom;
 
 		padding-left: $s_margin_left;
 		padding-right: $s_margin_right;
-
-		// $carousel_item_height: calc(100% - #{$margin_top + $margin_bottom});
-		$carousel_item_height: calc(100vh - #{$s_nav_top + $margin_top} - #{$s_nav_height});
 
 		.carousel-item {
 			width: auto;
@@ -367,14 +371,14 @@ $s_content_right: $s_content_right_val;
 			}
 		}
 		.empty-item {
-			max-height: $carousel_item_height;//calc(100% - #{$margin_top + $margin_bottom});
+			max-height: $s_carousel_item_height;//calc(100% - #{$s_content_top + $s_content_bottom});
 			// FIXME FIXME FIXME : parallax breaks if item is not 100%;
 			width: auto;
 			right: $s_aside_width;
 			// right: calc(#{$s_aside_width} - #{$s_content_left}});
 		}
 		.media-item {
-			height: $carousel_item_height;//calc(100% - #{$margin_top + $margin_bottom});
+			height: $s_carousel_item_height;//calc(100% - #{$s_content_top + $s_content_bottom});
 			.placeholder:before {
 				font-size: 18vw;
 				padding: 5%;
@@ -388,6 +392,10 @@ $s_content_right: $s_content_right_val;
 	.container-expanded .media-carousel {
 		transform: moveY(#{$nav_collapse_offset * 0.6666666});
 	}
+
+	$ctrl_height: 2.1rem;
+	$ctrl_width: $rhu * 1.05;//2.1rem;
+
 	.playable-renderer {
 		.top-bar {
 			height: $ctrl_height;

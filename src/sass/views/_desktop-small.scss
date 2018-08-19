@@ -32,6 +32,7 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 	#navigation {
 		max-width: $wide_page_width;
 		min-height: $large_nav_height;
+		// max-height: calc(100vh - #{$large_nav_top});
 		padding-top: $large_nav_top;
 		// margin-top: $large_nav_top;
 	}
@@ -55,9 +56,6 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 		transform: move();
 		// transform: move(0, 0.1px);
 	}
-	// .with-bundle %nav_list {
-	// 	transform: move();
-	// }
 
 	// ///////////////////////////////////
 	// navigation children
@@ -70,9 +68,10 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 
 	// Common alignment
 	// ===================================
-	&.without-article.without-bundle {
+	&.without-article.without-bundle,
+ 	&.route-root {
 		#bundle-list, #keyword-list {
-			padding-top: $large_nav_height*0.5;//4.5rem;//$nav_top_without_bundle;
+			padding-top: $large_nav_height * 0.5;//4.5rem;//$nav_top_without_bundle;
 		}
 		#site-name-wrapper, #article-list-wrapper {
 			transform: moveY(#{$large_nav_height*0.5 - 1.5rem}); //$nav_top_without_bundle);
@@ -206,7 +205,13 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 
 	.media-carousel {
 		min-width: $wide_page_width;
+
 		top: $large_nav_top + $large_nav_height;
+		height: calc(100%
+			- #{$large_nav_top}
+			- #{$large_nav_height}
+			+ #{$m_content_top}
+		);
 
 		.carousel-item {
 			left: calc(50% - #{$wide_page_width/2 + $hu});
