@@ -402,21 +402,24 @@ var NavigationView = View.extend({
 	/* ------------------------------- */
 
 	renderTransitions: function(flags) {
-		var fromRoute = this.model.previous("routeName");
-		var toRoute = this.model.get("routeName");
 
 		var modelChanged = (flags & View.MODEL_INVALID);
+
+		var fromRoute = this.model.get("fromRouteName");
+		var toRoute = this.model.get("routeName");
+		var routeChanged = modelChanged && this.model.hasChanged("routeName");
+
 		/* bundle */
 		var withBundle = this.model.has("bundle");
-		var withBundleChanged = modelChanged && this.model.hasChanged("withBundle");
+		var withBundleChanged = modelChanged && this.model.hasAnyChanged("bundle");
 		var bundleChanged = modelChanged && this.model.hasChanged("bundle");
 		/* media */
 		var withMedia = this.model.has("media");
-		var withMediaChanged = modelChanged && this.model.hasChanged("withMedia");
+		var withMediaChanged = modelChanged && this.model.hasAnyChanged("media");
 		//var mediaChanged = modelChanged && this.model.hasChanged("media");
 		/* article */
 		// var withArticle = this.model.has("article");
-		var withArticleChanged = modelChanged && this.model.hasChanged("withArticle");
+		var withArticleChanged = modelChanged && this.model.hasAnyChanged("article");
 		//var articleChanged = modelChanged && this.model.hasChanged("article");
 		/* collapsed */
 		var collapsed = this.model.get("collapsed");
@@ -474,7 +477,7 @@ var NavigationView = View.extend({
 				}
 			} else {
 				if (!withBundleChanged && withMediaChanged)
-					tf.runTransition(bundleChanged ? tx.BETWEEN : tx.NOW);
+					tf.runTransition(bundleChanged ? tx.BETWEEN : txNow); //tx.NOW);
 			}
 			if (tf.hasOffset)
 				tf.clearOffset();
@@ -483,13 +486,12 @@ var NavigationView = View.extend({
 			if (collapsedChanged ^ withArticleChanged) {
 				this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST,
 					this.sitename.el, this.about.el, this.bundleList.wrapper);
-				if (!(fromRoute == 'article-item' && toRoute == 'media-item')) {
-					this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST,
-						this.hGroupings);
-				}
+				// if (fromRoute != 'article-item' && toRoute != 'media-item') {
+				this.transforms.runTransition(collapsed ? tx.LAST : tx.FIRST, this.hGroupings);
+				// }
 			}
 			/* VERTICAL */
-			if (fromRoute == 'root' || toRoute == 'root') {
+			if (routeChanged && (fromRoute == 'root' || toRoute == 'root')) {
 				this.transforms.runTransition(tx.BETWEEN,
 					this.sitename.wrapper, this.about.wrapper);
 			}

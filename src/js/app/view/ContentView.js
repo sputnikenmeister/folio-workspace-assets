@@ -270,7 +270,7 @@ var ContentView = View.extend({
 	/* --------------------------- */
 
 	_onModelChange: function() {
-		if (this.model.hasChanged("withBundle")) {
+		if (this.model.hasAnyChanged("bundle")) {
 			if (this.model.has("bundle")) {
 				this.vpan.on("vpanstart", this._onVPanStart);
 			} else {

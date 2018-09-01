@@ -287,23 +287,29 @@ var AppViewProto = {
 
 	_onRoute: function(name, args) {
 		console.info("%s::_onRoute %o -> %o", this.cid, this.model.get("routeName"), name);
-		var o = _.defaults({ routeName: name }, AppState.prototype.defaults);
+		// var o = _.defaults({ routeName: name }, AppState.prototype.defaults);
+		var o = {
+			routeName: name,
+			bundle: null,
+			media: null,
+			article: null
+		};
 		switch (name) {
 			case "media-item":
 				o.bundle = bundles.selected;
-				o.withBundle = true;
+				// o.withBundle = true;
 				o.media = o.bundle.media.selected;
-				o.withMedia = true;
+				// o.withMedia = true;
 				o.collapsed = true;
 				break;
 			case "bundle-item":
 				o.bundle = bundles.selected;
-				o.withBundle = true;
+				// o.withBundle = true;
 				o.collapsed = true;
 				break;
 			case "article-item":
 				o.article = articles.selected;
-				o.withArticle = true;
+				// o.withArticle = true;
 				o.collapsed = true;
 				break;
 			case "bundle-list":
@@ -329,6 +335,20 @@ var AppViewProto = {
 				this.model.previous(key),
 				this.model.get(key));
 		}, this);
+
+		["Article", "Bundle", "Media"].forEach(function(name) {
+			var key = name.toLowerCase();
+			console[this.hasChanged("with" + name) == this.hasAnyChanged(key) ? "log" : "warn"].call(console, "%s::_onModelChange with%s: %o with%sChanged: %o", this.cid,
+				name, this.has(key),
+				name, this.hasAnyChanged(key)
+			);
+		}, this.model);
+
+		// console.log("%s::_onModelChange %o", this.cid,
+		// 	// arguments
+		// 	// _.clone(this.model.attributes),
+		// 	// this.model.changedAttributes()
+		// );
 
 		this.requestRender(View.MODEL_INVALID)
 			// .requestChildrenRender(View.MODEL_INVALID)
@@ -427,10 +447,19 @@ var AppViewProto = {
 
 		/* Set route class */
 		if (this.model.hasChanged("routeName")) {
+
+			prevAttr = this.model.previous("fromRouteName");
+			if (prevAttr) {
+				cls.remove("from-route-" + prevAttr);
+			}
+			cls.add("from-route-" + this.model.get("fromRouteName"));
+
 			prevAttr = this.model.previous("routeName");
 			if (prevAttr) {
 				cls.remove("route-" + prevAttr);
+				// this.el.setAttribute("from-route", prevAttr);
 			}
+			// this.el.setAttribute("to-route", this.model.get("routeName"));
 			cls.add("route-" + this.model.get("routeName"));
 		}
 

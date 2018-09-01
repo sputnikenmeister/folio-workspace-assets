@@ -3,10 +3,10 @@
  * @requires module:backbone
  */
 
-/** @type {module:backbone} */
-var Model = require("backbone").Model;
 /** @type {module:underscore} */
 var _ = require("underscore");
+/** @type {module:app/model/BaseModel} */
+var BaseModel = require("app/model/BaseModel");
 
 // /** @type {module:app/control/Globals} */
 // var Globals = require("app/control/Globals");
@@ -31,8 +31,11 @@ var toAttrsHash = function(obj, attr) {
 	} // else ignore non-string values
 	return obj;
 };
-
-var BaseItemProto = {
+/**
+ * @constructor
+ * @type {module:app/model/BaseItem}
+ */
+module.exports = BaseModel.extend({
 
 	_domPrefix: "_",
 
@@ -77,57 +80,4 @@ var BaseItemProto = {
 	toString: function() {
 		return this.get("domid");
 	}
-};
-
-var BaseItem = {
-	extend: function(proto, obj) {
-		var constr, propName; //, propDef;
-		for (propName in proto) {
-			if (proto.hasOwnProperty(propName) && _.isObject(proto[propName])) { //(Object.getPrototypeOf(proto[propName]) === Object.prototype)) {
-				_.defaults(proto[propName], BaseItemProto[propName]);
-				// console.log("BaseItem::extend '%s:%s' is Object\n%s", proto._domPrefix, p, JSON.stringify(proto[p]));
-			}
-		}
-		// if (proto.properties && this.prototype.properties) {
-		// 	_.defaults(proto.properties, this.prototype.properties);
-		// }
-		constr = Model.extend.apply(this, arguments);
-
-		if (Array.isArray(constr.prototype.getters)) {
-			constr.prototype.getters.forEach(function(getterName) {
-				Object.defineProperty(constr.prototype, getterName, {
-					enumerable: true,
-					get: function() {
-						return this.get(getterName);
-					}
-				});
-			});
-		}
-		// if (_.isObject(proto.properties)) {
-		// 	for (propName in proto.properties) {
-		// 		if (proto.properties.hasOwnProperty(propName)) {
-		// 			propDef = proto.properties[propName];
-		// 			if (_.isFunction(propDef)) {
-		// 				proto.properties[propName] = {
-		// 					enumerable: true, get: propDef
-		// 				};
-		// 			} else if (_.isObject(propDef)){
-		// 				propDef.enumerable = true;
-		// 			} else {
-		// 				delete proto.properties[propName];
-		// 			}
-		// 		}
-		// 	}
-		// 	Object.defineProperties(proto, proto.properties);
-		// 	delete proto.properties;
-		// }
-		return constr;
-	}
-};
-
-/**
- * @constructor
- * @type {module:app/model/BaseItem}
- */
-module.exports = BaseItem.extend.call(Model, BaseItemProto, BaseItem);
-// module.exports = Model.extend(BaseItemProto, BaseItem);
+});
