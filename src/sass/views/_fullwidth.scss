@@ -329,11 +329,11 @@ $s_content_right: $s_content_right_val;
 	// content children
 	// ///////////////////////////////////
 
-	// media-carousel
-	// ===================================
-
 	$s_content_top: 4rem;
 	$s_content_bottom: 3rem;
+
+	// media-carousel
+	// ===================================
 
 	.media-carousel {
 		max-width: $s_page_width_max;
@@ -455,8 +455,10 @@ $s_content_right: $s_content_right_val;
 		padding-right: $s_margin_right;
 		width: auto;
 		bottom: 0.75rem;
+
 		.list-item {
-			padding: 0 0.3333333rem;
+			// padding: 0 0.5rem;
+			//padding: 0 0.3333333rem;
 		}
 	}
 

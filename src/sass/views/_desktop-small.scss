@@ -200,6 +200,9 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 	// content
 	// //////////////////////////////////
 
+	$large_content_top: 1.5rem;
+	$large_content_bottom: 4.5rem;
+
 	// media-carousel
 	// ===================================
 
@@ -210,8 +213,16 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 		height: calc(100%
 			- #{$large_nav_top}
 			- #{$large_nav_height}
-			+ #{$m_content_top}
+			+ #{$large_content_top}
 		);
+		$large_carousel_item_height: calc(100%
+			- #{$large_content_top}
+			- #{$large_content_bottom}
+		);
+
+		margin-top: -#{$large_content_top};
+		padding-top: $large_content_top;
+		padding-bottom: $large_content_bottom;
 
 		.carousel-item {
 			left: calc(50% - #{$wide_page_width/2 + $hu});
@@ -222,6 +233,7 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 		$_fixme_empty_val: $hu*2 + $_fixme_empty_adj;
 		.empty-item {
 			// width: $wide_main_width;
+			max-height: $large_carousel_item_height;
 			width: $wide_page_width - ($hu*2 + $_fixme_empty_adj);
 			padding-right: $wide_aside_width - ($hu*2 + $_fixme_empty_adj);
 			padding-left: 0;
@@ -229,6 +241,7 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 		.media-item {
 			width: $wide_main_width;
 			margin-left: $wide_aside_width + $hu;
+			height: $large_carousel_item_height;
 		}
 		// .empty-item .content {
 			// font-size: 28px;
@@ -275,23 +288,23 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 				margin: 0 1.5rem 0 0;
 			}
 		}
-		.top-bar {
-			-webkit-flex-direction: column;
-			-ms-flex-direction: column;
-			flex-direction: column;
-			// top: -9.5rem; right: -$hu;
-			direction: ltr;
-			top: 0;
-			right: 100%;
-			width: auto;
-			height: calc(100% + 1rem);
-			margin: -0.5rem 1.25rem;
-			& > * {
-				padding: 0.5rem 0;
-				// &:first-child { padding-inline-start: 0; }
-				// &:last-child { padding-inline-end: 0; }
-			}
-		}
+		// .top-bar {
+		// 	-webkit-flex-direction: column;
+		// 	-ms-flex-direction: column;
+		// 	flex-direction: column;
+		// 	// top: -9.5rem; right: -$hu;
+		// 	direction: ltr;
+		// 	top: 0;
+		// 	right: 100%;
+		// 	width: auto;
+		// 	height: calc(100% + 1rem);
+		// 	margin: -0.5rem 1.25rem;
+		// 	& > * {
+		// 		padding: 0.5rem 0;
+		// 		// &:first-child { padding-inline-start: 0; }
+		// 		// &:last-child { padding-inline-end: 0; }
+		// 	}
+		// }
 	}
 
 	// media-caption-stack

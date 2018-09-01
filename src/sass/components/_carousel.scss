@@ -13,7 +13,7 @@
 	// transform: translate3d(0,0,0);
 	// transform-style: preserve-3d;
 
-	transition: tx(transform, 1, -1);
+	transition: tx(transform, 1, -1, ease);
 	@at-root .skip-transitions & {
 		@include skip_transitions;
 	}
@@ -74,9 +74,9 @@
 			@at-root & {
 				// overflow: auto;
 				opacity: 1.0;
-				.s {
-					background-color: transparent;
-				}
+				// .s {
+				// 	background-color: transparent;
+				// }
 				// color: darkgreen;
 			}
 			// @at-root .carousel.scrolling & {
@@ -87,9 +87,9 @@
 			@at-root .carousel.disabled & {
 				opacity: 0.06;
 				// overflow: hidden;
-				.s {
-					background-color: currentColor;
-				}
+				// .s {
+				// 	background-color: currentColor;
+				// }
 				// color: red;
 				// text-decoration: line-through
 			}

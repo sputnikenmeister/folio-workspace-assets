@@ -33,11 +33,12 @@ $nav_collapse_offset: map-get($temp, collapse_offset) * 1px;
 
 html {
 	font: 12px/1.5 $base_font;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
 }
 
 body {
 	// line-height: 1.5rem;
-	-moz-osx-font-smoothing: grayscale;
 }
 
 html {
@@ -201,31 +202,33 @@ body {
 // ===================================
 @import "components/filterable";
 
-.list-item {
-	@extend %leaf_content;
-	white-space: nowrap;
-	cursor: pointer;
-	a {
-		display: inline-block;
-		// transition: tx(color, 1, 0);
+.filterable {
+	.list-item {
+		@extend %leaf_content;
+		white-space: nowrap;
+		cursor: pointer;
+		a {
+			display: inline-block;
+			// transition: tx(color, 1, 0);
+		}
+		.label {
+			@extend %leaf_content_label;
+			// line-height: 0; // NOTE: is line-height: 0 required ??
+			// margin: 0 #{-$hu * 0.75} 0 #{-$hu};
+			// padding: 0 #{$hu * 0.75} 0 $hu;
+			// display: inline-block;
+		}
 	}
-	.label {
-		@extend %leaf_content_label;
-		line-height: 0;
-		// margin: 0 #{-$hu * 0.75} 0 #{-$hu};
-		// padding: 0 #{$hu * 0.75} 0 $hu;
-		// display: inline-block;
-	}
-}
-.list-group {
-	@extend %leaf_content;
-	white-space: nowrap;
-	.label {
-		@extend %leaf_content_label;
-		display: inline-block;
-		& > span {
-			padding: 0 1ex;
-			margin: 0 -1ex;
+	.list-group {
+		@extend %leaf_content;
+		white-space: nowrap;
+		.label {
+			@extend %leaf_content_label;
+			display: inline-block;
+			& > span {
+				padding: 0 1ex;
+				margin: 0 -1ex;
+			}
 		}
 	}
 }
@@ -304,8 +307,10 @@ body {
 		.label {
 			@include small_caps($size: 0.85rem, $lead: 0);
 			display: inline-block;
-			width: $m_aside_width - $hu * 4;
-			transform: moveX(-100%);
+
+			// NOTE: this is overhanging value
+			width: 100%;// $m_aside_width - $hu * 4;
+			transform: moveX(-66%);// moveX(-100%);
 			box-sizing: border-box;
 
 			// padding: 0 #{0.5*$hu};
@@ -469,6 +474,9 @@ body {
 			opacity: 1;
 			visibility: visible;
 		}
+		.container-collapsed:not(.container-changing) & {
+			display: none;
+		}
 		.container-expanded.container-changing & {
 			transition: tx(opacity, 1, 0),
 				tx(visibility, 1, 0, step-start);
@@ -500,6 +508,9 @@ body {
 // content
 // ///////////////////////////////////
 
+$m_content_top: 4.5rem;
+$m_content_bottom: 4.5rem;
+
 // media-carousel
 // ===================================
 
@@ -513,9 +524,6 @@ body {
 		// transform: moveY(calc(#{$nav_collapse_offset} + 3rem));
 	}
 }
-
-$m_content_top: 4.5rem;
-$m_content_bottom: 4.5rem;
 
 .media-carousel {
 	overflow: hidden;
@@ -561,8 +569,8 @@ $m_content_bottom: 4.5rem;
 		width: $m_main_width;// - 12px;
 	}
 	.media-item {
-		height: $m_carousel_item_height;
 		width: $m_page_width;
+		height: $m_carousel_item_height;
 	}
 	.playable-renderer {
 		.controls {
@@ -701,6 +709,8 @@ $m_content_bottom: 4.5rem;
 @import "components/selectable.dots-fontface.scss";
 
 .media-dotnav {
+	font-size: 125%;
+	line-height: 1rem;
 	text-align: center;
 	margin: 0 auto;
 	padding: 0 $m_margin_right 0 $m_margin_left;
@@ -713,6 +723,13 @@ $m_content_bottom: 4.5rem;
 	right: 0;
 	transform: move();
 
+	.list-item {
+		// padding: 0 0.666666666rem;
+		a {
+			color: inherit !important;
+		}
+	}
+
 	transition: tx(opacity, 1, 0);
 	opacity: 1;
 	@at-root .without-media &,
@@ -720,12 +737,6 @@ $m_content_bottom: 4.5rem;
 	.container-changing &,
 	.container-changed & {
 		opacity: 0;
-	}
-	.list-item {
-		padding: 0 0.5rem;
-		a {
-			color: inherit !important;
-		}
 	}
 }
 

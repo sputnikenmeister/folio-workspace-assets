@@ -1,6 +1,17 @@
 // -----------------------------------
 // .media-item
 // -----------------------------------
+
+@mixin placeholder_label{
+		font-size: 9rem;
+		font-weight: bold;
+		line-height: 0.9;
+		letter-spacing: -0.01em;
+		padding: 3rem;
+		position: absolute;
+		top: 0;
+		left: 0;
+}
 .media-item {
 	img {
 		// object-fit: cover;
@@ -54,14 +65,15 @@
 	// .placeholder:before
 	// - - - - - - - - - - - - - - - - -
 	.placeholder:before {
-		font-size: 9rem;
-		font-weight: bold;
-		line-height: 0.9;
-		letter-spacing: -0.01em;
-		padding: 3rem;
-		position: absolute;
-		top: 0;
-		left: 0;
+		@include placeholder_label;
+// 		font-size: 9rem;
+// 		font-weight: bold;
+// 		line-height: 0.9;
+// 		letter-spacing: -0.01em;
+// 		padding: 3rem;
+// 		position: absolute;
+// 		top: 0;
+// 		left: 0;
 	}
 	&.pending,
 	&.ready {

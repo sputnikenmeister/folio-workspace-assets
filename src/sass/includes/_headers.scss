@@ -252,6 +252,21 @@
 	// &:first-child: { margin-top: -0.666666666666rem; }
 }
 
+/* 1f3_1f6 */
+%char_1f3_1f6 {
+	@extend %char_heading;
+	font-size: 1.333333333rem;
+	line-height: 1.666666666rem;
+	letter-spacing: 0.25px;
+}
+%n1f3_1f6 {
+	@extend %para_heading;
+	@extend %char_1f3_1f6;
+	margin-bottom: 1rem;
+	// padding: 4px 20px 3px 20px;
+	// &:first-child: { margin-top: 0.25rem; }
+}
+
 /* 1f3_1f5 */
 %char_1f3_1f5 {
 	@extend %char_heading;

@@ -1,4 +1,5 @@
 {
+	"video_crop_px": "0",
 	"transform_type": "3d",
 	"transitions": {
 		"ease": "ease-in-out",
