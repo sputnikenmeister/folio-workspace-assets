@@ -8,7 +8,7 @@
 // 	background-image: image-url("debug/debug-background.svg");
 // 	background-repeat: no-repeat;
 // 	background-position: 50% 3px;
-// 	background-size: #{$default_page_width + $hu*2} 100%; //1600px;
+// 	background-size: #{$m_page_width + $hu*2} 100%; //1600px;
 //
 // 	// @include media(desktop-small) {
 // 	@at-root .desktop-small & {
@@ -53,7 +53,7 @@ svg#debug-grid {
 	display: block;
 	width: 100%;
 	height: 100%;
-	max-width: $default_page_width;
+	max-width: $m_page_width;
 	margin: 0 auto;
 	top: 0; bottom: 0;
 	left: 0; right: 0;
@@ -148,7 +148,7 @@ svg#debug-grid {
 
 	/* Horizontal guides */
 	#debug-grid-container {
-		transform: translate(0, $default_nav_top);
+		transform: translate(0, $m_nav_top);
 		@at-root .desktop-small & {
 			transform: translate(0, $large_nav_top);
 		}
@@ -166,7 +166,7 @@ svg#debug-grid {
 		}
 	}
 	#debug-grid-content {
-		transform: translate(0, $default_nav_height);
+		transform: translate(0, $m_nav_height);
 		@at-root .desktop-small & {
 			transform: translate(0, $large_nav_height);
 		}
@@ -181,21 +181,21 @@ svg#debug-grid {
 
 	/* Vertical guides instances */
 	#gl0 {
-		transform: translate($default_margin_left, 0);
+		transform: translate($m_margin_left, 0);
 	}
 	#gl1 {
-		transform: translate(#{$default_margin_left + $default_content_left}, 0);
+		transform: translate(#{$m_margin_left + $m_content_left}, 0);
 	}
 	/* container is flipped horizontally */
 	#gr0 {
-		transform: translate(calc(100% - #{$default_margin_right}, 0));
+		transform: translate(calc(100% - #{$m_margin_right}, 0));
 	}
 	#gr1 {
-		transform: translate(calc(100% - #{$default_margin_right} - #{$default_content_right}, 0));
+		transform: translate(calc(100% - #{$m_margin_right} - #{$m_content_right}, 0));
 	}
 	#gm {
 		transform:
-			translate(calc(100vw - #{$default_aside_width} - #{$default_margin_right}), 0);
+			translate(calc(100vw - #{$m_aside_width} - #{$m_margin_right}), 0);
 	}
 
 	// #gm0 { transform: translate(-2rem, 0); }

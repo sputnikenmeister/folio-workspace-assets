@@ -53,6 +53,9 @@
 		&[data-logtype="ended"] {
 			background-color: rgba(0,255,0,0.25);
 		}
+		&[data-logtype^="timeout"] {
+			background-color: rgba(127,255,127,0.25);
+		}
 	}
 }
 .carousel .debug-log {

@@ -79,10 +79,9 @@ module.exports = View.extend({
 
 		/* toggle visibility
 		/* - - - - - - - - - - - - - - - - */
-		this.initializeClassToggle("show-links", this.el.querySelector(".debug-links #links-toggle"), this.el,
+		this.initializeClassToggle("show-links", this.el.querySelector("#links-toggle"), this.el,
 			function(key, value) {
 				this.el.classList.toggle("not-" + key, !value);
-				// console.log("%s:initializeClassToggle:[callback] %o", this.cid, arguments);
 			}
 		);
 		this.initializeClassToggle("show-tests", this.el.querySelector("#toggle-tests a"), this.el);
@@ -90,17 +89,25 @@ module.exports = View.extend({
 
 		/* toggle container classes
 		/* - - - - - - - - - - - - - - - - */
-		this.initializeClassToggle("debug-grid-bg", this.el.querySelector("#toggle-grid-bg a"), document.body);
-		this.initializeClassToggle("debug-blocks", this.el.querySelector("#toggle-blocks a"), container);
-		this.initializeClassToggle("debug-graph", this.el.querySelector("#toggle-graph a"), container);
-		this.initializeClassToggle("debug-mdown", this.el.querySelector("#toggle-mdown a"), container);
-		this.initializeClassToggle("debug-logs", this.el.querySelector("#toggle-logs a"), container);
-		this.initializeClassToggle("debug-tx", this.el.querySelector("#toggle-tx a"), container,
+		this.initializeClassToggle("debug-blocks-nav",
+			this.el.querySelector("#toggle-blocks-nav a"), container);
+		this.initializeClassToggle("debug-blocks-content",
+			this.el.querySelector("#toggle-blocks-content a"), container);
+		this.initializeClassToggle("debug-mdown",
+			this.el.querySelector("#toggle-mdown a"), container);
+		this.initializeClassToggle("debug-tx",
+			this.el.querySelector("#toggle-tx a"), container,
 			function(key, value) {
 				this.el.classList.toggle("show-tx", value);
 				this.el.classList.toggle("not-show-tx", !value);
 			}
 		);
+		this.initializeClassToggle("debug-graph",
+			this.el.querySelector("#toggle-graph a"), container);
+		this.initializeClassToggle("debug-logs",
+			this.el.querySelector("#toggle-logs a"), container);
+		this.initializeClassToggle("debug-grid-bg",
+			this.el.querySelector("#toggle-grid-bg a"), document.body);
 
 		this.initializeViewportInfo();
 
@@ -120,6 +127,8 @@ module.exports = View.extend({
 	},
 
 	initializeToggle: function(key, toggleEl, callback) {
+		if (!toggleEl) return;
+
 		var ctx = this;
 		var toggleValue = Cookies.get(key) === "true";
 		callback.call(ctx, key, toggleValue);

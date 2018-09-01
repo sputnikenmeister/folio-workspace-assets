@@ -46,8 +46,8 @@ $crimsom: rgba(220, 20, 60, 1);
 	// #sitename,
 	// .transform-wrapper {
 	// 	// height: 1rem;
-	// 	width: $default_aside_width;
-	// 	height: $default_nav_height;
+	// 	width: $m_aside_width;
+	// 	height: $m_nav_height;
 	// 	@include media(desktop-small) {
 	// 		width: $wide_aside_width;
 	// 		height: $large_nav_height;
@@ -97,9 +97,9 @@ $crimsom: rgba(220, 20, 60, 1);
 }
 
 // -----------------------------------
-// .debug-blocks
+// .debug-blocks-nav
 // -----------------------------------
-.debug-blocks {
+.debug-blocks-nav {
 	// @include debug_outline(0.4rem, solid, $brightyellow, $offset:-0.6rem);
 	// #container { @include debug_outline(0.4rem, dashed, $brightyellow, $offset:-0.9rem); }
 	// *[data-cid] {
@@ -145,6 +145,12 @@ $crimsom: rgba(220, 20, 60, 1);
 			// @include debug_outline_thin(1px, solid, $lightcoral);
 		}
 	}
+}
+
+// -----------------------------------
+// .debug-blocks-content
+// -----------------------------------
+.debug-blocks-content {
 	#content {
 		@include debug_outline(0.5rem, solid, $deepskyblue, 0.75);
 		// &:hover {
@@ -173,7 +179,7 @@ $crimsom: rgba(220, 20, 60, 1);
 		}
 		.carousel {
 			background-color: transparentize($lightblue, 0.9);
-			// @include debug_outline(1rem, solid, $deepskyblue, 0.8);
+			@include debug_outline(0.75rem, solid, $deepskyblue, 0.8);
 			&.scrolling {
 				@include debug_outline(1rem, solid, $deepskyblue, 0.7);
 				&.panning {
@@ -200,9 +206,9 @@ $crimsom: rgba(220, 20, 60, 1);
 		.media-item {
 			background-color: transparentize($lightblue, 0.7);
 			// .content {}
-// 			.play-toggle-hitarea {
-// 				background-color: transparentize($lightblue, 0.5);
-// 			}
+			// .play-toggle-hitarea {
+			// 	background-color: transparentize($lightblue, 0.5);
+			// }
 		}
 	}
 }
