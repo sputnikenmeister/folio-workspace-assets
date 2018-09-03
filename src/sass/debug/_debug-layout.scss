@@ -25,15 +25,14 @@ $brightyellow: hsl(308, 100%, 50%);
 /* Crimson	DC 14 3C	220  20  60 */
 $crimsom: rgba(220, 20, 60, 1);
 
-@mixin debug_outline($width: 1px, $style: dashed, $color: inherit, $opacity: null, $offset: null) {
-	outline: $width $style if($opacity == null, $color, transparentize($color, $opacity));
-	outline-offset: if($offset == null, -$width, $offset);
-}
-@mixin debug_outline_thin($width: 1px, $style: dashed, $color: inherit, $offset: null) {
-	@include debug_outline($width, $style, $color, null, $offset);
-}
-@mixin debug_outline_thick($style: solid, $color: $thistle, $opacity: 0.8) {
-	@include debug_outline_thin(1rem, $style, $color, $opacity);
+@mixin debug_outline(
+		$width: 1px,
+		$style: dashed,
+		$color: inherit,
+		$offset: null,
+		$opacity: null) {
+	outline: $width $style if($opacity == null, $color, rgba($color, $opacity));
+	outline-offset: if($offset == null, -$width, -($width+$offset));
 }
 
 // -----------------------------------
@@ -41,7 +40,7 @@ $crimsom: rgba(220, 20, 60, 1);
 // -----------------------------------
 .debug-tx {
 	// *[style*="transition"] {
-	// 	@include debug_outline_thin(1px, dotted, $darkseagreen);
+	// 	@include debug_outline(1px, dotted, $darkseagreen);
 	// }
 	// #sitename,
 	// .transform-wrapper {
@@ -54,32 +53,32 @@ $crimsom: rgba(220, 20, 60, 1);
 	// 	}
 	// }
 	#navigation.container-changing {
-		@include debug_outline(0.5rem, dashed, $lightcoral, 0.75);
+		@include debug_outline(0.5rem, dashed, rgba($lightcoral, 0.25));
 	}
 	#sitename,
 	.article-button {
 		&[style*="transition"] {
-			@include debug_outline(4px, dashed, $darkseagreen, 0.25, -4px);
+			@include debug_outline(4px, dashed, rgba($darkseagreen, 0.75));
 		}
 	}
 	#article-list-wrapper,
 	#site-name-wrapper {
 		&[style*="transition"] {
-			@include debug_outline(4px, dashed, $deepskyblue, 0.25, -4px);
+			@include debug_outline(4px, dashed, rgba($deepskyblue, 0.75));
 		}
 	}
 
 	.transform-wrapper[style*="transition"] {
-		@include debug_outline(2px, solid, $lightcoral, 0.35, -4px);
-		// background-color: transparentize($lightcoral, 0.5);
+		@include debug_outline(2px, solid, rgba($lightcoral, 0.65), 2px);
+		// background-color: rgba($lightcoral, 0.5);
 	}
 	.list-group span[style*="transition"] {
-		@include debug_outline(2px, dashed, $lightcoral, 0.35);
-		// background-color: transparentize($lightcoral, 0.5);
+		@include debug_outline(2px, dashed, rgba($lightcoral, 0.65));
+		// background-color: rgba($lightcoral, 0.5);
 	}
 	.list[style*="transition"] {
-		@include debug_outline(2px, dashed, $lightcoral, 0.35);
-		// background-color: transparentize($lightblue, 0.5);
+		@include debug_outline(2px, dashed, rgba($lightcoral, 0.65));
+		// background-color: rgba($lightblue, 0.5);
 	}
 	// .list-item, .list-group {
 	// 	&.excluded .label {
@@ -90,7 +89,7 @@ $crimsom: rgba(220, 20, 60, 1);
 	.carousel,
 	.stack {
 		&[style*="transition"] {
-			@include debug_outline(2px, dashed, $deepskyblue, 0.5);
+			@include debug_outline(2px, dashed, rgba($deepskyblue, 0.5));
 			outline-style: dashed !important;
 		}
 	}
@@ -100,49 +99,48 @@ $crimsom: rgba(220, 20, 60, 1);
 // .debug-blocks-nav
 // -----------------------------------
 .debug-blocks-nav {
-	// @include debug_outline(0.4rem, solid, $brightyellow, $offset:-0.6rem);
-	// #container { @include debug_outline(0.4rem, dashed, $brightyellow, $offset:-0.9rem); }
+	// @include debug_outline(0.4rem, solid, rgba($brightyellow, $offset:-0.6rem));
+	// #container { @include debug_outline(0.4rem, dashed, rgba($brightyellow, $offset:-0.9rem)); }
 	// *[data-cid] {
-	// 	@include debug_outline_thin($width: 0.25rem, $style: solid, $color: transparentize($thistle, 0.5));
+	// 	@include debug_outline($width: 0.25rem, $style: solid, $color: rgba($thistle, 0.5));
 	// }
 	// .list-item[data-cid] {
-	// 	// @include debug_outline_thin($width: 1px, $style: dashed, $color: transparentize($darkseagreen, 0.2));
-	// 	background-color: transparentize($thistle, 0.8);
+	// 	// @include debug_outline($width: 1px, $style: dashed, $color: rgba($darkseagreen, 0.8));
+	// 	background-color: rgba($thistle, 0.8);
 	// }
 
 	#navigation {
-		@include debug_outline(0.8rem, dashed, $lightcoral, 0.5, -0.4rem);
+		@include debug_outline(0.8rem, dashed, rgba($lightcoral, 0.5), -0.4rem);
 		&.container-changing {
-			@include debug_outline(0.8rem, dashed, $lightcoral, 0.25, -0.4rem);
+			@include debug_outline(0.8rem, dashed, rgba($lightcoral, 0.75), -0.4rem);
 		}
 		#vpan-group {
-			@include debug_outline(0.5rem, solid, $crimsom, 0.4, -0.25rem);
+			@include debug_outline(0.5rem, solid, rgba($crimsom, 0.6), -0.25rem);
 		}
 		.graph {
-			@include debug_outline(0.3rem, dashed, $darkseagreen, 0.75, 0);
+			@include debug_outline(0.3rem, dashed, rgba($darkseagreen, 0.25), 0);
 			// &:hover, &:active {
-			// 	@include debug_outline(0.3rem, dashed, $darkseagreen, 0.25, 0);
+			// 	@include debug_outline(0.3rem, dashed, rgba($darkseagreen, 0.75), 0);
 			// }
 		}
 		#article-list-wrapper,
 		#site-name-wrapper,
 		.list {
-			@include debug_outline_thin(1px, solid, Crimson, -1px);
-			// @include debug_outline_thick($color: $lightcoral);
-			background-color: transparentize($lightcoral, 0.9);
+			@include debug_outline(1px, solid, Crimson);
+			background-color: rgba($lightcoral, 0.1);
 		}
 		#site-name,
 		.article-button,
 		.list-group,
 		.list-item {
-			background-color: transparentize($lightcoral, 0.7);
+			background-color: rgba($lightcoral, 0.3);
 		}
 		#site-name a,
 		.article-button a,
 		.list-group .label span,
 		.list-item .label {
-			@include debug_outline_thin(1px, solid, $lightcoral, -1px);
-			// @include debug_outline_thin(1px, solid, $lightcoral);
+			@include debug_outline(1px, solid, $lightcoral);
+			// @include debug_outline(1px, solid, $lightcoral);
 		}
 	}
 }
@@ -152,63 +150,65 @@ $crimsom: rgba(220, 20, 60, 1);
 // -----------------------------------
 .debug-blocks-content {
 	#content {
-		@include debug_outline(0.5rem, solid, $deepskyblue, 0.75);
+		@include debug_outline(0.5rem, solid, rgba($deepskyblue, 0.25));
 		// &:hover {
-		// 	@include debug_outline(0.75rem, dashed, $deepskyblue, 0.25);
+		// 	@include debug_outline(0.75rem, dashed, rgba($deepskyblue, 0.75));
 		// }
 		&.container-changing {
-			@include debug_outline(0.5rem, dashed, $deepskyblue, 0.4);
+			@include debug_outline(0.5rem, dashed, rgba($deepskyblue, 0.6));
 		}
 		.article-view {
-			@include debug_outline(0.5rem, solid, $deepskyblue, 0.7);
+			@include debug_outline(0.5rem, solid, rgba($deepskyblue, 0.3));
 			& > * {
-				background-color: transparentize($lightblue, 0.8);
-				@include debug_outline_thin(1px, dashed, $deepskyblue);
+				background-color: rgba($lightblue, 0.2);
+				@include debug_outline(1px, dashed, $deepskyblue);
 			}
 		}
 		.stack {
 			.stack-item {
-				@include debug_outline_thin(1px, solid, RoyalBlue);
+				@include debug_outline(1px, solid, RoyalBlue);
 			}
 			.content {
-				background-color: transparentize($lightblue, 0.9);
+				background-color: rgba($lightblue, 0.1);
 				& > * {
-					background-color: transparentize($lightblue, 0.7);
+					background-color: rgba($lightblue, 0.3);
 				}
 			}
 		}
 		.carousel {
-			background-color: transparentize($lightblue, 0.9);
-			@include debug_outline(0.75rem, solid, $deepskyblue, 0.8);
+			background-color: rgba($lightblue, 0.1);
+			@include debug_outline(0.75rem, solid, rgba($deepskyblue, 0.2));
 			&.scrolling {
-				@include debug_outline(1rem, solid, $deepskyblue, 0.7);
+				@include debug_outline(1rem, solid, rgba($deepskyblue, 0.3));
 				&.panning {
-					@include debug_outline(1rem, solid, $deepskyblue, 0.3);
+					@include debug_outline(1rem, solid, rgba($deepskyblue, 0.7));
 				}
 			}
 			// &[style*="transition"] {
-			// 	@include debug_outline(0.25rem, dashed, $deepskyblue, 0.5);
+			// 	@include debug_outline(0.25rem, dashed, rgba($deepskyblue, 0.5));
 			// 	outline-style: dashed !important;
 			// }
 		}
 		.carousel-item {
 			// @include debug_outline($color: $deepskyblue);
-			// @include debug_outline_thin(1px, solid, $deepskyblue, 0.5);
-			@include debug_outline_thin(1px, solid, RoyalBlue, -1px);
+			// @include debug_outline(1px, solid, $deepskyblue, 0.5);
+			@include debug_outline(1px, solid, RoyalBlue);
 		}
 		.empty-item {
-			// @include debug_outline_thin(1px, solid, RoyalBlue, -1px);
+			// @include debug_outline(1px, solid, RoyalBlue);
 			.content {
-				@include debug_outline_thin(1px, solid, $deepskyblue, -1px);
-				background-color: transparentize($lightblue, 0.7);
+				@include debug_outline(1px, solid, $deepskyblue);
+				background-color: rgba($lightblue, 0.3);
 			}
 		}
 		.media-item {
-			background-color: transparentize($lightblue, 0.7);
-			// .content {}
-			// .play-toggle-hitarea {
-			// 	background-color: transparentize($lightblue, 0.5);
-			// }
+			background-color: rgba($lightblue, 0.3);
+		}
+		.playable-renderer {
+			.play-toggle-hitarea {
+				// background-color: rgba($lightblue, 0.5);
+				@include debug_outline(1.5rem, dashed, rgba(RoyalBlue, 0.25));
+			}
 		}
 	}
 }
@@ -229,8 +229,8 @@ $crimsom: rgba(220, 20, 60, 1);
 }
 .debug-mdown .mdown {
 	@include _debugSelectorInContent(h1,h2,h3,h4,h5,h6,p,ol,ul,dl) {
-		@include debug_outline(1px, solid, $darkolivegreen, 0.1, -1px);
-		background-color: transparentize($darkolivegreen, 0.9);
+		@include debug_outline(1px, solid, rgba($darkolivegreen, 0.9));
+		background-color: rgba($darkolivegreen, 0.1);
 		position: relative;
 		&::before {
 			position: absolute;
