@@ -79,7 +79,7 @@ function initRootStyles(sheet, rootSelector, attrs, fgColor, bgColor, lnColor, h
 	s = {
 		"color": bgColorVal
 	}; // s = { "color" : revFgColorVal };
-	s["-webkit-font-smoothing"] = (hasDarkBg ? "auto" : "antialiased");
+	// s["-webkit-font-smoothing"] = (hasDarkBg ? "auto" : "antialiased");
 	// insertCSSRule(sheet, revSelector + " .color-fg", s);
 	// insertCSSRule(sheet, revSelector + ".color-fg", s);
 	insertCSSRule(sheet, selfAndDescendant(revSelector, ".color-fg"), s);

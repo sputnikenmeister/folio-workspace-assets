@@ -4,11 +4,11 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {Function} */
-// var Color = require("color");
 
 /** @type {module:app/view/MediaRenderer} */
 var MediaRenderer = require("app/view/render/MediaRenderer");
+// /** @type {module:app/view/component/PlayToggleSymbol} */
+var PlayToggleSymbol = require("app/view/component/PlayToggleSymbol");
 // /** @type {module:app/view/component/ProgressMeter} */
 // var ProgressMeter = require("app/view/component/ProgressMeter");
 
@@ -24,21 +24,39 @@ var visibilityStateProp = prefixedProperty("visibilityState", document);
 var visibilityChangeEvent = prefixedEvent("visibilitychange", document, "hidden");
 
 /** @type {Function} */
-// var duotone = require("utils/canvas/bitmap/duotone");
-// var stackBlurRGB = require("utils/canvas/bitmap/stackBlurRGB");
-// var stackBlurMono = require("utils/canvas/bitmap/stackBlurMono");
-// var getAverageRGBA = require("utils/canvas/bitmap/getAverageRGBA");
-// var getAverageRGB = require("utils/canvas/bitmap/getAverageRGB");
+var Color = require("color");
 
-// /** @type {HTMLCanvasElement} */
-// var _sharedCanvas = null;
-// /** @return {HTMLCanvasElement} */
-// var getSharedCanvas = function() {
-// 	if (_sharedCanvas === null) {
-// 		_sharedCanvas = document.createElement("canvas");
-// 	}
-// 	return _sharedCanvas;
+/** @type {Function} */
+// var duotone = require("utils/canvas/bitmap/duotone");
+// var stackBlurMono = require("utils/canvas/bitmap/stackBlurMono");
+var stackBlurRGB = require("utils/canvas/bitmap/stackBlurRGB");
+// var getAverageRGBA = require("utils/canvas/bitmap/getAverageRGBA");
+var getAverageRGB = require("utils/canvas/bitmap/getAverageRGB");
+// var inflateRect = require("utils/geom/inflateRect");
+
+/** @type {HTMLCanvasElement} */
+var _sharedCanvas = null;
+/** @return {HTMLCanvasElement} */
+var getSharedCanvas = function() {
+	if (_sharedCanvas === null) {
+		_sharedCanvas = document.createElement("canvas");
+	}
+	return _sharedCanvas;
+};
+
+
+// var SVG_NS = "http://www.w3.org/2000/svg";
+// var XLINK_NS = "http://www.w3.org/1999/xlink";
+//
+// var useIdSeed = 0
+// var createSVGUseElement = function() {
+// 	var svgEl = document.createElementNS(SVG_NS, "use");
+// 	svgEl.setAttributeNS(null, "id", name + (useIdSeed++));
+// 	svgEl.setAttributeNS(null, "class", [name, "symbol"].join(" "));
+// 	svgEl.setAttributeNS(XLINK_NS, "xlink:href", "#" + name);
+// 	return svgEl;
 // };
+
 
 // function logAttachInfo(view, name, level) {
 // 	if (["log", "info", "warn", "error"].indexOf(level) != -1) {
@@ -60,10 +78,16 @@ var PlayableRenderer = MediaRenderer.extend({
 	className: MediaRenderer.prototype.className + " playable-renderer",
 
 	properties: {
-		paused: {
+		mediaPaused: {
 			/** @return {Boolean} */
 			get: function() {
 				return this._isMediaPaused();
+			}
+		},
+		mediaWaiting: {
+			/** @return {Boolean} */
+			get: function() {
+				return this._isMediaWaiting();
 			}
 		},
 		playbackRequested: {
@@ -75,19 +99,48 @@ var PlayableRenderer = MediaRenderer.extend({
 				this._setPlaybackRequested(value);
 			}
 		},
+		overlay: {
+			/** @return {HTMLElement} */
+			get: function() {
+				return this._overlay || (this._overlay = this.el.querySelector(".overlay"));
+			}
+		},
 		playToggle: {
 			/** @return {HTMLElement} */
 			get: function() {
 				return this._playToggle || (this._playToggle = this.el.querySelector(".play-toggle"));
 			}
 		},
-		overlay: {
+		playToggleSymbol: {
 			/** @return {HTMLElement} */
 			get: function() {
-				return this._overlay || (this._overlay = this.el.querySelector(".overlay"));
+				return this._playToggleSymbol || (this._playToggleSymbol = this.el.querySelector(".play-toggle-symbol"));
+			}
+		},
+		playToggleHitarea: {
+			/** @return {HTMLElement} */
+			get: function() {
+				return this._playToggleHitarea || (this._playToggleHitarea = this.el.querySelector(".play-toggle-hitarea"));
+			}
+		},
+		playbackState: {
+			get: function() {
+				return this._playbackState;
+			},
+			set: function(state) {
+				this._setPlaybackState(state);
 			}
 		}
 	},
+
+	// events: function() {
+	// 	var events = {};
+	// 	events[PlayableRenderer.CLICK_EVENT + " .play-toggle"] = "_onPlaybackToggle";
+	// 	return _.extend(events, _.result(this, MediaRenderer.prototype.events));
+	// },
+	// events: {
+	// 	"click .play-toggle":"_onPlaybackToggle"
+	// },
 
 	/** @override */
 	initialize: function(opts) {
@@ -140,6 +193,10 @@ var PlayableRenderer = MediaRenderer.extend({
 		// 	this.model.selected && this.togglePlayback(false);
 		// 	// this.togglePlayback(false);
 		// }
+		// console.log("%s::setEnabled", this.cid, this.enabled);
+		if (this._playToggleSymbol) {
+			this._playToggleSymbol.enabled = this.enabled;
+		}
 	},
 
 	/* ---------------------------
@@ -180,15 +237,22 @@ var PlayableRenderer = MediaRenderer.extend({
 		this.listenTo(this, "view:parentChange", this._onParentChange);
 		if (this.parentView) this._onParentChange(this, this.parentView, null);
 
+		// this.enabled = true;
+		if (this._playToggleSymbol) this._playToggleSymbol.paused = !this.enabled;
+
 		this._addDOMListeners();
 		this._validatePlayback();
 	},
 
 	_onModelDeselected: function() {
+		console.log("%s::_onModelDeselected _playbackRequested: %s, event: %s", this.cid, this._playbackRequested, this._toggleEvent);
 		// logAttachInfo(this, "_onModelDeselected", "log");
 		// this._removeParentListeners();
 		this.stopListening(this, "view:parentChange", this._onParentChange);
 		if (this.parentView) this._onParentChange(this, null, this.parentView);
+
+		// this.enabled = false;
+		if (this._playToggleSymbol) this._playToggleSymbol.paused = true;
 
 		this._removeDOMListeners();
 		this.togglePlayback(false);
@@ -267,13 +331,15 @@ var PlayableRenderer = MediaRenderer.extend({
 	_addDOMListeners: function() {
 		this.listenTo(this, "view:removed", this._removeDOMListeners);
 		document.addEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		this.playToggle.addEventListener(this._toggleEvent, this._onPlaybackToggle, true);
+		this.playToggleHitarea.addEventListener(
+			this._toggleEvent, this._onPlaybackToggle, true);
 	},
 
 	_removeDOMListeners: function() {
 		this.stopListening(this, "view:removed", this._removeDOMListeners);
 		document.removeEventListener(visibilityChangeEvent, this._onVisibilityChange, false);
-		this.playToggle.removeEventListener(this._toggleEvent, this._onPlaybackToggle, true);
+		this.playToggleHitarea.removeEventListener(
+			this._toggleEvent, this._onPlaybackToggle, true);
 	},
 
 	/* visibility dom event
@@ -293,10 +359,10 @@ var PlayableRenderer = MediaRenderer.extend({
 	/* --------------------------- */
 
 	/** @type {String} */
-	_toggleEvent: window.hasOwnProperty("onpointerup") ? "pointerup" : "mouseup",
+	_toggleEvent: MediaRenderer.CLICK_EVENT, //window.hasOwnProperty("onpointerup") ? "pointerup" : "mouseup",
 
 	_onPlaybackToggle: function(ev) {
-		console.log("%s[%sabled]::_onPlaybackToggle[%s] defaultPrevented: %s", this.cid, this.enabled ? "en" : "dis", ev.type, ev.defaultPrevented);
+		//console.log("%s[%sabled]::_onPlaybackToggle[%s] defaultPrevented: %s", this.cid, this.enabled ? "en" : "dis", ev.type, ev.defaultPrevented);
 		// NOTE: Perform action if MouseEvent.button is 0 or undefined (0: left-button)
 		if (this.enabled && !ev.defaultPrevented && !ev.button) {
 			ev.preventDefault();
@@ -348,6 +414,8 @@ var PlayableRenderer = MediaRenderer.extend({
 		} else {
 			this._pauseMedia();
 		}
+		// this.setImmediate(this._renderPlaybackState);
+		this._renderPlaybackState();
 	},
 
 	_canResumePlayback: function() {
@@ -373,6 +441,111 @@ var PlayableRenderer = MediaRenderer.extend({
 		}
 	},
 
+	/* ---------------------------
+	/* _setPlayToggleSymbol
+	/* --------------------------- */
+
+	_renderPlaybackState: function() {
+		if (this.progressMeter) {
+			this.progressMeter.indeterminate = this._isMediaWaiting();
+		}
+
+		// this._setPlayToggleSymbol("waiting");
+		// this.content.classList.toggle("waiting", true);
+
+		if (!this.content.classList.contains("started")) {
+			this._setPlayToggleSymbol("play");
+		} else
+		if (this.playbackRequested) {
+			if (this._isMediaWaiting()) {
+				this._setPlayToggleSymbol("waiting");
+			} else {
+				this._setPlayToggleSymbol("play");
+			}
+		} else {
+			this._setPlayToggleSymbol("pause");
+		}
+		this.content.classList.toggle("waiting", this._isMediaWaiting());
+	},
+
+	_playToggleSymbol: null,
+	_setPlayToggleSymbol: function(symbolName) {
+		if (this._playToggleSymbol === null) {
+			this._playToggleSymbol = new PlayToggleSymbol({
+				el: this.el.querySelector(".play-toggle-symbol"),
+			});
+		}
+		console.log("%s::_setPlayToggleSymbol [enabled:%s] [selected:%s]", this.cid, this.enabled, this.parentView.collection.selected === this.model);
+
+		this._playToggleSymbol.paused = !(this.enabled && this.parentView.collection.selected === this.model);
+		this._playToggleSymbol.symbolName = symbolName;
+	},
+
+	// _playToggleSymbolSvg: null,
+	// _playToggleSymbolName: null,
+	// _setPlayToggleSymbol_svg: function(symbolName) {
+	// 	if (this._playToggleSymbolName !== symbolName) {
+	// 		var svgDoc = this.el.querySelector("svg.play-toggle-symbol");
+	// 		if (this._playToggleSymbolSvg) {
+	// 			svgDoc.removeChild(this._playToggleSymbolSvg);
+	// 		}
+	// 		var svgSym = document.createElementNS("http://www.w3.org/2000/svg", "use");
+	// 		svgSym.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", "#" + symbolName);
+	// 		svgDoc.appendChild(svgSym);
+	// 		svgDoc.setAttributeNS(null, "class", symbolName + "-symbol play-toggle-symbol");
+	//
+	// 		this._playToggleSymbolSvg = svgSym;
+	// 		this._playToggleSymbolName = symbolName;
+	// 	}
+	// },
+
+	/* --------------------------- *
+	/* waiting
+	/* --------------------------- */
+
+	_isWaiting: null,
+
+	_isMediaWaiting: function() {
+		return this._isWaiting;
+	},
+
+	_toggleWaiting: function(waiting) {
+		if (!_.isBoolean(waiting)) {
+			waiting = !this._isWaiting;
+		}
+		if (this._isMediaPaused()) {
+			waiting = false;
+		}
+		if (this._isWaiting !== waiting) {
+			this._isWaiting = waiting;
+			// this._renderPlaybackState();
+		}
+	},
+
+	/* --------------------------- *
+	/* playbackState
+	/* --------------------------- */
+
+	/*_playbackState: null,
+
+	_playbackStateEnum: ["playing", "paused", "waiting", "ended"],
+
+	_setPlaybackState: function(key) {
+		if (this._playbackStateEnum.indexOf(key) === -1) {
+			throw new Error("Argument " + key + " invalid. Must be one of: " + this._playbackStateEnum.join(", "));
+		}
+		if (this._playbackState !== key) {
+			if (this._playbackState) {
+				this.content.classList.remove(this._playbackState);
+			} else {
+				this.content.classList.add("started");
+			}
+			this.content.classList.add(key);
+			this._playbackState = key;
+			this.trigger("playback:" + key);
+		}
+	},*/
+
 	/* --------------------------- *
 	/* abstract
 	/* --------------------------- */
@@ -395,7 +568,7 @@ var PlayableRenderer = MediaRenderer.extend({
 	/* --------------------------- */
 
 	updateOverlay: function(mediaEl, targetEl, rectEl) {
-		// // this method is not critical, just catch and log all errors
+		// this method is not critical, just catch and log all errors
 		// try {
 		// 	this._updateOverlay(mediaEl, targetEl, rectEl)
 		// } catch (err) {
@@ -447,7 +620,7 @@ var PlayableRenderer = MediaRenderer.extend({
 		return context;
 	},
 
-	/*
+	/**/
 	_updateOverlay: function(mediaEl, targetEl, rectEl) {
 		// src/dest rects
 		// ------------------------------
@@ -481,10 +654,10 @@ var PlayableRenderer = MediaRenderer.extend({
 		};
 
 		// native/display scale
-		var sW = this.model.get("w"),
-			sH = this.model.get("h"),
-			rsX = sW/this.metrics.media.width,
-			rsY = sH/this.metrics.media.height;
+		var sW = this.model.get("source").get("w"),
+			sH = this.model.get("source").get("h"),
+			rsX = sW / this.metrics.media.width,
+			rsY = sH / this.metrics.media.height;
 
 		// dest, scaled to native
 		var src = {
@@ -528,21 +701,25 @@ var PlayableRenderer = MediaRenderer.extend({
 		// Color, filter opts
 		// ------------------------------
 
-		// this.fgColor || (this.fgColor = new Color(this.model.attr("color")));
-		// this.bgColor || (this.bgColor = new Color(this.model.attr("background-color")));
-		//
-		// var opts = { radius: 20 };
-		// var isFgDark = this.fgColor.luminosity() < this.bgColor.luminosity();
-		// opts.x00 = isFgDark? this.fgColor.clone().lighten(0.5) : this.bgColor.clone().darken(0.5);
-		// opts.xFF = isFgDark? this.bgColor.clone().lighten(0.5) : this.fgColor.clone().darken(0.5);
-		//
+		this.fgColor || (this.fgColor = new Color(this.model.attr("color")));
+		this.bgColor || (this.bgColor = new Color(this.model.attr("background-color")));
+
+		var opts = { radius: 20 };
+		var isFgDark = this.fgColor.luminosity() < this.bgColor.luminosity();
+		opts.x00 = isFgDark ? this.fgColor.clone().lighten(0.5) : this.bgColor.clone().darken(0.5);
+		opts.xFF = isFgDark ? this.bgColor.clone().lighten(0.5) : this.fgColor.clone().darken(0.5);
+
+		stackBlurRGB(imageData, { radius: 40 });
 		// stackBlurMono(imageData, opts);
 		// duotone(imageData, opts);
-		// stackBlurRGB(imageData, { radius: 20 });
 		//
-		// context.putImageData(imageData, 0, 0);
-		// targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
-	}*/
+		context.putImageData(imageData, 0, 0);
+		targetEl.style.backgroundOrigin = "border-box";
+		targetEl.style.backgroundClip = "content-box";
+		targetEl.style.backgroundSize = "100%";
+		// targetEl.style.padding = "0 0 5rem 0";
+		targetEl.style.backgroundImage = "url(" + canvas.toDataURL() + ")";
+	} /**/
 });
 
 /* ---------------------------
@@ -556,7 +733,6 @@ if (GA) {
 
 		// var readyEvents = ["playing", "waiting", "ended"];
 		// var userEvents = ["play", "pause"];
-
 
 		return PlayableRenderer.extend({
 

@@ -190,8 +190,10 @@ var View = {
 	/** @const */
 	NONE_INVALID: 0,
 	/** @const */
-	CHILDREN_INVALID: 1,
+	ALL_INVALID: ~0 >>> 1,
 
+	/** @const */
+	CHILDREN_INVALID: 1,
 	/** @const */
 	MODEL_INVALID: 2,
 	/** @const */
@@ -202,7 +204,7 @@ var View = {
 	LAYOUT_INVALID: 16,
 
 	/** @const */
-	// RENDER_INVALID: 8 | 16,
+	CLICK_EVENT: "click", //window.hasOwnProperty("onpointerup") ? "pointerup" : "mouseup",
 
 	/** @type {module:app/view/base/ViewError} */
 	ViewError: require("app/view/base/ViewError"),
@@ -216,12 +218,8 @@ var View = {
 	/** @type {module:utils/prefixedEvent} */
 	prefixedEvent: require("utils/prefixedEvent"),
 
-	// /** @type {module:utils/setImmediate} */
-	// setImmediate: require("utils/setImmediate"),
-
 	/** @type {module:app/view/promise/whenViewIsAttached} */
 	whenViewIsAttached: require("app/view/promise/whenViewIsAttached"),
-
 
 	/** @type {module:app/view/promise/whenViewIsRendered} */
 	whenViewIsRendered: require("app/view/promise/whenViewIsRendered"),
@@ -450,6 +448,7 @@ var ViewProto = {
 		// this._addToParentView();
 		this._attached = true;
 		this._viewDepth = null;
+		this.setEnabled(true);
 		this._setParentView(View.findByDescendant(this.el.parentElement));
 
 		// if (this.parentView) {
@@ -478,6 +477,7 @@ var ViewProto = {
 		}
 		this._attached = false;
 		this._viewDepth = null;
+		this.setEnabled(false);
 
 		if (this._viewPhase != "disposing" || this._viewPhase == "disposed") {
 			this.remove();
@@ -580,7 +580,6 @@ var ViewProto = {
 
 	setImmediate: function(callback, priority, ctx) {
 		return modelQueue.request(callback.bind(ctx || this), priority);
-		// return window.setImmediate(callback.bind(ctx || this));
 	},
 
 	clearImmediate: function(id) {
@@ -770,7 +769,13 @@ var ViewProto = {
 	/* @param {Boolean}
 	/*/
 	setEnabled: function(enable) {
-		this._enabled = enable;
+		if (this._enabled == enable) return;
+		this._enabled = !!(enable);
+		if (this._enabled) {
+			this.delegateEvents();
+		} else {
+			this.undelegateEvents();
+		}
 	},
 };
 //, View);

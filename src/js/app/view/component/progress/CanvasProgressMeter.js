@@ -3,15 +3,15 @@
  * @module app/view/component/progress/CanvasProgressMeter
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-/** @type {module:underscore} */
-var Color = require("color");
+// /** @type {module:underscore} */
+// var _ = require("underscore");
+// /** @type {module:underscore} */
+// var Color = require("color");
 
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
-/** @type {module:utils/svg/arcData} */
-var arcData = require("utils/svg/arcData");
+// /** @type {module:utils/svg/arcData} */
+// var arcData = require("utils/svg/arcData");
 /** @type {module:utils/ease/linear} */
 var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
@@ -24,16 +24,16 @@ function isSizeProp(propName) {
 	return /^(offset|client)(Left|Top|Width|Height)$/.test(propName);
 }
 
-var ARC_ERR = 0.00001;
+// var ARC_ERR = 0.00001;
 // var ARC_ERR = 0.0;
-var PI = Math.PI;
+// var PI = Math.PI;
 var PI2 = Math.PI * 2;
 
 var MIN_CANVAS_RATIO = 2;
 var GAP_ARC = PI2 / 48;
-var CAP_SCALE = 2; // cap arc = GAP_ARC * CAP_SCALE
-var WAIT_CYCLE_VALUE = 1;
-var WAIT_CYCLE_MS = 300; // milliseconds per interpolation loop 
+// var CAP_SCALE = 2; // cap arc = GAP_ARC * CAP_SCALE
+// var WAIT_CYCLE_VALUE = 1;
+// var WAIT_CYCLE_MS = 300; // milliseconds per interpolation loop
 
 var ARC_DEFAULTS = {
 	"amount": {
@@ -97,9 +97,9 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	// 		set: function(value) {
 	// 			if ((this._indeterminate === true && value === false) || (this._indeterminate === false && value === true)) {
 	// 				this._indeterminate = value;
-	// 				this.valueTo(0, 0, "_wait");
+	// 				this.valueTo( "_wait", 0,  0);
 	// 				if (value) {
-	// 					this.valueTo(WAIT_CYCLE_VALUE, WAIT_CYCLE_MS, "_wait");
+	// 					this.valueTo( "_wait", E,  WAIT_CYCLE_MS);
 	// 				}
 	// 			}
 	// 		}
@@ -259,7 +259,7 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	/* render
 	/* --------------------------- */
 
-	///** @override */ 
+	///** @override */
 	/* render: function () {
 		if (!this.attached) {
 			if (!this._renderPending) {
@@ -335,8 +335,8 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		// if (this.indeterminate) {
 		// 	var waitValue = this._valueData["_wait"]._renderedValue || 0;
 		// 	if (waitValue == WAIT_CYCLE_VALUE) {
-		// 		this.valueTo(0, 0, "_wait");
-		// 		this.valueTo(WAIT_CYCLE_VALUE, WAIT_CYCLE_MS, "_wait");
+		// 		this.valueTo( "_wait", 0,  0);
+		// 		this.valueTo( "_wait", E,  WAIT_CYCLE_MS);
 		// 	}
 		// 	notAvailableStyle.lineDashOffset = waitValue * notAvailableStyle.lineDashLength;
 		// 	// waitValue = WAIT_CYCLE_VALUE - waitValue; // reverse direction
@@ -361,8 +361,8 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		// var loopValue = this._valueData["_loop"]._renderedValue || 0;
 		// trigger loop
 		if ((changed.indexOf("amount") !== -1) && amountData._lastRenderedValue > amountData._renderedValue) {
-			this.valueTo(1, 0, "_loop");
-			this.valueTo(0, 750, "_loop");
+			this.valueTo("_loop", 1, 0);
+			this.valueTo("_loop", 0, 750);
 			this.updateValue("_loop");
 			// loopValue = 1; // value will not be updated until next frame
 		}
@@ -492,17 +492,17 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	// 	var gapWidth = GAP_ARC * valueStyle.radius * 2;
 	// 	var xTip = Math.cos(GAP_ARC/2) * radius;
 	// 	var yTip = Math.sin(GAP_ARC/2) * radius;
-	// 	
+	//
 	// 	this._ctx.save();
 	// 	this._ctx.lineWidth = valueStyle.lineWidth;// * 0.75;
-	// 	
+	//
 	// 	this._ctx.rotate(arcPos);
 	// 	this._ctx.beginPath();
 	// 	this._ctx.moveTo(xTip, yTip);
 	// 	this._ctx.lineTo(xTip, yTip - gapWidth);
 	// 	this._ctx.lineTo(xTip - gapWidth * (2/3), yTip - gapWidth);
 	// 	this._ctx.closePath();
-	// 	
+	//
 	// 	this._ctx.fill();
 	// 	// this._ctx.stroke();
 	// 	this._ctx.restore();
@@ -511,36 +511,36 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	// drawEndCap3: function (valueStyle, arcPos) {
 	// 	var ARR_ARC_SCALE = 2;
 	// 	var ARR_WIDTH_SCALE = 1.25;
-	// 	
+	//
 	// 	var arrArc = arcPos - GAP_ARC * ARR_ARC_SCALE;
 	// 	var inArc = Math.max(GAP_ARC, arrArc);
 	// 	// var inArc = arrArc;
 	// 	// var arrWidth = GAP_ARC * valueStyle.radius * ARR_WIDTH_SCALE;
 	// 	var arrWidth = Math.min(GAP_ARC, arrArc) * valueStyle.radius * ARR_WIDTH_SCALE;
-	// 	
+	//
 	// 	var xIn = Math.cos(inArc);
 	// 	var yIn = Math.sin(inArc);
 	// 	var xOut = Math.cos(arcPos);
 	// 	var yOut = Math.sin(arcPos);
-	// 	
+	//
 	// 	var rOut = valueStyle.radius + valueStyle.lineWidth * 0.5;
 	// 	var rIn = rOut - arrWidth;
 	// 	// var rIn2 = rOut + arrWidth;
-	// 	
+	//
 	// 	this._ctx.save();
 	// 	this._ctx.lineWidth = valueStyle.lineWidth;// * 0.75;
 	// 	this._ctx.beginPath();
 	// 	this._ctx.moveTo(xOut*rOut, yOut*rOut);
 	// 	this._ctx.lineTo(xIn*rIn, yIn*rIn);
 	// 	this._ctx.stroke();
-	// 	
+	//
 	// 	// this._ctx.lineTo(xIn*rOut, yIn*rOut);
 	// 	// this._ctx.arc(0, 0, rOut, inArc, arcPos);
 	// 	// this._ctx.closePath();
 	// 	// this._ctx.fill();
 	// 	this._ctx.restore();
 	// },
-	// 
+	//
 	// drawDash: function (valueStyle, arcPos) {
 	// 	var cx = Math.cos(arcPos);
 	// 	var cy = Math.sin(arcPos);
@@ -549,7 +549,7 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	// 	// shift dash by half lineWidth.
 	// 	var rOut = valueStyle.radius + valueStyle.lineWidth * 0.5;
 	// 	var rIn = rOut - dashWidth;
-	// 	
+	//
 	// 	this._ctx.save();
 	// 	this._ctx.lineWidth = valueStyle.lineWidth * 0.75;
 	// 	this._ctx.beginPath();
@@ -566,14 +566,14 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	// 	var UNICODE_PAUSE = String.fromCharCode(0x23F8);
 	// 	// var UNICODE_BLACK_SQUARE_FOR_STOP = String.fromCharCode(0x23F9);
 	// 	var UNICODE_STOP = String.fromCharCode(0x23F9);
-	// 	
+	//
 	// 	var symbolFull = Math.round(this._canvasSize/14)*3;//this._fontSize;
 	// 	var symbolHalf = symbolFull/2;
 	// 	var symbolThird = symbolFull/3;
 	// 	var labelWidth = symbolFull;
-	// 	
+	//
 	// 	this._ctx.save();
-	// 	
+	//
 	// 	switch (labelString) {
 	// 		case UNICODE_PLAY:
 	// 			// this._ctx.scale(symbolScale, symbolScale);
@@ -603,7 +603,7 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	// 				this._baselineShift, labelWidth);
 	// 			break;
 	// 	}
-	// 	
+	//
 	// 	this._ctx.restore();
 	// 	// this._drawLabelGuides(-this._canvasSize/2, labelWidth);
 	// },
@@ -611,8 +611,8 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	// drawSpinner: function() {
 	// 	var waitValue = this._valueData["_wait"]._renderedValue || 0;
 	// 	if (waitValue == 1) {
-	// 		this.valueTo(0, 0, "_wait");
-	// 		this.valueTo(1, WAIT_CYCLE_MS, "_wait");
+	// 		this.valueTo( "_wait", 0,  0);
+	// 		this.valueTo( "_wait", 1,  WAIT_CYCLE_MS);
 	// 	}
 	// 	this._ctx.save();
 	// 	this._ctx.rotate(PI2 * (1 - waitValue));
@@ -624,11 +624,11 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 	/*
 	_drawLabelGuides: function(canvasPos, labelWidth) {
 		var labelLeft = labelWidth * -0.5;
-		
+
 		this._ctx.save();
 		this._ctx.lineWidth = 1;
 		this._ctx.strokeStyle = "#990000";
-		
+
 		this._ctx.beginPath();
 		this._ctx.moveTo(labelLeft, this._baselineShift - 0.5);
 		this._ctx.lineTo(labelLeft + labelWidth, this._baselineShift - 0.5);
@@ -636,17 +636,17 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		this._ctx.lineTo(labelLeft + labelWidth, -this._baselineShift - 0.5);
 		this._ctx.closePath();
 		this._ctx.stroke();
-		
+
 		this._ctx.beginPath();
 		this._ctx.arc(0, 0, labelWidth/2, 0, PI2);
 		this._ctx.closePath();
 		this._ctx.stroke();
-		
+
 		this._ctx.moveTo(0, canvasPos);
 		this._ctx.lineTo(0, this._canvasSize-1);
 		this._ctx.moveTo(canvasPos, 0);
 		this._ctx.lineTo(this._canvasSize-1, 0);
-		
+
 		this._ctx.strokeStyle = "none";
 		this._ctx.fillStyle = "#990000";
 		this._ctx.beginPath();
@@ -654,7 +654,7 @@ var CanvasProgressMeter = ModelProgressMeter.extend({
 		this._ctx.rect(-0.5, canvasPos, 1, this._canvasSize-1);
 		this._ctx.closePath();
 		this._ctx.fill();
-		
+
 		this._ctx.rect(labelLeft, this._baselineShift - this._fontSize, labelWidth, this._fontSize);
 		this._ctx.rect(canvasPos, canvasPos, this._canvasSize-1, this._canvasSize-1);
 		this._ctx.restore();

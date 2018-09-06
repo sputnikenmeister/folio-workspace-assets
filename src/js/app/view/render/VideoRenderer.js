@@ -44,6 +44,10 @@ var formatTimecode = function(value) {
 	return (value | 0) + "S";
 };
 
+var VIDEO_CROP_PX = Globals.VIDEO_CROP_PX;
+var SYNC_TIMEOUT_MS = 1200;
+var SYNC_THRESHOLD_MS = 100;
+
 /**
  * @constructor
  * @type {module:app/view/render/VideoRenderer}
@@ -57,36 +61,46 @@ var VideoRenderer = PlayableRenderer.extend({
 	/** @type {Function} */
 	template: require("./VideoRenderer.hbs"),
 
-	events: (function() {
-		var ret = {};
-		ret[Globals.CLICK_EVENT + " fullscreen-toggle"] = "_onFullscreenToggle";
-		return ret;
-	}()),
+	// events: (function() {
+	// 	var ret = {};
+	// 	ret[PlayableRenderer.CLICK_EVENT + " .fullscreen-toggle"] = "_onFullscreenToggle";
+	// 	return ret;
+	// }()),
 
+	// events: function() {
+	// 	var events = {};
+	// 	events[PlayableRenderer.CLICK_EVENT + " .fullscreen-toggle"] = "_onFullscreenToggle";
+	// 	return _.extend(events, _.result(this, PlayableRenderer.prototype.events));
+	// },
 	// events: {
 	// 	"click .fullscreen-toggle": "_onFullscreenToggle",
 	// },
 
-	// properties: {
-	// 	paused: {
-	// 		get: function() {
-	// 			return this.video.paused;
-	// 		}
-	// 	},
-	// },
+	properties: {
+		fullscreenToggle: {
+			/** @return {HTMLElement} */
+			get: function() {
+				return this._fullscreenToggle || (this._fullscreenToggle = this.el.querySelector(".fullscreen-toggle"));
+			}
+		},
+	},
 
 	/** @override */
 	initialize: function(opts) {
 		PlayableRenderer.prototype.initialize.apply(this, arguments);
-
 		_.bindAll(this,
 			"_updatePlaybackState",
-			"_updatePlayedValue",
+			"_updateCurrTimeValue",
 			"_updateBufferedValue",
 			"_onMediaError",
 			"_onMediaEnded",
 			"_onMediaPlayingOnce",
-			"_onFullscreenChange"
+			"_onFullscreenChange",
+			"_onFullscreenToggle"
+		);
+		_.bindAll(this,
+			"_playbackTimeoutFn_playing",
+			"_playbackTimeoutFn_waiting"
 		);
 		// var onPeerSelect = function() {
 		// 	this.content.style.display = (this.getSelectionDistance() > 1)? "none": "";
@@ -107,6 +121,7 @@ var VideoRenderer = PlayableRenderer.extend({
 		// this.overlay = this.content.querySelector(".overlay");
 		this.video = this.content.querySelector("video");
 		// this.video.loop = this.model.attrs().hasOwnProperty("@video-loop");
+		this.video.preload = "none";
 		this.video.loop = this.model.attr("@video-loop") !== void 0;
 		this.video.src = this.findPlayableSource(this.video);
 	},
@@ -114,12 +129,12 @@ var VideoRenderer = PlayableRenderer.extend({
 	measure: function() {
 		PlayableRenderer.prototype.measure.apply(this, arguments);
 
-		// NOTE: Top/bottom 1px video crop
+		// NOTE: Vertical 1px video crop
 		// - Cropped in CSS: video, .poster { margin-top: -1px; margin-bottom: -1px;}
 		// - Cropped height is adjusted in metrics obj
 		// - Crop amount added back to actual video on render()
-		this.metrics.media.height -= 2;
-		this.metrics.content.height -= 2;
+		this.metrics.media.height += VIDEO_CROP_PX * 2;
+		this.metrics.content.height += VIDEO_CROP_PX * 2;
 	},
 
 	/** @override */
@@ -143,7 +158,7 @@ var VideoRenderer = PlayableRenderer.extend({
 		}
 
 		content.style.width = cssW;
-		content.style.height = (this.metrics.media.height - 1) + "px";
+		content.style.height = (this.metrics.media.height + VIDEO_CROP_PX) + "px";
 
 		// content-position
 		// ---------------------------------
@@ -173,9 +188,9 @@ var VideoRenderer = PlayableRenderer.extend({
 
 		// NOTE: elements below must use video's UNCROPPED height, so +2px
 		this.video.setAttribute("width", this.metrics.media.width);
-		this.video.setAttribute("height", this.metrics.media.height + 2);
+		this.video.setAttribute("height", this.metrics.media.height - VIDEO_CROP_PX * 2);
 		img.setAttribute("width", this.metrics.media.width);
-		img.setAttribute("height", this.metrics.media.height + 2);
+		img.setAttribute("height", this.metrics.media.height - VIDEO_CROP_PX * 2);
 
 		return this;
 	},
@@ -190,26 +205,31 @@ var VideoRenderer = PlayableRenderer.extend({
 			.then(PlayableRenderer.whenScrollingEnds)
 			.then(
 				function(view) {
+					console.log("%s::initializeAsync whenAttached", view.cid);
+					return view.whenAttached();
+				})
+			.then(
+				function(view) {
+					console.log("%s::initializeAsync whenVideoHasMetadata", view.cid);
 					return Promise.all([
 						view.whenVideoHasMetadata(view),
 						PlayableRenderer.whenDefaultImageLoads(view),
 					]).then(
 						function(arr) {
+							console.log("%s::initializeAsync whenVideoHasMetadata res", view.cid);
 							return Promise.resolve(view);
 						},
 						function(err) {
+							console.log("%s::initializeAsync whenVideoHasMetadata err", view.cid);
 							return Promise.reject(err);
 						}
 					);
 				})
 			.then(
 				function(view) {
-					return view.whenAttached();
-				})
-			.then(
-				function(view) {
+					console.log("%s::initializeAsync initializeAsync", view.cid);
 					view.initializePlayable();
-					view.updateOverlay(view.defaultImage, view.overlay);
+					view.updateOverlay(view.defaultImage, view.playToggle); //view.overlay);
 					view.addSelectionListeners();
 					return view;
 				});
@@ -218,6 +238,9 @@ var VideoRenderer = PlayableRenderer.extend({
 	initializePlayable: function() {
 		// video
 		// ---------------------------------
+		// if (this.model.source.has("prefetched")) {
+		// 	this.video.setAttribute("poster", this.model.source.get("prefetched"));
+		// }
 		this.addMediaListeners();
 
 		// progress-meter
@@ -232,8 +255,14 @@ var VideoRenderer = PlayableRenderer.extend({
 			// backgroundColor: this.model.attr("background-color"),
 			labelFn: this._progressLabelFn.bind(this)
 		});
-		// var parentEl = this.el.querySelector(".top-bar");
-		// parentEl.insertBefore(this.progressMeter.render().el, parentEl.firstChild);
+		// this.el.querySelector(".controls").appendChild(this.progressMeter.el);
+		// var el = this.el.querySelector(".progress-meter");
+		// el.parentNode.replaceChild(this.progressMeter.el, el);
+		// var parentEl = this.el.querySelector(".controls");
+		// parentEl.insertBefore(this.progressMeter.el, parentEl.firstChild);
+
+		// this._setPlayToggleSymbol("play-symbol");
+		this._renderPlaybackState();
 	},
 
 	_progressLabelFn: function(value, total) {
@@ -257,7 +286,7 @@ var VideoRenderer = PlayableRenderer.extend({
 			var eventHandlers = {
 				loadedmetadata: function(ev) {
 					if (ev) removeEventListeners();
-					// console.log("%s::whenVideoHasMetadata [%s] %s", view.cid, "resolved", ev? ev.type : "sync");
+					console.log("%s::whenVideoHasMetadata [%s] %s", view.cid, "resolved", ev ? ev.type : "sync");
 					resolve(view);
 				},
 				abort: function(ev) {
@@ -279,6 +308,11 @@ var VideoRenderer = PlayableRenderer.extend({
 					reject(err);
 				},
 			};
+			// mediaEl.setAttribute("preload", "metadata");
+			// mediaEl.preload = "metadata";
+			// mediaEl.loop = view.model.attr("@video-loop") !== void 0;
+			// mediaEl.src = view.findPlayableSource(mediaEl);
+
 			//  (mediaEl.preload == "auto" && mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA)
 			// 	(mediaEl.preload == "metadata" && mediaEl.readyState >= HTMLMediaElement.HAVE_METADATA)
 			if (mediaEl.error) {
@@ -304,6 +338,7 @@ var VideoRenderer = PlayableRenderer.extend({
 						mediaEl.addEventListener(ev, eventHandlers[ev], false);
 					}
 				}
+				console.log("%s::initializeAsync whenVideoHasMetadata preload:%s", view.cid, mediaEl.preload);
 				mediaEl.preload = "metadata";
 			}
 		});
@@ -338,31 +373,83 @@ var VideoRenderer = PlayableRenderer.extend({
 		} else if (this.video.ended) {
 			this.video.currentTime = this.video.seekable.start(0);
 		}
+		// this._setPlayToggleSymbol("pause-symbol");
 		this.video.play();
+		// this._renderPlaybackState();
+
+		// var p = this.video.play();
+		// if (this.video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA) {
+		// 	if (p) {
+		// 		p.then(function() {
+		// 			this.video.pause();
+		// 			this.content.classList.add("waiting");
+		// 		}.bind(this));
+		// 	} else {
+		// 		this.video.pause();
+		// 		this.content.classList.add("waiting");
+		// 	}
+		// 	var handler = function(ev) {
+		// 		this.video.removeEventListener("canplaythrough", handler, false);
+		// 		this.content.classList.remove("waiting");
+		// 		this.video.play();
+		// 	}.bind(this);
+		//
+		// 	this.video.addEventListener("canplaythrough", handler, false);
+		// }
 	},
 
 	/** @override */
 	_pauseMedia: function() {
+		// this._setPlayToggleSymbol("play-symbol");
 		this.video.pause();
+		// this._renderPlaybackState();
+	},
+
+	/* ---------------------------
+	/* DOM events
+	/* --------------------------- */
+
+	_addDOMListeners: function() {
+		PlayableRenderer.prototype._addDOMListeners.apply(this, arguments);
+		this.fullscreenToggle.addEventListener(
+			this._toggleEvent, this._onFullscreenToggle, true);
+	},
+
+	_removeDOMListeners: function() {
+		PlayableRenderer.prototype._removeDOMListeners.apply(this, arguments);
+		this.fullscreenToggle.removeEventListener(
+			this._toggleEvent, this._onFullscreenToggle, true);
+	},
+
+	/* ---------------------------
+	/* event helpers
+	/* --------------------------- */
+
+	addListener: function(target, events, handler, useCapture) {
+		(typeof events === "string") && (events = events.split(" "));
+		for (var i = 0; i < events.length; i++) {
+			target.addEventListener(events[i], handler, !!useCapture);
+		}
+	},
+
+	removeListener: function(target, events, handler, useCapture) {
+		(typeof events === "string") && (events = events.split(" "));
+		for (var i = 0; i < events.length; i++) {
+			target.removeEventListener(events[i], handler, !!useCapture);
+		}
 	},
 
 	/* ---------------------------
 	/* media events
 	/* --------------------------- */
 
-	// updatePlaybackEvents: "play playing waiting pause seeking seeked ended",
-	// updateBufferedEvents: "progress canplay canplaythrough playing timeupdate",//loadeddata
-
-	playingOnceEvent: "playing",
-	updatePlaybackEvents: "playing waiting pause",
-	updateBufferedEvents: "progress canplay canplaythrough play playing",
-	updatePlayedEvents: "timeupdate seeked",
-
 	addMediaListeners: function() {
-		if (!this._started) this.video.addEventListener(this.playingOnceEvent, this._onMediaPlayingOnce, false);
+		if (!this._started) {
+			this.addListener(this.video, this.playingOnceEvents, this._onMediaPlayingOnce);
+		}
 		this.addListener(this.video, this.updatePlaybackEvents, this._updatePlaybackState);
 		this.addListener(this.video, this.updateBufferedEvents, this._updateBufferedValue);
-		this.addListener(this.video, this.updatePlayedEvents, this._updatePlayedValue);
+		this.addListener(this.video, this.updateCurrTimeEvents, this._updateCurrTimeValue);
 		this.video.addEventListener("ended", this._onMediaEnded, false);
 		this.video.addEventListener("error", this._onMediaError, true);
 
@@ -372,10 +459,12 @@ var VideoRenderer = PlayableRenderer.extend({
 	removeMediaListeners: function() {
 		this.off("view:removed", this.removeMediaListeners, this);
 
-		if (!this._started) this.video.removeEventListener(this.playingOnceEvent, this._onMediaPlayingOnce, false);
+		if (!this._started) {
+			this.removeListener(this.video, this.playingOnceEvents, this._onMediaPlayingOnce);
+		}
 		this.removeListener(this.video, this.updatePlaybackEvents, this._updatePlaybackState);
 		this.removeListener(this.video, this.updateBufferedEvents, this._updateBufferedValue);
-		this.removeListener(this.video, this.updatePlayedEvents, this._updatePlayedValue);
+		this.removeListener(this.video, this.updateCurrTimeEvents, this._updateCurrTimeValue);
 		this.video.removeEventListener("ended", this._onMediaEnded, false);
 		this.video.removeEventListener("error", this._onMediaError, true);
 	},
@@ -388,25 +477,22 @@ var VideoRenderer = PlayableRenderer.extend({
 		this.removeMediaListeners();
 		this.removeSelectionListeners();
 
-		this._onMediaEnded(ev);
-		this.content.classList.remove("ended");
-		this.content.classList.remove("waiting");
-		this.content.classList.remove("started");
 		this._started = false;
+		this.content.classList.remove("started");
 
 		this.mediaState = "error";
-	},
-
-	_onMediaPlayingOnce: function(ev) {
-		this.video.removeEventListener(this.playingOnceEvent, this._onMediaPlayingOnce, false);
-		if (!this._started) {
-			this._started = true;
-			this.content.classList.add("started");
-		}
+		this.playbackRequested = false;
+		// this.content.classList.remove("ended");
+		// this.content.classList.remove("waiting");
+		this._exitFullscreen();
 	},
 
 	_onMediaEnded: function(ev) {
 		this.playbackRequested = false;
+		this._exitFullscreen();
+	},
+
+	_exitFullscreen: function() {
 		if (this.video.webkitDisplayingFullscreen) {
 			this.video.webkitExitFullscreen();
 		}
@@ -415,40 +501,170 @@ var VideoRenderer = PlayableRenderer.extend({
 		}
 	},
 
+	/* ---------------------------
+	/* _onMediaPlayingOnce
+	/* --------------------------- */
+
+	playingOnceEvents: "playing waiting",
+
+	_onMediaPlayingOnce: function(ev) {
+		this.removeListener(this.video, this.playingOnceEvents, this._onMediaPlayingOnce);
+		if (!this._started) {
+			this._started = true;
+			this.content.classList.add("started");
+		}
+	},
+
+	/* ---------------------------
+	/* _updateCurrTimeValue
+	/* --------------------------- */
+
+	updateCurrTimeEvents: "playing waiting pause timeupdate seeked".split(" "),
+
+	_updateCurrTimeValue: function(ev) {
+		if (this.progressMeter) {
+			this.progressMeter.valueTo("amount", this.video.currentTime, 0);
+		}
+	},
+
+	/* ---------------------------
+	/* _updatePlaybackState
+	/* --------------------------- */
+
+	// updatePlaybackEvents: "play playing waiting pause seeking seeked ended",
+	updatePlaybackEvents: "playing waiting pause timeupdate seeked".split(" "),
+
+	_isPlaybackWaiting: false,
+	_playbackStartTS: -1,
+	_playbackStartTC: -1,
+
 	_updatePlaybackState: function(ev) {
-		var classList = this.content.classList;
+		var isWaiting = false;
+		// var symbolName = "play-symbol";
+
+		// NOTE: clearTimeout will cancel both setTimeout and setInterval IDs
+		window.clearTimeout(this._playbackTimeoutID);
+		this._playbackTimeoutID = -1;
+
 		if (this.playbackRequested) {
+			if (ev.type !== "timeupdate") {
+				this._playbackStartTS = ev.timeStamp;
+				this._playbackStartTC = this.video.currentTime;
+			}
 			switch (ev.type) {
-				case "pause":
+				case "timeupdate":
+					if (SYNC_THRESHOLD_MS < Math.abs((ev.timeStamp - this._playbackStartTS) -
+							((this.video.currentTime - this._playbackStartTC) * 1000))) {
+						this._playbackStartTS = ev.timeStamp;
+						this._playbackStartTC = this.video.currentTime;
+						this._playbackTimeoutID =
+							window.setTimeout(this._playbackTimeoutFn_waiting, SYNC_TIMEOUT_MS);
+						isWaiting = true;
+						// symbolName = "waiting-symbol";
+						// break;
+					} else {
+						this._playbackTimeoutID =
+							window.setTimeout(this._playbackTimeoutFn_playing, SYNC_TIMEOUT_MS);
+						isWaiting = false;
+						// symbolName = "pause-symbol";
+					}
+					break
+
+				case "seeked":
 				case "playing":
-					classList.remove("waiting");
+					this._playbackStartTS = ev.timeStamp;
+					this._playbackStartTC = this.video.currentTime;
+					this._playbackTimeoutID =
+						window.setTimeout(this._playbackTimeoutFn_playing, SYNC_TIMEOUT_MS);
+					/* continue */
+				case "pause":
+					isWaiting = false;
+					// symbolName = (this.video.paused && !this.video.ended) ? "pause-symbol" : "play-symbol";
 					break;
+
 				case "waiting":
-					classList.add("waiting");
+					isWaiting = true;
+					// symbolName = "waiting-symbol";
 					break;
 			}
 		} else {
-			classList.remove("waiting");
+			isWaiting = false;
+			// symbolName = "play-symbol";
 		}
-		classList.toggle("ended", this.video.ended);
 
-		this._updatePlayedValue(ev);
+		this._toggleWaiting(isWaiting);
+		this._renderPlaybackState();
+		// this.progressMeter.indeterminate = isWaiting;
+		// this.content.classList.toggle("ended", this.video.ended);
+		// this.content.classList.toggle("waiting", isWaiting);
+		// this._setPlayToggleSymbol(symbolName);
+		// this._isPlaybackWaiting = isWaiting;
+
+		// this._currTimeTS = ev.timeStamp;
+		// this._currTimeVal = this.video.currentTime;
 	},
 
-	_updatePlayedValue: function(ev) {
-		this._currentTimeValue = this.video.currentTime;
-		if (this.progressMeter) {
-			this.progressMeter.valueTo(this._currentTimeValue, 0, "amount");
+	_playbackTimeoutID: -1,
+	_playbackTimeoutFn_playing: function() {
+		this._playbackTimeoutID = -1;
+
+		this._toggleWaiting(true);
+		this._renderPlaybackState();
+		// this._setPlayToggleSymbol("waiting-symbol");
+		// this.content.classList.add("waiting");
+		// this.progressMeter.indeterminate = true;
+		// this._isPlaybackWaiting = true;
+	},
+
+	_playbackTimeoutFn_waiting: function() {
+		if (SYNC_THRESHOLD_MS < (this.video.currentTime - this._playbackStartTC) * 1000) {
+			this._playbackTimeoutID =
+				window.setTimeout(this._playbackTimeoutFn_waiting, SYNC_TIMEOUT_MS);
+		} else {
+			// since there is no event.timeStamp
+			// var delta = this.video.currentTime - this._playbackStartTC;
+			// this._playbackStartTS += delta * 1000;
+			// this._playbackStartTS = window.performance.now();
+			this._playbackStartTS += SYNC_TIMEOUT_MS;
+			this._playbackStartTC = this.video.currentTime;
+			this._playbackTimeoutID =
+				window.setTimeout(this._playbackTimeoutFn_playing, SYNC_TIMEOUT_MS);
+
+			this._toggleWaiting(false);
+			this._renderPlaybackState();
+			// this._setPlayToggleSymbol("pause-symbol");
+			// this.content.classList.remove("waiting");
+			// this.progressMeter.indeterminate = false;
+			// this._isPlaybackWaiting = false;
+
 		}
 	},
+
+	/** @override */
+	_renderPlaybackState: function() {
+
+		if (this._started) {
+			this.updateOverlay(this.video, this.playToggle);
+		}
+		PlayableRenderer.prototype._renderPlaybackState.apply(this, arguments);
+		this.content.classList.toggle("ended", this.video.ended);
+	},
+
+	/* ---------------------------
+	/* _updateBufferedValue
+	/* --------------------------- */
+
+	// updateBufferedEvents: "progress canplay canplaythrough playing timeupdate",//loadeddata
+	updateBufferedEvents: "progress canplay canplaythrough play playing",
 
 	_updateBufferedValue: function(ev) {
+		if (!this._started) return;
 		var bRanges = this.video.buffered;
 		if (bRanges.length > 0) {
 			this._bufferedValue = bRanges.end(bRanges.length - 1);
 			if (this.progressMeter && ((this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) /*|| (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && this.video.networkState == HTMLMediaElement.NETWORK_LOADING)*/ )) {
-				this.progressMeter.valueTo(this._bufferedValue, 300, "available");
-				// this.progressMeter.valueTo(this._bufferedValue, Math.max(0, 1000 * (this._bufferedValue - (this.progressMeter.getValue("available") | 0))), "available");
+				this.progressMeter.valueTo("available", this._bufferedValue, 300);
+				// this.progressMeter.valueTo("available", this._bufferedValue, Math.max(0, 1000 * (this._bufferedValue - (this.progressMeter.getTargetValue("available") | 0))));
 			}
 		}
 	},
@@ -499,24 +715,6 @@ var VideoRenderer = PlayableRenderer.extend({
 				break;
 		}
 	},
-
-	/* ---------------------------
-	/* event helpers
-	/* --------------------------- */
-
-	addListener: function(target, events, handler, useCapture) {
-		(typeof events === "string") && (events = events.split(" "));
-		for (var i = 0; i < events.length; i++) {
-			target.addEventListener(events[i], handler, !!useCapture);
-		}
-	},
-
-	removeListener: function(target, events, handler, useCapture) {
-		(typeof events === "string") && (events = events.split(" "));
-		for (var i = 0; i < events.length; i++) {
-			target.removeEventListener(events[i], handler, !!useCapture);
-		}
-	},
 });
 
 /* ---------------------------
@@ -540,13 +738,13 @@ if (DEBUG) {
 		// ];
 
 		var mediaEvents = require("utils/event/mediaEventsEnum");
-		var updatePlaybackStateEvents, updateBufferedEvents, updatePlayedEvents;
+		var logPlaybackStateEvents, logBufferedEvents, logPlayedEvents;
 
-		// updatePlaybackStateEvents = ["playing", "waiting", "ended", "pause", "seeking", "seeked"];
-		// updateBufferedEvents = ["progress", "durationchange", "canplay", "play"];
-		// updatePlayedEvents = ["playing", "timeupdate"];
+		// logPlaybackStateEvents = ["playing", "waiting", "ended", "pause", "seeking", "seeked"];
+		// logBufferedEvents = ["progress", "durationchange", "canplay", "play"];
+		// logPlayedEvents = ["playing", "timeupdate"];
 
-		updatePlaybackStateEvents = [
+		logPlaybackStateEvents = [
 			"loadstart",
 			"progress",
 			"suspend",
@@ -555,7 +753,7 @@ if (DEBUG) {
 			"emptied",
 			"stalled",
 		];
-		updateBufferedEvents = [
+		logBufferedEvents = [
 			"loadedmetadata",
 			"loadeddata",
 			"canplay",
@@ -566,14 +764,17 @@ if (DEBUG) {
 			"seeked", // seeking changed to false
 			"ended", // ended is true
 		];
-		updatePlayedEvents = ["play", "pause"];
+		logPlayedEvents = [
+			"play",
+			"pause"
+		];
 
 		// Exclude some events from log
 		mediaEvents = _.without(mediaEvents, "resize", "error");
 		// Make sure event subsets exist in the main set
-		updatePlaybackStateEvents = _.intersection(mediaEvents, updatePlaybackStateEvents);
-		updateBufferedEvents = _.intersection(mediaEvents, updateBufferedEvents);
-		updatePlayedEvents = _.intersection(mediaEvents, updatePlayedEvents);
+		logPlaybackStateEvents = _.intersection(mediaEvents, logPlaybackStateEvents);
+		logBufferedEvents = _.intersection(mediaEvents, logBufferedEvents);
+		logPlayedEvents = _.intersection(mediaEvents, logPlayedEvents);
 
 		var readyStateSymbols = _.invert(_.pick(HTMLMediaElement,
 			function(val, key, obj) {
@@ -614,7 +815,7 @@ if (DEBUG) {
 		};
 
 		var getVideoStatsCols = function() {
-			return "0000.000 [Current/Total] [Seekable   ] [Buffered   ] networkState readyState      Playing";
+			return "0000.000 [Curr/Total] [Seekable]  [Buffered]  networkState readyState      Playback";
 			// return "0000.620 [t:  0.0  27.4] [s: 27.4 0/1] [b:  0.5 0/1] LOADING(2)   FUTURE_DATA(3)  :: (::)";
 		}
 
@@ -629,16 +830,17 @@ if (DEBUG) {
 			bRangeIdx = findRangeIndex(bRanges, currTime);
 			sRangeIdx = findRangeIndex(sRanges, currTime);
 			return [
-				"[t:" + lpad(currTime.toFixed(1), 5) +
-					" " + lpad((!isNaN(durTime) ? durTime.toFixed(1) : "-"), 5) + "]",
-				"[s:" + lpad((sRangeIdx >= 0 ? sRanges.end(sRangeIdx).toFixed(1) : "-"), 5) +
+				"[" + lpad(currTime.toFixed(1), 5) +
+					" " + lpad((!isNaN(durTime) ? durTime.toFixed(1) : "-"), 4) + "]",
+				"[" + lpad((sRangeIdx >= 0 ? sRanges.end(sRangeIdx).toFixed(1) : "-"), 5) +
 					" " + (sRangeIdx >= 0 ? sRangeIdx : "-") + "/" + sRanges.length + "]",
-				"[b:" + lpad((bRangeIdx >= 0 ? bRanges.end(bRangeIdx).toFixed(1) : "-"), 5) +
+				"[" + lpad((bRangeIdx >= 0 ? bRanges.end(bRangeIdx).toFixed(1) : "-"), 5) +
 					" " + (bRangeIdx >= 0 ? bRangeIdx : "-") + "/" + bRanges.length + "]",
 				rpad(networkStateToString(video).substr(8), 12),
 				rpad(readyStateToString(video).substr(5), 15),
-				(video.ended ? ">:" : (video.paused ? "::" : ">>")),
-			].join(" ");
+				(video.ended ? ">:" : (video.paused ? "::" : ">>"))
+				// video.playbackRate.toFixed(2) + " (" + video.defaultPlaybackRate.toFixed(2) + ")"
+			]; //.join(" ");
 		};
 
 		return VideoRenderer.extend({
@@ -660,9 +862,9 @@ if (DEBUG) {
 
 					var c = new Color(fgColor),
 						cc = 1;
-					if (updateBufferedEvents.indexOf(ev) != -1) c.mix(green, (cc /= 2));
-					if (updatePlayedEvents.indexOf(ev) != -1) c.mix(red, (cc /= 2));
-					if (updatePlaybackStateEvents.indexOf(ev) != -1) c.mix(blue, (cc /= 2));
+					if (logBufferedEvents.indexOf(ev) != -1) c.mix(green, (cc /= 2));
+					if (logPlayedEvents.indexOf(ev) != -1) c.mix(red, (cc /= 2));
+					if (logPlaybackStateEvents.indexOf(ev) != -1) c.mix(blue, (cc /= 2));
 					this.__logColors[ev] = c.rgbString();
 				}
 				this.video.addEventListener("error", this.__handleMediaEvent, true);
@@ -700,18 +902,63 @@ if (DEBUG) {
 				}
 			},
 
+			/** @override */
+			_playbackTimeoutFn_playing: function() {
+				VideoRenderer.prototype._playbackTimeoutFn_playing.apply(this, arguments);
+				// this.__logEvent(formatVideoStats(this.video).join(" "), "timeout-play");
+				this.__handleMediaEvent({
+					type: "timeout-play",
+					timeStamp: null,
+					isTimeout: true
+				});
+			},
+
+			/** @override */
+			_playbackTimeoutFn_waiting: function() {
+				VideoRenderer.prototype._playbackTimeoutFn_waiting.apply(this, arguments);
+				// this.__logEvent(formatVideoStats(this.video).join(" "), "timeout-wait");
+				this.__handleMediaEvent({
+					type: "timeout-wait",
+					timeStamp: null,
+					isTimeout: true
+				});
+			},
+
 			__handleMediaEvent: function(ev) {
-				var evmsg; //, errmsg;
-				// evmsg = formatVideoStats(this.video) + " " + rpad(this._lastPlaybackStates || "-", 9);
-				evmsg = formatVideoStats(this.video);
+				var evmsg = formatVideoStats(this.video);
+
 				if (this.playbackRequested === true) {
-					evmsg += " (>>)";
+					evmsg.push("(>>)");
 				} else if (this.playbackRequested === false) {
-					evmsg += " (::)";
+					evmsg.push("(::)");
 				} else {
-					evmsg += " (--)";
+					evmsg.push("(--)");
 				}
-				this.__logEvent(evmsg, ev.type);
+
+				if (this._playbackTimeoutID !== -1) {
+					evmsg.push(this.playbackRequested ? "-" : "!");
+				} else {
+					evmsg.push(this.playbackRequested ? "W" : "-");
+				}
+
+				var ts, tc;
+				if ((this.updatePlaybackEvents.indexOf(ev.type) > -1) || ev.isTimeout) {
+					// evmsg.push(this._playbackStartTS.toFixed(2));
+					ts = ev.timeStamp - this._playbackStartTS;
+					tc = this.video.currentTime - this._playbackStartTC;
+					ts *= .001; // s to ms
+					evmsg.push(Math.abs(tc - ts).toFixed(3));
+				}
+				// else {
+				// 	ts = this._playbackStartTS;
+				// 	tc = this._playbackStartTC;
+				// }
+				// ts *= .001; // s to ms
+				// evmsg.push(Math.abs(tc - ts).toFixed(3));
+				// evmsg.push("TC:" + tc.toFixed(3));
+				// evmsg.push("TS:" + ts.toFixed(3));
+
+				this.__logEvent(evmsg.join(" "), ev.type);
 				if (ev.type === "error" || ev.type === "abort") {
 					this.__logMessage(formatVideoError(this.video), ev.type);
 				}

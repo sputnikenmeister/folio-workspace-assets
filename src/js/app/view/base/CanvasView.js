@@ -33,6 +33,20 @@ var CanvasView = View.extend({
 	className: "canvas-view",
 
 	properties: {
+		paused: {
+			get: function() {
+				return this._paused;
+			},
+			set: function(paused) {
+				paused = !!(paused);
+				if (this._paused !== paused) {
+					this._paused = paused;
+					if (!this._paused) { // && this._interpolator.valuesChanged) {
+						this.requestRender(View.LAYOUT_INVALID);
+					}
+				}
+			}
+		},
 		context: {
 			get: function() {
 				return this._ctx;
@@ -58,7 +72,6 @@ var CanvasView = View.extend({
 		maxValues: {
 			value: 1
 		},
-		useOpaque: true,
 	},
 
 	/* --------------------------- *
@@ -68,12 +81,14 @@ var CanvasView = View.extend({
 	/** @override */
 	initialize: function(options) {
 		// TODO: cleanup this options mess
-		options = _.defaults(options, this.defaults);
-		options.values = _.defaults(options.values, this.defaults.values);
-		options.maxValues = _.defaults(options.maxValues, this.defaults.maxValues);
+		options = _.defaults(options || {}, this.defaults);
+		options.values = _.defaults(options.values || {}, this.defaults.values);
+		options.maxValues = _.defaults(options.maxValues || {}, this.defaults.maxValues);
 
 		this._interpolator = new Interpolator(options.values, options.maxValues);
-		this._useOpaque = options.useOpaque;
+
+		this._useOpaque = options.useOpaque || true;
+		this._paused = options.paused || false;
 		this._options = _.pick(options, "color", "backgroundColor");
 
 		// opaque background
@@ -181,7 +196,7 @@ var CanvasView = View.extend({
 		this._ctx.strokeStyle = this._color;
 		this._ctx.fillStyle = this._color;
 
-		this.updateCanvas(this._ctx);
+		this.updateCanvas(this._ctx, s);
 		this._ctx.save();
 
 		// console.group(this.cid+"::_updateCanvas");
@@ -194,11 +209,11 @@ var CanvasView = View.extend({
 		// console.groupEnd();
 	},
 
-	updateCanvas: function() {
+	measureCanvas: function(w, h, s) {
 		/* abstract */
 	},
 
-	measureCanvas: function() {
+	updateCanvas: function(ctx, s) {
 		/* abstract */
 	},
 
@@ -211,7 +226,11 @@ var CanvasView = View.extend({
 				mObj = Globals.FONT_METRICS[key];
 			}
 		}
-		return mObj;
+		return mObj || {
+			"unitsPerEm": 1024,
+			"ascent": 939,
+			"descent": -256
+		};
 	},
 
 	_clearCanvas: function(x, y, w, h) {
@@ -254,26 +273,37 @@ var CanvasView = View.extend({
 		}
 		if (flags & (View.LAYOUT_INVALID | View.SIZE_INVALID)) {
 			this.redraw(this._ctx, this._interpolator, flags);
-			if (this._interpolator.valuesChanged) {
+			if (!this._paused && this._interpolator.valuesChanged) {
 				this.requestRender();
 			}
 		}
 	},
 
+	// setEnabled: function(enabled) {
+	// 	View.prototype.setEnabled.apply(this, arguments);
+	// 	if (this.attached) {
+	// 		console.info("[%s] %s::setEnabled", this.parentView.cid, this.cid, this.enabled);
+	// 		// if (this._enabled && this._interpolator.valuesChanged) {
+	// 		// this.requestRender();
+	// 		// this.requestRender(CanvasView.LAYOUT_INVALID);
+	// 		// }
+	// 	}
+	// },
+
 	/* --------------------------- *
 	/* public
 	/* --------------------------- */
 
-	getValue: function(key) {
-		return this._interpolator.getValue(key);
+	getTargetValue: function(key) {
+		return this._interpolator.getTargetValue(key);
 	},
 
 	getRenderedValue: function(key) {
 		return this._interpolator.getRenderedValue(key);
 	},
 
-	valueTo: function(value, duration, key) {
-		this._interpolator.valueTo(value, duration, key);
+	valueTo: function(key, value, duration) {
+		this._interpolator.valueTo(key, value, duration);
 		this.requestRender(View.MODEL_INVALID | View.LAYOUT_INVALID);
 	},
 
@@ -285,7 +315,7 @@ var CanvasView = View.extend({
 	/* redraw
 	/* --------------------------- */
 
-	redraw: function(context, changed) {},
+	redraw: function(ctx, interp, flags) {},
 
 }, {
 	setStyle: function(ctx, s) {

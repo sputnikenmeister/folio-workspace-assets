@@ -111,7 +111,7 @@ module.exports = View.extend({
 		// --------------------------------
 		this._ctx = this.el.getContext("2d");
 
-		this.listenTo(this, "view:attached", function() {
+		this.listenTo(this, "view:attached", function(view) {
 			// this.invalidateSize();
 			// this.renderNow();
 			view.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID).renderNow();
@@ -246,8 +246,8 @@ module.exports = View.extend({
 	/* public
 	/* --------------------------- */
 
-	getValue: function(key) {
-		return this._interpolator.getValue(key || this.defaultKey);
+	getTargetValue: function(key) {
+		return this._interpolator.getTargetValue(key || this.defaultKey);
 	},
 
 	getRenderedValue: function(key) {
@@ -255,7 +255,7 @@ module.exports = View.extend({
 	},
 
 	valueTo: function(value, duration, key) {
-		this._interpolator.valueTo(value, duration, key || this.defaultKey);
+		this._interpolator.valueTo(key || this.defaultKey, value, duration);
 		this.requestRender();
 	},
 
@@ -296,8 +296,8 @@ module.exports = View.extend({
 		// --------------------------------
 		// trigger loop
 		if ((changed.indexOf("amount") !== -1) && amountData._lastRenderedValue > amountData._renderedValue) {
-			this.valueTo(1, 0, "_loop");
-			this.valueTo(0, 750, "_loop");
+			this.valueTo("_loop", 1, 0);
+			this.valueTo("_loop", 0, 750);
 			this.updateValue("_loop");
 		}
 		this._ctx.rotate(PI2 * ((1 - loopValue) - 0.25));

@@ -27,9 +27,18 @@ var SVGPathProgressMeter = ModelProgressMeter.extend({
 
 	/** @override */
 	defaults: {
-		amount: 0,
-		available: 0,
-		total: 1,
+		values: {
+			amount: 0,
+			available: 0,
+			_loop: 0,
+		},
+		maxValues: {
+			amount: 1,
+			available: 1,
+		},
+		// amount: 0,
+		// available: 0,
+		// total: 1,
 		// steps: 1,
 		gap: Math.PI / 16,
 		// gap: 8 * (Math.PI/180), // x deg in radians

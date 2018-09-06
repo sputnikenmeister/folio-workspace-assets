@@ -60,6 +60,7 @@
 		opacity: 1.00;
 	}
 }
+
 @keyframes flashOdd {
 	from {
 		opacity: 1.00;
@@ -68,32 +69,71 @@
 		opacity: 1.00;
 	}
 }
-// from { opacity: 0.00; }
-// 10%  { opacity: 1.00; }
-// to   { opacity: 0.00; }
+@keyframes spin {
+	from { transform:rotate(0deg); }
+	to { transform:rotate(360deg); }
+}
+
+$path_length: 566;
+@keyframes pathspin {
+	from {
+		transform: rotate(360deg);
+		stroke-dashoffset: 0;
+		stroke-dasharray: $path_length * 0.75, $path_length;
+	}
+	50% {
+		stroke-dashoffset: $path_length * -0.25;
+		stroke-dasharray: $path_length * 0.25, $path_length;
+	}
+	to {
+		transform: rotate(0deg);
+		stroke-dashoffset: 0;
+		stroke-dasharray: $path_length * 0.75, $path_length;
+	}
+}
+%path_spinner {
+	animation: 1s linear infinite pathspin;
+	stroke-width: 12px;
+	stroke-dashoffset: 0;
+	stroke-dasharray: $path_length, $path_length*1.4;
+	// vector-effect: non-scaling-stroke;
+}
+.playable-renderer.selected .waiting-symbol use {
+	@extend %path_spinner;
+}
 
 // - - - - - - - - - - - - - - - - -
 // .play-toggle
 // - - - - - - - - - - - - - - - - -
 .playable-renderer {
+	.play-toggle-hitarea {
+		cursor: pointer;
+	}
 	// - - - - - - - - - - - - - - - - -
 	// box/background position
 	// - - - - - - - - - - - - - - - - -
 	.play-toggle {
-		margin: 1rem;
-		top: 0;//20%;//1em;
-		bottom: 0;//20%;//1em;
-		left: 0;//20%;//1em;
-		right: 0;//20%;//1em;
-		width: auto;
-		height: auto;
-		cursor: pointer;
 		display: block;
 		position: absolute;
+		width: 49px;
+		height: 49px;
+		margin-left: -24px; left: 50%;
+		margin-top: -24px; top: 50%;
+		// top: calc(50% - 24px);
+		// left: calc(50% - 24px);
 
-		background-size: 49px 49px;
-		background-position: center center;
-		background-repeat: no-repeat;
+		color: white;
+		background-color: rgba(0,0,0,0.2);
+		border-radius: 2px;
+		stroke-width:1px;
+
+		// top: 0;//20%;//1em;
+		// bottom: 0;//20%;//1em;
+		// left: 0;//20%;//1em;
+		// right: 0;//20%;//1em;
+		// width: auto;
+		// height: auto;
+		// margin: 1rem;
 	}
 	// :not(.started) .play-toggle {
 	// .started.playing.waiting .play-toggle {
@@ -105,25 +145,6 @@
 	// 	left: calc(50% - #{$size/2}); top: calc(50% - #{$size/2});
 	// 	// margin-left: $size/2; margin-top: $size/2;
 	// }
-	// .play-toggle-hitarea {} // hit-area
-
-	// - - - - - - - - - - - - - - - - -
-	// symbols
-	// - - - - - - - - - - - - - - - - -
-	.paused:not(.started) .play-toggle,
-	.play-toggle,
-	.playing .play-toggle {
-		background-image: symbol-url("symbols/playback-play.svg");
-	}
-	.paused .play-toggle {
-		background-image: symbol-url("symbols/playback-pause.svg");
-	}
-	.playing.waiting .play-toggle {
-		background-image: symbol-url("symbols/playback-wait.svg");
-	}
-	.paused.ended .play-toggle {
-		background-image: symbol-url("symbols/playback-replay.svg");
-	}
 
 	// - - - - - - - - - - - - - - - - -
 	// opacity animation
@@ -132,26 +153,119 @@
 	// :not(.started) .play-toggle { opacity: 1; }
 	.play-toggle {
 		opacity: 1;
-	};
+	}
 	.started {
 		.play-toggle {
 			opacity: 0;
-		};
+		}
+		/* using progress*/
 		&.playing.waiting .play-toggle {
 			opacity: 1;
+			// transition: opacity 1s step-end;//tx(opacity, $ease: step-end);
 		}
 		&.paused.ended .play-toggle {
 			opacity: 1;
 		}
 		@at-root :not(.scrolling) & {
 			&.playing .play-toggle {
-				animation: $duration*2 $ease flashOdd;
+				animation: $duration * 2 $ease flashOdd;
 			}
 			&.paused .play-toggle {
-				animation: $duration*2 $ease flashEven;
+				animation: $duration * 2 $ease flashEven;
 			}
+			// &.waiting .waiting-symbol {
+			// 	animation: 4s linear infinite spin;
+			// }
 		}
 	}
+
+	// - - - - - - - - - - - - - - - - -
+	// spinning animation
+	// - - - - - - - - - - - - - - - - -
+	// &.selected .started.waiting {
+	// 	@at-root :not(.scrolling):not(.disabled) & {
+	// 		.play-toggle-symbol,
+	// 		.play-toggle::after {
+	// 			animation: $duration * 2 linear infinite spin;
+	// 		}
+	// 	}
+	// }
+
+
+	// - - - - - - - - - - - - - - - - -
+	// symbols as svg+js
+	// - - - - - - - - - - - - - - - - -
+	.play-toggle-symbol {
+		// position: absolute;
+		width: 49px;
+		height: 49px;
+		// top: calc(50% - 24px);
+		// left: calc(50% - 24px);
+		color: #ffffff;
+		font-family: "FolioFigures", monospace;
+		font-size: 24px;
+	}
+
+	// - - - - - - - - - - - - - - - - -
+	// symbols as ::after
+	// - - - - - - - - - - - - - - - - -
+	// .play-toggle::after {
+	// 	position: absolute;
+	// 	display: inline-block;
+	// 	width: 49px;
+	// 	height: 49px;
+	// 	top: 0;
+	// 	left: 0;
+	// }
+	// .play-toggle::after,
+	// .paused:not(.started) .play-toggle::after,
+	// .playing .play-toggle::after {
+	// 	content: symbol-url("symbols/playback-play.svg");
+	// }
+	// .paused .play-toggle::after {
+	// 	content: symbol-url("symbols/playback-pause.svg");
+	// }
+	// .paused.ended .play-toggle::after {
+	// 	content: symbol-url("symbols/playback-replay.svg");
+	// }
+	// .playing.waiting .play-toggle::after {
+	// 	content: symbol-url("symbols/playback-wait.svg");
+	// 	// animation: 1s linear infinite pathspin;
+	// 	@extend %path_spinner;
+	// }
+
+	// - - - - - - - - - - - - - - - - -
+	// symbols as background
+	// - - - - - - - - - - - - - - - - -
+	/** As background images */
+	// .play-toggle {
+	// 	background-size: 49px 49px;
+	// 	background-position: center center;
+	// 	background-repeat: no-repeat;
+	// }
+	// .paused:not(.started) .play-toggle,
+	// .play-toggle,
+	// .playing .play-toggle {
+	// 	background-image: symbol-url("symbols/playback-play.svg");
+	// 	// .play-symbol {
+	// 	// 	display: block;
+	// 	// }
+	// }
+	// .paused .play-toggle {
+	// 	background-image: symbol-url("symbols/playback-pause.svg");
+	// 	// .pause-symbol {
+	// 	// 	display: block;
+	// 	// }
+	// }
+	// .playing.waiting .play-toggle {
+	// 	background-image: symbol-url("symbols/playback-wait.svg");
+	// 	// .waiting-symbol {
+	// 	// 	display: block;
+	// 	// }
+	// }
+	// .paused.ended .play-toggle {
+	// 	background-image: symbol-url("symbols/playback-replay.svg");
+	// }
 }
 
 // - - - - - - - - - - - - - - - - - -
@@ -165,90 +279,36 @@
 		// height: 4.5rem;
 	}
 
-	// .control-box
-	// - - - - - - - - - - - - - - - - -
-	.control-box {
-		display: flex;
-		flex-direction: row;
-
-		& > * {
-			flex: 0 1 auto;
-			//padding: 0 0.5rem;
-			margin: 0 0.5rem;
-			align-self: center;
-		}
-		//& > *:first-child {
-		//	margin-right: 0;
-		//}
-	}
-	.bottom-bar,
-	.top-bar {
-		position: absolute;
-		width: calc(100% + 1rem);
-		height: auto;
-		margin: 0.5rem -0.5rem;
-	}
-	.bottom-bar {
-		top: 100%;
-		margin-top: 1.5rem;
-		justify-content: space-between;
-	}
-	.top-bar {
-		// NOTE: using direction, for crossbrowser consistency
-		// [ direction: rtl | ltr ]
-		// [ justify-content: flex-start | flex-end ]
-		direction: rtl;
-		bottom: 100%; // top: -3.5rem;
-		margin-bottom: 1.5rem;
-	}
-
-	// .control-box > *
+	// .controls > *
 	// - - - - - - - - - - - - - - - - -
 	// NOTE: Fade controls while scrolling ONLY. For other states
 	// (not-selected, disabled), an ancestor will be shown/hidden.
 	.controls > * {
 		opacity: 0;
 		visibility: hidden;
-	}
-	&.ready.selected .controls > * {
 		transition: tx(opacity, 1, 0), tx(visibility, 1, 0);
-		opacity: 1;
-		visibility: visible;
-		@at-root .scrolling & {
-			opacity: 0;
-			visibility: hidden;
-		}
-		// @at-root .disabled & { }
 	}
-}
+	&.ready.selected {
+		.controls > * {
+			opacity: 1;
+			visibility: visible;
+			@at-root {
+				.panning &,
+				.scrolling & {
+					opacity: 0;
+					visibility: hidden;
+				}
+			}
+		}
+		// :not(.started) .controls > .fullscreen-toggle {
+		// 		opacity: 0;
+		// 		visibility: hidden;
+		// }
+	}
 
-// @include media(desktop-small) {
-// 	.playable-renderer {
-// 		// .progress-meter {
-// 		// 	top: 0; right: -$hu*2;
-// 		// 	// &.dev { transform: translate(0, -3rem); }
-// 		// }
-// 		.top-bar.control-box {
-// 			-webkit-flex-direction: column;
-// 			-ms-flex-direction: column;
-// 			flex-direction: column;
-// 			// -webkit-justify-content: flex-start;
-// 			// justify-content: flex-start;
-// 			direction: ltr;
-// 			top: 0; left: 100%;
-// 			width: auto; height: calc(100% + 1rem);
-// 			margin: -0.5rem 1.25rem;
-// 			& > * {
-// 				padding: 0.5rem 0rem;
-// 			}
-// 		}
-// 	}
-// }
-
-// - - - - - - - - - - - - - - - - - -
-//  .playable-renderer children
-// - - - - - - - - - - - - - - - - - -
-.playable-renderer {
+	// - - - - - - - - - - - - - - - - - -
+	//  .playable-renderer children
+	// - - - - - - - - - - - - - - - - - -
 
 	// .fullscreen-toggle
 	// - - - - - - - - - - - - - - - - -
@@ -338,14 +398,16 @@
 		// background-color: #00CC00;
 	}
 	.crop-box {
-		overflow: hidden;
+		@if $video_crop_px < 0 {
+			overflow: hidden;
+		}
 		// background-color: #FF00FF;
-		.poster,
-		video {
+		.poster, video {
 			position: absolute;
-			top: 0; left: 0; right: 0;
+			left: 0; right: 0;
+			top: #{$video_crop_px}px;
+			// top: -1px;
 			// margin-top: -1px;
-			top: -1px;
 			// margin-left: -1px;
 
 			// top: -5px;
@@ -360,6 +422,7 @@
 	}
 	.started .poster {
 		visibility: hidden;
+		// display: none;
 	}
 }
 
@@ -413,8 +476,11 @@
 
 		&.error {
 			// background-image: image-url("bg-missing-media.svg");
-			background-image: base64-encode("bg-missing-media.svg");
+			// background-image: base64-encode("bg-missing-media.svg");
 			// background-color: transparent !important;
+		}
+		&.error .error-title {
+			@include placeholder_label;
 		}
 	}
 	.playback-error .sequence-step:not(.current) {

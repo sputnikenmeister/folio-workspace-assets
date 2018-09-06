@@ -20,7 +20,8 @@ module.exports = (function() {
 	g.PAN_THRESHOLD = 15; // px
 	g.COLLAPSE_THRESHOLD = 75; // px
 	g.COLLAPSE_OFFSET = parseInt(sass.temp["collapse_offset"]);
-	g.CLICK_EVENT = window.hasOwnProperty("onpointerup") ? "pointerup" : "mouseup";
+	// g.CLICK_EVENT = "click"; //window.hasOwnProperty("onpointerup") ? "pointerup" : "mouseup";
+	g.VIDEO_CROP_PX = parseInt(sass["video_crop_px"]);
 
 	// breakpoints
 	// - - - - - - - - - - - - - - - - -

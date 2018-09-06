@@ -283,10 +283,10 @@ var ContentView = View.extend({
 			if (this.model.get("withBundle") &&
 				!this.model.get("collapsed")) {
 				this.hpan.on("hpanleft hpanright", this._onCollapsedEvent);
-				this.el.addEventListener(Globals.CLICK_EVENT, this._onCollapsedEvent, false);
+				this.el.addEventListener(View.CLICK_EVENT, this._onCollapsedEvent, false);
 			} else {
 				this.hpan.off("hpanleft hpanright", this._onCollapsedEvent);
-				this.el.removeEventListener(Globals.CLICK_EVENT, this._onCollapsedEvent, false);
+				this.el.removeEventListener(View.CLICK_EVENT, this._onCollapsedEvent, false);
 			}
 		}
 		*/

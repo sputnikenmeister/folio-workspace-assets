@@ -96,17 +96,17 @@ var VERTICAL_PROPS = {
 // var DIRECTION_UP = 8;
 // var DIRECTION_DOWN = 16;
 
-// function dirToStr(dir) {
-// 	if (dir === Hammer.DIRECTION_NONE) return 'NONE';
-// 	if (dir === Hammer.DIRECTION_LEFT) return 'LEFT';
-// 	if (dir === Hammer.DIRECTION_RIGHT) return 'RIGHT';
-// 	if (dir === Hammer.DIRECTION_UP) return 'UP';
-// 	if (dir === Hammer.DIRECTION_DOWN) return 'DOWN';
-// 	if (dir === Hammer.DIRECTION_HORIZONTAL) return 'HORIZONTAL';
-// 	if (dir === Hammer.DIRECTION_VERTICAL) return 'VERTICAL';
-// 	if (dir === Hammer.DIRECTION_ALL) return 'ALL';
-// 	return 'UNRECOGNIZED';
-// }
+var dirToStr = function(dir) {
+	if (dir === Hammer.DIRECTION_NONE) return 'NONE';
+	if (dir === Hammer.DIRECTION_LEFT) return 'LEFT';
+	if (dir === Hammer.DIRECTION_RIGHT) return 'RIGHT';
+	if (dir === Hammer.DIRECTION_UP) return 'UP';
+	if (dir === Hammer.DIRECTION_DOWN) return 'DOWN';
+	if (dir === Hammer.DIRECTION_HORIZONTAL) return 'HORIZONTAL';
+	if (dir === Hammer.DIRECTION_VERTICAL) return 'VERTICAL';
+	if (dir === Hammer.DIRECTION_ALL) return 'ALL';
+	return 'UNRECOGNIZED';
+}
 
 var isValidTouchManager = function(touch, direction) {
 	// var retval;
@@ -218,7 +218,7 @@ var CarouselProto = {
 
 	/** @override */
 	initialize: function(options) {
-		_.bindAll(this, "_onTouchEvent");
+		_.bindAll(this, "_onPointerEvent", "_onClick");
 
 		this.itemViews = new Container();
 		this.metrics = {};
@@ -303,7 +303,7 @@ var CarouselProto = {
 		// 	this.touch.off("tap", this._onTap);
 		// 	this.touch.off("hpanstart hpanmove hpanend hpancancel", this._onPan);
 		// }
-		this._toggleTouchEvents(false);
+		this._togglePointerEvents(false);
 		this.removeChildren();
 		View.prototype.remove.apply(this, arguments);
 		return this;
@@ -394,15 +394,12 @@ var CarouselProto = {
 		if (this._enabled !== enabled) {
 			this._enabled = enabled;
 			// toggle events immediately
-			this._toggleTouchEvents(enabled);
+			this._togglePointerEvents(enabled);
 			// dom manipulation on render (_renderEnabled)
 			// this._renderFlags |= View.STYLES_INVALID;
 			// this.requestRender();
-
-			this.el.classList.toggle("disabled", !this.enabled);
-			this.itemViews.each(function(view) {
-				view.setEnabled(this.enabled);
-			}, this);
+			this.setImmediate(this._renderEnabled);
+			// this._renderEnabled();
 		}
 	},
 
@@ -663,21 +660,33 @@ var CarouselProto = {
 	/* toggle touch events
 	/* --------------------------- */
 
-	_toggleTouchEvents: function(enable) {
-		// console.log("%s::_toggleTouchEvents", this.cid, enable);
-		if (this._touchEventsEnabled !== enable) {
-			this._touchEventsEnabled = enable;
-			if (enable) {
-				this.touch.on("hpanstart hpanmove hpanend hpancancel tap", this._onTouchEvent);
-			} else {
-				this.touch.off("hpanstart hpanmove hpanend hpancancel tap", this._onTouchEvent);
-			}
+	_togglePointerEvents: function(enable) {
+		// console.log("%s::_togglePointerEvents", this.cid, enable);
+		if (this._pointerEventsEnabled == enable) return;
+
+		this._pointerEventsEnabled = enable;
+		if (enable) {
+			this.touch.on("hpanstart hpanmove hpanend hpancancel", this._onPointerEvent);
+			this.el.addEventListener(View.CLICK_EVENT, this._onClick, true);
+		} else {
+			this.touch.off("hpanstart hpanmove hpanend hpancancel", this._onPointerEvent);
+			this.el.removeEventListener(View.CLICK_EVENT, this._onClick, true);
 		}
 	},
 
-	_onTouchEvent: function(ev) {
-		// console.log("%s::_onTouchEvent", this.cid, ev.type);
+	_onPointerEvent: function(ev) {
+		// NOTE: https://github.com/hammerjs/hammer.js/pull/1118
+		if (ev.srcEvent.type === 'pointercancel')
+			return;
+		// console.log("%s::_onPointerEvent", this.cid, ev.type,
+		// 	dirToStr(ev.direction),
+		// 	dirToStr(ev.offsetDirection),
+		// 	dirToStr(this.direction),
+		// 	dirToStr(ev.direction | this.direction));
+		// if (ev.direction & this.direction) {
 		switch (ev.type) {
+			// case View.CLICK_EVENT:
+			// 	return this._onClick(ev);
 			case "tap":
 				return this._onTap(ev);
 			case "hpanstart":
@@ -689,11 +698,17 @@ var CarouselProto = {
 			case "hpancancel":
 				return this._onPanFinal(ev);
 		}
+		// }
 	},
 
 	/* --------------------------- *
 	/* touch event: pan
 	/* --------------------------- */
+
+	getViewAtPanDir: function(dir) {
+		// return (dir & this._precedingDir) ? this._precedingView : this._followingView;
+		return (dir & this._followingDir) ? this._precedingView : this._followingView;
+	},
 
 	// _panCapturedOffset: 0,
 
@@ -706,16 +721,17 @@ var CarouselProto = {
 
 	/** @param {Object} ev */
 	_onPanMove: function(ev) {
-		var view = this.getViewAtPanDir(ev.offsetDirection);
 		// var delta = (this.direction & HORIZONTAL) ? ev.thresholdDeltaX : ev.thresholdDeltaY;
 		var delta = (this.direction & HORIZONTAL) ? ev.deltaX : ev.deltaY;
+		var view = this.getViewAtPanDir(ev.offsetDirection);
+		var cView = this._panCandidateView;
 
-		if (this._panCandidateView !== view) {
-			this._panCandidateView && this._panCandidateView.el.classList.remove("candidate");
+		if (cView !== view) {
+			cView && cView.el.classList.remove("candidate");
+			view && view.el.classList.add("candidate");
 			this._panCandidateView = view;
-			this._panCandidateView && this._panCandidateView.el.classList.add("candidate");
 		}
-		if (this._panCandidateView === void 0) {
+		if (cView === void 0) {
 			delta *= Globals.HPAN_OUT_DRAG;
 		}
 
@@ -766,26 +782,24 @@ var CarouselProto = {
 	/* touch event: tap
 	/* --------------------------- */
 
-	getViewAtPanDir: function(dir) {
-		// return (dir & this._precedingDir) ? this._precedingView : this._followingView;
-		return (dir & this._followingDir) ? this._precedingView : this._followingView;
-	},
-
 	/** @type {int} In pixels */
 	_tapGrow: 10,
 
-	getViewAtTapPos: function(pos, posAcross) {
-		if (this._tapAcrossBefore < posAcross && posAcross < this._tapAcrossAfter) {
-			if (pos < this._tapBefore) {
+	getViewAtTapPos: function(posAlong, posAcross) {
+		if ((this._tapAcrossBefore < posAcross) && (posAcross < this._tapAcrossAfter)) {
+			if (posAlong < this._tapBefore) {
 				return this._precedingView;
-			} else if (pos > this._tapAfter) {
+			} else
+			if (posAlong > this._tapAfter) {
 				return this._followingView;
 			}
 		}
-		return void 0;
+		return (void 0);
 	},
 
 	_onTap: function(ev) {
+		if (ev.defaultPrevented) return;
+
 		var targetView = View.findByDescendant(ev.target);
 		// if (!this.itemViews.contains(targetView)) {
 		// 	return;
@@ -801,11 +815,16 @@ var CarouselProto = {
 		} while ((targetView = targetView.parentView))
 
 		// this.selectFromView();
-
-		var bounds = this.el.getBoundingClientRect();
-		var tapX = ev.center.x - bounds.left;
-		var tapY = ev.center.y - bounds.top;
-		var tapCandidate = this.getViewAtTapPos(
+		var bounds, tapX, tapY, tapCandidate;
+		bounds = this.el.getBoundingClientRect();
+		if (ev.type == "tap") {
+			tapX = ev.center.x - bounds.left;
+			tapY = ev.center.y - bounds.top;
+		} else {
+			tapX = ev.clientX - bounds.left;
+			tapY = ev.clientY - bounds.top;
+		}
+		tapCandidate = this.getViewAtTapPos(
 			this.dirProp(tapX, tapY),
 			this.dirProp(tapY, tapX)
 		);
@@ -832,6 +851,11 @@ var CarouselProto = {
 			this.triggerSelectionEvents(tapCandidate, true);
 			// this.renderNow();
 		}
+	},
+
+	_onClick: function(ev) {
+		console.log("%s::_onClick", this.cid, ev.type);
+		this._onTap(ev);
 	},
 
 	/* --------------------------- *

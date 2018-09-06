@@ -74,7 +74,7 @@ module.exports = View.extend({
 	/* public interface
 	/* --------------------------- */
 
-	getValue: function(key) {
+	getTargetValue: function(key) {
 		return this._valueData[(key ? key : this.defaultKey)]._value;
 	},
 

@@ -3,11 +3,11 @@
  * @module app/view/component/progress/SVGCircleProgressMeter
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
+// /** @type {module:underscore} */
+// var _ = require("underscore");
 
-/** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+// /** @type {module:app/control/Globals} */
+// var Globals = require("app/control/Globals");
 /** @type {module:app/view/component/progress/AbstractProgressMeter} */
 var AbstractProgressMeter = require("app/view/component/progress/AbstractProgressMeter");
 

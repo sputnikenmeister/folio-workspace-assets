@@ -3,17 +3,14 @@
 	<div class="media-border content-size"></div>
 	<div class="controls content-size">
 		<canvas class="progress-meter"></canvas>
-		{{! <div class="top-bar control-box"> }}
-			{{! <div class="progress-meter"></div> }}
-			{{! <canvas class="progress-meter"></canvas> }}
-		{{! </div> }}
 	</div>
 	<div class="sequence media-size">
 		<img class="sequence-step current default" alt="{{text}}" longdesc="#desc_m{{id}}" />
 	</div>
-	<div class="overlay media-size">
-		<div class="play-toggle-hitarea play-toggle">
-			{{! &#xe80d; }}
+	<div class="overlay media-size play-toggle-hitarea">
+		<div class="play-toggle">
+			<canvas class="play-toggle-symbol"/>
+			{{!> ../template/svg/PlayToggleSymbol.hbs }}
 		</div>
 	</div>
 </div>

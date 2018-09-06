@@ -62,7 +62,7 @@ var AppViewProto = {
 	/** @override */
 	el: "html",
 	// /** @override */
-	className: "app without-bundle without-media without-article",
+	className: "app", // without-bundle without-media without-article",
 	/** @override */
 	model: AppState,
 
@@ -109,11 +109,9 @@ var AppViewProto = {
 		// this.routeEl = this.el;
 		// this.stateEl = this.el
 		this.breakpointEl = this.el;
-		// this.touchEl = document.body;
-		// this.touchEl = document.getElementById("containter");
 
 		/* init HammerJS handlers */
-		var vtouch, htouch;
+		var vtouch, htouch, touchEl;
 		// var vpan, hpan, tap;
 
 		// this._vpanEnableFn = function(mc, ev) {
@@ -128,7 +126,10 @@ var AppViewProto = {
 		// 	return !!retval;
 		// }.bind(this);
 
-		vtouch = htouch = TouchManager.init(this.content);
+		touchEl = this.content;
+		// touchEl = document.body;
+		vtouch = htouch = TouchManager.init(touchEl);
+
 		// vtouch.get("vpan").set({ enable: this._vpanEnableFn });
 		// htouch.get("hpan").set({ enable: this._hpanEnableFn });
 		// 		vtouch.set({

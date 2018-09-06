@@ -259,7 +259,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 				})
 			.then(function(view) {
 				view.initializePlayable();
-				view.updateOverlay(view.defaultImage, view.overlay);
+				view.updateOverlay(view.defaultImage, view.playToggle); //view.overlay);
 				view.addSelectionListeners();
 				return view;
 			});
@@ -304,7 +304,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// add default image as renderer (already in DOM)
 		this.itemViews.add(new SequenceStepRenderer({
 			el: this.getDefaultImage(),
-			model: this.sources.selected
+			model: this.model.get("source")
 		}));
 	},
 
@@ -363,26 +363,31 @@ var SequenceRenderer = PlayableRenderer.extend({
 	},
 
 	initializePlayable: function() {
+		// model
+		// ---------------------------------
+		// this.sources.select(this.model.get("source"));
+		// this.content.classList.add("started");
+
 		// Sequence model
 		// ---------------------------------
 		// this.sources = this._createSourceCollection(this.model);
 		whenSelectionDistanceIs(this, 0).then(this._preloadAllItems, function(err) {
-			if (err instanceof View.ViewError) { // Ignore ViewError
-				// console.warn(err.name, err.message);//, err.view.cid);
-				return;
-			}
-			return err;
+			return (err instanceof View.ViewError) ? (void 0) : err; // Ignore ViewError
 		});
+
+		this._sequenceInterval = Math.max(parseInt(this.model.attr("@sequence-interval")), MIN_STEP_INTERVAL) || DEFAULT_STEP_INTERVAL;
 
 		// timer
 		// ---------------------------------
-		this._sequenceInterval = Math.max(parseInt(this.model.attr("@sequence-interval")), MIN_STEP_INTERVAL) || DEFAULT_STEP_INTERVAL;
-
 		this.timer = new Timer();
 		this.listenTo(this, "view:removed", function() {
 			this.timer.stop();
 			this.stopListening(this.timer);
 		});
+		// trick the timer as in
+		// this.timer.start(this._sequenceInterval);
+		// this.timer.pause();
+
 		this.listenTo(this.timer, {
 			"start": this._onTimerStart,
 			"resume": this._onTimerResume,
@@ -413,9 +418,11 @@ var SequenceRenderer = PlayableRenderer.extend({
 			// backgroundColor: this.model.attr("background-color"),
 			labelFn: this._progressLabelFn.bind(this)
 		});
-
 		// this.el.querySelector(".top-bar")
 		//		.appendChild(this.progressMeter.render().el);
+
+		// this._setPlayToggleSymbol("play-symbol");
+		// this._renderPlaybackState();
 	},
 
 	_progressLabelFn: function() {
@@ -494,7 +501,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 	_updateItemProgress: function(progress, index) {
 		this._sourceProgressByIdx[index] = progress;
 		if (this.progressMeter) {
-			this.progressMeter.valueTo(this._sourceProgressByIdx, 300, "available");
+			this.progressMeter.valueTo("available", this._sourceProgressByIdx, 300);
 		}
 	},
 
@@ -517,34 +524,62 @@ var SequenceRenderer = PlayableRenderer.extend({
 	_playMedia: function() {
 		if (!this._paused) return;
 		this._paused = false;
-		if (this.timer.status == Timer.PAUSED) {
-			this.timer.start(); // resume, actually
-		} else {
-			this.timer.start(this._sequenceInterval);
+
+		if (!this._isMediaWaiting()) {
+			if (this.timer.status === Timer.PAUSED) {
+				this.timer.start(); // resume, actually
+			} else {
+				this.timer.start(this._sequenceInterval);
+			}
 		}
+		// this._renderPlaybackState();
 	},
 
 	/** @override */
 	_pauseMedia: function() {
 		if (this._paused) return;
 		this._paused = true;
-		if (this.timer.status == Timer.STARTED) {
+		if (this.timer.status === Timer.STARTED) {
 			this.timer.pause();
 		}
+		// this._renderPlaybackState();
 	},
+
+	// /** @override */
+	// _renderPlaybackState: function() {
+	// 	// if (!this.content.classList.contains("started")) {
+	// 	// 	this.content.classList.add("started");
+	// 	// }
+	// 	PlayableRenderer.prototype._renderPlaybackState.apply(this, arguments);
+	// },
 
 	/* --------------------------- *
 	/* sequence private
 	/* --------------------------- */
 
 	_onTimerStart: function(duration) {
-		this.progressMeter.valueTo(this.sources.selectedIndex + 1, duration, "amount");
-		// init next renderer now to have smooth transitions
+		var item, view;
+		if (this.sources.selectedIndex === -1) {
+			item = this.model.get("source");
+		} else {
+			item = this.sources.followingOrFirst();
+		}
+		this.sources.select(item);
+
+		this.progressMeter.valueTo("amount", this.sources.selectedIndex + 1, duration);
+		this.content.classList.toggle("playback-error", item.has("error"));
+
+		view = this.itemViews.findByModel(item);
+		if (!item.has("error") && view !== null) {
+			this.updateOverlay(view.el, this.playToggle);
+		}
+
+		// init next renderer now to have smoother transitions
 		this._getItemRenderer(this.sources.followingOrFirst());
 	},
 
 	_onTimerResume: function(duration) {
-		this.progressMeter.valueTo(this.sources.selectedIndex + 1, duration, "amount");
+		this.progressMeter.valueTo("amount", this.sources.selectedIndex + 1, duration);
 	},
 
 	_onTimerPause: function(duration) {
@@ -561,53 +596,64 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// this.progressMeter.valueTo(timerVal);
 		// this.progressMeter.valueTo(meterVal);
 
-		this.progressMeter.valueTo(this.progressMeter.getRenderedValue("amount"), 0, "amount");
+		this.progressMeter.valueTo("amount", this.progressMeter.getRenderedValue("amount"), 0);
 	},
+
+	/* last completely played sequence index */
+	// _lastPlayedIndex: -1,
 
 	_onTimerEnd: function() {
 		var context = this;
 		var nextSource, nextView;
 
+		// this._lastPlayedIndex = this.sources.selectedIndex;
+		// next item
 		nextSource = this.sources.followingOrFirst();
 		// init next renderer
 		nextView = this._getItemRenderer(nextSource);
-		// init second next renderer
-		// this._getItemRenderer(this.sources.followingOrFirst(nextSource));
 
-		var showNextView = function() {
-			context.requestAnimationFrame(function() {
-				context.content.classList.remove("waiting");
+		var showNextView = function(result) {
+			// console.log("%s::showNextView %sms %s", context.cid, context._sequenceInterval, nextSource.cid)
+			context.setImmediate(function() {
+				// context.content.classList.remove("waiting");
 				if (!context._paused) {
-					// if (context.playbackRequested) {
-					context.content.classList.toggle("playback-error", nextSource.has("error"));
-					context.sources.select(nextSource); // NOTE: step increase done here
+					// context.content.classList.toggle("playback-error", nextSource.has("error"));
+					// context.sources.select(nextSource); // NOTE: step increase done here
 					// view.updateOverlay(nextView.el, view.overlay);
 					context.timer.start(context._sequenceInterval);
-					// console.log("%s::showNextView %sms %s", context.cid, context._sequenceInterval, nextSource.cid)
 				}
 			});
+			return result;
 		};
 
 		if (nextSource.has("prefetched")) {
-			// nextView = context._getItemRenderer(nextSource).el;
 			_whenImageLoads(nextView.el).then(showNextView, showNextView);
-		} else if (nextSource.has("error")) {
+		} else
+		if (nextSource.has("error")) {
 			showNextView();
 		} else {
-			this.content.classList.add("waiting");
-			/* TODO: add ga event 'media-waiting' */
 			// console.log("%s:[waiting] %sms %s", context.cid, nextSource.cid);
-			window.ga("send", "event", "sequence-renderer", "waiting", this.model.get("text"));
-			this.listenTo(nextSource, "change:prefetched change:error",
-				function() {
-					this.stopListening(nextSource, "change:prefetched change:error");
-					/* TODO: add ga event 'media-playing' */
-					// console.log("%s:[playing] %sms %s", context.cid, nextSource.cid);
-					window.ga("send", "event", "sequence-renderer", "playing", this.model.get("text"));
-					_whenImageLoads(nextView.el).then(showNextView, showNextView);
-					// context.content.classList.remove("waiting");
-					// nextView = context._getItemRenderer(nextSource).el;
-				});
+			this._toggleWaiting(true);
+			this._renderPlaybackState();
+			// this.content.classList.add("waiting");
+			/* TODO: add ga event 'media-waiting' */
+			// window.ga("send", "event", "sequence-renderer", "waiting", this.model.get("text"));
+
+			this.listenToOnce(nextSource, "change:prefetched change:error", function(model) {
+				// this.stopListening(nextSource, "change:prefetched change:error");
+				// console.log("%s:[playing] %sms %s", context.cid, nextSource.cid);
+				this._toggleWaiting(false);
+				this._renderPlaybackState();
+				// this.content.classList.add("waiting");
+				/* TODO: add ga event 'media-playing' */
+				// window.ga("send", "event", "sequence-renderer", "playing", this.model.get("text"));
+
+				_whenImageLoads(nextView.el)
+					.then(showNextView, showNextView);
+
+				// context.content.classList.remove("waiting");
+				// nextView = context._getItemRenderer(nextSource).el;
+			});
 		}
 	},
 
@@ -649,7 +695,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 	// 	return canvas.toDataURL();
 	// },
 });
-
 if (DEBUG) {
 
 	SequenceRenderer = (function(SequenceRenderer) {
@@ -658,15 +703,81 @@ if (DEBUG) {
 		/** @type {module:underscore.strings/lpad} */
 		var lpad = require("underscore.string/lpad");
 
+		// /** @type {module:underscore.strings/lpad} */
+		// var rpad = require("underscore.string/rpad");
+
+		/** @type {module:underscore.strings/capitalize} */
+		var caps = require("underscore.string/capitalize");
+
 		return SequenceRenderer.extend({
+			/** @override */
+			initialize: function() {
+				SequenceRenderer.prototype.initialize.apply(this, arguments);
+
+				this.__logColors = _.extend({
+					"media:play": "darkred",
+					"media:pause": "darkred",
+
+					"timer:start": "darkgreen",
+					"timer:end": "darkgreen",
+					"timer:resume": "green",
+					"timer:pause": "green",
+
+					"load:progress": "blue",
+					"load:complete": "darkblue"
+				}, this.__logColors);
+			},
+
+			// __getHeaderText: function() {
+			// 	var fmt1 = function(s) {
+			// 		return lpad(caps(s), 8).substr(0, 8).toUpperCase();
+			// 	};
+			// 	var fmt2 = function(s) {
+			// 		return lpad(caps(s), 8).substr(0, 8).toUpperCase();
+			// 	};
+			// 	var o = {
+			// 		"tstamp": fmt1,
+			// 		"index": fmt2,
+			// 		"duration": fmt1,
+			// 		"playback": fmt1,
+			// 		"media": fmt1,
+			// 		"timer": fmt1,
+			// 		"next": fmt1,
+			// 	};
+			// 	return Object.keys(o).map(function(s, i, a) {
+			// 		return o[s](s);
+			// 	}).join(" ");
+			// 	// Object.keys(o).reduce(function(ss, s, i, a) {
+			// 	// 	return ss + " " + lpad(caps(s), 8).substr(0, 8).toUpperCase();
+			// 	// }, "");
+			// },
+
+			__getHeaderText: function() {
+				return [
+					"tstamp",
+					"index",
+					"duration",
+					"playback",
+					"media",
+					"timer",
+					"next",
+				].map(function(s, i, a) {
+					return lpad(caps(s), 8).substr(0, 8).toUpperCase();
+				}).join(" ");
+			},
+
 			__logTimerEvent: function(evname, msg) {
 				var logMsg = [
-				"source: ", lpad(this.sources.selectedIndex, 2),
-				"duration:", lpad(this.timer.getDuration(), 4),
-				"paused:", this.paused,
-				"requested:", this.playbackRequested,
-				"status:", this.timer.getStatus(),
-			];
+					this.sources.selectedIndex,
+					(this.timer.getDuration() * .001).toFixed(3),
+					this.playbackRequested ? ">>" : "::",
+					this.mediaPaused ? "paused" :
+					(this.mediaWaiting ? "waiting" : "playing"),
+					this.timer.getStatus(),
+					this.sources.followingOrFirst().has("prefetched") ? "ready" : "pending"
+				].map(function(s, i, a) {
+					return lpad(s, 8).substr(0, 8).toUpperCase();
+				});
 				msg && logMsg.push(msg);
 				logMsg = logMsg.join(" ");
 
@@ -674,13 +785,15 @@ if (DEBUG) {
 				// console.log("%s::[%s] %s", this.cid, evname, logMsg);
 			},
 			_playMedia: function() {
-				this.__logTimerEvent("playback");
+				this.__logTimerEvent("media:play");
 				SequenceRenderer.prototype._playMedia.apply(this, arguments);
+				// this.__logTimerEvent("< media:play");
 				// console.log("%s::_playMedia()", this.cid);
 			},
 			_pauseMedia: function() {
-				this.__logTimerEvent("playback");
+				this.__logTimerEvent("media:pause");
 				SequenceRenderer.prototype._pauseMedia.apply(this, arguments);
+				// this.__logTimerEvent("< media:pause");
 				// console.log("%s::_pauseMedia()", this.cid);
 			},
 
@@ -690,7 +803,7 @@ if (DEBUG) {
 			},
 			_onTimerResume: function() {
 				this.__logTimerEvent("timer:resume");
-				SequenceRenderer.prototype._onTimerStart.apply(this, arguments);
+				SequenceRenderer.prototype._onTimerResume.apply(this, arguments);
 			},
 			_onTimerPause: function() {
 				this.__logTimerEvent("timer:pause");
@@ -703,7 +816,10 @@ if (DEBUG) {
 
 			_updateItemProgress: function(progress, srcIdx) {
 				if (progress == 1) {
-					this.__logMessage("idx:" + srcIdx + " progress:" + progress, "load:progress");
+					this.__logTimerEvent("load:complete", "item " + srcIdx + ": complete");
+				} else
+				if (srcIdx === this.sources.selectedIndex) {
+					this.__logTimerEvent("load:progress", "item " + srcIdx + ": " + progress);
 				}
 				SequenceRenderer.prototype._updateItemProgress.apply(this, arguments);
 			},

@@ -2,8 +2,8 @@
  * @module app/view/base/Interpolator
  */
 
-// /** @type {module:underscore} */
-// var _ = require("underscore");
+/** @type {module:underscore} */
+var _ = require("underscore");
 /** @type {module:utils/ease/linear} */
 var linear = require("utils/ease/linear");
 
@@ -11,19 +11,24 @@ var linear = require("utils/ease/linear");
  * @constructor
  * @type {module:app/view/base/Interpolator}
  */
-var Interpolator = function(values, maxValues) {
-	this._valueData = {};
-	this._maxValues = {};
+var Interpolator = function(values, maxValues, easeValues) {
+	this._tstamp = 0;
+	// gets thrown away by first interpolate() but avoid null access errors
 	this._renderableKeys = [];
+	this._renderedKeys = [];
 
-	var key, val, maxVal;
-	for (key in values) {
-		val = values[key];
-		maxVal = maxValues[key] || null;
+	this._maxValues = _.isObject(maxValues) ? _.extend({}, maxValues) : {};
+	this._easeFn = _.isObject(easeValues) ? _.extend({}, easeValues) : {};
+	this._valueData = {};
+
+	// var key, val, maxVal, easeFn;
+	for (var key in values) {
+		_.isNumber(this._maxValues[key]) || (this._maxValues[key] = null);
+		_.isFunction(this._easeFn[key]) || (this._easeFn[key] = linear);
+
 		// create value object and store it
-		this._valueData[key] = this._initValue(val, 0, maxVal);
-		// add maxValue to store
-		this._maxValues[key] = maxVal;
+		this._valueData[key] = this._initValue(values[key], 0, this._maxValues[key]);
+
 		// add to next render list
 		this._renderableKeys.push(key);
 	}
@@ -40,7 +45,11 @@ Interpolator.prototype = Object.create({
 		return this._renderableKeys.indexOf(key) === -1;
 	},
 
-	getValue: function(key) {
+	getCurrentValue: function(key) {
+		return this._valueData[key]._renderedValue || this._valueData[key]._value;
+	},
+
+	getTargetValue: function(key) {
 		return this._valueData[key]._value;
 	},
 
@@ -48,20 +57,27 @@ Interpolator.prototype = Object.create({
 		return this._valueData[key]._renderedValue;
 	},
 
-	valueTo: function(value, duration, key) {
+	getOption: function(key, opt) {
+		if (opt === "max") return this._maxValues[key];
+		if (opt === "ease") return this._easeFn[key];
+	},
+
+	valueTo: function(key, value, duration, ease) {
 		var changed, dataObj = this._valueData[key];
+		if (_.isFunction(ease)) {
+			this._easeFn[key] = ease;
+		}
 		// console.log("%s::valueTo [%s]", "[interpolator]", key, value);
 		if (Array.isArray(dataObj)) {
 			changed = value.reduce(function(prevChanged, itemValue, i) {
 				if (dataObj[i]) {
 					dataObj[i] = this._initNumber(itemValue, duration, this._maxValues[key]);
 					return true;
-				} else {
-					return this._setValue(itemValue, duration, dataObj[i]) || prevChanged;
 				}
+				return this._setValue(dataObj[i], itemValue, duration) || prevChanged;
 			}.bind(this), changed);
 		} else {
-			changed = this._setValue(value, duration, dataObj);
+			changed = this._setValue(dataObj, value, duration);
 		}
 		if (changed) {
 			this._renderableKeys.indexOf(key) !== -1 || this._renderableKeys.push(key);
@@ -73,10 +89,10 @@ Interpolator.prototype = Object.create({
 	},
 
 	updateValue: function(key) {
-		// Call _interpolateValue only if needed. _interpolateValue() returns false
+		// Call _interpolateKey only if needed. _interpolateKey() returns false
 		// once interpolation is done, in which case remove key from _renderableKeys.
 		var kIndex = this._renderableKeys.indexOf(key);
-		if (kIndex !== -1 && !this._interpolateValue(key)) {
+		if (kIndex !== -1 && !this._interpolateKey(key)) {
 			this._renderableKeys.splice(kIndex, 1);
 			this._valuesChanged = this._renderableKeys.length > 0;
 		}
@@ -90,18 +106,11 @@ Interpolator.prototype = Object.create({
 	_initValue: function(value, duration, maxVal) {
 		if (Array.isArray(value)) {
 			return value.map(function(val) {
-				return this._initNumber(val, 0, maxVal);
+				return this._initNumber(val, duration, maxVal);
 			}, this);
-		} else {
-			return this._initNumber(value, 0, maxVal);
 		}
+		return this._initNumber(value, duration, maxVal);
 	},
-
-	// _initArray: function(value, duration, maxVal) {
-	// 	return val.map(function(val) {
-	// 		return this._initNumber(val, 0, maxVal);
-	// 	}, this);
-	// },
 
 	_initNumber: function(value, duration, maxVal) {
 		var o = {};
@@ -113,7 +122,8 @@ Interpolator.prototype = Object.create({
 		o._startTime = -1;
 		o._elapsedTime = 0;
 
-		o._lastRenderedValue = o._renderedValue = null;
+		o._lastRenderedValue = null;
+		o._renderedValue = o._startValue;
 
 		o._maxVal = maxVal;
 		// if (maxVal !== void 0) o._maxVal = maxVal;
@@ -122,8 +132,8 @@ Interpolator.prototype = Object.create({
 		return o;
 	},
 
-	_setValue: function(value, duration, o) {
-		if (o._value != value) {
+	_setValue: function(o, value, duration) {
+		if (o._value !== value) {
 			o._startValue = o._value;
 			o._valueDelta = value - o._value;
 			o._value = value;
@@ -132,7 +142,8 @@ Interpolator.prototype = Object.create({
 			o._startTime = -1;
 			o._elapsedTime = 0;
 
-			o._lastRenderedValue = o._renderedValue;
+			// o._lastRenderedValue = o._renderedValue;
+			// o._renderedValue = o._startValue;
 
 			return true;
 		}
@@ -145,12 +156,14 @@ Interpolator.prototype = Object.create({
 
 	/** @override */
 	interpolate: function(tstamp) {
+		this._tstamp = tstamp;
 		if (this._valuesChanged) {
 			this._valuesChanged = false;
 
 			var changedKeys = this._renderableKeys;
-			this._tstamp = tstamp;
-			this._renderableKeys = changedKeys.filter(this._interpolateValue, this);
+			this._renderableKeys = changedKeys.filter(function(key) {
+				return this._interpolateValue(tstamp, this._valueData[key], this._easeFn[key]);
+			}, this);
 			this._renderedKeys = changedKeys;
 
 			if (this._renderableKeys.length !== 0) {
@@ -165,51 +178,63 @@ Interpolator.prototype = Object.create({
 		return this;
 	},
 
-	_interpolateValue: function(key) {
-		var dataObj = this._valueData[key];
-		if (Array.isArray(dataObj)) {
-			return dataObj.reduce(function(continueNext, o, index, arr) {
-				return this._interpolateNumber(this._tstamp, o) || continueNext;
-			}.bind(this), false);
-		} else {
-			return this._interpolateNumber(this._tstamp, dataObj);
-		}
+	_interpolateKey: function(key) {
+		return this._interpolateValue(this._tstamp, this._valueData[key], this._easeFn[key]);
 	},
 
-	_interpolateNumber: function(tstamp, o) {
-		if (o._startTime < 0) {
-			o._startTime = tstamp;
+	_interpolateValue: function(tstamp, o, fn) {
+		if (Array.isArray(o)) {
+			return o.reduce(function(changed, item, index, arr) {
+				return this._interpolateNumber(tstamp, item, fn) || changed;
+			}.bind(this), false);
 		}
-		var elapsed = tstamp - o._startTime;
-		o._elapsedTime = elapsed;
+		return this._interpolateNumber(tstamp, o, fn);
+	},
+
+	_interpolateNumber: function(tstamp, o, fn) {
+		if (o._startTime < 0) {
+			o._startTime = tstamp; // - o._elapsedTime;
+		}
 		o._lastRenderedValue = o._renderedValue;
+
+		var elapsed = Math.max(0, tstamp - o._startTime);
 		if (elapsed < o._duration) {
 			if (o._maxVal && o._valueDelta < 0) {
 				// upper-bound values
-				o._renderedValue = linear(elapsed, o._startValue,
+				o._renderedValue = fn(elapsed, o._startValue,
 					o._valueDelta + o._maxVal, o._duration) - o._maxVal;
 			} else {
 				// unbound values
-				o._renderedValue = linear(elapsed, o._startValue,
+				o._renderedValue = fn(elapsed, o._startValue,
 					o._valueDelta, o._duration);
 			}
+			o._elapsedTime = elapsed;
 			return true;
-		} else {
-			o._renderedValue = o._value;
-			return false;
 		}
+		o._renderedValue = o._value;
+		// o._elapsedTime = 0;
+		return false;
 	},
 }, {
+	/**
+	 * @type {boolean} Has any value been changed by valueTo() since last interpolate()
+	 */
 	valuesChanged: {
 		get: function() {
 			return this._valuesChanged;
 		}
 	},
+	/**
+	 * @type {array} Keys that are not yet at target value
+	 */
 	renderableKeys: {
 		get: function() {
 			return this._renderableKeys;
 		}
 	},
+	/**
+	 * @type {array} Keys that have been rendered in the last interpolate()
+	 */
 	renderedKeys: {
 		get: function() {
 			return this._renderedKeys;
