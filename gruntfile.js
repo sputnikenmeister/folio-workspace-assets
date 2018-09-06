@@ -43,42 +43,30 @@ module.exports = function(grunt) {
 	/* -------------------------------- */
 
 	// resources
-	grunt.registerTask('deps-install', [
-		'copy:resources', 'copy:sources', 'deps-build']);
-	grunt.registerTask('deps-build', ['build-favicons', 'modernizr-build:production']);
+	grunt.registerTask('deps-build', ['build-favicons', 'modernizr-build:dist']);
+	grunt.registerTask('deps-install', ['copy:resources', 'copy:sources', 'deps-build', 'symlink:vendor']);
 
 	// debug build tasks
 	/* NOTE debug-styles defined next to task config */
 	grunt.registerTask('debug-styles', ['debug-styles-sass']);
-	grunt.registerTask('debug-vendor', [
-		'browserify:vendor', 'exorcise:vendor']);
-	grunt.registerTask('debug-client', [
-		'browserify:client', 'exorcise:client']);
-	grunt.registerTask('debug', [
-		'debug-vendor', 'debug-client', 'debug-styles']);
+	grunt.registerTask('debug-vendor', ['browserify:vendor', 'exorcise:vendor']);
+	grunt.registerTask('debug-client', ['browserify:client', 'exorcise:client']);
+	grunt.registerTask('debug', ['debug-vendor', 'debug-client', 'debug-styles']);
 
 	// dist build tasks
-	grunt.registerTask('dist-styles', [
-		'sass:dist', 'sass:ie', 'autoprefixer:dist']);
-	// 'compass:fonts-dist', 'compass:dist', 'compass:ie', 'autoprefixer:dist']);
-	grunt.registerTask('dist-js', [
-		'browserify:dist', 'uglify:dist']);
-	grunt.registerTask('dist', [
-		'dist-js', 'dist-styles']);
+	grunt.registerTask('dist-styles', ['sass:dist', 'sass:ie', 'autoprefixer:dist']);
+	grunt.registerTask('dist-js', ['browserify:dist', 'uglify:dist']);
+	grunt.registerTask('dist', ['dist-js', 'dist-styles']);
 
 	// watch
-	grunt.registerTask('debug-watch', [
-		'browserify:watch-client', 'browserify:watch-vendor', 'watch']);
+	grunt.registerTask('debug-watch', ['browserify:watch-client', 'browserify:watch-vendor', 'watch']);
 
-	grunt.registerTask('clean-all', [
-		'clean:js', 'clean:css']); //, 'compass:clean']);
-	grunt.registerTask('build', [
-		'debug', 'dist']);
-	grunt.registerTask('rebuild', [
-		'clean-all', 'deps-install', 'build']);
+	grunt.registerTask('clean-all', ['clean:js', 'clean:css']);
+	grunt.registerTask('install', ['deps-install']);
+	grunt.registerTask('build', ['debug', 'dist']);
+	grunt.registerTask('rebuild', ['clean-all', 'build']);
 	// Default task
-	grunt.registerTask('default', [
-		'debug', 'debug-watch']);
+	grunt.registerTask('default', ['debug', 'debug-watch']);
 
 	/* --------------------------------
 	/* watch
@@ -99,7 +87,7 @@ module.exports = function(grunt) {
 			files: ['src/sass/**/*.scss', 'src/sass/**/*.json'],
 		},
 		'build-deps': {
-			tasks: ['modernizr-build:production'],
+			tasks: ['modernizr-build:dist'],
 			files: ['build/grunt/modernizr-config.json'],
 		},
 		'process-vendor': {
@@ -135,9 +123,23 @@ module.exports = function(grunt) {
 				dest: './fonts/',
 				src: [
 					'./node_modules/@folio/webfonts/build/fonts/folio-figures/*.<%= paths.ext.fonts %>',
+					// './node_modules/@folio/webfonts/build/fonts/brown/*.<%= paths.ext.fonts %>',
+					// './node_modules/@folio/webfonts/build/fonts/rubik/*.<%= paths.ext.fonts %>',
 					'./src/resources/fonts/franklin-gothic-fs/*.<%= paths.ext.fonts %>',
 				]
 			}]
+		},
+		favicons: {
+			files: [{
+				flatten: false,
+				expand: true,
+				dest: './images/favicons',
+				cwd: './node_modules/@folio/favicons/build/',
+				src: [
+						// './node_modules/@folio/favicons/build/**/*',
+						'**/*.{png,ico}',
+					]
+				}]
 		},
 		sources: {
 			options: {
@@ -151,6 +153,8 @@ module.exports = function(grunt) {
 				dest: './build/generated/sass/fonts',
 				src: [
 					'./node_modules/@folio/webfonts/build/sass/_folio-figures.scss',
+					// './node_modules/@folio/webfonts/build/sass/_brown.scss',
+					// './node_modules/@folio/webfonts/build/sass/_rubik.scss',
 					'./src/resources/fonts/franklin-gothic-fs/*.css',
 				],
 				rename: function(dest, src) {
@@ -194,6 +198,7 @@ module.exports = function(grunt) {
 			loadPath: [
 				'src/sass',
 				'node_modules/compass-mixins/lib/',
+				'build/generated/sass/'
 			],
 			require: [
 				'sass-json-vars',
@@ -371,7 +376,7 @@ module.exports = function(grunt) {
 	/* -------------------------------- */
 
 	grunt.loadTasks('./build/grunt/tasks');
-	grunt.config('modernizr-build.production', {
+	grunt.config('modernizr-build.dist', {
 		files: {
 			'./build/generated/js/modernizr-dist.js': [
 				'./build/grunt/modernizr-config.json'
@@ -415,16 +420,25 @@ module.exports = function(grunt) {
 				'cookies-js',
 			],
 			alias: [
-				// './node_modules/webcomponents.js/MutationObserver.js:mutationobserver-polyfill',
 				'./build/generated/js/modernizr-dist.js:modernizr-dist',
 				'./src/js/shims/modernizr-shim.js:Modernizr',
 				'./src/js/shims/fullscreen.js:fullscreen-polyfill',
 				'./src/js/shims/matchesSelector.js:matches-polyfill',
 				'./src/js/shims/requestAnimationFrame.js:raf-polyfill',
 				'./src/js/shims/math-sign-polyfill.js:math-sign-polyfill',
+				'./node_modules/webcomponents.js/MutationObserver.js:mutation-polyfill',
+				// './node_modules/path2d-polyfill/build/index.js:path2d-polyfill',
 			]
 		},
 	});
+
+	/*
+		NOTE: path2d-polyfill has to be manually build with babel,
+		not included in build yet:
+		`cd ./node_modules/path2d-polyfill/ && \
+			npm install --save-dev babel-cli && \
+			./node_modules/.bin/babel src -d build --presets env`
+	*/
 
 	/* browserify:client */
 	grunt.config('browserify.client', {
@@ -440,7 +454,7 @@ module.exports = function(grunt) {
 				}
 			},
 			transform: [
-				['hbsfy', { extensions: ['hbs'] }],
+				['hbsfy', { traverse: true, extensions: ['hbs'] }],
 				// ['node-underscorify', { extensions: ['tpl'] }],
 			],
 			plugin: [
@@ -472,7 +486,6 @@ module.exports = function(grunt) {
 				return s.split(':').pop();
 			})
 			.concat(grunt.config('browserify.vendor.options.require'));
-
 	}()));
 
 	grunt.config('browserify.watch-vendor', grunt.config('browserify.vendor'));
@@ -502,6 +515,22 @@ module.exports = function(grunt) {
 		},
 	});
 
+
+	/* --------------------------------
+	/* Create symlinks to js deps for quick access
+	/* -------------------------------- */
+
+	grunt.loadNpmTasks('grunt-contrib-symlink');
+	grunt.config('symlink.vendor', {
+		files: [{
+			expand: true,
+			overwrite: false,
+			filter: 'isDirectory',
+			cwd: 'node_modules',
+			dest: 'build/src/lib',
+			src: grunt.config('browserify.vendor.options.require').concat()
+		}]
+	});
 
 	/* --------------------------------
 	/* dist
@@ -613,149 +642,6 @@ module.exports = function(grunt) {
 	grunt.config('uglify.dist.options.mangle.reserve', dropFuncs);
 	grunt.config('uglify.dist.options.compress.pure_funcs', dropFuncs);
 	grunt.config('uglify.dist.options.compress.drop_console', false);
-
-	/* --------------------------------
-	/* resources
-	/* -------------------------------- */
-
-	grunt.config('paths.favicons', {
-		src: 'src/resources/favicons',
-		dest: 'images/favicons',
-		generated: '<%= paths.src.generated %>/favicons',
-
-	});
-
-	// NOTE: already loaded above
-	// grunt.loadNpmTasks('grunt-contrib-clean');
-	grunt.config('clean.favicons', {
-		src: [
-			'<%= paths.favicons.generated %>',
-			'<%= paths.favicons.dest %>',
-		]
-	});
-	grunt.loadNpmTasks('grunt-favicons');
-	grunt.config('favicons', {
-		options: {
-			// debug: false,
-			apple: false,
-			regular: false,
-			windowsTile: false,
-			timestamp: true
-		},
-	});
-
-	/* generate-favicons
-	 * NOTE: requires `brew install imagemagick`
-	 * - - - - - - - - - - - - - - - - - */
-	var favTasks = ['clean:favicons'];
-	var favicons = {
-		black: { filename: 'profile-abstract2-black.png', color: '#000000', },
-		white: { filename: 'profile-abstract2-white.png', color: '#FFFFFF', },
-		prtfl: { filename: 'prtfl.png', color: '#D0021B', },
-	};
-	// sizes = [16, 32, 48, 64, 128, 256, 512];
-	var sizes = [57, 72, 114, 120, 144, 152];
-
-	var favObj, obj;
-	for (var favName in favicons) {
-		if (!favicons.hasOwnProperty(favName)) continue;
-
-		favObj = favicons[favName];
-
-		grunt.config('copy.svg-favicons_' + favName, {
-			files: [{
-				src: '<%= paths.favicons.src %>/' + favObj.filename,
-				dest: '<%= paths.favicons.generated %>/' + favName + '/favicon.png',
-			}]
-		});
-
-		obj = {
-			templateData: [],
-			globals: [{
-				maskRadius: '50%',
-				viewBox: '0 0 512 512',
-				transform: 'translate(256, 256) scale(1.05) translate(-256, -256)'
-				}],
-			files: [{
-				src: '<%= paths.favicons.src %>/favicon_template.hbs',
-				dest: []
-				}],
-		};
-		// NOTE: templateData.location is relative
-		obj = sizes.reduce(function(acc, val, idx, arr) {
-			// grunt.log.writeln('args: ' + JSON.stringify(arguments));
-			acc.files[0].dest[idx] = '<%= paths.favicons.generated %>/'
-				+ favName + '/apple-touch-icon-' + val + 'x' + val + '.svg';
-			acc.templateData[idx] = {
-				location: './favicon.png',
-				size: val,
-			};
-			return acc;
-		}, obj);
-		obj.files[0].dest.push('<%= paths.favicons.generated %>/' + favName + '/favicon_roundel.svg');
-		obj.templateData.push({ location: './favicon.png', size: 600 });
-
-		grunt.loadNpmTasks('grunt-compile-handlebars');
-		grunt.config('compile-handlebars.svg-wrap_' + favName, obj);
-
-		grunt.loadNpmTasks('grunt-svg2png');
-		grunt.config('svg2png.favicons_' + favName, {
-			files: [
-				{
-					cwd: '<%= paths.favicons.generated %>/' + favName + '/',
-					src: ['apple-touch-icon-*.svg'],
-					dest: '<%= paths.favicons.dest %>/' + favName + '/',
-				}, {
-					cwd: '<%= paths.favicons.generated %>/' + favName + '/',
-					src: ['favicon_roundel.svg'],
-					dest: '<%= paths.favicons.generated %>/' + favName + '/',
-					/* this plugin seems to be using src as cwd, and swaps the file ext to png :( */
-					// dest: './<%= paths.favicons.generated %>/'
-				}
-			]
-		});
-		grunt.config('favicons.square_' + favName, {
-			options: {
-				trueColor: false,
-				tileColor: favObj.color,
-				windowsTile: true,
-				tileBlackWhite: false,
-				apple: false,
-				regular: false,
-				html: '<%= paths.favicons.generated %>/favicon_square.html',
-				HTMLPrefix: '/workspace/assets/images/favicons/' + favName + '/',
-			},
-			src: '<%= paths.favicons.generated %>/' + favName + '/favicon.png',
-			dest: '<%= paths.favicons.dest %>/' + favName + '/',
-		});
-		grunt.config('favicons.roundel_' + favName, {
-			options: {
-				apple: true,
-				regular: true,
-				trueColor: true,
-				precomposed: true,
-				appleTouchBackgroundColor: favObj.color,
-				appleTouchPadding: 20,
-				html: '<%= paths.favicons.generated %>/' + favName + '/favicon_roundel.html',
-				HTMLPrefix: '/workspace/assets/images/favicons/' + favName + '/',
-			},
-			src: '<%= paths.favicons.generated %>/' + favName + '/favicon_roundel.png',
-			dest: '<%= paths.favicons.dest %>/' + favName + '/',
-
-		});
-
-		grunt.registerTask('build-favicons_' + favName, [
-			// 'clean:favicons_' + favName,
-			'copy:svg-favicons_' + favName,
-			'compile-handlebars:svg-wrap_' + favName,
-			'svg2png:favicons_' + favName,
-			'favicons:square_' + favName,
-			'favicons:roundel_' + favName,
-		]);
-
-		favTasks.push('build-favicons_' + favName);
-	}
-	grunt.registerTask('build-favicons', favTasks);
 
 	/* --------------------------------
 	/* offline data
