@@ -436,42 +436,56 @@ var SequenceRenderer = PlayableRenderer.extend({
 				silent: true
 			};
 			view.sources.forEach(function(item, index, sources) {
+				// view.stopListening(item, "change:progress");
 				var prefetched = item.get("prefetched");
 				if (prefetched && /^blob\:/.test(prefetched)) {
+					item.set("progress", 0);
 					item.unset("prefetched", silent);
-					item.set("progress", 0, silent);
 					URL.revokeObjectURL(prefetched);
 				}
 			});
 		});
 		return view.sources.reduce(function(lastPromise, item, index, sources) {
 			return lastPromise.then(function(view) {
+				if (view._viewPhase === "disposed") {
+					/** do nothing */
+					return view;
+				} else
 				if (item.has("prefetched")) {
 					view._updateItemProgress(1, index);
 					return view;
 				} else {
+					var onItemProgress = function(item, progress) {
+						view._updateItemProgress(progress, index);
+					};
+					view.listenTo(item, "change:progress", onItemProgress);
+					view.once("view:remove", function(view) {
+						view.stopListening(item, "change:progress", onItemProgress);
+					});
 					return _loadImageAsObjectURL(item.get("original"),
-							function(progress) {
-								view._updateItemProgress(progress, index);
-								item.set("progress", progress);
+							function(progress, request) {
+								/* NOTE: Since we are calling URL.revokeObjectURL when view is removed, also abort incomplete requests. Otherwise, clear the callback reference from XMLHttpRequest.onprogress  */
+								if (view._viewPhase === "disposed") {
+									console.warn("%s::_preloadAllItems aborting XHR [%s %s] (%s)", view.cid, request.status, request.readyState, item.get("original"), request);
+									request.abort();
+									// request.onprogress = void 0;
+								} else {
+									item.set("progress", progress);
+								}
 							})
 						.then(
 							function(pUrl) {
-								view._updateItemProgress(1, index);
 								item.set({
-									prefetched: pUrl,
-									progress: 1
+									"progress": pUrl ? 1 : 0,
+									"prefetched": pUrl
 								});
-								// item.set("prefetched", pUrl);
 								return view;
 							},
 							function(err) {
-								view._updateItemProgress(0, index);
 								item.set({
-									error: err,
-									progress: 0
+									"progress": 0,
+									"error": err
 								});
-								// item.set("error", err);
 								return view;
 							}
 						);

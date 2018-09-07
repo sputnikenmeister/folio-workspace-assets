@@ -620,7 +620,7 @@ var ViewProto = {
 		this.trigger("view:render:after", this, flags);
 
 		if (this._renderFlags != 0) {
-			console.warn("%s::_applyRender [returned] flags: %s", this.cid, View.flagsToString(this._renderFlags), this._renderFlags);
+			console.warn("%s::_applyRender [returned] phase: %s flags: %s (%s)", this.cid, this._viewPhase, View.flagsToString(this._renderFlags), this._renderFlags);
 		}
 	},
 

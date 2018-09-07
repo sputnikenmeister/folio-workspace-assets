@@ -15,13 +15,25 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 			// request.timeout = 10000; // in milliseconds
 			request.responseType = "blob";
 
+			var errorFromEvent = function(ev) {
+				var err = new Error((ev.target.status > 0 ?
+					"http_" + request.statusText.replace(/\s/g, "_") :
+					ev.type + "_event").toUpperCase());
+				err.infoCode = ev.target.status;
+				err.infoSrc = url;
+				err.logEvent = ev;
+				err.logMessage = "_loadImageAsObjectURL::" + ev.type + " [reject]";
+				return err;
+			};
+
 			// if progressFn is supplied
 			// - - - - - - - - - - - - - - - - - -
 			if (progressFn) {
 				request.onprogress = function(ev) {
-					progressFn(ev.loaded / ev.total);
+					progressFn(ev.loaded / ev.total, request);
 				};
 			}
+
 			// resolved/success
 			// - - - - - - - - - - - - - - - - - -
 			request.onload = function(ev) {
@@ -30,28 +42,25 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 					// If successful, resolve the promise by passing back a reference url
 					resolve(URL.createObjectURL(request.response));
 				} else {
-					var err = new Error(("http_" + request.statusText.replace(/\s/g, "_")).toUpperCase());
-					err.infoCode = request.status;
-					err.infoSrc = url;
-					err.logEvent = ev;
-					err.logMessage = "_loadImageAsObjectURL::" + ev.type + " [reject]";
-					reject(err);
+					reject(errorFromEvent(ev));
 				}
+			};
+			// normal abort
+			// - - - - - - - - - - - - - - - - - -
+			request.onabort = function(ev) {
+				resolve(void 0);
 			};
 			// reject/failure
 			// - - - - - - - - - - - - - - - - - -
 			request.onerror = function(ev) {
-				var err = new Error((ev.type + "_event").toUpperCase());
-				err.infoCode = -1;
-				err.infoSrc = url;
-				err.logEvent = ev;
-				err.logMessage = "_loadImageAsObjectURL::" + ev.type + " [reject]";
-				reject(err);
+				reject(errorFromEvent(ev));
 			};
-			request.onabort = request.ontimeout = request.onerror;
+			request.ontimeout = request.onerror;
+
 			// finally
 			// - - - - - - - - - - - - - - - - - -
-			request.onloadend = function() {
+			request.onloadend = function(ev) {
+				console.log("_loadImageAsObjectURL::%s [cleanup] (%s)", ev ? ev.type : "no event", url);
 				request.onabort = request.ontimeout = request.onerror = void 0;
 				request.onload = request.onloadend = void 0;
 				if (progressFn) {
@@ -63,7 +72,7 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 		});
 	};
 } else {
-	module.exports = function(url) {
+	module.exports = function(url, progressFn) {
 		return Promise.resolve(url);
 	};
 }

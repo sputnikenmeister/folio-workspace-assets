@@ -24,7 +24,7 @@ module.exports = function(view) {
 			view.mediaState = "pending";
 
 			var sUrl = source.get("original");
-			var progressFn = function(progress) {
+			var progressFn = function(progress, ev) {
 				// console.log(logMessage, view.cid, "progress", progress);
 				view.updateMediaProgress(progress, sUrl);
 			};
