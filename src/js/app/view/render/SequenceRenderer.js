@@ -432,14 +432,12 @@ var SequenceRenderer = PlayableRenderer.extend({
 
 	_preloadAllItems: function(view) {
 		view.once("view:remove", function() {
-			var silent = {
-				silent: true
-			};
+			var silent = { silent: true };
 			view.sources.forEach(function(item, index, sources) {
 				// view.stopListening(item, "change:progress");
 				var prefetched = item.get("prefetched");
 				if (prefetched && /^blob\:/.test(prefetched)) {
-					item.set("progress", 0);
+					item.set("progress", 0, silent);
 					item.unset("prefetched", silent);
 					URL.revokeObjectURL(prefetched);
 				}
@@ -466,7 +464,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 							function(progress, request) {
 								/* NOTE: Since we are calling URL.revokeObjectURL when view is removed, also abort incomplete requests. Otherwise, clear the callback reference from XMLHttpRequest.onprogress  */
 								if (view._viewPhase === "disposed") {
-									console.warn("%s::_preloadAllItems aborting XHR [%s %s] (%s)", view.cid, request.status, request.readyState, item.get("original"), request);
+									//console.warn("%s::_preloadAllItems aborting XHR [%s %s] (%s)", view.cid, request.status, request.readyState, item.get("original"), request);
 									request.abort();
 									// request.onprogress = void 0;
 								} else {

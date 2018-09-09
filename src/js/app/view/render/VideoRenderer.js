@@ -282,7 +282,7 @@ var VideoRenderer = PlayableRenderer.extend({
 	whenVideoHasMetadata: function(view) {
 		// NOTE: not pretty !!!
 		return new Promise(function(resolve, reject) {
-			var mediaEl = view.video;
+			var videoEl = view.video;
 			var eventHandlers = {
 				loadedmetadata: function(ev) {
 					if (ev) removeEventListeners();
@@ -296,50 +296,53 @@ var VideoRenderer = PlayableRenderer.extend({
 				error: function(ev) {
 					if (ev) removeEventListeners();
 					var err;
-					if (mediaEl.error) {
-						err = new Error(_.invert(MediaError)[mediaEl.error.code]);
-						err.infoCode = mediaEl.error.code;
+					if (videoEl.error) {
+						err = new Error(_.invert(MediaError)[videoEl.error.code]);
+						err.infoCode = videoEl.error.code;
 					} else {
 						err = new Error("Unspecified error");
 					}
-					err.infoSrc = mediaEl.src;
+					err.infoSrc = videoEl.src;
 					err.logMessage = "whenVideoHasMetadata: " + err.name + " " + err.infoSrc;
 					err.logEvent = ev;
 					reject(err);
 				},
 			};
-			// mediaEl.setAttribute("preload", "metadata");
-			// mediaEl.preload = "metadata";
-			// mediaEl.loop = view.model.attr("@video-loop") !== void 0;
-			// mediaEl.src = view.findPlayableSource(mediaEl);
+			// videoEl.setAttribute("preload", "metadata");
+			// videoEl.preload = "metadata";
+			// videoEl.loop = view.model.attr("@video-loop") !== void 0;
+			// videoEl.src = view.findPlayableSource(videoEl);
 
-			//  (mediaEl.preload == "auto" && mediaEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA)
-			// 	(mediaEl.preload == "metadata" && mediaEl.readyState >= HTMLMediaElement.HAVE_METADATA)
-			if (mediaEl.error) {
+			//  (videoEl.preload == "auto" && videoEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA)
+			// 	(videoEl.preload == "metadata" && videoEl.readyState >= HTMLMediaElement.HAVE_METADATA)
+			if (videoEl.error) {
 				eventHandlers.error();
-			} else if (mediaEl.readyState >= HTMLMediaElement.HAVE_METADATA) {
+			} else if (videoEl.readyState >= HTMLMediaElement.HAVE_METADATA) {
 				eventHandlers.loadedmetadata();
 			} else {
-				var sources = mediaEl.querySelectorAll("source");
-				var errTarget = sources.length > 0 ? sources.item(sources.length - 1) : mediaEl;
-				var errCapture = errTarget === mediaEl; // use capture with HTMLMediaElement
+				var sources = videoEl.querySelectorAll("source");
+				var errTarget = sources.length > 0 ? sources.item(sources.length - 1) : videoEl;
+				var errCapture = errTarget === videoEl; // use capture with HTMLMediaElement
 
 				var removeEventListeners = function() {
 					errTarget.removeEventListener("error", eventHandlers.error, errCapture);
 					for (var ev in eventHandlers) {
 						if (ev !== "error" && eventHandlers.hasOwnProperty(ev)) {
-							mediaEl.removeEventListener(ev, eventHandlers[ev], false);
+							videoEl.removeEventListener(ev, eventHandlers[ev], false);
 						}
 					}
 				};
 				errTarget.addEventListener("error", eventHandlers.error, errCapture);
 				for (var ev in eventHandlers) {
 					if (ev !== "error" && eventHandlers.hasOwnProperty(ev)) {
-						mediaEl.addEventListener(ev, eventHandlers[ev], false);
+						videoEl.addEventListener(ev, eventHandlers[ev], false);
 					}
 				}
-				console.log("%s::initializeAsync whenVideoHasMetadata preload:%s", view.cid, mediaEl.preload);
-				mediaEl.preload = "metadata";
+				console.log("%s::initializeAsync whenVideoHasMetadata preload:%s", view.cid, videoEl.preload);
+				// videoEl.preload = "metadata";
+				// videoEl.playsinline = true;
+				videoEl.setAttribute("preload", "metadata");
+				videoEl.setAttribute("playsinline", "true");
 			}
 		});
 	},
