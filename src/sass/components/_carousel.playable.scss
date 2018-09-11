@@ -167,15 +167,18 @@ $path_length: 566;
 			opacity: 1;
 		}
 		@at-root :not(.scrolling) & {
-			&.playing .play-toggle {
-				animation: $duration * 2 $ease flashOdd;
-			}
 			&.paused .play-toggle {
 				animation: $duration * 2 $ease flashEven;
 			}
-			// &.waiting .waiting-symbol {
-			// 	animation: 4s linear infinite spin;
+			// &.playing .play-toggle {
+			// 	animation: $duration * 2 $ease flashOdd;
 			// }
+			&.playing:not(.waiting) .play-toggle {
+				animation: $duration * 2 $ease flashOdd;
+			}
+			&.playing.waiting .waiting-symbol {
+				animation: $duration * 2 $ease flashEven;
+			}
 		}
 	}
 

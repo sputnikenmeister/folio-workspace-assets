@@ -6,8 +6,8 @@
 var _ = require("underscore");
 /** @type {module:app/view/base/View} */
 var View = require("app/view/base/View");
-/** @type {module:utils/ease/linear} */
-var linear = require("utils/ease/linear");
+/** @type {module:utils/ease/fn/linear} */
+var linear = require("utils/ease/fn/linear");
 
 module.exports = View.extend({
 

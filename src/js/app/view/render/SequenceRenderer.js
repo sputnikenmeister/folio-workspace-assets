@@ -22,8 +22,8 @@ var PlayableRenderer = require("app/view/render/PlayableRenderer");
 /** @type {module:app/control/Globals} */
 var Globals = require("app/control/Globals");
 
-/** @type {module:app/view/component/ProgressMeter} */
-var ProgressMeter = require("app/view/component/ProgressMeter");
+/** @type {module:app/view/component/CanvasProgressMeter} */
+var ProgressMeter = require("app/view/component/CanvasProgressMeter");
 
 /** @type {module:utils/Timer} */
 var Timer = require("utils/Timer");
@@ -570,7 +570,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/* --------------------------- */
 
 	_onTimerStart: function(duration) {
-		var item, view;
+		var item, currView;
 		if (this.sources.selectedIndex === -1) {
 			item = this.model.get("source");
 		} else {
@@ -581,9 +581,9 @@ var SequenceRenderer = PlayableRenderer.extend({
 		this.progressMeter.valueTo("amount", this.sources.selectedIndex + 1, duration);
 		this.content.classList.toggle("playback-error", item.has("error"));
 
-		view = this.itemViews.findByModel(item);
-		if (!item.has("error") && view !== null) {
-			this.updateOverlay(view.el, this.playToggle);
+		currView = this.itemViews.findByModel(item);
+		if (!item.has("error") && currView !== null) {
+			this.updateOverlay(currView.el, this.playToggle);
 		}
 
 		// init next renderer now to have smoother transitions
@@ -646,7 +646,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 		} else {
 			// console.log("%s:[waiting] %sms %s", context.cid, nextSource.cid);
 			this._toggleWaiting(true);
-			this._renderPlaybackState();
+			// this._renderPlaybackState();
 			// this.content.classList.add("waiting");
 			/* TODO: add ga event 'media-waiting' */
 			// window.ga("send", "event", "sequence-renderer", "waiting", this.model.get("text"));
@@ -655,7 +655,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 				// this.stopListening(nextSource, "change:prefetched change:error");
 				// console.log("%s:[playing] %sms %s", context.cid, nextSource.cid);
 				this._toggleWaiting(false);
-				this._renderPlaybackState();
+				// this._renderPlaybackState();
 				// this.content.classList.add("waiting");
 				/* TODO: add ga event 'media-playing' */
 				// window.ga("send", "event", "sequence-renderer", "playing", this.model.get("text"));

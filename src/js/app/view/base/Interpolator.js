@@ -4,8 +4,8 @@
 
 /** @type {module:underscore} */
 var _ = require("underscore");
-/** @type {module:utils/ease/linear} */
-var linear = require("utils/ease/linear");
+/** @type {module:utils/ease/fn/linear} */
+var linear = require("utils/ease/fn/linear");
 
 /**
  * @constructor
@@ -13,9 +13,14 @@ var linear = require("utils/ease/linear");
  */
 var Interpolator = function(values, maxValues, easeValues) {
 	this._tstamp = 0;
+
 	// gets thrown away by first interpolate() but avoid null access errors
 	this._renderableKeys = [];
 	this._renderedKeys = [];
+
+	this._paused = false;
+	this._pausedChanging = false;
+	//this._pausedKeys = [];
 
 	this._maxValues = _.isObject(maxValues) ? _.extend({}, maxValues) : {};
 	this._easeFn = _.isObject(easeValues) ? _.extend({}, easeValues) : {};
@@ -32,7 +37,6 @@ var Interpolator = function(values, maxValues, easeValues) {
 		// add to next render list
 		this._renderableKeys.push(key);
 	}
-	this._valuesChanged = this._renderableKeys.length > 0;
 };
 
 Interpolator.prototype = Object.create({
@@ -51,6 +55,10 @@ Interpolator.prototype = Object.create({
 
 	getTargetValue: function(key) {
 		return this._valueData[key]._value;
+	},
+
+	getStartValue: function(key) {
+		return this._valueData[key]._startValue;
 	},
 
 	getRenderedValue: function(key) {
@@ -81,9 +89,6 @@ Interpolator.prototype = Object.create({
 		}
 		if (changed) {
 			this._renderableKeys.indexOf(key) !== -1 || this._renderableKeys.push(key);
-			this._valuesChanged = true;
-			// this.render();
-			// this.requestRender();
 		}
 		return this;
 	},
@@ -94,7 +99,6 @@ Interpolator.prototype = Object.create({
 		var kIndex = this._renderableKeys.indexOf(key);
 		if (kIndex !== -1 && !this._interpolateKey(key)) {
 			this._renderableKeys.splice(kIndex, 1);
-			this._valuesChanged = this._renderableKeys.length > 0;
 		}
 		return this;
 	},
@@ -119,8 +123,8 @@ Interpolator.prototype = Object.create({
 		o._valueDelta = 0;
 
 		o._duration = duration || 0;
-		o._startTime = -1;
-		o._elapsedTime = 0;
+		o._startTime = NaN;
+		o._elapsedTime = NaN;
 
 		o._lastRenderedValue = null;
 		o._renderedValue = o._startValue;
@@ -139,8 +143,8 @@ Interpolator.prototype = Object.create({
 			o._value = value;
 
 			o._duration = duration || 0;
-			o._startTime = -1;
-			o._elapsedTime = 0;
+			o._startTime = NaN;
+			o._elapsedTime = NaN;
 
 			// o._lastRenderedValue = o._renderedValue;
 			// o._renderedValue = o._startValue;
@@ -154,27 +158,28 @@ Interpolator.prototype = Object.create({
 	/* private: interpolate
 	/* --------------------------- */
 
+	_tstamp: 0,
+
 	/** @override */
 	interpolate: function(tstamp) {
 		this._tstamp = tstamp;
-		if (this._valuesChanged) {
-			this._valuesChanged = false;
 
+		if (this.valuesChanged) {
+			if (this._pausedChanging) {
+				this._renderableKeys.forEach(function(key) {
+					var o = this._valueData[key];
+					if (!isNaN(o._elapsedTime)) {
+						o._startTime = tstamp - o._elapsedTime;
+					}
+				}, this);
+				this._pausedChanging = false;
+			}
 			var changedKeys = this._renderableKeys;
 			this._renderableKeys = changedKeys.filter(function(key) {
 				return this._interpolateValue(tstamp, this._valueData[key], this._easeFn[key]);
 			}, this);
 			this._renderedKeys = changedKeys;
-
-			if (this._renderableKeys.length !== 0) {
-				this._valuesChanged = true;
-				// 	// this.requestRender();
-			}
 		}
-		// console.log("%s::interpolate valuesChanged:%s tstamp:%f", "[interpolator]", this._valuesChanged, tstamp);
-		// return this._valuesChanged;
-		// return this.valuesChanged;
-
 		return this;
 	},
 
@@ -192,8 +197,8 @@ Interpolator.prototype = Object.create({
 	},
 
 	_interpolateNumber: function(tstamp, o, fn) {
-		if (o._startTime < 0) {
-			o._startTime = tstamp; // - o._elapsedTime;
+		if (isNaN(o._startTime)) {
+			o._startTime = tstamp;
 		}
 		o._lastRenderedValue = o._renderedValue;
 
@@ -212,16 +217,32 @@ Interpolator.prototype = Object.create({
 			return true;
 		}
 		o._renderedValue = o._value;
-		// o._elapsedTime = 0;
+		o._elapsedTime = NaN;
+		o._startTime = NaN;
 		return false;
 	},
 }, {
+	/**
+	 * @type {boolean}
+	 */
+	paused: {
+		get: function() {
+			return this._paused;
+		},
+		set: function(value) {
+			value = !!(value); // Convert to boolean
+			if (this._paused !== value) {
+				this._paused = value;
+				this._pausedChanging = true;
+			}
+		}
+	},
 	/**
 	 * @type {boolean} Has any value been changed by valueTo() since last interpolate()
 	 */
 	valuesChanged: {
 		get: function() {
-			return this._valuesChanged;
+			return !this._paused && this._renderableKeys.length > 0;
 		}
 	},
 	/**
@@ -238,6 +259,14 @@ Interpolator.prototype = Object.create({
 	renderedKeys: {
 		get: function() {
 			return this._renderedKeys;
+		}
+	},
+	/**
+	 * @type {array} All keys
+	 */
+	keys: {
+		get: function() {
+			return Object.keys(this._valueData);
 		}
 	},
 });

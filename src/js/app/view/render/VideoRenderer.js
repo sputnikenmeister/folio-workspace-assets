@@ -20,8 +20,8 @@ var _ = require("underscore");
 var Globals = require("app/control/Globals");
 /** @type {module:app/view/render/PlayableRenderer} */
 var PlayableRenderer = require("app/view/render/PlayableRenderer");
-/** @type {module:app/view/component/ProgressMeter} */
-var ProgressMeter = require("app/view/component/ProgressMeter");
+/** @type {module:app/view/component/CanvasProgressMeter} */
+var ProgressMeter = require("app/view/component/CanvasProgressMeter");
 // /** @type {module:utils/prefixedStyleName} */
 // var prefixedStyleName = require("utils/prefixedStyleName");
 /** @type {module:utils/prefixedEvent} */
@@ -596,8 +596,9 @@ var VideoRenderer = PlayableRenderer.extend({
 		}
 
 		this._toggleWaiting(isWaiting);
-		this._renderPlaybackState();
-		// this.progressMeter.indeterminate = isWaiting;
+		// this._renderPlaybackState();
+
+		// this.progressMeter.stalled = isWaiting;
 		// this.content.classList.toggle("ended", this.video.ended);
 		// this.content.classList.toggle("waiting", isWaiting);
 		// this._setPlayToggleSymbol(symbolName);
@@ -612,10 +613,11 @@ var VideoRenderer = PlayableRenderer.extend({
 		this._playbackTimeoutID = -1;
 
 		this._toggleWaiting(true);
-		this._renderPlaybackState();
+		// this._renderPlaybackState();
+
 		// this._setPlayToggleSymbol("waiting-symbol");
 		// this.content.classList.add("waiting");
-		// this.progressMeter.indeterminate = true;
+		// this.progressMeter.stalled = true;
 		// this._isPlaybackWaiting = true;
 	},
 
@@ -634,10 +636,11 @@ var VideoRenderer = PlayableRenderer.extend({
 				window.setTimeout(this._playbackTimeoutFn_playing, SYNC_TIMEOUT_MS);
 
 			this._toggleWaiting(false);
-			this._renderPlaybackState();
+			// this._renderPlaybackState();
+
 			// this._setPlayToggleSymbol("pause-symbol");
 			// this.content.classList.remove("waiting");
-			// this.progressMeter.indeterminate = false;
+			// this.progressMeter.stalled = false;
 			// this._isPlaybackWaiting = false;
 
 		}

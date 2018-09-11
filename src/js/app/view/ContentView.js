@@ -43,8 +43,8 @@ var ImageRenderer = require("app/view/render/ImageRenderer");
 var VideoRenderer = require("app/view/render/VideoRenderer");
 /** @type {module:app/view/render/SequenceRenderer} */
 var SequenceRenderer = require("app/view/render/SequenceRenderer");
-// /** @type {module:app/view/component/ProgressMeter} */
-// var ProgressMeter = require("app/view/component/ProgressMeter");
+// /** @type {module:app/view/component/CanvasProgressMeter} */
+// var ProgressMeter = require("app/view/component/CanvasProgressMeter");
 
 /** @type {Function} */
 var carouselEmptyTemplate = require("./template/Carousel.EmptyRenderer.Bundle.hbs");

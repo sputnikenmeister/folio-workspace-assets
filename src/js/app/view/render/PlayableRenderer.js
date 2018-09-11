@@ -9,8 +9,8 @@ var _ = require("underscore");
 var MediaRenderer = require("app/view/render/MediaRenderer");
 // /** @type {module:app/view/component/PlayToggleSymbol} */
 var PlayToggleSymbol = require("app/view/component/PlayToggleSymbol");
-// /** @type {module:app/view/component/ProgressMeter} */
-// var ProgressMeter = require("app/view/component/ProgressMeter");
+// /** @type {module:app/view/component/CanvasProgressMeter} */
+// var ProgressMeter = require("app/view/component/CanvasProgressMeter");
 
 /** @type {Function} */
 var prefixedProperty = require("utils/prefixedProperty");
@@ -111,26 +111,18 @@ var PlayableRenderer = MediaRenderer.extend({
 				return this._playToggle || (this._playToggle = this.el.querySelector(".play-toggle"));
 			}
 		},
-		playToggleSymbol: {
-			/** @return {HTMLElement} */
-			get: function() {
-				return this._playToggleSymbol || (this._playToggleSymbol = this.el.querySelector(".play-toggle-symbol"));
-			}
-		},
+		// playToggleSymbol: {
+		// 	/** @return {HTMLElement} */
+		// 	get: function() {
+		// 		return this._playToggleSymbol || (this._playToggleSymbol = this.el.querySelector(".play-toggle-symbol"));
+		// 	}
+		// },
 		playToggleHitarea: {
 			/** @return {HTMLElement} */
 			get: function() {
 				return this._playToggleHitarea || (this._playToggleHitarea = this.el.querySelector(".play-toggle-hitarea"));
 			}
 		},
-		playbackState: {
-			get: function() {
-				return this._playbackState;
-			},
-			set: function(state) {
-				this._setPlaybackState(state);
-			}
-		}
 	},
 
 	// events: function() {
@@ -150,6 +142,10 @@ var PlayableRenderer = MediaRenderer.extend({
 			"_onVisibilityChange"
 		);
 		this._setPlaybackRequested(this._playbackRequested);
+
+		// this._toggleWaiting = _.debounce(this._toggleWaiting, 500);
+		this._toggleWaiting = _.throttle(this._toggleWaiting, 1000, { leading: false, trailing: true });
+
 		// this.listenTo(this, "view:parentChange", function(childView, newParent, oldParent) {
 		// 	// logAttachInfo(this, "[view:parentChange]", "info");
 		// 	console.info("%s::[view:parentChange] '%s' to '%s'", this.cid, oldParent && oldParent.cid, newParent && newParent.cid);
@@ -447,15 +443,15 @@ var PlayableRenderer = MediaRenderer.extend({
 
 	_renderPlaybackState: function() {
 		if (this.progressMeter) {
-			this.progressMeter.indeterminate = this._isMediaWaiting();
+			this.progressMeter.stalled = this._isMediaWaiting();
 		}
 
 		// this._setPlayToggleSymbol("waiting");
 		// this.content.classList.toggle("waiting", true);
 
-		if (!this.content.classList.contains("started")) {
-			this._setPlayToggleSymbol("play");
-		} else
+		// if (!this.content.classList.contains("started")) {
+		// 	this._setPlayToggleSymbol("play");
+		// } else
 		if (this.playbackRequested) {
 			if (this._isMediaWaiting()) {
 				this._setPlayToggleSymbol("waiting");
@@ -463,8 +459,14 @@ var PlayableRenderer = MediaRenderer.extend({
 				this._setPlayToggleSymbol("play");
 			}
 		} else {
-			this._setPlayToggleSymbol("pause");
+			if (this.content.classList.contains("started")) {
+				this._setPlayToggleSymbol("pause");
+			} else {
+				this._setPlayToggleSymbol("play");
+			}
 		}
+		this.content.classList.toggle("playing", this.playbackRequested);
+		this.content.classList.toggle("paused", !this.playbackRequested);
 		this.content.classList.toggle("waiting", this._isMediaWaiting());
 	},
 
@@ -503,48 +505,24 @@ var PlayableRenderer = MediaRenderer.extend({
 	/* waiting
 	/* --------------------------- */
 
-	_isWaiting: null,
+	_isWaiting: false,
 
 	_isMediaWaiting: function() {
 		return this._isWaiting;
 	},
 
 	_toggleWaiting: function(waiting) {
-		if (!_.isBoolean(waiting)) {
+		if (arguments.length === 0) {
 			waiting = !this._isWaiting;
 		}
-		if (this._isMediaPaused()) {
-			waiting = false;
-		}
+		// if (this._isMediaPaused()) {
+		// 	waiting = false;
+		// }
 		if (this._isWaiting !== waiting) {
 			this._isWaiting = waiting;
-			// this._renderPlaybackState();
+			this._renderPlaybackState();
 		}
 	},
-
-	/* --------------------------- *
-	/* playbackState
-	/* --------------------------- */
-
-	/*_playbackState: null,
-
-	_playbackStateEnum: ["playing", "paused", "waiting", "ended"],
-
-	_setPlaybackState: function(key) {
-		if (this._playbackStateEnum.indexOf(key) === -1) {
-			throw new Error("Argument " + key + " invalid. Must be one of: " + this._playbackStateEnum.join(", "));
-		}
-		if (this._playbackState !== key) {
-			if (this._playbackState) {
-				this.content.classList.remove(this._playbackState);
-			} else {
-				this.content.classList.add("started");
-			}
-			this.content.classList.add(key);
-			this._playbackState = key;
-			this.trigger("playback:" + key);
-		}
-	},*/
 
 	/* --------------------------- *
 	/* abstract

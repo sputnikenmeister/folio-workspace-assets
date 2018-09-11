@@ -39,10 +39,10 @@ var CanvasView = View.extend({
 			},
 			set: function(paused) {
 				paused = !!(paused);
-				if (this._paused !== paused) {
-					this._paused = paused;
-					if (!this._paused) { // && this._interpolator.valuesChanged) {
-						this.requestRender(View.LAYOUT_INVALID);
+				if (this._interpolator.paused !== paused) {
+					this._interpolator.paused = paused;
+					if (!paused) {
+						this.requestRender();
 					}
 				}
 			}
@@ -86,9 +86,9 @@ var CanvasView = View.extend({
 		options.maxValues = _.defaults(options.maxValues || {}, this.defaults.maxValues);
 
 		this._interpolator = new Interpolator(options.values, options.maxValues);
+		this._interpolator.paused = options.paused || false;
 
 		this._useOpaque = options.useOpaque || true;
-		this._paused = options.paused || false;
 		this._options = _.pick(options, "color", "backgroundColor");
 
 		// opaque background
@@ -273,7 +273,7 @@ var CanvasView = View.extend({
 		}
 		if (flags & (View.LAYOUT_INVALID | View.SIZE_INVALID)) {
 			this.redraw(this._ctx, this._interpolator, flags);
-			if (!this._paused && this._interpolator.valuesChanged) {
+			if (this._interpolator.valuesChanged) {
 				this.requestRender();
 			}
 		}
