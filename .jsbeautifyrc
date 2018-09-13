@@ -1,3 +1,13 @@
 {
-	"operator_position": "preserve-newline"
+	"js": {
+		"operator_position": "preserve-newline",
+		"space_before_conditional": true,
+		"brace_style": "collapse-preserve-inline",
+		"end_with_newline": true,
+		"indent_with_tabs": true,
+		"keep_array_indentation": true,
+		"keep_function_indentation": true,
+		"space_after_anon_function": false,
+		"preserve_newlines": true
+	}
 }

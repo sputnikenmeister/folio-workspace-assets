@@ -39,8 +39,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-module.exports = function ()
-{
+module.exports = function() {
 	this.r = 0;
 	this.g = 0;
 	this.b = 0;

@@ -1,9 +1,9 @@
-module.exports = function (imageData, opts) {
+module.exports = function(imageData, opts) {
 	var pixels = imageData.data,
 		rgbAvg = [0, 0, 0],
 		rgbNum = 0,
 		alpha;
-	
+
 	for (var i = 0, ii = pixels.length; i < ii; i += 4) {
 		alpha = pixels[i + 3];
 		rgbNum += alpha;

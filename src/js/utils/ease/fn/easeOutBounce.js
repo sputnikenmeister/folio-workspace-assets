@@ -10,4 +10,3 @@ module.exports = function(t, b, c, d) {
 		return c * (7.5625 * (t -= (2.625 / 2.75)) * t + .984375) + b;
 	}
 };
-//EOF

@@ -656,4 +656,20 @@ module.exports = function(grunt) {
 			dest: '<%= paths.src.generated %>/js/bootstrap.js'
 		}
 	});
+
+	/* --------------------------------
+	/* beautify
+	/* -------------------------------- */
+	grunt.loadNpmTasks('grunt-js-beautify');
+	grunt.config('js_beautify.sources', {
+		files: {
+			sources: [
+				"<%= paths.src.js %>/app/**/*.js",
+				"<%= paths.src.js %>/utils/**/*.js"
+			]
+		}
+	});
+
+	grunt.config('js_beautify.sources.options', grunt.file.readJSON('.jsbeautifyrc'));
+
 };

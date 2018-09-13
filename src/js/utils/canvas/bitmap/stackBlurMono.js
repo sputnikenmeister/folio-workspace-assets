@@ -44,14 +44,14 @@ var mul_table = require("./mul_table");
 var shg_table = require("./shg_table");
 var BlurStack = require("./BlurStack");
 
-module.exports = function (imageData, opts) {
+module.exports = function(imageData, opts) {
 	var pixels = imageData.data,
 		width = imageData.width,
 		height = imageData.height;
-		
+
 	if (!opts.hasOwnProperty("radius") || isNaN(opts.radius) || opts.radius < 1) return;
 	var radius = opts.radius | 0;
-	
+
 	var x, y, i, p, yp, yi, yw,
 		r_sum, r_out_sum, r_in_sum,
 		pr, pg, pb, rbs;
@@ -161,29 +161,29 @@ module.exports = function (imageData, opts) {
 			yi += width;
 		}
 	}
-	
+
 	var r1, g1, b1, w1, r2, g2, b2, w2;
 	if (opts && opts.x00 && opts.xFF) {
-		
+
 		r1 = opts.xFF.red();
 		g1 = opts.xFF.green();
 		b1 = opts.xFF.blue();
-		
+
 		r2 = opts.x00.red();
 		g2 = opts.x00.green();
 		b2 = opts.x00.blue();
-		
+
 		for (i = 0; i < pixelsNum; i += 4) {
 			w1 = pixels[i] / 256;
 			// w1 = 2 * (pixels[i] / 256) - 1;
 			w2 = 1 - w1;
-			pixels[i]     = (w1 * r1 + w2 * r2);
+			pixels[i] = (w1 * r1 + w2 * r2);
 			pixels[i + 1] = (w1 * g1 + w2 * g2);
 			pixels[i + 2] = (w1 * b1 + w2 * b2);
 		}
 	} else {
 		for (i = 0; i < pixelsNum; i += 4) {
-			pixels[i+2] = pixels[i+1] = pixels[i];
+			pixels[i + 2] = pixels[i + 1] = pixels[i];
 			// pixels[i + 2] = pixels[i + 1] = pixels[i] = pixels[i] / 2 + 127;
 		}
 	}
