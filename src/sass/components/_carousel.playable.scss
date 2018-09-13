@@ -122,10 +122,10 @@ $path_length: 566;
 		// top: calc(50% - 24px);
 		// left: calc(50% - 24px);
 
-		color: white;
-		background-color: rgba(0,0,0,0.2);
-		border-radius: 2px;
-		stroke-width:1px;
+		color: #ffffff;
+		// background-color: rgba(0,0,0,0.2);
+		// border-radius: 2px;
+		// stroke-width:1px;
 
 		// top: 0;//20%;//1em;
 		// bottom: 0;//20%;//1em;
@@ -176,7 +176,7 @@ $path_length: 566;
 			&.playing:not(.waiting) .play-toggle {
 				animation: $duration * 2 $ease flashOdd;
 			}
-			&.playing.waiting .waiting-symbol {
+			&.playing.waiting .play-toggle {
 				animation: $duration * 2 $ease flashEven;
 			}
 		}

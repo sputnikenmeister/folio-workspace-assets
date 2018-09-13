@@ -16,7 +16,7 @@ var easeOut = require("utils/ease/fn/easeOutQuad");
 
 var LOOP_OFFSET = 1.833333;
 var PI2 = Math.PI * 2;
-var STEP_MS = 400;
+var STEP_MS = 300;
 
 var PlayToggleSymbol = {
 	PLAY: "playing",
@@ -30,7 +30,7 @@ module.exports = CanvasView.extend({
 		/** @type {string} */
 		cidPrefix: "playToggleSymbol",
 		/** @type {string} */
-		className: "play-toggle-symbol",
+		className: "play-toggle",
 
 		defaults: {
 			values: {
@@ -85,7 +85,7 @@ module.exports = CanvasView.extend({
 			this._baselineShift = Math.round(this._baselineShift);
 			// double SQRT1_2: square within circle within square
 			this._radius = (this._canvasWidth / 2) * Math.SQRT1_2 * Math.SQRT1_2;
-			this._side = this._radius * Math.SQRT1_2;
+			this._side = this._radius * Math.SQRT1_2; // * Math.SQRT1_2;
 
 			// this._ctx.restore();
 			// this._ctx.textBaseline = "middle";
@@ -100,9 +100,17 @@ module.exports = CanvasView.extend({
 		},
 
 		redraw: function(ctx, intrp, flags) {
-			this._clearCanvas(-this._canvasWidth / 2, -this._canvasHeight / 2,
+			this._clearCanvas(
+				-this._canvasWidth / 2, -this._canvasHeight / 2,
 				this._canvasWidth, this._canvasHeight
 			);
+			ctx.save();
+			ctx.fillStyle = "rgba(0,0,0,0.2)";
+			this.drawRoundRect(ctx,
+				-this._canvasWidth / 2, -this._canvasHeight / 2,
+				this._canvasWidth, this._canvasHeight, 3 * this._canvasRatio);
+			ctx.fill();
+			ctx.restore();
 
 			if (this._symbolName === 'waiting') {
 				if (intrp.getTargetValue('_arc') === 0) {
@@ -171,6 +179,20 @@ module.exports = CanvasView.extend({
 				default:
 					break;
 			}
+		},
+
+		drawRoundRect: function(ctx, x, y, w, h, r) {
+			ctx.beginPath();
+			ctx.moveTo(x, y + r);
+			ctx.quadraticCurveTo(x, y, x + r, y);
+			ctx.lineTo(x + w - r, y);
+			ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+			ctx.lineTo(x + w, y + h - r);
+			ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+			ctx.lineTo(x + r, y + h);
+			ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+			ctx.closePath();
+			// ctx.fill();
 		},
 
 		drawPlay: function(ctx, r) {

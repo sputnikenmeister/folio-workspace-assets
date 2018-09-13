@@ -121,9 +121,20 @@ var VideoRenderer = PlayableRenderer.extend({
 		// this.overlay = this.content.querySelector(".overlay");
 		this.video = this.content.querySelector("video");
 		// this.video.loop = this.model.attrs().hasOwnProperty("@video-loop");
-		this.video.preload = "none";
-		this.video.loop = this.model.attr("@video-loop") !== void 0;
-		this.video.src = this.findPlayableSource(this.video);
+
+		// this.video.setAttribute("muted", "muted");
+		// this.video.setAttribute("playsinline", "playsinline");
+		// if (this.model.attr("@video-loop") !== void 0) {
+		// 	this.video.setAttribute("loop", "loop");
+		// }
+		// this.video.setAttribute("preload", "none");
+
+		// this.video.muted = true;
+		// this.video.playsinline = true;
+		// this.video.preload = "auto";
+		// this.video.loop = this.model.attr("@video-loop") !== void 0;
+		// this.video.poster = this.model.get("source").get("original");
+		// this.video.src = this.findPlayableSource(this.video);
 	},
 
 	measure: function() {
@@ -308,13 +319,10 @@ var VideoRenderer = PlayableRenderer.extend({
 					reject(err);
 				},
 			};
-			// videoEl.setAttribute("preload", "metadata");
-			// videoEl.preload = "metadata";
-			// videoEl.loop = view.model.attr("@video-loop") !== void 0;
-			// videoEl.src = view.findPlayableSource(videoEl);
 
 			//  (videoEl.preload == "auto" && videoEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA)
 			// 	(videoEl.preload == "metadata" && videoEl.readyState >= HTMLMediaElement.HAVE_METADATA)
+
 			if (videoEl.error) {
 				eventHandlers.error();
 			} else if (videoEl.readyState >= HTMLMediaElement.HAVE_METADATA) {
@@ -338,11 +346,17 @@ var VideoRenderer = PlayableRenderer.extend({
 						videoEl.addEventListener(ev, eventHandlers[ev], false);
 					}
 				}
-				console.log("%s::initializeAsync whenVideoHasMetadata preload:%s", view.cid, videoEl.preload);
+				// videoEl.setAttribute("poster", view.get("source").get("original"));
+				// videoEl.setAttribute("preload", "metadata");
+				// videoEl.setAttribute("preload", "auto");
+				// videoEl.poster = view.model.get("source").get("original");
 				// videoEl.preload = "metadata";
-				// videoEl.playsinline = true;
-				videoEl.setAttribute("preload", "metadata");
-				videoEl.setAttribute("playsinline", "true");
+				// videoEl.preload = "auto";
+				videoEl.loop = view.model.attr("@video-loop") !== void 0;
+				videoEl.src = view.findPlayableSource(videoEl);
+				// videoEl.load();
+
+				console.log("%s::initializeAsync whenVideoHasMetadata preload:%s", view.cid, videoEl.preload);
 			}
 		});
 	},
@@ -371,13 +385,63 @@ var VideoRenderer = PlayableRenderer.extend({
 		if (this.video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && this.video.seekable.length == 0) {
 			console.warn(this.cid, "WTF! got video data, but cannot seek, calling load()");
 			// this._logMessage("call:load", "got video data, but cannot seek, calling load()", "orange");
-			this.video.load();
+			if (_.isFunction(this.video.load)) {
+				this.video.load();
+			}
 			// this.video.currentTime = 0;
 		} else if (this.video.ended) {
 			this.video.currentTime = this.video.seekable.start(0);
 		}
+
+
+		/* Change the preload attr */
+		// if (this.video.preload !== "auto") {
+		// 	this.video.preload = "auto";
+		// }
+		// if (this.video.getAttribute("preload") !== "auto") {
+		// 	this.video.setAttribute("preload", "auto");
+		// }
+
+		/* */
+		// if (this.video.readyState === HTMLMediaElement.HAVE_ENOUGH_DATA && this.video.networkState === HTMLMediaElement.NETWORK_IDLE && (this.video.buffered.end(0) < this.video.duration)) {
+		// 	this._toggleWaiting(true);
+		// 	// this.video.load();
+		// 	this.video.addEventListener("canplaythrough", handler, false);
+		// }
+
+		// if (this.video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA) {
+		// 	var handler = function(ev) {
+		// 		this.video.removeEventListener("canplaythrough", handler, false);
+		// 		this.video.play();
+		// 	}.bind(this);
+		// 	this.video.addEventListener("canplaythrough", handler, false);
+		//
+		// 	if (this.video.readyState < 2 && this.video.networkState < 2 && _.isFunction(this.video.load)) {
+		// 		this.video.load();
+		// 	}
+		// 	this._toggleWaiting(true);
+		// }
+
+		/* if not enough data */
+		if (this.video.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA) {
+			if (this.video.networkState == HTMLMediaElement.NETWORK_IDLE) {
+				this.video.load();
+			}
+			var handler = function(ev) {
+				this.video.removeEventListener("canplaythrough", handler, false);
+				this._toggleWaiting(false);
+				this.playbackRequested && this.video.play();
+			}.bind(this);
+			this.video.addEventListener("canplaythrough", handler, false);
+			this._toggleWaiting(true);
+			// }
+		}
+		/* play*/
+		else {
+			this.video.play();
+		}
+
 		// this._setPlayToggleSymbol("pause-symbol");
-		this.video.play();
 		// this._renderPlaybackState();
 
 		// var p = this.video.play();
@@ -391,13 +455,6 @@ var VideoRenderer = PlayableRenderer.extend({
 		// 		this.video.pause();
 		// 		this.content.classList.add("waiting");
 		// 	}
-		// 	var handler = function(ev) {
-		// 		this.video.removeEventListener("canplaythrough", handler, false);
-		// 		this.content.classList.remove("waiting");
-		// 		this.video.play();
-		// 	}.bind(this);
-		//
-		// 	this.video.addEventListener("canplaythrough", handler, false);
 		// }
 	},
 
@@ -648,7 +705,6 @@ var VideoRenderer = PlayableRenderer.extend({
 
 	/** @override */
 	_renderPlaybackState: function() {
-
 		if (this._started) {
 			this.updateOverlay(this.video, this.playToggle);
 		}
@@ -664,7 +720,7 @@ var VideoRenderer = PlayableRenderer.extend({
 	updateBufferedEvents: "progress canplay canplaythrough play playing",
 
 	_updateBufferedValue: function(ev) {
-		if (!this._started) return;
+		// if (!this._started) return;
 		var bRanges = this.video.buffered;
 		if (bRanges.length > 0) {
 			this._bufferedValue = bRanges.end(bRanges.length - 1);
@@ -716,8 +772,8 @@ var VideoRenderer = PlayableRenderer.extend({
 				this.video.addEventListener("webkitendfullscreen", this._onFullscreenChange, false);
 				break;
 			case "webkitendfullscreen":
-				this.video.controls = false;
 				this.video.removeEventListener("webkitendfullscreen", this._onFullscreenChange, false);
+				this.video.controls = false;
 				break;
 		}
 	},

@@ -7,13 +7,13 @@
 		</a>
 	</div>
 	<div class="crop-box media-size">
-		<video width="240" height="180"></video>
+		<video width="240" height="180" preload="auto" muted playsinline></video>
 		<img class="poster default" alt="{{text}}" width="240" height="180" />
 	</div>
 	<div class="overlay media-size play-toggle-hitarea">
-		<div class="play-toggle">
-			<canvas class="play-toggle-symbol"/>
+		<canvas class="play-toggle"/>
+		{{!<div class="play-toggle">}}
 			{{!> ../template/svg/PlayToggleSymbol.hbs }}
-		</div>
+		{{!</div>}}
 	</div>
 </div>

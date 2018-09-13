@@ -468,16 +468,17 @@ var PlayableRenderer = MediaRenderer.extend({
 		this.content.classList.toggle("playing", this.playbackRequested);
 		this.content.classList.toggle("paused", !this.playbackRequested);
 		this.content.classList.toggle("waiting", this._isMediaWaiting());
+		console.log("%s:: [play %s] [wait %s] [symbol %s]", this.cid, this.playbackRequested, this._isMediaWaiting(), this._playToggleSymbol.symbolName);
 	},
 
 	_playToggleSymbol: null,
 	_setPlayToggleSymbol: function(symbolName) {
 		if (this._playToggleSymbol === null) {
 			this._playToggleSymbol = new PlayToggleSymbol({
-				el: this.el.querySelector(".play-toggle-symbol"),
+				el: this.el.querySelector(".play-toggle"),
 			});
 		}
-		console.log("%s::_setPlayToggleSymbol [enabled:%s] [selected:%s]", this.cid, this.enabled, this.parentView.collection.selected === this.model);
+		console.log("%s::_setPlayToggleSymbol [enabled:%s] [selected:%s]", this.cid, this.enabled); //, this.parentView.collection.selected === this.model);
 
 		this._playToggleSymbol.paused = !(this.enabled && this.parentView.collection.selected === this.model);
 		this._playToggleSymbol.symbolName = symbolName;

@@ -17,12 +17,13 @@ var PI2 = Math.PI * 2;
 var BASE_ROTATION = 1 - 0.25; // of PI2 (-90 degrees)
 var GAP_ARC = PI2 / 48;
 
-// /** @type {module:utils/ease/fn/easeInQuad} */
-// var easeIn = require("utils/ease/fn/easeInQuad");
-// /** @type {module:utils/ease/fn/easeOutQuad} */
-// var easeOut = require("utils/ease/fn/easeOutQuad");
-// var LOOP_OFFSET = 1.833333;
-// var STEP_MS = 400; // tween time base
+/** @type {module:utils/ease/fn/easeInQuad} */
+var easeIn = require("utils/ease/fn/easeInQuad");
+/** @type {module:utils/ease/fn/easeOutQuad} */
+var easeOut = require("utils/ease/fn/easeOutQuad");
+
+var LOOP_OFFSET = 1.833333;
+var STEP_MS = 400; // tween time base
 
 var ARC_DEFAULTS = {
 	"amount": {
@@ -65,13 +66,13 @@ module.exports = CanvasView.extend({
 			amount: 0,
 			available: 0,
 			_loop: 0,
-			// _stalled_arc: 0,
-			// _stalled_loop: 0,
+			_stalled_arc: 0,
+			_stalled_loop: 0,
 		},
 		maxValues: {
 			amount: 1,
 			available: 1,
-			// _stalled_loop: 1,
+			_stalled_loop: 1,
 		},
 		useOpaque: true,
 		labelFn: function(value, max) {
@@ -82,10 +83,10 @@ module.exports = CanvasView.extend({
 	properties: {
 		stalled: {
 			get: function() {
-				return this._stalled;
+				return false; //this._stalled;
 			},
 			set: function(value) {
-				this._setStalled(value)
+				// this._setStalled(value)
 			}
 		}
 	},
@@ -326,10 +327,10 @@ module.exports = CanvasView.extend({
 				lastEndArc, s);
 		}
 		// restore ctx after drawing arcs
-		ctx.restore();
+		// keep rotation transform
+		//ctx.restore();
 
-
-		/*if (this._stalled) {
+		if (this._stalled) {
 			if (intrp.getTargetValue('_stalled_arc') === 0) {
 				intrp.valueTo('_stalled_arc', 1, 1 * STEP_MS, easeIn).updateValue('_stalled_arc');
 			}
@@ -368,8 +369,8 @@ module.exports = CanvasView.extend({
 			ctx.arc(0, 0, (this._canvasWidth) / 2, ((1 - aa) + ll) * PI2, (aa + ll) * PI2, false);
 			ctx.stroke();
 			ctx.restore();
-		}*/
-
+		}
+		ctx.restore();
 	},
 
 	drawArc: function(value, startArc, endArc, prevArc, style) {
