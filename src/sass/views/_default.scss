@@ -33,8 +33,8 @@ $nav_collapse_offset: map-get($temp, collapse_offset) * 1px;
 
 html {
 	font: 12px/1.5 $base_font;
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -69,12 +69,12 @@ body {
 // - - - - - - - - - - - - - - - - - -
 
 // #container {
-	//	position: relative;
-	/* allow to grow beyond viewport so that #content can grow too */
-	//	min-height: 100%;
-	//	width: 100%;
-	// 	overflow-x: hidden;
-	// 	overflow-y: visible;
+//	position: relative;
+/* allow to grow beyond viewport so that #content can grow too */
+//	min-height: 100%;
+//	width: 100%;
+// 	overflow-x: hidden;
+// 	overflow-y: visible;
 // }
 
 #navigation {
@@ -101,7 +101,7 @@ body {
 	// height: calc(100% - #{$m_nav_top});
 	// left: 0;
 	// right: 0;
- }
+}
 
 #content {
 	position: absolute;
@@ -465,7 +465,7 @@ body {
 	opacity: 0;
 	visibility: hidden;
 	transition: tx(opacity, 1, 0),
-		tx(visibility, 1, 0, step-start);
+	tx(visibility, 1, 0, step-start);
 
 	@at-root {
 		.container-collapsed & {
@@ -481,11 +481,11 @@ body {
 		}
 		.container-expanded.container-changing & {
 			transition: tx(opacity, 1, 0),
-				tx(visibility, 1, 0, step-start);
+			tx(visibility, 1, 0, step-start);
 		}
 		.container-collapsed.container-changing & {
 			transition: tx(opacity, 1, 0),
-				tx(visibility, 1, 0, step-end);
+			tx(visibility, 1, 0, step-end);
 		}
 		.skip-transitions & {
 			@include skip_transitions;
@@ -536,13 +536,13 @@ $m_content_bottom: 4.5rem;
 	top: calc(#{$m_nav_top} + #{$m_nav_height});
 	// top: $m_nav_top + $m_nav_height;
 	height: calc(100%
-		- #{$m_nav_top}
-		- #{$m_nav_height}
-		+ #{$m_content_top}
+	- #{$m_nav_top}
+	- #{$m_nav_height}
+	+ #{$m_content_top}
 	);
 	$m_carousel_item_height: calc(100%
-		- #{$m_content_top}
-		- #{$m_content_bottom}
+	- #{$m_content_top}
+	- #{$m_content_bottom}
 	);
 
 	margin-top: -#{$m_content_top};
@@ -803,7 +803,7 @@ $m_content_bottom: 4.5rem;
 // 	}
 // }
 
-// #content:after {
+// #content::after {
 // 	position: absolute;
 // 	margin: 0 auto;
 // 	max-width: $m_page_width;

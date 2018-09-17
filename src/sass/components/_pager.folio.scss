@@ -18,11 +18,11 @@
 	.following-button {
 		margin-left: 2em;
 	}
-	.preceding-button:before {
+	.preceding-button::before {
 		content: "\e807";
 		@include fontello_icon_before();
 	}
-	.following-button:after {
+	.following-button::after {
 		content: "\e808";
 		@include fontello_icon_after();
 	}

@@ -379,11 +379,11 @@ $s_content_right: $s_content_right_val;
 		}
 		.media-item {
 			height: $s_carousel_item_height;//calc(100% - #{$s_content_top + $s_content_bottom});
-			.placeholder:before {
+			.placeholder::before {
 				font-size: 18vw;
 				padding: 5%;
 			}
-			// .placeholder:before,
+			// .placeholder::before,
 			.error-message {
 				padding: 7%;
 			}

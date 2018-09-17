@@ -2,15 +2,15 @@
 // .media-item
 // -----------------------------------
 
-@mixin placeholder_label{
-		font-size: 9rem;
-		font-weight: bold;
-		line-height: 0.9;
-		letter-spacing: -0.01em;
-		padding: 3rem;
-		position: absolute;
-		top: 0;
-		left: 0;
+@mixin placeholder_label {
+	font-size: 9rem;
+	font-weight: bold;
+	line-height: 0.9;
+	letter-spacing: -0.01em;
+	padding: 3rem;
+	position: absolute;
+	top: 0;
+	left: 0;
 }
 .media-item {
 	img {
@@ -62,60 +62,60 @@
 		}
 	}
 
-	// .placeholder:before
+	// .placeholder::before
 	// - - - - - - - - - - - - - - - - -
-	.placeholder:before {
+	.placeholder::before {
 		@include placeholder_label;
-// 		font-size: 9rem;
-// 		font-weight: bold;
-// 		line-height: 0.9;
-// 		letter-spacing: -0.01em;
-// 		padding: 3rem;
-// 		position: absolute;
-// 		top: 0;
-// 		left: 0;
+		// 		font-size: 9rem;
+		// 		font-weight: bold;
+		// 		line-height: 0.9;
+		// 		letter-spacing: -0.01em;
+		// 		padding: 3rem;
+		// 		position: absolute;
+		// 		top: 0;
+		// 		left: 0;
 	}
 	&.pending,
 	&.ready {
-		.placeholder:before {
+		.placeholder::before {
 			font: 300 12rem/0.9 "FolioFigures", $mono_font;
 			letter-spacing: -0.05em;
 		}
 	}
-	.placeholder:before {
+	.placeholder::before {
 		transition: tx(opacity, 1, 1); //$duration $ease $delay + 0.001s;
 		opacity: 0;
 	}
 	&.candidate,
 	&.selected,
 	.empty-item.selected + & {
-		&.pending .placeholder:before {
+		&.pending .placeholder::before {
 			opacity: 1;
 		}
-		&.error .placeholder:before {
+		&.error .placeholder::before {
 			opacity: 1;
 		}
 	}
 
-	.placeholder:before {
+	.placeholder::before {
 		content: "";
 	}
-	&.idle .placeholder:before {
+	&.idle .placeholder::before {
 		content: "Waiting";
 	}
-	&.error .placeholder:before {
+	&.error .placeholder::before {
 		content: "Error"; //"☹"
 	}
-	&.pending .placeholder:before {
+	&.pending .placeholder::before {
 		content: "00%";
 	}
-	&.ready .placeholder:before {
+	&.ready .placeholder::before {
 		content: "99%";
 	}
 	&.candidate,
 	&.selected,
 	.empty-item.selected + & {
-		&.pending .placeholder[data-progress]:before {
+		&.pending .placeholder[data-progress]::before {
 			content: attr(data-progress) "%";
 			// font-style: normal;
 		}

@@ -16,7 +16,7 @@
 	// font icons
 	// ===================================
 
-	& a:before {
+	& a::before {
 		font: 70%/1.5 "FolioFigures", monospace;
 		width: 1.5em;
 		display: inline-block;
@@ -31,13 +31,13 @@
 	U+25CE 	BULLSEYE
 	U+25CF 	BLACK CIRCLE
 	*/
-	& a:before {
+	& a::before {
 		content: "\25CB";
 	}
-	&.selected a:before {
+	&.selected a::before {
 		content: "\25CF";
 	}
-	&.empty-item a:before {
+	&.empty-item a::before {
 		content: "\25A4";
 	}
 

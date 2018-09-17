@@ -17,20 +17,20 @@
 		background-color: white;
 		color: $link_color;
 	}
-	.button:before {
+	.button::before {
 		text-align: center;
 		display: block;
 		position: absolute;
 		left: 0.5em;
 		width: 1em;
 	}
-	.preceding-button:before {
+	.preceding-button::before {
 		content: "\2190";
 	}
-	.following-button:before {
+	.following-button::before {
 		content: "\2192";
 	}
-	.close-button:before {
+	.close-button::before {
 		content: "\2715";
 	}
 }

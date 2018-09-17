@@ -45,7 +45,7 @@ $breakpoints: (
 	"desktop-large": "only screen and (min-width: 1824px)",
 	"iphone4": "only screen and (min-device-pixel-ratio: 1.5)"
 );
-.test:after {
+.test::after {
 	content: quote(inspect(map-get($breakpoints, "unquoted")));
 }
 */
