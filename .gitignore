@@ -13,4 +13,6 @@
 /npm-debug.log
 build/sandbox
 /fonts
+/images/favicons
 package-lock.json
+build/target
