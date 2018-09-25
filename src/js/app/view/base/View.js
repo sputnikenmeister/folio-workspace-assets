@@ -355,6 +355,8 @@ var ViewProto = {
 		}
 	},
 
+	$: Backbone.$,
+
 	/**
 	 * @constructor
 	 * @type {module:app/view/base/View}
@@ -566,6 +568,67 @@ var ViewProto = {
 		return this;
 	},
 
+	/* ---------------------------
+	/* event helpers
+	/* --------------------------- */
+
+	addListeners: function(target, events, handler, useCapture) {
+		if (!_.isObject(useCapture)) useCapture = !!useCapture;
+		if (typeof events === "string") { events = events.split(" "); }
+		for (var i = 0; i < events.length; i++) {
+			target.addEventListener(events[i], handler, useCapture);
+		}
+		return this;
+	},
+
+	removeListeners: function(target, events, handler, useCapture) {
+		if (!_.isObject(useCapture)) useCapture = !!useCapture;
+		if (typeof events === "string") { events = events.split(" "); }
+		for (var i = 0; i < events.length; i++) {
+			target.removeEventListener(events[i], handler, useCapture);
+		}
+		return this;
+	},
+
+	listenToElement: function(target, events, handler) {
+		target = Backbone.$(target);
+		if (typeof events === "string") { events = events.split(" "); }
+		for (var i = 0; i < events.length; i++) {
+			this.listenTo(target, events[i], handler);
+		}
+	},
+	stopListeningToElement: function(target, events, handler) {
+		target = Backbone.$(target);
+		if (typeof events === "string") { events = events.split(" "); }
+		for (var i = 0; i < events.length; i++) {
+			this.stopListening(target, events[i], handler);
+		}
+	},
+
+	// listenToElementOnce: function(target, event, handler, useCapture) {
+	// 	this.listenToOnce(this.$(target), event, handler);
+	// },
+	// stopListenToElement: function(target, event, handler, useCapture) {
+	// 	this.stopListening(Backbone.$(target), event, handler);
+	// },
+
+	listenToElementOnce: function(target, event, handler, useCapture) {
+		if (!_.isObject(useCapture)) useCapture = !!useCapture;
+		var cleanup, wrapper, ctx;
+		ctx = this;
+		cleanup = function() {
+			ctx.off("view:remove", cleanup);
+			target.removeEventListener(event, wrapper, useCapture);
+		};
+		wrapper = function(ev) {
+			cleanup();
+			handler.call(ctx, ev);
+		};
+		ctx.on("view:remove", cleanup);
+		target.addEventListener(event, wrapper, useCapture);
+		return this;
+	},
+
 	/* -------------------------------
 	/* requestAnimationFrame
 	/* ------------------------------- */
@@ -604,7 +667,7 @@ var ViewProto = {
 	_applyRender: function(tstamp) {
 		if (DEBUG) {
 			if (this._logFlags["view.render"]) {
-				console.log("%s::_applyRender   [%s]",
+				console.log("%s::_applyRender [%s]",
 					this.cid, this._traceRenderStatus(),
 					this._logFlags["view.trace"] ?
 					this._logRenderCallers.join("\n") : "");
@@ -656,7 +719,7 @@ var ViewProto = {
 			this._renderQueueId = renderQueue.request(this._applyRender, isNaN(this.viewDepth) ? Number.MAX_VALUE : this.viewDepth);
 		}
 		if (DEBUG) {
-			if (this._logFlags["view.render"]) {
+			if (this._logFlags["view.trace"]) {
 				// if (this._logFlags["view.trace"]) {
 				// 	console.groupCollapsed(this.cid + "::_requestRender [" + this._traceRenderStatus() + "] trace");
 				// 	console.trace();

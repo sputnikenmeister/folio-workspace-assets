@@ -1,8 +1,8 @@
 // -----------------------------------
-// .playable-renderer
+// .playable-item
 // -----------------------------------
 
-.playable-renderer {
+.playable-item {
 	.content-size,
 	.media-size {
 		position: absolute;
@@ -19,32 +19,11 @@
 }
 
 // -----------------------------------
-// .playable-renderer .overlay
+// .playable-item .overlay
 // -----------------------------------
 
-// .overlay visibility
-// - - - - - - - - - - - - - - - - -
-// .playable-renderer .overlay {
-// 	visibility: hidden;
-// 	opacity: 0;
-// }
-// .playable-renderer.selected .overlay {
-// 	visibility: visible;
-// 	opacity: 1;
-// }
-// .carousel .playable-renderer .overlay {
-// 	transition-property: visibility, opacity;
-// 	transition-timing-function: step-start, $ease;
-// 	transition-duration: $duration * 3;
-// }
-// .carousel:not(.panning) .playable-renderer.selected .overlay {
-// 	transition-property: visibility, opacity;
-// 	transition-timing-function: step-end;
-// 	transition-duration: $duration * 1;
-// }
-
 // -----------------------------------
-// .playable-renderer .play-toggle
+// .playable-item .play-toggle
 // -----------------------------------
 
 @function symbol-url($url) {
@@ -69,47 +48,30 @@
 		opacity: 1.00;
 	}
 }
-@keyframes spin {
-	from {
-		transform:rotate(0deg);
-	}
-	to {
-		transform:rotate(360deg);
-	}
-}
 
-$path_length: 566;
-@keyframes pathspin {
-	from {
-		transform: rotate(360deg);
-		stroke-dashoffset: 0;
-		stroke-dasharray: $path_length * 0.75, $path_length;
+.playable-item {
+	.overlay {
+		.play-toggle, .fullscreen-toggle {
+			color: rgba(255,255,255,1.0);
+			.color-stroke {
+				stroke: currentColor;
+			}
+			.color-fill {
+				fill: currentColor;
+			}
+			background-color: rgba(0,0,0,0.25);
+			.bg-color-stroke {
+				stroke: rgb(0,0,0);
+			}
+			.bg-color-fill {
+				fill: rgba(0,0,0,0.25);
+			}
+		}
 	}
-	50% {
-		stroke-dashoffset: $path_length * -0.25;
-		stroke-dasharray: $path_length * 0.25, $path_length;
-	}
-	to {
-		transform: rotate(0deg);
-		stroke-dashoffset: 0;
-		stroke-dasharray: $path_length * 0.75, $path_length;
-	}
-}
-%path_spinner {
-	animation: 1s linear infinite pathspin;
-	stroke-width: 12px;
-	stroke-dashoffset: 0;
-	stroke-dasharray: $path_length, $path_length*1.4;
-	// vector-effect: non-scaling-stroke;
-}
-.playable-renderer.selected .waiting-symbol use {
-	@extend %path_spinner;
-}
 
-// - - - - - - - - - - - - - - - - -
-// .play-toggle
-// - - - - - - - - - - - - - - - - -
-.playable-renderer {
+	// - - - - - - - - - - - - - - - - -
+	// .play-toggle
+	// - - - - - - - - - - - - - - - - -
 	.play-toggle-hitarea {
 		cursor: pointer;
 	}
@@ -119,16 +81,30 @@ $path_length: 566;
 	.play-toggle {
 		display: block;
 		position: absolute;
-		width: 49px;
-		height: 49px;
-		margin-left: -24px; left: 50%;
-		margin-top: -24px; top: 50%;
+		font-size: 2.5rem;
+		width: 2em;
+		height: 2em;
+		margin-left: -1em; left: 50%;
+		margin-top: -1em; top: 50%;
 		// top: calc(50% - 24px);
 		// left: calc(50% - 24px);
 
-		color: #ffffff;
-		// background-color: rgba(0,0,0,0.2);
-		// border-radius: 2px;
+		// border: 1px solid rgba(127,127,127,0.25);
+		// border: 1px solid currentColor;
+		border-radius: 4px;
+		// border-width: 0;
+		// border-radius: 51%;
+
+		// &,
+		// &.lod { // light-over-dark
+		// 	color: white;
+		// 	background-color: rgba(0,0,0,0.25);
+		// }
+		// &.dol { // dark-over-light
+		// 	color: black;
+		// 	background-color: rgba(255,255,255,0.25);
+		// }
+		// background-color: rgba(0,0,0,0.25);
 		// stroke-width:1px;
 
 		// top: 0;//20%;//1em;
@@ -172,46 +148,37 @@ $path_length: 566;
 		}
 		@at-root :not(.scrolling) & {
 			&.paused .play-toggle {
-				animation: $duration * 2 $ease flashEven;
+				animation: #{$duration * 2.0} $ease flashEven;
+			}
+			&.paused.ended .play-toggle {
+				animation: none;
 			}
 			// &.playing .play-toggle {
 			// 	animation: $duration * 2 $ease flashOdd;
 			// }
 			&.playing:not(.waiting) .play-toggle {
-				animation: $duration * 2 $ease flashOdd;
+				animation: #{$duration * 1.5} $ease flashOdd;
 			}
-			&.playing.waiting .play-toggle {
-				animation: $duration * 2 $ease flashEven;
-			}
+			// &.playing.waiting .play-toggle {
+			// 	animation: $duration * 2 $ease flashEven;
+			// }
 		}
 	}
-
-	// - - - - - - - - - - - - - - - - -
-	// spinning animation
-	// - - - - - - - - - - - - - - - - -
-	// &.selected .started.waiting {
-	// 	@at-root :not(.scrolling):not(.disabled) & {
-	// 		.play-toggle-symbol,
-	// 		.play-toggle::after {
-	// 			animation: $duration * 2 linear infinite spin;
-	// 		}
-	// 	}
-	// }
 
 
 	// - - - - - - - - - - - - - - - - -
 	// symbols as svg+js
 	// - - - - - - - - - - - - - - - - -
-	.play-toggle-symbol {
-		// position: absolute;
-		width: 49px;
-		height: 49px;
-		// top: calc(50% - 24px);
-		// left: calc(50% - 24px);
-		color: #ffffff;
-		font-family: "FolioFigures", monospace;
-		font-size: 24px;
-	}
+	// .play-toggle-symbol {
+	// 	// position: absolute;
+	// 	width: 49px;
+	// 	height: 49px;
+	// 	// top: calc(50% - 24px);
+	// 	// left: calc(50% - 24px);
+	// 	color: #ffffff;
+	// 	font-family: "FolioFigures", monospace;
+	// 	font-size: 24px;
+	// }
 
 	// - - - - - - - - - - - - - - - - -
 	// symbols as ::after
@@ -275,10 +242,27 @@ $path_length: 566;
 	// }
 }
 
+// - - - - - - - - - - - - - - - - -
+// spinning animation
+// - - - - - - - - - - - - - - - - -
+// @keyframes spin {
+// 	from {
+// 		transform:rotate(0deg);
+// 	}
+// 	to {
+// 		transform:rotate(360deg);
+// 	}
+// }
+// :not(.scrolling):not(.disabled) .playable-item.selected .started.waiting {
+// 	.play-toggle-symbol, .play-toggle::after {
+// 		animation: $duration * 2 linear infinite spin;
+// 	}
+// }
+
 // - - - - - - - - - - - - - - - - - -
-//  .playable-renderer .controls
+//  .playable-item .controls
 // - - - - - - - - - - - - - - - - - -
-.playable-renderer {
+.playable-item {
 	.controls {
 		position: absolute;
 		// top: 100%;
@@ -314,7 +298,7 @@ $path_length: 566;
 	}
 
 	// - - - - - - - - - - - - - - - - - -
-	//  .playable-renderer children
+	//  .playable-item children
 	// - - - - - - - - - - - - - - - - - -
 
 	// .fullscreen-toggle
@@ -322,7 +306,20 @@ $path_length: 566;
 	.fullscreen-toggle {
 		line-height: 0;
 		cursor: pointer;
+
+		svg.fullscreen-symbol {
+			width: 1em;
+			height: 1em;
+			padding: 0.5em;
+		}
+	}
+	.controls .fullscreen-toggle {
+		font-size: 14px;
 		border-radius: 0.2rem;
+
+		svg.fullscreen-symbol {
+			stroke-width: 1px;
+		}
 		&:hover {
 			background-color: hsla(0,0,100%,0.25);
 			@at-root .color-dark & {
@@ -335,10 +332,37 @@ $path_length: 566;
 				background-color: hsla(0,0,0%,0.5);
 			}
 		}
-		svg {
-			width: 1em;
-			height: 1em;
-			padding: 0.5em;
+	}
+	.overlay .fullscreen-toggle {
+		font-size: 21px;
+		// background-color: rgba(0,0,0,0.5);
+		margin: 1rem;
+		padding: 0.25em;
+		border-radius: 50%;
+
+		svg.fullscreen-symbol {
+			stroke-width: 2px;
+			padding: 1rem;
+		}
+		opacity: 0;
+	}
+
+	.overlay:hover  .fullscreen-toggle {
+		// opacity: 1;
+		animation: #{$duration * 2.0} $ease flashEven;
+		&:hover, &:active {
+			opacity: 1;
+		}
+
+		// background-color: hsla(0,0,100%,0.25);
+		// @at-root .color-dark & {
+			background-color: hsla(0,0,0%,0.25);
+		// }
+		&:active {
+			// background-color: hsla(0,0,100%,0.5);
+			// @at-root .color-dark & {
+				background-color: hsla(0,0,0%,0.5);
+			// }
 		}
 	}
 
@@ -378,24 +402,24 @@ $path_length: 566;
 // .progress-meter per-renderer adjustments
 // - - - - - - - - - - - - - - - - -
 // .progress-meter {
-// 	@at-root .playable-renderer & { font-size: 140%; }
-// 	@at-root .sequence-renderer & { width: 2.5rem; height: 2.5rem; }
-// 	@at-root .video-renderer & { width: 2.3rem; height: 2.3rem; }
+// 	@at-root .playable-item & { font-size: 140%; }
+// 	@at-root .sequence-item & { width: 2.5rem; height: 2.5rem; }
+// 	@at-root .video-item & { width: 2.3rem; height: 2.3rem; }
 // }
 // .canvas-progress-meter {
-// 	@at-root .sequence-renderer & { font-size: 80%; }
-// 	@at-root .video-renderer & { font-size: 90%; }
+// 	@at-root .sequence-item & { font-size: 80%; }
+// 	@at-root .video-item & { font-size: 90%; }
 // }
 // .svg-progress-meter #label {
-// 	@at-root .playable-renderer & { font-size: 140%; }
-// 	@at-root .sequence-renderer & { font-size: 140%; }
-// 	@at-root .video-renderer & { font-size: 133%; }
+// 	@at-root .playable-item & { font-size: 140%; }
+// 	@at-root .sequence-item & { font-size: 140%; }
+// 	@at-root .video-item & { font-size: 133%; }
 // }
 
 // -----------------------------------
 // VideoRenderer
 // -----------------------------------
-.video-renderer {
+.video-item {
 	transform-style: flat;
 	// Closest to 680px at 16:9 -> 672x378
 	// .content { max-width: 672px; }
@@ -436,7 +460,7 @@ $path_length: 566;
 // -----------------------------------
 // SequenceRenderer
 // -----------------------------------
-.sequence-renderer {
+.sequence-item {
 	// .content {
 	// 	box-shadow: none;//0 1rem 1rem -0.5rem rgba(0,0,0,0.5);
 	// }

@@ -24,80 +24,111 @@ var Pan = Hammer.Pan;
  * @return {Hammer.Manager}
  */
 function createInstance(el) {
+	var manager = new Hammer.Manager(el);
+	// manager.set({ domevents: true });
+
 	// var tap = new Hammer.Tap({
 	// 	threshold: Globals.PAN_THRESHOLD - 1
 	// });
+	// manager.add(tap);
 	var hpan = new Pan({
 		event: "hpan",
 		direction: Hammer.DIRECTION_HORIZONTAL,
-		// threshold: Globals.PAN_THRESHOLD,
+		threshold: Globals.PAN_THRESHOLD,
 		// touchAction: "pan-y",
 	});
+	manager.add(hpan);
+
 	// var vpan = new Pan({
 	// 	event: "vpan",
 	// 	direction: Hammer.DIRECTION_VERTICAL,
 	// 	// threshold: Globals.PAN_THRESHOLD,
 	// 	// touchAction: "pan-x",
 	// });
-
-	var manager = new Hammer.Manager(el);
-	// manager.set({ domevents: true });
-	manager.add([hpan]);
-	// manager.add([hpan, vpan]);
-	// manager.add([tap, hpan, vpan]);
+	// manager.add(vpan);
 	// vpan.requireFailure(hpan);
+
 	return manager;
 }
 
-/*https://gist.githubusercontent.com/jtangelder/361052976f044200ea17/raw/f54c2cef78d59da3f38286fad683471e1c976072/PreventGhostClick.js*/
-
-// function	logEvent(message) {
-// 	console.log(message, domev.type,
-// 		"panSessionOpened: " + panSessionOpened,
-// 		"defaultPrevented: " + domev.defaultPrevented
-// 	);
-// }
+/* -------------------------------
+/* Global hammer handlers
+/* ------------------------------- */
 
 var touchHandlers = {};
+
+/*https://gist.githubusercontent.com/jtangelder/361052976f044200ea17/raw/f54c2cef78d59da3f38286fad683471e1c976072/PreventGhostClick.js*/
+var lastTimeStamp = -1;
+var panSessionOpened = false;
+
+var saveTimeStamp = function(hev) {
+	panSessionOpened = !hev.isFinal;
+	if (hev.isFinal) {
+		lastTimeStamp = hev.srcEvent.timeStamp;
+	}
+};
+touchHandlers["vpanstart vpanend vpancancel"] =
+	touchHandlers["hpanstart hpanend hpancancel"] = saveTimeStamp;
+
+var preventSrcEvent = function(hev) {
+	//console.log(hev.type, "preventDefault");
+	hev.srcEvent.preventDefault();
+};
+touchHandlers["vpanmove vpanend vpancancel"] =
+	touchHandlers["hpanmove hpanend hpancancel"] = preventSrcEvent;
+
+// var logHammerEvent = function(hev) {
+// 	var msgs = [];
+// 	var domev = hev.srcEvent;
+// 	msgs.push(panSessionOpened ? "panning" : "pan: " + lastTimeStamp.toFixed(3));
+// 	if (domev.defaultPrevented) msgs.push("prevented");
+// 	console.log("TouchManager %s [%s] [%o]",
+// 		domev.timeStamp.toFixed(3),
+// 		domev.type,
+// 		hev.type,
+// 		msgs.join(", ")
+// 	);
+// };
+// touchHandlers[[
+// 	"vpanstart", "vpanend", "vpancancel", "vpanmove",
+// 	"hpanstart", "hpanend", "hpancancel", "hpanmove"
+// ].join(" ")] = logHammerEvent;
+
+/* -------------------------------
+/* DOM event handlers
+/* ------------------------------- */
+
 var captureHandlers = {};
 var bubblingHandlers = {};
-
-// var lastTimeStamp = -1;
-// var panSessionOpened = false;
 // var upEventName = window.hasOwnProperty("onpointerup") ? "pointerup" : "mouseup";
-//
-// touchHandlers["vpanstart vpanend vpancancel"] =
-// 	touchHandlers["hpanstart hpanend hpancancel"] = function(hev) {
-// 		// console.log("TouchManager:[%s]", hev.srcEvent.type);
-// 		panSessionOpened = !hev.isFinal;
-// 		if (hev.isFinal)
-// 			lastTimeStamp = hev.srcEvent.timeStamp;
-// 	};
-// touchHandlers["hammer.input tap vpanmove hpanmove"] = function(hev) {
-// 	console.log("TouchManager:[%s -> %s]", hev.srcEvent.type, hev.type);
-// };
-//
+
+/* eslint-disable-next-line */
+var logDOMEvent = function(domev, msg) {
+	var msgs = [];
+	if (domev.defaultPrevented) msgs.push("prevented");
+	if (msg) msgs.push(msg);
+	console.log("TouchManager %s [%o]",
+		domev.timeStamp.toFixed(3),
+		domev.type,
+		msgs.join(", ")
+	);
+};
 // var preventWhilePanning = function(domev) {
-// 	panSessionOpened && domev.preventDefault();
+// panSessionOpened && domev.preventDefault();
 // };
 // var preventWhileNotPanning = function(domev) {
 // 	!panSessionOpened && domev.preventDefault();
 // };
-// captureHandlers["click"] = function(domev) {
-// 	if (lastTimeStamp == domev.timeStamp) {
-// 		lastTimeStamp = -1;
-// 		domev.defaultPrevented || domev.preventDefault();
-// 		// domev.stopPropagation();
-// 	}
-// };
 // captureHandlers[upEventName] = preventWhilePanning;
 
-// captureHandlers["dragstart"] = function(domev) {
-// 	if (domev.target.nodeName == "IMG") {
-// 		domev.defaultPrevented || domev.preventDefault();
-// 	}
-// };
+captureHandlers["click"] = function(domev) {
+	if (lastTimeStamp === domev.timeStamp) {
+		lastTimeStamp = -1;
+		domev.defaultPrevented || domev.preventDefault();
+	}
+};
 
+// captureHandlers["touchmove"] = captureHandlers["mousemove"] = logDOMEvent;
 
 // -------------------------------
 //

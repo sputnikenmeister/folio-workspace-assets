@@ -88,7 +88,7 @@
 	}
 }
 
-@include media(fullwidth) {
+@include media(small-stretch) {
 	.carousel .mdown,
 	.article-view.mdown {
 		h1, h2 {
@@ -106,7 +106,7 @@
 	}
 }
 
-// @include media(desktop-small) {
+// @include media(medium-wide) {
 // 	.carousel .mdown {
 // 		// - - - - - - - - - - - - - - - -
 // 		h1 {

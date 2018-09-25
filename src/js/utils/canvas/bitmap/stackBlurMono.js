@@ -13,7 +13,7 @@ In case you find this class useful - especially in commercial projects -
 I am not totally unhappy for a small donation to my PayPal account
 mario@quasimondo.de
 
-Or support me on flattr: 
+Or support me on flattr:
 https://flattr.com/thing/72791/StackBlur-a-fast-almost-Gaussian-Blur-Effect-for-CanvasJavascript
 
 Copyright (c) 2010 Mario Klingemann
@@ -45,16 +45,16 @@ var shg_table = require("./shg_table");
 var BlurStack = require("./BlurStack");
 
 module.exports = function(imageData, opts) {
-	var pixels = imageData.data,
-		width = imageData.width,
-		height = imageData.height;
 
-	if (!opts.hasOwnProperty("radius") || isNaN(opts.radius) || opts.radius < 1) return;
+	if (!opts.hasOwnProperty("radius") || isNaN(opts.radius) || opts.radius < 1) return imageData;
 	var radius = opts.radius | 0;
 
 	var x, y, i, p, yp, yi, yw,
 		r_sum, r_out_sum, r_in_sum,
 		pr, pg, pb, rbs;
+	var pixels = imageData.data,
+		width = imageData.width,
+		height = imageData.height;
 
 	var div = radius + radius + 1;
 	var w4 = width << 2;

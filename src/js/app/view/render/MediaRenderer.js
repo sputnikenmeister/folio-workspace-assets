@@ -15,7 +15,7 @@ var MediaItem = require("app/model/item/MediaItem");
 /** @type {module:app/view/CarouselRenderer} */
 var CarouselRenderer = require("app/view/render/CarouselRenderer");
 
-var errorTemplate = require("../template/ErrorBlock.hbs");
+// var errorTemplate = require("../template/ErrorBlock.hbs");
 
 var MediaRenderer = CarouselRenderer.extend({
 
@@ -83,25 +83,12 @@ var MediaRenderer = CarouselRenderer.extend({
 	whenInitializeError: function(err) {
 		if (err instanceof CarouselRenderer.ViewError) {
 			// NOTE: ignore ViewError type
-			// console.log("%s::whenInitializeError", err.view.cid, err.message);
 			return;
 		} else if (err instanceof Error) {
 			console.error(err.stack);
 		}
-		this.renderMediaError(err);
 		this.placeholder.removeAttribute("data-progress");
 		this.mediaState = "error";
-		// this.placeholder.innerHTML = errorTemplate(err);
-		// this.placeholder.removeAttribute("data-progress");
-		// this.mediaState = "error";
-
-		console.error("%s::initializeAsync [%s (caught)]: %s", this.cid, err.name,
-			(err.info && err.info.logMessage) || err.message);
-		err.logEvent && console.log(err.logEvent);
-	},
-
-	renderMediaError: function(err) {
-		this.placeholder.innerHTML = err ? errorTemplate(err) : "";
 	},
 
 	updateMediaProgress: function(progress, id) {
@@ -234,6 +221,8 @@ var MediaRenderer = CarouselRenderer.extend({
 	},
 }, {
 	LOG_TO_SCREEN: true,
+	/** @type {module:app/view/promise/whenSelectionDistanceIs} */
+	whenSelectionDistanceIs: require("app/view/promise/whenSelectionDistanceIs"),
 
 	/** @type {module:app/view/promise/whenSelectionIsContiguous} */
 	whenSelectionIsContiguous: require("app/view/promise/whenSelectionIsContiguous"),
@@ -267,7 +256,6 @@ if (DEBUG) {
 
 			/** @override */
 			initialize: function() {
-				MediaRenderer.prototype.initialize.apply(this, arguments);
 
 				var fgColor = new Color(this.model.attr("color"));
 				var bgColor = new Color(this.model.attr("background-color"));
@@ -281,6 +269,7 @@ if (DEBUG) {
 				this.__logStartTime = Date.now();
 				this.__rafId = -1;
 				this.__onFrame = this.__onFrame.bind(this);
+				MediaRenderer.prototype.initialize.apply(this, arguments);
 			},
 
 			initializeAsync: function() {
@@ -321,11 +310,34 @@ if (DEBUG) {
 				return ret;
 			},
 
+			whenInitializeError: function(err) {
+				// NOTE: not calling super
+				// MediaRenderer.prototype.whenInitializeError.apply(this, arguments);
+				if (err instanceof CarouselRenderer.ViewError) {
+					// NOTE: ignore ViewError type
+					// console.warn("%s::whenInitializeError ", err.view.cid, err.message);
+					return;
+				} else if (err instanceof Error) {
+					console.warn(err.stack);
+				}
+				// this.placeholder.innerHTML = err ? errorTemplate(err) : "";
+				this.placeholder.removeAttribute("data-progress");
+				this.mediaState = "error";
+
+				// console.error("%s::initializeAsync [%s (caught)]: %s", this.cid, err.name, (err.info && err.info.logMessage) || err.message);
+				// err.logEvent && console.log(err.logEvent);
+			},
+
+			/* --------------------------- *
+			/* log methods
+			/* --------------------------- */
+
 			__logMessage: function(msg, logtype, color) {
 				var logEntryEl = document.createElement("pre");
 
+				logtype || (logtype = "-")
 				logEntryEl.textContent = this.__getTStamp() + " " + msg;
-				logEntryEl.setAttribute("data-logtype", logtype || "-");
+				logEntryEl.setAttribute("data-logtype", logtype);
 				logEntryEl.style.color = color || this.__logColors[logtype] || this.__logColors.normal;
 
 				this.__logElement.appendChild(logEntryEl);

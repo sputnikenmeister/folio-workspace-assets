@@ -14,14 +14,15 @@ console.info("Portfolio App started");
 // function applyPolyfills() {
 require("Modernizr");
 require("setimmediate");
-require("es6-promise").polyfill();
+require("es6-promise/auto");
 require("classlist-polyfill");
 require("raf-polyfill");
 require("matches-polyfill");
 require("fullscreen-polyfill");
 require("math-sign-polyfill");
-require("mutation-polyfill");
 // require("path2d-polyfill");
+// if (!window.Modernizr.mutationobserver) {
+// 	require("mutation-observer");
 // }
 
 // function applyRequires() {

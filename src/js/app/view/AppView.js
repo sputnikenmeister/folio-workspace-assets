@@ -31,8 +31,8 @@ var ContentView = require("app/view/ContentView");
 
 /** @type {module:app/view/base/TouchManager} */
 var TouchManager = require("app/view/base/TouchManager");
-// /** @type {module:hammerjs} */
-// var Hammer = require("hammerjs");
+/** @type {module:hammerjs} */
+var Hammer = require("hammerjs");
 // /** @type {module:utils/touch/SmoothPanRecognizer} */
 // var Pan = require("utils/touch/SmoothPanRecognizer");
 // /** @type {module:hammerjs.Tap} */
@@ -44,18 +44,11 @@ var TouchManager = require("app/view/base/TouchManager");
 // var vpanLogFn = _.debounce(console.log.bind(console), 100, false);
 // var hpanLogFn = _.debounce(console.log.bind(console), 100, false);
 
-var AppView = {
-	getInstance: function() {
-		if (!(window.app instanceof this)) {
-			window.app = new(this)({
-				model: new AppState()
-			});
-		}
-		return window.app;
-	}
-};
-
-var AppViewProto = {
+/**
+ * @constructor
+ * @type {module:app/view/AppView}
+ */
+module.exports = View.extend({
 
 	/** @override */
 	cidPrefix: "app",
@@ -69,16 +62,19 @@ var AppViewProto = {
 	/** @override */
 	events: {
 		"visibilitychange": function(ev) {
-			console.log(ev.type);
+			console.log("%s:[%s]", this.cid, ev.type);
 		},
 		"fullscreenchange": function(ev) {
-			console.log(ev.type);
+			console.log("%s:[%s] fullscreen: %o", this.cid, ev.type, (document.fullscreenElement !== null), document.fullscreen);
 		},
 		"dragstart": function(ev) {
 			if (ev.target.nodeName == "IMG" || ev.target.nodeName == "A") {
 				ev.defaultPrevented || ev.preventDefault();
 			}
-		}
+		},
+		// "touchmove body": function(ev) {
+		// 	ev.defaultPrevented || ev.preventDefault();
+		// },
 	},
 
 	properties: {
@@ -159,8 +155,6 @@ var AppViewProto = {
 		// });
 		// hpan.requireFailure(vpan);
 		// vpan.requireFailure(hpan);
-
-		// vtouch = new Hammer.Manager(this.navigation);
 		// vtouch.add([]);
 
 		// htouch = vtouch = new Hammer.Manager(this.content);
@@ -207,8 +201,9 @@ var AppViewProto = {
 		(vg. Carousel) require update on resize */
 		// this._onBreakpointChange = this._onBreakpointChange.bind(this);
 		// Object.keys(Globals.BREAKPOINTS).forEach(function(s) {
-		// 	Globals.BREAKPOINTS[s].addListener(this._onBreakpointChange);
+		// 	Globals.BREAKPOINTS[s].addListeners(this._onBreakpointChange);
 		// }, this);
+
 
 		/* initialize controller/model listeners BEFORE views register their own */
 		this.listenTo(controller, "route", this._onRoute);
@@ -230,7 +225,90 @@ var AppViewProto = {
 			hpan: htouch,
 		});
 
-		/* Google Analytics */
+		/* TouchEvents fixups
+		 * ------------------------------- */
+		var traceTouchEvent = function(msg, traceObj) {
+			if (msg.hasOwnProperty("type")) {
+				msg = msg.type + " : " +
+					(msg.defaultPrevented ? "prevented" : "not prevented");
+			}
+			var sy, sh, ch;
+			sy = this.el.scrollTop;
+			sh = this.el.scrollHeight - 1;
+			ch = this.el.clientHeight;
+			console.log("%s:[%s] " +
+				"sy:[1>%o>=%s = %o] " +
+				"sh:[%o<=%o = %o] " +
+				"nav:[css:%o val:%o]",
+				this.cid, msg,
+				sy, sh - ch, (1 <= sy <= (sh - ch)),
+				sh, ch, (sh <= ch),
+				this.navigationView.el.style.height,
+				this.navigationView.el.scrollHeight,
+				traceObj || ""
+			);
+		}.bind(this);
+
+
+		// var scrolltouch = new Hammer.Manager(this.el);
+		// scrolltouch.add(new Hammer.Pan({ direction: Hammer.DIRECTION_VERTICAL, threshold: 0 }));
+		// scrolltouch.on("panmove", function(ev) {
+		//
+		// 	// var sy, sh, ch;
+		// 	// sy = this.el.scrollTop;
+		// 	// sh = this.el.scrollHeight - 1;
+		// 	// ch = this.el.clientHeight;
+		// 	//
+		// 	// if ((1 > sy) && (ev.direction | Hammer.DIRECTION_DOWN)) {
+		// 	// 	ev.preventDefault();
+		// 	// 	console.log("%s:[panmove] %s", this.cid, "prevent at top");
+		// 	// } else
+		// 	// if ((sy > (sh - ch)) && (ev.direction | Hammer.DIRECTION_UP)) {
+		// 	// 	ev.preventDefault();
+		// 	// 	console.log("%s:[panmove] %s", this.cid, "prevent at bottom");
+		// 	// }
+		// 	if ((this.el.scrollHeight - 1) <= this.el.clientHeight) {
+		// 		ev.srcEvent.preventDefault();
+		// 	}
+		// 	// traceTouchEvent(ev);
+		// }.bind(this));
+
+		var touchOpts = { capture: false, passive: false };
+		var onTouchStart = function(ev) {
+			this.el.addEventListener("touchmove", onTouchMove, touchOpts);
+			this.el.addEventListener("touchend", onTouchEnd, touchOpts);
+			this.el.addEventListener("touchcancel", onTouchEnd, touchOpts);
+		}.bind(this);
+
+		var onTouchMove = function(ev) {
+			if ((this.el.scrollHeight - 1) <= this.el.clientHeight) {
+				ev.preventDefault();
+			}
+			//traceTouchEvent(ev);
+		}.bind(this);
+
+		var onTouchEnd = function(ev) {
+			this.el.removeEventListener("touchmove", onTouchMove, touchOpts);
+			this.el.removeEventListener("touchend", onTouchEnd, touchOpts);
+			this.el.removeEventListener("touchcancel", onTouchEnd, touchOpts);
+		}.bind(this);
+
+		this.el.addEventListener("touchstart", onTouchStart);
+
+		var onMeasured = function(view) {
+			this.el.scrollTop = 1;
+			if ((this.el.scrollHeight - 1) <= this.el.clientHeight) {
+				this.el.style.overflowY = "hidden";
+			} else {
+				this.el.style.overflowY = "";
+			}
+			//traceTouchEvent("view:collapsed:measured");
+		};
+		this.listenTo(this.navigationView, "view:collapsed:measured", onMeasured);
+
+
+		/* Google Analytics
+		 * ------------------------------- */
 		if (window.ga && window.GA_ID) {
 			controller
 				.once("route", function() {
@@ -329,34 +407,32 @@ var AppViewProto = {
 	/* --------------------------- */
 
 	_onModelChange: function() {
-		// console.log("%s::_onModelChange [START]", this.cid);
-		console.group(this.cid + "::_onModelChange");
-		Object.keys(this.model.changedAttributes()).forEach(function(key) {
-			console.info("%s::_onModelChange %s: %s -> %s", this.cid, key,
-				this.model.previous(key),
-				this.model.get(key));
-		}, this);
+		if (DEBUG) {
+			console.groupCollapsed(this.cid + "::_onModelChange");
+			console.groupCollapsed("changes");
+			Object.keys(this.model.changedAttributes()).forEach(function(key) {
+				console.info("%s::_onModelChange %s: %s -> %s", this.cid, key,
+					this.model.previous(key),
+					this.model.get(key));
+			}, this);
 
-		["Article", "Bundle", "Media"].forEach(function(name) {
-			var key = name.toLowerCase();
-			console[this.hasChanged("with" + name) == this.hasAnyChanged(key) ? "log" : "warn"].call(console, "%s::_onModelChange with%s: %o with%sChanged: %o", this.cid,
-				name, this.has(key),
-				name, this.hasAnyChanged(key)
-			);
-		}, this.model);
+			["Article", "Bundle", "Media"].forEach(function(name) {
+				var key = name.toLowerCase();
+				console[this.hasChanged("with" + name) == this.hasAnyChanged(key) ? "log" : "warn"].call(console, "%s::_onModelChange with%s: %o with%sChanged: %o", this.cid,
+					name, this.has(key),
+					name, this.hasAnyChanged(key)
+				);
+			}, this.model);
+			console.groupEnd();
 
-		// console.log("%s::_onModelChange %o", this.cid,
-		// 	// arguments
-		// 	// _.clone(this.model.attributes),
-		// 	// this.model.changedAttributes()
-		// );
-
-		this.requestRender(View.MODEL_INVALID)
-			// .requestChildrenRender(View.MODEL_INVALID)
-			.once("view:render:after", function(view, flags) {
-				console.info("%s::_onModelChange [render complete]", view.cid);
+			this.once("view:render:after", function(view, flags) {
+				console.info("%s::_onModelChange [view:render:after]", view.cid);
 				console.groupEnd();
 			});
+		}
+
+		this.requestRender(View.MODEL_INVALID);
+		// this.requestChildrenRender(View.MODEL_INVALID);
 	},
 
 	/* -------------------------------
@@ -377,9 +453,11 @@ var AppViewProto = {
 					console.info("%s::_onResize [view:render:after][raf]", view.cid);
 					view.skipTransitions = false;
 					view.el.classList.remove("skip-transitions");
+					this.el.scrollTop = 1;
 					console.groupEnd();
 				})
-			}).renderNow();
+			});
+		if (document.fullscreenElement === null) this.renderNow();
 	},
 
 	/* -------------------------------
@@ -405,23 +483,26 @@ var AppViewProto = {
 		/* request children render:  set 'now' flag if size is invalid */
 		// this.requestChildrenRender(flags, flags & View.SIZE_INVALID);
 
-		// if (flags & (View.MODEL_INVALID | View.SIZE_INVALID)) {
-		// 	this.navigation.style.touchAction = !this._hasOverflowY(this.container) ? "pan-x" : "";
-		// 	this.content.style.touchAction = this._hpanEnableFn() ? "pan-y" : "";
-		// 	this.requestAnimationFrame(function() {
-		// 		if (this._hpanEnableFn() && this._vpanEnableFn()) {
-		// 			this.content.style.touchAction = "none";
-		// 		} else if (this._hpanEnableFn()) {
-		// 			this.content.style.touchAction = "pan-y";
-		// 		} else if (this._vpanEnableFn()) {
-		// 			this.content.style.touchAction = "pan-x";
-		// 		} else {
-		// 			this.content.style.touchAction = "auto";
-		// 		}
-		// 		// 	document.body.scrollTop = 0;
-		// 		// 	window.scroll({ top: 0, behavior: "smooth" });
-		// 	});
+		// if ((this.el.scrollHeight - 1) <= this.el.clientHeight) {
+		// 	this.el.scrollTop = 1;
+		// 	this.el.style.overflowY = "hidden";
+		// } else {
+		// 	this.el.style.overflowY = "";
 		// }
+		// this.navigationView.whenRendered().then(function(view) {
+		// 	this.requestAnimationFrame(function() {
+		// 		console.log("%s::renderFrame [raf] css:%o val:%o",
+		// 			this.cid,
+		// 			this.navigationView.el.style.height,
+		// 			this.navigationView.el.scrollHeight,
+		// 			this.el.scrollTop,
+		// 			this.el.scrollHeight - 1,
+		// 			this.el.clientHeight,
+		// 			(this.el.scrollHeight - 1) <= this.el.clientHeight,
+		// 			this.el.style.overflowY
+		// 		);
+		// 	});
+		// }.bind(this));
 	},
 
 	/* -------------------------------
@@ -484,36 +565,35 @@ var AppViewProto = {
 		/* flag dark background */
 		cls.toggle("color-dark", hasDarkBg);
 	},
-};
+}, {
+	getInstance: function() {
+		if (!(window.app instanceof this)) {
+			window.app = new(this)({
+				model: new AppState()
+			});
+		}
+		return window.app;
+	}
+});
 
 if (DEBUG) {
-	/** @type {module:app/debug/DebugToolbar} */
-	var DebugToolbar = require("app/debug/DebugToolbar");
+	module.exports = (function(AppView) {
+		/** @type {module:app/debug/DebugToolbar} */
+		var DebugToolbar = require("app/debug/DebugToolbar");
 
-	AppViewProto.initialize = (function(fn) {
-		return function() {
-			var retval;
-			var view = new DebugToolbar({
-				id: "debug-toolbar",
-				model: this.model
-			});
-			document.body.appendChild(view.render().el);
-			// this.listenTo(this.model, "change:layoutName", function() {
-			// 	this.requestRender(View.SIZE_INVALID); //.renderNow();
-			// });
-			retval = fn.apply(this, arguments);
-			this._logFlags["view.trace"] = true;
-			this.navigationView._logFlags["view.trace"] = true;
-			// this.navigationView.graph._logFlags["view.trace"] = true;
-			// this.navigationView.bundleList._logFlags["view.trace"] = true;
-			// this.navigationView.keywordList._logFlags["view.trace"] = true;
-			return retval;
-		};
-	})(AppViewProto.initialize);
+		return AppView.extend({
+			initialize: function() {
+				var retval;
+				var view = new DebugToolbar({
+					id: "debug-toolbar",
+					model: this.model
+				});
+				document.body.appendChild(view.render().el);
+				retval = AppView.prototype.initialize.apply(this, arguments);
+				this._logFlags["view.trace"] = true;
+				this.navigationView._logFlags["view.trace"] = true;
+				return retval;
+			},
+		})
+	})(module.exports);
 }
-
-/**
-/* @constructor
-/* @type {module:app/view/AppView}
-/*/
-module.exports = View.extend(AppViewProto, AppView);

@@ -5,7 +5,7 @@
 module.exports = function(grunt) {
 
 	var _ = require('underscore');
-	var path = require('path');
+	// var path = require('path');
 
 	grunt.config('pkg', grunt.file.readJSON('package.json'));
 
@@ -108,9 +108,9 @@ module.exports = function(grunt) {
 	grunt.config('clean', {
 		'js': { src: ['js/*'] },
 		'css': { src: ['css/*'] },
+		'favicons': { src: ['images/favicons'] },
 		'font-files': { src: ['fonts/*.<%= paths.ext.fonts %>'] },
 		'font-sass': { src: ['build/target/sass/fonts/*.scss', './build/target/sass/fonts/'] },
-		'favicons': { src: ['images/favicons'] },
 
 	});
 
@@ -124,13 +124,12 @@ module.exports = function(grunt) {
 			files: [{
 				flatten: true,
 				expand: true,
-				dest: './fonts/',
+				dest: 'fonts/',
+				cwd: 'node_modules/@folio/webfonts/build/fonts/',
 				src: [
-					// './src/resources/fonts/franklin-gothic-fs/*.<%= paths.ext.fonts %>',
-					'./node_modules/@folio/webfonts/build/fonts/folio-figures/*.<%= paths.ext.fonts %>',
-					'./node_modules/@folio/webfonts/build/fonts/franklin-gothic-fs/*.<%= paths.ext.fonts %>',
-					// './node_modules/@folio/webfonts/build/fonts/brown/*.<%= paths.ext.fonts %>',
-					// './node_modules/@folio/webfonts/build/fonts/rubik/*.<%= paths.ext.fonts %>',
+					'folio-figures/*.<%= paths.ext.fonts %>',
+					'franklin-gothic-fs/*.<%= paths.ext.fonts %>',
+					// 'libre-franklin/*.<%= paths.ext.fonts %>',
 				]
 			}]
 		},
@@ -143,14 +142,12 @@ module.exports = function(grunt) {
 			files: [{
 				flatten: true,
 				expand: true,
-				dest: './build/target/sass/fonts',
+				dest: 'build/target/sass/fonts',
+				cwd: 'node_modules/@folio/webfonts/build/sass/',
 				src: [
-					// './src/resources/fonts/franklin-gothic-fs/*.css',
-					'./node_modules/@folio/webfonts/build/sass/_franklin-gothic-fs.scss',
-					'./node_modules/@folio/webfonts/build/sass/_folio-figures.scss',
-					// './node_modules/@folio/webfonts/build/sass/_theinhardt.scss',
-					// './node_modules/@folio/webfonts/build/sass/_brown.scss',
-					// './node_modules/@folio/webfonts/build/sass/_rubik.scss',
+					'_franklin-gothic-fs.scss',
+					'_folio-figures.scss',
+					// '_libre-franklin.scss',
 				],
 				// rename: function(dest, src) {
 				// 	var name = path.parse(src).name;
@@ -164,13 +161,10 @@ module.exports = function(grunt) {
 			files: [{
 				flatten: false,
 				expand: true,
-				dest: './images/favicons',
-				cwd: './node_modules/@folio/favicons/build/',
-				src: [
-						// './node_modules/@folio/favicons/build/**/*',
-						'**/*.{png,ico}',
-					]
-				}]
+				dest: 'images/favicons/',
+				cwd: 'node_modules/@folio/favicons/build/',
+				src: ['**/*.{png,ico}']
+			}]
 		},
 	});
 
@@ -318,8 +312,9 @@ module.exports = function(grunt) {
 				debug: true,
 				fullPaths: false,
 				insertGlobalVars: {
-					DEBUG: function(file, dir) { return 'true'; },
-					GA: function(file, dir) { return 'false'; },
+					'DEBUG': function(file, dir) { return 'true'; },
+					'GA': function(file, dir) { return 'false'; },
+					'_': function(file, dir) { return require('underscore'); },
 				}
 			},
 			transform: [
@@ -425,8 +420,9 @@ module.exports = function(grunt) {
 					debug: false,
 					fullPaths: false,
 					insertGlobalVars: {
-						DEBUG: function(file, dir) { return 'false'; },
-						GA: function(file, dir) { return 'true'; }
+						'DEBUG': function(file, dir) { return 'false'; },
+						'GA': function(file, dir) { return 'true'; },
+						'_': function(file, dir) { return require('underscore'); },
 					}
 				},
 			},
@@ -525,7 +521,6 @@ module.exports = function(grunt) {
 			]
 		}
 	});
-
 	grunt.config('js_beautify.sources.options', grunt.file.readJSON('.jsbeautifyrc'));
 
 
@@ -546,41 +541,6 @@ module.exports = function(grunt) {
 				'path2d-polyfill'
 			])
 		}]
-	});
-
-
-	/* --------------------------------
-	 * base64 font encode and embed
-	 * -------------------------------- */
-	// var xmlWrapper = {
-	// 	header: '<?xml version="1.0" encoding="UTF-8"?><data><![CDATA[',
-	// 	footer: ']]></data>',
-	// };
-	// grunt.loadNpmTasks('grunt-contrib-copy');
-	grunt.config('copy.fonts-xmlwrap', {
-		options: {
-			process: function(content, srcpath) {
-				return '<?xml version="1.0" encoding="UTF-8"?><data><![CDATA[' + content + ']]></data>';
-			}
-		},
-		files: [{
-			flatten: true,
-			expand: true,
-			src: 'fonts/base64/*.b64',
-			dest: 'fonts/base64',
-			ext: '.xml',
-			extDot: 'last',
-		}]
-	});
-
-	grunt.loadNpmTasks('grunt-embed-fonts');
-	grunt.config('embedFonts.fonts-inline', {
-		options: {
-			applyTo: ['woff2', 'woff', 'ttf']
-		},
-		files: {
-			'css/fonts-inline.css': ['css/fonts.css']
-		}
 	});
 
 	grunt.registerTask('fonts-inline', ['sass:dist', 'embedFonts:fonts-inline']);

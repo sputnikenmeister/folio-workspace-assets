@@ -45,13 +45,17 @@ var shg_table = require("./shg_table");
 var BlurStack = require("./BlurStack");
 
 module.exports = function(imageData, opts) {
+	if ((typeof opts === "object") && opts.hasOwnProperty("radius")) {
+		opts = opts.radius;
+	}
+	if ((typeof opts !== "number") || isNaN(opts) || (1 > opts)) {
+		// no valid argument value do nothing
+		return imageData;
+	}
+	var radius = opts | 0;
 	var pixels = imageData.data,
 		width = imageData.width,
 		height = imageData.height;
-	// var radius = opts.radius;
-
-	if (!opts.hasOwnProperty("radius") || isNaN(opts.radius) || opts.radius < 1) return;
-	var radius = opts.radius | 0;
 
 	var x, y, i, p, yp, yi, yw, r_sum, g_sum, b_sum,
 		r_out_sum, g_out_sum, b_out_sum,

@@ -60,7 +60,7 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 			// finally
 			// - - - - - - - - - - - - - - - - - -
 			request.onloadend = function(ev) {
-				console.log("_loadImageAsObjectURL::%s [cleanup] (%s)", ev ? ev.type : "no event", url);
+				//console.log("_loadImageAsObjectURL::%s [cleanup] (%s)", ev ? ev.type : "no event", url);
 				request.onabort = request.ontimeout = request.onerror = void 0;
 				request.onload = request.onloadend = void 0;
 				if (progressFn) {

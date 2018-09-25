@@ -3,6 +3,14 @@ var PI2 = Math.PI * 2;
 var splice = Array.prototype.splice;
 // var concat = Array.prototype.concat;
 
+/*
+ *	Using javascript to convert radians to degrees with positive and
+ *	negative values [https://stackoverflow.com/questions/29588404/]
+ *	`(((r * (180/Math.PI)) % 360) + 360) % 360;`
+ *	`function mod(n, m) {
+ *		return ((n % m) + m) % m;
+ *	}`
+ */
 var _mod = function(n, m) {
 	return ((n % m) + m) % m;
 };
@@ -14,8 +22,11 @@ var setStyle = function(ctx, s) {
 			case "undefined":
 				break;
 			case "function":
-				if (Array.isArray(s[p])) ctx[p].apply(ctx, s[p]);
-				else ctx[p].call(ctx, s[p]);
+				if (Array.isArray(s[p])) {
+					ctx[p].apply(ctx, s[p]);
+				} else {
+					ctx[p].call(ctx, s[p]);
+				}
 				break;
 			default:
 				ctx[p] = s[p];
@@ -25,10 +36,16 @@ var setStyle = function(ctx, s) {
 
 var _drawShape = function(fn, s, ctx) {
 	ctx.save();
-	if (s) setStyle(ctx, s);
+	if (s) {
+		setStyle(ctx, s);
+	}
 	fn.apply(null, splice.call(arguments, 2));
-	if (ctx.lineWidth !== "transparent") ctx.stroke();
-	if (ctx.fillStyle !== "transparent") ctx.fill();
+	if ('strokeStyle' in s) { /* ctx.lineWidth > 0 */
+		ctx.stroke();
+	}
+	if ('fillStyle' in s) { /* ctx.fillStyle !== "transparent" */
+		ctx.fill();
+	}
 	ctx.restore();
 };
 
@@ -85,13 +102,6 @@ module.exports = {
 		_drawShape(this.square, s, ctx, x, y, r);
 	},
 
-	/* https://stackoverflow.com/questions/29588404/using-javascript-to-convert-radians-to-degrees-with-positive-and-negative-values
-		(((r * (180/Math.PI)) % 360) + 360) % 360;
-		function mod(n, m) {
-  return ((n % m) + m) % m;
-}
-	*/
-
 	arrowhead: function(ctx, x, y, r, t) {
 		ctx.save();
 		ctx.translate(x, y);
@@ -112,16 +122,62 @@ module.exports = {
 		_drawShape(this.arrowhead, s, ctx, x, y, r, t);
 	},
 
-	rect: function(ctx, a1, a2, a3, a4) {
-
+	arrowhead2: function(ctx, x, y, r, t) {
+		ctx.save();
+		ctx.translate(x, y);
+		ctx.rotate(_mod(t, PI2));
 		ctx.beginPath();
-		if (isNaN(a1)) {
-			ctx.rect(a1.left, a1.top, a1.width, a1.height);
-		} else {
-			ctx.rect(a1, a2, a3, a4);
+		ctx.moveTo(-r, r * Math.SQRT1_2);
+		ctx.lineTo(0, 0);
+		ctx.lineTo(-r, -r * Math.SQRT1_2);
+		ctx.restore();
+	},
+	drawArrowhead2: function(ctx, s, x, y, r, t) {
+		_drawShape(this.arrowhead, s, ctx, x, y, r, t);
+	},
+
+	rect: function(ctx, a1, a2, a3, a4) {
+		if (typeof a1 === "object") {
+			a4 = a1.height;
+			a3 = a1.width;
+			a2 = a1.top;
+			a1 = a1.left;
 		}
+		ctx.beginPath();
+		ctx.rect(a1, a2, a3, a4);
 	},
 	drawRect: function(ctx, s, a1, a2, a3, a4) {
 		_drawShape(this.rect, s, ctx, a1, a2, a3, a4);
+	},
+
+	roundRect: function(ctx, x, y, w, h, r) {
+		if (w < 2 * r) r = w / 2;
+		if (h < 2 * r) r = h / 2;
+		ctx.beginPath();
+		ctx.moveTo(x + r, y);
+		ctx.arcTo(x + w, y, x + w, y + h, r);
+		ctx.arcTo(x + w, y + h, x, y + h, r);
+		ctx.arcTo(x, y + h, x, y, r);
+		ctx.arcTo(x, y, x + w, y, r);
+		ctx.closePath();
+	},
+	drawRoundRect: function(ctx, s, x, y, w, h, r) {
+		_drawShape(this.roundRect, s, ctx, x, y, h, r);
+	},
+
+	quadRoundRect: function(ctx, x, y, w, h, r) {
+		ctx.beginPath();
+		ctx.moveTo(x, y + r);
+		ctx.quadraticCurveTo(x, y, x + r, y);
+		ctx.lineTo(x + w - r, y);
+		ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+		ctx.lineTo(x + w, y + h - r);
+		ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+		ctx.lineTo(x + r, y + h);
+		ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+		ctx.closePath();
+	},
+	drawQuadRoundRect: function(ctx, s, x, y, w, h, r) {
+		_drawShape(this.quadRoundRect, s, ctx, x, y, h, r);
 	},
 };

@@ -1,5 +1,5 @@
 // ///////////////////////////////////
-// media query : desktop-small
+// media query : medium-wide
 // ///////////////////////////////////
 
 // layout variables
@@ -15,10 +15,9 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 // Root
 // ///////////////////////////////////
 
-// html.desktop-small {}
+// html.medium-wide {}
 
-@include media(desktop-small) {
-
+@include media(medium-wide) {
 	/* body */
 	// padding-top: $large_nav_top;
 	// padding-bottom: $large_nav_top;
@@ -69,7 +68,7 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 	// Common alignment
 	// ===================================
 	&.without-article.without-bundle,
- 	&.route-root {
+	&.route-root {
 		#bundle-list, #keyword-list {
 			padding-top: $large_nav_height * 0.5;//4.5rem;//$nav_top_without_bundle;
 		}
@@ -107,7 +106,7 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 	// keyword-list
 	// ===================================
 	#keyword-list {
-		//NOTE: clearance for .playable-renderer children mouse events
+		//NOTE: clearance for .playable-item children mouse events
 		width: $wide_aside_width;// - $gutter;
 		// padding-top: $large_nav_height;// - 0.25rem;
 		// transform: moveY(-0.25rem);
@@ -171,8 +170,8 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 			visibility: visible;
 			opacity: 1;
 			transition: tx(visibility, 3, 0, step-start),
-				tx(opacity, 1, 0),
-				tx(color, 1, 1);
+			tx(opacity, 1, 0),
+			tx(color, 1, 1);
 		}
 	}
 
@@ -211,13 +210,13 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 
 		top: $large_nav_top + $large_nav_height;
 		height: calc(100%
-			- #{$large_nav_top}
-			- #{$large_nav_height}
-			+ #{$large_content_top}
+		- #{$large_nav_top}
+		- #{$large_nav_height}
+		+ #{$large_content_top}
 		);
 		$large_carousel_item_height: calc(100%
-			- #{$large_content_top}
-			- #{$large_content_bottom}
+		- #{$large_content_top}
+		- #{$large_content_bottom}
 		);
 
 		margin-top: -#{$large_content_top};
@@ -244,9 +243,9 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 			height: $large_carousel_item_height;
 		}
 		// .empty-item .content {
-			// font-size: 28px;
-			// line-height: 30px;
-			// @include heading_font(300, 28px, 36px);
+		// font-size: 28px;
+		// line-height: 30px;
+		// @include heading_font(300, 28px, 36px);
 		// }
 		// .empty-item .content *:first-child {
 		// 	margin-top: -4px;
@@ -277,9 +276,9 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 	}
 
 	// overrides carousel.playable.scss
-	.playable-renderer {
+	.playable-item {
 		&[data-fit-dir] .controls {
-		// & > .fullscreen-toggle
+			// & > .fullscreen-toggle
 			& > .progress-meter {
 				top: 0;
 				bottom: auto;
@@ -288,23 +287,6 @@ $wide_main_width: $wide_page_width - $wide_aside_width;
 				margin: 0 1.5rem 0 0;
 			}
 		}
-		// .top-bar {
-		// 	-webkit-flex-direction: column;
-		// 	-ms-flex-direction: column;
-		// 	flex-direction: column;
-		// 	// top: -9.5rem; right: -$hu;
-		// 	direction: ltr;
-		// 	top: 0;
-		// 	right: 100%;
-		// 	width: auto;
-		// 	height: calc(100% + 1rem);
-		// 	margin: -0.5rem 1.25rem;
-		// 	& > * {
-		// 		padding: 0.5rem 0;
-		// 		// &:first-child { padding-inline-start: 0; }
-		// 		// &:last-child { padding-inline-end: 0; }
-		// 	}
-		// }
 	}
 
 	// media-caption-stack

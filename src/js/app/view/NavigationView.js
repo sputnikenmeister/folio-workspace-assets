@@ -54,10 +54,10 @@ txNow.easing = "ease";
 // hTx.easing = "ease";
 
 /**
-/* @constructor
-/* @type {module:app/view/NavigationView}
-/*/
-var NavigationView = View.extend({
+ * @constructor
+ * @type {module:app/view/NavigationView}
+ */
+module.exports = View.extend({
 
 	// /** @override */
 	// tagName: "div",
@@ -199,10 +199,40 @@ var NavigationView = View.extend({
 			// 			(o.hasTransition ? o.transition.name : "-");
 			// 	}));
 		}
-
+		// if (this.model.hasChanged("collapsed") && this.model.get("collapsed")) {
+		// 	this.el.style.height = "";
+		// 	// this.el.style.minHeight = hval + "px";
+		// 	this.graph.el.style.height = "";
+		// }
 
 		// promise handlers
 		// - - - - - - - - - - - - - - - - -
+
+		var measureRenderedLists = function(result) {
+			// var hval = result.reduce(function(a, o) {
+			// 	return Math.max(a, o.metrics.height);
+			// }, 0);
+			var hval = Math.max(
+				this.bundleList.metrics.height,
+				this.keywordList.metrics.height);
+
+			if (this.model.get("collapsed")) {
+				this.el.style.height = "";
+				// this.el.style.minHeight = hval + "px";
+				this.graph.el.style.height = "";
+			} else {
+				this.el.style.height = hval + "px";
+				// this.el.style.minHeight = "";
+				this.graph.el.style.height = hval + "px";
+			}
+			// this.el.style.height = this.model.get("collapsed") ? "" : "100%";
+			// this.vpanGroup.style.height = hval;
+			this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
+			console.log("%s:[whenListsRenderedDone] height set to %s", this.cid, this.model.get("collapsed") ? hval + "px" : "[not set]", result);
+			this.trigger("view:collapsed:measured", this);
+			return result;
+		}.bind(this);
+
 		var toggleGraph = function(result) {
 			this.graph.enabled = !this.model.get("collapsed");
 			this.graph.valueTo("a2b", 0, 0);
@@ -212,31 +242,12 @@ var NavigationView = View.extend({
 			return result;
 		}.bind(this);
 
-		var measureRenderedLists = function(result) {
-			// var hval = result.reduce(function(a, o) {
-			// 	return Math.max(a, o.metrics.height);
-			// }, 0);
-			var hval = this.model.get("collapsed") ?
-				"" : Math.max(
-					this.bundleList.metrics.height,
-					this.keywordList.metrics.height) + "px";
-
-			this.el.style.height = hval;
-			// this.el.style.height = this.model.get("collapsed") ? "" : "100%";
-			// this.vpanGroup.style.height = hval;
-			this.graph.el.style.height = hval;
-			this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID);
-			console.log("%s:[whenListsRenderedDone] height set to %s", this.cid, hval || "[not set]", result);
-			return result;
-		}.bind(this);
-
 		var whenCollapsedChangeDone = function(result) {
 			console.log("%s:[whenCollapsedChangeDone][flags: %s]", this.cid, View.flagsToString(flags), result);
 			this.el.classList.remove("container-changing");
+			this.trigger("view:collapsed:end", this);
 			return result;
 		}.bind(this);
-
-
 
 		// promises
 		// - - - - - - - - - - - - - - - - -
@@ -258,13 +269,13 @@ var NavigationView = View.extend({
 		if ((flags & View.MODEL_INVALID) && this.model.hasChanged("collapsed")) {
 			p = p.then(toggleGraph);
 		}
-		p = Promise.all([p, this.transforms.whenAllTransitionsEnd()]);
-		p = p.then(whenCollapsedChangeDone);
-
-		p.catch(function(r) {
-			console.warn("%s::renderFrame promise rejected", this.cid, r);
-			return r;
-		}.bind(this));
+		p
+			.then(this.transforms.whenAllTransitionsEnd())
+			.then(whenCollapsedChangeDone)
+			.catch(function(reason) {
+				console.error("%s::renderFrame promise rejected", this.cid, reason);
+				return reason;
+			}.bind(this));
 
 		/*
 		var whenListsRendered = Promise.all([
@@ -388,7 +399,7 @@ var NavigationView = View.extend({
 	_whenTransitionsEnd: function(result) {
 		console.info("%s::_whenTransitionsEnd", this.cid);
 		this.el.classList.remove("container-changing");
-		// if (!Globals.BREAKPOINTS["desktop-small"].matches)
+		// if (!Globals.BREAKPOINTS["medium-wide"].matches)
 		// 	return;
 		// if (!this.model.get("collapsed")) {
 		// 	this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID); //.renderNow();
@@ -399,7 +410,7 @@ var NavigationView = View.extend({
 	_whenTransitionsAbort: function(reason) {
 		console.warn("%s::_whenTransitionsAbort %o", this.cid, reason);
 		this.el.classList.remove("container-changing");
-		// if (!Globals.BREAKPOINTS["desktop-small"].matches)
+		// if (!Globals.BREAKPOINTS["medium-wide"].matches)
 		// 	return;
 		// if (!this.model.get("collapsed")) {
 		// 	this.graph.requestRender(View.SIZE_INVALID | View.LAYOUT_INVALID); //.renderNow();
@@ -473,7 +484,7 @@ var NavigationView = View.extend({
 		 *		bundleList.wrapper,
 		 *		hGroupings
 		 */
-		if (Globals.BREAKPOINTS["desktop-small"].matches) {
+		if (Globals.BREAKPOINTS["medium-wide"].matches) {
 			/* HORIZONTAL: keywordList.wrapper */
 			tf = this.transforms.get(this.keywordList.wrapper);
 			if (collapsedChanged && !withArticleChanged) {
@@ -520,7 +531,7 @@ var NavigationView = View.extend({
 			// 		this.transforms.runTransition(withArticle ? tx.BETWEEN : tx.LAST, this.bundleList.wrapper);
 			// 	}
 			// }
-		} else if (Globals.BREAKPOINTS["fullwidth"].matches) {
+		} else if (Globals.BREAKPOINTS["small-stretch"].matches) {
 			// if (collapsedChanged ) {
 			if (collapsedChanged ^ withArticleChanged) {
 				this.transforms.runTransition(collapsed ? tx.FIRST : tx.LAST,
@@ -583,7 +594,7 @@ var NavigationView = View.extend({
 				this.hpan.on("hpanstart", this._onHPanStart);
 				// this.hpan.on("tap", this._onTap);
 			} else {
-				this.el.removeEventListener("click", this._onNavigationClick);
+				this.el.removeEventListener(View.CLICK_EVENT, this._onNavigationClick);
 				this.vpan.off("vpanstart", this._onVPanStart);
 				this.hpan.off("hpanstart", this._onHPanStart);
 				keywords.deselect();
@@ -665,7 +676,7 @@ var NavigationView = View.extend({
 		// 	&& this.model.get("layoutName") != "default-layout") {
 		// 	return;
 		// }
-		if (Globals.BREAKPOINTS["desktop-small"].matches
+		if (Globals.BREAKPOINTS["medium-wide"].matches
 			&& this.model.get("bundle").get("media").selectedIndex <= 0
 			&& this.model.get("collapsed")) {
 			this.transforms.get(this.keywordList.wrapper).clearCapture();
@@ -964,7 +975,7 @@ var NavigationView = View.extend({
 
 	/*
 	_beginTransformObserve: function() {
-		if (!(Globals.BREAKPOINTS["desktop-small"].matches && this.model.get("bundle").get("media").selectedIndex <= 0 && this.model.get("collapsed"))) {
+		if (!(Globals.BREAKPOINTS["medium-wide"].matches && this.model.get("bundle").get("media").selectedIndex <= 0 && this.model.get("collapsed"))) {
 			return;
 		}
 		var target = document.querySelector(".carousel > .empty-item");
@@ -1015,5 +1026,3 @@ var NavigationView = View.extend({
 	},
 	*/
 });
-
-module.exports = NavigationView;

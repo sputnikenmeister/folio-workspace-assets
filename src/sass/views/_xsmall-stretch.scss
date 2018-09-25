@@ -1,5 +1,5 @@
 // ///////////////////////////////////
-// media query : fullwidth-small
+// media query : xsmall-stretch
 // ///////////////////////////////////
 
 // layout variables
@@ -19,11 +19,11 @@ $default_page_width_min: 375px;
 // Root
 // ///////////////////////////////////
 
-HTML.fullwidth-small {
+HTML.xsmall-stretch {
 	font-size:10px;
 }
 
-@include media(fullwidth-small) {
+@include media(xsmall-stretch) {
 
 	// @include ss_variables;
 
@@ -33,9 +33,6 @@ HTML.fullwidth-small {
 
 	// container navigation content
 	// - - - - - - - - - - - - - - - - - -
-	// #container {
-	// 	min-width: $default_page_width_min;
-	// }
 
 	// bundle-list
 	// ===================================

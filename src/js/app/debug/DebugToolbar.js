@@ -89,6 +89,8 @@ module.exports = View.extend({
 
 		/* toggle container classes
 		/* - - - - - - - - - - - - - - - - */
+		this.initializeClassToggle("debug-state",
+			this.el.querySelector("#toggle-state a"), container);
 		this.initializeClassToggle("debug-blocks-nav",
 			this.el.querySelector("#toggle-blocks-nav a"), container);
 		this.initializeClassToggle("debug-blocks-content",
@@ -182,6 +184,11 @@ module.exports = View.extend({
 				break;
 		}
 		this.backendEl.setAttribute("href", attrVal);
+
+		if (this.model.hasChanged("routeName")) {
+			document.body.setAttribute("last-route", this.model.previous("routeName"));
+			document.body.setAttribute("current-route", this.model.get("routeName"));
+		}
 
 		if (this.model.hasChanged("media")) {
 			if (this.model.has("media")) {

@@ -35,9 +35,9 @@
 
 	// .content
 	// - - - - - - - - - - - - - - - - - -
-	.content {
-		transition: tx(opacity, 1, 0);
-	}
+	// .content {
+	// 	transition: tx(opacity, 1, -1);
+	// }
 	// // &.selected, &.candidate {
 	// &.selected, &.candidate, .empty-item.selected + & {
 	// 	.content {
@@ -63,22 +63,22 @@
 		opacity: 0.06;
 		// overflow: hidden;
 		// color: silver;
-		.s {
-			transition: tx(background-color, 0.5, 0);
-			background-color: currentColor;
-		}
+		// .s {
+		// 	transition: tx(background-color, 0.5, 0);
+		// 	background-color: currentColor;
+		// }
 	}
 	&.candidate,
 	&.selected {
 		.content {
-			@at-root & {
-				// overflow: auto;
-				opacity: 1.0;
-				// .s {
-				// 	background-color: transparent;
-				// }
-				// color: darkgreen;
-			}
+			// @at-root & {
+			// overflow: auto;
+			opacity: 1.0;
+			// .s {
+			// 	background-color: transparent;
+			// }
+			// color: darkgreen;
+			// }
 			// @at-root .carousel.scrolling & {
 			// // @at-root .carousel.panning & {
 			// 	// opacity: 0.2;

@@ -47,7 +47,7 @@ $crimsom: rgba(220, 20, 60, 1);
 	// 	// height: 1rem;
 	// 	width: $m_aside_width;
 	// 	height: $m_nav_height;
-	// 	@include media(desktop-small) {
+	// 	@include media(medium-wide) {
 	// 		width: $wide_aside_width;
 	// 		height: $large_nav_height;
 	// 	}
@@ -204,7 +204,7 @@ $crimsom: rgba(220, 20, 60, 1);
 		.media-item {
 			background-color: rgba($lightblue, 0.3);
 		}
-		.playable-renderer {
+		.playable-item {
 			.play-toggle-hitarea {
 				// background-color: rgba($lightblue, 0.5);
 				@include debug_outline(1.5rem, dashed, rgba(RoyalBlue, 0.25));
@@ -213,6 +213,48 @@ $crimsom: rgba(220, 20, 60, 1);
 	}
 }
 
+// -----------------------------------
+// debug labels
+// -----------------------------------
+%debug-label-small {
+	font: 800 8px/120% $small_font;
+	text-transform: uppercase;
+	letter-spacing: normal;
+	height: 1.2em;
+	padding: 0.1em 0.2em;
+	margin: 0;
+	display: inline-block;
+}
+
+%debug-label-list {
+	font: 800 8px/120% $small_font;
+	// text-transform: uppercase;
+	letter-spacing: normal;
+	// padding: 0.4em 0.8em;
+	// margin: 0;
+
+	border: 1px solid currentColor;
+	border-radius: 0.2em;
+	padding: 0.3em 0.5em 0.2em;
+	margin: 0.5em;
+
+	word-spacing: 12em;
+	display: inline-block;
+	width: 12em;
+}
+
+%debug-label-cartouche {
+	font-size: 85%;
+	font-weight: bolder;
+	line-height: 1;
+	text-transform: lowercase;
+	white-space: nowrap;
+	border: 1px solid currentColor;
+	border-radius: 0.2em;
+	padding: 0.3em 0.5em 0.2em;
+	margin: 0.5em;
+	display: inline-block;
+}
 
 // -----------------------------------
 // .mdown
@@ -233,18 +275,68 @@ $crimsom: rgba(220, 20, 60, 1);
 		background-color: rgba($darkolivegreen, 0.1);
 		position: relative;
 		&::before {
+			@extend %debug-label-small;
+			color: white;
+			background: $darkolivegreen;
 			position: absolute;
-			display: block;
 			right: 0;
 			bottom: 0;
-			height: 1.2em;
-			padding: 0.1em 0.2em;
-			margin: 0;
-			color: white;
-			background: $darkolivegreen; //#5d7533;
-			font: 800 8px/120% $small_font;
-			text-transform: uppercase;
-			letter-spacing: normal;
+		}
+	}
+}
+
+// debug-state
+// -----------------------------------
+
+%debug-classes-left::after,
+%debug-classes-right::after {
+@extend %debug-label-list;
+	content: attr(class);
+	color: white;
+	background-color: rgba(royalblue, 0.75);
+	position: absolute;
+	z-index: 999;
+	bottom: 0;
+}
+%debug-classes-left::after {
+	text-align: left;
+	left: 0;
+}
+%debug-classes-right::after {
+	text-align: right;
+	right: 0;
+}
+
+%debug-view-cid::after {
+	content: attr(data-cid) " " attr(class);
+}
+
+.debug-state {
+	&::after {
+		content: attr(last-route) " ➞ " attr(current-route);
+		@extend %debug-label-cartouche;
+		opacity: 0.4;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+	}
+
+	.carousel {
+		@extend %debug-classes-right;
+	}
+
+	.media-item {
+		@include debug_outline(1px, dashed, royalblue, -1px);
+		@extend %debug-classes-right;
+		@extend %debug-view-cid;
+		.content {
+			@extend %debug-classes-right;
+		}
+	}
+	.selected + .media-item {
+		@extend %debug-classes-left;
+		.content {
+			@extend %debug-classes-left;
 		}
 	}
 }

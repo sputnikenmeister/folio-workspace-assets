@@ -27,7 +27,7 @@ var ImageRenderer = MediaRenderer.extend({
 	/** @type {string} */
 	cidPrefix: "imageRenderer",
 	/** @type {string} */
-	className: MediaRenderer.prototype.className + " image-renderer",
+	className: MediaRenderer.prototype.className + " image-item",
 	/** @type {Function} */
 	template: viewTemplate,
 

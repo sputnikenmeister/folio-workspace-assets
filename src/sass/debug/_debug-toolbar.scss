@@ -121,7 +121,7 @@
 		// 	dt + & {
 		// 		display: none;
 		// 	}
-		// 	@include media(fullwidth) {
+		// 	@include media(small-stretch) {
 		// 		display: none;
 		// 	}
 		// }
@@ -240,7 +240,7 @@
 		}
 	}
 
-	@include media(fullwidth) {
+	@include media(small-stretch) {
 		// top: auto;
 		// bottom: 0;
 		#test-results {

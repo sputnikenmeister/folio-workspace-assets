@@ -10,12 +10,12 @@
 	"breakpoints": {
 		"landscape": "'(orientation: landscape)'",
 		"portrait": "'(orientation: portrait)'",
-		"fullwidth-small": "'not screen and (min-width: 460px)'",
-		"fullwidth": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
+		"xsmall-stretch": "'not screen and (min-width: 460px), not screen and (min-height: 420px)'",
+		"small-stretch": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
 		"default":"'only screen and (min-width: 704px) and (min-height: 540px)'",
-		"desktop-small": "'only screen and (min-width: 1024px) and (min-height: 540px)'",
-		"desktop-medium": "'only screen and (min-width: 1224px) and (min-height: 704px)'",
-		"desktop-large": "'only screen and (min-width: 1824px) and (min-height: 1024px)'"
+		"medium-wide": "'only screen and (min-width: 1024px) and (min-height: 540px)'",
+		"large-wide": "'only screen and (min-width: 1224px) and (min-height: 704px)'",
+		"xlarge-wide": "'only screen and (min-width: 1824px) and (min-height: 1024px)'"
 	},
 	"default_colors": {
 		"color": "hsl(47, 5%, 15%)",

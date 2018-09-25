@@ -64,7 +64,7 @@ var tx = Globals.transitions;
  * @constructor
  * @type {module:app/view/ContentView}
  */
-var ContentView = View.extend({
+module.exports = View.extend({
 
 	/** @override */
 	cidPrefix: "contentView",
@@ -572,5 +572,3 @@ var ContentView = View.extend({
 	// 	return null;
 	// },
 });
-
-module.exports = ContentView;

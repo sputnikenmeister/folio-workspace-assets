@@ -1,16 +1,16 @@
 require("modernizr-dist");
 
-Modernizr._config.classPrefix = "has-";
+Modernizr._config.classPrefix = "mod-";
 Modernizr._config.enableClasses = false;
-Modernizr.addTest("weakmap", function () { 
-	return window.WeakMap !== void 0; 
+Modernizr._config.enableJSClasses = false;
+Modernizr.addTest("weakmap", function() {
+	return window.WeakMap !== void 0;
 });
-/* jshint -W117 */
+/* eslint-disable no-undef */
 Modernizr.addTest("strictmode", function() {
-	try { undeclaredVar = 1; }
-	catch (e) { return true; }
+	try { undeclaredVar = 1; } catch (e) { return true; }
 	return false;
 });
-/* jshint +W117 */
+/* eslint-enable no-undef */
 
 module.exports = window.Modernizr;

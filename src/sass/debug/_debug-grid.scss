@@ -10,13 +10,13 @@
 // 	background-position: 50% 3px;
 // 	background-size: #{$m_page_width + $hu*2} 100%; //1600px;
 //
-// 	// @include media(desktop-small) {
-// 	@at-root .desktop-small & {
+// 	// @include media(medium-wide) {
+// 	@at-root .medium-wide & {
 // 		background-position: 50% 0;
 // 		background-size: #{$wide_page_width + $hu*2} 100%; //1600px;
 // 	}
-// 	// @include media(fullwidth) {
-// 	@at-root .fullwidth & {
+// 	// @include media(small-stretch) {
+// 	@at-root .small-stretch & {
 // 		background-position: 6px 0;
 // 		background-size: 100% 100%;
 // 	}
@@ -36,10 +36,10 @@
 	@at-root .debug-grid-bg & {
 		display: block;
 	}
-	@at-root .desktop-small & {
+	@at-root .medium-wide & {
 		// top: $large_nav_top;
 	}
-	@at-root .fullwidth & {
+	@at-root .small-stretch & {
 		// top: $small_nav_top;
 		left: $s_page_left;
 		right: $s_page_right;
@@ -58,10 +58,10 @@ svg#debug-grid {
 	top: 0; bottom: 0;
 	left: 0; right: 0;
 
-	@at-root .desktop-small & {
+	@at-root .medium-wide & {
 		max-width: $wide_page_width;
 	}
-	@at-root .fullwidth & {
+	@at-root .small-stretch & {
 		max-width: $s_page_width_max;
 	}
 
@@ -91,14 +91,14 @@ svg#debug-grid {
 	#baseline {
 		opacity: 0.25;
 		fill: url("#pat-baseline-12px");
-		@at-root .fullwidth-small & {
+		@at-root .xsmall-stretch & {
 			fill: url("#pat-baseline-10px");
 		}
 	}
 	#baseline-content {
 		// opacity: 0.5;
 		fill: url("#pat-baseline-24px");
-		@at-root .fullwidth & {
+		@at-root .small-stretch & {
 			fill: none;//url("#pat-baseline-10px");
 		}
 	}
@@ -108,13 +108,13 @@ svg#debug-grid {
 	}
 	#abs-cols {
 		visibility: visible;
-		@at-root .fullwidth & {
+		@at-root .small-stretch & {
 			visibility: hidden;
 		}
 	}
 	#rel-cols {
 		visibility: hidden;
-		@at-root .fullwidth & {
+		@at-root .small-stretch & {
 			visibility: visible;
 		}
 	}
@@ -149,10 +149,10 @@ svg#debug-grid {
 	/* Horizontal guides */
 	#debug-grid-container {
 		transform: translate(0, $m_nav_top);
-		@at-root .desktop-small & {
+		@at-root .medium-wide & {
 			transform: translate(0, $large_nav_top);
 		}
-		@at-root .fullwidth & {
+		@at-root .small-stretch & {
 			transform: translate(0, $s_nav_top);
 		}
 		#gnv0, #gct0 {
@@ -167,10 +167,10 @@ svg#debug-grid {
 	}
 	#debug-grid-content {
 		transform: translate(0, $m_nav_height);
-		@at-root .desktop-small & {
+		@at-root .medium-wide & {
 			transform: translate(0, $large_nav_height);
 		}
-		@at-root .fullwidth & {
+		@at-root .small-stretch & {
 			transform: translate(0, $s_nav_height);
 		}
 	}
@@ -201,7 +201,7 @@ svg#debug-grid {
 	// #gm0 { transform: translate(-2rem, 0); }
 	// #gm1 { transform: translate(2rem, 0); }
 
-	@at-root .fullwidth & {
+	@at-root .small-stretch & {
 		#gl0 {
 			transform: translate($s_margin_left, 0);
 		}

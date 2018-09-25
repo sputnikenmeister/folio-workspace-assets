@@ -50,8 +50,8 @@ var paramsBase = {
 	radiusIncrement: 0.21, //3, //0.25,
 	/* uses lineWidth multiplier */
 	outlineWidth: 3,
-	/* uses lineWidth multiplier */
-	arrowSize: 0.3,
+	/* factored to rem unit */
+	arrowSize: 0.4, //0.3,
 };
 
 // var overlayStyleBase = {
@@ -531,7 +531,7 @@ var GraphView = CanvasView.extend({
 				// p.cx1 = sMin + (rMax0 * qx);
 				// p.cx2 = dMin;
 
-				tx = calcArcHConnector(p.cx1, p.cy1, p.r1, p.cx2, p.cy2, p.r2, 1);
+				tx = calcArcHConnector(p.cx1, p.cy1, p.r1, p.cx2, p.cy2, p.r2, 0.9);
 				if (tx) {
 					p.tx1 = tx[0];
 					p.tx2 = tx[1];
@@ -612,8 +612,7 @@ var GraphView = CanvasView.extend({
 				}
 				this._drawConnector(p, i, pp);
 				if (lVal == 1) {
-					CanvasHelper.arrowhead(this._ctx, p.x2, p.y2, ra2, ta);
-					this._ctx.fill();
+					this._drawArrowhead(p.x2, p.y2, ra2, dir * ta);
 				}
 			}
 			this._ctx.restore();
@@ -627,11 +626,36 @@ var GraphView = CanvasView.extend({
 			}
 			this._drawConnector(p, i, pp);
 			if (lVal == 1) {
-				CanvasHelper.arrowhead(this._ctx, p.x2, p.y2, ra1, dir * ta);
-				this._ctx.fill();
+				this._drawArrowhead(p.x2, p.y2, ra1, dir * ta);
 			}
 		}
 	},
+
+	_drawArrowhead: function(x, y, r, t) {
+		// this._ctx.save();
+		// this._ctx.lineDashOffset = 0;
+		// this._ctx.setLineDash([]);
+		CanvasHelper.arrowhead2(this._ctx, x, y, r, t);
+		this._ctx.stroke();
+		// this._ctx.restore();
+	},
+
+	_drawArrowhead2: function(x, y, r, t) {
+		CanvasHelper.arrowhead(this._ctx, x, y, r, t);
+		this._ctx.fill();
+	},
+
+	// _drawArrowheadH: function(x, y, r, a) {
+	// 	this._ctx.save();
+	// 	this._ctx.lineDashOffset = 0;
+	// 	this._ctx.setLineDash([]);
+	// 	this._ctx.beginPath();
+	// 	this._ctx.moveTo(x + r * 1 / dir, y - r);
+	// 	this._ctx.lineTo(x, y);
+	// 	this._ctx.lineTo(x + r * 1 / dir, y + r);
+	// 	this._ctx.stroke();
+	// 	this._ctx.restore();
+	// },
 
 	_drawConnector: function(p, i, pp) {
 		this._ctx.beginPath();

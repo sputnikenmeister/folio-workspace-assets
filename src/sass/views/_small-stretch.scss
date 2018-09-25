@@ -1,5 +1,5 @@
 // ///////////////////////////////////
-// media query : fullwidth
+// media query : small-stretch
 // ///////////////////////////////////
 
 // ///////////////////////////////////
@@ -42,7 +42,7 @@ $s_content_right: $s_content_right_val;
 // 	$s_content_left: #{var(--cml, $s_content_left_val)};
 // 	$s_content_right: #{var(--cmr, $s_content_right_val)};
 //
-// 	@include media(fullwidth) {
+// 	@include media(small-stretch) {
 // 		--aw: #{$s_aside_width_val};
 // 		--pl: #{$s_page_left_val};
 // 		--pr: #{$s_page_right_val};
@@ -57,16 +57,23 @@ $s_content_right: $s_content_right_val;
 // Root
 // ///////////////////////////////////
 
-// html.fullwidth {}
+// html.small-stretch {}
 
 // @import "views/mobile.mdown";
 
-@include media(fullwidth) {
+@include media(small-stretch) {
 
 	// @if ($debug) { @include s_variables; }
 	// @include s_variables;
 
 	/* body */
+	 @at-root {
+		@media (orientation:landscape){
+			#container {
+				min-height: calc(100% + 1px);
+			}
+		}
+	}
 	// width: 100%;
 	// overflow: hidden;
 	// overflow-y: auto;
@@ -220,7 +227,7 @@ $s_content_right: $s_content_right_val;
 	// &.with-bundle .container-collapsed #keyword-list {
 	// 	padding-top: 0.75rem;
 	// }
-	&.with-media .container-collapsed #keyword-list {
+	&.with-bundle .container-collapsed #keyword-list {
 		opacity: 0;
 		visibility: 0;
 	}
@@ -330,7 +337,7 @@ $s_content_right: $s_content_right_val;
 	// ///////////////////////////////////
 
 	$s_content_top: 4rem;
-	$s_content_bottom: 3rem;
+	$s_content_bottom: 3.5rem;
 
 	// media-carousel
 	// ===================================
@@ -396,7 +403,7 @@ $s_content_right: $s_content_right_val;
 	$ctrl_height: 2.1rem;
 	$ctrl_width: $rhu * 1.05;//2.1rem;
 
-	.playable-renderer {
+	.playable-item {
 		.top-bar {
 			height: $ctrl_height;
 			margin-bottom: 1rem;

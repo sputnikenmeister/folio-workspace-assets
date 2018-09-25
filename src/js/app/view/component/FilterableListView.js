@@ -593,7 +593,7 @@ if (DEBUG) {
 	].join(" ");
 
 	FilterableListView.prototype._printStats = function(lastFilteredItems) {
-		console.log("%o::renderFrame %s filtered:%o(=%o)/%o (changed:%o, in:%o, out:%o)", this.cid,
+		if (this._logFlags["view.trace"]) console.log("%s::renderFrame %s filtered:%o(=%o)/%o (changed:%o, in:%o, out:%o)", this.cid,
 			this.filteredItems.length > 0 ? "has" : "has not",
 			this.filteredItems.length,
 			lastFilteredItems ? (this.filteredItems.length + this._filteredIncoming.length) - this._filteredOutgoing.length : this.filteredItems.length,

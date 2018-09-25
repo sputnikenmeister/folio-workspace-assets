@@ -24,6 +24,8 @@ var Globals = require("app/control/Globals");
 
 /** @type {module:app/view/component/CanvasProgressMeter} */
 var ProgressMeter = require("app/view/component/CanvasProgressMeter");
+// /** @type {module:app/view/component/PlayToggleSymbol} */
+var PlayToggleSymbol = require("app/view/component/PlayToggleSymbol");
 
 /** @type {module:utils/Timer} */
 var Timer = require("utils/Timer");
@@ -36,8 +38,8 @@ var Timer = require("utils/Timer");
 var _whenImageLoads = require("app/view/promise/_whenImageLoads");
 /** @type {module:app/view/promise/_loadImageAsObjectURL} */
 var _loadImageAsObjectURL = require("app/view/promise/_loadImageAsObjectURL");
-/** @type {Function} */
-var whenSelectionDistanceIs = require("app/view/promise/whenSelectionDistanceIs");
+// /** @type {Function} */
+// var whenSelectionDistanceIs = require("app/view/promise/whenSelectionDistanceIs");
 // var whenSelectTransitionEnds = require("app/view/promise/whenSelectTransitionEnds");
 // var whenDefaultImageLoads = require("app/view/promise/whenDefaultImageLoads");
 
@@ -238,7 +240,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/** @type {string} */
 	cidPrefix: "sequenceRenderer",
 	/** @type {string} */
-	className: PlayableRenderer.prototype.className + " sequence-renderer",
+	className: PlayableRenderer.prototype.className + " sequence-item",
 	/** @type {Function} */
 	template: require("./SequenceRenderer.hbs"),
 
@@ -260,7 +262,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 			.then(function(view) {
 				view.initializePlayable();
 				view.updateOverlay(view.defaultImage, view.playToggle); //view.overlay);
-				view.addSelectionListeners();
+				view.listenToSelection();
 				return view;
 			});
 	},
@@ -281,8 +283,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 
 		this.placeholder = this.el.querySelector(".placeholder");
 		this.sequence = this.content.querySelector(".sequence");
-
-		this.content.classList.add("started");
 
 		// styles
 		// ---------------------------------
@@ -366,19 +366,25 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// model
 		// ---------------------------------
 		// this.sources.select(this.model.get("source"));
-		// this.content.classList.add("started");
+		this.content.classList.add("started");
 
 		// Sequence model
 		// ---------------------------------
-		// this.sources = this._createSourceCollection(this.model);
-		whenSelectionDistanceIs(this, 0).then(this._preloadAllItems, function(err) {
-			return (err instanceof View.ViewError) ? (void 0) : err; // Ignore ViewError
-		});
+		PlayableRenderer.whenSelectionDistanceIs(this, 0)
+			// .then(function(view) {
+			// 	/* defaultImage is loaded, add `started` rightaway */
+			// 	view.content.classList.add("started");
+			// 	return view;
+			// })
+			.then(this._preloadAllItems, function(err) {
+				return (err instanceof View.ViewError) ? (void 0) : err; // Ignore ViewError
+			});
 
 		this._sequenceInterval = Math.max(parseInt(this.model.attr("@sequence-interval")), MIN_STEP_INTERVAL) || DEFAULT_STEP_INTERVAL;
 
 		// timer
 		// ---------------------------------
+		/* timer will be started when _validatePlayback is called from _onModelSelected */
 		this.timer = new Timer();
 		this.listenTo(this, "view:removed", function() {
 			this.timer.stop();
@@ -407,6 +413,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// ---------------------------------
 		this.progressMeter = new ProgressMeter({
 			el: this.el.querySelector(".progress-meter"),
+			color: this.model.attr("color"),
+			// backgroundColor: this.model.attr("background-color"),
 			values: {
 				available: this._sourceProgressByIdx.concat(),
 			},
@@ -414,20 +422,19 @@ var SequenceRenderer = PlayableRenderer.extend({
 				amount: this.sources.length,
 				available: this.sources.length,
 			},
-			color: this.model.attr("color"),
-			// backgroundColor: this.model.attr("background-color"),
-			labelFn: this._progressLabelFn.bind(this)
+			labelFn: (function() {
+				if (this.playbackRequested === false) return Globals.PAUSE_CHAR;
+				return (this.sources.selectedIndex + 1) + "/" + this.sources.length;
+			}).bind(this)
 		});
 		// this.el.querySelector(".top-bar")
 		//		.appendChild(this.progressMeter.render().el);
 
-		// this._setPlayToggleSymbol("play-symbol");
-		// this._renderPlaybackState();
-	},
-
-	_progressLabelFn: function() {
-		if (this.playbackRequested === false) return Globals.PAUSE_CHAR;
-		return (this.sources.selectedIndex + 1) + "/" + this.sources.length;
+		// play-toggle-symbol
+		// ---------------------------------
+		var opts = this._playToggleSymbol || {};
+		opts.el = this.el.querySelector(".play-toggle")
+		this._playToggleSymbol = new PlayToggleSymbol(opts);
 	},
 
 	_preloadAllItems: function(view) {
@@ -582,9 +589,12 @@ var SequenceRenderer = PlayableRenderer.extend({
 		this.content.classList.toggle("playback-error", item.has("error"));
 
 		currView = this.itemViews.findByModel(item);
-		if (!item.has("error") && currView !== null) {
-			this.updateOverlay(currView.el, this.playToggle);
-		}
+		// if (!item.has("error") && currView !== null) {
+		// 	this._playToggleSymbol.setImageSource(currView.el);
+		// 	// this.updateOverlay(currView.el, this.playToggle);
+		// } else {
+		// 	this._playToggleSymbol.setImageSource(null);
+		// }
 
 		// init next renderer now to have smoother transitions
 		this._getItemRenderer(this.sources.followingOrFirst());
@@ -649,7 +659,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 			// this._renderPlaybackState();
 			// this.content.classList.add("waiting");
 			/* TODO: add ga event 'media-waiting' */
-			// window.ga("send", "event", "sequence-renderer", "waiting", this.model.get("text"));
+			// window.ga("send", "event", "sequence-item", "waiting", this.model.get("text"));
 
 			this.listenToOnce(nextSource, "change:prefetched change:error", function(model) {
 				// this.stopListening(nextSource, "change:prefetched change:error");
@@ -658,7 +668,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 				// this._renderPlaybackState();
 				// this.content.classList.add("waiting");
 				/* TODO: add ga event 'media-playing' */
-				// window.ga("send", "event", "sequence-renderer", "playing", this.model.get("text"));
+				// window.ga("send", "event", "sequence-item", "playing", this.model.get("text"));
 
 				_whenImageLoads(nextView.el)
 					.then(showNextView, showNextView);

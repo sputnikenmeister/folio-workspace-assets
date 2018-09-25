@@ -79,5 +79,19 @@ module.exports = BaseModel.extend({
 
 	toString: function() {
 		return this.get("domid");
+	},
+
+	getDistanceToSelected: function() {
+		if (this.collection && this.collection.selectedIndex > 0) {
+			return this.collection.indexOf(this) - this.collection.selectedIndex;
+		}
+		return -1;
+	},
+
+	getIndex: function() {
+		if (this.collection) {
+			return this.collection.indexOf(this);
+		}
+		return -1;
 	}
 });

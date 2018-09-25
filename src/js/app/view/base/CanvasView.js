@@ -72,11 +72,13 @@ var CanvasView = View.extend({
 		maxValues: {
 			value: 1
 		},
+		paused: false,
+		useOpaque: false,
 	},
 
 	/* --------------------------- *
-	/* children/layout
-	/* --------------------------- */
+	 * children/layout
+	 * --------------------------- */
 
 	/** @override */
 	initialize: function(options) {
@@ -86,9 +88,9 @@ var CanvasView = View.extend({
 		options.maxValues = _.defaults(options.maxValues || {}, this.defaults.maxValues);
 
 		this._interpolator = new Interpolator(options.values, options.maxValues);
-		this._interpolator.paused = options.paused || false;
+		this._interpolator.paused = options.paused;
 
-		this._useOpaque = options.useOpaque || true;
+		this._useOpaque = options.useOpaque;
 		this._options = _.pick(options, "color", "backgroundColor");
 
 		// opaque background
@@ -233,7 +235,18 @@ var CanvasView = View.extend({
 		};
 	},
 
-	_clearCanvas: function(x, y, w, h) {
+	_clearCanvas: function() {
+		if (arguments.length == 4) {
+			this._clearCanvasRect.apply(this, arguments);
+		} else {
+			this._ctx.save();
+			this._ctx.setTransform(1, 0, 0, 1, 0, 0);
+			this._clearCanvasRect(0, 0, this.el.width, this.el.height);
+			this._ctx.restore();
+		}
+	},
+
+	_clearCanvasRect: function(x, y, w, h) {
 		this._ctx.clearRect(x, y, w, h);
 		if (this._useOpaque) {
 			this._ctx.save();
@@ -248,8 +261,8 @@ var CanvasView = View.extend({
 	},
 
 	/* --------------------------- *
-	/* render
-	/* --------------------------- */
+	 * render
+	 * --------------------------- */
 
 	/** @override */
 	render: function() {
