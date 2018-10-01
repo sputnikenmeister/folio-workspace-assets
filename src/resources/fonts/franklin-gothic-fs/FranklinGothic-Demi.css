@@ -23,16 +23,17 @@
  */
 
 @font-face {
-    /* font-family: 'franklin_gothic_fsdemi'; */
-    font-family: 'Franklin Gothic FS';
+    font-family: 'franklin_gothic_fsdemi';
+    /* font-family: 'Franklin Gothic FS'; */
     src: url('FranklinGothic-Demi-webfont.eot');
     src: url('FranklinGothic-Demi-webfont.eot?#iefix') format('embedded-opentype'),
          url('FranklinGothic-Demi-webfont.woff2') format('woff2'),
          url('FranklinGothic-Demi-webfont.woff') format('woff'),
          url('FranklinGothic-Demi-webfont.ttf') format('truetype'),
          url('FranklinGothic-Demi-webfont.svg#franklin_gothic_fsdemi') format('svg');
-    font-weight: bold;
-	/* font-weight: 600; */
+		font-weight: 600;
     font-style: normal;
+		/* font-weight: bold; */
+    /* font-weight: normal; */
 
 }

@@ -288,27 +288,29 @@ $crimsom: rgba(220, 20, 60, 1);
 // debug-state
 // -----------------------------------
 
-%debug-classes-left::after,
-%debug-classes-right::after {
-@extend %debug-label-list;
-	content: attr(class);
+%debug-attrs-left::after,
+%debug-attrs-right::after {
+	@extend %debug-label-list;
 	color: white;
 	background-color: rgba(royalblue, 0.75);
 	position: absolute;
 	z-index: 999;
 	bottom: 0;
 }
-%debug-classes-left::after {
+%debug-attrs-left::after {
 	text-align: left;
 	left: 0;
 }
-%debug-classes-right::after {
+%debug-attrs-right::after {
 	text-align: right;
 	right: 0;
 }
 
 %debug-view-cid::after {
-	content: attr(data-cid) " " attr(class);
+	content: attr(data-cid) " " attr(data-mcid) " " attr(class);
+}
+%debug-attrs-class::after {
+	content: attr(class);
 }
 
 .debug-state {
@@ -322,21 +324,24 @@ $crimsom: rgba(220, 20, 60, 1);
 	}
 
 	.carousel {
-		@extend %debug-classes-right;
+		@extend %debug-attrs-right;
+		@extend %debug-view-cid;
 	}
 
 	.media-item {
 		@include debug_outline(1px, dashed, royalblue, -1px);
-		@extend %debug-classes-right;
+		@extend %debug-attrs-right;
 		@extend %debug-view-cid;
 		.content {
-			@extend %debug-classes-right;
+			@extend %debug-attrs-right;
+			@extend %debug-attrs-class;
 		}
 	}
 	.selected + .media-item {
-		@extend %debug-classes-left;
+		@extend %debug-attrs-left;
+		@extend %debug-view-cid;
 		.content {
-			@extend %debug-classes-left;
+			@extend %debug-attrs-class;
 		}
 	}
 }

@@ -2,54 +2,51 @@
  * @module app/view/ContentView
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 /** @type {module:utils/TransformHelper} */
-var TransformHelper = require("utils/TransformHelper");
+const TransformHelper = require("utils/TransformHelper");
 // /** @type {module:app/view/base/TouchManager} */
 // var TouchManager = require("app/view/base/TouchManager");
 
 /** @type {module:app/control/Controller} */
-var controller = require("app/control/Controller");
+const controller = require("app/control/Controller");
 /** @type {module:app/model/collection/BundleCollection} */
-var bundles = require("app/model/collection/BundleCollection");
+const bundles = require("app/model/collection/BundleCollection");
 /** @type {module:app/model/collection/ArticleCollection} */
-var articles = require("app/model/collection/ArticleCollection");
+const articles = require("app/model/collection/ArticleCollection");
 
 // /** @type {module:app/model/collection/BundleItem} */
 // var BundleItem = require("app/model/item/BundleItem");
 
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 /** @type {module:app/view/component/ArticleView} */
-var ArticleView = require("app/view/component/ArticleView");
+const ArticleView = require("app/view/component/ArticleView");
 /** @type {module:app/view/component/CollectionStack} */
-var CollectionStack = require("app/view/component/CollectionStack");
+const CollectionStack = require("app/view/component/CollectionStack");
 /** @type {module:app/view/component/CollectionStack} */
-var SelectableListView = require("app/view/component/SelectableListView");
+const SelectableListView = require("app/view/component/SelectableListView");
 /** @type {module:app/view/render/DotNavigationRenderer} */
-var DotNavigationRenderer = require("app/view/render/DotNavigationRenderer");
+const DotNavigationRenderer = require("app/view/render/DotNavigationRenderer");
 /** @type {module:app/view/component/Carousel} */
-var Carousel = require("app/view/component/Carousel");
+const Carousel = require("app/view/component/Carousel");
 
 /** @type {module:app/view/render/CarouselRenderer} */
-var CarouselRenderer = require("app/view/render/CarouselRenderer");
+const CarouselRenderer = require("app/view/render/CarouselRenderer");
 /** @type {module:app/view/render/ImageRenderer} */
-var ImageRenderer = require("app/view/render/ImageRenderer");
+const ImageRenderer = require("app/view/render/ImageRenderer");
 /** @type {module:app/view/render/VideoRenderer} */
-var VideoRenderer = require("app/view/render/VideoRenderer");
+const VideoRenderer = require("app/view/render/VideoRenderer");
 /** @type {module:app/view/render/SequenceRenderer} */
-var SequenceRenderer = require("app/view/render/SequenceRenderer");
+const SequenceRenderer = require("app/view/render/SequenceRenderer");
 // /** @type {module:app/view/component/CanvasProgressMeter} */
 // var ProgressMeter = require("app/view/component/CanvasProgressMeter");
 
 /** @type {Function} */
-var carouselEmptyTemplate = require("./template/Carousel.EmptyRenderer.Bundle.hbs");
+const carouselEmptyTemplate = require("./template/Carousel.EmptyRenderer.Bundle.hbs");
 /** @type {Function} */
-var mediaStackTemplate = require("./template/CollectionStack.Media.hbs");
+const mediaStackTemplate = require("./template/CollectionStack.Media.hbs");
 
 // var transitionEnd = View.prefixedEvent("transitionend");
 var transformProp = View.prefixedProperty("transform");
@@ -498,11 +495,14 @@ module.exports = View.extend({
 			collection: bundle.get("media"),
 			rendererFunction: rendererFunction,
 			requireSelection: false,
-			direction: Carousel.DIRECTION_HORIZONTAL,
+			// direction: Carousel.DIRECTION_HORIZONTAL,
 			touch: this.hpan,
 		});
 		controller.listenTo(view, {
-			"view:select:one": controller.selectMedia,
+			"view:select:one": (model) => {
+				console.log("%s:[view:select:one] %s", view.cid, model.cid);
+				controller.selectMedia(model);
+			},
 			"view:select:none": controller.deselectMedia,
 			// "view:removed": controller.stopListening
 		});

@@ -3,7 +3,7 @@
 /*/
 
 /** @type {module:utils/prefixes} */
-var prefixes = require("./prefixes");
+const prefixes = require("./prefixes");
 /** @type {Number} prefix count */
 var _prefixNum = prefixes.length;
 /** @type {Array} cached values */

@@ -1,5 +1,5 @@
 /** @type {module:app/view/base/ViewError} */
-var ViewError = require("app/view/base/ViewError");
+const ViewError = require("app/view/base/ViewError");
 
 // var logMessage = "%s::whenSelectionDistanceIs [%s]: %s";
 

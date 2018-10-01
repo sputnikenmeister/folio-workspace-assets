@@ -1,7 +1,7 @@
 /** @type {module:app/utils/prefixedProperty} */
 // var prefixedStyle = require("utils/prefixedStyleName");
 /** @type {module:utils/prefixedProperty} */
-var prefixedProperty = require("utils/prefixedProperty");
+const prefixedProperty = require("utils/prefixedProperty");
 
 var transitionStyles = ["transition-duration", "transition-delay", "transition-property"];
 var transitionProps = ["transition", "transitionDuration", "transitionDelay", "transitionProperty", "transitionTimingFunction"];

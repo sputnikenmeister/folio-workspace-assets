@@ -1,7 +1,5 @@
-/** @type {module:underscore} */
-var _ = require("underscore");
 /** @type {Function} */
-var transitionEnd = require("./transitionEnd");
+const transitionEnd = require("./transitionEnd");
 
 /**
  * get the prefixed transitionend event name

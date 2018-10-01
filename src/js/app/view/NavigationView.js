@@ -1,45 +1,40 @@
-/* global MutationObserver */
 /**
-/* @module app/view/NavigationView
-/*/
+ * @module app/view/NavigationView
+ */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-// /** @type {module:backbone} */
-// var Backbone = require("backbone");
 /** @type {module:hammerjs} */
-var Hammer = require("hammerjs");
+const Hammer = require("hammerjs");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 /** @type {module:utils/TransformHelper} */
-var TransformHelper = require("utils/TransformHelper");
+const TransformHelper = require("utils/TransformHelper");
 // /** @type {module:app/view/base/TouchManager} */
 // var TouchManager = require("app/view/base/TouchManager");
 
 /** @type {module:app/control/Controller} */
-var controller = require("app/control/Controller");
+const controller = require("app/control/Controller");
 /** @type {module:app/model/collection/TypeCollection} */
-var types = require("app/model/collection/TypeCollection");
+const types = require("app/model/collection/TypeCollection");
 /** @type {module:app/model/collection/KeywordCollection} */
-var keywords = require("app/model/collection/KeywordCollection");
+const keywords = require("app/model/collection/KeywordCollection");
 /** @type {module:app/model/collection/BundleCollection} */
-var bundles = require("app/model/collection/BundleCollection");
+const bundles = require("app/model/collection/BundleCollection");
 /** @type {module:app/model/collection/ArticleCollection} */
-var articles = require("app/model/collection/ArticleCollection");
+const articles = require("app/model/collection/ArticleCollection");
 
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 /** @type {module:app/view/component/FilterableListView} */
-var FilterableListView = require("app/view/component/FilterableListView");
+const FilterableListView = require("app/view/component/FilterableListView");
 /** @type {module:app/view/component/GroupingListView} */
-var GroupingListView = require("app/view/component/GroupingListView");
+const GroupingListView = require("app/view/component/GroupingListView");
 // /** @type {module:app/view/component/CollectionPager} */
 // var CollectionPager = require("app/view/component/CollectionPager");
 /** @type {module:app/view/component/GraphView} */
-var GraphView = require("app/view/component/GraphView");
+const GraphView = require("app/view/component/GraphView");
 /** @type {module:app/view/component/ArticleButton} */
-var ArticleButton = require("app/view/component/ArticleButton");
+const ArticleButton = require("app/view/component/ArticleButton");
 
 // /** @type {module:utils/prefixedProperty} */
 // var prefixedProperty = require("utils/prefixedProperty");
@@ -273,8 +268,7 @@ module.exports = View.extend({
 			.then(this.transforms.whenAllTransitionsEnd())
 			.then(whenCollapsedChangeDone)
 			.catch(function(reason) {
-				console.error("%s::renderFrame promise rejected", this.cid, reason);
-				return reason;
+				console.warn("%s::renderFrame promise rejected", this.cid);
 			}.bind(this));
 
 		/*

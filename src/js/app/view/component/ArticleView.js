@@ -3,7 +3,7 @@
 /*/
 
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 
 // /** @type {module:utils/net/toAbsoluteURL} */
 // var toAbsoluteURL = require("utils/net/toAbsoluteURL");

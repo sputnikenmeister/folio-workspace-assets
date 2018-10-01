@@ -1,7 +1,7 @@
 /** @type {Function} */
-var transitionEnd = require("./transitionEnd");
+const transitionEnd = require("./transitionEnd");
 /** @type {{module:jquery}.Deferred} */
-var Deferred = require("jquery").Deferred;
+const Deferred = require("jquery").Deferred;
 
 /**
  * get the prefixed transitionend event name

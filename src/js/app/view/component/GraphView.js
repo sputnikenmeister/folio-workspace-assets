@@ -2,26 +2,23 @@
  * @module app/view/component/GraphView
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-
 /** @type {Function} */
-var Color = require("color");
+const Color = require("color");
 
 /** @type {module:app/view/base/CanvasView} */
-var CanvasView = require("app/view/base/CanvasView");
+const CanvasView = require("app/view/base/CanvasView");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 
 /** @type {module:utils/canvas/calcArcHConnector} */
-var calcArcHConnector = require("utils/canvas/calcArcHConnector");
+const calcArcHConnector = require("utils/canvas/calcArcHConnector");
 
 /** @type {module:utils/canvas/CanvasHelper} */
-var CanvasHelper = require("utils/canvas/CanvasHelper");
+const CanvasHelper = require("utils/canvas/CanvasHelper");
 
 /** @type {module:utils/geom/inflateRect} */
-var inflateRect = require("utils/geom/inflateRect");
+const inflateRect = require("utils/geom/inflateRect");
 
 // /** @type {module:utils/dom/getAbsoluteClientRect} */
 // var getAbsoluteClientRect = require("utils/dom/getAbsoluteClientRect");
@@ -84,7 +81,7 @@ if (DEBUG) {
 		"grey", "silver"
 	]
 	.forEach(function(colorName) {
-		var rgbaValue = Color(colorName).alpha(0.75).rgbaString();
+		var rgbaValue = Color(colorName).alpha(0.75).string();
 
 		_dStyles[colorName] = _.defaults({
 			lineWidth: 0.75,
@@ -158,14 +155,11 @@ var GraphView = CanvasView.extend({
 			srcView: options.listA,
 			destView: options.listB,
 			s: _.defaults({
-				lineWidth: 1.25
+				lineWidth: 0.7, //1.25
 				// radiusIncrement: 0.25,
 			}, styleBase, paramsBase),
 			p: _.defaults({}, paramsBase),
-			strokeStyleFn: function(fg, bg, ln) {
-				return Color(ln).mix(bg, 0.9).hexString();
-				// return Color(fg).mix(bg, 0.9).hexString();
-			}
+			strokeStyleFn: (fg, bg, ln) => Color(ln).mix(bg, 0.1).hex()
 		};
 		this._b2a = {
 			srcView: options.listB,
@@ -177,9 +171,7 @@ var GraphView = CanvasView.extend({
 				// outlineWidth: 0,
 			}, styleBase, paramsBase),
 			p: _.defaults({}, paramsBase),
-			strokeStyleFn: function(fg, bg, ln) {
-				return Color(fg).mix(bg, 0.6).hexString();
-			}
+			strokeStyleFn: (fg, bg, ln) => Color(fg).mix(bg, 0.4).hex()
 		};
 
 		// this.listenTo(this._a2b.srcView.collection, "view:select:one view:select:none", function(item) {
@@ -239,8 +231,8 @@ var GraphView = CanvasView.extend({
 		var b, bgColor, lnColor;
 		if (this.model.has("bundle")) {
 			b = this.model.get("bundle");
-			lnColor = b.colors.lnColor.clone();
-			bgColor = b.colors.bgColor.clone();
+			lnColor = Color(b.colors.lnColor); //.clone();
+			bgColor = Color(b.colors.bgColor); //.clone();
 		} else {
 			bgColor = Color(Globals.DEFAULT_COLORS["background-color"]);
 			lnColor = Color(Globals.DEFAULT_COLORS["link-color"]);
@@ -479,9 +471,7 @@ var GraphView = CanvasView.extend({
 				p.qx = qx;
 				connectors[i] = p;
 			}
-			connectors.sort(function(a, b) {
-				return a.y2 - b.y2;
-			});
+			connectors.sort((a, b) => a.y2 - b.y2);
 			// ssEl's number of items above in the Y axis
 			var si = 0;
 			// Node first arc (r0) max radius (cx0)
@@ -544,12 +534,12 @@ var GraphView = CanvasView.extend({
 				// Find out longest node connection for setLineDash
 				// root.maxLength = Math.max(root.maxLength, p.length);
 			}
-			connectors.sort(function(a, b) {
-				return a.di - b.di; // Sort by index distance to from source point
-				// return a.r0 - b.r0; // Sort by first arc (centered)
-				// return (a.r1 + a.r2) - (b.r1 + b.r2);
-				// return a.tx2 - b.tx2;
-			});
+			connectors.sort((a, b) =>
+				a.di - b.di // Sort by index distance to from source point
+				// a.r0 - b.r0 // Sort by first arc (centered)
+				// (a.r1 + a.r2) - (b.r1 + b.r2)
+				// a.tx2 - b.tx2
+			);
 
 			connectors.si = si;
 			connectors.qx = qx;

@@ -3,10 +3,11 @@
  * @module app/view/base/View
  */
 
+/** @type {module:setimmediate} */
+require("setimmediate");
+
 /** @type {module:backbone} */
-var Backbone = require("backbone");
-/** @type {module:underscore} */
-var _ = require("underscore");
+const Backbone = require("backbone");
 
 /* -------------------------------
 /* MutationObserver
@@ -145,7 +146,7 @@ var modelQueue = (function(CallbackQueue) {
 })(require("app/view/base/CallbackQueue"));
 
 /** @type {module:app/view/base/PrefixedEvents} */
-var PrefixedEvents = require("app/view/base/PrefixedEvents");
+const PrefixedEvents = require("app/view/base/PrefixedEvents");
 
 var applyEventPrefixes = function(events) {
 	var selector, unprefixed;
@@ -564,6 +565,9 @@ var ViewProto = {
 		_viewsByCid[this.cid] = this;
 		this.el.cid = this.cid;
 		this.el.setAttribute("data-cid", this.cid);
+		if (this.model) {
+			this.el.setAttribute("data-mcid", this.model.cid);
+		}
 
 		return this;
 	},

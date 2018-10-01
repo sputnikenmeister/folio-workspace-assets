@@ -1,9 +1,9 @@
 /* global Promise */
 /** @type {module:app/view/base/ViewError} */
-var ViewError = require("app/view/base/ViewError");
+const ViewError = require("app/view/base/ViewError");
 
 /** @type {module:app/view/base/ViewError} */
-var whenViewIsAttached = require("app/view/promise/whenViewIsAttached");
+const whenViewIsAttached = require("app/view/promise/whenViewIsAttached");
 
 function whenScrollingEnds(view) {
 	return new Promise(function(resolve, reject) {

@@ -3,10 +3,10 @@
  */
 
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 
 /** @type {string} */
-var viewTemplate = require("./CollectionStack.hbs");
+const viewTemplate = require("./CollectionStack.hbs");
 
 /**
  * @constructor

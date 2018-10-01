@@ -1,20 +1,18 @@
 /**
-/* @module app/control/Controller
-/*/
+ * @module app/control/Controller
+ */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 /** @type {module:backbone} */
-var Backbone = require("backbone");
+const Backbone = require("backbone");
 
 // /** @type {module:app/model/collection/TypeCollection} */
 // var types = require("app/model/collection/TypeCollection");
 // /** @type {module:app/model/collection/KeywordCollection} */
 // var keywords = require("app/model/collection/KeywordCollection");
 /** @type {module:app/model/collection/ArticleCollection} */
-var articles = require("app/model/collection/ArticleCollection");
+const articles = require("app/model/collection/ArticleCollection");
 /** @type {module:app/model/collection/BundleCollection} */
-var bundles = require("app/model/collection/BundleCollection");
+const bundles = require("app/model/collection/BundleCollection");
 
 /* --------------------------- *
 /* Static private

@@ -1,35 +1,31 @@
 /**
-/* @module app/view/component/Carousel
-/*/
+ * @module app/view/component/Carousel
+ */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-// /** @type {module:backbone} */
-// var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
-var Container = require("backbone.babysitter");
+const Container = require("backbone.babysitter");
 
 /** @type {module:hammerjs} */
-var Hammer = require("hammerjs");
+const Hammer = require("hammerjs");
 /** @type {module:utils/touch/SmoothPanRecognizer} */
-var Pan = require("utils/touch/SmoothPanRecognizer");
+const Pan = require("utils/touch/SmoothPanRecognizer");
 /** @type {module:hammerjs.Tap} */
 var Tap = Hammer.Tap;
 
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 // /** @type {module:app/view/base/DeferredView} */
 // var View = require("app/view/base/DeferredView");
 
 /** @type {module:app/view/render/CarouselRenderer} */
-var CarouselRenderer = require("app/view/render/CarouselRenderer");
+const CarouselRenderer = require("app/view/render/CarouselRenderer");
 
 /** @type {module:utils/prefixedProperty} */
-var prefixedProperty = require("utils/prefixedProperty");
+const prefixedProperty = require("utils/prefixedProperty");
 /** @type {module:utils/prefixedStyleName} */
-var prefixedStyleName = require("utils/prefixedStyleName");
+const prefixedStyleName = require("utils/prefixedStyleName");
 
 var transformStyleName = prefixedStyleName("transform");
 var transformProperty = prefixedProperty("transform");
@@ -102,10 +98,10 @@ var dirToStr = function(dir) {
 	if (dir === Hammer.DIRECTION_RIGHT) return 'RIGHT';
 	if (dir === Hammer.DIRECTION_UP) return 'UP';
 	if (dir === Hammer.DIRECTION_DOWN) return 'DOWN';
-	if (dir === Hammer.DIRECTION_HORIZONTAL) return 'HORIZONTAL';
-	if (dir === Hammer.DIRECTION_VERTICAL) return 'VERTICAL';
+	if (dir === Hammer.DIRECTION_HORIZONTAL) return 'HOR'; //IZONTAL';
+	if (dir === Hammer.DIRECTION_VERTICAL) return 'VER'; //TICAL';
 	if (dir === Hammer.DIRECTION_ALL) return 'ALL';
-	return 'UNRECOGNIZED';
+	return 'UNREC'; //OGNIZED';
 }
 
 var isValidTouchManager = function(touch, direction) {
@@ -679,11 +675,14 @@ var CarouselProto = {
 		// NOTE: https://github.com/hammerjs/hammer.js/pull/1118
 		if (ev.srcEvent.type === 'pointercancel')
 			return;
-		// console.log("%s::_onPointerEvent", this.cid, ev.type,
-		// 	dirToStr(ev.direction),
-		// 	dirToStr(ev.offsetDirection),
-		// 	dirToStr(this.direction),
-		// 	dirToStr(ev.direction | this.direction));
+
+		console.log("%s:[%s (%s)]:_onPointerEvent offs:%s [%s|%s==%s] [%s]", this.cid, ev.type, ev.srcEvent.type,
+			dirToStr(ev.offsetDirection),
+			dirToStr(ev.direction),
+			dirToStr(this.direction),
+			dirToStr(ev.direction | this.direction),
+			(ev.srcEvent.defaultPrevented ? "prevented" : "-"));
+
 		// if (ev.direction & this.direction) {
 		switch (ev.type) {
 			// case View.CLICK_EVENT:
@@ -768,6 +767,15 @@ var CarouselProto = {
 		this._panCandidateView = (void 0);
 		this.el.classList.remove("panning");
 
+		console.log("%s:[%s]:_onPanFinal thres:(%s>%s) dir:(e:%s o:%s c:%s)=%s\n", this.cid, ev.type,
+			Math.abs(delta), this.selectThreshold,
+			dirToStr(ev.direction),
+			dirToStr(ev.offsetDirection),
+			dirToStr(this.direction),
+			dirToStr(ev.direction ^ ev.offsetDirection ^ this.direction),
+			scrollCandidate ? (scrollCandidate.cid + ":" + scrollCandidate.model.cid) : "none");
+		// console.log("%s::_onPanFinal", this.cid, ev);
+
 		this.scrollBy(0, Carousel.ANIMATED);
 		this.selectFromView();
 
@@ -799,7 +807,7 @@ var CarouselProto = {
 	},
 
 	_onClick: function(ev) {
-		console.log("%s::_onClick", this.cid, ev.type, ev);
+		console.log("%s::_onClick [%s]", this.cid, ev.type, ev.defaultPrevented ? "prevented" : "not-prevented");
 		this._onTap(ev);
 	},
 
@@ -822,8 +830,8 @@ var CarouselProto = {
 			} else if (this === targetView) {
 				var bounds, tapX, tapY;
 				bounds = this.el.getBoundingClientRect();
-				tapX = (ev.type == "tap" ? ev.center.x : ev.clientX) - bounds.left;
-				tapY = (ev.type == "tap" ? ev.center.y : ev.clientY) - bounds.top;
+				tapX = (ev.type === "tap" ? ev.center.x : ev.clientX) - bounds.left;
+				tapY = (ev.type === "tap" ? ev.center.y : ev.clientY) - bounds.top;
 				tapCandidate = this.getViewAtTapPos(
 					this.dirProp(tapX, tapY),
 					this.dirProp(tapY, tapX)
@@ -874,16 +882,14 @@ var CarouselProto = {
 	},
 
 	selectFromView: function() {
-		if (this._scrollCandidateView === (void 0)) {
-			return;
+		if (this._scrollCandidateView) {
+			this.triggerSelectionEvents(this._scrollCandidateView, true);
 		}
-		var view = this._scrollCandidateView;
-
-		this.triggerSelectionEvents(view, true);
-
-		// this._scrollCandidateView = (void 0);
-		// view.el.classList.remove("candidate");
-		// this.requestAnimationFrame(function() {});
+		// if (this._scrollCandidateView === (void 0)) {
+		// 	return;
+		// }
+		// var view = this._scrollCandidateView;
+		// this.triggerSelectionEvents(view, true);
 	},
 
 	adjustToSelection: function() {

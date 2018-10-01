@@ -1,11 +1,6 @@
 /**
  * @module app/view/component/GraphView
- */
-
-// /** @type {module:underscore} */
-// var _ = require("underscore");
-
-module.exports = function(rect, dx, dy) {
+ */module.exports = function(rect, dx, dy) {
 	if (arguments.length == 2) {
 		dy = dx;
 	}

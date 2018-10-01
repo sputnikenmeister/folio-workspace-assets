@@ -1,12 +1,8 @@
 /**
  * @module app/model/BaseItem
  * @requires module:backbone
- */
-
-// /** @type {module:underscore} */
-// var _ = require("underscore");
-/** @type {module:backbone} */
-var BaseModel = require("backbone").Model;
+ *//** @type {module:backbone} */
+const BaseModel = require("backbone").Model;
 // /** @type {module:app/model/BaseModel} */
 // var BaseModel = require("app/model/BaseModel");
 

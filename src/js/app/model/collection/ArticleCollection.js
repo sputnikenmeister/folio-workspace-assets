@@ -3,10 +3,10 @@
  */
 
 /** @type {module:app/model/SelectableCollection} */
-var SelectableCollection = require("app/model/SelectableCollection");
+const SelectableCollection = require("app/model/SelectableCollection");
 
 /** @type {module:app/model/item/ArticleItem} */
-var ArticleItem = require("app/model/item/ArticleItem");
+const ArticleItem = require("app/model/item/ArticleItem");
 
 /**
  * @constructor

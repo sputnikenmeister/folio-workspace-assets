@@ -3,7 +3,7 @@
 /*/
 
 /** @type {module:utils/prefixes} */
-var prefixes = require("./prefixes"); //.map(function(prefix) { return "-" + prefix + "-"; });
+const prefixes = require("./prefixes"); //.map(function(prefix) { return "-" + prefix + "-"; });
 /** @type {Number} prefix count */
 var _prefixNum = prefixes.length;
 /** @type {Array} cached values */

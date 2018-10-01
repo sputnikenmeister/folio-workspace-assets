@@ -3,19 +3,16 @@
  * @module app/view/component/progress/CanvasView
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 // /** @type {module:color} */
 // var Color = require("color");
-
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 /** @type {module:app/view/base/Interpolator} */
-var Interpolator = require("app/view/base/Interpolator");
+const Interpolator = require("app/view/base/Interpolator");
 /** @type {module:utils/css/getBoxEdgeStyles} */
-var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
+const getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
 var MIN_CANVAS_RATIO = 1; // /Firefox/.test(window.navigator.userAgent)? 2 : 1;
 

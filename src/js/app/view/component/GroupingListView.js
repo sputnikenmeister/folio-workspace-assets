@@ -2,20 +2,12 @@
  * @module app/view/component/GroupingListView
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-// /** @type {module:backbone} */
-// var Backbone = require("backbone");
-// /** @type {module:backbone.babysitter} */
-// var Container = require("backbone.babysitter");
-// /** @type {module:app/view/base/View} */
-// var View = require("app/view/base/View");
 /** @type {module:app/view/component/FilterableListView} */
-var FilterableListView = require("app/view/component/FilterableListView");
+const FilterableListView = require("app/view/component/FilterableListView");
 /** @type {module:app/view/component/ClickableRenderer} */
-var ClickableRenderer = require("app/view/render/ClickableRenderer");
+const ClickableRenderer = require("app/view/render/ClickableRenderer");
 /** @type {module:app/view/render/LabelRenderer} */
-var LabelRenderer = require("app/view/render/LabelRenderer");
+const LabelRenderer = require("app/view/render/LabelRenderer");
 // /** @type {module:utils/array/difference} */
 // var diff = require("utils/array/difference");
 

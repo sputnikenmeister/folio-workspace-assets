@@ -2,27 +2,23 @@
 /* @module app/view/component/FilterableListView
 /*/
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-// /** @type {module:backbone} */
-// var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
-var Container = require("backbone.babysitter");
+const Container = require("backbone.babysitter");
 
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 /** @type {module:app/view/component/ClickableRenderer} */
-var ClickableRenderer = require("app/view/render/ClickableRenderer");
+const ClickableRenderer = require("app/view/render/ClickableRenderer");
 /** @type {module:utils/prefixedProperty} */
-var prefixedProperty = require("utils/prefixedProperty");
+const prefixedProperty = require("utils/prefixedProperty");
 /** @type {module:utils/css/getBoxEdgeStyles} */
-var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
+const getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 /** @type {module:utils/array/difference} */
-var diff = require("utils/array/difference");
+const diff = require("utils/array/difference");
 /** @type {module:utils/promise/resolveAll} */
-var resolveAll = require("utils/promise/resolveAll");
+const resolveAll = require("utils/promise/resolveAll");
 /** @type {module:utils/promise/rejectAll} */
-var rejectAll = require("utils/promise/rejectAll");
+const rejectAll = require("utils/promise/rejectAll");
 
 // var resolveAll = function(pp, result) {
 // 	if (pp.length != 0) {
@@ -47,7 +43,7 @@ var rejectAll = require("utils/promise/rejectAll");
 // };
 
 /** @type {module:app/control/Globals.TRANSLATE_TEMPLATE} */
-var translateCssValue = require("app/control/Globals").TRANSLATE_TEMPLATE;
+const translateCssValue = require("app/control/Globals").TRANSLATE_TEMPLATE;
 
 /** @const */
 var transformProp = prefixedProperty("transform");

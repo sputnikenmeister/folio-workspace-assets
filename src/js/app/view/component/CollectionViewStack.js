@@ -2,21 +2,19 @@
  * @module app/view/component/CollectionViewStack
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 /** @type {module:backbone} */
-var Backbone = require("backbone");
+const Backbone = require("backbone");
 /** @type {module:hammerjs} */
-var Hammer = require("hammerjs");
+const Hammer = require("hammerjs");
 /** @type {module:backbone.babysitter} */
-var Container = require("backbone.babysitter");
+const Container = require("backbone.babysitter");
 
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 /** @type {module:app/view/base/DeferredView} */
-var DeferredView = require("app/view/base/DeferredView");
+const DeferredView = require("app/view/base/DeferredView");
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 
 /**
  * @constructor

@@ -1,5 +1,5 @@
 /** @type {module:utils/prefixedEvent} */
-var prefixedEvent = require("utils/prefixedEvent");
+const prefixedEvent = require("utils/prefixedEvent");
 
 var eventMap = {
 	"transitionend": prefixedEvent("transitionend"),

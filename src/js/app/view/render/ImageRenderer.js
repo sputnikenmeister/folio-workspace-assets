@@ -2,21 +2,11 @@
  * @module app/view/render/ImageRenderer
  */
 
-// /** @type {module:underscore} */
-// var _ = require("underscore");
-// /** @type {module:backbone} */
-// var Backbone = require("backbone");
-
-// /** @type {module:app/control/Globals} */
-// var Globals = require("app/control/Globals");
-// /** @type {module:app/model/item/MediaItem} */
-// var MediaItem = require("app/model/item/MediaItem");
-
 /** @type {module:app/view/MediaRenderer} */
-var MediaRenderer = require("./MediaRenderer");
+const MediaRenderer = require("./MediaRenderer");
 
 /** @type {Function} */
-var viewTemplate = require("./ImageRenderer.hbs");
+const viewTemplate = require("./ImageRenderer.hbs");
 
 /**
  * @constructor

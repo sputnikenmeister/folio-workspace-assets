@@ -1,6 +1,3 @@
-/** @type {module:underscore} */
-var _ = require("underscore");
-
 module.exports = function(bootstrap) {
 
 	/** @type {module:app/control/Globals} */

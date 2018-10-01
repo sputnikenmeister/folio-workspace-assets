@@ -2,7 +2,7 @@
  * @module utils/canvas/drawArcHConnector
  */
 
-var calcArcHConnector = require("./calcArcHConnector");
+const calcArcHConnector = require("./calcArcHConnector");
 
 module.exports = function(ctx, x1, y1, r1, x2, y2, r2, ro) {
 	var tx = calcArcHConnector(x1, y1, r1, x2, y2, r2, ro || 0);

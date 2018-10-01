@@ -2,14 +2,11 @@
  * @module app/view/render/CarouselRenderer
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-// /** @type {module:backbone} */
-// var Backbone = require("backbone");
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
+
 /** @type {module:underscore} */
-var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
+const getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
 // FIXME: this fixup should not be done here
 // /** @type {module:utils/net/toAbsoluteURL} */

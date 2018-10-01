@@ -5,7 +5,7 @@
 // /** @type {module:backbone} */
 // var Backbone = require("backbone");
 /** @type {module:app/model/item/SourceItem} */
-var BaseItem = require("app/model/BaseItem");
+const BaseItem = require("app/model/BaseItem");
 
 /**
  * @constructor

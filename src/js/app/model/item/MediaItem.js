@@ -4,23 +4,20 @@
  */
 
 // /** @type {module:backbone} */
-// var Backbone = require("backbone");
-/** @type {module:underscore} */
-var _ = require("underscore");
-/** @type {Function} */
-var Color = require("color");
+// var Backbone = require("backbone");/** @type {Function} */
+const Color = require("color");
 
 /** @type {module:app/model/item/SourceItem} */
-var BaseItem = require("app/model/BaseItem");
+const BaseItem = require("app/model/BaseItem");
 /** @type {module:app/model/item/SourceItem} */
-var SourceItem = require("app/model/item/SourceItem");
+const SourceItem = require("app/model/item/SourceItem");
 /** @type {module:app/model/SelectableCollection} */
-var SelectableCollection = require("app/model/SelectableCollection");
+const SelectableCollection = require("app/model/SelectableCollection");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 /** @type {module:app/utils/strings/stripTags} */
-var stripTags = require("utils/strings/stripTags");
+const stripTags = require("utils/strings/stripTags");
 // /** @type {module:app/model/parseSymAttrs} */
 // var parseSymAttrs = require("app/model/parseSymAttrs");
 

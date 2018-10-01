@@ -2,15 +2,8 @@
  * @module app/view/component/progress/CanvasProgressMeter
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-
-// /** @type {module:app/control/Globals} */
-// var Globals = require("app/control/Globals");
 /** @type {module:app/view/base/CanvasView} */
-var CanvasView = require("app/view/base/CanvasView");
-// /** @type {module:app/view/base/Interpolator} */
-// var Interpolator = require("app/view/base/Interpolator");
+const CanvasView = require("app/view/base/CanvasView");
 
 var PI2 = Math.PI * 2;
 /* NOTE: avoid negative rotations */
@@ -18,9 +11,9 @@ var BASE_ROTATION = 1 - 0.25; // of PI2 (-90 degrees)
 var GAP_ARC = PI2 / 48;
 
 /** @type {module:utils/ease/fn/easeInQuad} */
-var easeIn = require("utils/ease/fn/easeInQuad");
+const easeIn = require("utils/ease/fn/easeInQuad");
 /** @type {module:utils/ease/fn/easeOutQuad} */
-var easeOut = require("utils/ease/fn/easeOutQuad");
+const easeOut = require("utils/ease/fn/easeOutQuad");
 
 var LOOP_OFFSET = 1.833333;
 var STEP_MS = 400; // tween time base
@@ -459,11 +452,12 @@ module.exports = CanvasView.extend({
 		this._ctx.restore();
 	},
 
-	drawLabel: function(labelString) {
-		var labelWidth = this._ctx.measureText(labelString).width;
-		this._ctx.fillText(labelString,
-			labelWidth * -0.5,
-			this._baselineShift, labelWidth);
+	drawLabel: function(s) {
+		if (this._labelText !== s) {
+			this._labelText = s;
+			this._labelWidth = this._ctx.measureText(s).width;
+		}
+		this._ctx.fillText(s, this._labelWidth * -0.5, this._baselineShift, this._labelWidth);
 	},
 });
 

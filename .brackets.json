@@ -1,8 +1,0 @@
-{
-	"language": {
-    	"javascript": {
-			"linting.prefer": ["ESLint", "SassLint"],
-        	"linting.usePreferredOnly": true
-		}
-	}
-}

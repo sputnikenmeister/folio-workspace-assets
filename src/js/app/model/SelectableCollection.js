@@ -2,10 +2,8 @@
  * @module app/model/SelectableCollection
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 /** @type {module:backbone} */
-var Backbone = require("backbone");
+const Backbone = require("backbone");
 
 /**
  * @constructor

@@ -1,48 +1,46 @@
 /**
-/* @module app/view/AppView
-/*/
+ * @module app/view/AppView
+ */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 /** @type {module:backbone} */
-var Backbone = require("backbone");
+const Backbone = require("backbone");
 
 /** @type {module:app/utils/debug/traceArgs} */
-var stripTags = require("utils/strings/stripTags");
+const stripTags = require("utils/strings/stripTags");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 /** @type {module:app/control/Controller} */
-var controller = require("app/control/Controller");
+const controller = require("app/control/Controller");
 /** @type {module:app/model/AppState} */
-var AppState = require("app/model/AppState");
+const AppState = require("app/model/AppState");
 /** @type {module:app/model/collection/BundleCollection} */
-var bundles = require("app/model/collection/BundleCollection");
+const bundles = require("app/model/collection/BundleCollection");
 /** @type {module:app/model/collection/ArticleCollection} */
-var articles = require("app/model/collection/ArticleCollection");
+const articles = require("app/model/collection/ArticleCollection");
 
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 /** @type {module:app/view/NavigationView} */
-var NavigationView = require("app/view/NavigationView");
+const NavigationView = require("app/view/NavigationView");
 /** @type {module:app/view/ContentView} */
-var ContentView = require("app/view/ContentView");
+const ContentView = require("app/view/ContentView");
 
 
 /** @type {module:app/view/base/TouchManager} */
-var TouchManager = require("app/view/base/TouchManager");
-/** @type {module:hammerjs} */
-var Hammer = require("hammerjs");
+const TouchManager = require("app/view/base/TouchManager");
+// /** @type {module:hammerjs} */
+// const Hammer = require("hammerjs");
 // /** @type {module:utils/touch/SmoothPanRecognizer} */
-// var Pan = require("utils/touch/SmoothPanRecognizer");
+// const Pan = require("utils/touch/SmoothPanRecognizer");
 // /** @type {module:hammerjs.Tap} */
-// var Tap = Hammer.Tap;
+// const Tap = Hammer.Tap;
 
 // /** @type {module:utils/debug/traceElement} */
-// var traceElement = require("utils/debug/traceElement");
+// const traceElement = require("utils/debug/traceElement");
 //
-// var vpanLogFn = _.debounce(console.log.bind(console), 100, false);
-// var hpanLogFn = _.debounce(console.log.bind(console), 100, false);
+// const vpanLogFn = _.debounce(console.log.bind(console), 100, false);
+// const hpanLogFn = _.debounce(console.log.bind(console), 100, false);
 
 /**
  * @constructor
@@ -227,7 +225,7 @@ module.exports = View.extend({
 
 		/* TouchEvents fixups
 		 * ------------------------------- */
-		var traceTouchEvent = function(msg, traceObj) {
+		var traceTouchEvent = (msg, traceObj) => {
 			if (msg.hasOwnProperty("type")) {
 				msg = msg.type + " : " +
 					(msg.defaultPrevented ? "prevented" : "not prevented");
@@ -247,7 +245,7 @@ module.exports = View.extend({
 				this.navigationView.el.scrollHeight,
 				traceObj || ""
 			);
-		}.bind(this);
+		};
 
 
 		// var scrolltouch = new Hammer.Manager(this.el);
@@ -274,35 +272,39 @@ module.exports = View.extend({
 		// }.bind(this));
 
 		var touchOpts = { capture: false, passive: false };
-		var onTouchStart = function(ev) {
+		var onTouchStart = (ev) => {
 			this.el.addEventListener("touchmove", onTouchMove, touchOpts);
 			this.el.addEventListener("touchend", onTouchEnd, touchOpts);
 			this.el.addEventListener("touchcancel", onTouchEnd, touchOpts);
-		}.bind(this);
+		};
 
-		var onTouchMove = function(ev) {
-			if ((this.el.scrollHeight - 1) <= this.el.clientHeight) {
+		var onTouchMove = (ev) => {
+			if (!ev.defaultPrevented && (this.el.scrollHeight - 1) <= this.el.clientHeight) {
 				ev.preventDefault();
 			}
 			//traceTouchEvent(ev);
-		}.bind(this);
+		};
 
-		var onTouchEnd = function(ev) {
+		var onTouchEnd = (ev) => {
 			this.el.removeEventListener("touchmove", onTouchMove, touchOpts);
 			this.el.removeEventListener("touchend", onTouchEnd, touchOpts);
 			this.el.removeEventListener("touchcancel", onTouchEnd, touchOpts);
-		}.bind(this);
+		};
 
 		this.el.addEventListener("touchstart", onTouchStart);
 
-		var onMeasured = function(view) {
-			this.el.scrollTop = 1;
-			if ((this.el.scrollHeight - 1) <= this.el.clientHeight) {
-				this.el.style.overflowY = "hidden";
-			} else {
-				this.el.style.overflowY = "";
-			}
-			//traceTouchEvent("view:collapsed:measured");
+		var onMeasured = (view) => {
+			this.setImmediate(() => {
+				this.requestAnimationFrame(() => {
+					if ((this.el.scrollHeight - 1) <= this.el.clientHeight) {
+						this.el.style.overflowY = "hidden";
+					} else {
+						this.el.style.overflowY = "";
+					}
+					this.el.scrollTop = 1;
+					//traceTouchEvent("view:collapsed:measured");
+				});
+			});
 		};
 		this.listenTo(this.navigationView, "view:collapsed:measured", onMeasured);
 
@@ -311,7 +313,7 @@ module.exports = View.extend({
 		 * ------------------------------- */
 		if (window.ga && window.GA_ID) {
 			controller
-				.once("route", function() {
+				.once("route", () => {
 					window.ga("create", window.GA_ID, "auto");
 					// if localhost or dummy ID, disable analytics
 					if (/(?:(localhost|\.local))$/.test(location.hostname)
@@ -319,7 +321,7 @@ module.exports = View.extend({
 						window.ga("set", "sendHitTask", null);
 					}
 				})
-				.on("route", function(name) {
+				.on("route", (name) => {
 					var page = Backbone.history.getFragment();
 					// Add a slash if neccesary
 					page.replace(/^(?!\/)/, "/");

@@ -1,6 +1,5 @@
 /*global XMLHttpRequest */
 
-// var _ = require("underscore");
 // /** @type {module:underscore.string/lpad} */
 // var classify = require("underscore.string/classify");
 

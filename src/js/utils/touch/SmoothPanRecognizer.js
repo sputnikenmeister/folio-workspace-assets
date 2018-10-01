@@ -1,5 +1,5 @@
 /** @type {module:hammerjs} */
-var Hammer = require("hammerjs");
+const Hammer = require("hammerjs");
 
 // /**
 //  * get a usable string, used as event postfix

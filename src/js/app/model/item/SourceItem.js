@@ -8,7 +8,7 @@
 // /** @type {module:app/control/Globals} */
 // var Globals = require("app/control/Globals");
 /** @type {module:app/model/item/SourceItem} */
-var BaseItem = require("app/model/BaseItem");
+const BaseItem = require("app/model/BaseItem");
 
 /** @type {String} */
 var noCacheSuffix = "?" + Date.now();

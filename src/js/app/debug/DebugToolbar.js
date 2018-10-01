@@ -2,31 +2,28 @@
  * @module app/view/DebugToolbar
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-// /** @type {module:backbone} */
-// var Backbone = require("backbone");
 /** @type {module:cookies-js} */
-var Cookies = require("cookies-js");
-// /** @type {module:modernizr} */
-// var Modernizr = require("Modernizr");
+const Cookies = require("cookies-js");
+
+/** @type {module:modernizr} */
+const Modernizr = require("Modernizr");
 
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 // /** @type {module:app/control/Controller} */
 // var controller = require("app/control/Controller");
 
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 
 /** @type {Function} */
-var viewTemplate = require("./template/DebugToolbar.hbs");
+const viewTemplate = require("./template/DebugToolbar.hbs");
 
 /** @type {Function} */
-var gridTemplate = require("./template/DebugToolbar.SVGGrid.hbs");
+const gridTemplate = require("./template/DebugToolbar.SVGGrid.hbs");
 
 /** @type {Function} */
-var sizeTemplate = _.template("<%= w %> \u00D7 <%= h %>");
+const sizeTemplate = _.template("<%= w %> \u00D7 <%= h %>");
 
 // var appStateSymbols = { withBundle: "b", withMedia: "m", collapsed: "c"};
 // var appStateKeys = Object.keys(appStateSymbols);

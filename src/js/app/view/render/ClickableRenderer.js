@@ -1,10 +1,9 @@
 /**
  * @module app/view/render/ClickableRenderer
  */
-// /** @type {module:underscore} */
-// var _ = require("underscore");
+
 /** @type {module:app/view/render/LabelRenderer} */
-var LabelRenderer = require("app/view/render/LabelRenderer");
+const LabelRenderer = require("app/view/render/LabelRenderer");
 
 /**
  * @constructor

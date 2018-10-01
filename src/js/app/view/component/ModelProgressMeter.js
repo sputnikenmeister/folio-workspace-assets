@@ -2,12 +2,10 @@
  * @module app/view/component/progress/ModelProgressMeter
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 /** @type {module:utils/ease/fn/linear} */
-var linear = require("utils/ease/fn/linear");
+const linear = require("utils/ease/fn/linear");
 
 module.exports = View.extend({
 

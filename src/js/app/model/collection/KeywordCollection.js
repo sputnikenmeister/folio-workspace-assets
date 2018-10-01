@@ -4,10 +4,10 @@
  */
 
 /** @type {module:app/model/SelectableCollection} */
-var SelectableCollection = require("app/model/SelectableCollection");
+const SelectableCollection = require("app/model/SelectableCollection");
 
 /** @type {module:app/model/item/KeywordItem} */
-var KeywordItem = require("app/model/item/KeywordItem");
+const KeywordItem = require("app/model/item/KeywordItem");
 
 /**
  * @constructor

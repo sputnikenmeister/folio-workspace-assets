@@ -213,11 +213,7 @@ var FrameQueue = Object.create({
 	}
 });
 
-if (DEBUG) {
-	/** @type {module:underscore} */
-	var _ = require("underscore");
-
-	// console.info("Using app/view/base/FrameQueue");
+if (DEBUG) { // console.info("Using app/view/base/FrameQueue");
 
 	// 	// // log frame exec time
 	// 	// var _now = window.performance?

@@ -2,18 +2,16 @@
  * @module app/view/base/TouchManager
  */
 
-// /** @type {module:underscore} */
-// var _ = require("underscore");
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 /** @type {module:hammerjs} */
-var Hammer = require("hammerjs");
+const Hammer = require("hammerjs");
 // /** @type {module:hammerjs.Tap} */
-// var Tap = Hammer.Tap;
-// /** @type {module:utils/touch/SmoothPanRecognizer} */
-// var Pan = require("utils/touch/SmoothPanRecognizer");
+// const Tap = Hammer.Tap;
+/** @type {module:utils/touch/SmoothPanRecognizer} */
+const Pan = require("utils/touch/SmoothPanRecognizer");
 /** @type {module:hammerjs.Pan} */
-var Pan = Hammer.Pan;
+// const Pan = Hammer.Pan;
 
 /* -------------------------------
 /* Static private
@@ -24,14 +22,14 @@ var Pan = Hammer.Pan;
  * @return {Hammer.Manager}
  */
 function createInstance(el) {
-	var manager = new Hammer.Manager(el);
+	let manager = new Hammer.Manager(el);
 	// manager.set({ domevents: true });
 
-	// var tap = new Hammer.Tap({
+	// let tap = new Hammer.Tap({
 	// 	threshold: Globals.PAN_THRESHOLD - 1
 	// });
 	// manager.add(tap);
-	var hpan = new Pan({
+	let hpan = new Pan({
 		event: "hpan",
 		direction: Hammer.DIRECTION_HORIZONTAL,
 		threshold: Globals.PAN_THRESHOLD,
@@ -39,7 +37,7 @@ function createInstance(el) {
 	});
 	manager.add(hpan);
 
-	// var vpan = new Pan({
+	// let vpan = new Pan({
 	// 	event: "vpan",
 	// 	direction: Hammer.DIRECTION_VERTICAL,
 	// 	// threshold: Globals.PAN_THRESHOLD,
@@ -52,43 +50,65 @@ function createInstance(el) {
 }
 
 /* -------------------------------
-/* Global hammer handlers
-/* ------------------------------- */
+ * hammerjs fixup handlers
+ * ------------------------------- */
 
-var touchHandlers = {};
+/* eslint-disable no-unused-vars */
+const PANEND_THRES_MS = 300; // millisecs
+const PANEND_THRES_PX = 25; // pixels
+const UP_EVENT = window.hasOwnProperty("onpointerup") ? "pointerup" : "mouseup";
+
+let touchHandlers = {};
+let captureHandlers = {};
+let bubblingHandlers = {};
 
 /*https://gist.githubusercontent.com/jtangelder/361052976f044200ea17/raw/f54c2cef78d59da3f38286fad683471e1c976072/PreventGhostClick.js*/
-var lastTimeStamp = -1;
+var lastTimeStamp = NaN;
 var panSessionOpened = false;
 
-var saveTimeStamp = function(hev) {
+let saveTimeStamp = function(hev) {
 	panSessionOpened = !hev.isFinal;
 	if (hev.isFinal) {
 		lastTimeStamp = hev.srcEvent.timeStamp;
 	}
+	if (DEBUG) {
+		logPanEvent(hev);
+	}
 };
-touchHandlers["vpanstart vpanend vpancancel"] =
-	touchHandlers["hpanstart hpanend hpancancel"] = saveTimeStamp;
 
-var preventSrcEvent = function(hev) {
-	//console.log(hev.type, "preventDefault");
-	hev.srcEvent.preventDefault();
-};
-touchHandlers["vpanmove vpanend vpancancel"] =
-	touchHandlers["hpanmove hpanend hpancancel"] = preventSrcEvent;
-
-// var logHammerEvent = function(hev) {
-// 	var msgs = [];
-// 	var domev = hev.srcEvent;
-// 	msgs.push(panSessionOpened ? "panning" : "pan: " + lastTimeStamp.toFixed(3));
-// 	if (domev.defaultPrevented) msgs.push("prevented");
-// 	console.log("TouchManager %s [%s] [%o]",
-// 		domev.timeStamp.toFixed(3),
-// 		domev.type,
-// 		hev.type,
-// 		msgs.join(", ")
-// 	);
+// let preventSrcEvent = function(hev) {
+// 	//console.log(hev.type, "preventDefault");
+// 	hev.srcEvent.preventDefault();
 // };
+
+// let preventWhilePanning = function(domev) {
+// 	panSessionOpened && domev.preventDefault();
+// };
+
+// let preventWhileNotPanning = function(domev) {
+// 	!panSessionOpened && domev.preventDefault();
+// };
+
+let stopEventAfterPan = function(domev) {
+	if ((domev.timeStamp - lastTimeStamp) < PANEND_THRES_MS) {
+		// domev.defaultPrevented ||
+		domev.preventDefault();
+		domev.stopPropagation();
+	}
+	if (DEBUG) {
+		logEvent(domev, (domev.timeStamp - lastTimeStamp).toFixed(3));
+	}
+	lastTimeStamp = NaN;
+};
+
+touchHandlers["hpanstart hpanend hpancancel"] = saveTimeStamp;
+// touchHandlers["vpanstart vpanend vpancancel"] = saveTimeStamp;
+// touchHandlers["hpanmove hpanend hpancancel"] = preventSrcEvent;
+// touchHandlers["vpanmove vpanend vpancancel"] = preventSrcEvent;
+
+captureHandlers["click"] = stopEventAfterPan;
+// bubblingHandlers["click"] = stopEventAfterPan;
+
 // touchHandlers[[
 // 	"vpanstart", "vpanend", "vpancancel", "vpanmove",
 // 	"hpanstart", "hpanend", "hpancancel", "hpanmove"
@@ -98,44 +118,38 @@ touchHandlers["vpanmove vpanend vpancancel"] =
 /* DOM event handlers
 /* ------------------------------- */
 
-var captureHandlers = {};
-var bubblingHandlers = {};
-// var upEventName = window.hasOwnProperty("onpointerup") ? "pointerup" : "mouseup";
 
-/* eslint-disable-next-line */
-var logDOMEvent = function(domev, msg) {
-	var msgs = [];
-	if (domev.defaultPrevented) msgs.push("prevented");
-	if (msg) msgs.push(msg);
-	console.log("TouchManager %s [%o]",
-		domev.timeStamp.toFixed(3),
-		domev.type,
-		msgs.join(", ")
-	);
-};
-// var preventWhilePanning = function(domev) {
-// panSessionOpened && domev.preventDefault();
-// };
-// var preventWhileNotPanning = function(domev) {
-// 	!panSessionOpened && domev.preventDefault();
-// };
-// captureHandlers[upEventName] = preventWhilePanning;
-
-captureHandlers["click"] = function(domev) {
-	if (lastTimeStamp === domev.timeStamp) {
-		lastTimeStamp = -1;
-		domev.defaultPrevented || domev.preventDefault();
-	}
-};
-
+// captureHandlers[UP_EVENT] = preventWhilePanning;
 // captureHandlers["touchmove"] = captureHandlers["mousemove"] = logDOMEvent;
+
+if (DEBUG) {
+	var logPanEvent = function(hev) {
+		logEvent(hev.srcEvent, `[${hev.type}]`);
+	};
+	var logEvent = function(domev, msg) {
+		let msgs = [];
+		if (domev.defaultPrevented)
+			msgs.push("prevented");
+		if (msg)
+			msgs.push(msg);
+		msgs.push(`${panSessionOpened ? "panning" : "pan ended"} ${(domev.timeStamp - lastTimeStamp).toFixed(3)}`);
+		console.log("TouchManager %s [%s]",
+			domev.timeStamp.toFixed(3),
+			domev.type,
+			msgs.join(", ")
+		);
+	};
+}
+
+/* eslint-enable no-unsused-vars */
 
 // -------------------------------
 //
 // -------------------------------
 
 function addHandlers() {
-	var eventName, el = instance.element;
+	let eventName;
+	const el = instance.element;
 	for (eventName in touchHandlers)
 		if (touchHandlers.hasOwnProperty(eventName))
 			instance.on(eventName, touchHandlers[eventName]);
@@ -149,7 +163,8 @@ function addHandlers() {
 }
 
 function removeHandlers() {
-	var eventName, el = instance.element;
+	let eventName;
+	const el = instance.element;
 	for (eventName in captureHandlers)
 		if (captureHandlers.hasOwnProperty(eventName))
 			el.removeEventListener(eventName, captureHandlers[eventName], true);
@@ -160,13 +175,13 @@ function removeHandlers() {
 }
 
 /** @type {Hammer.Manager} */
-var instance = null;
+let instance = null;
 
 /* -------------------------------
 /* Static public
 /* ------------------------------- */
 
-var TouchManager = {
+let TouchManager = {
 	init: function(target) {
 		if (instance === null) {
 			instance = createInstance(target);

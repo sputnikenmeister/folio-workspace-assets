@@ -1,7 +1,5 @@
-/** @type {module:underscore} */
-var _ = require("underscore");
 /** @type {module:backbone} */
-var Events = require("backbone").Events;
+const Events = require("backbone").Events;
 
 
 // var defaultOptions = {

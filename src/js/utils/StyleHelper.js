@@ -1,16 +1,11 @@
 /**
  * Some static helper functions
  * @module app/helper/StyleHelper
- */
-
-/** @type {module:underscore} */
-var _ = require("underscore");
-
-// /** @type {module:utils/strings/camelToDashed} */
+ */ // /** @type {module:utils/strings/camelToDashed} */
 // var camelToDashed = require("./strings/camelToDashed");
 
 /** @type {module:utils/strings/dashedToCamel} */
-var camelCase = require("./strings/dashedToCamel");
+const camelCase = require("./strings/dashedToCamel");
 // var camelCase = jQuery.camelCase;
 
 var _rules = {};

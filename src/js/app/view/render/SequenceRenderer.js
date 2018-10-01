@@ -3,41 +3,37 @@
  */
 
 /* --------------------------- *
-/* Imports
-/* --------------------------- */
+ * Imports
+ * --------------------------- */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
-// /** @type {module:backbone} */
-// var Backbone = require("backbone");
 /** @type {module:backbone.babysitter} */
-var Container = require("backbone.babysitter");
+const Container = require("backbone.babysitter");
 
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 /** @type {module:app/view/render/PlayableRenderer} */
-var PlayableRenderer = require("app/view/render/PlayableRenderer");
+const PlayableRenderer = require("app/view/render/PlayableRenderer");
 // /** @type {module:app/model/SelectableCollection} */
 // var SelectableCollection = require("app/model/SelectableCollection");
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 
 /** @type {module:app/view/component/CanvasProgressMeter} */
-var ProgressMeter = require("app/view/component/CanvasProgressMeter");
-// /** @type {module:app/view/component/PlayToggleSymbol} */
-var PlayToggleSymbol = require("app/view/component/PlayToggleSymbol");
+const ProgressMeter = require("app/view/component/CanvasProgressMeter");
+/** @type {module:app/view/component/PlayToggleSymbol} */
+const PlayToggleSymbol = require("app/view/component/PlayToggleSymbol");
 
 /** @type {module:utils/Timer} */
-var Timer = require("utils/Timer");
+const Timer = require("utils/Timer");
 // /** @type {Function} */
 // var transitionEnd = require("utils/event/transitionEnd");
 // /** @type {module:utils/prefixedProperty} */
 // var prefixed = require("utils/prefixedProperty");
 
 /** @type {Function} */
-var _whenImageLoads = require("app/view/promise/_whenImageLoads");
+const _whenImageLoads = require("app/view/promise/_whenImageLoads");
 /** @type {module:app/view/promise/_loadImageAsObjectURL} */
-var _loadImageAsObjectURL = require("app/view/promise/_loadImageAsObjectURL");
+const _loadImageAsObjectURL = require("app/view/promise/_loadImageAsObjectURL");
 // /** @type {Function} */
 // var whenSelectionDistanceIs = require("app/view/promise/whenSelectionDistanceIs");
 // var whenSelectTransitionEnds = require("app/view/promise/whenSelectTransitionEnds");
@@ -50,23 +46,15 @@ var _loadImageAsObjectURL = require("app/view/promise/_loadImageAsObjectURL");
 // var stackBlurMono = require("utils/canvas/bitmap/stackBlurMono");
 // var getAverageRGBA = require("utils/canvas/bitmap/getAverageRGBA");
 
-var errorTemplate = require("../template/ErrorBlock.hbs");
+const errorTemplate = require("../template/ErrorBlock.hbs");
 
 var MIN_STEP_INTERVAL = 2 * Globals.TRANSITION_DURATION + Globals.TRANSITION_DELAY_INTERVAL;
 var DEFAULT_STEP_INTERVAL = 6 * Globals.TRANSITION_DURATION + Globals.TRANSITION_DELAY_INTERVAL;
 
 
 /* --------------------------- *
-/* Private classes
-/* --------------------------- */
-
-// /**
-// * @constructor
-// * @type {module:app/view/render/SequenceRenderer.SourceCollection}
-// */
-// var SourceCollection = SelectableCollection.extend({
-// 	model: Backbone.Model
-// });
+ * Private classes
+ * --------------------------- */
 
 /**
  * @constructor
@@ -89,7 +77,7 @@ var PrefetechedSourceRenderer = View.extend({
 	},
 
 	/** @override */
-	initialize: function(options) {
+	initialize: function(opts) {
 		!this.el.hasAttribute("alt") && this.el.setAttribute("alt", this.model.get("src"));
 		// this.el.setAttribute("longdesc", this.model.get("original"));
 
@@ -129,9 +117,10 @@ var PrefetechedSourceRenderer = View.extend({
 	_ready: false,
 
 	_setReady: function(ready) {
-		if (this._ready === ready) return;
-		this._ready = !!(ready); // make bool
-		this.trigger("renderer:ready", this);
+		if (this._ready !== ready) {
+			this._ready = !!(ready); // make bool
+			this.trigger("renderer:ready", this);
+		}
 	},
 
 	render: function() {
@@ -209,7 +198,7 @@ var SourceErrorRenderer = View.extend({
 	/** @type {boolean} */
 	ready: true,
 
-	initialize: function(options) {
+	initialize: function(opts) {
 		// var handleSelectionChange = function onSelectionChange () {
 		// 	this.el.classList.toggle("current", !!this.model.selected);
 		// };
@@ -248,34 +237,14 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/* initialize
 	/* --------------------------- */
 
-	initialize: function() {
+	initialize: function(opts) {
 		this.sources = this.model.get("sources");
 		PlayableRenderer.prototype.initialize.apply(this, arguments);
 	},
 
-	initializeAsync: function() {
-		return PlayableRenderer.prototype.initializeAsync.apply(this, arguments)
-			.then(
-				function(view) {
-					return view.whenAttached();
-				})
-			.then(function(view) {
-				view.initializePlayable();
-				view.updateOverlay(view.defaultImage, view.playToggle); //view.overlay);
-				view.listenToSelection();
-				return view;
-			});
-	},
-
-	whenInitialized: function(view) {
-		var retval = PlayableRenderer.prototype.whenInitialized.apply(this, arguments);
-		view._validatePlayback();
-		return retval;
-	},
-
 	/* --------------------------- *
-	/* children
-	/* --------------------------- */
+	 * children
+	 * --------------------------- */
 
 	/** @override */
 	createChildren: function() {
@@ -309,8 +278,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 	},
 
 	/* --------------------------- *
-	/* layout
-	/* --------------------------- */
+	 * layout/render
+	 * --------------------------- */
 
 	/** @override */
 	render: function() {
@@ -362,6 +331,10 @@ var SequenceRenderer = PlayableRenderer.extend({
 		return this;
 	},
 
+	/* --------------------------- *
+	 * initializeAsync
+	 * --------------------------- */
+
 	initializePlayable: function() {
 		// model
 		// ---------------------------------
@@ -390,17 +363,20 @@ var SequenceRenderer = PlayableRenderer.extend({
 			this.timer.stop();
 			this.stopListening(this.timer);
 		});
-		// trick the timer as in
-		// this.timer.start(this._sequenceInterval);
-		// this.timer.pause();
 
 		this.listenTo(this.timer, {
 			"start": this._onTimerStart,
 			"resume": this._onTimerResume,
 			"pause": this._onTimerPause,
 			"end": this._onTimerEnd,
-			// "stop": function () { // stop is only called on view remove},
+			// "stop": function () {}, // stop is only called on view remove
 		});
+
+		// play-toggle-symbol
+		// ---------------------------------
+		this._playToggleSymbol = new PlayToggleSymbol(_.extend({
+			el: this.el.querySelector(".play-toggle")
+		}, this._playToggleSymbol || {}));
 
 		// progress-meter model
 		// ---------------------------------
@@ -429,13 +405,31 @@ var SequenceRenderer = PlayableRenderer.extend({
 		});
 		// this.el.querySelector(".top-bar")
 		//		.appendChild(this.progressMeter.render().el);
-
-		// play-toggle-symbol
-		// ---------------------------------
-		var opts = this._playToggleSymbol || {};
-		opts.el = this.el.querySelector(".play-toggle")
-		this._playToggleSymbol = new PlayToggleSymbol(opts);
 	},
+
+	initializeAsync: function() {
+		return PlayableRenderer.prototype.initializeAsync.apply(this, arguments)
+			.then(
+				function(view) {
+					return view.whenAttached();
+				})
+			.then(function(view) {
+				view.initializePlayable();
+				// view.updateOverlay(view.defaultImage, view.playToggle); //view.overlay);
+				view.listenToSelection();
+				return view;
+			});
+	},
+
+	whenInitialized: function(view) {
+		var retval = PlayableRenderer.prototype.whenInitialized.apply(this, arguments);
+		view._validatePlayback();
+		return retval;
+	},
+
+	/* --------------------------- *
+	 * _preloadAllItems
+	 * --------------------------- */
 
 	_preloadAllItems: function(view) {
 		view.once("view:remove", function() {
@@ -502,7 +496,7 @@ var SequenceRenderer = PlayableRenderer.extend({
 	// _preloadAllItems2: function(view) {
 	// 	return view.sources.reduce(function(lastPromise, item, index, sources) {
 	// 		return lastPromise.then(function(view) {
-	// 			var itemView = view._getItemRenderer(item);
+	// 			var itemView = view._getItemView(item);
 	// 			return _whenImageLoads(itemView.el).then(function(url){
 	// 				view._updateItemProgress(1, index);
 	// 				return view;
@@ -515,8 +509,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 	// 	}, Promise.resolve(view));
 	// },
 
-	// _getItemRenderer: function(item) {}
-
 	_updateItemProgress: function(progress, index) {
 		this._sourceProgressByIdx[index] = progress;
 		if (this.progressMeter) {
@@ -525,8 +517,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 	},
 
 	/* ---------------------------
-	/* PlayableRenderer implementation
-	/* --------------------------- */
+	 * PlayableRenderer implementation
+	 * --------------------------- */
 
 	/** @override initial value */
 	_playbackRequested: true,
@@ -551,7 +543,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 				this.timer.start(this._sequenceInterval);
 			}
 		}
-		// this._renderPlaybackState();
 	},
 
 	/** @override */
@@ -561,7 +552,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 		if (this.timer.status === Timer.STARTED) {
 			this.timer.pause();
 		}
-		// this._renderPlaybackState();
 	},
 
 	// /** @override */
@@ -577,18 +567,17 @@ var SequenceRenderer = PlayableRenderer.extend({
 	/* --------------------------- */
 
 	_onTimerStart: function(duration) {
-		var item, currView;
+		var item;
 		if (this.sources.selectedIndex === -1) {
 			item = this.model.get("source");
 		} else {
 			item = this.sources.followingOrFirst();
 		}
 		this.sources.select(item);
-
 		this.progressMeter.valueTo("amount", this.sources.selectedIndex + 1, duration);
 		this.content.classList.toggle("playback-error", item.has("error"));
 
-		currView = this.itemViews.findByModel(item);
+		// var currView = this.itemViews.findByModel(item);
 		// if (!item.has("error") && currView !== null) {
 		// 	this._playToggleSymbol.setImageSource(currView.el);
 		// 	// this.updateOverlay(currView.el, this.playToggle);
@@ -596,8 +585,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 		// 	this._playToggleSymbol.setImageSource(null);
 		// }
 
-		// init next renderer now to have smoother transitions
-		this._getItemRenderer(this.sources.followingOrFirst());
+		// // init next renderer now to have smoother transitions
+		// this._getItemView(this.sources.followingOrFirst());
 	},
 
 	_onTimerResume: function(duration) {
@@ -605,19 +594,6 @@ var SequenceRenderer = PlayableRenderer.extend({
 	},
 
 	_onTimerPause: function(duration) {
-		// var meterDur = this.progressMeter._valueData["amount"]._duration - this.progressMeter._valueData["amount"]._elapsedTime;
-		// var meterVal = this.progressMeter.getRenderedValue("amount");
-		// var timerVal = (this._sequenceInterval - duration) / this._sequenceInterval + this.sources.selectedIndex;
-		//
-		// console.log("%s::_onTimerPause [interval:%sms]\n\tmeter:%s (%sms)\n\ttimer:%s (%sms)\n\tdiffs:%s (%sms)",
-		// 		this.cid, this._sequenceInterval,
-		// 		meterVal, meterDur,
-		// 		timerVal, duration,
-		// 		Math.abs(meterVal-timerVal), Math.abs(meterDur-duration));
-
-		// this.progressMeter.valueTo(timerVal);
-		// this.progressMeter.valueTo(meterVal);
-
 		this.progressMeter.valueTo("amount", this.progressMeter.getRenderedValue("amount"), 0);
 	},
 
@@ -625,68 +601,45 @@ var SequenceRenderer = PlayableRenderer.extend({
 	// _lastPlayedIndex: -1,
 
 	_onTimerEnd: function() {
-		var context = this;
-		var nextSource, nextView;
-
-		// this._lastPlayedIndex = this.sources.selectedIndex;
-		// next item
-		nextSource = this.sources.followingOrFirst();
-		// init next renderer
-		nextView = this._getItemRenderer(nextSource);
+		var nextItem, nextView;
 
 		var showNextView = function(result) {
-			// console.log("%s::showNextView %sms %s", context.cid, context._sequenceInterval, nextSource.cid)
-			context.setImmediate(function() {
-				// context.content.classList.remove("waiting");
-				if (!context._paused) {
-					// context.content.classList.toggle("playback-error", nextSource.has("error"));
-					// context.sources.select(nextSource); // NOTE: step increase done here
-					// view.updateOverlay(nextView.el, view.overlay);
-					context.timer.start(context._sequenceInterval);
+			// console.log("%s::showNextView %sms %s", context.cid, context._sequenceInterval, nextItem.cid)
+			this.setImmediate(function() {
+				if (!this.mediaPaused) {
+					this.timer.start(this._sequenceInterval);
 				}
 			});
 			return result;
-		};
+		}.bind(this);
 
-		if (nextSource.has("prefetched")) {
-			_whenImageLoads(nextView.el).then(showNextView, showNextView);
-		} else
-		if (nextSource.has("error")) {
+		// get next item init next renderer
+		nextItem = this.sources.followingOrFirst();
+		nextView = this._getItemView(nextItem);
+
+		if (nextItem.has("error")) {
 			showNextView();
+		} else if (nextItem.has("prefetched")) {
+			_whenImageLoads(nextView.el).then(showNextView, showNextView);
 		} else {
-			// console.log("%s:[waiting] %sms %s", context.cid, nextSource.cid);
-			this._toggleWaiting(true);
-			// this._renderPlaybackState();
-			// this.content.classList.add("waiting");
 			/* TODO: add ga event 'media-waiting' */
 			// window.ga("send", "event", "sequence-item", "waiting", this.model.get("text"));
-
-			this.listenToOnce(nextSource, "change:prefetched change:error", function(model) {
-				// this.stopListening(nextSource, "change:prefetched change:error");
-				// console.log("%s:[playing] %sms %s", context.cid, nextSource.cid);
+			// console.log("%s:[waiting] %sms %s", context.cid, nextItem.cid);
+			this._toggleWaiting(true);
+			this.listenToOnce(nextItem, "change:prefetched change:error", function(model) {
+				// console.log("%s:[playing] %sms %s", context.cid, nextItem.cid);
 				this._toggleWaiting(false);
-				// this._renderPlaybackState();
-				// this.content.classList.add("waiting");
-				/* TODO: add ga event 'media-playing' */
-				// window.ga("send", "event", "sequence-item", "playing", this.model.get("text"));
-
-				_whenImageLoads(nextView.el)
-					.then(showNextView, showNextView);
-
-				// context.content.classList.remove("waiting");
-				// nextView = context._getItemRenderer(nextSource).el;
+				_whenImageLoads(nextView.el).then(showNextView, showNextView);
 			});
 		}
 	},
 
-	_getItemRenderer: function(item) {
+	_getItemView: function(item) {
 		var view = this.itemViews.findByModel(item);
 		if (!view) {
-			var renderer = item.has("error") ? SourceErrorRenderer : SequenceStepRenderer;
-			view = new renderer({
+			view = new(item.has("error") ? SourceErrorRenderer : SequenceStepRenderer)({
 				model: item
 			});
-			// view = new SequenceStepRenderer({ model: item });
 			this.itemViews.add(view);
 			this.sequence.appendChild(view.render().el);
 		}
@@ -706,8 +659,8 @@ var SequenceRenderer = PlayableRenderer.extend({
 	// 	var fgColor = new Color(this.model.attr("color"));
 	// 	var bgColor = new Color(this.model.attr("background-color"));
 	// 	var isFgDark = fgColor.luminosity() < bgColor.luminosity();
-	// 	opts.x00 = isFgDark? fgColor.clone().lighten(0.33) : bgColor.clone().darken(0.33);
-	// 	opts.xFF = isFgDark? bgColor.clone().lighten(0.33) : fgColor.clone().darken(0.33);
+	// 	opts.x00 = isFgDark? Color(fgColor).lighten(0.33) : Color(bgColor).darken(0.33);
+	// 	opts.xFF = isFgDark? Color(bgColor).lighten(0.33) : Color(fgColor).darken(0.33);
 	//
 	// 	stackBlurMono(imageData, opts);
 	// 	duotone(imageData, opts);
@@ -717,17 +670,15 @@ var SequenceRenderer = PlayableRenderer.extend({
 	// 	return canvas.toDataURL();
 	// },
 });
-if (DEBUG) {
 
+if (DEBUG) {
 	SequenceRenderer = (function(SequenceRenderer) {
 		if (!SequenceRenderer.LOG_TO_SCREEN) return SequenceRenderer;
 
-		/** @type {module:underscore.strings/lpad} */
-		var lpad = require("underscore.string/lpad");
-
 		// /** @type {module:underscore.strings/lpad} */
 		// var rpad = require("underscore.string/rpad");
-
+		/** @type {module:underscore.strings/lpad} */
+		var lpad = require("underscore.string/lpad");
 		/** @type {module:underscore.strings/capitalize} */
 		var caps = require("underscore.string/capitalize");
 

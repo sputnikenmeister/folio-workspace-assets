@@ -2,18 +2,15 @@
  * @module app/view/component/SelectableListView
  */
 
-// /** @type {module:underscore} */
-// var _ = require("underscore");
-// /** @type {module:backbone} */
-// var Backbone = require("backbone");
-/** @type {module:backbone.babysitter} */
-var Container = require("backbone.babysitter");
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
+
+/** @type {module:backbone.babysitter} */
+const Container = require("backbone.babysitter");
 /** @type {module:app/view/component/DefaultSelectableRenderer} */
-var DefaultSelectableRenderer = require("app/view/render/DefaultSelectableRenderer");
+const DefaultSelectableRenderer = require("app/view/render/DefaultSelectableRenderer");
 /** @type {module:app/view/component/ClickableRenderer} */
-var ClickableRenderer = require("app/view/render/ClickableRenderer");
+const ClickableRenderer = require("app/view/render/ClickableRenderer");
 
 var SelectableListView = View.extend({
 

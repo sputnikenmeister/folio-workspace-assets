@@ -1,9 +1,9 @@
 // var Handlebars = require("handlebars")["default"];
-var Handlebars = require("hbsfy/runtime");
+const Handlebars = require("hbsfy/runtime");
 /** @type {Function} */
-var Color = require("color");
+const Color = require("color");
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 
 // (function() {
 var helpers = {
@@ -66,22 +66,22 @@ var helpers = {
 	/* Color helpers
 	/*/
 	mix: function(colora, colorb, amount) {
-		return new Color(colora).mix(new Color(colorb), amount).rgbString();
+		return new Color(colora).mix(new Color(colorb), amount).rgb().string();
 	},
 	lighten: function(color, amount) {
-		return new Color(color).lighten(amount).rgbString();
+		return new Color(color).lighten(amount).rgb().string();
 	},
 	darken: function(color, amount) {
-		return new Color(color).darken(amount).rgbString();
+		return new Color(color).darken(amount).rgb().string();
 	},
 	// colorFormat: function(color, fmt) {
 	// 	switch (fmt) {
 	// 		case "rgb":
-	// 			return new Color(color).rgbString();
+	// 			return new Color(color).rgb().string();
 	// 		case "hsl":
-	// 			return new Color(color).hslString();
+	// 			return new Color(color).hsl().string();
 	// 		case "hex": default:
-	// 			return new Color(color).hexString();
+	// 			return new Color(color).hex().string();
 	// 	}
 	// },
 };

@@ -3,10 +3,8 @@
  * @requires module:backbone
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 /** @type {module:app/model/BaseModel} */
-var BaseModel = require("app/model/BaseModel");
+const BaseModel = require("app/model/BaseModel");
 
 // /** @type {module:app/control/Globals} */
 // var Globals = require("app/control/Globals");

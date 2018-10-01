@@ -70,7 +70,7 @@
 	}
 
 	// - - - - - - - - - - - - - - - - -
-	// .play-toggle
+	// .play-toggle-hitarea
 	// - - - - - - - - - - - - - - - - -
 	.play-toggle-hitarea {
 		cursor: pointer;
@@ -129,39 +129,44 @@
 	// - - - - - - - - - - - - - - - - -
 	// opacity animation
 	// - - - - - - - - - - - - - - - - -
-	// .play-toggle { opacity: 0; };
-	// :not(.started) .play-toggle { opacity: 1; }
-	.play-toggle {
+	// %overlay_toggle { opacity: 0; };
+	// :not(.started) %overlay_toggle { opacity: 1; }
+	%overlay_toggle {
 		opacity: 1;
 	}
 	.started {
-		.play-toggle {
+		%overlay_toggle {
 			opacity: 0;
 		}
 		/* using progress*/
-		&.playing.waiting .play-toggle {
+		&.playing.waiting %overlay_toggle {
 			opacity: 1;
 			// transition: opacity 1s step-end;//tx(opacity, $ease: step-end);
 		}
-		&.paused.ended .play-toggle {
+		&.paused.ended %overlay_toggle {
 			opacity: 1;
 		}
 		@at-root :not(.scrolling) & {
-			&.paused .play-toggle {
+			&.paused %overlay_toggle {
 				animation: #{$duration * 2.0} $ease flashEven;
 			}
-			&.paused.ended .play-toggle {
+			&.paused.ended %overlay_toggle {
 				animation: none;
 			}
-			// &.playing .play-toggle {
+			// &.playing %overlay_toggle {
 			// 	animation: $duration * 2 $ease flashOdd;
 			// }
-			&.playing:not(.waiting) .play-toggle {
+			&.playing:not(.waiting) %overlay_toggle {
 				animation: #{$duration * 1.5} $ease flashOdd;
 			}
-			// &.playing.waiting .play-toggle {
+			// &.playing.waiting %overlay_toggle {
 			// 	animation: $duration * 2 $ease flashEven;
 			// }
+		}
+	}
+	.overlay {
+		.fullscreen-toggle, .play-toggle {
+			@extend %overlay_toggle;
 		}
 	}
 
@@ -334,19 +339,30 @@
 		}
 	}
 	.overlay .fullscreen-toggle {
-		font-size: 21px;
+		font-size: 18px;
 		// background-color: rgba(0,0,0,0.5);
-		margin: 1rem;
-		padding: 0.25em;
-		border-radius: 50%;
+		// margin: 1rem;
+		// padding: 0.25em;
+		// border-radius: 50%;
+		margin: 0.5em;
+		padding: 0.125em;
+		border-radius: 0.125em;
 
 		svg.fullscreen-symbol {
 			stroke-width: 2px;
-			padding: 1rem;
+			padding: 0.35em;
 		}
-		opacity: 0;
+		// opacity: 0;
+		&:hover {
+			opacity: 1;
+			// background-color: hsla(0,0,100%,0.25);
+			// @at-root .color-dark & {
+				background-color: hsla(0,0,0%,0.25);
+			// }
+		}
 	}
 
+	/*
 	.overlay:hover  .fullscreen-toggle {
 		// opacity: 1;
 		animation: #{$duration * 2.0} $ease flashEven;
@@ -365,6 +381,7 @@
 			// }
 		}
 	}
+	*/
 
 	// .progress-meter
 	// - - - - - - - - - - - - - - - - -

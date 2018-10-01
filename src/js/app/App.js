@@ -11,8 +11,9 @@ console.info("Portfolio App started");
 // 	});
 // }
 
-// function applyPolyfills() {
-require("Modernizr");
+if (DEBUG) {
+	require("Modernizr");
+}
 require("setimmediate");
 require("es6-promise/auto");
 require("classlist-polyfill");
@@ -21,16 +22,12 @@ require("matches-polyfill");
 require("fullscreen-polyfill");
 require("math-sign-polyfill");
 // require("path2d-polyfill");
-// if (!window.Modernizr.mutationobserver) {
-// 	require("mutation-observer");
-// }
+require("mutation-observer");
 
-// function applyRequires() {
 require("backbone").$ = require("backbone.native");
 require("backbone.babysitter");
 require("Backbone.Mutators");
 require("hammerjs");
-// }
 
 // document.addEventListener('DOMContentLoaded', function(ev) {
 // 	console.log("%s:[event %s]", ev.target, ev.type);
@@ -54,37 +51,30 @@ window.addEventListener("load", function(ev) {
 	require("app/view/template/_helpers");
 
 	/** @type {module:app/view/helper/createColorStyleSheet} */
-	require("app/view/helper/createColorStyleSheet").call();
-
-	/** @type {module:underscore} */
-	var _ = require("underscore");
-
-	/** @type {module:app/view/AppView} */
+	require("app/view/helper/createColorStyleSheet").call(); /** @type {module:app/view/AppView} */
 	var AppView = require("app/view/AppView");
-	var startApp = AppView.getInstance.bind(AppView);
+	// var startApp = AppView.getInstance.bind(AppView);
 
 	/** @type {module:webfontloader} */
 	var WebFont = require("webfontloader");
 	var loadOpts = {
-		async: true,
+		async: false,
 		groupName: "",
 		classes: false,
+		loading: function() {
+			console.log("WebFont:%s:loading", this.groupName);
+		},
 		active: function() {
 			console.info("WebFont:%s:active", this.groupName);
-			// AppView.getInstance();
+		},
+		inactive: function() {
+			console.warn("WebFont:%s:inactive", this.groupName);
 		},
 		fontactive: function(familyName, variantFvd) {
 			console.info("WebFont:%s:fontactive '%s' (%s)", this.groupName, familyName, variantFvd);
 		},
-		inactive: function() {
-			console.warn("WebFont:%s:inactive", this.groupName);
-			// AppView.getInstance();
-		},
 		fontinactive: function(familyName, variantFvd) {
 			console.warn("WebFont:%s:fontinactive '%s' (%s)", this.groupName, familyName, variantFvd);
-		},
-		loading: function() {
-			console.log("WebFont:%s:loading", this.groupName);
 		},
 		// fontloading: function(familyName, variantDesc) {
 		// 	console.log("WebFont::fontloading", familyName, JSON.stringify(variantDesc, null, " "));
@@ -96,16 +86,16 @@ window.addEventListener("load", function(ev) {
 		groupName: "required",
 		custom: {
 			families: [
-				"Franklin Gothic FS:n4,n7",
-				// 		"Franklin Gothic FS:i4,i7"
+				"FranklinGothicFS:n4,n6",
+				// "FranklinGothicFS:i4,i6"
 				"FolioFigures:n4",
 			],
 			testStrings: {
 				"FolioFigures": "hms"
 			},
 		},
-		active: startApp,
-		inactive: startApp
+		active: () => AppView.getInstance(),
+		inactive: () => AppView.getInstance(),
 	}, loadOpts));
 
 	WebFont.load(_.defaults({}, loadOpts));

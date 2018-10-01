@@ -1,12 +1,7 @@
 /* -------------------------------
 /* Imports
-/* ------------------------------- */
-
-// /** @type {module:underscore} */
-// var _ = require("underscore");
-
-/** @type {module:utils/TransformItem} */
-var TransformItem = require("./TransformItem");
+/* ------------------------------- *//** @type {module:utils/TransformItem} */
+const TransformItem = require("./TransformItem");
 
 var idSeed = 0;
 var cidSeed = 100;

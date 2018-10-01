@@ -2,10 +2,8 @@
  * @module app/view/base/Interpolator
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 /** @type {module:utils/ease/fn/linear} */
-var linear = require("utils/ease/fn/linear");
+const linear = require("utils/ease/fn/linear");
 
 /**
  * @constructor

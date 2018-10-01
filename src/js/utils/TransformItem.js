@@ -1,16 +1,12 @@
 /* -------------------------------
  * Imports
  * ------------------------------- */
-
-/** @type {module:underscore} */
-var _ = require("underscore");
-
 /** @type {module:utils/prefixedProperty} */
-var prefixedProperty = require("utils/prefixedProperty");
+const prefixedProperty = require("utils/prefixedProperty");
 /** @type {module:utils/prefixedStyleName} */
-var prefixedStyleName = require("utils/prefixedStyleName");
+const prefixedStyleName = require("utils/prefixedStyleName");
 /** @type {module:utils/prefixedEvent} */
-var prefixedEvent = require("utils/prefixedEvent");
+const prefixedEvent = require("utils/prefixedEvent");
 /** @type {String} */
 var transitionEnd = prefixedEvent("transitionend");
 //var transitionEnd = require("utils/event/transitionEnd");

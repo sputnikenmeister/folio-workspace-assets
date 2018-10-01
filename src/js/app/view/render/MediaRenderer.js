@@ -3,19 +3,17 @@
  * @module app/view/render/MediaRenderer
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 /** @type {module:underscore.strings/lpad} */
-var lpad = require("underscore.string/lpad");
-// /** @type {module:utils/css/getBoxEdgeStyles} */
-// var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
+const lpad = require("underscore.string/lpad");
 
 /** @type {module:app/model/item/MediaItem} */
-var MediaItem = require("app/model/item/MediaItem");
+const MediaItem = require("app/model/item/MediaItem");
 /** @type {module:app/view/CarouselRenderer} */
-var CarouselRenderer = require("app/view/render/CarouselRenderer");
+const CarouselRenderer = require("app/view/render/CarouselRenderer");
 
 // var errorTemplate = require("../template/ErrorBlock.hbs");
+// /** @type {module:utils/css/getBoxEdgeStyles} */
+// var getBoxEdgeStyles = require("utils/css/getBoxEdgeStyles");
 
 var MediaRenderer = CarouselRenderer.extend({
 
@@ -260,12 +258,12 @@ if (DEBUG) {
 				var fgColor = new Color(this.model.attr("color"));
 				var bgColor = new Color(this.model.attr("background-color"));
 				this.__logColors = {
-					normal: fgColor.clone().mix(bgColor, 0.75).hslString(),
-					ignored: fgColor.clone().mix(bgColor, 0.25).hslString(),
+					normal: Color(fgColor).mix(bgColor, 0.75).hsl().string(),
+					ignored: Color(fgColor).mix(bgColor, 0.25).hsl().string(),
 					error: "brown",
 					abort: "orange"
 				};
-				this.__logFrameStyle = "1px dashed " + fgColor.clone().mix(bgColor, 0.5).hslString();
+				this.__logFrameStyle = "1px dashed " + Color(fgColor).mix(bgColor, 0.5).hsl().string();
 				this.__logStartTime = Date.now();
 				this.__rafId = -1;
 				this.__onFrame = this.__onFrame.bind(this);
@@ -290,8 +288,8 @@ if (DEBUG) {
 				// this.__logElement.style.touchAction = "pan-y";
 				this.__logHeaderEl = document.createElement("pre");
 				this.__logHeaderEl.className = "log-header color-bg";
-				// this.model.colors.fgColor.clone().mix(fgColor, 0.9).rgbString()
-				// this.model.colors.fgColor.clone().alpha
+				// Color(this.model.colors.fgColor).mix(fgColor, 0.9).rgb().string()
+				// Color(this.model.colors.fgColor).alpha
 				this.__logHeaderEl.textContent = this.__getHeaderText();
 				this.__logElement.appendChild(this.__logHeaderEl);
 				this.el.insertBefore(this.__logElement, this.el.firstElementChild);

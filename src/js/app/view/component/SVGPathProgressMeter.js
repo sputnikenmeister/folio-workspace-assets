@@ -2,16 +2,12 @@
  * @module app/view/component/progress/SVGPathProgressMeter
  */
 
-
-// /** @type {module:underscore} */
-// var _ = require("underscore");
-
 // /** @type {module:app/control/Globals} */
 // var Globals = require("app/control/Globals");
 /** @type {module:utils/svg/arcData} */
-var arcData = require("utils/svg/arcData");
+const arcData = require("utils/svg/arcData");
 /** @type {module:app/view/component/progress/ModelProgressMeter} */
-var ModelProgressMeter = require("app/view/component/progress/ModelProgressMeter");
+const ModelProgressMeter = require("app/view/component/progress/ModelProgressMeter");
 
 /**
  * @constructor

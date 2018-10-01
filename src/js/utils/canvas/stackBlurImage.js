@@ -1,7 +1,7 @@
-var stackBlurRGBA = require("./bitmap/stackBlurRGBA");
-var stackBlurRGB = require("./bitmap/stackBlurRGB");
-var stackBlurMono = require("./bitmap/stackBlurMono");
-var duotone = require("./bitmap/duotone");
+const stackBlurRGBA = require("./bitmap/stackBlurRGBA");
+const stackBlurRGB = require("./bitmap/stackBlurRGB");
+const stackBlurMono = require("./bitmap/stackBlurMono");
+const duotone = require("./bitmap/duotone");
 
 module.exports = function(src, canvas, width, height, opts) {
 	opts || (opts = {});

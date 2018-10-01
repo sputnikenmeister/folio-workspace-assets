@@ -2,34 +2,32 @@
  * @module app/view/component/PlayToggleSymbol
  */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 // /** @type {module:app/control/Globals} */
 // var Globals = require("app/control/Globals");
 /** @type {module:app/view/base/CanvasView} */
-var CanvasView = require("app/view/base/CanvasView");
+const CanvasView = require("app/view/base/CanvasView");
 
 /** @type {Function} */
-var Color = require("color");
+const Color = require("color");
 /** @type {module:utils/canvas/bitmap/stackBlurRGB} */
-var stackBlurRGB = require("utils/canvas/bitmap/stackBlurRGB");
+const stackBlurRGB = require("utils/canvas/bitmap/stackBlurRGB");
 /** @type {module:utils/canvas/bitmap/getAverageRGB} */
-var getAverageRGB = require("utils/canvas/bitmap/getAverageRGB");
+const getAverageRGB = require("utils/canvas/bitmap/getAverageRGB");
 /** @type {module:utils/canvas/bitmap/multiply} */
-var multiply = require("utils/canvas/bitmap/multiply");
+const multiply = require("utils/canvas/bitmap/multiply");
 /** @type {module:utils/canvas/bitmap/desaturate} */
-var desaturate = require("utils/canvas/bitmap/desaturate");
+const desaturate = require("utils/canvas/bitmap/desaturate");
 /** @type {module:utils/canvas/CanvasHelper} */
-var roundRect = require("utils/canvas/CanvasHelper").roundRect;
+const roundRect = require("utils/canvas/CanvasHelper").roundRect;
 
 /** @type {module:utils/ease/fn/easeInQuad} */
-var easeIn = require("utils/ease/fn/easeInQuad");
+const easeIn = require("utils/ease/fn/easeInQuad");
 /** @type {module:utils/ease/fn/easeOutQuad} */
-var easeOut = require("utils/ease/fn/easeOutQuad");
+const easeOut = require("utils/ease/fn/easeOutQuad");
 
 var PI2 = Math.PI * 2;
 var LOOP_OFFSET = 1.833333;
-var INTEP_MS = require("app/control/Globals").TRANSITION_DURATION;
+const INTEP_MS = require("app/control/Globals").TRANSITION_DURATION;
 var FILTER_REFRESH_THRESHOLD = 0.5; //seconds elapsed
 var FILTER_SCALE = 1.5;
 var FILTER_RADIUS = 30; //pixels

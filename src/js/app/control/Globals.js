@@ -1,8 +1,6 @@
 /**
-/* @module app/control/Globals
-/*/
-/** @type {module:underscore} */
-var _ = require("underscore");
+ * @module app/control/Globals
+ */
 
 module.exports = (function() {
 	// reusable vars
@@ -86,7 +84,7 @@ module.exports = (function() {
 	// hardcoded font data
 	// - - - - - - - - - - - - - - - - -
 	g.FONT_METRICS = {
-		"Franklin Gothic FS": {
+		"FranklinGothicFS": {
 			"unitsPerEm": 1000,
 			"ascent": 827,
 			"descent": -173

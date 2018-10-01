@@ -4,9 +4,7 @@
  */
 
 /** @type {module:backbone} */
-var Backbone = require("backbone");
-/** @type {module:underscore} */
-var _ = require("underscore");
+const Backbone = require("backbone");
 
 var BaseModelProto = {
 	// constructor: function() {

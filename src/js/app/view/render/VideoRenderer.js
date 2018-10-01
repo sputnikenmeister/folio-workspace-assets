@@ -9,21 +9,19 @@
  */
 
 /* --------------------------- *
-/* Imports
-/* --------------------------- */
+ * Imports
+ * --------------------------- */
 
-/** @type {module:underscore} */
-var _ = require("underscore");
 // /** @type {module:backbone} */
 // var Backbone = require("backbone");
 /** @type {module:app/control/Globals} */
-var Globals = require("app/control/Globals");
+const Globals = require("app/control/Globals");
 /** @type {module:app/view/render/PlayableRenderer} */
-var PlayableRenderer = require("app/view/render/PlayableRenderer");
+const PlayableRenderer = require("app/view/render/PlayableRenderer");
 /** @type {module:app/view/component/CanvasProgressMeter} */
-var ProgressMeter = require("app/view/component/CanvasProgressMeter");
+const ProgressMeter = require("app/view/component/CanvasProgressMeter");
 // /** @type {module:app/view/component/PlayToggleSymbol} */
-var PlayToggleSymbol = require("app/view/component/PlayToggleSymbol");
+const PlayToggleSymbol = require("app/view/component/PlayToggleSymbol");
 
 // var stackBlurMono = require("utils/canvas/bitmap/stackBlurMono");
 // var stackBlurRGB = require("utils/canvas/bitmap/stackBlurRGB");
@@ -31,15 +29,15 @@ var PlayToggleSymbol = require("app/view/component/PlayToggleSymbol");
 // /** @type {module:utils/prefixedStyleName} */
 // var prefixedStyleName = require("utils/prefixedStyleName");
 /** @type {module:utils/prefixedEvent} */
-var prefixedEvent = require("utils/prefixedEvent");
+const prefixedEvent = require("utils/prefixedEvent");
 
 // var whenViewIsAttached = require("app/view/promise/whenViewIsAttached");
 // /** @type {Function} */
 // var whenSelectionDistanceIs = require("app/view/promise/whenSelectionDistanceIs");
 
 /* --------------------------- *
-/* private static
-/* --------------------------- */
+ * private static
+ * --------------------------- */
 
 var fullscreenChangeEvent = prefixedEvent("fullscreenchange", document);
 // var fullscreenErrorEvent = prefixedEvent("fullscreenerror", document);
@@ -118,8 +116,8 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 
 	/* --------------------------- *
-	/* children/layout
-	/* --------------------------- */
+	 * children
+	 * --------------------------- */
 
 	/** @override */
 	createChildren: function() {
@@ -144,6 +142,10 @@ var VideoRenderer = PlayableRenderer.extend({
 		this.video.loop = this.model.attr("@video-loop") !== void 0;
 		this.video.src = this.findPlayableSource(this.video);
 	},
+
+	/* --------------------------- *
+	 * layout/render
+	 * --------------------------- */
 
 	measure: function() {
 		PlayableRenderer.prototype.measure.apply(this, arguments);
@@ -215,8 +217,8 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 
 	/* --------------------------- *
-	/* initializeAsync
-	/* --------------------------- */
+	 * initializeAsync
+	 * --------------------------- */
 
 	initializeAsync: function() {
 		return Promise.resolve(this)
@@ -237,7 +239,7 @@ var VideoRenderer = PlayableRenderer.extend({
 				function(view) {
 					// console.log("%s::initializeAsync [defaultImage, preload:%s] ('%o')", view.cid, view.video.preload, view.model.get("name"));
 					view.initializePlayable();
-					view.updateOverlay(view.defaultImage, view.playToggle); //view.overlay);
+					// view.updateOverlay(view.defaultImage, view.playToggle); //view.overlay);
 					view.listenToSelection();
 					return view;
 				});
@@ -309,9 +311,9 @@ var VideoRenderer = PlayableRenderer.extend({
 		this.addMediaListeners();
 	},
 
-	/* ---------------------------
-	/* whenVideoHasMetadata promise
-	/* --------------------------- */
+	/* --------------------------- *
+	 * whenVideoHasMetadata promise
+	 * --------------------------- */
 
 	whenVideoHasMetadata: function(view) {
 		// NOTE: not pretty !!!
@@ -393,8 +395,8 @@ var VideoRenderer = PlayableRenderer.extend({
 	},
 
 	/* ---------------------------
-	/* PlayableRenderer implementation
-	/* --------------------------- */
+	 * PlayableRenderer implementation
+	 * --------------------------- */
 
 	// /** @override */
 	// _canResumePlayback: function() {
@@ -950,7 +952,7 @@ if (DEBUG) {
 					if (logBufferedEvents.indexOf(ev) != -1) c.mix(green, (cc /= 2));
 					if (logPlayedEvents.indexOf(ev) != -1) c.mix(red, (cc /= 2));
 					if (logPlaybackStateEvents.indexOf(ev) != -1) c.mix(blue, (cc /= 2));
-					this.__logColors[ev] = c.rgbString();
+					this.__logColors[ev] = c.rgb().string();
 				}
 				this.video.addEventListener("error", this.__handleMediaEvent, true);
 			},

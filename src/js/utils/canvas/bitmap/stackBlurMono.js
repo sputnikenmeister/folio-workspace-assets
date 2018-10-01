@@ -40,9 +40,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-var mul_table = require("./mul_table");
-var shg_table = require("./shg_table");
-var BlurStack = require("./BlurStack");
+const mul_table = require("./mul_table");
+const shg_table = require("./shg_table");
+const BlurStack = require("./BlurStack");
 
 module.exports = function(imageData, opts) {
 

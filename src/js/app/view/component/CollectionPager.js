@@ -2,15 +2,11 @@
  * @module app/view/component/CollectionPager
  */
 
-// /** @type {module:underscore} */
-// var _ = require("underscore");
-// /** @type {module:backbone} */
-// var Backbone = require("backbone");
 /** @type {module:app/view/base/View} */
-var View = require("app/view/base/View");
+const View = require("app/view/base/View");
 
 /** @type {Function} */
-var viewTemplate = require("./CollectionPager.hbs");
+const viewTemplate = require("./CollectionPager.hbs");
 //var viewTemplate = require("./CollectionPager.withClose.hbs");
 
 /**
