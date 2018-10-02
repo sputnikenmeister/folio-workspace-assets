@@ -44,30 +44,32 @@ module.exports = function(grunt) {
 	 * -------------------------------- */
 
 	// resources
-	grunt.registerTask('deps-clean', [
+	grunt.registerTask('clean-deps', [
 		'clean:favicons',
 		'clean:font-files',
-		'clean:font-sass'
+		'clean:font-sass',
+		'clean:modernizr',
 	]);
-	grunt.registerTask('deps-install', [
-		'deps-clean',
+	grunt.registerTask('install-deps', [
+		'clean-deps',
 		'copy:favicons',
 		'copy:font-files',
 		'copy:font-sass',
-		'modernizr-build:dist',
-		'symlink:vendor'
+		'modernizr-build:dist'
 	]);
-	grunt.registerTask('install', ['deps-install']);
-
-	grunt.registerTask('clean-all', [
-		'clean:js',
-		'clean:css'
+	grunt.registerTask('install-utils', [
+		'clean:utils',
+		'symlink:vendor',
 	]);
 
 	// dev build tasks
-	/* NOTE dev-styles defined next to task config */
+	grunt.registerTask('clean-build', [
+		'clean:js',
+		'clean:css'
+	]);
 	grunt.registerTask('dev-styles', [
-		'dev-styles-sass'
+		'sass:dev',
+		'autoprefixer:dev'
 	]);
 	grunt.registerTask('dev-vendor', [
 		'browserify:dev-vendor',
@@ -81,12 +83,10 @@ module.exports = function(grunt) {
 	// dist build tasks
 	grunt.registerTask('dist-styles', [
 		'sass:dist',
-		'sass:ie',
 		'autoprefixer:dist'
 	]);
 	grunt.registerTask('dist-js', [
 		'browserify:dist',
-		// 'uglify:dist'
 		'exorcise:dist'
 	]);
 
@@ -96,10 +96,12 @@ module.exports = function(grunt) {
 		'watch'
 	]);
 
+	grunt.registerTask('install', ['install-deps', 'install-utils']);
+
 	grunt.registerTask('dist', ['dist-js', 'dist-styles']);
 	grunt.registerTask('dev', ['dev-vendor', 'dev-main', 'dev-styles']);
 	grunt.registerTask('build', ['dev', 'dist']);
-	grunt.registerTask('rebuild', ['clean-all', 'build']);
+	grunt.registerTask('rebuild', ['clean-build', 'build']);
 	// Default task
 	grunt.registerTask('default', ['dev', 'watch-dev']);
 
@@ -115,15 +117,11 @@ module.exports = function(grunt) {
 		},
 		'reload-config': {
 			files: ['gruntfile.js', 'package.json'],
-			tasks: ['build'],
+			tasks: ['install', 'rebuild'],
 		},
 		'build-styles': {
-			tasks: ['sass:dev', 'sass:ie', 'autoprefixer:dev'],
+			tasks: ['sass:dev', 'autoprefixer:dev'],
 			files: ['src/sass/**/*.scss', 'src/sass/**/*.json'],
-		},
-		'build-deps': {
-			tasks: ['modernizr-build:dist'],
-			files: ['build/tasks/modernizr-build/modernizr-config.json'],
 		},
 		'process-vendor': {
 			tasks: ['exorcise:dev-vendor'],
@@ -133,6 +131,10 @@ module.exports = function(grunt) {
 			tasks: ['exorcise:dev-main'],
 			files: ['<%= paths.dev.main %>'],
 		},
+		// 'build-deps': {
+		// 	tasks: ['modernizr-build:dist'],
+		// 	files: ['build/tasks/modernizr-build/modernizr-config.json'],
+		// },
 	});
 
 	/* --------------------------------
@@ -143,10 +145,9 @@ module.exports = function(grunt) {
 	grunt.config('clean', {
 		'js': { src: ['js/*'] },
 		'css': { src: ['css/*'] },
-		'babel': { src: ['build/target/babel'] },
 		'favicons': { src: ['images/favicons'] },
 		'font-files': { src: ['fonts/*.<%= paths.ext.fonts %>'] },
-		'font-sass': { src: ['build/target/sass/fonts/*.scss', './build/target/sass/fonts/'] },
+		'font-sass': { src: ['build/target/sass/fonts/*.scss', 'build/target/sass/fonts/'] },
 
 	});
 
@@ -208,13 +209,6 @@ module.exports = function(grunt) {
 	 * dev stylesheets
 	 * --------------------------------- */
 
-	grunt.registerTask('dev-styles-sass', [
-		'sass:dev',
-		'sass:fonts',
-		'sass:ie',
-		'autoprefixer:dev'
-	]);
-
 	// grunt.loadNpmTasks('grunt-sass-format');
 	// grunt.loadNpmTasks('grunt-sass');
 	// grunt.loadNpmTasks('grunt-contrib-compass');
@@ -249,30 +243,32 @@ module.exports = function(grunt) {
 		},
 		files: {
 			'css/folio-dev.css': 'src/sass/folio-dev.scss',
+			// 'css/folio-dev-ie.css': 'src/sass/folio-ie.scss',
+			// 'css/folio-dev-fonts.css': 'src/sass/fonts.scss',
 		}
 	});
-	grunt.config('sass.fonts', {
-		files: {
-			'css/fonts.css': 'src/sass/fonts.scss',
-		}
-	});
-	grunt.config('sass.ie', {
-		files: {
-			'css/folio-ie.css': 'src/sass/folio-ie.scss',
-		}
-	});
+	// grunt.config('sass.fonts', {
+	// 	files: {
+	// 		'css/fonts.css': 'src/sass/fonts.scss',
+	// 	}
+	// });
+	// grunt.config('sass.ie', {
+	// 	files: {
+	// 		'css/folio-ie.css': 'src/sass/folio-ie.scss',
+	// 	}
+	// });
 
 	/* autoprefixer
 	 * - - - - - - - - - - - - - - - - - */
 	// grunt.loadNpmTasks('grunt-autoprefixer');
 	grunt.config('autoprefixer.dev', {
 		options: {
+			map: true,
 			// map: {
 			// 	prev: 'css/',
 			// 	sourcesContent: true
 			// },
 			// diff: true,
-			map: true,
 			// safe: true,
 
 		},
@@ -282,7 +278,6 @@ module.exports = function(grunt) {
 	/* --------------------------------
 	 * Javascript
 	 * -------------------------------- */
-
 
 	/* browserify
 	 * - - - - - - - - - - - - - - - - - */
@@ -392,10 +387,8 @@ module.exports = function(grunt) {
 		}
 	});
 
-
 	/* browserify:dev-main
 	 * - - - - - - - - - - - - - - - - - */
-
 	/* NOTE: Add requires and aliases from vendor as external */
 	let JS_EXTERNAL_MODULES = [
 		// 'browserify.polyfills.options',
@@ -508,21 +501,21 @@ module.exports = function(grunt) {
 	 * -------------------------------- */
 
 	grunt.config('sass.dist', {
-		// options: {
-		// 	sourceMap: false,
-		// 	sourceComments: false,
-		// 	outputStyle: 'compressed',
-		// },
+		options: {
+			sourcemap: 'auto',
+			// 	sourceComments: false,
+			// 	outputStyle: 'compressed',
+		},
 		files: {
 			'css/folio.css': 'src/sass/folio.scss',
-			'css/folio-ie.css': 'src/sass/folio-ie.scss',
-			'css/fonts.css': 'src/sass/fonts.scss',
+			// 'css/folio-ie.css': 'src/sass/folio-ie.scss',
+			// 'css/folio-fonts.css': 'src/sass/fonts.scss',
 		}
 	});
 
 	grunt.config('autoprefixer.dist', {
 		options: {
-			map: false
+			map: true
 		},
 		files: {
 			'<%= paths.dist.styles %>': '<%= paths.dist.styles %>'
@@ -650,9 +643,72 @@ module.exports = function(grunt) {
 	// grunt.config('uglify.dist.options.compress.pure_funcs', DROP_FN);
 	// grunt.config('uglify.dist.options.compress.drop_console', false);
 
+
+
+	/* - - - - - - - - - - - - - - - - -
+	 * modernizr-build:dist
+	 * Build JS dependencies
+	 * - - - - - - - - - - - - - - - - - */
+	grunt.loadTasks('./build/tasks/modernizr-build');
+	grunt.config('modernizr-build.dist', {
+		files: {
+			'./build/target/modernizr-build/modernizr-dist-all.js': [
+				'./build/tasks/modernizr-build/modernizr-config-all.json'
+			],
+			'./build/target/modernizr-build/modernizr-dist.js': [
+					'./build/tasks/modernizr-build/modernizr-config.json'
+				]
+		}
+	});
+	grunt.config('clean.modernizr', {
+		src: ['build/target/modernizr-build']
+	});
+
 	/* --------------------------------
-	 * Utils
+	 * Dev Utils
 	 * -------------------------------- */
+
+	grunt.config('clean.utils', {
+		src: [
+			'build/target/symlink-vendor',
+			'build/target/http-cms',
+			'build/target/babel',
+		]
+	});
+
+	/* - - - - - - - - - - - - - - - - -
+	 * symlink:vendor
+	 * Create symlinks to js deps for quick access
+	 * - - - - - - - - - - - - - - - - - */
+	// grunt.loadNpmTasks('grunt-contrib-symlink');
+	grunt.config('symlink.vendor', {
+		files: [{
+			expand: true,
+			overwrite: false,
+			filter: 'isDirectory',
+			cwd: 'node_modules',
+			dest: 'build/target/symlink-vendor',
+			src: grunt.config('browserify.vendor.options.require').concat([
+				'mutation-observer',
+				'path2d-polyfill'
+			])
+		}]
+	});
+
+	/* - - - - - - - - - - - - - - - - -
+	 * http:cms
+	 * Get offline data from CMS
+	 * - - - - - - - - - - - - - - - - - */
+	// grunt.loadNpmTasks('grunt-http');
+	grunt.config('http', {
+		options: {
+			ignoreErrors: true
+		},
+		cms: {
+			options: { url: '<%= paths.web.root %>/json' },
+			dest: 'build/target/http-cms/bootstrap.js'
+		}
+	});
 
 	/* babel
 	 * compile output to build/target/babel
@@ -676,37 +732,6 @@ module.exports = function(grunt) {
 	});
 
 	/* - - - - - - - - - - - - - - - - -
-	 * modernizr-build:dist
-	 * Build JS dependencies
-	 * - - - - - - - - - - - - - - - - - */
-	// grunt.loadTasks('./build/tasks/modernizr-build');
-	grunt.config('modernizr-build.dist', {
-		files: {
-			'./build/target/modernizr-build/modernizr-dist-all.js': [
-				'./build/tasks/modernizr-build/modernizr-config-all.json'
-			],
-			'./build/target/modernizr-build/modernizr-dist.js': [
-					'./build/tasks/modernizr-build/modernizr-config.json'
-				]
-		}
-	});
-
-	/* - - - - - - - - - - - - - - - - -
-	 * http:cms
-	 * Get offline data from CMS
-	 * - - - - - - - - - - - - - - - - - */
-	// grunt.loadNpmTasks('grunt-http');
-	grunt.config('http', {
-		options: {
-			ignoreErrors: true
-		},
-		cms: {
-			options: { url: '<%= paths.web.root %>/json' },
-			dest: '<%= paths.target %>/http-cms/bootstrap.js'
-		}
-	});
-
-	/* - - - - - - - - - - - - - - - - -
 	 * js_beautify:scripts
 	 * - - - - - - - - - - - - - - - - - */
 	// grunt.loadNpmTasks('grunt-js-beautify');
@@ -719,26 +744,6 @@ module.exports = function(grunt) {
 		}
 	});
 	grunt.config('js_beautify.sources.options', grunt.file.readJSON('.jsbeautifyrc'));
-
-
-	/* - - - - - - - - - - - - - - - - -
-	 * symlink:vendor
-	 * Create symlinks to js deps for quick access
-	 * - - - - - - - - - - - - - - - - - */
-	// grunt.loadNpmTasks('grunt-contrib-symlink');
-	grunt.config('symlink.vendor', {
-		files: [{
-			expand: true,
-			overwrite: false,
-			filter: 'isDirectory',
-			cwd: 'node_modules',
-			dest: 'build/target/symlink-vendor',
-			src: grunt.config('browserify.vendor.options.require').concat([
-				'mutation-observer',
-				'path2d-polyfill'
-			])
-		}]
-	});
 
 	grunt.registerTask('fonts-inline', ['sass:dist', 'embedFonts:fonts-inline']);
 

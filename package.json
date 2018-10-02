@@ -6,6 +6,21 @@
 		"@folio/favicons": "file:../folio-favicons",
 		"@folio/webfonts": "file:../folio-webfonts"
 	},
+  "files": [
+		"js/.{js,map}*",
+    "css/*.{css,map}",
+    "images/**/*",
+		"fonts/**/*"
+  ],
+  "homepage": "https://github.com/sputnikenmeister/folio-workspace-assets",
+  "repository": {
+    "type": "git",
+		"url": "git+https://github.com/sputnikenmeister/folio-workspace-assets.git"
+  },
+  "scripts": {
+    "install": "grunt rebuild",
+    "test": "echo 'Not implemented'"
+  },
 	"devDependencies": {
 		"@babel/core": "^7.1.0",
 		"@babel/preset-env": "^7.1.0",
