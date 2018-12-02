@@ -234,7 +234,7 @@
 %n1p2_2 {
 	@extend %char_2_2;
 	@extend %para_heading;
-	margin-bottom: 1rem;//0.75rem;
+	margin-bottom: 2rem;//1rem;//0.75rem;
 	// &:first-child: { margin-top: -0.75rem; }
 }
 
@@ -298,12 +298,27 @@
 	// &:first-child: { margin-top: 0.25rem; }
 }
 
+/* 1f22_1f3 */
+%char_1f22_1f3 {
+	@extend %char_text;
+	font-size: 1.22rem;
+	line-height: 1.5rem;
+	letter-spacing: 0;//-0.25px;
+}
+%n1f22_1f3 {
+	@extend %para_text;
+	@extend %char_1f22_1f3;
+	margin-bottom: 1rem;//0.75rem;
+	// padding: 3px 20px 3px 20px;
+	// &:first-child: { margin-top: 0.25rem; }
+}
+
 /* 1f1_1f6 */
 %char_1f1_1f6 {
 	@extend %char_text;
 	font-size: 1.1rem;
 	line-height: 1.333333333rem;
-	// letter-spacing: -0.25px;
+	letter-spacing: 0;//-0.25px;
 }
 %n1f1_1f6 {
 	@extend %para_text;
@@ -318,7 +333,7 @@
 	@extend %char_text;
 	font-size: 1rem;
 	line-height: 1.333333333rem;
-	// letter-spacing: 0;
+	letter-spacing: 0;
 }
 %n1_1f5 {
 	@extend %para_text;

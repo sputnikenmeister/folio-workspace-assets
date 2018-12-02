@@ -1,4 +1,4 @@
-(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/Backbone.Mutators/backbone.mutators.js":[function(require,module,exports){
 /*! Backbone.Mutators - v0.4.4
 ------------------------------
 Build @ 2015-02-03
@@ -207,7 +207,7 @@ IN THE SOFTWARE.*/
     return Mutator;
 }));
 
-},{"backbone":5,"underscore":2}],2:[function(require,module,exports){
+},{"backbone":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/Backbone.Mutators/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/Backbone.Mutators/node_modules/underscore/underscore.js":[function(require,module,exports){
 //     Underscore.js 1.4.4
 //     http://underscorejs.org
 //     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud Inc.
@@ -1435,7 +1435,7 @@ IN THE SOFTWARE.*/
 
 }).call(this);
 
-},{}],3:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone.babysitter/lib/backbone.babysitter.js":[function(require,module,exports){
 // Backbone.BabySitter
 // -------------------
 // v0.1.11
@@ -1627,7 +1627,7 @@ IN THE SOFTWARE.*/
 
 }));
 
-},{"backbone":5,"underscore":51}],4:[function(require,module,exports){
+},{"backbone":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone.native/backbone.native.js":[function(require,module,exports){
 /**
  * Backbone.Native
  *
@@ -2102,7 +2102,7 @@ IN THE SOFTWARE.*/
     }
 }).call(this);
 
-},{}],5:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js":[function(require,module,exports){
 //     Backbone.js 1.1.2
 
 //     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -3712,7 +3712,7 @@ IN THE SOFTWARE.*/
 
 }));
 
-},{"underscore":51}],6:[function(require,module,exports){
+},{"underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/classlist-polyfill/src/index.js":[function(require,module,exports){
 /*
  * classList.js: Cross-browser full element.classList implementation.
  * 1.1.20170427
@@ -3954,7 +3954,7 @@ if (objCtr.defineProperty) {
 
 }
 
-},{}],7:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-convert/conversions.js":[function(require,module,exports){
 /* MIT license */
 var cssKeywords = require('color-name');
 
@@ -4817,7 +4817,7 @@ convert.rgb.gray = function (rgb) {
 	return [val / 255 * 100];
 };
 
-},{"color-name":10}],8:[function(require,module,exports){
+},{"color-name":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-name/index.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-convert/index.js":[function(require,module,exports){
 var conversions = require('./conversions');
 var route = require('./route');
 
@@ -4897,7 +4897,7 @@ models.forEach(function (fromModel) {
 
 module.exports = convert;
 
-},{"./conversions":7,"./route":9}],9:[function(require,module,exports){
+},{"./conversions":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-convert/conversions.js","./route":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-convert/route.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-convert/route.js":[function(require,module,exports){
 var conversions = require('./conversions');
 
 /*
@@ -4996,7 +4996,7 @@ module.exports = function (fromModel) {
 };
 
 
-},{"./conversions":7}],10:[function(require,module,exports){
+},{"./conversions":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-convert/conversions.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-name/index.js":[function(require,module,exports){
 'use strict'
 
 module.exports = {
@@ -5150,7 +5150,7 @@ module.exports = {
 	"yellowgreen": [154, 205, 50]
 };
 
-},{}],11:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-string/index.js":[function(require,module,exports){
 /* MIT license */
 var colorNames = require('color-name');
 var swizzle = require('simple-swizzle');
@@ -5386,7 +5386,7 @@ function hexDouble(num) {
 	return (str.length < 2) ? '0' + str : str;
 }
 
-},{"color-name":10,"simple-swizzle":39}],12:[function(require,module,exports){
+},{"color-name":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-name/index.js","simple-swizzle":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/simple-swizzle/index.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color/index.js":[function(require,module,exports){
 'use strict';
 
 var colorString = require('color-string');
@@ -5867,13 +5867,13 @@ function zeroArray(arr, length) {
 
 module.exports = Color;
 
-},{"color-convert":8,"color-string":11}],13:[function(require,module,exports){
+},{"color-convert":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-convert/index.js","color-string":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color-string/index.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/es6-promise/auto.js":[function(require,module,exports){
 // This file can be required in Browserify and Node.js for automatic polyfill
 // To use it:  require('es6-promise/auto');
 'use strict';
 module.exports = require('./').polyfill();
 
-},{"./":14}],14:[function(require,module,exports){
+},{"./":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/es6-promise/dist/es6-promise.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/es6-promise/dist/es6-promise.js":[function(require,module,exports){
 (function (process,global){
 /*!
  * @overview es6-promise - a tiny implementation of Promises/A+.
@@ -7061,7 +7061,7 @@ return Promise$1;
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"_process":37}],15:[function(require,module,exports){
+},{"_process":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/process/browser.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hammerjs/hammer.js":[function(require,module,exports){
 /*! Hammer.JS - v2.0.7 - 2016-04-22
  * http://hammerjs.github.io/
  *
@@ -9706,7 +9706,7 @@ if (typeof define === 'function' && define.amd) {
 
 })(window, document, 'Hammer');
 
-},{}],16:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars.runtime.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -9774,7 +9774,7 @@ exports['default'] = inst;
 module.exports = exports['default'];
 
 
-},{"./handlebars/base":17,"./handlebars/exception":20,"./handlebars/no-conflict":30,"./handlebars/runtime":31,"./handlebars/safe-string":32,"./handlebars/utils":33}],17:[function(require,module,exports){
+},{"./handlebars/base":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/base.js","./handlebars/exception":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/exception.js","./handlebars/no-conflict":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/no-conflict.js","./handlebars/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/runtime.js","./handlebars/safe-string":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/safe-string.js","./handlebars/utils":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/base.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -9880,7 +9880,7 @@ exports.createFrame = _utils.createFrame;
 exports.logger = _logger2['default'];
 
 
-},{"./decorators":18,"./exception":20,"./helpers":21,"./logger":29,"./utils":33}],18:[function(require,module,exports){
+},{"./decorators":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/decorators.js","./exception":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/exception.js","./helpers":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers.js","./logger":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/logger.js","./utils":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/decorators.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -9898,7 +9898,7 @@ function registerDefaultDecorators(instance) {
 }
 
 
-},{"./decorators/inline":19}],19:[function(require,module,exports){
+},{"./decorators/inline":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/decorators/inline.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/decorators/inline.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -9929,7 +9929,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 
-},{"../utils":33}],20:[function(require,module,exports){
+},{"../utils":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/exception.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -9985,7 +9985,7 @@ exports['default'] = Exception;
 module.exports = exports['default'];
 
 
-},{}],21:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10033,7 +10033,7 @@ function registerDefaultHelpers(instance) {
 }
 
 
-},{"./helpers/block-helper-missing":22,"./helpers/each":23,"./helpers/helper-missing":24,"./helpers/if":25,"./helpers/log":26,"./helpers/lookup":27,"./helpers/with":28}],22:[function(require,module,exports){
+},{"./helpers/block-helper-missing":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/block-helper-missing.js","./helpers/each":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/each.js","./helpers/helper-missing":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/helper-missing.js","./helpers/if":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/if.js","./helpers/log":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/log.js","./helpers/lookup":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/lookup.js","./helpers/with":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/with.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/block-helper-missing.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10074,7 +10074,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 
-},{"../utils":33}],23:[function(require,module,exports){
+},{"../utils":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/each.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10170,7 +10170,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 
-},{"../exception":20,"../utils":33}],24:[function(require,module,exports){
+},{"../exception":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/exception.js","../utils":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/helper-missing.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10197,7 +10197,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 
-},{"../exception":20}],25:[function(require,module,exports){
+},{"../exception":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/exception.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/if.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10228,7 +10228,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 
-},{"../utils":33}],26:[function(require,module,exports){
+},{"../utils":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/log.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10256,7 +10256,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 
-},{}],27:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/lookup.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10270,7 +10270,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 
-},{}],28:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/helpers/with.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10305,7 +10305,7 @@ exports['default'] = function (instance) {
 module.exports = exports['default'];
 
 
-},{"../utils":33}],29:[function(require,module,exports){
+},{"../utils":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/logger.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10354,7 +10354,7 @@ exports['default'] = logger;
 module.exports = exports['default'];
 
 
-},{"./utils":33}],30:[function(require,module,exports){
+},{"./utils":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/no-conflict.js":[function(require,module,exports){
 (function (global){
 /* global window */
 'use strict';
@@ -10379,7 +10379,7 @@ module.exports = exports['default'];
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{}],31:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/runtime.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10688,7 +10688,7 @@ function executeDecorators(fn, prog, container, depths, data, blockParams) {
 }
 
 
-},{"./base":17,"./exception":20,"./utils":33}],32:[function(require,module,exports){
+},{"./base":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/base.js","./exception":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/exception.js","./utils":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/utils.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/safe-string.js":[function(require,module,exports){
 // Build out our basic SafeString type
 'use strict';
 
@@ -10705,7 +10705,7 @@ exports['default'] = SafeString;
 module.exports = exports['default'];
 
 
-},{}],33:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars/utils.js":[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -10831,15 +10831,15 @@ function appendContextPath(contextPath, id) {
 }
 
 
-},{}],34:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/runtime.js":[function(require,module,exports){
 // Create a simple path alias to allow browserify to resolve
 // the runtime on a supported path.
 module.exports = require('./dist/cjs/handlebars.runtime')['default'];
 
-},{"./dist/cjs/handlebars.runtime":16}],35:[function(require,module,exports){
+},{"./dist/cjs/handlebars.runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/dist/cjs/handlebars.runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js":[function(require,module,exports){
 module.exports = require("handlebars/runtime")["default"];
 
-},{"handlebars/runtime":34}],36:[function(require,module,exports){
+},{"handlebars/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/handlebars/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/mutation-observer/index.js":[function(require,module,exports){
 var MutationObserver = window.MutationObserver
   || window.WebKitMutationObserver
   || window.MozMutationObserver;
@@ -11427,7 +11427,7 @@ if (!MutationObserver) {
 
 module.exports = MutationObserver;
 
-},{}],37:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/process/browser.js":[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -11613,7 +11613,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],38:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/setimmediate/setImmediate.js":[function(require,module,exports){
 (function (process,global){
 (function (global, undefined) {
     "use strict";
@@ -11804,7 +11804,7 @@ process.umask = function() { return 0; };
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 
-},{"_process":37}],39:[function(require,module,exports){
+},{"_process":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/process/browser.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/simple-swizzle/index.js":[function(require,module,exports){
 'use strict';
 
 var isArrayish = require('is-arrayish');
@@ -11835,7 +11835,7 @@ swizzle.wrap = function (fn) {
 	};
 };
 
-},{"is-arrayish":40}],40:[function(require,module,exports){
+},{"is-arrayish":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/simple-swizzle/node_modules/is-arrayish/index.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/simple-swizzle/node_modules/is-arrayish/index.js":[function(require,module,exports){
 module.exports = function isArrayish(obj) {
 	if (!obj || typeof obj === 'string') {
 		return false;
@@ -11846,7 +11846,7 @@ module.exports = function isArrayish(obj) {
 			(Object.getOwnPropertyDescriptor(obj, (obj.length - 1)) && obj.constructor.name !== 'String')));
 };
 
-},{}],41:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/capitalize.js":[function(require,module,exports){
 var makeString = require('./helper/makeString');
 
 module.exports = function capitalize(str, lowercaseRest) {
@@ -11856,14 +11856,14 @@ module.exports = function capitalize(str, lowercaseRest) {
   return str.charAt(0).toUpperCase() + remainingChars;
 };
 
-},{"./helper/makeString":45}],42:[function(require,module,exports){
+},{"./helper/makeString":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/helper/makeString.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/dasherize.js":[function(require,module,exports){
 var trim = require('./trim');
 
 module.exports = function dasherize(str) {
   return trim(str).replace(/([A-Z])/g, '-$1').replace(/[-_\s]+/g, '-').toLowerCase();
 };
 
-},{"./trim":50}],43:[function(require,module,exports){
+},{"./trim":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/trim.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/helper/defaultToWhiteSpace.js":[function(require,module,exports){
 var escapeRegExp = require('./escapeRegExp');
 
 module.exports = function defaultToWhiteSpace(characters) {
@@ -11875,14 +11875,14 @@ module.exports = function defaultToWhiteSpace(characters) {
     return '[' + escapeRegExp(characters) + ']';
 };
 
-},{"./escapeRegExp":44}],44:[function(require,module,exports){
+},{"./escapeRegExp":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/helper/escapeRegExp.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/helper/escapeRegExp.js":[function(require,module,exports){
 var makeString = require('./makeString');
 
 module.exports = function escapeRegExp(str) {
   return makeString(str).replace(/([.*+?^=!:${}()|[\]\/\\])/g, '\\$1');
 };
 
-},{"./makeString":45}],45:[function(require,module,exports){
+},{"./makeString":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/helper/makeString.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/helper/makeString.js":[function(require,module,exports){
 /**
  * Ensure some object is a coerced to a string
  **/
@@ -11891,7 +11891,7 @@ module.exports = function makeString(object) {
   return '' + object;
 };
 
-},{}],46:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/helper/strRepeat.js":[function(require,module,exports){
 module.exports = function strRepeat(str, qty){
   if (qty < 1) return '';
   var result = '';
@@ -11902,14 +11902,14 @@ module.exports = function strRepeat(str, qty){
   return result;
 };
 
-},{}],47:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/lpad.js":[function(require,module,exports){
 var pad = require('./pad');
 
 module.exports = function lpad(str, length, padStr) {
   return pad(str, length, padStr);
 };
 
-},{"./pad":48}],48:[function(require,module,exports){
+},{"./pad":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/pad.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/pad.js":[function(require,module,exports){
 var makeString = require('./helper/makeString');
 var strRepeat = require('./helper/strRepeat');
 
@@ -11937,14 +11937,14 @@ module.exports = function pad(str, length, padStr, type) {
   }
 };
 
-},{"./helper/makeString":45,"./helper/strRepeat":46}],49:[function(require,module,exports){
+},{"./helper/makeString":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/helper/makeString.js","./helper/strRepeat":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/helper/strRepeat.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/rpad.js":[function(require,module,exports){
 var pad = require('./pad');
 
 module.exports = function rpad(str, length, padStr) {
   return pad(str, length, padStr, 'right');
 };
 
-},{"./pad":48}],50:[function(require,module,exports){
+},{"./pad":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/pad.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/trim.js":[function(require,module,exports){
 var makeString = require('./helper/makeString');
 var defaultToWhiteSpace = require('./helper/defaultToWhiteSpace');
 var nativeTrim = String.prototype.trim;
@@ -11956,7 +11956,7 @@ module.exports = function trim(str, characters) {
   return str.replace(new RegExp('^' + characters + '+|' + characters + '+$', 'g'), '');
 };
 
-},{"./helper/defaultToWhiteSpace":43,"./helper/makeString":45}],51:[function(require,module,exports){
+},{"./helper/defaultToWhiteSpace":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/helper/defaultToWhiteSpace.js","./helper/makeString":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/helper/makeString.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js":[function(require,module,exports){
 //     Underscore.js 1.8.3
 //     http://underscorejs.org
 //     (c) 2009-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
@@ -13506,7 +13506,7 @@ module.exports = function trim(str, characters) {
   }
 }.call(this));
 
-},{}],52:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/webfontloader/webfontloader.js":[function(require,module,exports){
 /* Web Font Loader v1.6.28 - (c) Adobe Systems, Google. License: Apache 2.0 */(function(){function aa(a,b,c){return a.call.apply(a.bind,arguments)}function ba(a,b,c){if(!a)throw Error();if(2<arguments.length){var d=Array.prototype.slice.call(arguments,2);return function(){var c=Array.prototype.slice.call(arguments);Array.prototype.unshift.apply(c,d);return a.apply(b,c)}}return function(){return a.apply(b,arguments)}}function p(a,b,c){p=Function.prototype.bind&&-1!=Function.prototype.bind.toString().indexOf("native code")?aa:ba;return p.apply(null,arguments)}var q=Date.now||function(){return+new Date};function ca(a,b){this.a=a;this.o=b||a;this.c=this.o.document}var da=!!window.FontFace;function t(a,b,c,d){b=a.c.createElement(b);if(c)for(var e in c)c.hasOwnProperty(e)&&("style"==e?b.style.cssText=c[e]:b.setAttribute(e,c[e]));d&&b.appendChild(a.c.createTextNode(d));return b}function u(a,b,c){a=a.c.getElementsByTagName(b)[0];a||(a=document.documentElement);a.insertBefore(c,a.lastChild)}function v(a){a.parentNode&&a.parentNode.removeChild(a)}
 function w(a,b,c){b=b||[];c=c||[];for(var d=a.className.split(/\s+/),e=0;e<b.length;e+=1){for(var f=!1,g=0;g<d.length;g+=1)if(b[e]===d[g]){f=!0;break}f||d.push(b[e])}b=[];for(e=0;e<d.length;e+=1){f=!1;for(g=0;g<c.length;g+=1)if(d[e]===c[g]){f=!0;break}f||b.push(d[e])}a.className=b.join(" ").replace(/\s+/g," ").replace(/^\s+|\s+$/,"")}function y(a,b){for(var c=a.className.split(/\s+/),d=0,e=c.length;d<e;d++)if(c[d]==b)return!0;return!1}
 function ea(a){return a.o.location.hostname||a.a.location.hostname}function z(a,b,c){function d(){m&&e&&f&&(m(g),m=null)}b=t(a,"link",{rel:"stylesheet",href:b,media:"all"});var e=!1,f=!0,g=null,m=c||null;da?(b.onload=function(){e=!0;d()},b.onerror=function(){e=!0;g=Error("Stylesheet failed to load");d()}):setTimeout(function(){e=!0;d()},0);u(a,"head",b)}
@@ -13525,14 +13525,14 @@ Ca=/^(thin|(?:(?:extra|ultra)-?)?light|regular|book|medium|(?:(?:semi|demi|extra
 function Da(a){for(var b=a.f.length,c=0;c<b;c++){var d=a.f[c].split(":"),e=d[0].replace(/\+/g," "),f=["n4"];if(2<=d.length){var g;var m=d[1];g=[];if(m)for(var m=m.split(","),h=m.length,l=0;l<h;l++){var k;k=m[l];if(k.match(/^[\w-]+$/)){var n=Ca.exec(k.toLowerCase());if(null==n)k="";else{k=n[2];k=null==k||""==k?"n":Ba[k];n=n[1];if(null==n||""==n)n="4";else var r=Aa[n],n=r?r:isNaN(n)?"4":n.substr(0,1);k=[k,n].join("")}}else k="";k&&g.push(k)}0<g.length&&(f=g);3==d.length&&(d=d[2],g=[],d=d?d.split(","):
 g,0<d.length&&(d=za[d[0]])&&(a.c[e]=d))}a.c[e]||(d=za[e])&&(a.c[e]=d);for(d=0;d<f.length;d+=1)a.a.push(new G(e,f[d]))}};function Ea(a,b){this.c=a;this.a=b}var Fa={Arimo:!0,Cousine:!0,Tinos:!0};Ea.prototype.load=function(a){var b=new B,c=this.c,d=new ta(this.a.api,this.a.text),e=this.a.families;va(d,e);var f=new ya(e);Da(f);z(c,wa(d),C(b));E(b,function(){a(f.a,f.c,Fa)})};function Ga(a,b){this.c=a;this.a=b}Ga.prototype.load=function(a){var b=this.a.id,c=this.c.o;b?A(this.c,(this.a.api||"https://use.typekit.net")+"/"+b+".js",function(b){if(b)a([]);else if(c.Typekit&&c.Typekit.config&&c.Typekit.config.fn){b=c.Typekit.config.fn;for(var e=[],f=0;f<b.length;f+=2)for(var g=b[f],m=b[f+1],h=0;h<m.length;h++)e.push(new G(g,m[h]));try{c.Typekit.load({events:!1,classes:!1,async:!0})}catch(l){}a(e)}},2E3):a([])};function Ha(a,b){this.c=a;this.f=b;this.a=[]}Ha.prototype.load=function(a){var b=this.f.id,c=this.c.o,d=this;b?(c.__webfontfontdeckmodule__||(c.__webfontfontdeckmodule__={}),c.__webfontfontdeckmodule__[b]=function(b,c){for(var g=0,m=c.fonts.length;g<m;++g){var h=c.fonts[g];d.a.push(new G(h.name,ga("font-weight:"+h.weight+";font-style:"+h.style)))}a(d.a)},A(this.c,(this.f.api||"https://f.fontdeck.com/s/css/js/")+ea(this.c)+"/"+b+".js",function(b){b&&a([])})):a([])};var Y=new oa(window);Y.a.c.custom=function(a,b){return new sa(b,a)};Y.a.c.fontdeck=function(a,b){return new Ha(b,a)};Y.a.c.monotype=function(a,b){return new ra(b,a)};Y.a.c.typekit=function(a,b){return new Ga(b,a)};Y.a.c.google=function(a,b){return new Ea(b,a)};var Z={load:p(Y.load,Y)};"function"===typeof define&&define.amd?define(function(){return Z}):"undefined"!==typeof module&&module.exports?module.exports=Z:(window.WebFont=Z,window.WebFontConfig&&Y.load(window.WebFontConfig));}());
 
-},{}],53:[function(require,module,exports){
-(function (DEBUG,_){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/App.js":[function(require,module,exports){
+(function (GIT_REV,DEBUG,_){
 /**
-/* @module app/App
-/*/
+ * @module app/App
+ */
 "use strict";
 
-console.info("Portfolio App started"); // if (!DEBUG) {
+console.info("Portfolio App started ".concat(GIT_REV)); // if (!DEBUG) {
 // 	window.addEventListener("error", function(ev) {
 // 		console.error("Uncaught Error", ev);
 // 	});
@@ -13713,9 +13713,9 @@ if (DEBUG) {// /** @type {module:underscore} */
   }*/
 }
 
-}).call(this,true,require("underscore"))
+}).call(this,'',true,require("underscore"))
 
-},{"Backbone.Mutators":1,"Modernizr":"Modernizr","app/model/helper/bootstrap":67,"app/view/AppView":74,"app/view/helper/createColorStyleSheet":96,"app/view/template/_helpers":123,"backbone":5,"backbone.babysitter":3,"backbone.native":4,"classlist-polyfill":6,"es6-promise/auto":13,"fullscreen-polyfill":"fullscreen-polyfill","hammerjs":15,"matches-polyfill":"matches-polyfill","math-sign-polyfill":"math-sign-polyfill","mutation-observer":36,"raf-polyfill":"raf-polyfill","setimmediate":38,"underscore":51,"webfontloader":52}],54:[function(require,module,exports){
+},{"Backbone.Mutators":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/Backbone.Mutators/backbone.mutators.js","Modernizr":"Modernizr","app/model/helper/bootstrap":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/helper/bootstrap.js","app/view/AppView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/AppView.js","app/view/helper/createColorStyleSheet":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/helper/createColorStyleSheet.js","app/view/template/_helpers":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/_helpers.js","backbone":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js","backbone.babysitter":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone.babysitter/lib/backbone.babysitter.js","backbone.native":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone.native/backbone.native.js","classlist-polyfill":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/classlist-polyfill/src/index.js","es6-promise/auto":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/es6-promise/auto.js","fullscreen-polyfill":"fullscreen-polyfill","hammerjs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hammerjs/hammer.js","matches-polyfill":"matches-polyfill","math-sign-polyfill":"math-sign-polyfill","mutation-observer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/mutation-observer/index.js","raf-polyfill":"raf-polyfill","setimmediate":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/setimmediate/setImmediate.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","webfontloader":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/webfontloader/webfontloader.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Controller.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -13776,9 +13776,13 @@ var Controller = Backbone.Router.extend({
     this.route(/^([a-z][a-z0-9\-]*)\/?$/, "article-item", this.toArticleItem);
     this.route(/^(?:bundles)?\/?$/, "root", this.toRoot); // this.route(/^bundles\/?$/,
     // 	"bundle-list", this.toBundleList);
+    // this.route(/^bundles\/([^\/]+)\/?$/,
+    // 	"bundle-item", this.toBundleItem);
+    // this.route(/^bundles\/([^\/]+)\/(\d+)\/?$/,
+    // 	"media-item", this.toMediaItem);
+    // this.route(/^bundles(?:\/([^\/]+)(?:\/(\d+))?)?\/?$/,
 
-    this.route(/^bundles\/([^\/]+)\/?$/, "bundle-item", this.toBundleItem);
-    this.route(/^bundles\/([^\/]+)\/(\d+)\/?$/, "media-item", this.toMediaItem);
+    this.route(/^bundles\/([^\/]+)(?:\/(\d+)?)?\/?$/, "media-item", this.toMediaItem);
 
     if (DEBUG) {
       console.log("%s::initialize routes: %o", "controller", this._routeNames);
@@ -13792,7 +13796,11 @@ var Controller = Backbone.Router.extend({
     this._goToLocation(media.get("bundle"), media);
   },
   selectBundle: function selectBundle(bundle) {
-    this._goToLocation(bundle);
+    if (bundle.attr("@no-desc")) {
+      this._goToLocation(bundle, bundle.get("media").at(0));
+    } else {
+      this._goToLocation(bundle);
+    }
   },
   deselectMedia: function deselectMedia() {
     this._goToLocation(bundles.selected);
@@ -13854,8 +13862,8 @@ var Controller = Backbone.Router.extend({
   },
 
   /* --------------------------- *
-  /* URL to JS: router handlers
-  /* --------------------------- */
+   * URL to JS: router handlers
+   * --------------------------- */
   toRoot: function toRoot() {
     this.trigger("change:before");
 
@@ -13883,10 +13891,12 @@ var Controller = Backbone.Router.extend({
     });
 
     if (!bundle) {
-      throw new Error("Cannot find bundle with handle \"" + bundleHandle + "\"");
+      throw new Error("Cannot find bundle with handle \"" + bundleHandle + "\""); // } else if (bundle.attr("@no-desc")) {
+      // this._changeSelection(bundle, bundle.get("media").at(0));
+      // this.navigate(this._getLocation(bundle, bundle.get("media").at(0)), { trigger: true, replace: false });
+    } else {
+      this._changeSelection(bundle);
     }
-
-    this._changeSelection(bundle);
   },
   toMediaItem: function toMediaItem(bundleHandle, mediaIndex) {
     var bundle, media; // if (bundleHandle) {
@@ -13897,10 +13907,9 @@ var Controller = Backbone.Router.extend({
 
     if (!bundle) {
       throw new Error("No bundle with handle \"" + bundleHandle + "\" found");
-    } // if (mediaIndex) {
+    }
 
-
-    media = bundle.get("media").at(mediaIndex);
+    media = bundle.get("media").at(mediaIndex ? mediaIndex : 0);
 
     if (!media) {
       throw new Error("No media at index " + mediaIndex + " in bundle with handle \"" + bundleHandle + "\" found");
@@ -13941,7 +13950,12 @@ var Controller = Backbone.Router.extend({
   _changeSelection: function _changeSelection(bundle, media) {
     var lastBundle, lastMedia;
     if (bundle === void 0) bundle = null;
-    if (media === void 0) media = null;
+    if (media === void 0) media = null; // if (bundle !== null && media === null && bundle.attr("@no-desc")) {
+    // 	media = bundle.get("media").at(0);
+    // 	this._goToLocation(bundle, media);
+    // 	return;
+    // }
+
     lastBundle = bundles.selected;
     lastMedia = lastBundle ? lastBundle.get("media").selected : null;
     console.log("controller::_changeSelection bundle:[%s -> %s] media:[%s -> %s]", lastBundle ? lastBundle.cid : lastBundle, bundle ? bundle.cid : bundle, lastMedia ? lastMedia.cid : lastMedia, media ? media.cid : media);
@@ -13961,7 +13975,7 @@ module.exports = new Controller();
 
 }).call(this,true,require("underscore"))
 
-},{"app/model/collection/ArticleCollection":63,"app/model/collection/BundleCollection":64,"backbone":5,"underscore":51}],55:[function(require,module,exports){
+},{"app/model/collection/ArticleCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/ArticleCollection.js","app/model/collection/BundleCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/BundleCollection.js","backbone":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -14189,7 +14203,7 @@ module.exports = function () {
 
 }).call(this,true,require("underscore"))
 
-},{"../../../sass/variables.json":154,"underscore":51}],56:[function(require,module,exports){
+},{"../../../sass/variables.json":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/sass/variables.json","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/debug/DebugToolbar.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -14402,14 +14416,14 @@ module.exports.prototype._logFlags = "";
 
 }).call(this,require("underscore"))
 
-},{"./template/DebugToolbar.SVGGrid.hbs":57,"./template/DebugToolbar.hbs":58,"Modernizr":"Modernizr","app/control/Globals":55,"app/view/base/View":82,"cookies-js":"cookies-js","underscore":51}],57:[function(require,module,exports){
+},{"./template/DebugToolbar.SVGGrid.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/debug/template/DebugToolbar.SVGGrid.hbs","./template/DebugToolbar.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/debug/template/DebugToolbar.hbs","Modernizr":"Modernizr","app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js","cookies-js":"cookies-js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/debug/template/DebugToolbar.SVGGrid.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     return "<svg id=\"debug-grid\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" preserveAspectRatio=\"xMaxYMid slice\" viewport-fill=\"hsl(0,0%,100%)\" viewport-fill-opacity=\"1\" style=\"fill:none;stroke:none;stroke-width:1px;fill:none;fill-rule:evenodd;\">\n<defs>\n	<pattern id=\"pat-baseline-12px\" class=\"baseline base12\" x=\"0\" y=\"0\" width=\"20\" height=\"12\" patternUnits=\"userSpaceOnUse\">\n		<line x1=\"0\" x2=\"100%\" y1=\"0\" y2=\"0\" stroke-opacity=\"1.0\"/>\n		<line x1=\"0\" x2=\"100%\" y1=\"3\" y2=\"3\" stroke-opacity=\"0.125\"/>\n		<line x1=\"0\" x2=\"100%\" y1=\"6\" y2=\"6\" stroke-opacity=\"0.375\"/>\n		<line x1=\"0\" x2=\"100%\" y1=\"9\" y2=\"9\" stroke-opacity=\"0.125\"/>\n	</pattern>\n\n	<pattern id=\"pat-baseline-24px\" class=\"baseline base12\" x=\"0\" y=\"0\" width=\"20\" height=\"24\" patternUnits=\"userSpaceOnUse\">\n		<line x1=\"0\" x2=\"100%\" y1=\"0\" y2=\"0\" stroke-opacity=\"1.0\"/>\n	</pattern>\n\n	<pattern id=\"pat-baseline-10px\" class=\"baseline base10\" x=\"0\" y=\"0\" width=\"20\" height=\"10\" patternUnits=\"userSpaceOnUse\">\n		<line x1=\"0\" x2=\"100%\" y1=\"0\" y2=\"0\" stroke-opacity=\"1.00\"/>\n		<line x1=\"0\" x2=\"100%\" y1=\"5\" y2=\"5\" stroke-opacity=\"0.75\"/>\n	</pattern>\n	<pattern id=\"pat-baseline-20px\" class=\"baseline base10\" x=\"0\" y=\"0\" width=\"20\" height=\"20\" patternUnits=\"userSpaceOnUse\">\n		<line x1=\"0\" x2=\"100%\" y1=\"0\" y2=\"0\" stroke-opacity=\"1.0\"/>\n	</pattern>\n	<pattern id=\"pat-cols-220px\" x=\"0\" y=\"0\" width=\"220\" height=\"36\" patternUnits=\"userSpaceOnUse\">\n		<rect transform=\"translate(0,0)\" x=\"0\" y=\"0\" width=\"20\" height=\"100%\" fill=\"hsl(336,50%,40%)\" fill-opacity=\"0.1\"/>\n		<rect transform=\"translate(200,0)\" x=\"0\" y=\"0\" width=\"20\" height=\"100%\" fill=\"hsl(336,50%,40%)\" fill-opacity=\"0.1\"/>\n		<line transform=\"translate(20 0)\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\" stroke=\"hsl(336,50%,60%)\" stroke-opacity=\"0.2\"/>\n		<line transform=\"translate(200 0)\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\" stroke=\"hsl(336,50%,40%)\" stroke-opacity=\"0.2\"/>\n\n		<line transform=\"translate(140 0)\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\" stroke=\"hsl(336,50%,40%)\" stroke-opacity=\"0.3\"/>\n		<line transform=\"translate(80 0)\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\" stroke=\"hsl(336,50%,40%)\" stroke-opacity=\"0.3\"/>\n\n		<line transform=\"translate(0 0)\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\" stroke=\"hsl(236,50%,40%)\" stroke-opacity=\"0.4\" stroke-width=\"1\"/>\n		<line transform=\"translate(220 0)\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\" stroke=\"hsl(236,50%,40%)\" stroke-opacity=\"0.4\" stroke-width=\"1\"/>\n	</pattern>\n</defs>\n<g id=\"debug-grid-body\" transform=\"translate(0 0.5)\">\n	<rect id=\"baseline\" x=\"0\" y=\"0\" width=\"100%\" height=\"100%\"/>\n	<g id=\"debug-grid-container\">\n		<g id=\"debug-grid-content\">\n			<rect id=\"baseline-content\" x=\"0\" y=\"0\" width=\"100%\" height=\"100%\"/>\n			<line id=\"gct0\" class=\"hguide\" x1=\"0\" x2=\"100%\" y1=\"0\" y2=\"0\"/>\n			<line id=\"gct1\" class=\"hguide\" x1=\"0\" x2=\"100%\" y1=\"0\" y2=\"0\"/>\n		</g>\n		<line id=\"gnv0\" class=\"hguide\" x1=\"0\" x2=\"100%\" y1=\"0\" y2=\"0\"/>\n		<line id=\"gnv1\" class=\"hguide\" x1=\"0\" x2=\"100%\" y1=\"0\" y2=\"0\"/>\n	</g>\n\n	<g id=\"abs-cols\">\n		<rect id=\"columns\" x=\"0\" y=\"0\" width=\"100%\" height=\"100%\"/>\n	</g>\n\n	<g id=\"rel-cols\">\n		<line id=\"le\" class=\"vguide edge\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\"/>\n		<line id=\"re\" class=\"vguide edge\" x1=\"100%\" x2=\"100%\" y1=\"0\" y2=\"100%\"/>\n\n		<line id=\"gl0\" class=\"vguide margin\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\"/>\n		<line id=\"gl1\" class=\"vguide gutter\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\"/>\n\n		<line id=\"gr0\" class=\"vguide margin\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\"/>\n		<line id=\"gr1\" class=\"vguide gutter\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\"/>\n\n		<line id=\"gm\" class=\"vguide\" x1=\"0\" x2=\"0\" y1=\"0\" y2=\"100%\"/>\n	</g>\n</g>\n</svg>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":35}],58:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/debug/template/DebugToolbar.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 var partial$0 = require('../../view/template/svg/CogSymbol.hbs');
@@ -14456,7 +14470,7 @@ module.exports = HandlebarsCompiler.template({"1":function(container,depth0,help
     + "	</ul>\n</div>\n";
 },"usePartial":true,"useData":true});
 
-},{"../../view/template/svg/CogSymbol.hbs":124,"hbsfy/runtime":35}],59:[function(require,module,exports){
+},{"../../view/template/svg/CogSymbol.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/svg/CogSymbol.hbs","hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/AppState.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -14571,7 +14585,7 @@ module.exports = BaseModel.extend({
 
 });
 
-},{"backbone":5}],60:[function(require,module,exports){
+},{"backbone":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/BaseItem.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -14674,7 +14688,7 @@ module.exports = BaseModel.extend({
 
 }).call(this,require("underscore"))
 
-},{"app/model/BaseModel":61,"underscore":51}],61:[function(require,module,exports){
+},{"app/model/BaseModel":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/BaseModel.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/BaseModel.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -14757,7 +14771,7 @@ module.exports = Backbone.Model.extend.call(Backbone.Model, BaseModelProto, Base
 
 }).call(this,require("underscore"))
 
-},{"backbone":5,"underscore":51}],62:[function(require,module,exports){
+},{"backbone":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/SelectableCollection.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -14904,7 +14918,7 @@ module.exports = SelectableCollection;
 
 }).call(this,require("underscore"))
 
-},{"backbone":5,"underscore":51}],63:[function(require,module,exports){
+},{"backbone":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/ArticleCollection.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -14929,7 +14943,7 @@ var ArticleCollection = SelectableCollection.extend({
 });
 module.exports = new ArticleCollection();
 
-},{"app/model/SelectableCollection":62,"app/model/item/ArticleItem":68}],64:[function(require,module,exports){
+},{"app/model/SelectableCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/SelectableCollection.js","app/model/item/ArticleItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/ArticleItem.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/BundleCollection.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -14971,7 +14985,7 @@ var BundleCollection = SelectableCollection.extend({
 });
 module.exports = new BundleCollection();
 
-},{"app/model/SelectableCollection":62,"app/model/item/BundleItem":69}],65:[function(require,module,exports){
+},{"app/model/SelectableCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/SelectableCollection.js","app/model/item/BundleItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/BundleItem.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/KeywordCollection.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -14997,7 +15011,7 @@ var KeywordCollection = SelectableCollection.extend({
 });
 module.exports = new KeywordCollection();
 
-},{"app/model/SelectableCollection":62,"app/model/item/KeywordItem":70}],66:[function(require,module,exports){
+},{"app/model/SelectableCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/SelectableCollection.js","app/model/item/KeywordItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/KeywordItem.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/TypeCollection.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -15023,7 +15037,7 @@ var TypeCollection = Backbone.Collection.extend({
 });
 module.exports = new TypeCollection();
 
-},{"app/model/item/TypeItem":73,"backbone":5}],67:[function(require,module,exports){
+},{"app/model/item/TypeItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/TypeItem.js","backbone":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/helper/bootstrap.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -15093,7 +15107,7 @@ module.exports = function (bootstrap) {
 
 }).call(this,require("underscore"))
 
-},{"app/control/Globals":55,"app/model/collection/ArticleCollection":63,"app/model/collection/BundleCollection":64,"app/model/collection/KeywordCollection":65,"app/model/collection/TypeCollection":66,"underscore":51}],68:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/model/collection/ArticleCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/ArticleCollection.js","app/model/collection/BundleCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/BundleCollection.js","app/model/collection/KeywordCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/KeywordCollection.js","app/model/collection/TypeCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/TypeCollection.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/ArticleItem.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -15121,7 +15135,7 @@ module.exports = BaseItem.extend({
   }
 });
 
-},{"app/model/BaseItem":60}],69:[function(require,module,exports){
+},{"app/model/BaseItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/BaseItem.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/BundleItem.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -15243,7 +15257,7 @@ module.exports = BaseItem.extend({
 
 }).call(this,require("underscore"))
 
-},{"app/control/Globals":55,"app/model/BaseItem":60,"app/model/SelectableCollection":62,"app/model/item/MediaItem":71,"color":12,"underscore":51,"utils/strings/stripTags":152}],70:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/model/BaseItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/BaseItem.js","app/model/SelectableCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/SelectableCollection.js","app/model/item/MediaItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/MediaItem.js","color":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color/index.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/strings/stripTags":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/strings/stripTags.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/KeywordItem.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -15284,7 +15298,7 @@ module.exports = BaseItem.extend({
 
 });
 
-},{"app/model/BaseItem":60}],71:[function(require,module,exports){
+},{"app/model/BaseItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/BaseItem.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/MediaItem.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -15437,7 +15451,7 @@ module.exports = BaseItem.extend({
 
 }).call(this,require("underscore"))
 
-},{"app/control/Globals":55,"app/model/BaseItem":60,"app/model/SelectableCollection":62,"app/model/item/SourceItem":72,"color":12,"underscore":51,"utils/strings/stripTags":152}],72:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/model/BaseItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/BaseItem.js","app/model/SelectableCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/SelectableCollection.js","app/model/item/SourceItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/SourceItem.js","color":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color/index.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/strings/stripTags":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/strings/stripTags.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/SourceItem.js":[function(require,module,exports){
 (function (DEBUG){
 "use strict";
 
@@ -15536,7 +15550,7 @@ module.exports = BaseItem.extend({
 
 }).call(this,true)
 
-},{"app/model/BaseItem":60}],73:[function(require,module,exports){
+},{"app/model/BaseItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/BaseItem.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/TypeItem.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -15565,7 +15579,7 @@ module.exports = BaseItem.extend({
   }
 });
 
-},{"app/model/BaseItem":60}],74:[function(require,module,exports){
+},{"app/model/BaseItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/BaseItem.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/AppView.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -15891,6 +15905,52 @@ module.exports = View.extend({
     this.listenTo(this.navigationView, "view:collapsed:measured", onMeasured);
     /* Google Analytics
      * ------------------------------- */
+    // if (window.GA_ID) {
+    // 	// let gaPageviewDisable = /(?:(localhost|\.local))$/.test(location.hostname) || window.GA_ID === "UA-0000000-0";
+    // 	if (window.gtag) {
+    // 		controller
+    // 			.on("route", (name) => {
+    // 				var page = Backbone.history.getFragment();
+    // 				// Add a slash if neccesary
+    // 				if (page.charAt(0) !== '/') {
+    // 					page = '/' + page;
+    // 				}
+    // 				// page.replace(/^(?!\/)/, "/");
+    // 				window.gtag('config', window.GA_ID, {
+    // 					'page_title': page,
+    // 					'page_path': page
+    // 				});
+    // 				console.warn("GTAG page set to '%s'", page);
+    // 			});
+    // 		// } else
+    // 		// if (window.ga) {
+    // 		// 	controller
+    // 		// 		.once("route", () => {
+    // 		// 			window.ga("create", window.GA_ID, "auto");
+    // 		// 			// if localhost or dummy ID, disable analytics
+    // 		// 			if (gaPageviewDisable) {
+    // 		// 				window.ga("set", "sendHitTask", null);
+    // 		// 			}
+    // 		// 			console.warn("GA enabled tag '%s'", window.GA_ID);
+    // 		// 		})
+    // 		// 		.on("route", (name) => {
+    // 		// 			var page = Backbone.history.getFragment();
+    // 		// 			// Add a slash if neccesary
+    // 		// 			if (page.charAt(0) !== '/') {
+    // 		// 				page = '/' + page;
+    // 		// 			}
+    // 		// 			// page.replace(/^(?!\/)/, "/");
+    // 		// 			window.ga("set", "page", page);
+    // 		// 			window.ga("send", "pageview");
+    // 		//
+    // 		// 			console.warn("GA page set to '%s'", page);
+    // 		// 		});
+    // 	} else {
+    // 		console.warn("GA/GTAG not loaded (LIB: %s, GA_ID: %s)", !!(window.ga || window.gtag), window.GA_ID);
+    // 	}
+    // } else {
+    // 	console.warn("GA/GTAG not enabled (LIB: %s, GA_ID: %s)", !!(window.ga || window.gtag), window.GA_ID);
+    // }
 
     if (window.ga && window.GA_ID) {
       controller.once("route", function () {
@@ -15898,14 +15958,22 @@ module.exports = View.extend({
 
         if (/(?:(localhost|\.local))$/.test(location.hostname) || window.GA_ID == "UA-0000000-0") {
           window.ga("set", "sendHitTask", null);
+          console.warn("GA disabled for localhost", window.GA_ID);
         }
       }).on("route", function (name) {
         var page = Backbone.history.getFragment(); // Add a slash if neccesary
 
-        page.replace(/^(?!\/)/, "/");
+        if (page.charAt(0) !== '/') {
+          page = '/' + page;
+        } // page.replace(/^(?!\/)/, "/");
+
+
         window.ga("set", "page", page);
         window.ga("send", "pageview");
+        console.warn("GA page set to '%s'", page);
       });
+    } else {
+      console.warn("GA not enabled (LIB: %s, GA_ENABLED: %s, GA_ID: %s)", !!window.ga, window.GA_ENABLED, window.GA_ID);
     }
     /* Startup listener, added last */
 
@@ -16177,7 +16245,7 @@ if (DEBUG) {
 
 }).call(this,true,require("underscore"))
 
-},{"app/control/Controller":54,"app/control/Globals":55,"app/debug/DebugToolbar":56,"app/model/AppState":59,"app/model/collection/ArticleCollection":63,"app/model/collection/BundleCollection":64,"app/view/ContentView":75,"app/view/NavigationView":76,"app/view/base/TouchManager":81,"app/view/base/View":82,"backbone":5,"underscore":51,"utils/strings/stripTags":152}],75:[function(require,module,exports){
+},{"app/control/Controller":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Controller.js","app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/debug/DebugToolbar":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/debug/DebugToolbar.js","app/model/AppState":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/AppState.js","app/model/collection/ArticleCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/ArticleCollection.js","app/model/collection/BundleCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/BundleCollection.js","app/view/ContentView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/ContentView.js","app/view/NavigationView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/NavigationView.js","app/view/base/TouchManager":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/TouchManager.js","app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js","backbone":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/strings/stripTags":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/strings/stripTags.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/ContentView.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -16697,7 +16765,7 @@ module.exports = View.extend({
       className: "media-carousel " + bundle.get("domid"),
       collection: bundle.get("media"),
       rendererFunction: rendererFunction,
-      requireSelection: false,
+      requireSelection: !!bundle.attr("@no-desc"),
       // direction: Carousel.DIRECTION_HORIZONTAL,
       touch: this.hpan
     });
@@ -16777,7 +16845,7 @@ module.exports = View.extend({
 
 }).call(this,require("underscore"))
 
-},{"./template/Carousel.EmptyRenderer.Bundle.hbs":120,"./template/CollectionStack.Media.hbs":121,"app/control/Controller":54,"app/control/Globals":55,"app/model/collection/ArticleCollection":63,"app/model/collection/BundleCollection":64,"app/view/base/View":82,"app/view/component/ArticleView":86,"app/view/component/Carousel":88,"app/view/component/CollectionStack":90,"app/view/component/SelectableListView":95,"app/view/render/CarouselRenderer":105,"app/view/render/DotNavigationRenderer":110,"app/view/render/ImageRenderer":112,"app/view/render/SequenceRenderer":117,"app/view/render/VideoRenderer":119,"underscore":51,"utils/TransformHelper":127}],76:[function(require,module,exports){
+},{"./template/Carousel.EmptyRenderer.Bundle.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/Carousel.EmptyRenderer.Bundle.hbs","./template/CollectionStack.Media.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/CollectionStack.Media.hbs","app/control/Controller":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Controller.js","app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/model/collection/ArticleCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/ArticleCollection.js","app/model/collection/BundleCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/BundleCollection.js","app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js","app/view/component/ArticleView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/ArticleView.js","app/view/component/Carousel":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/Carousel.js","app/view/component/CollectionStack":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/CollectionStack.js","app/view/component/SelectableListView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/SelectableListView.js","app/view/render/CarouselRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/CarouselRenderer.js","app/view/render/DotNavigationRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/DotNavigationRenderer.js","app/view/render/ImageRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/ImageRenderer.js","app/view/render/SequenceRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/SequenceRenderer.js","app/view/render/VideoRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/VideoRenderer.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/TransformHelper":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/TransformHelper.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/NavigationView.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -17045,7 +17113,9 @@ module.exports = View.extend({
       p = p.then(toggleGraph);
     }
 
-    p.then(this.transforms.whenAllTransitionsEnd()).then(whenCollapsedChangeDone).catch(function (reason) {
+    p.then(this.transforms.whenAllTransitionsEnd()).then(whenCollapsedChangeDone, function (reason) {
+      console.error(reason);
+    }).catch(function (reason) {
       console.warn("%s::renderFrame promise rejected", this.cid);
     }.bind(this));
     /*
@@ -17252,7 +17322,7 @@ module.exports = View.extend({
      */
 
 
-    if (Globals.BREAKPOINTS["medium-wide"].matches) {
+    if (Globals.BREAKPOINTS["medium-wide"].matches || Globals.BREAKPOINTS["medium-wide-stretch"].matches) {
       /* HORIZONTAL: keywordList.wrapper */
       tf = this.transforms.get(this.keywordList.wrapper);
 
@@ -17430,7 +17500,7 @@ module.exports = View.extend({
     // 	return;
     // }
 
-    if (Globals.BREAKPOINTS["medium-wide"].matches && this.model.get("bundle").get("media").selectedIndex <= 0 && this.model.get("collapsed")) {
+    if ((Globals.BREAKPOINTS["medium-wide"].matches || Globals.BREAKPOINTS["medium-wide-stretch"].matches) && this.model.get("routeName") === "bundleItem" && this.model.get("bundle").get("media").selectedIndex <= 0 && this.model.get("collapsed")) {
       this.transforms.get(this.keywordList.wrapper).clearCapture();
 
       this._onHPanMove(ev);
@@ -17756,7 +17826,7 @@ module.exports = View.extend({
 
 }).call(this,require("underscore"))
 
-},{"app/control/Controller":54,"app/control/Globals":55,"app/model/collection/ArticleCollection":63,"app/model/collection/BundleCollection":64,"app/model/collection/KeywordCollection":65,"app/model/collection/TypeCollection":66,"app/view/base/View":82,"app/view/component/ArticleButton":85,"app/view/component/FilterableListView":91,"app/view/component/GraphView":92,"app/view/component/GroupingListView":93,"hammerjs":15,"underscore":51,"utils/TransformHelper":127}],77:[function(require,module,exports){
+},{"app/control/Controller":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Controller.js","app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/model/collection/ArticleCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/ArticleCollection.js","app/model/collection/BundleCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/BundleCollection.js","app/model/collection/KeywordCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/KeywordCollection.js","app/model/collection/TypeCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/TypeCollection.js","app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js","app/view/component/ArticleButton":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/ArticleButton.js","app/view/component/FilterableListView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/FilterableListView.js","app/view/component/GraphView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/GraphView.js","app/view/component/GroupingListView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/GroupingListView.js","hammerjs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hammerjs/hammer.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/TransformHelper":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/TransformHelper.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/CallbackQueue.js":[function(require,module,exports){
 "use strict";
 
 var PriorityQueue = function PriorityQueue(offset) {
@@ -17958,7 +18028,7 @@ CallbackQueue.prototype = Object.create({
 });
 module.exports = CallbackQueue;
 
-},{}],78:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/CanvasView.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -18323,7 +18393,7 @@ module.exports = CanvasView;
 
 }).call(this,true,require("underscore"))
 
-},{"app/control/Globals":55,"app/view/base/Interpolator":79,"app/view/base/View":82,"underscore":51,"utils/css/getBoxEdgeStyles":139}],79:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/view/base/Interpolator":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/Interpolator.js","app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/css/getBoxEdgeStyles":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/css/getBoxEdgeStyles.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/Interpolator.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -18595,7 +18665,7 @@ module.exports = Interpolator;
 
 }).call(this,require("underscore"))
 
-},{"underscore":51,"utils/ease/fn/linear":142}],80:[function(require,module,exports){
+},{"underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/ease/fn/linear":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/ease/fn/linear.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/PrefixedEvents.js":[function(require,module,exports){
 (function (DEBUG){
 "use strict";
 
@@ -18638,7 +18708,7 @@ module.exports = eventMap; // module.exports = eventNum > 0? eventMap : null;
 
 }).call(this,true)
 
-},{"utils/prefixedEvent":145}],81:[function(require,module,exports){
+},{"utils/prefixedEvent":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedEvent.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/TouchManager.js":[function(require,module,exports){
 (function (DEBUG){
 "use strict";
 
@@ -18877,7 +18947,7 @@ function createInstance(el) {
 
 }).call(this,true)
 
-},{"app/control/Globals":55,"hammerjs":15,"utils/touch/SmoothPanRecognizer":153}],82:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","hammerjs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hammerjs/hammer.js","utils/touch/SmoothPanRecognizer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/touch/SmoothPanRecognizer.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -19230,6 +19300,8 @@ var ViewProto = {
     cid: {
       get: function get() {
         return this._cid || (this._cid = this.cidPrefix + _cidSeed++);
+      },
+      set: function set(value) {// ignored
       }
     },
     attached: {
@@ -19785,7 +19857,7 @@ module.exports = Backbone.View.extend(ViewProto, View);
 
 }).call(this,true,require("underscore"))
 
-},{"app/view/base/CallbackQueue":77,"app/view/base/PrefixedEvents":80,"app/view/base/ViewError":83,"app/view/promise/whenViewIsAttached":103,"app/view/promise/whenViewIsRendered":104,"backbone":5,"setimmediate":38,"underscore":51,"utils/prefixedEvent":145,"utils/prefixedProperty":146,"utils/prefixedStyleName":147}],83:[function(require,module,exports){
+},{"app/view/base/CallbackQueue":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/CallbackQueue.js","app/view/base/PrefixedEvents":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/PrefixedEvents.js","app/view/base/ViewError":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/ViewError.js","app/view/promise/whenViewIsAttached":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenViewIsAttached.js","app/view/promise/whenViewIsRendered":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenViewIsRendered.js","backbone":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js","setimmediate":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/setimmediate/setImmediate.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/prefixedEvent":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedEvent.js","utils/prefixedProperty":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedProperty.js","utils/prefixedStyleName":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedStyleName.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/ViewError.js":[function(require,module,exports){
 "use strict";
 
 function ViewError(view, err) {
@@ -19799,7 +19871,7 @@ ViewError.prototype.constructor = ViewError;
 ViewError.prototype.name = "ViewError";
 module.exports = ViewError;
 
-},{}],84:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/ArticleButton.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
@@ -19809,12 +19881,12 @@ module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":f
     + alias3((helpers.global || (depth0 && depth0.global) || alias2).call(alias1,"APP_ROOT",{"name":"global","hash":{},"data":data}))
     + "#"
     + alias3(((helper = (helper = helpers.handle || (depth0 != null ? depth0.handle : depth0)) != null ? helper : alias2),(typeof helper === alias4 ? helper.call(alias1,{"name":"handle","hash":{},"data":data}) : helper)))
-    + "\">"
+    + "\"><span class=\"label\">"
     + ((stack1 = ((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : alias2),(typeof helper === alias4 ? helper.call(alias1,{"name":"name","hash":{},"data":data}) : helper))) != null ? stack1 : "")
-    + "</a>\n";
+    + "</span></a>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":35}],85:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/ArticleButton.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -19863,7 +19935,7 @@ var ArticleButton = View.extend({
 });
 module.exports = ArticleButton;
 
-},{"./ArticleButton.hbs":84,"app/view/base/View":82}],86:[function(require,module,exports){
+},{"./ArticleButton.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/ArticleButton.hbs","app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/ArticleView.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -19877,6 +19949,14 @@ var View = require("app/view/base/View"); // /** @type {module:utils/net/toAbsol
 // /** @type {string} */
 // var ABS_APP_ROOT = toAbsoluteURL(require("app/control/Globals").APP_ROOT);
 
+
+var RECAPTCHA_KEYS = {
+  'canillas.name': '6LcaPHwUAAAAAAfzEnqRchIx8jY1YkUEpuswJDHx'
+};
+
+var RECAPTCHA_URL = function RECAPTCHA_URL(key) {
+  return "https://www.google.com/recaptcha/api.js?render=".concat(RECAPTCHA_KEYS[key]);
+};
 /**
 /* @constructor
 /* @type {module:app/view/component/ArticleView}
@@ -19900,7 +19980,13 @@ var ArticleView = View.extend({
   /* Render
   /* --------------------------- */
   renderFrame: function renderFrame(tstamp, flags) {
-    this.el.innerHTML = this.model.get("text"); // FIXME: now done in xslt
+    this.el.innerHTML = this.model.get("text"); // let linkEls = this.el.querySelectorAll("a[href]");
+    // if (linkEls.length) {
+    // 	RECAPTCHA_URL('canillas.name');
+    // }
+    // linkEls.forEach(el => {
+    // });
+    // FIXME: now done in xslt
     // this.el.querySelectorAll("a[href]").forEach(function(el) {
     // 	var url = toAbsoluteURL(el.getAttribute("href"));
     // 	if (url.indexOf(ABS_APP_ROOT) !== 0) {
@@ -19911,7 +19997,7 @@ var ArticleView = View.extend({
 });
 module.exports = ArticleView;
 
-},{"app/view/base/View":82}],87:[function(require,module,exports){
+},{"app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/CanvasProgressMeter.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -20381,7 +20467,7 @@ if (DEBUG) {
 
 }).call(this,true,require("underscore"))
 
-},{"app/view/base/CanvasView":78,"underscore":51,"utils/ease/fn/easeInQuad":140,"utils/ease/fn/easeOutQuad":141}],88:[function(require,module,exports){
+},{"app/view/base/CanvasView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/CanvasView.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/ease/fn/easeInQuad":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/ease/fn/easeInQuad.js","utils/ease/fn/easeOutQuad":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/ease/fn/easeOutQuad.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/Carousel.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -21386,7 +21472,7 @@ module.exports = Carousel = View.extend(CarouselProto, Carousel);
 
 }).call(this,true,require("underscore"))
 
-},{"app/control/Globals":55,"app/view/base/View":82,"app/view/render/CarouselRenderer":105,"backbone.babysitter":3,"hammerjs":15,"underscore":51,"utils/prefixedProperty":146,"utils/prefixedStyleName":147,"utils/touch/SmoothPanRecognizer":153}],89:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js","app/view/render/CarouselRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/CarouselRenderer.js","backbone.babysitter":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone.babysitter/lib/backbone.babysitter.js","hammerjs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hammerjs/hammer.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/prefixedProperty":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedProperty.js","utils/prefixedStyleName":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedStyleName.js","utils/touch/SmoothPanRecognizer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/touch/SmoothPanRecognizer.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/CollectionStack.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
@@ -21395,7 +21481,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":f
   return container.escapeExpression(((helper = (helper = helpers.id || (depth0 != null ? depth0.id : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"id","hash":{},"data":data}) : helper)));
 },"useData":true});
 
-},{"hbsfy/runtime":35}],90:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/CollectionStack.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -21492,7 +21578,7 @@ module.exports = View.extend({
   }
 });
 
-},{"./CollectionStack.hbs":89,"app/view/base/View":82}],91:[function(require,module,exports){
+},{"./CollectionStack.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/CollectionStack.hbs","app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/FilterableListView.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -22090,7 +22176,7 @@ module.exports = FilterableListView;
 
 }).call(this,true,require("underscore"))
 
-},{"app/control/Globals":55,"app/view/base/View":82,"app/view/render/ClickableRenderer":106,"backbone.babysitter":3,"underscore":51,"utils/array/difference":129,"utils/css/getBoxEdgeStyles":139,"utils/prefixedProperty":146,"utils/promise/rejectAll":149,"utils/promise/resolveAll":150}],92:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js","app/view/render/ClickableRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/ClickableRenderer.js","backbone.babysitter":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone.babysitter/lib/backbone.babysitter.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/array/difference":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/array/difference.js","utils/css/getBoxEdgeStyles":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/css/getBoxEdgeStyles.js","utils/prefixedProperty":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedProperty.js","utils/promise/rejectAll":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/promise/rejectAll.js","utils/promise/resolveAll":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/promise/resolveAll.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/GraphView.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -22943,7 +23029,7 @@ module.exports = GraphView;
 
 }).call(this,true,require("underscore"))
 
-},{"app/control/Globals":55,"app/view/base/CanvasView":78,"color":12,"underscore":51,"utils/canvas/CanvasHelper":130,"utils/canvas/calcArcHConnector":138,"utils/geom/inflateRect":144}],93:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/view/base/CanvasView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/CanvasView.js","color":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color/index.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/canvas/CanvasHelper":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/CanvasHelper.js","utils/canvas/calcArcHConnector":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/calcArcHConnector.js","utils/geom/inflateRect":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/geom/inflateRect.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/GroupingListView.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -23160,7 +23246,7 @@ module.exports = GroupingListView;
 
 }).call(this,require("underscore"))
 
-},{"app/view/component/FilterableListView":91,"app/view/render/ClickableRenderer":106,"app/view/render/LabelRenderer":113,"underscore":51}],94:[function(require,module,exports){
+},{"app/view/component/FilterableListView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/FilterableListView.js","app/view/render/ClickableRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/ClickableRenderer.js","app/view/render/LabelRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/LabelRenderer.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/PlayToggleSymbol.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -23527,7 +23613,7 @@ module.exports = CanvasView.extend({
 
 }).call(this,require("underscore"))
 
-},{"app/control/Globals":55,"app/view/base/CanvasView":78,"color":12,"underscore":51,"utils/canvas/CanvasHelper":130,"utils/canvas/bitmap/desaturate":132,"utils/canvas/bitmap/getAverageRGB":133,"utils/canvas/bitmap/multiply":135,"utils/canvas/bitmap/stackBlurRGB":137,"utils/ease/fn/easeInQuad":140,"utils/ease/fn/easeOutQuad":141}],95:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/view/base/CanvasView":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/CanvasView.js","color":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color/index.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/canvas/CanvasHelper":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/CanvasHelper.js","utils/canvas/bitmap/desaturate":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/desaturate.js","utils/canvas/bitmap/getAverageRGB":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/getAverageRGB.js","utils/canvas/bitmap/multiply":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/multiply.js","utils/canvas/bitmap/stackBlurRGB":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/stackBlurRGB.js","utils/ease/fn/easeInQuad":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/ease/fn/easeInQuad.js","utils/ease/fn/easeOutQuad":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/ease/fn/easeOutQuad.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/SelectableListView.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -23693,7 +23779,7 @@ var SelectableListView = View.extend({
 });
 module.exports = SelectableListView;
 
-},{"app/view/base/View":82,"app/view/render/ClickableRenderer":106,"app/view/render/DefaultSelectableRenderer":108,"backbone.babysitter":3}],96:[function(require,module,exports){
+},{"app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js","app/view/render/ClickableRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/ClickableRenderer.js","app/view/render/DefaultSelectableRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/DefaultSelectableRenderer.js","backbone.babysitter":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone.babysitter/lib/backbone.babysitter.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/helper/createColorStyleSheet.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -23844,7 +23930,14 @@ function initCarouselStyles(sheet, carouselSelector, attrs, fgColor, bgColor, ln
   // s["background-color"] = Color(bgColor)[hasDarkBg ? "lighten" : "darken"](0.03).rgb().string();
 
   "border-radius" in attrs && (s["border-radius"] = attrs["border-radius"]);
-  insertCSSRule(sheet, carouselSelector + " .media-item .placeholder", s); // .empty-item A
+  insertCSSRule(sheet, carouselSelector + " .media-item .placeholder", s); // .image-item img
+  // .sequence-item .sequence-step
+  // - - - - - - - - - - - - - - - -
+
+  s = {};
+  s["background-color"] = bgColor.rgb().string();
+  insertCSSRule(sheet, carouselSelector + " .image-item img", s);
+  insertCSSRule(sheet, carouselSelector + " .sequence-item .sequence-step", s); // .empty-item A
   // - - - - - - - - - - - - - - - -
 
   s = {};
@@ -23897,10 +23990,9 @@ module.exports = function () {
 
 }).call(this,require("underscore"))
 
-},{"app/control/Globals":55,"app/model/collection/BundleCollection":64,"color":12,"underscore":51}],97:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/model/collection/BundleCollection":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/collection/BundleCollection.js","color":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color/index.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/_loadImageAsObjectURL.js":[function(require,module,exports){
 "use strict";
 
-/*global XMLHttpRequest */
 // /** @type {module:underscore.string/lpad} */
 // var classify = require("underscore.string/classify");
 // var statusMsg = _.template("<%= status %> received from <%= url %> (<%= statusText %>)");
@@ -23915,10 +24007,10 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 
       var errorFromEvent = function errorFromEvent(ev) {
         var err = new Error((ev.target.status > 0 ? "http_" + request.statusText.replace(/\s/g, "_") : ev.type + "_event").toUpperCase());
+        err.logMessage = "_loadImageAsObjectURL::" + ev.type + " [reject]";
         err.infoCode = ev.target.status;
         err.infoSrc = url;
         err.logEvent = ev;
-        err.logMessage = "_loadImageAsObjectURL::" + ev.type + " [reject]";
         return err;
       }; // if progressFn is supplied
       // - - - - - - - - - - - - - - - - - -
@@ -23976,7 +24068,7 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
   };
 }
 
-},{}],98:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/_whenImageLoads.js":[function(require,module,exports){
 "use strict";
 
 module.exports = function (image, resolveEmpty) {
@@ -24024,7 +24116,7 @@ module.exports = function (image, resolveEmpty) {
   });
 };
 
-},{}],99:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenDefaultImageLoads.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -24045,7 +24137,6 @@ module.exports = function (view) {
       view.defaultImage.src = source.get("prefetched");
 
       _whenImageLoads(view.defaultImage).then(function (targetEl) {
-        // console.log(logMessage, view.cid, "resolved", "prefetched");
         resolve(view);
       });
     } else {
@@ -24067,11 +24158,9 @@ module.exports = function (view) {
           source.set("prefetched", url);
         }
 
-        view.defaultImage.src = url; // URL.revokeObjectURL(url);
-
+        view.defaultImage.src = url;
         return view.defaultImage;
       }).then(_whenImageLoads).then(function (targetEl) {
-        // console.log(logMessage, view.cid, "resolved", targetEl.src);
         view.on("view:removed", function () {
           var prefetched = source.get("prefetched");
 
@@ -24081,16 +24170,9 @@ module.exports = function (view) {
             });
             URL.revokeObjectURL(prefetched);
           }
-        }); // view.placeholder.removeAttribute("data-progress");
-        // view.updateMediaProgress(imageUrl, "complete");
-
+        });
         resolve(view);
-      }, // 	})
-      // .catch(
-      function (err) {
-        // console.warn(logMessage, view.cid, "rejected", err.message);
-        // view.placeholder.removeAttribute("data-progress");
-        // view.updateMediaProgress(imageUrl, progress);
+      }, function (err) {
         reject(err);
       });
     }
@@ -24099,7 +24181,7 @@ module.exports = function (view) {
 
 }).call(this,require("underscore"))
 
-},{"app/view/promise/_loadImageAsObjectURL":97,"app/view/promise/_whenImageLoads":98,"underscore":51}],100:[function(require,module,exports){
+},{"app/view/promise/_loadImageAsObjectURL":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/_loadImageAsObjectURL.js","app/view/promise/_whenImageLoads":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/_whenImageLoads.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenScrollingEnds.js":[function(require,module,exports){
 "use strict";
 
 /* global Promise */
@@ -24186,7 +24268,7 @@ module.exports = function(view) {
 };
 */
 
-},{"app/view/base/ViewError":83,"app/view/promise/whenViewIsAttached":103}],101:[function(require,module,exports){
+},{"app/view/base/ViewError":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/ViewError.js","app/view/promise/whenViewIsAttached":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenViewIsAttached.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenSelectionDistanceIs.js":[function(require,module,exports){
 "use strict";
 
 /** @type {module:app/view/base/ViewError} */
@@ -24240,7 +24322,7 @@ module.exports = function (view, distance) {
   });
 };
 
-},{"app/view/base/ViewError":83}],102:[function(require,module,exports){
+},{"app/view/base/ViewError":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/ViewError.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenSelectionIsContiguous.js":[function(require,module,exports){
 "use strict";
 
 // /** @type {module:app/view/base/ViewError} */
@@ -24255,7 +24337,7 @@ module.exports = function (view) {
   return whenSelectionDistanceIs(view, 1);
 };
 
-},{"app/view/promise/whenSelectionDistanceIs":101}],103:[function(require,module,exports){
+},{"app/view/promise/whenSelectionDistanceIs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenSelectionDistanceIs.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenViewIsAttached.js":[function(require,module,exports){
 "use strict";
 
 module.exports = function (view) {
@@ -24270,7 +24352,7 @@ module.exports = function (view) {
   });
 };
 
-},{}],104:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenViewIsRendered.js":[function(require,module,exports){
 "use strict";
 
 module.exports = function (view) {
@@ -24285,7 +24367,7 @@ module.exports = function (view) {
   });
 };
 
-},{}],105:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/CarouselRenderer.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -24401,7 +24483,7 @@ module.exports = CarouselRenderer;
 
 }).call(this,require("underscore"))
 
-},{"app/view/base/View":82,"underscore":51,"utils/css/getBoxEdgeStyles":139}],106:[function(require,module,exports){
+},{"app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/css/getBoxEdgeStyles":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/css/getBoxEdgeStyles.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/ClickableRenderer.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -24453,7 +24535,7 @@ var ClickableRenderer = LabelRenderer.extend({
 });
 module.exports = ClickableRenderer;
 
-},{"app/view/render/LabelRenderer":113}],107:[function(require,module,exports){
+},{"app/view/render/LabelRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/LabelRenderer.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/DefaultSelectableRenderer.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
@@ -24466,7 +24548,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":f
     + "</span></a>";
 },"useData":true});
 
-},{"hbsfy/runtime":35}],108:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/DefaultSelectableRenderer.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -24510,7 +24592,7 @@ var DefaultSelectableRenderer = ClickableRenderer.extend({
 });
 module.exports = DefaultSelectableRenderer;
 
-},{"./DefaultSelectableRenderer.hbs":107,"app/view/render/ClickableRenderer":106}],109:[function(require,module,exports){
+},{"./DefaultSelectableRenderer.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/DefaultSelectableRenderer.hbs","app/view/render/ClickableRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/ClickableRenderer.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/DotNavigationRenderer.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
@@ -24523,7 +24605,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":f
     + "\"><b> </b></a>";
 },"useData":true});
 
-},{"hbsfy/runtime":35}],110:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/DotNavigationRenderer.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -24587,7 +24669,7 @@ var DotNavigationRenderer = View.extend({
 });
 module.exports = DotNavigationRenderer;
 
-},{"./DotNavigationRenderer.hbs":109,"app/view/base/View":82}],111:[function(require,module,exports){
+},{"./DotNavigationRenderer.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/DotNavigationRenderer.hbs","app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/ImageRenderer.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
@@ -24600,7 +24682,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":f
     + "\" />\n";
 },"useData":true});
 
-},{"hbsfy/runtime":35}],112:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/ImageRenderer.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -24651,8 +24733,15 @@ var ImageRenderer = MediaRenderer.extend({
     MediaRenderer.prototype.render.apply(this, arguments); // this.measure();
 
     var img = this.getDefaultImage();
-    img.setAttribute("width", this.metrics.media.width);
-    img.setAttribute("height", this.metrics.media.height);
+
+    if (this.metrics.media.width) {
+      img.setAttribute("width", this.metrics.media.width);
+    }
+
+    if (this.metrics.media.height) {
+      img.setAttribute("height", this.metrics.media.height);
+    }
+
     var content = this.getContentEl();
     content.style.left = this.metrics.content.x + "px";
     content.style.top = this.metrics.content.y + "px"; // var sizing = this.getSizingEl();
@@ -24691,7 +24780,7 @@ var ImageRenderer = MediaRenderer.extend({
 });
 module.exports = ImageRenderer;
 
-},{"./ImageRenderer.hbs":111,"./MediaRenderer":114}],113:[function(require,module,exports){
+},{"./ImageRenderer.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/ImageRenderer.hbs","./MediaRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/MediaRenderer.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/LabelRenderer.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -24736,7 +24825,7 @@ var LabelRenderer = View.extend({
 });
 module.exports = LabelRenderer;
 
-},{"app/view/base/View":82}],114:[function(require,module,exports){
+},{"app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/MediaRenderer.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -24873,8 +24962,14 @@ var MediaRenderer = CarouselRenderer.extend({
     eh = cm.paddingTop + cm.paddingBottom + cm.borderTopWidth + cm.borderBottomWidth;
     pcw -= ew;
     pch -= eh;
-    sw = this.model.get("source").get("w");
-    sh = this.model.get("source").get("h"); // Unless both client dimensions are larger than the source's
+    sw = this.model.get("source").get("w"); // || this.defaultImage.naturalWidth || pcw;
+
+    sh = this.model.get("source").get("h"); // || this.defaultImage.naturalHeight || pch;
+    // if (!(sw && sh)) {
+    // 	sw = pcw;
+    // 	sh = pch;
+    // }
+    // Unless both client dimensions are larger than the source's
     // choose constraint direction by aspect ratio
 
     if (sw < pcw && sh < pch) {
@@ -25090,8 +25185,8 @@ module.exports = MediaRenderer;
 
 }).call(this,true,require("underscore"))
 
-},{"app/model/item/MediaItem":71,"app/view/promise/whenDefaultImageLoads":99,"app/view/promise/whenScrollingEnds":100,"app/view/promise/whenSelectionDistanceIs":101,"app/view/promise/whenSelectionIsContiguous":102,"app/view/render/CarouselRenderer":105,"color":12,"underscore":51,"underscore.string/lpad":47}],115:[function(require,module,exports){
-(function (DEBUG,GA,_){
+},{"app/model/item/MediaItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/model/item/MediaItem.js","app/view/promise/whenDefaultImageLoads":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenDefaultImageLoads.js","app/view/promise/whenScrollingEnds":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenScrollingEnds.js","app/view/promise/whenSelectionDistanceIs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenSelectionDistanceIs.js","app/view/promise/whenSelectionIsContiguous":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/whenSelectionIsContiguous.js","app/view/render/CarouselRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/CarouselRenderer.js","color":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color/index.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","underscore.string/lpad":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/lpad.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/PlayableRenderer.js":[function(require,module,exports){
+(function (DEBUG,_){
 "use strict";
 
 /**
@@ -25669,7 +25764,7 @@ var PlayableRenderer = MediaRenderer.extend({
 /* Google Analytics
 /* --------------------------- */
 
-if (GA) {
+if (window.GA_ENABLED) {
   PlayableRenderer = function (PlayableRenderer) {
     /** @type {module:underscore.strings/dasherize} */
     var dasherize = require("underscore.string/dasherize"); // var readyEvents = ["playing", "waiting", "ended"];
@@ -25746,9 +25841,9 @@ if (GA) {
 
 module.exports = PlayableRenderer;
 
-}).call(this,true,false,require("underscore"))
+}).call(this,true,require("underscore"))
 
-},{"app/view/render/MediaRenderer":114,"underscore":51,"underscore.string/dasherize":42,"utils/prefixedEvent":145,"utils/prefixedProperty":146}],116:[function(require,module,exports){
+},{"app/view/render/MediaRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/MediaRenderer.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","underscore.string/dasherize":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/dasherize.js","utils/prefixedEvent":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedEvent.js","utils/prefixedProperty":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedProperty.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/SequenceRenderer.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
@@ -25761,7 +25856,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":f
     + "\" />\n	</div>\n	<div class=\"overlay media-size play-toggle-hitarea\">\n		<canvas class=\"play-toggle\"/>\n	</div>\n</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":35}],117:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/SequenceRenderer.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -26197,10 +26292,13 @@ var SequenceRenderer = PlayableRenderer.extend({
         // view.stopListening(item, "change:progress");
         var prefetched = item.get("prefetched");
 
-        if (prefetched && /^blob\:/.test(prefetched)) {
+        if (prefetched) {
           item.set("progress", 0, silent);
           item.unset("prefetched", silent);
-          URL.revokeObjectURL(prefetched);
+
+          if (/^blob\:/.test(prefetched)) {
+            URL.revokeObjectURL(prefetched);
+          }
         }
       });
     });
@@ -26222,6 +26320,7 @@ var SequenceRenderer = PlayableRenderer.extend({
           view.once("view:remove", function (view) {
             view.stopListening(item, "change:progress", onItemProgress);
           });
+          console.log("%s:_preloadAllItems", view.cid, item.get("original"), item.get("mime"));
           return _loadImageAsObjectURL(item.get("original"), function (progress, request) {
             /* NOTE: Since we are calling URL.revokeObjectURL when view is removed, also abort incomplete requests. Otherwise, clear the callback reference from XMLHttpRequest.onprogress  */
             if (view._viewPhase === "disposed") {
@@ -26544,7 +26643,7 @@ module.exports = SequenceRenderer;
 
 }).call(this,true,require("underscore"))
 
-},{"../template/ErrorBlock.hbs":122,"./SequenceRenderer.hbs":116,"app/control/Globals":55,"app/view/base/View":82,"app/view/component/CanvasProgressMeter":87,"app/view/component/PlayToggleSymbol":94,"app/view/promise/_loadImageAsObjectURL":97,"app/view/promise/_whenImageLoads":98,"app/view/render/PlayableRenderer":115,"backbone.babysitter":3,"underscore":51,"underscore.string/capitalize":41,"underscore.string/lpad":47,"utils/Timer":126}],118:[function(require,module,exports){
+},{"../template/ErrorBlock.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/ErrorBlock.hbs","./SequenceRenderer.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/SequenceRenderer.hbs","app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/view/base/View":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/base/View.js","app/view/component/CanvasProgressMeter":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/CanvasProgressMeter.js","app/view/component/PlayToggleSymbol":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/PlayToggleSymbol.js","app/view/promise/_loadImageAsObjectURL":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/_loadImageAsObjectURL.js","app/view/promise/_whenImageLoads":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/promise/_whenImageLoads.js","app/view/render/PlayableRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/PlayableRenderer.js","backbone.babysitter":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone.babysitter/lib/backbone.babysitter.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","underscore.string/capitalize":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/capitalize.js","underscore.string/lpad":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/lpad.js","utils/Timer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/Timer.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/VideoRenderer.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 var partial$0 = require('../template/svg/FullscreenSymbol.hbs');
@@ -26559,7 +26658,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":f
     + "		</a>\n	</div>\n</div>\n";
 },"usePartial":true,"useData":true});
 
-},{"../template/svg/FullscreenSymbol.hbs":125,"hbsfy/runtime":35}],119:[function(require,module,exports){
+},{"../template/svg/FullscreenSymbol.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/svg/FullscreenSymbol.hbs","hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/VideoRenderer.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -27557,7 +27656,7 @@ if (DEBUG) {
 
 }).call(this,true,require("underscore"))
 
-},{"./VideoRenderer.hbs":118,"app/control/Globals":55,"app/view/component/CanvasProgressMeter":87,"app/view/component/PlayToggleSymbol":94,"app/view/render/PlayableRenderer":115,"color":12,"underscore":51,"underscore.string/lpad":47,"underscore.string/rpad":49,"utils/event/mediaEventsEnum":143,"utils/prefixedEvent":145}],120:[function(require,module,exports){
+},{"./VideoRenderer.hbs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/VideoRenderer.hbs","app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","app/view/component/CanvasProgressMeter":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/CanvasProgressMeter.js","app/view/component/PlayToggleSymbol":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/component/PlayToggleSymbol.js","app/view/render/PlayableRenderer":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/render/PlayableRenderer.js","color":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color/index.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","underscore.string/lpad":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/lpad.js","underscore.string/rpad":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore.string/rpad.js","utils/event/mediaEventsEnum":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/event/mediaEventsEnum.js","utils/prefixedEvent":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedEvent.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/Carousel.EmptyRenderer.Bundle.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
@@ -27570,7 +27669,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":f
     + "</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":35}],121:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/CollectionStack.Media.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
@@ -27585,7 +27684,7 @@ module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":f
     + "</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":35}],122:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/ErrorBlock.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"1":function(container,depth0,helpers,partials,data) {
@@ -27608,7 +27707,7 @@ module.exports = HandlebarsCompiler.template({"1":function(container,depth0,help
     + "</div>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":35}],123:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/_helpers.js":[function(require,module,exports){
 "use strict";
 
 // var Handlebars = require("handlebars")["default"];
@@ -27712,21 +27811,21 @@ for (var helper in helpers) {
 } // })();
 // module.exports = Handlebars;
 
-},{"app/control/Globals":55,"color":12,"hbsfy/runtime":35}],124:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","color":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/color/index.js","hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/svg/CogSymbol.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     return "<svg class=\"cog-symbol icon\" viewBox=\"-100 -100 200 200\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" preserveAspectRatio=\"xMidYMid meet\">\n	<path d=\"M11.754,-99.307c-7.809,-0.924 -15.699,-0.924 -23.508,0l-3.73,20.82c-6.254,1.234 -12.338,3.21 -18.123,5.888l-15.255,-14.651c-6.861,3.842 -13.244,8.48 -19.018,13.818l9.22,19.036c-4.335,4.674 -8.095,9.849 -11.201,15.416l-20.953,-2.886c-3.292,7.141 -5.731,14.645 -7.265,22.357l18.648,9.981c-0.759,6.329 -0.759,12.727 0,19.056l-18.648,9.981c1.534,7.712 3.973,15.216 7.265,22.357l20.953,-2.886c3.106,5.567 6.866,10.742 11.201,15.416l-9.22,19.036c5.774,5.338 12.157,9.976 19.018,13.818l15.255,-14.651c5.785,2.678 11.869,4.654 18.123,5.888l3.73,20.82c7.809,0.924 15.699,0.924 23.508,0l3.73,-20.82c6.254,-1.234 12.338,-3.21 18.123,-5.888l15.255,14.651c6.861,-3.842 13.244,-8.48 19.018,-13.818l-9.22,-19.036c4.335,-4.674 8.095,-9.849 11.201,-15.416l20.953,2.886c3.292,-7.141 5.731,-14.645 7.265,-22.357l-18.648,-9.981c0.759,-6.329 0.759,-12.727 0,-19.056l18.648,-9.981c-1.534,-7.712 -3.973,-15.216 -7.265,-22.357l-20.953,2.886c-3.106,-5.567 -6.866,-10.742 -11.201,-15.416l9.22,-19.036c-5.774,-5.338 -12.157,-9.976 -19.018,-13.818l-15.255,14.651c-5.785,-2.678 -11.869,-4.654 -18.123,-5.888l-3.73,-20.82ZM0,-33c18.213,0 33,14.787 33,33c0,18.213 -14.787,33 -33,33c-18.213,0 -33,-14.787 -33,-33c0,-18.213 14.787,-33 33,-33Z\" style=\"fill:currentColor;fill-rule:evenodd;\"/>\n</svg>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":35}],125:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/view/template/svg/FullscreenSymbol.hbs":[function(require,module,exports){
 // hbsfy compiled Handlebars template
 var HandlebarsCompiler = require('hbsfy/runtime');
 module.exports = HandlebarsCompiler.template({"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     return "<svg class=\"fullscreen-symbol\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" preserveAspectRatio=\"xMidYMid meet\" viewBox=\"-21 -21 42 42\">\n	<path id=\"fullscreen-shadow\" d=\"M-5,5 L-20,20 M-7,20 L-20,20 L-20,7 M5,-5 L20,-20 M7,-20 L20,-20 L20,-7\" class=\"bg-color-stroke\" style=\"fill:none\" vector-effect=\"non-scaling-stroke\" transform=\"translate(2 2)\"/>\n	<path id=\"fullscreen-path\" d=\"M-5,5 L-20,20 M-7,20 L-20,20 L-20,7 M5,-5 L20,-20 M7,-20 L20,-20 L20,-7\" class=\"color-stroke\" style=\"fill:none\" vector-effect=\"non-scaling-stroke\" />\n</svg>\n";
 },"useData":true});
 
-},{"hbsfy/runtime":35}],126:[function(require,module,exports){
+},{"hbsfy/runtime":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hbsfy/runtime.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/Timer.js":[function(require,module,exports){
 (function (_){
 "use strict";
 
@@ -27867,7 +27966,7 @@ module.exports = Timer;
 
 }).call(this,require("underscore"))
 
-},{"backbone":5,"underscore":51}],127:[function(require,module,exports){
+},{"backbone":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/backbone/backbone.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/TransformHelper.js":[function(require,module,exports){
 "use strict";
 
 /* -------------------------------
@@ -28121,7 +28220,7 @@ TransformHelper.prototype = Object.create({
 });
 module.exports = TransformHelper;
 
-},{"./TransformItem":128}],128:[function(require,module,exports){
+},{"./TransformItem":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/TransformItem.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/TransformItem.js":[function(require,module,exports){
 (function (DEBUG,_){
 "use strict";
 
@@ -28272,10 +28371,11 @@ var resolveAll = function resolveAll(pp, result) {
 var rejectAll = function rejectAll(pp, reason) {
   if (pp.length != 0) {
     pp.forEach(function (p, i, a) {
-      p.reject(reason);
+      p.reject(reason); //
+
       a[i] = null;
     });
-    pp.length = 0;
+    pp.length = 0; //
   }
 
   return pp;
@@ -28327,8 +28427,8 @@ TransformItem.prototype = Object.create({
     // NOTE: style property may have been modified; clearOffset(element) should
     // be called explicitly if clean up is required.
     this.el.removeEventListener(transitionEnd, this._onTransitionEnd, false);
-    rejectAll(this._pendingPromises, this);
-    rejectAll(this._promises, this); // delete this.el.eid;
+    resolveAll(this._pendingPromises, this);
+    resolveAll(this._promises, this); // delete this.el.eid;
   },
 
   /* capture
@@ -28560,11 +28660,11 @@ TransformItem.prototype = Object.create({
       // this._validateCapture();
       this._transitionInvalid = false; // save promises made while invalid
 
-      var reject = this._promises; // prepare _promises and push in new ones
+      var pp = this._promises; // prepare _promises and push in new ones
 
       this._promises = this._pendingPromises; // whatever still here is to be rejected. reuse array
 
-      this._pendingPromises = rejectAll(reject, this); // Set running flag, if there's a transition to run
+      this._pendingPromises = resolveAll(pp, this); // Set running flag, if there's a transition to run
 
       this._transitionRunning = this._hasTransition; // Set the css value (which will be empty string if there's no transition)
 
@@ -28681,7 +28781,7 @@ module.exports = TransformItem;
 
 }).call(this,true,require("underscore"))
 
-},{"app/control/Globals":55,"underscore":51,"utils/prefixedEvent":145,"utils/prefixedProperty":146,"utils/prefixedStyleName":147,"utils/strings/camelToDashed":151}],129:[function(require,module,exports){
+},{"app/control/Globals":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/control/Globals.js","underscore":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/underscore/underscore.js","utils/prefixedEvent":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedEvent.js","utils/prefixedProperty":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedProperty.js","utils/prefixedStyleName":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedStyleName.js","utils/strings/camelToDashed":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/strings/camelToDashed.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/array/difference.js":[function(require,module,exports){
 "use strict";
 
 module.exports = function (a1, a2, dest) {
@@ -28691,7 +28791,7 @@ module.exports = function (a1, a2, dest) {
   }, dest !== void 0 ? dest : []);
 };
 
-},{}],130:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/CanvasHelper.js":[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -28881,7 +28981,7 @@ module.exports = {
   }
 };
 
-},{}],131:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/BlurStack.js":[function(require,module,exports){
 "use strict";
 
 /*
@@ -28932,7 +29032,7 @@ module.exports = function () {
   this.next = null;
 };
 
-},{}],132:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/desaturate.js":[function(require,module,exports){
 "use strict";
 
 module.exports = function (imageData, adj) {
@@ -29009,7 +29109,7 @@ module.exports = function (imageData, adj) {
 //     ];
 // }
 
-},{}],133:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/getAverageRGB.js":[function(require,module,exports){
 "use strict";
 
 module.exports = function (imageData, opts) {
@@ -29031,7 +29131,7 @@ module.exports = function (imageData, opts) {
   return rgbAvg;
 };
 
-},{}],134:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/mul_table.js":[function(require,module,exports){
 "use strict";
 
 /*
@@ -29076,7 +29176,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 module.exports = [512, 512, 456, 512, 328, 456, 335, 512, 405, 328, 271, 456, 388, 335, 292, 512, 454, 405, 364, 328, 298, 271, 496, 456, 420, 388, 360, 335, 312, 292, 273, 512, 482, 454, 428, 405, 383, 364, 345, 328, 312, 298, 284, 271, 259, 496, 475, 456, 437, 420, 404, 388, 374, 360, 347, 335, 323, 312, 302, 292, 282, 273, 265, 512, 497, 482, 468, 454, 441, 428, 417, 405, 394, 383, 373, 364, 354, 345, 337, 328, 320, 312, 305, 298, 291, 284, 278, 271, 265, 259, 507, 496, 485, 475, 465, 456, 446, 437, 428, 420, 412, 404, 396, 388, 381, 374, 367, 360, 354, 347, 341, 335, 329, 323, 318, 312, 307, 302, 297, 292, 287, 282, 278, 273, 269, 265, 261, 512, 505, 497, 489, 482, 475, 468, 461, 454, 447, 441, 435, 428, 422, 417, 411, 405, 399, 394, 389, 383, 378, 373, 368, 364, 359, 354, 350, 345, 341, 337, 332, 328, 324, 320, 316, 312, 309, 305, 301, 298, 294, 291, 287, 284, 281, 278, 274, 271, 268, 265, 262, 259, 257, 507, 501, 496, 491, 485, 480, 475, 470, 465, 460, 456, 451, 446, 442, 437, 433, 428, 424, 420, 416, 412, 408, 404, 400, 396, 392, 388, 385, 381, 377, 374, 370, 367, 363, 360, 357, 354, 350, 347, 344, 341, 338, 335, 332, 329, 326, 323, 320, 318, 315, 312, 310, 307, 304, 302, 299, 297, 294, 292, 289, 287, 285, 282, 280, 278, 275, 273, 271, 269, 267, 265, 263, 261, 259];
 
-},{}],135:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/multiply.js":[function(require,module,exports){
 "use strict";
 
 module.exports = function (pixels, adjustment) {
@@ -29091,7 +29191,7 @@ module.exports = function (pixels, adjustment) {
   return pixels;
 };
 
-},{}],136:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/shg_table.js":[function(require,module,exports){
 "use strict";
 
 /*
@@ -29136,7 +29236,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 module.exports = [9, 11, 12, 13, 13, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 17, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24];
 
-},{}],137:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/stackBlurRGB.js":[function(require,module,exports){
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -29357,7 +29457,7 @@ module.exports = function (imageData, opts) {
 };
 /* jshint ignore:end */
 
-},{"./BlurStack":131,"./mul_table":134,"./shg_table":136}],138:[function(require,module,exports){
+},{"./BlurStack":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/BlurStack.js","./mul_table":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/mul_table.js","./shg_table":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/bitmap/shg_table.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/canvas/calcArcHConnector.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -29500,7 +29600,7 @@ var drawArcConnector1 = function(ctx, x1, y1, x2, y2, r) {
 };
 */
 
-},{}],139:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/css/getBoxEdgeStyles.js":[function(require,module,exports){
 (function (DEBUG){
 "use strict";
 
@@ -29572,7 +29672,7 @@ module.exports = function (s, m, includeSizePos) {
 
 }).call(this,true)
 
-},{}],140:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/ease/fn/easeInQuad.js":[function(require,module,exports){
 "use strict";
 
 /* easeInQuad */
@@ -29580,7 +29680,7 @@ module.exports = function (x, t, b, c, d) {
   return c * (t /= d) * t + b;
 };
 
-},{}],141:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/ease/fn/easeOutQuad.js":[function(require,module,exports){
 "use strict";
 
 /* easeOutQuad */
@@ -29588,7 +29688,7 @@ module.exports = function (t, b, c, d) {
   return -c * (t /= d) * (t - 2) + b;
 };
 
-},{}],142:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/ease/fn/linear.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -29604,7 +29704,7 @@ var linear = function linear(i, s, d, t) {
 
 module.exports = linear;
 
-},{}],143:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/event/mediaEventsEnum.js":[function(require,module,exports){
 "use strict";
 
 /* https://html.spec.whatwg.org/multipage/media.html#event-media-canplay
@@ -29624,7 +29724,7 @@ module.exports = [// networkState
 "ratechange", //
 "resize", "volumechange"];
 
-},{}],144:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/geom/inflateRect.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -29663,7 +29763,7 @@ module.exports = function (rect, dx, dy) {
   return r;
 };
 
-},{}],145:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedEvent.js":[function(require,module,exports){
 "use strict";
 
 /** @type {Array} lowercase prefixes */
@@ -29770,7 +29870,7 @@ var proxyTest = function(name, obj, testProp) {
 };
 */
 
-},{"./prefixes":148}],146:[function(require,module,exports){
+},{"./prefixes":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixes.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedProperty.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -29821,7 +29921,7 @@ module.exports = function (prop, obj) {
   return _cache[prop] || (_cache[prop] = _prefixedProperty(prop, obj || document.body.style));
 };
 
-},{"./prefixes":148}],147:[function(require,module,exports){
+},{"./prefixes":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixes.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixedStyleName.js":[function(require,module,exports){
 "use strict";
 
 /**
@@ -29884,12 +29984,12 @@ module.exports = function (style, styleObj) {
 // 	return prefixedProp? (camelProp === prefixedProp? "" : "-") + camelToDashed(prefixedProp) : null;
 // };
 
-},{"./prefixes":148}],148:[function(require,module,exports){
+},{"./prefixes":"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixes.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/prefixes.js":[function(require,module,exports){
 "use strict";
 
 module.exports = ["webkit", "moz", "ms", "o"];
 
-},{}],149:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/promise/rejectAll.js":[function(require,module,exports){
 "use strict";
 
 module.exports = function (pp, reason) {
@@ -29904,7 +30004,7 @@ module.exports = function (pp, reason) {
   return pp;
 };
 
-},{}],150:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/promise/resolveAll.js":[function(require,module,exports){
 "use strict";
 
 module.exports = function (pp, result) {
@@ -29919,7 +30019,7 @@ module.exports = function (pp, result) {
   return pp;
 };
 
-},{}],151:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/strings/camelToDashed.js":[function(require,module,exports){
 "use strict";
 
 module.exports = function (str) {
@@ -29928,14 +30028,14 @@ module.exports = function (str) {
   });
 };
 
-},{}],152:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/strings/stripTags.js":[function(require,module,exports){
 "use strict";
 
 module.exports = function (s) {
   return s.replace(/<[^>]+>/g, "");
 };
 
-},{}],153:[function(require,module,exports){
+},{}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/utils/touch/SmoothPanRecognizer.js":[function(require,module,exports){
 "use strict";
 
 /** @type {module:hammerjs} */
@@ -30101,7 +30201,7 @@ Hammer.inherit(SmoothPan, Hammer.Pan, {
 });
 module.exports = SmoothPan;
 
-},{"hammerjs":15}],154:[function(require,module,exports){
+},{"hammerjs":"/Users/pablo/Work/projects/folio/folio-workspace-assets/node_modules/hammerjs/hammer.js"}],"/Users/pablo/Work/projects/folio/folio-workspace-assets/src/sass/variables.json":[function(require,module,exports){
 module.exports={
 	"video_crop_px": "0",
 	"transform_type": "3d",
@@ -30117,9 +30217,8 @@ module.exports={
 		"xsmall-stretch": "'not screen and (min-width: 460px), not screen and (min-height: 420px)'",
 		"small-stretch": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
 		"default":"'only screen and (min-width: 704px) and (min-height: 540px)'",
-		"medium-wide": "'only screen and (min-width: 1024px) and (min-height: 540px)'",
-		"large-wide": "'only screen and (min-width: 1224px) and (min-height: 704px)'",
-		"xlarge-wide": "'only screen and (min-width: 1824px) and (min-height: 1024px)'"
+		"medium-wide": "'only screen and (min-width: 1024px) and (max-width: 1223px) and (min-height: 420px)'",
+		"medium-wide-stretch": "'only screen and (min-width: 1224px) and (min-height: 420px)'"
 	},
 	"default_colors": {
 		"color": "hsl(47, 5%, 15%)",
@@ -30145,6 +30244,8 @@ module.exports={
 			"vu_px": "12"
 		},
 		"breakpoints": {
+			"medium-wide-stretch": "'only screen and (min-width: 1024px) and (min-height: 420px)'",
+			"large-wide": "'only screen and (min-width: 1824px) and (min-height: 1024px)'",
 			"mobile": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
 			"unsupported": "'not screen and (min-width: 704px)'",
 			"unquoted": "only screen and (min-width: 1824px)",
@@ -30159,5 +30260,5 @@ module.exports={
 	}
 }
 
-},{}]},{},[53])
+},{}]},{},["/Users/pablo/Work/projects/folio/folio-workspace-assets/src/js/app/App.js"])
 //# sourceMappingURL=folio-dev-main.js.map

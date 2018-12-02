@@ -198,6 +198,16 @@ $browser_height: 30px;
 	&.browser-generic-dark .media-border {
 		background-image: image-url("mockup/browser-generic-dark.svg");
 	}
+	&.none .media-border {
+		background-image: none;
+		padding-top: 0;
+	}
+	&.no-shadow .media-border {
+		padding-top: 0;
+		background-image: none;
+		box-shadow: none;
+		//box-shadow: 0 1px 0.5rem hsla(0,0%,50%,0.05);
+	}
 }
 
 // TEMP

@@ -141,7 +141,14 @@ var MediaRenderer = CarouselRenderer.extend({
 		pch -= eh;
 
 		sw = this.model.get("source").get("w");
+		// || this.defaultImage.naturalWidth || pcw;
 		sh = this.model.get("source").get("h");
+		// || this.defaultImage.naturalHeight || pch;
+
+		// if (!(sw && sh)) {
+		// 	sw = pcw;
+		// 	sh = pch;
+		// }
 
 		// Unless both client dimensions are larger than the source's
 		// choose constraint direction by aspect ratio

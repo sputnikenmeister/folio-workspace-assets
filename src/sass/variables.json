@@ -13,9 +13,8 @@
 		"xsmall-stretch": "'not screen and (min-width: 460px), not screen and (min-height: 420px)'",
 		"small-stretch": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
 		"default":"'only screen and (min-width: 704px) and (min-height: 540px)'",
-		"medium-wide": "'only screen and (min-width: 1024px) and (min-height: 540px)'",
-		"large-wide": "'only screen and (min-width: 1224px) and (min-height: 704px)'",
-		"xlarge-wide": "'only screen and (min-width: 1824px) and (min-height: 1024px)'"
+		"medium-wide": "'only screen and (min-width: 1024px) and (max-width: 1223px) and (min-height: 420px)'",
+		"medium-wide-stretch": "'only screen and (min-width: 1224px) and (min-height: 420px)'"
 	},
 	"default_colors": {
 		"color": "hsl(47, 5%, 15%)",
@@ -41,6 +40,8 @@
 			"vu_px": "12"
 		},
 		"breakpoints": {
+			"medium-wide-stretch": "'only screen and (min-width: 1024px) and (min-height: 420px)'",
+			"large-wide": "'only screen and (min-width: 1824px) and (min-height: 1024px)'",
 			"mobile": "'not screen and (min-width: 704px), not screen and (min-height: 540px)'",
 			"unsupported": "'not screen and (min-width: 704px)'",
 			"unquoted": "only screen and (min-width: 1824px)",

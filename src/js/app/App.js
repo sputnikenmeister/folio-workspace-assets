@@ -1,9 +1,9 @@
 /**
-/* @module app/App
-/*/
+ * @module app/App
+ */
 "use strict";
 
-console.info("Portfolio App started");
+console.info(`Portfolio App started ${GIT_REV}`);
 
 // if (!DEBUG) {
 // 	window.addEventListener("error", function(ev) {

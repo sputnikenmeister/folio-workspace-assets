@@ -1,5 +1,3 @@
-/*global XMLHttpRequest */
-
 // /** @type {module:underscore.string/lpad} */
 // var classify = require("underscore.string/classify");
 
@@ -18,13 +16,12 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 				var err = new Error((ev.target.status > 0 ?
 					"http_" + request.statusText.replace(/\s/g, "_") :
 					ev.type + "_event").toUpperCase());
+				err.logMessage = "_loadImageAsObjectURL::" + ev.type + " [reject]";
 				err.infoCode = ev.target.status;
 				err.infoSrc = url;
 				err.logEvent = ev;
-				err.logMessage = "_loadImageAsObjectURL::" + ev.type + " [reject]";
 				return err;
 			};
-
 			// if progressFn is supplied
 			// - - - - - - - - - - - - - - - - - -
 			if (progressFn) {
@@ -32,7 +29,6 @@ if (window.XMLHttpRequest && window.URL && window.Blob) {
 					progressFn(ev.loaded / ev.total, request);
 				};
 			}
-
 			// resolved/success
 			// - - - - - - - - - - - - - - - - - -
 			request.onload = function(ev) {

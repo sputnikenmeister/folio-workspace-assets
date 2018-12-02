@@ -11,6 +11,11 @@ const View = require("app/view/base/View");
 // /** @type {string} */
 // var ABS_APP_ROOT = toAbsoluteURL(require("app/control/Globals").APP_ROOT);
 
+const RECAPTCHA_KEYS = {
+	'canillas.name': '6LcaPHwUAAAAAAfzEnqRchIx8jY1YkUEpuswJDHx'
+};
+const RECAPTCHA_URL = (key) => `https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_KEYS[key]}`;
+
 /**
 /* @constructor
 /* @type {module:app/view/component/ArticleView}
@@ -33,6 +38,14 @@ var ArticleView = View.extend({
 
 	renderFrame: function(tstamp, flags) {
 		this.el.innerHTML = this.model.get("text");
+
+		// let linkEls = this.el.querySelectorAll("a[href]");
+		// if (linkEls.length) {
+		// 	RECAPTCHA_URL('canillas.name');
+		// }
+		// linkEls.forEach(el => {
+		// });
+
 		// FIXME: now done in xslt
 		// this.el.querySelectorAll("a[href]").forEach(function(el) {
 		// 	var url = toAbsoluteURL(el.getAttribute("href"));

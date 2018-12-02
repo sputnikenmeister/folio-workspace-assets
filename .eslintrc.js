@@ -13,11 +13,16 @@ module.exports = {
 		],
 		"globals": {
 			/* define globals, disallow assignment */
-			"Modernizr": false,
-			"Promise": false,
 			"DEBUG": false,
-			"GA": false,
+			"GIT_REV": false,
+			"GA_ENABLED": false,
+			"Modernizr": false,
 			"_": false,
+		},
+		"settings": {
+			"polyfills": [
+				"promises"
+			]
 		},
 		"rules": {
 			"compat/compat": "warn",
@@ -38,6 +43,7 @@ module.exports = {
 			"node": true,
 			"es6": true
 		},
+
 	}],
 	"rules": {
 		"no-cond-assign": "off",

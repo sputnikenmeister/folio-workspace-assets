@@ -157,6 +157,14 @@ function initCarouselStyles(sheet, carouselSelector, attrs, fgColor, bgColor, ln
 	("border-radius" in attrs) && (s["border-radius"] = attrs["border-radius"]);
 	insertCSSRule(sheet, carouselSelector + " .media-item .placeholder", s);
 
+	// .image-item img
+	// .sequence-item .sequence-step
+	// - - - - - - - - - - - - - - - -
+	s = {};
+	s["background-color"] = bgColor.rgb().string();
+	insertCSSRule(sheet, carouselSelector + " .image-item img", s);
+	insertCSSRule(sheet, carouselSelector + " .sequence-item .sequence-step", s);
+
 	// .empty-item A
 	// - - - - - - - - - - - - - - - -
 	s = {};

@@ -15,7 +15,6 @@ module.exports = function(view) {
 			_whenImageLoads(view.defaultImage)
 				.then(
 					function(targetEl) {
-						// console.log(logMessage, view.cid, "resolved", "prefetched");
 						resolve(view);
 					});
 		} else {
@@ -37,32 +36,21 @@ module.exports = function(view) {
 							source.set("prefetched", url);
 						}
 						view.defaultImage.src = url;
-						// URL.revokeObjectURL(url);
 						return view.defaultImage;
 					})
 				.then(_whenImageLoads)
 				.then(
 					function(targetEl) {
-						// console.log(logMessage, view.cid, "resolved", targetEl.src);
 						view.on("view:removed", function() {
 							var prefetched = source.get("prefetched");
 							if (prefetched && /^blob\:/.test(prefetched)) {
-								source.unset("prefetched", {
-									silent: true
-								});
+								source.unset("prefetched", { silent: true });
 								URL.revokeObjectURL(prefetched);
 							}
 						});
-						// view.placeholder.removeAttribute("data-progress");
-						// view.updateMediaProgress(imageUrl, "complete");
 						resolve(view);
 					},
-					// 	})
-					// .catch(
 					function(err) {
-						// console.warn(logMessage, view.cid, "rejected", err.message);
-						// view.placeholder.removeAttribute("data-progress");
-						// view.updateMediaProgress(imageUrl, progress);
 						reject(err);
 					});
 		}

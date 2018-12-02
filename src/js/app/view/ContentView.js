@@ -494,7 +494,7 @@ module.exports = View.extend({
 			className: "media-carousel " + bundle.get("domid"),
 			collection: bundle.get("media"),
 			rendererFunction: rendererFunction,
-			requireSelection: false,
+			requireSelection: !!(bundle.attr("@no-desc")),
 			// direction: Carousel.DIRECTION_HORIZONTAL,
 			touch: this.hpan,
 		});

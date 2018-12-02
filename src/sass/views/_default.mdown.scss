@@ -80,11 +80,11 @@
 	h3, h4 {
 		@extend %n1f3_1f5;
 	}
+	h5, h6, p {
+		@extend %n1f22_1f3;
+	}
 	h3, h4 {
 		font-weight: 600;
-	}
-	p {
-		@extend %n1f1_1f6;
 	}
 }
 

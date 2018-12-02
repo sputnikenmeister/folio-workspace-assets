@@ -225,27 +225,27 @@ module.exports = View.extend({
 
 		/* TouchEvents fixups
 		 * ------------------------------- */
-		var traceTouchEvent = (msg, traceObj) => {
-			if (msg.hasOwnProperty("type")) {
-				msg = msg.type + " : " +
-					(msg.defaultPrevented ? "prevented" : "not prevented");
-			}
-			var sy, sh, ch;
-			sy = this.el.scrollTop;
-			sh = this.el.scrollHeight - 1;
-			ch = this.el.clientHeight;
-			console.log("%s:[%s] " +
-				"sy:[1>%o>=%s = %o] " +
-				"sh:[%o<=%o = %o] " +
-				"nav:[css:%o val:%o]",
-				this.cid, msg,
-				sy, sh - ch, (1 <= sy <= (sh - ch)),
-				sh, ch, (sh <= ch),
-				this.navigationView.el.style.height,
-				this.navigationView.el.scrollHeight,
-				traceObj || ""
-			);
-		};
+		// var traceTouchEvent = (msg, traceObj) => {
+		// 	if (msg.hasOwnProperty("type")) {
+		// 		msg = msg.type + " : " +
+		// 			(msg.defaultPrevented ? "prevented" : "not prevented");
+		// 	}
+		// 	var sy, sh, ch;
+		// 	sy = this.el.scrollTop;
+		// 	sh = this.el.scrollHeight - 1;
+		// 	ch = this.el.clientHeight;
+		// 	console.log("%s:[%s] " +
+		// 		"sy:[1>%o>=%s = %o] " +
+		// 		"sh:[%o<=%o = %o] " +
+		// 		"nav:[css:%o val:%o]",
+		// 		this.cid, msg,
+		// 		sy, sh - ch, (1 <= sy <= (sh - ch)),
+		// 		sh, ch, (sh <= ch),
+		// 		this.navigationView.el.style.height,
+		// 		this.navigationView.el.scrollHeight,
+		// 		traceObj || ""
+		// 	);
+		// };
 
 
 		// var scrolltouch = new Hammer.Manager(this.el);
@@ -311,6 +311,53 @@ module.exports = View.extend({
 
 		/* Google Analytics
 		 * ------------------------------- */
+		// if (window.GA_ID) {
+		// 	// let gaPageviewDisable = /(?:(localhost|\.local))$/.test(location.hostname) || window.GA_ID === "UA-0000000-0";
+		// 	if (window.gtag) {
+		// 		controller
+		// 			.on("route", (name) => {
+		// 				var page = Backbone.history.getFragment();
+		// 				// Add a slash if neccesary
+		// 				if (page.charAt(0) !== '/') {
+		// 					page = '/' + page;
+		// 				}
+		// 				// page.replace(/^(?!\/)/, "/");
+		// 				window.gtag('config', window.GA_ID, {
+		// 					'page_title': page,
+		// 					'page_path': page
+		// 				});
+		// 				console.warn("GTAG page set to '%s'", page);
+		// 			});
+		// 		// } else
+		// 		// if (window.ga) {
+		// 		// 	controller
+		// 		// 		.once("route", () => {
+		// 		// 			window.ga("create", window.GA_ID, "auto");
+		// 		// 			// if localhost or dummy ID, disable analytics
+		// 		// 			if (gaPageviewDisable) {
+		// 		// 				window.ga("set", "sendHitTask", null);
+		// 		// 			}
+		// 		// 			console.warn("GA enabled tag '%s'", window.GA_ID);
+		// 		// 		})
+		// 		// 		.on("route", (name) => {
+		// 		// 			var page = Backbone.history.getFragment();
+		// 		// 			// Add a slash if neccesary
+		// 		// 			if (page.charAt(0) !== '/') {
+		// 		// 				page = '/' + page;
+		// 		// 			}
+		// 		// 			// page.replace(/^(?!\/)/, "/");
+		// 		// 			window.ga("set", "page", page);
+		// 		// 			window.ga("send", "pageview");
+		// 		//
+		// 		// 			console.warn("GA page set to '%s'", page);
+		// 		// 		});
+		// 	} else {
+		// 		console.warn("GA/GTAG not loaded (LIB: %s, GA_ID: %s)", !!(window.ga || window.gtag), window.GA_ID);
+		// 	}
+		// } else {
+		// 	console.warn("GA/GTAG not enabled (LIB: %s, GA_ID: %s)", !!(window.ga || window.gtag), window.GA_ID);
+		// }
+
 		if (window.ga && window.GA_ID) {
 			controller
 				.once("route", () => {
@@ -319,15 +366,23 @@ module.exports = View.extend({
 					if (/(?:(localhost|\.local))$/.test(location.hostname)
 						|| window.GA_ID == "UA-0000000-0") {
 						window.ga("set", "sendHitTask", null);
+						console.warn("GA disabled for localhost", window.GA_ID);
 					}
 				})
 				.on("route", (name) => {
 					var page = Backbone.history.getFragment();
 					// Add a slash if neccesary
-					page.replace(/^(?!\/)/, "/");
+					if (page.charAt(0) !== '/') {
+						page = '/' + page;
+					}
+					// page.replace(/^(?!\/)/, "/");
 					window.ga("set", "page", page);
 					window.ga("send", "pageview");
+
+					console.warn("GA page set to '%s'", page);
 				});
+		} else {
+			console.warn("GA not enabled (LIB: %s, GA_ENABLED: %s, GA_ID: %s)", !!window.ga, window.GA_ENABLED, window.GA_ID);
 		}
 
 		/* Startup listener, added last */

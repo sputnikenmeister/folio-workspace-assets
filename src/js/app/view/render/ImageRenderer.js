@@ -46,8 +46,12 @@ var ImageRenderer = MediaRenderer.extend({
 		// this.measure();
 
 		var img = this.getDefaultImage();
-		img.setAttribute("width", this.metrics.media.width);
-		img.setAttribute("height", this.metrics.media.height);
+		if (this.metrics.media.width) {
+			img.setAttribute("width", this.metrics.media.width);
+		}
+		if (this.metrics.media.height) {
+			img.setAttribute("height", this.metrics.media.height);
+		}
 
 		var content = this.getContentEl();
 		content.style.left = this.metrics.content.x + "px";

@@ -266,7 +266,9 @@ module.exports = View.extend({
 		}
 		p
 			.then(this.transforms.whenAllTransitionsEnd())
-			.then(whenCollapsedChangeDone)
+			.then(whenCollapsedChangeDone, function(reason) {
+				console.error(reason);
+			})
 			.catch(function(reason) {
 				console.warn("%s::renderFrame promise rejected", this.cid);
 			}.bind(this));
@@ -478,7 +480,7 @@ module.exports = View.extend({
 		 *		bundleList.wrapper,
 		 *		hGroupings
 		 */
-		if (Globals.BREAKPOINTS["medium-wide"].matches) {
+		if (Globals.BREAKPOINTS["medium-wide"].matches || Globals.BREAKPOINTS["medium-wide-stretch"].matches) {
 			/* HORIZONTAL: keywordList.wrapper */
 			tf = this.transforms.get(this.keywordList.wrapper);
 			if (collapsedChanged && !withArticleChanged) {
@@ -670,8 +672,9 @@ module.exports = View.extend({
 		// 	&& this.model.get("layoutName") != "default-layout") {
 		// 	return;
 		// }
-		if (Globals.BREAKPOINTS["medium-wide"].matches
-			&& this.model.get("bundle").get("media").selectedIndex <= 0
+		if ((Globals.BREAKPOINTS["medium-wide"].matches || Globals.BREAKPOINTS["medium-wide-stretch"].matches)
+			&& (this.model.get("routeName") === "bundleItem")
+			&& (this.model.get("bundle").get("media").selectedIndex <= 0)
 			&& this.model.get("collapsed")) {
 			this.transforms.get(this.keywordList.wrapper).clearCapture();
 			this._onHPanMove(ev);

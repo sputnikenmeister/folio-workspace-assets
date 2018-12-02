@@ -319,6 +319,9 @@ var ViewProto = {
 		cid: {
 			get: function() {
 				return this._cid || (this._cid = this.cidPrefix + _cidSeed++);
+			},
+			set: function(value) {
+				// ignored
 			}
 		},
 		attached: {

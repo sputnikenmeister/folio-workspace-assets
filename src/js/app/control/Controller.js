@@ -53,9 +53,13 @@ var Controller = Backbone.Router.extend({
 			"root", this.toRoot);
 		// this.route(/^bundles\/?$/,
 		// 	"bundle-list", this.toBundleList);
-		this.route(/^bundles\/([^\/]+)\/?$/,
-			"bundle-item", this.toBundleItem);
-		this.route(/^bundles\/([^\/]+)\/(\d+)\/?$/,
+		// this.route(/^bundles\/([^\/]+)\/?$/,
+		// 	"bundle-item", this.toBundleItem);
+		// this.route(/^bundles\/([^\/]+)\/(\d+)\/?$/,
+		// 	"media-item", this.toMediaItem);
+
+		// this.route(/^bundles(?:\/([^\/]+)(?:\/(\d+))?)?\/?$/,
+		this.route(/^bundles\/([^\/]+)(?:\/(\d+)?)?\/?$/,
 			"media-item", this.toMediaItem);
 
 		if (DEBUG) {
@@ -74,7 +78,11 @@ var Controller = Backbone.Router.extend({
 	},
 
 	selectBundle: function(bundle) {
-		this._goToLocation(bundle);
+		if (bundle.attr("@no-desc")) {
+			this._goToLocation(bundle, bundle.get("media").at(0));
+		} else {
+			this._goToLocation(bundle);
+		}
 	},
 
 	deselectMedia: function() {
@@ -132,8 +140,8 @@ var Controller = Backbone.Router.extend({
 	},
 
 	/* --------------------------- *
-	/* URL to JS: router handlers
-	/* --------------------------- */
+	 * URL to JS: router handlers
+	 * --------------------------- */
 
 	toRoot: function() {
 		this.trigger("change:before");
@@ -163,8 +171,12 @@ var Controller = Backbone.Router.extend({
 		});
 		if (!bundle) {
 			throw new Error("Cannot find bundle with handle \"" + bundleHandle + "\"");
+			// } else if (bundle.attr("@no-desc")) {
+			// this._changeSelection(bundle, bundle.get("media").at(0));
+			// this.navigate(this._getLocation(bundle, bundle.get("media").at(0)), { trigger: true, replace: false });
+		} else {
+			this._changeSelection(bundle);
 		}
-		this._changeSelection(bundle);
 	},
 
 	toMediaItem: function(bundleHandle, mediaIndex) {
@@ -174,8 +186,7 @@ var Controller = Backbone.Router.extend({
 		if (!bundle) {
 			throw new Error("No bundle with handle \"" + bundleHandle + "\" found");
 		}
-		// if (mediaIndex) {
-		media = bundle.get("media").at(mediaIndex);
+		media = bundle.get("media").at(mediaIndex ? mediaIndex : 0);
 		if (!media) {
 			throw new Error("No media at index " + mediaIndex + " in bundle with handle \"" + bundleHandle + "\" found");
 		}
@@ -212,6 +223,12 @@ var Controller = Backbone.Router.extend({
 		var lastBundle, lastMedia;
 		if (bundle === void 0) bundle = null;
 		if (media === void 0) media = null;
+
+		// if (bundle !== null && media === null && bundle.attr("@no-desc")) {
+		// 	media = bundle.get("media").at(0);
+		// 	this._goToLocation(bundle, media);
+		// 	return;
+		// }
 
 		lastBundle = bundles.selected;
 		lastMedia = lastBundle ? lastBundle.get("media").selected : null;

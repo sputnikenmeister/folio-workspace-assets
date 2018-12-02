@@ -146,10 +146,10 @@ var resolveAll = function(pp, result) {
 var rejectAll = function(pp, reason) {
 	if (pp.length != 0) {
 		pp.forEach(function(p, i, a) {
-			p.reject(reason);
+			p.reject(reason);//
 			a[i] = null;
 		});
-		pp.length = 0;
+		pp.length = 0;//
 	}
 	return pp;
 };
@@ -205,8 +205,8 @@ TransformItem.prototype = Object.create({
 		// NOTE: style property may have been modified; clearOffset(element) should
 		// be called explicitly if clean up is required.
 		this.el.removeEventListener(transitionEnd, this._onTransitionEnd, false);
-		rejectAll(this._pendingPromises, this);
-		rejectAll(this._promises, this);
+		resolveAll(this._pendingPromises, this);
+		resolveAll(this._promises, this);
 		// delete this.el.eid;
 	},
 
@@ -431,11 +431,11 @@ TransformItem.prototype = Object.create({
 			this._transitionInvalid = false;
 
 			// save promises made while invalid
-			var reject = this._promises;
+			var pp = this._promises;
 			// prepare _promises and push in new ones
 			this._promises = this._pendingPromises;
 			// whatever still here is to be rejected. reuse array
-			this._pendingPromises = rejectAll(reject, this);
+			this._pendingPromises = resolveAll(pp, this);
 
 			// Set running flag, if there's a transition to run
 			this._transitionRunning = this._hasTransition;

@@ -1,6 +1,7 @@
 /* -------------------------------
 /* Imports
-/* ------------------------------- *//** @type {module:utils/TransformItem} */
+/* ------------------------------- */
+/** @type {module:utils/TransformItem} */
 const TransformItem = require("./TransformItem");
 
 var idSeed = 0;

@@ -633,7 +633,7 @@ var PlayableRenderer = MediaRenderer.extend({
 /* ---------------------------
 /* Google Analytics
 /* --------------------------- */
-if (GA) {
+if (window.GA_ENABLED) {
 	PlayableRenderer = (function(PlayableRenderer) {
 
 		/** @type {module:underscore.strings/dasherize} */
