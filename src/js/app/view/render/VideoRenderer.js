@@ -814,10 +814,10 @@ if (DEBUG) {
 
 		/** @type {Function} */
 		var Color = require("color");
-		/** @type {module:underscore.strings/lpad} */
-		var lpad = require("underscore.string/lpad");
-		/** @type {module:underscore.strings/rpad} */
-		var rpad = require("underscore.string/rpad");
+		// /** @type {module:underscore.strings/lpad} */
+		// var lpad = require("underscore.string/lpad");
+		// /** @type {module:underscore.strings/rpad} */
+		// var rpad = require("underscore.string/rpad");
 
 		// var fullscreenEvents = [
 		// 	fullscreenChangeEvent, fullscreenErrorEvent,
@@ -917,14 +917,14 @@ if (DEBUG) {
 			bRangeIdx = findRangeIndex(bRanges, currTime);
 			sRangeIdx = findRangeIndex(sRanges, currTime);
 			return [
-				"[" + lpad(currTime.toFixed(1), 5) +
-					" " + lpad((!isNaN(durTime) ? durTime.toFixed(1) : "-"), 4) + "]",
-				"[" + lpad((sRangeIdx >= 0 ? sRanges.end(sRangeIdx).toFixed(1) : "-"), 5) +
+				"[" + String(currTime.toFixed(1)).padStart(5) +
+					" " + String(!isNaN(durTime) ? durTime.toFixed(1) : "-").padStart(4) + "]",
+				"[" + String(sRangeIdx >= 0 ? sRanges.end(sRangeIdx).toFixed(1) : "-").padStart(5) +
 					" " + (sRangeIdx >= 0 ? sRangeIdx : "-") + "/" + sRanges.length + "]",
-				"[" + lpad((bRangeIdx >= 0 ? bRanges.end(bRangeIdx).toFixed(1) : "-"), 5) +
+				"[" + String(bRangeIdx >= 0 ? bRanges.end(bRangeIdx).toFixed(1) : "-").padStart(5) +
 					" " + (bRangeIdx >= 0 ? bRangeIdx : "-") + "/" + bRanges.length + "]",
-				rpad(networkStateToString(video).substr(8), 12),
-				rpad(readyStateToString(video).substr(5), 15),
+				networkStateToString(video).substr(8).padEnd(12),
+				readyStateToString(video).substr(5).padEnd(15),
 				(video.ended ? ">:" : (video.paused ? "::" : ">>"))
 				// video.playbackRate.toFixed(2) + " (" + video.defaultPlaybackRate.toFixed(2) + ")"
 			]; //.join(" ");

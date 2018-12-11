@@ -2,23 +2,15 @@
 // media query : small-stretch
 // ///////////////////////////////////
 
-// ///////////////////////////////////
-// Definitions
-// ///////////////////////////////////
-
-$rhu: 1.666666666rem;
-
 // vertical layout variables
 // - - - - - - - - - - - - - - - - - -
-$s_nav_top: 1.166666666rem;
-$s_nav_bottom: 0;
+$s_nav_top: 2vh;//1.166666666rem;
 $s_nav_height: 20vh;//25%;// 7rem;//6.5rem;
 
 // horizontal layout variables
 // - - - - - - - - - - - - - - - - - -
 $one_third: 100vw * (1/3);
 $two_thirds: 100vw * (2/3);
-
 $s_page_width_max: none;//704px;
 
 $s_side_width_val: 32vw;
@@ -351,16 +343,14 @@ $s_content_right: $s_content_right_val;
 		min-width: 0;
 		// width: auto; left: 0; right: 0;
 
-		top: calc(#{$s_nav_top} + #{$s_nav_height});
+		top: $s_nav_top + $s_nav_height;
 		// height: calc(100% - #{$s_nav_height});
 		height: calc(100%
-			- #{$s_nav_top}
-			- #{$s_nav_height}
+			- #{$s_nav_height + $s_nav_top}
 			+ #{$s_content_top}
 		);
 		$s_carousel_item_height: calc(100%
-			- #{$s_content_top}
-			- #{$s_content_bottom}
+			- #{$s_content_top + $s_content_bottom}
 		);
 
 		margin-top: -#{$s_content_top};
@@ -405,7 +395,6 @@ $s_content_right: $s_content_right_val;
 	}
 
 	$ctrl_height: 2.1rem;
-	$ctrl_width: $rhu * 1.05;//2.1rem;
 
 	.playable-item {
 		.top-bar {

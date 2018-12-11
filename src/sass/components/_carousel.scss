@@ -25,9 +25,11 @@
 	}
 	&.selected .content {
 		cursor: grab;
+		// cursor: image-url("cursors/openhand_0.cur"), grab;
 	}
 	@at-root .carousel.panning & .content {
 		cursor: grabbing;
+		// cursor: image-url("cursors/closedhand_0.cur"), grabbing;
 	}
 	@at-root .carousel.disabled & .content {
 		cursor: default !important;

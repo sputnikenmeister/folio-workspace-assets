@@ -1,35 +1,43 @@
 /**
  * @module app/model/BaseItem
  * @requires module:backbone
- *//** @type {module:backbone} */
+ */
+/** @type {module:backbone} */
 const BaseModel = require("backbone").Model;
 // /** @type {module:app/model/BaseModel} */
 // var BaseModel = require("app/model/BaseModel");
 
+// /** @type {module:utils/strings/stripTags} */
+// const stripTags = require("utils/strings/stripTags");
+// /** @type {module:app/control/Globals} */
+// const Globals = require("app/control/Globals");
+
 module.exports = BaseModel.extend({
 
 	defaults: {
-		collapsed: false,
 		routeName: "initial",
+		fromRouteName: "",
+		page: "",
 		article: null,
 		bundle: null,
 		media: null,
-		fromRouteName: "",
 		withArticle: false,
 		withBundle: false,
 		withMedia: false,
+		collapsed: false
 	},
 
 	getters: [
-		"collapsed",
+		"page",
 		"routeName",
+		"fromRouteName",
 		"article",
 		"bundle",
 		"media",
-		"fromRouteName",
 		"withArticle",
 		"withBundle",
-		"withMedia"
+		"withMedia",
+		"collapsed"
 	],
 
 	// mutators: {
@@ -86,6 +94,7 @@ module.exports = BaseModel.extend({
 			if (this.hasChanged("media")) {
 				this.set("withMedia", this.has("media"), opts);
 			}
+			// this.set("pageTitle", this._getDocumentTitle(), { silent: true });
 		});
 
 		this.listenTo(this, "change:routeName",
@@ -116,7 +125,21 @@ module.exports = BaseModel.extend({
 
 	hasAnyChanged: function(attr) {
 		return this.hasChanged(attr) && (this.has(attr) != this.hasAnyPrevious(attr));
-	}
+	},
+
+	// _getDocumentTitle: function() {
+	// 	let docTitle = [];
+	// 	docTitle.push(Globals.APP_NAME);
+	// 	if (this.get("bundle")) {
+	// 		docTitle.push(stripTags(this.get("bundle").get("name")));
+	// 		if (this.model.get("media")) {
+	// 			docTitle.push(stripTags(this.get("media").get("name")));
+	// 		}
+	// 	} else if (this.get("article")) {
+	// 		docTitle.push(stripTags(this.get("article").get("name")));
+	// 	}
+	// 	return _.unescape(docTitle.join(" / "));
+	// }
 
 	// constructor: function() {
 	// 	Object.keys(this.defaults).forEach(function(getterName) {

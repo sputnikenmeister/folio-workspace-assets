@@ -43,7 +43,8 @@ module.exports = function(grunt) {
 	 * Main Targets
 	 * -------------------------------- */
 
-	// resources
+	/* install
+	 * - - - - - - - - - - - - - - - - - */
 	grunt.registerTask('clean-deps', [
 		'clean:favicons',
 		'clean:font-files',
@@ -62,7 +63,8 @@ module.exports = function(grunt) {
 		'symlink:vendor',
 	]);
 
-	// dev build tasks
+	/* dev
+	 * - - - - - - - - - - - - - - - - - */
 	grunt.registerTask('clean-build', [
 		'clean:js',
 		'clean:css'
@@ -73,37 +75,51 @@ module.exports = function(grunt) {
 	]);
 	grunt.registerTask('dev-vendor', [
 		'browserify:dev-vendor',
-		'exorcise:dev-vendor'
+		// 'exorcise:dev-vendor'
 	]);
 	grunt.registerTask('dev-main', [
+		'githash:main',
 		'browserify:dev-main',
 		'exorcise:dev-main'
 	]);
+	grunt.registerTask('dev', [
+		'dev-vendor',
+		'dev-main',
+		'dev-styles'
+	]);
+	grunt.registerTask('watch-dev', [
+		'dev', // build once before watch
+		'browserify-watch',
+		'watch'
+	]);
 
-	// dist build tasks
+	/* dist
+	 * - - - - - - - - - - - - - - - - - */
 	grunt.registerTask('dist-styles', [
 		'sass:dist',
 		'autoprefixer:dist'
 	]);
 	grunt.registerTask('dist-js', [
+		'githash:main',
 		'browserify:dist',
 		'exorcise:dist'
 	]);
-
-	// watch
-	grunt.registerTask('watch-dev', [
-		'browserify-watch',
-		'watch'
+	grunt.registerTask('dist', [
+		'dist-js',
+		'dist-styles'
 	]);
 
-	grunt.registerTask('install', ['install-deps', 'install-utils']);
+	/* main goals
+	 * - - - - - - - - - - - - - - - - - */
+	grunt.registerTask('build', ['dev', 'dist']);
 
-	grunt.registerTask('dist', ['dist-js', 'dist-styles']);
-	grunt.registerTask('dev', ['dev-vendor', 'dev-main', 'dev-styles']);
-	grunt.registerTask('build', ['dev', 'dist', 'run_grunt']);
+	grunt.registerTask('stage', ['build', 'run_grunt:stage']);
+	grunt.registerTask('deploy', ['build', 'run_grunt:deploy']);
+
+	grunt.registerTask('install', ['install-deps', 'install-utils']);
 	grunt.registerTask('rebuild', ['clean-build', 'build']);
 	// Default task
-	grunt.registerTask('default', ['dev', 'watch-dev']);
+	grunt.registerTask('default', ['watch-dev']);
 
 	/* --------------------------------
 	 * watch
@@ -123,10 +139,10 @@ module.exports = function(grunt) {
 			tasks: ['sass:dev', 'autoprefixer:dev'],
 			files: ['src/sass/**/*.scss', 'src/sass/**/*.json'],
 		},
-		'process-vendor': {
-			tasks: ['exorcise:dev-vendor'],
-			files: ['<%= paths.dev.vendor %>'],
-		},
+		// 'process-vendor': {
+		// 	tasks: ['exorcise:dev-vendor'],
+		// 	files: ['<%= paths.dev.vendor %>'],
+		// },
 		'process-main': {
 			tasks: ['exorcise:dev-main'],
 			files: ['<%= paths.dev.main %>'],
@@ -219,10 +235,6 @@ module.exports = function(grunt) {
 	 * stylesheets
 	 * ================================ */
 
-	/* --------------------------------
-	 * dev stylesheets
-	 * -------------------------------- */
-
 	// grunt.loadNpmTasks('grunt-sass-format');
 	// grunt.loadNpmTasks('grunt-sass');
 	// grunt.loadNpmTasks('grunt-contrib-compass');
@@ -235,6 +247,9 @@ module.exports = function(grunt) {
 	 * `npm install --save-dev compass-sass-mixins`
 	 * - - - - - - - - - - - - - - - - - */
 
+
+	/* sass
+	 * - - - - - - - - - - - - - - - - - */
 	// grunt.loadNpmTasks('grunt-contrib-sass');
 	grunt.config('sass', {
 		options: {
@@ -261,37 +276,6 @@ module.exports = function(grunt) {
 			// 'css/folio-dev-fonts.css': 'src/sass/fonts.scss',
 		}
 	});
-	// grunt.config('sass.fonts', {
-	// 	files: {
-	// 		'css/fonts.css': 'src/sass/fonts.scss',
-	// 	}
-	// });
-	// grunt.config('sass.ie', {
-	// 	files: {
-	// 		'css/folio-ie.css': 'src/sass/folio-ie.scss',
-	// 	}
-	// });
-
-	/* autoprefixer
-	 * - - - - - - - - - - - - - - - - - */
-	// grunt.loadNpmTasks('grunt-autoprefixer');
-	grunt.config('autoprefixer.dev', {
-		options: {
-			map: true,
-			// map: {
-			// 	prev: 'css/',
-			// 	sourcesContent: true
-			// },
-			// diff: true,
-			// safe: true,
-
-		},
-		src: 'css/folio-dev.css',
-	});
-
-	/* --------------------------------
-	 * dist stylesheets
-	 * -------------------------------- */
 
 	grunt.config('sass.dist', {
 		options: {
@@ -303,6 +287,23 @@ module.exports = function(grunt) {
 			'css/folio.css': 'src/sass/folio.scss',
 			// 'css/folio-ie.css': 'src/sass/folio-ie.scss',
 			// 'css/folio-fonts.css': 'src/sass/fonts.scss',
+		}
+	});
+
+	/* autoprefixer
+	 * - - - - - - - - - - - - - - - - - */
+	grunt.config('autoprefixer.dev', {
+		options: {
+			map: true,
+			// map: {
+			// 	prev: 'css/',
+			// 	sourcesContent: true
+			// },
+			// diff: true,
+			// safe: true,
+		},
+		files: {
+			'<%= paths.dev.styles %>': '<%= paths.dev.styles %>'
 		}
 	});
 
@@ -331,8 +332,18 @@ module.exports = function(grunt) {
 			debug: true,
 			fullPaths: true,
 			paths: [
-				'src/js'
+				'./src/js/'
 			],
+		}
+	});
+
+	/* exorcise
+	 * - - - - - - - - - - - - - - - - - */
+	// grunt.loadNpmTasks('grunt-exorcise');
+	grunt.config('exorcise', {
+		options: {
+			strict: true,
+			root: '.',
 		}
 	});
 
@@ -341,24 +352,35 @@ module.exports = function(grunt) {
 	grunt.config('browserify.vendor', {
 		dest: './js/folio-vendor.js',
 		src: [
-			'src/js/shims/fullscreen.js',
-			'src/js/shims/math-sign-polyfill.js',
+			// 'src/js/shims/fullscreen.js',
+			// 'src/js/shims/math-sign-polyfill.js',
+			// 'src/js/shims/matchesSelector.js',
+			// 'src/js/shims/requestAnimationFrame.js',
+			// 'node_modules/es6-promise/auto.js'
 		],
 		options: {
 			require: [
+				// 'setimmediate',
+				// 'es6-promise/auto',
+				// 'mutation-observer',
+				// 'classlist-polyfill',
+				// 'path2d-polyfill',
 				'underscore',
-				'setimmediate',
-				'webfontloader',
-				'hammerjs',
-				'color',
 				'backbone',
 				'backbone.native',
-				'Backbone.Mutators',
 				'backbone.babysitter',
+				'Backbone.Mutators',
+				'hammerjs',
+				'color',
+				'webfontloader',
+				'hbsfy/runtime',
 			],
 			alias: [
-				'./src/js/shims/fullscreen.js:fullscreen-polyfill',
-				'./src/js/shims/math-sign-polyfill.js:math-sign-polyfill',
+				// './src/js/shims/fullscreen.js:fullscreen-polyfill',
+				// './src/js/shims/math-sign-polyfill.js:math-sign-polyfill',
+				// './src/js/shims/requestAnimationFrame.js:raf-polyfill',
+				// './src/js/shims/matchesSelector.js:matches-polyfill',
+				// './node_modules/es6-promise/auto.js:es6-promise/auto'
 			]
 		},
 	});
@@ -381,34 +403,24 @@ module.exports = function(grunt) {
 			}
 		}`
 	*/
-	grunt.config('browserify.polyfills', {
-		dest: 'js/folio-polyfills.js',
-		src: [
-			'src/js/shims/matchesSelector.js',
-			'src/js/shims/requestAnimationFrame.js',
-			'node_modules/es6-promise/auto.js'
-		],
-		options: {
-			require: [
-				'classlist-polyfill',
-				'mutation-observer',
-				'path2d-polyfill',
-				// 'es6-promise/auto',
-			],
-			alias: [
-				'./src/js/shims/requestAnimationFrame.js:raf-polyfill',
-				'./src/js/shims/matchesSelector.js:matches-polyfill',
-				// './node_modules/es6-promise/auto.js:es6-promise/auto'
-			],
-		}
-	});
+	// grunt.config('browserify.polyfills', {
+	// 	dest: 'js/folio-polyfills.js',
+	// 	src: [
+	// 	],
+	// 	options: {
+	// 		require: [
+	// 		],
+	// 		alias: [
+	// 		],
+	// 	}
+	// });
 
 	/* browserify:dev
 	 * - - - - - - - - - - - - - - - - - */
 	grunt.config('browserify.dev-vendor', {
 		dest: 'js/folio-dev-vendor.js',
 		src: [].concat(
-			grunt.config('browserify.polyfills.src'),
+			// grunt.config('browserify.polyfills.src'),
 			grunt.config('browserify.vendor.src'),
 			[
 				'build/target/modernizr-build/modernizr-dist.js',
@@ -416,12 +428,16 @@ module.exports = function(grunt) {
 			]
 		),
 		options: {
-			require: [
-				'cookies-js',
-				'underscore.string',
-			],
+			require: [].concat(
+				// grunt.config('browserify.polyfills.options.require'),
+				grunt.config('browserify.vendor.options.require'),
+				[
+					'cookies-js',
+					// 'underscore.string',
+				]
+			),
 			alias: [].concat(
-				grunt.config('browserify.polyfills.options.alias'),
+				// grunt.config('browserify.polyfills.options.alias'),
 				grunt.config('browserify.vendor.options.alias'),
 				[
 					'./build/target/modernizr-build/modernizr-dist.js:modernizr-dist',
@@ -447,16 +463,18 @@ module.exports = function(grunt) {
 		return r;
 	}, []);
 
+	grunt.log.writeln(JS_EXTERNAL_MODULES);
+
 	grunt.config('browserify.dev-main', {
-		dest: './<%= paths.dev.main %>',
 		src: ['./src/js/app/App.js'],
+		dest: './<%= paths.dev.main %>',
 		options: {
 			browserifyOptions: _.extend({
-				// fullPaths: true,
+				fullPaths: true,
 				insertGlobalVars: {
-					'GIT_REV': (file, dir) => `'${grunt.config.process('<%= githash.main.short %>')}'`,
 					'DEBUG': (file, dir) => 'true',
-					'GA_ENABLED': (file, dir) => 'false',
+					'GTAG_ENABLED': (file, dir) => 'false',
+					'GIT_REV': (file, dir) => `'${grunt.config.process('<%= githash.main.short %>')}'`,
 					'_': (file, dir) => 'require("underscore")',
 				}
 			}, grunt.config('browserify.options.browserifyOptions')),
@@ -473,15 +491,20 @@ module.exports = function(grunt) {
 					'babelify',
 					{
 						global: true,
-						only: ['./src/js/**/*.js'],
+						sourceMaps: 'inline',
+						only: [
+							'./src/js/app/**/*.js',
+							'./src/js/utils/**/*.js'
+						],
 					}
 				],
 				// [
 				// 	'strictify'
-				// ]
+				// ],
 			],
 			plugin: [
-				['remapify',
+				[
+					'remapify',
 					[
 						{
 							expose: 'app',
@@ -495,6 +518,30 @@ module.exports = function(grunt) {
 					]
 				]
 			],
+		}
+	});
+
+	grunt.config('exorcise.dev-vendor', {
+		options: {
+			root: '../',
+			// base: 'src/js/'
+		},
+		files: {
+			'./<%= paths.dev.vendor %>.map': [
+				'./<%= paths.dev.vendor %>'
+			]
+		}
+	});
+
+	grunt.config('exorcise.dev-main', {
+		options: {
+			// base: './src/js/',
+			root: '../'
+		},
+		files: {
+			'./<%= paths.dev.main %>.map': [
+				'./<%= paths.dev.main %>'
+			]
 		}
 	});
 
@@ -516,8 +563,9 @@ module.exports = function(grunt) {
 	 * - - - - - - - - - - - - - - - - - */
 	grunt.config('browserify.dist', {
 		src: [].concat(
-			grunt.config('browserify.polyfills.src'),
-			grunt.config('browserify.vendor.src'),
+			// grunt.config('browserify.polyfills.src'),
+			// grunt.config('browserify.vendor.src'),
+			grunt.config('browserify.dev-vendor.src'),
 			['./src/js/app/App.js']
 		),
 		dest: './<%= paths.dist.main %>',
@@ -527,13 +575,8 @@ module.exports = function(grunt) {
 				insertGlobalVars: {
 					'GIT_REV': (file, dir) => `'${grunt.config.process('<%= githash.main.short %>')}'`,
 					'DEBUG': (file, dir) => 'false',
-					'GA_ENABLED': (file, dir) => 'true',
+					'GTAG_ENABLED': (file, dir) => 'true',
 					'_': (file, dir) => 'require("underscore")',
-
-					// 'GIT_REV': (file, dir) => `'${grunt.config.process('<%= githash.main.short %>')}'`,
-					// 'DEBUG': function(file, dir) { return 'false'; },
-					// 'GA_ENABLED': function(file, dir) { return 'true'; },
-					// '_': function(file, dir) { return 'require("underscore")'; },
 				}
 			}, grunt.config('browserify.options.browserifyOptions')),
 			transform: [
@@ -555,7 +598,9 @@ module.exports = function(grunt) {
 					'uglifyify',
 					{
 						global: true,
-						sourceMap: { includeSources: true },
+						sourceMap: {
+							includeSources: true
+						},
 						mangle: {
 							reserved: DROP_FN
 						},
@@ -565,9 +610,9 @@ module.exports = function(grunt) {
 							dead_code: true,
 							global_defs: {
 								'DEBUG': false,
-								// 'GA_ENABLED': true,
+								// 'GTAG_ENABLED': true,
 								// 'DEBUG': (file, dir) => 'false',
-								// 'GA_ENABLED': (file, dir) => 'true',
+								// 'GTAG_ENABLED': (file, dir) => 'true',
 							},
 						}
 					}
@@ -577,15 +622,9 @@ module.exports = function(grunt) {
 				]
 			],
 			plugin: grunt.config('browserify.dev-main.options.plugin'),
-			// exclude: grunt.config('browserify.vendor.options.exclude'),
-			require: [].concat(
-				grunt.config('browserify.polyfills.options.require'),
-				grunt.config('browserify.vendor.options.require')
-			),
-			alias: [].concat(
-				grunt.config('browserify.polyfills.options.alias'),
-				grunt.config('browserify.vendor.options.alias')
-			),
+			// exclude: grunt.config('browserify.dev-vendor.options.exclude'),
+			require: grunt.config('browserify.dev-vendor.options.require'),
+			alias: grunt.config('browserify.dev-vendor.options.alias'),
 		},
 		// options: {
 		// 	browserifyOptions: {
@@ -613,7 +652,7 @@ module.exports = function(grunt) {
 	// 			drop_console: true,
 	// 			global_defs: {
 	// 				'DEBUG': false,
-	// 				'GA_ENABLED': true,
+	// 				'GTAG_ENABLED': true,
 	// 			},
 	// 		}
 	// 	},
@@ -627,40 +666,12 @@ module.exports = function(grunt) {
 	// grunt.config('uglify.dist.options.compress.pure_funcs', DROP_FN);
 	// grunt.config('uglify.dist.options.compress.drop_console', false);
 
-
-	/* exorcise:client exorcise:vendor
-	 * Extract source maps from browserify
-	 * - - - - - - - - - - - - - - - - - */
-	// grunt.loadNpmTasks('grunt-exorcise');
-	grunt.config('exorcise', {
-		options: {
-			strict: true,
-			root: '../',
-			// base: '.'
-		}
-	});
-	grunt.config('exorcise.dev-vendor', {
-		// options: { root: '../src/js/' },
-		files: {
-			'./<%= paths.dev.vendor %>.map': [
-				'./<%= paths.dev.vendor %>'
-			]
-		}
-	});
-	grunt.config('exorcise.dev-main', {
-		// options: { root: '../src/js/' },
-		files: {
-			'./<%= paths.dev.main %>.map': [
-				'./<%= paths.dev.main %>'
-			]
-		}
-	});
 	grunt.config('exorcise.dist', {
 		// options: { root: '../src/js/' },
 		files: {
 			'./<%= paths.dist.main %>.map': [
-					'./<%= paths.dist.main %>'
-				]
+				'./<%= paths.dist.main %>'
+			]
 		}
 	});
 
@@ -688,30 +699,58 @@ module.exports = function(grunt) {
 				'./build/tasks/modernizr-build/modernizr-config-all.json'
 			],
 			'./build/target/modernizr-build/modernizr-dist.js': [
-					'./build/tasks/modernizr-build/modernizr-config.json'
-				]
+				'./build/tasks/modernizr-build/modernizr-config.json'
+			]
 		}
 	});
 	grunt.config('clean.modernizr', {
 		src: ['build/target/modernizr-build']
 	});
 
+	/* NOTE: browserify + path2d-polyfill
+	 * - - - - - - - - - - - - - - - - - */
+	/*
+		NOTE: path2d-polyfill has to be manually build with babel,
+		not included in build yet:
+		`cd ./node_modules/path2d-polyfill/ && \
+			npm install --save-dev babel-cli && \
+			./node_modules/.bin/babel src -d build --presets env`
+		add to browserify config:
+		`{
+			src: [ 'node_modules/path2d-polyfill/build/index.js'],
+			options: {
+				alias: [
+					'node_modules/path2d-polyfill/build/index.js:path2d-polyfill',
+				]
+			}
+		}`
+	*/
 
 	/* ================================
-	 * dev utils
+	 * deploy
 	 * ================================ */
 
 	// grunt.loadNpmTasks('grunt-run-grunt');
-	grunt.config('run_grunt.fulanito', {
+	grunt.config('run_grunt.stage', {
+		options: {
+			task: ['build', 'deploy']
+		},
 		src: [
 			'../fulanito-canillas.github.io/gruntfile.js',
 		]
 	});
-	grunt.config('run_grunt.folio', {
+	grunt.config('run_grunt.deploy', {
+		options: {
+			task: ['build', 'deploy']
+		},
 		src: [
 			'../folio-github.io/gruntfile.js',
 		]
 	});
+
+	/* ================================
+	 * utils
+	 * ================================ */
 
 	grunt.config('clean.utils', {
 		src: [

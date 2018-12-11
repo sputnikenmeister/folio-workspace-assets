@@ -222,6 +222,22 @@
 	// &:first-child: { margin-top: -0.75rem; }
 }
 
+/* 2_2f25 */
+/* #site-name #about #bundle-list */
+%char_2_2f25 {
+	@extend %char_heading;
+	// @include heading_font(300, 1.999999999rem, 2.25rem);
+	font-size: 1.999999999rem;//28px;
+	line-height: 2.25rem;//30px;
+	// letter-spacing: -1px;
+}
+%n1p2_2f25 {
+	@extend %char_2_2f25;
+	@extend %para_heading;
+	margin-bottom: 1.5rem;//1rem;//0.75rem;
+	// &:first-child: { margin-top: -0.75rem; }
+}
+
 /* 2_2 */
 /* #site-name #about #bundle-list */
 %char_2_2 {

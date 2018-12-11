@@ -277,21 +277,18 @@ module.exports = View.extend({
 			this.el.addEventListener("touchend", onTouchEnd, touchOpts);
 			this.el.addEventListener("touchcancel", onTouchEnd, touchOpts);
 		};
-
 		var onTouchMove = (ev) => {
 			if (!ev.defaultPrevented && (this.el.scrollHeight - 1) <= this.el.clientHeight) {
 				ev.preventDefault();
 			}
 			//traceTouchEvent(ev);
 		};
-
 		var onTouchEnd = (ev) => {
 			this.el.removeEventListener("touchmove", onTouchMove, touchOpts);
 			this.el.removeEventListener("touchend", onTouchEnd, touchOpts);
 			this.el.removeEventListener("touchcancel", onTouchEnd, touchOpts);
 		};
-
-		this.el.addEventListener("touchstart", onTouchStart);
+		this.el.addEventListener("touchstart", onTouchStart, { passive: true });
 
 		var onMeasured = (view) => {
 			this.setImmediate(() => {
@@ -308,11 +305,10 @@ module.exports = View.extend({
 		};
 		this.listenTo(this.navigationView, "view:collapsed:measured", onMeasured);
 
-
 		/* Google Analytics
 		 * ------------------------------- */
-		// if (window.GA_ID) {
-		// 	// let gaPageviewDisable = /(?:(localhost|\.local))$/.test(location.hostname) || window.GA_ID === "UA-0000000-0";
+		// if (window.GTAG_ID) {
+		// 	// let gaPageviewDisable = /(?:(localhost|\.local))$/.test(location.hostname) || window.GTAG_ID === "UA-0000000-0";
 		// 	if (window.gtag) {
 		// 		controller
 		// 			.on("route", (name) => {
@@ -322,7 +318,7 @@ module.exports = View.extend({
 		// 					page = '/' + page;
 		// 				}
 		// 				// page.replace(/^(?!\/)/, "/");
-		// 				window.gtag('config', window.GA_ID, {
+		// 				window.gtag('config', window.GTAG_ID, {
 		// 					'page_title': page,
 		// 					'page_path': page
 		// 				});
@@ -332,12 +328,12 @@ module.exports = View.extend({
 		// 		// if (window.ga) {
 		// 		// 	controller
 		// 		// 		.once("route", () => {
-		// 		// 			window.ga("create", window.GA_ID, "auto");
+		// 		// 			window.ga("create", window.GTAG_ID, "auto");
 		// 		// 			// if localhost or dummy ID, disable analytics
 		// 		// 			if (gaPageviewDisable) {
 		// 		// 				window.ga("set", "sendHitTask", null);
 		// 		// 			}
-		// 		// 			console.warn("GA enabled tag '%s'", window.GA_ID);
+		// 		// 			console.warn("GA enabled tag '%s'", window.GTAG_ID);
 		// 		// 		})
 		// 		// 		.on("route", (name) => {
 		// 		// 			var page = Backbone.history.getFragment();
@@ -352,38 +348,46 @@ module.exports = View.extend({
 		// 		// 			console.warn("GA page set to '%s'", page);
 		// 		// 		});
 		// 	} else {
-		// 		console.warn("GA/GTAG not loaded (LIB: %s, GA_ID: %s)", !!(window.ga || window.gtag), window.GA_ID);
+		// 		console.warn("GA/GTAG not loaded (LIB: %s, GA_ID: %s)", !!(window.ga || window.gtag), window.GTAG_ID);
 		// 	}
 		// } else {
-		// 	console.warn("GA/GTAG not enabled (LIB: %s, GA_ID: %s)", !!(window.ga || window.gtag), window.GA_ID);
+		// 	console.warn("GA/GTAG not enabled (LIB: %s, GA_ID: %s)", !!(window.ga || window.gtag), window.GTAG_ID);
 		// }
 
-		if (window.ga && window.GA_ID) {
-			controller
-				.once("route", () => {
-					window.ga("create", window.GA_ID, "auto");
-					// if localhost or dummy ID, disable analytics
-					if (/(?:(localhost|\.local))$/.test(location.hostname)
-						|| window.GA_ID == "UA-0000000-0") {
-						window.ga("set", "sendHitTask", null);
-						console.warn("GA disabled for localhost", window.GA_ID);
-					}
-				})
-				.on("route", (name) => {
-					var page = Backbone.history.getFragment();
-					// Add a slash if neccesary
-					if (page.charAt(0) !== '/') {
-						page = '/' + page;
-					}
-					// page.replace(/^(?!\/)/, "/");
-					window.ga("set", "page", page);
-					window.ga("send", "pageview");
-
-					console.warn("GA page set to '%s'", page);
-				});
-		} else {
-			console.warn("GA not enabled (LIB: %s, GA_ENABLED: %s, GA_ID: %s)", !!window.ga, window.GA_ENABLED, window.GA_ID);
-		}
+		// if (window.ga && window.GTAG_ID) {
+		// 	controller
+		// 		.once("route", () => {
+		// 			window.ga("create", window.GTAG_ID, "auto");
+		// 			// if localhost or dummy ID, disable analytics
+		// 			if (/(?:(localhost|\.local))$/.test(location.hostname)
+		// 				|| window.GTAG_ID == "XX-0000000-0") {
+		// 				window.ga("set", "sendHitTask", null);
+		// 				window.gtag('config', 'GA_TRACKING_ID', { 'send_page_view': false });
+		// 				console.warn("GA disabled for localhost", window.GTAG_ID);
+		// 			}
+		// 		})
+		// 		.on("route", (name) => {
+		// 			var page = Backbone.history.getFragment();
+		// 			// Add a slash if neccesary
+		// 			if (page.charAt(0) !== '/') {
+		// 				page = '/' + page;
+		// 			}
+		// 			// page.replace(/^(?!\/)/, "/");
+		// 			window.ga("set", "page", page);
+		// 			window.ga("send", "pageview");
+		//
+		// 			console.warn("GA page set to '%s'", page);
+		// 		});
+		// } else {
+		// 	console.warn("GA not enabled (LIB: %s, GA_ENABLED: %s, GA_ID: %s)", !!window.ga, window.GA_ENABLED, window.GTAG_ID);
+		// }
+		// if (window.ga && window.GTAG_ID) {
+		// 	controller.once("route", () => {
+		// 		window.ga("create", window.GTAG_ID, "auto");
+		// 	});
+		// }
+		// console.info("Git: %s", GIT_REV);
+		console.info("Analytics GTAG_ENABLED: %s, GTAG_ID: %s, GA_LIB: %s", GTAG_ENABLED, window.GTAG_ID, !!window.ga);
 
 		/* Startup listener, added last */
 		this.listenToOnce(controller, "route", this._appStart);
@@ -403,6 +407,10 @@ module.exports = View.extend({
 		console.info("%s::_appStart(%s, %s)", this.cid, name, args.join());
 		this.skipTransitions = true;
 		this.el.classList.add("skip-transitions");
+
+		if (window.ga && window.GTAG_ID) {
+			window.ga("create", window.GTAG_ID, "auto");
+		}
 
 		this.requestRender(View.MODEL_INVALID | View.SIZE_INVALID)
 			.requestChildrenRender(View.MODEL_INVALID | View.SIZE_INVALID)
@@ -428,7 +436,8 @@ module.exports = View.extend({
 			routeName: name,
 			bundle: null,
 			media: null,
-			article: null
+			article: null,
+			page: Backbone.history.getFragment().replace(/^(?!\/)/, "/"),
 		};
 		switch (name) {
 			case "media-item":
@@ -474,11 +483,18 @@ module.exports = View.extend({
 			}, this);
 
 			["Article", "Bundle", "Media"].forEach(function(name) {
-				var key = name.toLowerCase();
-				console[this.hasChanged("with" + name) == this.hasAnyChanged(key) ? "log" : "warn"].call(console, "%s::_onModelChange with%s: %o with%sChanged: %o", this.cid,
-					name, this.has(key),
-					name, this.hasAnyChanged(key)
-				);
+				let key = name.toLowerCase();
+				let wName = `with${name}`;
+				// let logArgs = [
+				// 	"%s::_onModelChange with%s: %o with%sChanged: %o", this.cid,
+				// 	wName, this.has(key), name, this.hasAnyChanged(key)
+				// ];
+				// if (this.hasChanged(wName) !== this.hasAnyChanged(key)) {
+				// 	console.error.apply(console, logArgs);
+				// } else {
+				// 	console.log.apply(console, logArgs);
+				// }
+				console.assert(this.hasChanged(wName) === this.hasAnyChanged(key), this)
 			}, this.model);
 			console.groupEnd();
 
@@ -509,8 +525,8 @@ module.exports = View.extend({
 				this.requestAnimationFrame(function() {
 					console.info("%s::_onResize [view:render:after][raf]", view.cid);
 					view.skipTransitions = false;
-					view.el.classList.remove("skip-transitions");
 					this.el.scrollTop = 1;
+					view.el.classList.remove("skip-transitions");
 					console.groupEnd();
 				})
 			});
@@ -567,11 +583,10 @@ module.exports = View.extend({
 	/* ------------------------------- */
 
 	renderModelChange: function() {
-
-		var cls = this.el.classList;
-		var prevAttr = null;
-		var docTitle = [];
-		var hasDarkBg = false;
+		let cls = this.el.classList;
+		let prevAttr = null;
+		let hasDarkBg = false;
+		let docTitle = [];
 
 		docTitle.push(Globals.APP_NAME);
 		if (this.model.get("bundle")) {
@@ -582,23 +597,40 @@ module.exports = View.extend({
 		} else if (this.model.get("article")) {
 			docTitle.push(stripTags(this.model.get("article").get("name")));
 		}
-		document.title = _.unescape(docTitle.join(" / "));
+		docTitle = _.unescape(docTitle.join(" / "))
+		document.title = docTitle;
+
+		let metaTitle = docTitle;
+		let metaUrl = document.location.origin
+			+ document.location.pathname
+			+ document.location.hash;
+
+		document.head.querySelector("meta[property='og:title']")
+			.setAttribute("content", metaTitle);
+		document.head.querySelector("meta[property='og:url']")
+			.setAttribute("content", metaUrl);
+		document.head.querySelector("link[rel='canonical']")
+			.setAttribute("href", metaUrl);
+
+		if (window.ga && window.GTAG_ID) {
+			window.ga('send', {
+				'hitType': 'pageview',
+				'page': this.model.get("page"),
+				'title': docTitle
+			});
+		}
 
 		/* Set route class */
 		if (this.model.hasChanged("routeName")) {
-
 			prevAttr = this.model.previous("fromRouteName");
 			if (prevAttr) {
 				cls.remove("from-route-" + prevAttr);
 			}
 			cls.add("from-route-" + this.model.get("fromRouteName"));
-
 			prevAttr = this.model.previous("routeName");
 			if (prevAttr) {
 				cls.remove("route-" + prevAttr);
-				// this.el.setAttribute("from-route", prevAttr);
 			}
-			// this.el.setAttribute("to-route", this.model.get("routeName"));
 			cls.add("route-" + this.model.get("routeName"));
 		}
 

@@ -680,10 +680,10 @@ if (DEBUG) {
 
 		// /** @type {module:underscore.strings/lpad} */
 		// var rpad = require("underscore.string/rpad");
-		/** @type {module:underscore.strings/lpad} */
-		var lpad = require("underscore.string/lpad");
-		/** @type {module:underscore.strings/capitalize} */
-		var caps = require("underscore.string/capitalize");
+		// /** @type {module:underscore.strings/lpad} */
+		// var lpad = require("underscore.string/lpad");
+		// /** @type {module:underscore.strings/capitalize} */
+		// var caps = require("underscore.string/capitalize");
 
 		return SequenceRenderer.extend({
 			/** @override */
@@ -738,7 +738,7 @@ if (DEBUG) {
 					"timer",
 					"next",
 				].map(function(s, i, a) {
-					return lpad(caps(s), 8).substr(0, 8).toUpperCase();
+					return s.padStart(8).substr(0, 8).toUpperCase();
 				}).join(" ");
 			},
 
@@ -752,7 +752,7 @@ if (DEBUG) {
 					this.timer.getStatus(),
 					this.sources.followingOrFirst().has("prefetched") ? "ready" : "pending"
 				].map(function(s, i, a) {
-					return lpad(s, 8).substr(0, 8).toUpperCase();
+					return String(s).padStart(8).substr(0, 8).toUpperCase();
 				});
 				msg && logMsg.push(msg);
 				logMsg = logMsg.join(" ");

@@ -58,8 +58,12 @@ svg#debug-grid {
 	top: 0; bottom: 0;
 	left: 0; right: 0;
 
+
 	@at-root .medium-wide & {
 		max-width: $w_page_width;
+	}
+	@at-root .medium-wide-stretch & {
+		max-width: $ws_page_width;
 	}
 	@at-root .small-stretch & {
 		max-width: $s_page_width_max;
@@ -152,6 +156,9 @@ svg#debug-grid {
 		@at-root .medium-wide & {
 			transform: translate(0, $l_nav_top);
 		}
+		@at-root .medium-wide-stretch & {
+			transform: translate(0, $ls_nav_top);
+		}
 		@at-root .small-stretch & {
 			transform: translate(0, $s_nav_top);
 		}
@@ -167,8 +174,12 @@ svg#debug-grid {
 	}
 	#debug-grid-content {
 		transform: translate(0, $m_nav_height);
+
 		@at-root .medium-wide & {
 			transform: translate(0, $l_nav_height);
+		}
+		@at-root .medium-wide-stretch & {
+			transform: translate(0, $ls_nav_height);
 		}
 		@at-root .small-stretch & {
 			transform: translate(0, $s_nav_height);

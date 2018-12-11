@@ -3,8 +3,8 @@
  * @module app/view/base/View
  */
 
-/** @type {module:setimmediate} */
-require("setimmediate");
+// /** @type {module:setimmediate} */
+// require("setimmediate");
 
 /** @type {module:backbone} */
 const Backbone = require("backbone");

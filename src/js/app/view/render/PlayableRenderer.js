@@ -633,11 +633,16 @@ var PlayableRenderer = MediaRenderer.extend({
 /* ---------------------------
 /* Google Analytics
 /* --------------------------- */
-if (window.GA_ENABLED) {
+// if (window.GTAG_ENABLED && window.ga) {
+if (window.ga) {
 	PlayableRenderer = (function(PlayableRenderer) {
 
-		/** @type {module:underscore.strings/dasherize} */
-		var dasherize = require("underscore.string/dasherize");
+		// /** @type {module:underscore.strings/dasherize} */
+		// var dasherize = require("underscore.string/dasherize");
+
+		var dasherize = function(s) {
+			String(s).trim().replace(/([A-Z])/g, '-$1').replace(/[-_\s]+/g, '-').toLowerCase()
+		};
 
 		// var readyEvents = ["playing", "waiting", "ended"];
 		// var userEvents = ["play", "pause"];

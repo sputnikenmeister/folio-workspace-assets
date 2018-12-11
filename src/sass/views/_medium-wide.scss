@@ -2,11 +2,13 @@
 // media query : medium-wide
 // ///////////////////////////////////
 
-// layout variables
+// vertical layout variables
 // - - - - - - - - - - - - - - - - - -
 $l_nav_top: 2rem;
 $l_nav_height: 11rem;
 
+// horizontal layout variables
+// - - - - - - - - - - - - - - - - - -
 $w_page_width: 44 * $hu; //940px;
 $w_side_width: 11 * $hu;
 $w_main_width: $w_page_width - $w_side_width;
@@ -67,6 +69,7 @@ $w_main_width: $w_page_width - $w_side_width;
 
 	// Common alignment
 	// ===================================
+	// &.route-article-item, &.with-article,
 	&.without-article.without-bundle,
 	&.route-root {
 		#bundle-list, #keyword-list {
@@ -199,24 +202,22 @@ $w_main_width: $w_page_width - $w_side_width;
 	// content
 	// //////////////////////////////////
 
-	$l_content_top: 1.5rem;
-	$l_content_bottom: 4.5rem;
-
 	// media-carousel
 	// ===================================
+
+	$l_content_top: 1.5rem;
+	$l_content_bottom: 4.5rem;
 
 	.media-carousel {
 		min-width: $w_page_width;
 
 		top: $l_nav_top + $l_nav_height;
 		height: calc(100%
-		- #{$l_nav_top}
-		- #{$l_nav_height}
+		- #{$l_nav_height + $l_nav_top}
 		+ #{$l_content_top}
 		);
 		$l_carousel_item_height: calc(100%
-		- #{$l_content_top}
-		- #{$l_content_bottom}
+		- #{$l_content_top + $l_content_bottom}
 		);
 
 		margin-top: -#{$l_content_top};
@@ -293,11 +294,10 @@ $w_main_width: $w_page_width - $w_side_width;
 	// ===================================
 	.media-caption-stack {
 		@extend %char_2_2;
-		// @include heading_font(300, 1.999999999rem, 2rem);
 
-		top: 0; //$l_nav_top;
 		margin-top: 0;
 		width: $w_page_width;
+		top: 0; //$l_nav_top;
 		& > .stack-item {
 			top: 0;
 			bottom: auto;

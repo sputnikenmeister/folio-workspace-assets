@@ -29,7 +29,6 @@ var Controller = Backbone.Router.extend({
 
 	/** @override */
 	initialize: function(options) {
-
 		if (DEBUG) {
 			this._routeNames = [];
 			this.route = function(route, name, callback) {
@@ -53,12 +52,15 @@ var Controller = Backbone.Router.extend({
 			"root", this.toRoot);
 		// this.route(/^bundles\/?$/,
 		// 	"bundle-list", this.toBundleList);
+
 		// this.route(/^bundles\/([^\/]+)\/?$/,
 		// 	"bundle-item", this.toBundleItem);
 		// this.route(/^bundles\/([^\/]+)\/(\d+)\/?$/,
 		// 	"media-item", this.toMediaItem);
 
 		// this.route(/^bundles(?:\/([^\/]+)(?:\/(\d+))?)?\/?$/,
+		// 	"media-item", this.toMediaItem);
+
 		this.route(/^bundles\/([^\/]+)(?:\/(\d+)?)?\/?$/,
 			"media-item", this.toMediaItem);
 
@@ -79,7 +81,12 @@ var Controller = Backbone.Router.extend({
 
 	selectBundle: function(bundle) {
 		if (bundle.attr("@no-desc")) {
-			this._goToLocation(bundle, bundle.get("media").at(0));
+			this._goToLocation(bundle,
+				bundle.get("media").at(0), {
+					replace: true,
+					trigger: true
+				}
+			);
 		} else {
 			this._goToLocation(bundle);
 		}
@@ -133,10 +140,13 @@ var Controller = Backbone.Router.extend({
 		return location.join("/");
 	},
 
-	_goToLocation: function(bundle, media) {
-		this.navigate(this._getLocation(bundle, media), {
-			trigger: true
-		});
+	_goToLocation: function(bundle, media, opts) {
+		this.navigate(
+			this._getLocation(bundle, media),
+			_.defaults(opts || {}, {
+				trigger: true
+			})
+		);
 	},
 
 	/* --------------------------- *
@@ -166,39 +176,32 @@ var Controller = Backbone.Router.extend({
 	// },
 
 	toBundleItem: function(bundleHandle) {
-		var bundle = bundles.findWhere({
-			handle: bundleHandle
-		});
+		let bundle = bundles.findWhere({ handle: bundleHandle });
 		if (!bundle) {
-			throw new Error("Cannot find bundle with handle \"" + bundleHandle + "\"");
+			throw new Error(`No bundle found with handle '${bundleHandle}'`);
 			// } else if (bundle.attr("@no-desc")) {
 			// this._changeSelection(bundle, bundle.get("media").at(0));
 			// this.navigate(this._getLocation(bundle, bundle.get("media").at(0)), { trigger: true, replace: false });
-		} else {
-			this._changeSelection(bundle);
 		}
+		this._changeSelection(bundle);
 	},
 
 	toMediaItem: function(bundleHandle, mediaIndex) {
-		var bundle, media;
-		// if (bundleHandle) {
-		bundle = bundles.findWhere({ handle: bundleHandle });
+		let bundle = bundles.findWhere({ handle: bundleHandle });
 		if (!bundle) {
-			throw new Error("No bundle with handle \"" + bundleHandle + "\" found");
+			throw new Error(`No bundle found with handle '${bundleHandle}'`);
 		}
-		media = bundle.get("media").at(mediaIndex ? mediaIndex : 0);
+		let media = bundle.get("media").at(mediaIndex ? mediaIndex : 0);
 		if (!media) {
-			throw new Error("No media at index " + mediaIndex + " in bundle with handle \"" + bundleHandle + "\" found");
+			throw new Error(`No media found at index ${mediaIndex} in bundle '${bundleHandle}'`);
 		}
-		// }
-		// }
 		this._changeSelection(bundle, media);
 	},
 
 	toArticleItem: function(articleHandle) {
-		var article = articles.findWhere({ handle: articleHandle });
+		let article = articles.findWhere({ handle: articleHandle });
 		if (!article) {
-			throw new Error("Cannot find article with handle \"" + articleHandle + "\"");
+			throw new Error(`No article found with handle '${articleHandle}'`);
 		}
 		this.trigger("change:before", article);
 		bundles.deselect();
@@ -233,11 +236,15 @@ var Controller = Backbone.Router.extend({
 		lastBundle = bundles.selected;
 		lastMedia = lastBundle ? lastBundle.get("media").selected : null;
 		console.log("controller::_changeSelection bundle:[%s -> %s] media:[%s -> %s]",
-			(lastBundle ? lastBundle.cid : lastBundle), (bundle ? bundle.cid : bundle),
-			(lastMedia ? lastMedia.cid : lastMedia), (media ? media.cid : media)
+			(lastBundle ? lastBundle.cid : lastBundle),
+			(bundle ? bundle.cid : bundle),
+			(lastMedia ? lastMedia.cid : lastMedia),
+			(media ? media.cid : media)
 		);
 
-		if (!articles.selected && (lastBundle === bundle) && (lastMedia === media)) {
+		if (!articles.selected
+			&& (lastBundle === bundle)
+			&& (lastMedia === media)) {
 			return;
 		}
 

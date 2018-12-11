@@ -4,22 +4,22 @@
 	<title>Browser Mockup: Generic</title>
 	<defs>
 		<style type="text/css"><![CDATA[
-			
+
 			/* fg color #979797 */
 			.input-chrome, .button-chrome, .separator-line, #window-ctl-group { stroke: #979797 }
 			.ui-text, .input-text, .icon-filled { fill: #979797 }
-			
+
 			/* bg color #F6F6F6 */
 			.window-chrome { stroke: #F6F6F6 }
-			.window-chrome, #window-ctl-group { fill: #F6F6F6 }
-			.input-chrome, .button-chrome { fill: #FFFFFF }
-			
+			.window-chrome, #window-ctl-group { fill: #F6F6F6; fill-opacity: 1; }
+			.input-chrome, .button-chrome { fill: #FFFFFF; fill-opacity: 1; }
+
 			/* opacity */
 			.input-chrome, .button-chrome, .separator-line { stroke-opacity: 0.5 }
 			#window-ctl-group { stroke-opacity: 0.6 }
 			#domain-text { stroke-opacity: 1 }
 			#address-text, #title-text { stroke-opacity: 0.8 }
-			
+
 			/* text */
 			.input-text, .ui-text {
 				font-family: 'Lucida Grande', 'Lucida Sans', 'Apple SD Gothic Neo', Verdana, sans-serif;
@@ -29,7 +29,7 @@
 		]]></style>
 	</defs>
 	<clipPath id="window-mask-left">
-		<rect x="0" width="85.1%" height="400%"/>
+		<rect x="0" width="85%" height="400%"/>
 	</clipPath>
 	<g clip-path="url(#window-mask-left)">
 		<svg id="left_items" viewBox="0 0 2000 50" preserveAspectRatio="xMinYMin slice" buffered-rendering="static">

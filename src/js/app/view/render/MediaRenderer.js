@@ -3,8 +3,8 @@
  * @module app/view/render/MediaRenderer
  */
 
-/** @type {module:underscore.strings/lpad} */
-const lpad = require("underscore.string/lpad");
+// /** @type {module:underscore.strings/lpad} */
+// const lpad = require("underscore.string/lpad");
 
 /** @type {module:app/model/item/MediaItem} */
 const MediaItem = require("app/model/item/MediaItem");
@@ -91,7 +91,8 @@ var MediaRenderer = CarouselRenderer.extend({
 
 	updateMediaProgress: function(progress, id) {
 		if (_.isNumber(progress)) {
-			this.placeholder.setAttribute("data-progress", lpad(Math.floor(progress * 100), 2, '0'));
+			this.placeholder.setAttribute("data-progress",
+				String(Math.floor(progress * 100)).padStart(2, '0'));
 		}
 		// else if (progress === "complete") {
 		// 	this.placeholder.removeAttribute("data-progress");
@@ -252,10 +253,6 @@ if (DEBUG) {
 
 		/** @type {Function} */
 		var Color = require("color");
-		// /** @type {module:underscore.string/lpad} */
-		// var lpad = require("underscore.string/lpad");
-		// /** @type {module:underscore.string/rpad} */
-		// var rpad = require("underscore.string/rpad");
 
 		return MediaRenderer.extend({
 
@@ -362,7 +359,7 @@ if (DEBUG) {
 
 			__getTStamp: function() {
 				// return new Date(Date.now() - this.__logStartTime).toISOString().substr(11, 12);
-				return lpad(((Date.now() - this.__logStartTime) / 1000).toFixed(3), 8, "0");
+				return String(((Date.now() - this.__logStartTime) / 1000).toFixed(3)).padStart(8, "0");
 			},
 
 			__getHeaderText: function() {

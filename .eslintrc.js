@@ -15,7 +15,7 @@ module.exports = {
 			/* define globals, disallow assignment */
 			"DEBUG": false,
 			"GIT_REV": false,
-			"GA_ENABLED": false,
+			"GTAG_ENABLED": false,
 			"Modernizr": false,
 			"_": false,
 		},

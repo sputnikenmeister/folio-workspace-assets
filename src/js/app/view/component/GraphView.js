@@ -521,7 +521,7 @@ var GraphView = CanvasView.extend({
 				// p.cx1 = sMin + (rMax0 * qx);
 				// p.cx2 = dMin;
 
-				tx = calcArcHConnector(p.cx1, p.cy1, p.r1, p.cx2, p.cy2, p.r2, 0.9);
+				tx = calcArcHConnector(p.cx1, p.cy1, p.r1, p.cx2, p.cy2, p.r2, 0.7);
 				if (tx) {
 					p.tx1 = tx[0];
 					p.tx2 = tx[1];
